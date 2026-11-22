@@ -2525,6 +2525,7 @@ class Game
     void record(unsigned what, const std::string& character = {});
     void recordCharacters(unsigned what, const std::vector<std::string>& characters);
     Result applyStoryArea(const std::string& kind, const std::string& run, const json::Value& payload);
+    Result applyStoryTell(const std::string& run, const json::Value& payload);   // (Doc 85, Phase 2: "Tell the wolves".)
     // The journal's view of what was last recorded, to find what changed since.
     struct Shadow
     {

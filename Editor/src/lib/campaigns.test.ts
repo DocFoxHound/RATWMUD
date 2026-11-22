@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-    ago, alertText, dueText, filterRuns, filterTimeline, listCounts, mergeTimeline, missionGrid, phaseStrip, sinceOf, waitingLines,
+    ago, alertText, beforeAfter, causeText, changeText, commandLine, dueText, filterRuns, firingCounts, newKey, steerable, typedTitle, wayOf, filterTimeline, listCounts, mergeTimeline, missionGrid, phaseStrip, sinceOf, waitingLines,
     waitingOn, wolvesNow, hereCount, type FramePerson, type Mission, type Order, type RunRow, type TimelineItem, type Waiting,
 } from './campaigns.ts';
 
@@ -27,8 +27,8 @@ test('the timeline merges a poll into what it holds: one row per key, the newer 
     // An earlier page joins at the end.
     const earlier = mergeTimeline(after, [firing(3, '2026-11-21T08:00:00Z')]);
     assert.equal(earlier.at(-1)?.key, 't:3');
-    assert.deepEqual(sinceOf(earlier, {}, '2026-11-21T10:02:00Z'), {visit: 2, trigger: 8, order: 2, at: '2026-11-21T10:02:00Z'});
-    assert.deepEqual(sinceOf([], {visit: 4, trigger: 9}, 'now'), {visit: 4, trigger: 9, order: 0, at: 'now'}, 'an empty poll keeps the cursor');
+    assert.deepEqual(sinceOf(earlier, {}, '2026-11-21T10:02:00Z'), {visit: 2, trigger: 8, order: 2, command: 0, at: '2026-11-21T10:02:00Z'});
+    assert.deepEqual(sinceOf([], {visit: 4, trigger: 9}, 'now'), {visit: 4, trigger: 9, order: 0, command: 0, at: 'now'}, 'an empty poll keeps the cursor');
     assert.deepEqual(filterTimeline(after, 'trigger', 'player-birch').map(i => i.key), ['t:8']);
     assert.deepEqual(filterTimeline(after, 'all', 'player-birch').map(i => i.key), ['t:8', 'v:2', 'v:1'], 'a wolf filter keeps the phases');
 });
@@ -94,10 +94,70 @@ test('a mission as a grid: a row per wolf for their own checklist, one shared ro
 test('the list: counts by status, what needs the admin, and the phase strip', () => {
     const runs = [{run: 'a', status: 'running', alerts: [{kind: 'quiet', needsYou: false}]}, {run: 'b', status: 'paused', alerts: [{kind: 'paused', needsYou: true}]},
         {run: 'c', status: 'stopped'}, {run: 'd', status: 'complete'}, {run: 'e', status: 'approved'}] as RunRow[];
-    assert.deepEqual(listCounts(runs), {all: 5, running: 1, paused: 1, approved: 1, ended: 2, needsYou: 2});
+    assert.deepEqual(listCounts(runs), {all: 5, running: 1, held: 0, paused: 1, approved: 1, ended: 2, needsYou: 2});
     assert.deepEqual(filterRuns(runs, 'ended').map(r => r.run), ['c', 'd']);
     assert.deepEqual(phaseStrip([{visit: 3, phase: 'deep-freeze', day: 28, cause: 'clock', receipts: []}, {visit: 1, phase: 'enrol', day: 0, cause: 'published', receipts: []},
         {visit: 2, phase: 'ferry-watch', day: 0, cause: 'event 4', receipts: []}],
         [{id: 'deep-freeze', to: ['ferries-reopen', 'limited-crossings']}], 'deep-freeze'),
         {path: ['enrol', 'ferry-watch', 'deep-freeze'], next: ['ferries-reopen', 'limited-crossings']});
+});
+
+// ---- Phase 2: steering
+const command = (id: number, at: string, visit = 1, extra: Record<string, unknown> = {}): TimelineItem =>
+    ({key: `c:${id}`, type: 'command', id, command: 'set', visit, digest: 'd', payload: {key: 'stores', scope: 'story', value: 5},
+      reason: 'two coils were handed over', by: 'martin#a1', status: 'done', result: {text: 'stores set 3 → 5.', before: {value: 3}, after: {value: 5}},
+      doneAt: at, askedAt: at, at, ...extra} as TimelineItem);
+
+test('a command is the timeline\'s fourth source: after the orders of its moment, filtered as "Admin", in the poll cursor', () => {
+    const t = '2026-11-21T10:00:05Z';
+    const merged = mergeTimeline([], [visit(2, t), order(5, 'queued', t, 2), command(3, t, 2), firing(9, t, 2)]);
+    assert.deepEqual(merged.map(i => i.key), ['c:3', 'o:5', 't:9', 'v:2']);
+    assert.deepEqual(filterTimeline(merged, 'command').map(i => i.key), ['c:3']);
+    assert.equal(sinceOf(merged, {}, t).command, 3);
+    const fired = command(4, t, 2, {command: 'fire', payload: {trigger: 'offer-a-coil', actor: 'player-birch'}});
+    assert.deepEqual(filterTimeline([fired, firing(9, t, 2)], 'all', 'player-birch').map(i => i.key), ['c:4']);
+    assert.deepEqual(filterTimeline([fired, firing(9, t, 2)], 'all', '', 'offer-a-coil').map(i => i.key), ['c:4']);
+});
+
+test('commands, changes and causes in words', () => {
+    assert.equal(commandLine('set', {key: 'stores', scope: 'story', value: 5}, names), 'set stores to 5');
+    assert.equal(commandLine('fire', {trigger: 'offer-a-coil', actor: 'player-birch', check: false}, names), 'fired offer-a-coil for Birch Oakenfall (unchecked)');
+    assert.equal(commandLine('enter', {phase: 'deep-freeze', effects: false}, names), 'went to deep-freeze (without its entry effects)');
+    assert.equal(commandLine('tell', {to: 'participants', text: 'The river has closed.'}, names), 'told the story\'s wolves: "The river has closed."');
+    assert.equal(commandLine('order', {receipt: 5514, do: 'skip'}, names), 'skipped order #5514');
+    assert.equal(commandLine('timer', {do: 'shift', name: 'watch-round', days: 2}, names), 'shift timer watch-round (+2 days)');
+    assert.equal(changeText({what: 'counter', scope: 'story', key: 'watches', before: 5, after: 6}), 'watches 5 → 6');
+    assert.equal(changeText({what: 'counter', scope: 'player', key: 'hauled', wolf: 'player-birch', before: 0, after: 1}, names), 'hauled (Birch Oakenfall) 0 → 1');
+    assert.equal(changeText({what: 'timer', key: 'watch-round', before: 49, after: 56}), 'timer watch-round day 49 → day 56');
+    assert.equal(beforeAfter({result: {text: '', before: {status: 'running'}, after: {status: 'held'}}}), 'status running → held');
+    assert.equal(causeText('admin martin#a1: the river froze early'), 'martin by hand: "the river froze early"');
+});
+
+test('which commands ask for the title, which way a jump goes, what may be steered', () => {
+    assert.ok(typedTitle('stop', {}));
+    assert.ok(typedTitle('order', {do: 'skip'}));
+    assert.ok(!typedTitle('order', {do: 'retry'}));
+    assert.ok(typedTitle('enter', {}, 'back') && !typedTitle('enter', {}, 'on'));
+    const phases = ['enrol', 'ferry-watch', 'deep-freeze'];
+    assert.equal(wayOf(phases, 'deep-freeze', 'enrol'), 'back');
+    assert.equal(wayOf(phases, 'enrol', 'deep-freeze'), 'on');
+    assert.equal(wayOf(phases, 'enrol', 'enrol'), 'again');
+    assert.ok(steerable('held') && steerable('paused') && !steerable('stopping') && !steerable('complete'));
+    assert.match(newKey(), /^[A-Za-z0-9_-]{8,64}$/);
+    assert.notEqual(newKey(), newKey());
+    const counts = firingCounts([firing(1, '2026-11-21T09:00:00Z'), firing(2, '2026-11-21T10:00:00Z')]);
+    assert.deepEqual(counts['count-defeat'], {count: 2, last: '2026-11-21T10:00:00Z', day: 10});
+});
+
+test('held, stopping and the runner in the list and the alerts', () => {
+    const rows = [{status: 'running'}, {status: 'held'}, {status: 'stopping'}, {status: 'paused'}] as RunRow[];
+    const counts = listCounts(rows);
+    assert.deepEqual([counts.running, counts.held, counts.paused], [2, 1, 1]);
+    assert.deepEqual(filterRuns(rows, 'held').map(r => r.status), ['held']);
+    assert.match(alertText({kind: 'held', needsYou: false, by: 'martin#a1', reason: 'a check', events: 3}, names), /^Held by martin \("a check"\): 3 world events wait/);
+    assert.match(alertText({kind: 'runner', needsYou: true, age: 95}, names), /not beaten for 95 s/);
+    assert.match(alertText({kind: 'runner', needsYou: true, age: null}, names), /has not run on this world/);
+    const lines = waitingLines([{on: 'admin', problem: '', held: {by: 'martin#a1', reason: 'a check'}},
+        {on: 'game', stopping: true, order: {id: 9, kind: 'story.stop', target: 'w', status: 'queued', result: '', by: 'm', at: null, doneAt: null}}], names, 10);
+    assert.deepEqual(lines.map(l => l.text), ['held by martin ("a check"): resume it to carry on', 'to acknowledge the stop (order #9)']);
 });

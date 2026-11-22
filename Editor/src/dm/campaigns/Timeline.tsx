@@ -1,10 +1,12 @@
-// A campaign's timeline (doc 85, 5.3): phase visits, triggers fired and orders with their receipts, newest first, with
-// who, where and when; [Show] opens the world event behind a firing.
+// A campaign's timeline (doc 85, 5.3): phase visits, triggers fired (with the values they changed, before and after),
+// orders with their receipts, and the admin's commands (Phase 2), newest first, with who, where and when; [Show] opens the
+// world event behind a firing.
 import {useState} from 'react';
-import {ago, causeText, filterTimeline, nameOf, type TimelineFilter, type TimelineItem, type WorldEvent} from '../../lib/campaigns';
+import {ago, beforeAfter, causeText, changeText, commandLine, filterTimeline, nameOf, type TimelineFilter, type TimelineItem, type WorldEvent} from '../../lib/campaigns';
 
 type Place = {cell: string; x: number; y: number};
-const FILTERS: {id: TimelineFilter; label: string}[] = [{id: 'all', label: 'All'}, {id: 'phase', label: 'Phases'}, {id: 'trigger', label: 'Triggers'}, {id: 'order', label: 'Orders'}];
+const FILTERS: {id: TimelineFilter; label: string}[] = [{id: 'all', label: 'All'}, {id: 'phase', label: 'Phases'}, {id: 'trigger', label: 'Triggers'},
+    {id: 'order', label: 'Orders'}, {id: 'command', label: 'Admin'}];
 const when = (i: TimelineItem, now: string) => <span className="camp-when">{'day' in i && typeof i.day === 'number' ? `day ${i.day.toFixed(1)} · ` : ''}{i.at ? `${new Date(i.at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} · ${ago(i.at, now)}` : ''}</span>;
 const placeText = (p: {cell?: string; x?: number | null; y?: number | null}, names: Record<string, string>) =>
     p.cell ? `${nameOf(names, p.cell)}${p.x != null && p.y != null ? ` (${p.x}, ${p.y})` : ''}` : '';
@@ -14,6 +16,13 @@ export function TimelineRow({item: i, names, events, now, onMap}: {item: Timelin
     const [open, setOpen] = useState(false);
     if (i.type === 'phase') return <li className="phase">{when(i, now)}<span>▶ entered <b>{i.phase}</b> (visit {i.visit}) ← {causeText(i.cause, names)}</span>
         {!!i.missions?.length && <small>{i.missions.map(m => `${m.title}: ${m.ready ? 'done' : `${m.completed} / ${m.required}`}`).join(' · ')}</small>}</li>;
+    if (i.type === 'command') {
+        const change = beforeAfter(i);
+        return <li className={`command ${i.status}`}>{when(i, now)}
+            <span>✎ <b>{i.by.split('#')[0]}</b> {commandLine(i.command, i.payload, names)} · <span className={`camp-cmd ${i.status}`}>{i.status === 'queued' ? 'sent' : i.status}</span>
+                {' '}<q>{i.reason}</q></span>
+            {(i.result?.text || change) && <small>{i.result?.text}{change ? ` · ${change}` : ''}</small>}</li>;
+    }
     if (i.type === 'order') return <li className={`order ${i.status}`}>{when(i, now)}
         <span>→ order #{i.id} <b>{i.kind}</b>{i.target && !i.target.startsWith('world-') ? ' → ' + nameOf(names, i.target) : ''} · <span className={`camp-order ${i.status}`}>{i.status}</span>
             {i.doneAt && i.status !== 'queued' ? ` ${new Date(i.doneAt).toLocaleTimeString()}` : ''}</span>
@@ -23,7 +32,8 @@ export function TimelineRow({item: i, names, events, now, onMap}: {item: Timelin
     return <li className="trigger">{when(i, now)}
         <span>⚑ <b>{i.trigger}</b> {i.scope === 'campaign' ? '(campaign) ' : ''}in {i.phase}{i.actor ? ` · ${nameOf(names, i.actor)}` : ''}
             {place ? ` · ${placeText(place, names)}` : ''} ← {i.signal ? `signal ${i.signal}` : i.on}</span>
-        <small>{i.actions.join(' → ')}{event && <> · event #{event.id} <button className="link-button" onClick={() => setOpen(o => !o)}>{open ? 'Hide' : 'Show'}</button></>}
+        <small>{i.byHand ? `by hand (${(i.by ?? '').split('#')[0]}${i.checked === false ? ', unchecked' : ''}) · ` : i.command ? `from ${(i.by ?? '').split('#')[0]}'s command · ` : ''}
+            {i.actions.join(' → ')}{i.changes?.length ? ' · ' + i.changes.map(c => changeText(c, names)).join(' ; ') : ''}{event && <> · event #{event.id} <button className="link-button" onClick={() => setOpen(o => !o)}>{open ? 'Hide' : 'Show'}</button></>}
             {place && onMap && <> · <button className="link-button" onClick={() => onMap(place)}>On the map</button></>}</small>
         {open && event && <dl className="camp-event">
             <dt>kind</dt><dd>{event.kind}</dd>

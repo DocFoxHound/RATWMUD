@@ -216,6 +216,12 @@ def validate(phase):
         visit(name, set())
 
 
+def trigger_key(phase, trigger_id):
+    """How state.disabled names a trigger (doc 85, 3.5 and Phase 2): a campaign trigger by its id, a phase's own trigger
+    as phase/id (it stays off on a later visit of that phase)."""
+    return trigger_id if trigger_id in phase.get('_sharedIds', ()) else phase['id'] + '/' + trigger_id
+
+
 def counter_store(state, scope, actor, write=False):
     if scope == 'player' and actor not in state['cohort']:
         return {}
@@ -263,7 +269,10 @@ def fire(phase, state, event, day, elapsed, ready, matches, emit, trace):
     if native:
         return story_native.fire(native, phase, state, event, day, elapsed, ready, emit, trace)
     actor = event.get('actor', '')
+    disabled = set(state.get('disabled', ()))
     for t in phase.get('triggers', ()):
+        if disabled and trigger_key(phase, t['id']) in disabled:
+            continue
         kind = event['kind']
         if t['on'] == 'gift' and kind == 'gift again':
             kind = 'gift'
@@ -298,38 +307,47 @@ def fire(phase, state, event, day, elapsed, ready, matches, emit, trace):
                     'signal': event.get('signal'),
                 }
             )
-        for action in t['actions']:
-            op = action['do']
-            if op == 'enter':
-                return action['phase']
-            if op == 'effect':
-                effect = dict(action['effect'])
-                if effect.get('player') == '$actor':
-                    effect['player'] = actor
-                state.setdefault('triggerEffects', []).append(effect)
-            elif op in ('schedule', 'cancel'):
-                name = action['signal']
-                # A slash cannot appear in a signal ID. Shared keys stay compatible with older releases.
-                key = name + '/' + actor if action.get('owner') == 'player' else name
-                if op == 'cancel':
-                    state.get('timers', {}).pop(key, None)
-                    continue
-                state.setdefault('timers', {})[key] = {
-                    'signal': name,
-                    'at': (elapsed if action.get('clock') == 'real' else day) + action['days'],
-                    'clock': action.get('clock', 'game'),
-                    'actor': actor,
-                    'interval': action['days'] if action.get('repeat') else 0,
-                    'scope': action.get('scope', 'visit'),
-                }
-            elif op == 'emit':
-                emit(action['signal'], event)
-            elif action['scope'] != 'player' or actor in state['cohort']:
-                bucket = counter_store(state, action['scope'], actor, True)
-                value = action['value']
-                if isinstance(value, str):
-                    value = event.get(value, 0)
-                if op == 'add':
-                    value += bucket.get(action['key'], 0)
-                bucket[action['key']] = max(-LIMIT, min(LIMIT, value))
+        target = perform(t, state, event, actor, day, elapsed, emit)
+        if target:
+            return target
+    return None
+
+
+def perform(t, state, event, actor, day, elapsed, emit):
+    """A trigger's actions, in order, for the acting wolf: the target phase of an `enter`, or None. (Also the Campaigns
+    console's "fire now", doc 85 Phase 2.)"""
+    for action in t['actions']:
+        op = action['do']
+        if op == 'enter':
+            return action['phase']
+        if op == 'effect':
+            effect = dict(action['effect'])
+            if effect.get('player') == '$actor':
+                effect['player'] = actor
+            state.setdefault('triggerEffects', []).append(effect)
+        elif op in ('schedule', 'cancel'):
+            name = action['signal']
+            # A slash cannot appear in a signal ID. Shared keys stay compatible with older releases.
+            key = name + '/' + actor if action.get('owner') == 'player' else name
+            if op == 'cancel':
+                state.get('timers', {}).pop(key, None)
+                continue
+            state.setdefault('timers', {})[key] = {
+                'signal': name,
+                'at': (elapsed if action.get('clock') == 'real' else day) + action['days'],
+                'clock': action.get('clock', 'game'),
+                'actor': actor,
+                'interval': action['days'] if action.get('repeat') else 0,
+                'scope': action.get('scope', 'visit'),
+            }
+        elif op == 'emit':
+            emit(action['signal'], event)
+        elif action['scope'] != 'player' or actor in state['cohort']:
+            bucket = counter_store(state, action['scope'], actor, True)
+            value = action['value']
+            if isinstance(value, str):
+                value = event.get(value, 0)
+            if op == 'add':
+                value += bucket.get(action['key'], 0)
+            bucket[action['key']] = max(-LIMIT, min(LIMIT, value))
     return None

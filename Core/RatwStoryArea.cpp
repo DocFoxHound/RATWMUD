@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <optional>
 
 namespace ratw::game
 {
@@ -90,5 +91,66 @@ Result Game::applyStoryArea(const std::string& kind, const std::string& run, con
         tellActedOn(id, "You have no room to carry " + std::to_string(quantity) + " " + Society::itemName(good) + ".");
     return {true, "Area effect reached " + std::to_string(here.size()) + " participants" +
                       (full.empty() ? std::string(".") : "; " + std::to_string(full.size()) + " had no room."), run};
+}
+// A Dungeon Master's words to a world story's wolves (doc 85, Phase 2, story.tell): to all of them, one of them, or the ones
+// standing in one of its regions. {visit, text, to: participants | wolf | region, player?, region?, title?}. A wolf in the
+// world sees it as a banner and a line; one away is told when back (tellActedOn: on a community world, kept with the wolf).
+// Never refused for whoever is away: a message must not pause the story.
+Result Game::applyStoryTell(const std::string& run, const json::Value& payload)
+{
+    const auto* release = storylines_.find(run);
+    const int visit = countField(payload, "visit", 1000000000);
+    if (!visit || !release || release->kind != "world" || release->source != "storykeeper" || !release->live() ||
+        release->sourceRef != std::to_string(visit))
+        return {false, "This story visit is no longer active.", run};
+    const auto text = payload.string("text"), to = payload.string("to");
+    if (text.empty() || json::utf8Prefix(text, 300) != text || text.find_first_of("\r\n") != std::string::npos)
+        return {false, "A story message is one line of up to 300 characters.", run};
+    std::optional<story::Region> area;
+    if (to == "region")
+    {
+        area = story::Region::read(payload["region"]);
+        const auto bound = release->regions.find(payload["region"].string("id"));
+        if (!area || bound == release->regions.end() || bound->second.cell != area->cell || bound->second.x1 != area->x1 ||
+            bound->second.y1 != area->y1 || bound->second.x2 != area->x2 || bound->second.y2 != area->y2)
+            return {false, "The region differs from the published story.", run};
+    }
+    else if (to == "wolf")
+    {
+        const auto found = release->participants.find(payload.string("player"));
+        if (found == release->participants.end() || !found->second.active())
+            return {false, "That wolf is not in this story.", run};
+    }
+    else if (to != "participants")
+        return {false, "Tell the participants, a wolf or a region.", run};
+    const auto title = payload.string("title", release->title);
+    const auto words = (title.empty() ? std::string() : "\"" + title + "\": ") + text;
+    int told = 0, away = 0;
+    for (const auto& [id, participant] : release->participants)
+    {
+        if (!participant.active() || (to == "wolf" && id != payload.string("player")))
+            continue;
+        auto* c = clientOf(id);
+        const auto* e = world_.entity(id);
+        if (area)
+        {
+            if (!c || !e || e->npc || e->offstage)
+                continue;
+            const auto [x, y] = world_.eventTile(*e);
+            if (!area->contains(e->cellId, x, y))
+                continue;
+        }
+        if (c)
+        {
+            storylineToast(c, words);
+            ++told;
+        }
+        else
+        {
+            tellActedOn(id, words);
+            ++away;
+        }
+    }
+    return {true, "Told " + std::to_string(told) + " in the world" + (away ? "; " + std::to_string(away) + " away, told when back." : "."), run};
 }
 } // namespace ratw::game

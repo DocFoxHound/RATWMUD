@@ -871,7 +871,7 @@ def _new_invite(conn, username: str, by: str, hours: float) -> str:
 
 
 def add_account(conn, username: str, role: str, by: str, hours: float = CODE_HOURS, may_act_on_wolves: bool = False,
-                roles=GRANTABLE) -> tuple[str, str]:
+                roles=GRANTABLE, may_steer_campaigns: bool = False) -> tuple[str, str]:
     """A new Editor account on a one-time password, with an invite: (password, invite) for its Editor code."""
     if not isinstance(username, str) or not USERNAME.match(username):
         raise EditorError(422, 'username', 'Usernames are 3-32 lowercase letters, digits, _ or -, starting with a letter.')
@@ -885,6 +885,8 @@ def add_account(conn, username: str, role: str, by: str, hours: float = CODE_HOU
         conn.execute("""INSERT INTO dm.admins (username, role, password, must_change, must_change_until, may_act_on_wolves, created_by)
                         VALUES (%s, %s, %s, true, now() + %s * interval '1 hour', %s, %s)""",
                      (username, role, world_db.Jsonb(world_db.hash_password(password)), hours, bool(may_act_on_wolves), by[:80]))
+        if may_steer_campaigns:
+            conn.execute('UPDATE dm.admins SET may_steer_campaigns = true WHERE username = %s', (username,))
         invite = _new_invite(conn, username, by, hours)
         audit(conn, by, 'account.add', username, f'Added {username} as {role}.')
     return password, invite
@@ -975,6 +977,18 @@ def set_wolves(conn, username: str, allowed: bool, by: str) -> None:
               f'{username} {"may" if allowed else "may no longer"} act on players\' wolves.')
 
 
+def set_steer(conn, username: str, allowed: bool, by: str) -> None:
+    """"May steer campaigns" (doc 85, 5.7: migration 0071): hold, fire, jump and set a running world story's state."""
+    with conn.transaction():
+        _target(conn, username)
+        if not conn.execute("""SELECT 1 FROM information_schema.columns WHERE table_schema = 'dm' AND table_name = 'admins'
+                               AND column_name = 'may_steer_campaigns'""").fetchone():
+            raise EditorError(409, 'migrate', 'This world needs migration 0071 first (restart the world to update it).')
+        conn.execute('UPDATE dm.admins SET may_steer_campaigns = %s WHERE username = %s', (bool(allowed), username))
+        audit(conn, by, 'account.steer', username,
+              f'{username} {"may" if allowed else "may no longer"} steer running campaigns.')
+
+
 def end_all(conn, by: str) -> None:
     """End every Editor session and forget every account's devices."""
     with conn.transaction():
@@ -986,7 +1000,8 @@ def end_all(conn, by: str) -> None:
 def list_accounts(conn) -> list[dict]:
     rows = conn.execute("""SELECT a.username, a.role, a.disabled, a.must_change, a.must_change_until < now(), a.created_at,
                                   a.last_login, a.claimed_from, a.may_act_on_wolves, a.created_by,
-                                  (SELECT address FROM dm.sessions s WHERE s.username = a.username ORDER BY created_at DESC LIMIT 1)
+                                  (SELECT address FROM dm.sessions s WHERE s.username = a.username ORDER BY created_at DESC LIMIT 1),
+                                  coalesce((to_jsonb(a)->>'may_steer_campaigns')::boolean, false)
                            FROM dm.admins a WHERE a.role <> 'admin' ORDER BY a.username""").fetchall()
     devices = {}
     for username, created, used in conn.execute('SELECT username, created_at, last_used FROM dm.devices ORDER BY created_at'):
@@ -994,7 +1009,8 @@ def list_accounts(conn) -> list[dict]:
     return [{'username': r[0], 'role': r[1], 'disabled': r[2], 'mustChange': r[3], 'expired': bool(r[3] and r[4]),
              'unclaimed': bool(r[3] and r[7] is None), 'created': r[5].timestamp(),
              'lastLogin': r[6].timestamp() if r[6] else None, 'claimedFrom': r[7], 'lastFrom': r[10],
-             'mayActOnWolves': r[8] or r[1] == 'owner', 'createdBy': r[9], 'devices': devices.get(r[0], [])} for r in rows]
+             'mayActOnWolves': r[8] or r[1] == 'owner', 'maySteerCampaigns': r[11] or r[1] == 'owner', 'createdBy': r[9],
+             'devices': devices.get(r[0], [])} for r in rows]
 
 
 def ensure_first_owner(conn, name: str | None = None) -> dict | None:
@@ -1480,7 +1496,8 @@ class Core:
         hashed = token_hash(token)
         with self.db() as conn:
             row = conn.execute(f"""SELECT s.username, a.role, a.must_change, a.may_act_on_wolves,
-                                          coalesce(s.step_up_until > now(), false), extract(epoch FROM s.since)
+                                          coalesce(s.step_up_until > now(), false), extract(epoch FROM s.since),
+                                          coalesce((to_jsonb(a)->>'may_steer_campaigns')::boolean, false)
                                    FROM dm.sessions s JOIN dm.admins a USING (username)
                                    WHERE s.token_hash = %s AND s.expires_at > now()
                                      AND s.last_seen > now() - interval '{IDLE_MINUTES} minutes'
@@ -1489,7 +1506,8 @@ class Core:
             return None
         sid = short_id(hashed)
         return {'hash': hashed, 'account': row[0], 'role': row[1], 'mustChange': row[2],
-                'mayActOnWolves': bool(row[3]) or row[1] == 'owner', 'steppedUp': row[4],
+                'mayActOnWolves': bool(row[3]) or row[1] == 'owner', 'maySteerCampaigns': bool(row[6]) or row[1] == 'owner',
+                'steppedUp': row[4],
                 'since': float(row[5]) if row[5] is not None else 0.0, 'session': sid,
                 # The DM tool's `who` (doc 78, 6.3): requested_by and the audit name the account and the session.
                 'username': f'{row[0]}#{sid}'}
@@ -1643,7 +1661,8 @@ class Core:
                 raise EditorError(422, 'username', 'Name an Editor account.')
             if verb == 'add':
                 password, invite = add_account(conn, username, body.get('role', 'dm'), who,
-                                               may_act_on_wolves=body.get('mayActOnWolves') is True)
+                                               may_act_on_wolves=body.get('mayActOnWolves') is True,
+                                               may_steer_campaigns=body.get('maySteerCampaigns') is True)
                 result = {'code': self._code(username, password, invite)}
             elif verb == 'reset':
                 if _target_role(conn, username) == 'owner':
@@ -1657,6 +1676,9 @@ class Core:
                 result = {'ok': True}
             elif verb == 'wolves':
                 set_wolves(conn, username, body.get('allowed') is True, who)
+                result = {'ok': True}
+            elif verb == 'steer':
+                set_steer(conn, username, body.get('allowed') is True, who)
                 result = {'ok': True}
             elif verb in ('disable', 'enable'):
                 set_disabled(conn, username, verb == 'disable', who)
@@ -2071,7 +2093,7 @@ class EditorServer:
                 return Reply(200, await core._in(core.signed_in_pool, core.accounts, session, 'list', {}, core.peers.key(address)))
             if path.startswith('/editor/accounts/') and request.method == 'POST':
                 verb = path[len('/editor/accounts/'):]
-                if verb not in ('add', 'reset', 'role', 'wolves', 'disable', 'enable', 'remove', 'end-sessions'):
+                if verb not in ('add', 'reset', 'role', 'wolves', 'steer', 'disable', 'enable', 'remove', 'end-sessions'):
                     return Reply(404, {'error': 'not-found'})
                 return Reply(200, await core._in(core.signed_in_pool, core.accounts, session, verb, self._json(body),
                                                  core.peers.key(address)))

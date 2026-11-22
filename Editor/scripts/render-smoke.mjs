@@ -30,14 +30,22 @@ try {
         'My world (dm)': ['Your sign-ins', 'are for its owner', 'Only the world&#x27;s owner can do this.', 'Making the file…'],
         // (Doc 85, Phase 1: the Campaigns console, a running and a paused run.)
         'Campaigns': ['Ninety days on the winter ferries', '1 here now', '1 needs you', 'watch-round day 17.0 (in 4.1 days), every 7 days',
-            'offer-a-coil · Birch Oakenfall', 'Paused: Action 5514 refused', 'Ended 1'],
+            'offer-a-coil · Birch Oakenfall', 'Paused: Action 5514 refused', 'Ended 1', 'runner ● alive 1 s ago · 1 event behind', 'Hold all…'],
         'Campaigns (running)': ['Waiting for', 'enrol', '[ferry-watch]', 'next: deep-freeze', 'offer-a-coil', 'Birch Oakenfall', 'Reed Ford (31, 36)',
-            'offer-a-coil: when gift (item rope, target Ivo Tarmarsh)', 'Stop…'],
-        'Campaigns (paused)': ['Retry the refused order', 'deed.award → Ash Greymantle', 'REFUSED', 'waiting behind #5514', 'story.practice → Ash Greymantle'],
+            'offer-a-coil: when gift (item rope, target Ivo Tarmarsh)', 'Stop…',
+            // (Phase 2: the steering row, the heartbeat, a command and a firing's values in the timeline.)
+            '⏸ Hold', 'Send signal', 'Go to phase…', 'Tell the wolves…', 'set stores to 5', 'two coils were handed over',
+            'stores 1 → 3'],
+        'Campaigns (paused)': ['Retry', 'Skip it and carry on…', 'deed.award → Ash Greymantle', 'REFUSED', 'waiting behind #5514', 'story.practice → Ash Greymantle'],
+        'Campaigns (triggers)': ['offer-a-coil', 'choose a wolf…', 'Fire…', 'log-watch-round', '>off<'],
+        'Campaigns (audit)': ['Before → after', 'value 3 → 5', 'two coils were handed over before the story saw them', 'stores set 3 → 5.'],
+        'Campaigns (held)': ['▶ Resume', 'Resume from now', 'Held by martin', '4 world events wait'],
+        'Campaigns (hosted dm)': ['needs its owner, or the owner&#x27;s'],
         'Campaigns (viewer)': ['it needs a Dungeon Master account'],
         'My world (share failed)': ['the disk that holds the world folder is nearly full (300 MB free; making the file needs about 1.3 GB)'],
     };
-    const absent = {'My world (dm)': ['The world folder', 'OneDrive', 'exit 139'], 'Campaigns (viewer)': ['Ninety days']};
+    const absent = {'My world (dm)': ['The world folder', 'OneDrive', 'exit 139'], 'Campaigns (viewer)': ['Ninety days'],
+        'Campaigns (hosted dm)': ['⏸ Hold', 'Go to phase…'], 'Campaigns (held)': ['⏸ Hold']};
     if (process.env.RENDER_DUMP) for (const [name, text] of Object.entries(html)) console.log(`== ${name}\n${text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 700)}`);
     for (const [name, text] of Object.entries(html)) {
         assert.ok(text.length > 100, `${name}: rendered`);

@@ -44,6 +44,7 @@ def fire(dispatch, phase, state, event, day, elapsed, ready, emit, trace):
     request = {
         'rules': rules,
         'shared': list(shared),
+        'disabled': [k for k in state.get('disabled', ()) if k in global_ids],
         'regions': phase.get('_regions', {}),
         'phase': phase['id'],
         'entered': state['entered'],

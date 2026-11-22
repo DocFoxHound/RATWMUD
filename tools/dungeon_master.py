@@ -2750,6 +2750,18 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                             result = story_runner.timeline(conn, world, data.get('run', ''), data.get('before'), data.get('since'),
                                                            data.get('kinds'), data.get('wolf') or None, data.get('trigger') or None,
                                                            data.get('limit', story_runner.TIMELINE_PAGE))
+                        elif op in ('command', 'hold-all'):
+                            # Steering a running campaign (doc 85, Phase 2; 5.7): on a hosted world the owner always, any
+                            # other account only with "may steer campaigns" (and "hold all" is the owner's). Every command is
+                            # audited when the runner takes it. In the user's own studio a dm may steer.
+                            if hosted and who['role'] != 'owner' and (op == 'hold-all' or not who.get('maySteerCampaigns')):
+                                raise DMError("Steering a running story on this world needs its owner, or the owner's "
+                                              '"may steer campaigns" for your account.' if op == 'command'
+                                              else 'Only the world\'s owner may hold every story at once.', 403)
+                            may = {'relations': not hosted or RANK[who['role']] >= RANK['builder'],
+                                   'wolves': not hosted or bool(who.get('mayActOnWolves'))}
+                            result = (story_runner.command(conn, world, who['username'], data, may) if op == 'command'
+                                      else story_runner.hold_all(conn, world, who['username'], data))
                         elif op == 'atlas.search':
                             result = story_runner.atlas(conn, world, data.get('query',''))
                         elif op == 'npc.context':

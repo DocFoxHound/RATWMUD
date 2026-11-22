@@ -1,19 +1,23 @@
-// One campaign (doc 85, 5.3): where it is and how it got there, what it waits for, and its tabs. Read-only in Phase 1,
-// except the controls that existed before (stop, retry a refused or expired order, the one-use direction and guest-line
-// tickets), moved here from Story Creator's Releases panel.
+// One campaign (doc 85, 5.3): where it is and how it got there, what it waits for, and its tabs; and since Phase 2 its
+// steering: every control sends a command to the story runner's inbox (Steer.tsx), asks first, and is audited. Steering
+// needs a DM in the user's own studio, and on a hosted world the owner or "may steer campaigns" (5.7). The one-use direction
+// and guest-line tickets stay, for the author bridge.
 import {useState} from 'react';
-import {atLeast, storyProgram, type Live, type Me, type Target} from '../api';
-import {ago, alertText, nameOf, phaseStrip, waitingLines, type Now, type RunDetail, type RunRow, type TimelineItem, type WorldEvent} from '../../lib/campaigns';
+import {atLeast, maySteer, storyProgram, type Live, type Me, type Target} from '../api';
+import {ago, alertText, commandLine, firingCounts, nameOf, newKey, phaseStrip, steerable, waitingLines, type Now, type RunDetail, type RunRow,
+    type TimelineItem, type WorldEvent} from '../../lib/campaigns';
+import {AskDialog, SteerBar, TriggersPanel, type Ask} from './Steer';
+import {Audit} from './Audit';
 import {Timeline, TimelineRow} from './Timeline';
 import {StatePanel} from './StatePanel';
 import {MissionGrid} from './MissionGrid';
 import {WolvesMap} from './WolvesMap';
 import {Orders} from './Orders';
 
-export type ViewTab = 'overview' | 'timeline' | 'state' | 'missions' | 'wolves' | 'orders';
+export type ViewTab = 'overview' | 'timeline' | 'triggers' | 'state' | 'missions' | 'wolves' | 'orders' | 'audit';
 const TABS: {id: ViewTab; label: string}[] = [
-    {id: 'overview', label: 'Overview'}, {id: 'timeline', label: 'Timeline'}, {id: 'state', label: 'Variables & timers'},
-    {id: 'missions', label: 'Missions'}, {id: 'wolves', label: 'Wolves & map'}, {id: 'orders', label: 'Orders'},
+    {id: 'overview', label: 'Overview'}, {id: 'timeline', label: 'Timeline'}, {id: 'triggers', label: 'Triggers'}, {id: 'state', label: 'Variables & timers'},
+    {id: 'missions', label: 'Missions'}, {id: 'wolves', label: 'Wolves & map'}, {id: 'orders', label: 'Orders'}, {id: 'audit', label: 'Audit'},
 ];
 
 export function CampaignView({me, target, row, detail, items, events, names, now, live, tab, setTab, earlier, refresh}: {
@@ -22,7 +26,9 @@ export function CampaignView({me, target, row, detail, items, events, names, now
     refresh: () => Promise<void> | void}) {
     const [ticket, setTicket] = useState(''), [said, setSaid] = useState(''), [busy, setBusy] = useState(false);
     const [mapFocus, setMapFocus] = useState<{cell: string; x: number; y: number} | null>(null);
+    const [ask, setAsk] = useState<Ask | null>(null), [sent, setSent] = useState<number | null>(null);
     const canDirect = atLeast(me, 'dm');
+    const canSteer = maySteer(me) && steerable(row.status) && !!detail?.controls;
     const state = detail?.state ?? null;
     const strip = detail ? phaseStrip(detail.history, detail.phases, row.phase) : {path: [], next: []};
     const lines = waitingLines(row.waiting, names, now.day, state?.publishedAt, now.at);
@@ -31,23 +37,26 @@ export function CampaignView({me, target, row, detail, items, events, names, now
         setBusy(true); setSaid('');
         try { await work(); setSaid(done); await refresh(); } catch (e) { setSaid((e as Error).message); } finally { setBusy(false); }
     };
-    const stuck = (row.waiting ?? []).find(w => w.on === 'admin');
-    const retryable = row.status === 'paused' && stuck?.on === 'admin' && (!stuck.order || ['refused', 'expired'].includes(stuck.order.status));
-    const live_ = ['approved', 'running', 'paused'].includes(row.status);
+    /** The admin's second click: one command, with its reason, made for this visit and this version. */
+    const send = (reason: string, force: boolean) => {
+        if (!ask || !detail) return;
+        const payload = force ? {...ask.payload, force: true} : ask.payload;
+        void act(async () => {
+            const c = await storyProgram<{id: number}>(target, 'command', {run: row.run, kind: ask.kind, payload, reason, key: newKey(), visit: row.visit, digest: row.digest});
+            setSent(c.id); setAsk(null);
+        }, 'Sent: the story runner takes it within a tick.');
+    };
+    const mine = sent !== null ? detail?.commands?.find(c => c.id === sent) : undefined;
     const showOnMap = (place: {cell: string; x: number; y: number}) => { setMapFocus(place); setTab('wolves'); };
     return <div className="camp-view">
         <header className="camp-head">
             <div><small>{row.run} · version {row.digest.slice(0, 6)} · approved by {row.approver}{row.approvedAt ? ' ' + ago(row.approvedAt, now.at) : ''}</small>
                 <h2>{row.title} <span className={`camp-status ${row.status}`}>{row.status}</span>{row.visit ? <small> visit {row.visit}</small> : null}</h2></div>
-            {canDirect && <div className="camp-controls">
-                {retryable && <button disabled={busy} onClick={() => void act(() => storyProgram(target, 'retry', {run: row.run}),
-                    'Sent again: the story carries on when the game applies it.')}>Retry the {stuck?.on === 'admin' && stuck.order ? stuck.order.status : 'refused'} order</button>}
-                {live_ && <button disabled={busy} onClick={() => {
-                    if (window.confirm(`Stop "${row.title}" and cancel its future phases? What it already gave the world stays.`))
-                        void act(() => storyProgram(target, 'stop', {run: row.run}), 'Stopped.');
-                }}>⏹ Stop…</button>}
-            </div>}
         </header>
+        {canSteer && detail && <div className="camp-steer"><SteerBar row={row} detail={detail} names={names} steer={setAsk} busy={busy} /></div>}
+        {!canSteer && canDirect && steerable(row.status) && me.hosted && <p className="hint camp-pad-x">Steering this world's campaigns needs its owner, or the owner's
+            "may steer campaigns" for your account (My world, Editor accounts).</p>}
+        {ask && <AskDialog key={ask.title + JSON.stringify(ask.payload)} ask={ask} row={row} names={names} busy={busy} send={send} cancel={() => setAsk(null)} />}
         <div className="camp-strip" aria-label="Phases">
             {strip.path.map((p, i) => <span key={i} className={i === strip.path.length - 1 && row.phase === p ? 'now' : ''}>{i ? '▸ ' : ''}{i === strip.path.length - 1 && row.phase === p ? `[${p}]` : p}</span>)}
             {strip.next.length > 0 && <span className="next">▸ next: {strip.next.join(' or ')}</span>}
@@ -55,7 +64,8 @@ export function CampaignView({me, target, row, detail, items, events, names, now
         </div>
         <nav className="camp-tabs" role="tablist">{TABS.map(t => <button key={t.id} role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'on' : ''}
             onClick={() => setTab(t.id)}>{t.label}</button>)}</nav>
-        {said && <p className="hint dm-note">{said}</p>}
+        {said && <p className="hint dm-note">{said}{mine && <> · <b className={`camp-cmd ${mine.status}`}>{mine.status === 'queued' ? 'sent' : mine.status}</b>
+            {mine.result?.text ? `: ${mine.result.text}` : ` (${commandLine(mine.kind, mine.payload, names)})`}</>}</p>}
         <section className="camp-body">
             {!detail ? <p className="hint">Reading this story…</p>
                 : tab === 'overview' ? <div className="camp-overview">
@@ -65,7 +75,8 @@ export function CampaignView({me, target, row, detail, items, events, names, now
                     <h3>Waiting for</h3>
                     {lines.length ? <ul className="camp-waiting">{lines.map((l, i) => <li key={i} className={l.tone}><b>{l.who}</b> {l.text}</li>)}</ul>
                         : <p className="hint">{row.status === 'complete' ? 'It has ended.' : row.status === 'stopped' ? 'It was stopped.' : '(nothing)'}</p>}
-                    {canDirect && row.status === 'running' && (detail.signals.length > 0 || detail.guestVoices.length > 0) && <>
+                    {canDirect && row.status === 'running' && (detail.signals.length > 0 || detail.guestVoices.length > 0) && <details>
+                        <summary>One-use tickets for the author bridge</summary>
                         <h3>Directions</h3>
                         <p className="hint">A one-use ticket, good for an hour, redeemed through the author bridge (tools/story_author.py).</p>
                         <div className="camp-controls">
@@ -75,7 +86,7 @@ export function CampaignView({me, target, row, detail, items, events, names, now
                                 setTicket((await storyProgram<{ticket: string}>(target, 'voice-ticket', {run: row.run, npc})).ticket), 'Ticket issued.')}>Allow one guest line for {nameOf(names, npc)}</button>)}
                         </div>
                         {ticket && <label className="field"><span>Direction ticket</span><input readOnly value={ticket} onFocus={e => e.target.select()} /></label>}
-                    </>}
+                    </details>}
                     {detail.directions.length > 0 && <><h3>Guest lines given</h3><ul>{detail.directions.map(d =>
                         <li key={d.receipt}>{nameOf(names, d.npc)} · visit {d.visit} · {d.status}</li>)}</ul></>}
                     <h3>Lately</h3>
@@ -85,11 +96,12 @@ export function CampaignView({me, target, row, detail, items, events, names, now
                 </div>
                 : tab === 'timeline' ? <Timeline items={items} events={events} names={names} now={now.at} earlier={earlier} onMap={showOnMap}
                     triggers={[...new Set(items.flatMap(i => (i.type === 'trigger' ? [i.trigger] : [])))]} cohort={state?.cohort ?? []} />
-                : tab === 'state' ? <StatePanel detail={detail} names={names} now={now} items={items} />
-                : tab === 'missions' ? <MissionGrid detail={detail} names={names} live={live} />
+                : tab === 'triggers' ? <TriggersPanel detail={detail} names={names} canSteer={canSteer} steer={setAsk} busy={busy} counts={firingCounts(items)} />
+                : tab === 'state' ? <StatePanel detail={detail} names={names} now={now} items={items} steer={canSteer ? setAsk : undefined} busy={busy} />
+                : tab === 'missions' ? <MissionGrid detail={detail} names={names} live={live} steer={canSteer ? setAsk : undefined} busy={busy} />
+                : tab === 'audit' ? <Audit detail={detail} names={names} now={now.at} />
                 : tab === 'wolves' ? <WolvesMap target={target} detail={detail} names={names} live={live} items={items} focus={mapFocus} />
-                : <Orders detail={detail} row={row} names={names} now={now.at} canDirect={canDirect} busy={busy}
-                    retry={retryable ? () => void act(() => storyProgram(target, 'retry', {run: row.run}), 'Sent again.') : undefined} />}
+                : <Orders detail={detail} row={row} names={names} now={now.at} busy={busy} steer={canSteer ? setAsk : undefined} />}
         </section>
     </div>;
 }

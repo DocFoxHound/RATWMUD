@@ -104,7 +104,8 @@ const pausedRow: RunRow = {run: 'world-77ab', title: 'Two ways across Reed Ford'
     waiting: [{on: 'admin', problem: 'Action 5514 refused', order: refused}, {on: 'send', effects: [{kind: 'story.practice', player: 'player-ash', skill: 'travel'}]}]};
 const names = {'player-ash': 'Ash Greymantle', 'player-birch': 'Birch Oakenfall', 'player-elm': 'Elm Sandpaw', rm111: 'Ivo Tarmarsh', ford: 'Reed Ford'};
 const campaignList: CampaignsInitial = {overview: {runs: [runningRow, pausedRow, {run: 'world-old', title: 'The hidden pup', status: 'complete', digest: 'beef',
-    approver: 'martin', approvedAt: earlier, phase: null, problem: '', visit: 4, wolves: 9}], now: {day: 12.9, newest: 48211, at}, names},
+    approver: 'martin', approvedAt: earlier, phase: null, problem: '', visit: 4, wolves: 9}], now: {day: 12.9, newest: 48211, at}, names,
+    runner: {beatAt: at, age: 1.2, behind: 1}},
     live: {target: 'dev', frame: {day: 12.9, people: [['player-ash', 'Ash Greymantle', 'p', 'ford', 31, 36, 0, '', 'walking'],
         ['player-birch', 'Birch Oakenfall', 'o', 'ford', 3, 4, 0, '', '']], shops: []}, age: 2, events: [], actions: []}};
 const detailOf = (row: RunRow, extra: Partial<RunDetail>): RunDetail => ({...row, state: {phase: row.phase!, entered: row.entered!, cohort: row.cohort!, votes: {}, visits: row.visit!, actor: '',
@@ -113,11 +114,26 @@ const detailOf = (row: RunRow, extra: Partial<RunDetail>): RunDetail => ({...row
     program: {id: 'winter-ferries', title: row.title}, approvedBy: 'martin', cursor: 48211, now: {day: 12.9, newest: 48211, at}, guestVoices: [], directions: [], signals: [],
     history: [{visit: 2, phase: row.phase!, day: 10, cause: 'event 47002', receipts: [5512]}, {visit: 1, phase: 'enrol', day: 10, cause: 'published', receipts: [5510]}],
     trace: [], actions: [], orders: [], missionsNow: [], directed: ['rm111'], regions: [{id: 'landing', cell: 'ford', x1: 29, y1: 34, x2: 34, y2: 38}],
-    phases: [{id: 'enrol', to: ['ferry-watch'], missions: 0}, {id: row.phase!, to: ['deep-freeze'], missions: 0}], start: 'enrol', listening: [], names, ...extra});
+    phases: [{id: 'enrol', to: ['ferry-watch'], missions: 0}, {id: row.phase!, to: ['deep-freeze'], missions: 0}], start: 'enrol', listening: [], names,
+    // (Doc 85, Phase 2: what the controls may name, the runner's heartbeat and the run's commands.)
+    runner: {beatAt: at, age: 1.2, version: 'doc85-phase2', behind: 0},
+    controls: {triggers: [{id: 'offer-a-coil', on: 'gift', key: 'offer-a-coil', off: false, scope: 'campaign', once: 'each', needsWolf: true, hasConditions: false, actions: ['add']},
+        {id: 'log-watch-round', on: 'story signal', signal: 'watch-round', key: 'log-watch-round', off: true, scope: 'campaign', once: 'each', needsWolf: false,
+            hasConditions: false, actions: ['add']}], offElsewhere: [], phases: ['enrol', row.phase!, 'deep-freeze'], signals: ['first-freeze', 'watch-round'],
+        counters: [{key: 'stores', scope: 'story'}, {key: 'watches', scope: 'story'}, {key: 'hauled', scope: 'player'}],
+        schedules: {'watch-round': {days: 7, repeat: true, scope: 'campaign'}}, missions: [], scenes: [], regions: ['landing']},
+    commands: [{id: 12, key: 'cabc12345678', visit: row.visit!, digest: row.digest, kind: 'set', payload: {key: 'stores', scope: 'story', value: 5},
+        reason: 'two coils were handed over before the story saw them', by: 'martin#a1', at, status: 'done', doneAt: at,
+        result: {text: 'stores set 3 → 5.', before: {value: 3}, after: {value: 5}}}],
+    ...extra});
 const campaignRunning: CampaignsInitial = {...campaignList, tab: 'overview', detail: detailOf(runningRow, {}), timeline: {run: runningRow.run, names, events: {
     '47002': {id: 47002, kind: 'gift', actor: 'player-birch', target: 'rm111', cell: 'ford', item: 'rope', quantity: 2, coins: 0, detail: '', day: 12.5, x: 31, y: 36, at}},
     before: null, since: {visit: 2, trigger: 9, order: 5513, at}, now: at, items: [
-        {key: 't:9', type: 'trigger', id: 9, visit: 2, phase: 'ferry-watch', trigger: 'offer-a-coil', actor: 'player-birch', day: 12.5, actions: ['add'], event: 47002, on: 'gift', cell: 'ford', x: 31, y: 36, at},
+        {key: 'c:12', type: 'command', id: 12, command: 'set', visit: 2, digest: 'a41c9e00', payload: {key: 'stores', scope: 'story', value: 5},
+            reason: 'two coils were handed over before the story saw them', by: 'martin#a1', status: 'done', doneAt: at, askedAt: at, at,
+            result: {text: 'stores set 3 → 5.', before: {value: 3}, after: {value: 5}}},
+        {key: 't:9', type: 'trigger', id: 9, visit: 2, phase: 'ferry-watch', trigger: 'offer-a-coil', actor: 'player-birch', day: 12.5, actions: ['add'], event: 47002, on: 'gift', cell: 'ford', x: 31, y: 36, at,
+            changes: [{what: 'counter', scope: 'story', key: 'stores', before: 1, after: 3}]},
         {key: 'o:5513', type: 'order', id: 5513, kind: 'story.phase', target: runningRow.run, status: 'applied', result: '', by: 'martin', at: earlier, doneAt: earlier, visit: 2},
         {key: 'v:2', type: 'phase', visit: 2, phase: 'ferry-watch', day: 10, cause: 'event 47001', receipts: [5513], at: earlier}]}};
 const campaignPaused: CampaignsInitial = {...campaignList, tab: 'orders', detail: detailOf(pausedRow, {orders: [refused,
@@ -148,6 +164,13 @@ export function renderAll(): Record<string, string> {
     out['Campaigns'] = renderToString(<CampaignsTab me={me} target="dev" initial={campaignList} />);
     out['Campaigns (running)'] = renderToString(<CampaignsTab me={me} target="dev" initial={campaignRunning} />);
     out['Campaigns (paused)'] = renderToString(<CampaignsTab me={me} target="dev" initial={campaignPaused} />);
+    out['Campaigns (triggers)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignRunning, tab: 'triggers'}} />);
+    out['Campaigns (audit)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignRunning, tab: 'audit'}} />);
+    out['Campaigns (held)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignRunning,
+        overview: {...campaignList.overview, runs: [{...runningRow, status: 'held', alerts: [{kind: 'held', needsYou: false, by: 'martin#a1', reason: 'a quick check', events: 4}],
+            waiting: [{on: 'admin', problem: '', held: {by: 'martin#a1', reason: 'a quick check'}}]}]},
+        detail: {...campaignRunning.detail!, status: 'held'}}} />);
+    out['Campaigns (hosted dm)'] = renderToString(<CampaignsTab me={{username: 'pell#3f2a1c', role: 'dm', hosted: true} as Me} target="dev" initial={campaignRunning} />);
     out['Campaigns (viewer)'] = renderToString(<CampaignsTab me={{username: 'v', role: 'viewer'} as Me} target="dev" initial={campaignList} />);
     return out;
 }

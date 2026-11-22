@@ -108,6 +108,9 @@ struct Dispatch
 
     bool eligible(const Value& rule, bool shared)
     {
+        // Turned off by an admin or (Phase 5) by a trigger: a campaign trigger by its id, a phase's as phase/id.
+        if (includes(input["disabled"], shared ? rule.string("id") : input.string("phase") + "/" + rule.string("id")))
+            return false;
         const auto repeat = rule.string("once", "each");
         const bool personal = repeat == "player" || repeat == "member";
         if (!matches(rule) || ((rule.string("audience") == "participant" || personal) && !participant))

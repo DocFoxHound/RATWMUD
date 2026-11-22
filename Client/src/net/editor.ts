@@ -78,6 +78,8 @@ export interface EditorState {available: boolean; session: EditorSession | null;
 export interface EditorAccount {
     username: string; role: string; disabled: boolean; mustChange: boolean; expired: boolean; unclaimed: boolean;
     created: number; lastLogin: number | null; claimedFrom: string | null; lastFrom: string | null; mayActOnWolves: boolean;
+    /** Doc 85, 5.7: may hold, fire, jump and set a running campaign (migration 0071; the owner always may). */
+    maySteerCampaigns?: boolean;
     createdBy: string | null; devices: {created: number; lastUsed: number}[];
 }
 export interface AuditBanner {at: number; action: string; target: string; who: string}
@@ -382,6 +384,7 @@ export function bannerText(b: AuditBanner): string {
         'account.reset': `Account ${target} given a new Editor code by ${who}`,
         'account.role': `Account ${target}'s role changed by ${who}`,
         'account.wolves': `Account ${target}'s "may act on players' wolves" changed by ${who}`,
+        'account.steer': `Account ${target}'s "may steer campaigns" changed by ${who}`,
         'account.disable': `Account ${target} turned off by ${who}`,
         'account.enable': `Account ${target} turned on by ${who}`,
         'account.remove': `Account ${target} removed by ${who}`,

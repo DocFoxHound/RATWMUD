@@ -1674,6 +1674,13 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         const auto* npc = world_.entity(target);
         outcome = npc && npc->npc ? world_.setDead(target, kind == "npc.kill") : Result{false, "No such NPC.", {}};
     }
+    else if (kind == "story.tell")
+    {
+        json::Value payload;
+        std::string problem;
+        outcome = row[4] && json::parse(*row[4], payload, problem) ? applyStoryTell(target, payload)
+                                                                  : Result{false, "Invalid story message.", target};
+    }
     else if (kind.rfind("story.area_", 0) == 0)
     {
         json::Value payload;

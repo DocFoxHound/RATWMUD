@@ -1,6 +1,6 @@
 # 85. Story triggers and campaign control: a trigger editor like StarCraft's and Warcraft III's, and a console to run a campaign live
 
-Draft, 2026-11-21. A survey and a design; Phase 1 is built (section 6, "Phase 1 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
+Draft, 2026-11-21. A survey and a design; Phases 1 and 2 are built (section 6, "Phase 1 as built" and "Phase 2 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
 Story Maker's commits `55ab323d..7300fc7d`, with our fixes `a86daab3` and `9e875df0`). Read
 `Docs/story-programs.md` first: it is the author's guide to what exists. This doc says what is there in the
 terms of a map editor's trigger system, what is missing, and what to build. Docs 17 (Storykeeper), 34 (the DM
@@ -14,7 +14,8 @@ quests are made here; steering a running campaign on a hosted world is the owner
 "may steer campaigns" permission; and the recommendations stand for the rest. Where a decision below was waiting on one
 of these answers, it now says **decided (user, 2026-11-21)**.
 
-**Built so far:** Phase 1 ("See it"), on branch `r3-camp-p1`: see "Phase 1 as built" at the end of section 6.
+**Built so far:** Phase 1 ("See it"), on branch `r3-camp-p1`, and Phase 2 ("Steer it"), on branch `r3-camp-p2` (from `r3-camp-p1`):
+see "Phase 1 as built" and "Phase 2 as built" in section 6.
 
 ## The ask (the user, 2026-11-21)
 
@@ -1379,6 +1380,101 @@ order to the game.
 - **Shaped by Phase 5b:** `dm.story_commands` takes a `migrate` kind later, so its `payload` carries what a command
   was made against (the run's `digest` as well as its `visit`), and the trigger history and the audit name the
   version a run was on. A command made against an older version is refused like one made for an earlier visit.
+
+**Phase 2 as built** (2026-11-21, branch `r3-camp-p2`, on `r3-camp-p1`). Migration `0071`, one new game order, no change to
+the program format.
+- **Migration `0071_story_commands.sql`** (additive): `dm.story_commands` (the inbox: `run`, the console's own `key`, unique
+  per run, so a command sent twice is done once; `visit` and `digest` it was made against; `kind`, `payload`, `reason`,
+  `requested_by`, `status` `queued`/`done`/`refused`, `result` jsonb with the values before and after, `done_at`);
+  `dm.story_runner` (the heartbeat: `beat_at`, `started_at`, `pid`, `version`, `behind`); the statuses `held` and
+  `stopping`; `dm.admins.may_steer_campaigns`. All closed to the game; `ratw_dm` reads and writes them. Not applied to
+  `ratw_ridgemere3` (it goes there at go-live). Reads of the new column go through `to_jsonb(a)->>…`, so an unmigrated
+  world still signs in.
+- **The runner** (`tools/story_runner.py`, "steering: the command inbox"). `command()` checks and queues (op `command`);
+  `hold_all()` queues one hold per running run (op `hold-all`); `take_commands()` runs at the top of each run's tick, in
+  order, each command in its own savepoint, against the run as it then stands (`Steer`: one method per kind), and writes
+  the result and a `dm.audit` row (`story.<kind>`, the requester as `who`, the reason and the before and after in the
+  detail) for done and refused alike. `tick()` now also takes paused and held runs that have queued commands, settles
+  `stopping` runs, and writes the heartbeat first. The kinds, as built:
+  `hold`, `resume {catchUp}` (false moves the cursor to now and says how many events were skipped; timers still fire),
+  `stop` (sends `story.stop`, status `stopping`; `stopped` when the game applies it, or refuses it as unknown; sent again
+  if it expires), `signal {name, actor?}` (a `story signal` fact, then the `dm signal` exit of that name; only names the
+  phase listens for), `fire {trigger, actor?, check}` (the trigger's actions run by `story_triggers.perform`, now shared
+  with the Python twin; checked: its once-rule, its conditions on a stand-in fact of its own filters, and "turned off";
+  unchecked: none of them; marked `byHand` in the history), `enable`/`disable {trigger, phase?}` (`state.disabled`: a
+  campaign trigger by its id, a phase's as `phase/id`, which stays off on later visits of that phase), `enter {phase,
+  effects}` (a new visit as a transition makes one; "without its entry effects" is `state.quietEntry`, which the delivery
+  and the journal's `end` honour), `set {key, scope, player?, value}` (only a counter the program reads or writes; a whole
+  number), `timer {do: fire|cancel|shift|start, name|signal, days?}` (start only a signal the program schedules, with that
+  action's clock, owner, repeat and lifetime), `mission {mission, player?, do: complete|reset}` (sends the journal's
+  `story.missions`; a completed gate counts at the next thing a wolf of the story does, as play does: today's missions
+  have no rewards of their own, so "without rewards" has nothing to hold back yet), `order {receipt, do: retry|skip}` (only
+  the order a paused run is stuck on; skip is `state.skipped`, which the delivery treats as applied), `tell {to:
+  participants|wolf|region, player?, region?, text}` and `scene {scene, player, cue?}` (orders beside the story's own, kept
+  in the visit's receipts so the Orders tab and the timeline show them, never holding the story up).
+- **The rules every command keeps** (5.8): a reason of two words or more; made for another visit is refused unless
+  `force` (hold, resume and stop are about the run, not a visit); made against another digest is refused at once (Phase
+  5b's `migrate` will rely on it); bounded by the program (`_check_payload`, at the request and again when taken). **Flow
+  commands** (`signal`, `fire`, `enter`, `mission`, and `timer` fire) need the run to have sent and had answered every order
+  of its visit: on a running run they wait (and the commands behind them) up to 60 s, then are refused; hold, resume, stop
+  and order commands go past a waiting one; on a held or paused run part-way through sending they are refused ("resume it
+  first", "retry or skip the stuck order first"). A command lands at the run's cursor, between two world events, whatever
+  is waiting in the log (known problem 2 is gone for the console; `direct()` keeps its old rule for the author bridge).
+- **Values before and after:** each firing's history entry now carries `changes` (counters and timers its own actions
+  touched, before and after the fact it answered), for world events and commands alike; commands' rows carry `command` and
+  `by`. A held run's `waiting` starts with `{on: 'admin', held: {by, reason, cursor, at}}`; a stopping run's is the stop
+  order. New alerts: `held` (with how many events wait) and `runner` (needs you: no heartbeat for 30 s, or never on this
+  world); `behind` no longer asks "is the runner running?" when the heartbeat answers that.
+- **`state.disabled` in both engines:** `story_triggers.fire` skips it, `story_native.fire` passes it, and
+  `RatwStoryTriggers.cpp` skips a rule whose key is in it; the parity test runs every combination on winter-ferries.
+- **The game:** one new order, `story.tell` (`Game::applyStoryTell`, `Core/RatwStoryArea.cpp`): one line of up to 300
+  characters, for the current visit only; to the story's wolves, one of them, or those standing in one of its regions (the
+  bounds must match the published ones). A wolf in the world sees it as the storyline banner and a line in their log; one
+  away is told when back (`tellActedOn`: kept with the wolf on a community world). Nobody away refuses it.
+- **Who may steer** (5.7, question 3): the `command` op, on a hosted world, needs the owner or `maySteerCampaigns` on the
+  session (`world_admin.session_now` reads it, `studio.HostedStudio.who` passes it); `hold-all` is the owner's. In the
+  user's own studio a dm steers. A flow control on a program with `faction.relation` needs a builder or the owner, and one
+  with `character.injury` or `story.area.damage` needs "may act on players' wolves" (the program-wide test: "could they have
+  approved it"). **The grant:** `world_admin.set_steer` and the accounts verb `steer` (audited `account.steer`, a banner),
+  `maySteerCampaigns` on `add` and in the list; the desktop shell passes the verb and the field
+  (`Desktop/src-tauri/src/editor.rs`); My world's account list has a "MAY STEER CAMPAIGNS" box beside "may act on players'
+  wolves" (`Client/src/ui/editorDoor.ts`).
+- **The Editor:** the header's `camp-controls` row became `Steer.tsx`'s `SteerBar` (Hold or Resume / Resume from now,
+  Stop…, Send signal, Go to phase… with or without its entry effects, Tell the wolves…), shown only to who may steer (a
+  hosted DM without the grant is told why); every control opens `AskDialog`: what it will do, the reason, "even if it has
+  moved on", and the story's title typed for stop, going back and skipping an order. The reply's command shows "sent",
+  then "done" or "refused: why". New tabs **Triggers** (each trigger on or off as a switch, how often it fired in the
+  timeline held, Fire… with a wolf and "check") and **Audit** (who, when, what, why, before → after, result). Variables &
+  timers gained ✎ (set), Fire now, ± time, Cancel and + Start; Missions gained Complete… and Reset… per wolf or shared row;
+  Orders gained Retry and Skip it and carry on… on the stuck order (the old `retry`/`stop` ops are no longer used by the
+  console). The timeline has its fourth source (`c:<id>`, ranked after orders at one moment; filter "Admin") and shows each
+  firing's `changes` ("stores 1 → 3"). The list has a Held filter, "N commands sent", Hold all… (the owner's on a hosted
+  world), and the bar shows the heartbeat ("runner ● alive 1 s ago · 0 events behind"). The direction and guest-line
+  tickets stay, folded, for the author bridge.
+- **Tests:** `tools/test_story_steering.py` (a throwaway migrated database: every kind, hold all, stop waiting for the
+  game, the disabled parity of both engines, made for an earlier visit, another version, sent twice, a command with world
+  events waiting, a flow command waiting behind the game and hold going past it, the audit rows, the timeline's fourth
+  source, the heartbeat and the runner alert; and through the route: a DM and a viewer in the user's own studio, a hosted DM
+  without and with the grant, the owner, hold all, "may act on wolves"); `tools/test_world_admin.py` (the grant on the
+  session, the list and the audit); `Tests/storyline_tests.cpp` (`story.tell` to all, one, a region, an altered region,
+  another visit, two lines); `Editor/src/lib/campaigns.test.ts` (commands in the timeline, words, typed titles, held and
+  runner alerts); the render smoke (the steering row, Triggers, Audit, a held run, a hosted DM without the grant); the
+  shell's account test. `test_story_console.py` and `test_story_program.py`'s runtime tests pass unchanged but for one tick
+  added for the heartbeat.
+- **Seen:** on a throwaway Greyfen world with a real game server and three signed-in wolves (as Phase 1), the sample
+  campaign held, resumed, a variable set, a trigger turned off and fired by hand, the wolves told, a phase jumped to, and
+  the second story's refused order skipped; screenshots in `/home/martinb/.claude/jobs/ee03c49e/tmp/shots-camp-p2/`.
+- **Not in Phase 2, on purpose:** `explain` and "this will do" from a dry run (Phase 3: the dialog lists what the program
+  says the control does, not a simulation); `admin signal` and `variable changed` as events (Phase 5's language; a signal
+  from the console is a `story signal`); quests' give, take, reveal and fail, and adding or removing a wolf (Phase 6: today's
+  missions only complete and reset); "retry when the wolf is next here" and "change target" (3.5's `ifRefused`);
+  `story.tell` to a party (nothing tells the runner about parties) or as a letter; "who else has this campaign open";
+  per-world alert thresholds.
+- **For Phase 3:** `Steer` is the place for `explain` to plug in (each `do_*` already refuses with the reason a dry run
+  would give; run them on a copy of the state with a recorder for "this will do"); the `runner` alert exists in the tab
+  only, and still needs its places outside it (the DM tab bar, LIVE, the Dev Console); `controls()` in `status` lists what
+  the controls may name, and is where "cannot move on" can be worked out (every trigger off, used up or waiting on a wolf
+  long gone); `state.disabled` is in both engines already for Phase 5's `enable`/`disable` actions.
 
 **Phase 3: Explain it. About 10 hours.**
 - `story_runner.explain` and the recording `satisfied`; Overview's "Waiting for", [Why not?], "this will do".

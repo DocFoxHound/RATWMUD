@@ -190,6 +190,7 @@ class ConsoleReads(unittest.TestCase):
 
     def test_alerts_paused_the_game_silent_falling_behind_and_quiet(self):
         self.launch('winter-ferries')
+        self.tick()   # (The runner's heartbeat: Phase 2's "runner" alert stands aside while it beats.)
         self.rewrite("UPDATE dm.actions SET requested_at=now()-interval '2 minutes'")
         self.assertEqual([a['kind'] for a in self.row()['alerts']], ['game'], 'the journal order has waited two minutes')
         self.answer('refused', 'that wolf is not in the world just now')

@@ -1748,6 +1748,8 @@ class HostedStudio:
             raise D.DMError('Your Editor session ended: sign in again.', 401)       # (Never admin: doc 78, 6.3.)
         return {'username': session['username'], 'account': session.get('account', ''), 'role': role,
                 'mayActOnWolves': bool(session.get('mayActOnWolves')) or role == 'owner', 'hosted': True,
+                # (Doc 85, 5.7: steering a running campaign; the owner always.)
+                'maySteerCampaigns': bool(session.get('maySteerCampaigns')) or role == 'owner',
                 'cheats': self.hosted.cheats()}
 
     def answer(self, session, method, path, query, headers, body):

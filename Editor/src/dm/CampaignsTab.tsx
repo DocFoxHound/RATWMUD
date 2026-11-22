@@ -1,11 +1,11 @@
 // Campaigns: the running world stories, watched live (Docs/Design/85-story-triggers-and-campaign-control.md, section 5;
 // Phase 1, "See it"). A read-only console that refreshes itself every 2 seconds while the page is visible: the list of
 // runs (where each is, who is in it, what happened last, what it waits for, its alerts), and one run's timeline,
-// variables and timers, missions, wolves on the map and orders. The controls that existed before (stop, retry, the
-// direction and guest-line tickets) moved here from Story Creator's Releases panel; steering comes in Phase 2.
+// variables and timers, missions, wolves on the map and orders. Phase 2 ("Steer it") adds the controls: every one a
+// command to the story runner's inbox, asked twice, with a reason, audited; and the runner's heartbeat in the bar.
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {atLeast, dmApi, storyProgram, worldLabel, type Live, type Me, type Target} from './api';
-import {mergeTimeline, sinceOf, type Overview, type RunDetail, type TimelineCursor, type TimelineItem, type TimelinePage, type WorldEvent} from '../lib/campaigns';
+import {atLeast, dmApi, maySteer, storyProgram, worldLabel, type Live, type Me, type Target} from './api';
+import {newKey, mergeTimeline, sinceOf, type Overview, type RunDetail, type TimelineCursor, type TimelineItem, type TimelinePage, type WorldEvent} from '../lib/campaigns';
 import {CampaignList} from './campaigns/CampaignList';
 import {CampaignView, type ViewTab} from './campaigns/CampaignView';
 
@@ -82,6 +82,13 @@ export function CampaignsTab({me, target, focus, initial}: {me: Me; target: Targ
         } catch (e) { setProblem((e as Error).message); }
     };
 
+    /** Doc 34's "pause all": one hold command per running story, one reason (the owner's on a hosted world). */
+    const holdAll = () => {
+        const reason = window.prompt('Hold every running story? They read no events, send no orders and fire no timers until resumed. Why (a few words, for the audit)?');
+        if (!reason || reason.trim().split(/\s+/).length < 2) return;
+        void storyProgram<{commands: unknown[]}>(target, 'hold-all', {reason: reason.trim(), key: newKey()})
+            .then(r => setProblem(r.commands.length ? '' : 'Nothing was running.'), e => setProblem((e as Error).message));
+    };
     if (!canSee) return <div className="dm-center"><div className="empty-sheet"><h2>⚑ Campaigns</h2>
         <p>The Campaigns console names wolves and where they are: it needs a Dungeon Master account.</p></div></div>;
     const run = overview?.runs.find(r => r.run === selected);
@@ -90,10 +97,15 @@ export function CampaignsTab({me, target, focus, initial}: {me: Me; target: Targ
             <strong>{selected ? <button className="link-button" onClick={() => setSelected('')}>◂ Campaigns</button> : 'Campaigns'} · {worldLabel(target)}</strong>
             <span className="meta hint">{overview ? `game day ${overview.now.day === null ? '—' : overview.now.day.toFixed(1)} · the world's log at #${overview.now.newest}`
                 : 'Loading…'}</span>
+            {overview?.runner !== undefined && <span className={`camp-beat ${overview.runner && overview.runner.age !== null && overview.runner.age <= 30 ? 'alive' : 'down'}`}
+                title="The story runner writes a heartbeat every tick (tools/story_runner.py)">
+                runner {overview.runner && overview.runner.age !== null ? `● ${overview.runner.age <= 30 ? 'alive' : 'silent'} ${Math.round(overview.runner.age)} s ago`
+                    + ` · ${overview.runner.behind ?? 0} event${overview.runner.behind === 1 ? '' : 's'} behind` : '○ has not run on this world'}</span>}
             <span className="live-feed" title="This page asks again every 2 seconds while it is visible">↻ 2 s</span>
         </div>
         {problem && <p className="error">{problem === 'Not found.' ? 'The DM host is older than this page: restart it.' : problem}</p>}
-        {!selected || !run ? <CampaignList overview={overview} live={live} names={names} open={id => { setSelected(id); setTab('overview'); }} />
+        {!selected || !run ? <CampaignList overview={overview} live={live} names={names} open={id => { setSelected(id); setTab('overview'); }}
+            holdAll={maySteer(me) && (!me.hosted || me.role === 'owner') ? holdAll : undefined} />
             : <CampaignView me={me} target={target} row={run} detail={detail?.run === selected ? detail : null} items={items} events={events}
                 names={names} now={overview!.now} live={live} tab={tab} setTab={setTab} earlier={earlier ? more : undefined}
                 refresh={() => poll(selected)} />}

@@ -1205,6 +1205,19 @@ class Accounts(SignInBase):
         self.assertEqual(owner_sql('SELECT count(*) FROM dm.sessions')[0][0] + owner_sql('SELECT count(*) FROM dm.devices')[0][0], 0)
         self.assertIsNone(self.owner())
 
+    def test_may_steer_campaigns_is_granted_and_taken_away_by_the_owner(self):
+        """Doc 85, 5.7 (migration 0071): the owner's grant, on the session, the list, the audit and the banners."""
+        self.account('pell')
+        self.assertFalse(self.session(self.login('pell', address='192.0.2.5')['token'])['maySteerCampaigns'])
+        self.call('steer', username='pell', allowed=True)
+        self.assertTrue(self.session(self.login('pell', address='192.0.2.6')['token'])['maySteerCampaigns'])
+        listed = {a['username']: a for a in self.call('list')['accounts']}
+        self.assertEqual((listed['pell']['maySteerCampaigns'], listed['ferro']['maySteerCampaigns']), (True, True))
+        self.call('steer', username='pell', allowed=False)
+        self.assertFalse(self.session(self.login('pell', address='192.0.2.7')['token'])['maySteerCampaigns'])
+        actions = [r[0] for r in owner_sql("SELECT action FROM dm.audit WHERE action = 'account.steer' AND target = 'pell'")]
+        self.assertEqual(actions, ['account.steer', 'account.steer'])
+
     def test_the_owner_s_sign_in_carries_counts_only(self):
         """R1, M-i: failed sign-ins today and account changes by others since the owner's last sign-in, before any
         step-up; nothing for anyone else."""

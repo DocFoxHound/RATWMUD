@@ -448,6 +448,20 @@ void storyAreaEffects()
         phase.set("players", members);
         phase.set("regions", parsed(R"([{"id":"wall","cell":"c_1_0","x1":7,"x2":9,"y1":8,"y2":8}])"));
         expect(t.g.applyDmAct({"1", "story.phase", run, "dm", json::dump(phase)}).ok, "area story started");
+        // story.tell (doc 85, Phase 2): the story's wolves, one of them, or those in a region; never Cy, who is not in it.
+        auto tell = [&](const std::string& extra) {
+            return t.g.applyDmAct({"9", "story.tell", run, "dm", R"({"visit":1,"title":"Breach","text":"Hold fast.")" + extra + "}"});
+        };
+        const auto everyone = tell(R"(,"to":"participants")");
+        expect(everyone.ok && everyone.message == "Told 2 in the world.", "told the story's two wolves: " + everyone.message);
+        expect(tell(R"(,"to":"wolf","player":")" + t.bo.entityId + "\"").message == "Told 1 in the world.", "told one wolf");
+        expect(!tell(R"(,"to":"wolf","player":")" + t.cy.entityId + "\"").ok, "a wolf outside the story is refused");
+        const auto inside = tell(R"(,"to":"region","region":{"id":"wall","cell":"c_1_0","x1":7,"x2":9,"y1":8,"y2":8})");
+        expect(inside.ok && inside.message == "Told 1 in the world.", "only Ash stands on the wall: " + inside.message);
+        expect(!tell(R"(,"to":"region","region":{"id":"wall","cell":"c_1_0","x1":6,"x2":9,"y1":8,"y2":8})").ok, "an altered region is refused");
+        expect(!t.g.applyDmAct({"9", "story.tell", run, "dm", R"({"visit":2,"to":"participants","text":"Late."})"}).ok, "another visit is refused");
+        expect(!t.g.applyDmAct({"9", "story.tell", run, "dm", R"({"visit":1,"to":"participants","text":"two\nlines"})"}).ok,
+               "one line only");
         auto area = parsed(R"({"region":"wall","visit":1,"cell":"c_1_0","x1":7,"x2":9,"y1":8,"y2":8})");
         auto apply = [&](const char* effect) {
             return t.g.applyDmAct({"2", std::string("story.area_") + effect, run, "dm", json::dump(area)});

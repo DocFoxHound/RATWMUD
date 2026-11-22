@@ -15,8 +15,8 @@ export interface Listening {
 }
 export type Waiting =
     | {on: 'publish'}
-    | {on: 'admin'; problem: string; order?: Order}
-    | {on: 'game'; order: Order}
+    | {on: 'admin'; problem: string; order?: Order; held?: {by: string; reason: string; at?: number; cursor?: number}}
+    | {on: 'game'; order: Order; stopping?: boolean}
     | {on: 'send'; effects: Effect[]}
     | {on: 'timer'; name: string; signal: string; at: number; clock: 'game' | 'real'; actor: string; repeat: number; scope: string}
     | {on: 'clock'; at: number; what: Listening}
@@ -24,8 +24,8 @@ export type Waiting =
     | {on: 'wolves'; events: string[]; what: Listening[]}
     | {on: 'end'};
 export interface Alert {
-    kind: 'paused' | 'game' | 'behind' | 'quiet'; needsYou: boolean; problem?: string; order?: Order; events?: number; seconds?: number;
-    hours?: number; since?: string; wolfSeen?: string;
+    kind: 'paused' | 'held' | 'runner' | 'game' | 'behind' | 'quiet'; needsYou: boolean; problem?: string; order?: Order; events?: number; seconds?: number;
+    hours?: number; since?: string; wolfSeen?: string; by?: string; reason?: string; age?: number | null; beatAt?: string | null; runner?: boolean;
 }
 export interface MissionSummary { id: string; title: string; mode: 'individual' | 'group' | 'either'; completed: number; required: number; ready: boolean; optional: boolean }
 export interface Objective { label: string; on: string; goal?: number; measure?: string; match?: Record<string, string>; signal?: string }
@@ -36,45 +36,66 @@ export interface Last { type: 'trigger' | 'phase'; trigger?: string; phase?: str
 export interface RunRow {
     run: string; title: string; status: string; digest: string; approver: string; approvedAt: string | null; phase: string | null; problem: string;
     visit?: number; entered?: number; cohort?: string[]; wolves?: number; missions?: MissionSummary[]; waiting?: Waiting[];
-    behind?: {events: number; seconds: number}; last?: Last | null; alerts?: Alert[]; ending?: boolean;
+    behind?: {events: number; seconds: number}; last?: Last | null; alerts?: Alert[]; ending?: boolean; commandsQueued?: number;
 }
+/** The story runner's heartbeat (doc 85, 5.6; Phase 2). */
+export interface Beat { beatAt: string | null; age: number | null; startedAt?: string; pid?: number; version?: string; behind?: number }
 export interface Now { day: number | null; newest: number; at: string }
-export interface Overview { runs: RunRow[]; now: Now; names: Record<string, string>; thresholds?: Record<string, number> }
+export interface Overview { runs: RunRow[]; now: Now; names: Record<string, string>; thresholds?: Record<string, number>; runner?: Beat | null }
 export interface Region { id: string; cell: string; x1: number; y1: number; x2: number; y2: number }
 export interface Timer { signal?: string; at: number; clock?: 'game' | 'real'; actor?: string; interval?: number; scope?: string }
 export interface RunState {
     phase: string; entered: number; cohort: string[]; votes: Record<string, string[]>; visits: number; actor: string; publishedAt?: number;
     counters?: {story?: Record<string, number>; player?: Record<string, Record<string, number>>}; timers?: Record<string, Timer>;
-    fired?: Record<string, string[]>; campaignFired?: Record<string, string[]>; triggerEffects?: Effect[];
+    fired?: Record<string, string[]>; campaignFired?: Record<string, string[]>; triggerEffects?: Effect[]; disabled?: string[];
+    held?: {by: string; reason: string; at: number; cursor: number};
+}
+/** A value a firing or a command changed (the timeline's "watches 5 → 6"). */
+export interface Change { what: 'counter' | 'timer'; key: string; scope?: string; wolf?: string; before: number | null; after: number | null }
+export type CommandKind = 'hold' | 'resume' | 'stop' | 'signal' | 'fire' | 'enable' | 'disable' | 'enter' | 'set' | 'timer' | 'mission' | 'order' | 'tell' | 'scene';
+/** An admin's command (dm.story_commands): what was asked, why, by whom, and once the runner took it, the result. */
+export interface Command {
+    id: number; key: string; visit: number | null; digest: string; kind: CommandKind; payload: Record<string, unknown>; reason: string; by: string;
+    at: string | null; status: 'queued' | 'done' | 'refused'; doneAt: string | null;
+    result: {text: string; before?: Record<string, unknown>; after?: Record<string, unknown>; atEvent?: number; visit?: number} | null;
+}
+/** What the controls may name for the run as it stands (tools/story_runner.controls). */
+export interface ControlTrigger { id: string; on: string; signal?: string | null; key: string; off: boolean; scope: 'campaign' | 'phase'; once: string; needsWolf: boolean; hasConditions: boolean; actions: string[] }
+export interface Controls {
+    triggers: ControlTrigger[]; offElsewhere: string[]; phases: string[]; signals: string[]; counters: {key: string; scope: 'story' | 'player'}[];
+    schedules: Record<string, {days: number; repeat?: boolean; scope?: string; clock?: string; owner?: string}>;
+    missions: {id: string; title: string; mode: string; objectives: number}[]; scenes: string[]; regions: string[];
 }
 export interface Visit { visit: number; phase: string; day: number; cause: string; receipts: number[]; missions?: Mission[] | null }
 export interface Firing {
     id: number; visit: number; phase: string; trigger: string; actor: string; day: number; actions: string[]; scope?: string; on?: string;
     signal?: string | null; event?: number | string | null; cell?: string; x?: number; y?: number;
+    changes?: Change[]; byHand?: boolean; checked?: boolean; command?: number; by?: string;
 }
 export interface RunDetail extends RunRow {
     state: RunState | null; program?: Record<string, unknown> & {title: string; id: string}; approvedBy: string; cursor: number; now: Now;
     guestVoices: string[]; directions: {npc: string; visit: number; receipt: number; status: string}[]; signals: string[];
     history: Visit[]; trace: Firing[]; actions: {id: number; kind: string; status: string; result: string}[]; orders: Order[];
     missionsNow: Mission[]; directed: string[]; regions: Region[]; phases: {id: string; to: string[]; missions: number}[]; start: string;
-    listening: Listening[]; names: Record<string, string>;
+    listening: Listening[]; names: Record<string, string>; runner?: Beat | null; commands?: Command[]; controls?: Controls | null;
 }
 export type TimelineItem =
     | {key: string; type: 'phase'; at: string | null; visit: number; phase: string; day: number; cause: string; receipts: number[]; missions?: Mission[] | null}
     | ({key: string; type: 'trigger'; at: string | null} & Firing)
-    | ({key: string; type: 'order'; at: string | null} & Order);
+    | ({key: string; type: 'order'; at: string | null} & Order)
+    | ({key: string; type: 'command'; at: string | null; command: CommandKind; askedAt: string | null} & Omit<Command, 'kind' | 'at'>);
 export interface WorldEvent { id: number; kind: string; actor: string; target: string; cell: string; item: string; quantity: number; coins: number; detail: string; day: number; x: number | null; y: number | null; at: string }
-export interface TimelineCursor { visit?: number; trigger?: number; order?: number; at?: string }
+export interface TimelineCursor { visit?: number; trigger?: number; order?: number; command?: number; at?: string }
 export interface TimelinePage { run: string; items: TimelineItem[]; events: Record<string, WorldEvent>; names: Record<string, string>; before: TimelineCursor | null; since: TimelineCursor; now: string }
 
 export const nameOf = (names: Record<string, string>, id: string | null | undefined) => (id ? names[id] ?? id : '');
 
 // ------------------------------------------------------------------------------------------------- the timeline
 
-const RANK = {phase: 0, trigger: 1, order: 2} as const;
+const RANK = {phase: 0, trigger: 1, order: 2, command: 3} as const;
 const seqOf = (i: TimelineItem) => (i.type === 'phase' ? i.visit : i.id);
 /** Newest first, as the runner sorts (tools/story_runner.timeline): by time, then visit, then a visit opened before its
- *  firings and its orders, then by id. */
+ *  firings, its orders and the admin's commands, then by id. */
 export function newestFirst(a: TimelineItem, b: TimelineItem): number {
     const time = (i: TimelineItem) => (i.at ? Date.parse(i.at) : 0);
     return (time(b) - time(a)) || ((b.visit ?? 0) - (a.visit ?? 0)) || (RANK[b.type] - RANK[a.type]) || (seqOf(b) - seqOf(a));
@@ -89,13 +110,15 @@ export function mergeTimeline(known: TimelineItem[], fresh: TimelineItem[]): Tim
 /** The cursor for the next poll: the newest of each kind the console holds, and the time of the last answer. */
 export function sinceOf(items: TimelineItem[], previous: TimelineCursor, at: string): TimelineCursor {
     const most = (type: TimelineItem['type'], had?: number) => Math.max(had ?? 0, ...items.filter(i => i.type === type).map(seqOf));
-    return {visit: most('phase', previous.visit), trigger: most('trigger', previous.trigger), order: most('order', previous.order), at};
+    return {visit: most('phase', previous.visit), trigger: most('trigger', previous.trigger), order: most('order', previous.order),
+        command: most('command', previous.command), at};
 }
-export type TimelineFilter = 'all' | 'phase' | 'trigger' | 'order';
+export type TimelineFilter = 'all' | 'phase' | 'trigger' | 'order' | 'command';
 export function filterTimeline(items: TimelineItem[], kind: TimelineFilter, wolf = '', trigger = ''): TimelineItem[] {
+    const wolfOf = (i: Extract<TimelineItem, {type: 'command'}>) => String(i.payload?.actor ?? i.payload?.player ?? '');
     return items.filter(i => (kind === 'all' || i.type === kind)
-        && (!wolf || (i.type === 'trigger' ? i.actor === wolf : i.type === 'order' ? i.target === wolf : true))
-        && (!trigger || (i.type === 'trigger' && i.trigger === trigger)));
+        && (!wolf || (i.type === 'trigger' ? i.actor === wolf : i.type === 'order' ? i.target === wolf : i.type === 'command' ? wolfOf(i) === wolf : true))
+        && (!trigger || (i.type === 'trigger' && i.trigger === trigger) || (i.type === 'command' && i.payload?.trigger === trigger)));
 }
 
 export function causeText(cause: string, names: Record<string, string> = {}): string {
@@ -103,6 +126,10 @@ export function causeText(cause: string, names: Record<string, string> = {}): st
     if (cause === 'clock') return 'by the clock (a timer or a delay)';
     if (cause.startsWith('event ')) return `world event #${cause.slice(6)}`;
     if (cause.startsWith('DM signal: ')) return `a Dungeon Master's direction "${cause.slice(11)}"`;
+    if (cause.startsWith('admin ')) {
+        const [who, ...why] = cause.slice(6).split(': ');
+        return `${who.split('#')[0]} by hand: "${why.join(': ')}"`;
+    }
     return nameOf(names, cause);
 }
 
@@ -151,6 +178,9 @@ export function waitingLines(waiting: Waiting[] | undefined, names: Record<strin
     const out: WaitLine[] = [];
     for (const w of waiting ?? []) {
         if (w.on === 'publish') out.push({who: 'you', text: 'approved, waiting to be published', tone: 'alert'});
+        else if (w.on === 'admin' && w.held) out.push({who: 'you', tone: 'alert',
+            text: `held by ${w.held.by.split('#')[0]}${w.held.reason ? ` ("${w.held.reason}")` : ''}: resume it to carry on`});
+        else if (w.on === 'game' && w.stopping) out.push({who: 'the game', tone: 'game', text: `to acknowledge the stop (order #${w.order.id})`});
         else if (w.on === 'admin') out.push({who: 'you', tone: 'alert',
             text: w.order ? `${orderLine(w.order, names)} ${w.order.status}${w.order.result ? ': ' + w.order.result : ''}` : w.problem || 'paused'});
         else if (w.on === 'game') out.push({who: 'the game', tone: 'game',
@@ -181,8 +211,11 @@ export function waitingOn(waiting: Waiting[] | undefined, names: Record<string, 
 
 export function alertText(a: Alert, names: Record<string, string>): string {
     if (a.kind === 'paused') return `Paused: ${a.problem || 'the game refused an order'}`;
+    if (a.kind === 'held') return `Held by ${(a.by ?? 'a Dungeon Master').split('#')[0]}${a.reason ? ` ("${a.reason}")` : ''}: ${a.events ?? 0} world event${a.events === 1 ? '' : 's'} wait${a.events === 1 ? 's' : ''} for it; nothing is lost.`;
+    if (a.kind === 'runner') return a.age == null ? 'The story runner has not run on this world: nothing moves until it does (python3 tools/story_runner.py --world …).'
+        : `The story runner has not beaten for ${a.age < 120 ? Math.round(a.age) + ' s' : Math.round(a.age / 60) + ' min'}: is it running?`;
     if (a.kind === 'game') return `The game has not answered ${a.order ? orderLine(a.order, names) + ' (#' + a.order.id + ')' : 'an order'} for ${Math.round((a.order?.age ?? 0) / 60)} min: is the game server running?`;
-    if (a.kind === 'behind') return `Falling behind: ${a.events} world event${a.events === 1 ? '' : 's'} unread, the oldest ${Math.round(a.seconds ?? 0)} s old. Is the story runner running?`;
+    if (a.kind === 'behind') return `Falling behind: ${a.events} world event${a.events === 1 ? '' : 's'} unread, the oldest ${Math.round(a.seconds ?? 0)} s old.${a.runner ? '' : ' Is the story runner running?'}`;
     return `Quiet for ${Math.round(a.hours ?? 0)} h while its wolves were about: nothing fired and no mission moved.`;
 }
 
@@ -236,17 +269,18 @@ export function missionSummary(m: MissionSummary | Mission, wolves?: number): st
 
 // ------------------------------------------------------------------------------------------------- the list
 
-export type ListFilter = 'all' | 'running' | 'paused' | 'approved' | 'ended';
+export type ListFilter = 'all' | 'running' | 'held' | 'paused' | 'approved' | 'ended';
 export const ended = (status: string) => status === 'complete' || status === 'stopped';
 export function listCounts(runs: RunRow[]): Record<ListFilter, number> & {needsYou: number} {
     return {
-        all: runs.length, running: runs.filter(r => r.status === 'running').length, paused: runs.filter(r => r.status === 'paused').length,
+        all: runs.length, running: runs.filter(r => r.status === 'running' || r.status === 'stopping').length,
+        held: runs.filter(r => r.status === 'held').length, paused: runs.filter(r => r.status === 'paused').length,
         approved: runs.filter(r => r.status === 'approved').length, ended: runs.filter(r => ended(r.status)).length,
         needsYou: runs.filter(r => (r.alerts ?? []).some(a => a.needsYou) || r.status === 'approved').length,
     };
 }
 export function filterRuns(runs: RunRow[], filter: ListFilter): RunRow[] {
-    return runs.filter(r => filter === 'all' || (filter === 'ended' ? ended(r.status) : r.status === filter));
+    return runs.filter(r => filter === 'all' || (filter === 'ended' ? ended(r.status) : filter === 'running' ? ['running', 'stopping'].includes(r.status) : r.status === filter));
 }
 /** Missions in a row of the list: "2 open · 1 done". */
 export function questsText(missions: MissionSummary[] | undefined): string {
@@ -266,4 +300,72 @@ export function phasePath(history: Visit[]): string[] {
 /** The phase strip: the phases this run has been through (in order) and where it can go from the current one. */
 export function phaseStrip(history: Visit[], phases: {id: string; to: string[]}[], current: string | null): {path: string[]; next: string[]} {
     return {path: phasePath(history), next: phases.find(p => p.id === current)?.to ?? []};
+}
+
+// ------------------------------------------------------------------------------------------------- steering (Phase 2)
+
+/** The statuses a command may steer (tools/story_runner.STEERED). */
+export const steerable = (status: string) => ['running', 'paused', 'held'].includes(status);
+/** A command's own id: sending it twice does it once (5.8, rule 3). */
+export function newKey(): string {
+    const bytes = new Uint8Array(12);
+    crypto.getRandomValues(bytes);
+    return 'c' + [...bytes].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+/** "watches 5 → 6", "stores (Ash) 0 → 2", "timer watch-round day 56.0 → 58.0" */
+export function changeText(c: Change, names: Record<string, string> = {}): string {
+    const n = (v: number | null) => (v === null || v === undefined ? '—' : Number.isInteger(v) ? String(v) : v.toFixed(1));
+    if (c.what === 'timer') return `timer ${c.key.split('/')[0]}${c.key.includes('/') ? ` (${nameOf(names, c.key.split('/')[1])})` : ''} ${c.before === null ? 'started' : 'day ' + n(c.before)} → ${c.after === null ? 'off' : 'day ' + n(c.after)}`;
+    return `${c.key}${c.wolf ? ` (${nameOf(names, c.wolf)})` : ''} ${n(c.before)} → ${n(c.after)}`;
+}
+const PRETTY: Record<CommandKind, string> = {
+    hold: 'held it', resume: 'resumed it', stop: 'stopped it', signal: 'sent a signal', fire: 'fired a trigger', enable: 'turned a trigger on',
+    disable: 'turned a trigger off', enter: 'went to a phase', set: 'set a variable', timer: 'changed a timer', mission: 'changed a mission',
+    order: 'dealt with an order', tell: 'told the wolves', scene: 'started a scene',
+};
+/** One line for a command: who did what, to what (before the runner's own words come back). */
+export function commandLine(kind: CommandKind, payload: Record<string, unknown>, names: Record<string, string>): string {
+    const p = payload ?? {};
+    const wolf = (p.actor || p.player) ? ` for ${nameOf(names, String(p.actor || p.player))}` : '';
+    switch (kind) {
+        case 'signal': return `sent signal "${p.name}"${wolf}`;
+        case 'fire': return `fired ${p.trigger}${wolf}${p.check === false ? ' (unchecked)' : ''}`;
+        case 'enable': case 'disable': return `turned ${p.trigger} ${kind === 'enable' ? 'on' : 'off'}`;
+        case 'enter': return `went to ${p.phase}${p.effects === false ? ' (without its entry effects)' : ''}`;
+        case 'set': return `set ${p.key}${wolf} to ${p.value}`;
+        case 'timer': return `${p.do} timer ${p.name ?? p.signal}${p.days !== undefined ? ` (${Number(p.days) > 0 && p.do === 'shift' ? '+' : ''}${p.days} days)` : ''}`;
+        case 'mission': return `${p.do === 'complete' ? 'completed' : 'reset'} ${p.mission}${wolf}`;
+        case 'order': return `${p.do === 'skip' ? 'skipped' : 'retried'} order #${p.receipt}`;
+        case 'tell': return `told ${p.to === 'wolf' ? nameOf(names, String(p.player)) : p.to === 'region' ? 'the wolves in ' + p.region : 'the story\'s wolves'}: "${p.text}"`;
+        case 'scene': return `started scene ${p.scene} for ${p.player === 'world' ? 'the world' : nameOf(names, String(p.player))}`;
+        default: return PRETTY[kind] ?? kind;
+    }
+}
+/** The values a command changed, before and after, in words (the Audit tab). */
+export function beforeAfter(c: Pick<Command, 'result'>): string {
+    const r = c.result;
+    if (!r?.before || !r.after) return '';
+    const keys = [...new Set([...Object.keys(r.before), ...Object.keys(r.after)])].filter(k => ['status', 'phase', 'value', 'at', 'on', 'step', 'visit'].includes(k));
+    const v = (x: unknown) => (x === null || x === undefined ? '—' : typeof x === 'boolean' ? (x ? 'on' : 'off')
+        : typeof x === 'number' && !Number.isInteger(x) ? x.toFixed(1) : String(x));
+    return keys.filter(k => r.before![k] !== r.after![k]).map(k => `${k} ${v(r.before![k])} → ${v(r.after![k])}`).join(' · ');
+}
+/** Ask the reason again for these, and the story's title typed (5.8, rule 2). */
+export const typedTitle = (kind: CommandKind, payload: Record<string, unknown>, way?: 'back' | 'on' | 'again') =>
+    kind === 'stop' || (kind === 'order' && payload.do === 'skip') || (kind === 'enter' && way === 'back');
+/** Which way a jump goes: on, back or again (doc 85, 5.1 rule 5: going back gives nothing back). */
+export function wayOf(phases: string[], from: string | null, to: string): 'on' | 'back' | 'again' {
+    if (from === to) return 'again';
+    return phases.indexOf(to) < phases.indexOf(from ?? '') ? 'back' : 'on';
+}
+/** How many times each trigger fired, and when last, from the timeline the console holds. */
+export function firingCounts(items: TimelineItem[]): Record<string, {count: number; last: string | null; day: number | null}> {
+    const out: Record<string, {count: number; last: string | null; day: number | null}> = {};
+    for (const i of items) {
+        if (i.type !== 'trigger') continue;
+        const o = (out[i.trigger] ??= {count: 0, last: null, day: null});
+        o.count += 1;
+        if (!o.last || (i.at && i.at > o.last)) { o.last = i.at; o.day = i.day; }
+    }
+    return out;
 }
