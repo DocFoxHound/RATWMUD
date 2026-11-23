@@ -23,6 +23,72 @@ say[topic.meeting=famous priority=6] You #topic.deed#, didn't you? Folk talk of 
 say[topic.meeting=famous_look priority=6] You look like the one who #topic.deed#. Are you? #watch_greet# | I've heard of a wolf like you, who #topic.deed#. #watch_greet#
 say[pair.disposition=wary priority=3] Yes? | What is it you want? | #greet#. What do you want?
 say[pair.disposition=hostile priority=10] You. Say what you want and go. | What now? | You. I'm watching you.
+# ---- The Ninth Howl: the cast's own greetings (Docs/Design/86 section 6; cast-and-talk.md section 3). Each is
+# gated on talk memory the campaign writes (world.mem, self.mem, pair.mem), so none plays until a key is set.
+# rmx_dagfinn_thornham
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_stage=king priority=4] #greet#. Don't call me my lord. I've a round to walk, and the alleys don't care what the Palace says, no?
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_stage=moot_called priority=4] #greet#. A Moot, the herald says. Fen-sure, I'll keep the lamp lit till it sits. Somebody has to.
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_stage=reckoning priority=4] They're chalking doors on my round. I knocked on every one of those doors for the Watch, no?
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_stage=signals priority=4] Lamps on the ridges and none of them ours. I'd go up myself, but they want me on the Steps.
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_stage=howls priority=4] I howled the fen one at the feast and half the square sang it back as a burying. Maybe it was, no?
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_stage=letters priority=4] I've a letter for the Grayrock lord as well. The old King wrote on the back. I've not read that side twice.
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_stage=lights priority=4] I'm walking down to the fens. Somebody from the Palace ought to stand where Mirebridge stood.
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_stage=lights here.region=fenshore priority=4] I knew every street of it, and which flooded first. There's reeds now where the old doors were, no?
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_stage=harvest priority=4] Every wolf I'd trust is at the Larkfield ford, and here's me holding a lamp. Bring me word, no?
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_stage=bell world.mem.nh_writ=whispered priority=4] The City Office shuts its doors at noon now. Twelve years on the round, I know a door that's hiding something.
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_stage=bell world.mem.nh_writ=read priority=4] The old King meant it for someone like me. I'd rather he'd said so to my face. I'd have slept better, no?
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_stage=moot priority=4] Every post on the Line wants a keeper, and here's me with the one lamp. Fen-sure, I'll find a use for it.
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_stage=moot world.mem.nh_dagfinn=stands priority=4] I'll stand. Not for the chair. For the round, no?
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_stage=moot world.mem.nh_dagfinn=steps priority=4] Let the Moot keep the lamp. I'll carry it to them, and walk the round after.
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_crown=lamp priority=5] Still walking the round on Restdays. A king can keep a habit, no?
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_crown=ottilie priority=5] The Queen keeps the chair and I keep the lamp. Fen-sure, that suits the both of us.
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_crown=regency priority=5] Steward of the Moot, they call it. I call it the lamp with more stairs.
+say[self.id=rmx_dagfinn_thornham self.from=fenshore world.mem.nh_crown=bought priority=5] Next Moot, #address#. Howl louder.
+say[self.id=rmx_dagfinn_thornham self.from=fenshore pair.mem.nh_stone=given priority=5] #greet#. You're the one who brought that heron stone up out of the mire. It's by the door, no?
+say[self.id=rmx_dagfinn_thornham self.from=fenshore pair.mem.nh_found=first priority=5] You found me on the round before the Houses did. I've not forgotten it, no?
+# rmx_cressida_cotton
+say[self.id=rmx_cressida_cotton self.from=frosthollow world.mem.nh_stage=king priority=4] Nobody's seen him since dusk. Deep strange. He's never been late for a round in his life.
+say[self.id=rmx_cressida_cotton self.from=frosthollow world.mem.nh_stage=moot_called priority=4] He keeps the lamp and I keep the round. Somebody's got to, cousin.
+say[self.id=rmx_cressida_cotton self.from=frosthollow world.mem.nh_stage=reckoning priority=4] Factors on my round. I'd like to see them chalk my door.
+say[self.id=rmx_cressida_cotton self.from=frosthollow world.mem.nh_stage=signals priority=4] Lamps on the ridges. Cold iron, I'd douse every one myself.
+say[self.id=rmx_cressida_cotton self.from=frosthollow world.mem.nh_stage=howls|letters|lights priority=4] Still walking his half of the round. Don't ask me how he's keeping. Ask him.
+say[self.id=rmx_cressida_cotton self.from=frosthollow world.mem.nh_stage=harvest priority=4] They won't let me go to the ford. Somebody has to walk the Sump.
+say[self.id=rmx_cressida_cotton self.from=frosthollow world.mem.nh_stage=bell priority=4] He reads papers now. He used to read doors.
+say[self.id=rmx_cressida_cotton self.from=frosthollow world.mem.nh_stage=moot priority=4] The waystation's mine on the Moot night. Bring oil if you're coming.
+say[self.id=rmx_cressida_cotton self.from=frosthollow world.mem.nh_crown=bought priority=5] There's a ship going somewhere dry. I've a berth on it. Keep your lamp lit.
+say[self.id=rmx_cressida_cotton self.from=frosthollow world.mem.nh_crown=ottilie|lamp|regency priority=5] Sergeant, they call me now. I've not got used to it. Don't you start.
+# rm_bettany_nailley
+say[self.id=rm_bettany_nailley world.mem.nh_stage=reckoning priority=4] If it's the Captain's note you're after, the cells know more than I do. I'm a sergeant; I'm not meant to know.
+say[self.id=rm_bettany_nailley world.mem.nh_stage=signals priority=4] Six years I've waited for a paper like that. If you find one, you know where I stand.
+say[self.id=rm_bettany_nailley world.mem.nh_stage=howls priority=4] The Watch sings the burying howl at every wake. I'd like to hear it sing something else for once.
+say[self.id=rm_bettany_nailley world.mem.nh_stage=howls|letters world.mem.nh_lists=bettany priority=4] The magistrate heard it. The Watch is mine for now. I didn't want it like this.
+say[self.id=rm_bettany_nailley world.mem.nh_stage=howls|letters world.mem.nh_lists=press priority=4] It's printed. Half the Watch won't meet my eye. Good.
+say[self.id=rm_bettany_nailley world.mem.nh_stage=howls|letters world.mem.nh_lists=sold priority=4] They've put me on the Harbour Gate. Somebody paid for that.
+say[self.id=rm_bettany_nailley world.mem.nh_stage=letters priority=4] Letters for the Grayrock lord on every desk. Say the name to me and I'll spit.
+say[self.id=rm_bettany_nailley world.mem.nh_stage=letters world.mem.nh_wharf=heard priority=4] The Grayrock lord stood at the chapel while the names were read. I didn't know he could stand still.
+say[self.id=rm_bettany_nailley world.mem.nh_stage=lights priority=4] There's a skipper at Rivermouth who carries more than eels. I'd like a reason.
+say[self.id=rm_bettany_nailley world.mem.nh_stage=harvest priority=4] We ride with the ford escorts. Bring a lamp you're willing to lose.
+say[self.id=rm_bettany_nailley world.mem.nh_stage=bell priority=4] Someone's paying the cells to forget things. I'm writing down what they forget.
+say[self.id=rm_bettany_nailley world.mem.nh_stage=moot priority=4] The Watch stands at the Moot. All of it, if I've a say.
+# rm_corra_slagmore
+say[self.id=rm_corra_slagmore world.mem.nh_stage=reckoning priority=4] Not a good day, and not a good place. Keep it short.
+say[self.id=rm_corra_slagmore world.mem.nh_stage=reckoning self.mem.nh_debt=freed priority=4] My note's gone. A wolf of the road, they say. I owe you a Watch that deserves you.
+say[self.id=rm_corra_slagmore world.mem.nh_stage=signals priority=4] Lists. Everyone wants a list. I'd rather they wanted a Watch.
+say[self.id=rm_corra_slagmore world.mem.nh_stage=howls|letters|lights|harvest|bell|moot world.mem.nh_lists=bettany priority=4] I've stood aside. The sergeant leads. She'll do it better.
+say[self.id=rm_corra_slagmore world.mem.nh_stage=howls|letters|lights|harvest|bell|moot world.mem.nh_lists=press priority=4] I resigned in disgrace, and I'd earned it.
+say[self.id=rm_corra_slagmore world.mem.nh_stage=howls|letters|lights|harvest|bell|moot world.mem.nh_lists=press self.mem.nh_debt=freed priority=4] I resigned. In honour, they say. It doesn't feel like it.
+say[self.id=rm_corra_slagmore world.mem.nh_stage=howls|letters|lights|harvest|bell|moot world.mem.nh_lists=captain priority=4] Burned. And the Counting House still owns me. You know that? It'll do for now.
+say[self.id=rm_corra_slagmore world.mem.nh_stage=howls|letters|lights|harvest|bell|moot world.mem.nh_lists=captain self.mem.nh_debt=freed priority=4] Burned, and sworn. The Watch keeps the lamp now.
+say[self.id=rm_corra_slagmore world.mem.nh_stage=howls|letters|lights|harvest|bell|moot world.mem.nh_lists=sold|lost priority=4] Don't ask me about the Watch. Ask whoever owns it.
+# rmx_desmond_hollis
+say[self.id=rmx_desmond_hollis self.from=coldwater world.mem.nh_stage=reckoning priority=4] You smell of the yard. So do I. Leave it.
+say[self.id=rmx_desmond_hollis self.from=coldwater world.mem.nh_stage=reckoning here.time=night priority=4] A penny a wagon day, and no names. Greatly pennies spend the same as any. Sell, or walk on.
+say[self.id=rmx_desmond_hollis self.from=coldwater world.mem.nh_stage=signals priority=4] A Palace guard with no Palace. Funny, that. Say your piece and go.
+say[self.id=rmx_desmond_hollis self.from=coldwater world.mem.nh_desmond=held priority=5] Speak for me at the hearing and I'll stand at the granary. Don't, and I'll not blame you.
+say[self.id=rmx_desmond_hollis self.from=coldwater world.mem.nh_desmond=redeemed priority=5] I stood at the granary. Nothing came through it. That's something.
+say[self.id=rmx_desmond_hollis self.from=coldwater world.mem.nh_desmond=pillory priority=5] A day in the pillory. The Sump threw fish. Fair enough, I suppose.
+say[self.id=rmx_desmond_hollis self.from=coldwater world.mem.nh_desmond=fled priority=5] Go away. I've nothing for the city, and the city's nothing for me.
+say[self.id=rmx_desmond_hollis self.from=coldwater world.mem.nh_desmond=mercy priority=5] They let me walk. I don't know why. I'm trying to be worth it.
 mood formal
 free
 choice What do I owe the watch? [here.wanted=yes] -> fine

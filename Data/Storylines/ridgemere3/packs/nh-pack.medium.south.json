@@ -1,0 +1,7498 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "nh-pack.medium.south",
+ "title": "Medium errands of the south",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "variables": [
+  {
+   "id": "coin_fenshore_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "coin_fenshore_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true
+  },
+  {
+   "id": "coin_saltwell_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "coin_saltwell_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true
+  },
+  {
+   "id": "coin_southmeadow_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "coin_southmeadow_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true
+  },
+  {
+   "id": "lq_salt",
+   "type": "text",
+   "scope": "world",
+   "initial": ""
+  },
+  {
+   "id": "nh_b_lights",
+   "type": "text",
+   "scope": "world",
+   "initial": ""
+  },
+  {
+   "id": "nh_names",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "nh_stage",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "nh_threat",
+   "type": "number",
+   "scope": "world",
+   "initial": 30
+  },
+  {
+   "id": "nh_voice_fenshore",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "nh_voice_mirebridge",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "nh_voice_saltwell",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "nh_voice_southmeadow",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "bg_pick",
+   "type": "text",
+   "scope": "player"
+  },
+  {
+   "id": "mq_bear_about",
+   "type": "switch",
+   "scope": "story",
+   "note": "A bear has been hunted by the garth: bears are about."
+  },
+  {
+   "id": "mq_bear_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_bear_b",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "vc_pick",
+   "type": "text",
+   "scope": "player"
+  },
+  {
+   "id": "vc_spawned",
+   "type": "switch",
+   "scope": "player"
+  },
+  {
+   "id": "spawned_vc_camp",
+   "type": "switch",
+   "scope": "story"
+  },
+  {
+   "id": "mq_casks_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_casks_b",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "wl_pick",
+   "type": "text",
+   "scope": "player"
+  },
+  {
+   "id": "wl_placed",
+   "type": "switch",
+   "scope": "player"
+  },
+  {
+   "id": "mq_lights_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_lights_b",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "pp_pick",
+   "type": "text",
+   "scope": "player"
+  },
+  {
+   "id": "mq_kiln_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_kiln_b",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "lr_pick",
+   "type": "text",
+   "scope": "player"
+  },
+  {
+   "id": "mq_raker_posted",
+   "type": "switch",
+   "scope": "story",
+   "note": "The 'it's taken' notice is up."
+  },
+  {
+   "id": "mq_raker_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_raker_b",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "ws_pick",
+   "type": "text",
+   "scope": "player",
+   "note": "Q18: paid, fought, or quiet (the Salt Road line broke the buyer)."
+  },
+  {
+   "id": "spawned_ws_wash",
+   "type": "switch",
+   "scope": "story"
+  },
+  {
+   "id": "mq_salt_posted",
+   "type": "switch",
+   "scope": "story",
+   "note": "The 'it's taken' notice is up."
+  },
+  {
+   "id": "mq_salt_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_salt_b",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_salt_c",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mx_pick",
+   "type": "text",
+   "scope": "player"
+  },
+  {
+   "id": "mq_names_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_names_b",
+   "type": "number",
+   "scope": "story"
+  }
+ ],
+ "regions": [
+  {
+   "id": "bg_garth",
+   "cell": "w_ridgemere_7_12",
+   "x1": 175,
+   "y1": 24,
+   "x2": 199,
+   "y2": 37
+  },
+  {
+   "id": "bg_far",
+   "cell": "w_ridgemere_6_13",
+   "x1": 120,
+   "y1": 120,
+   "x2": 140,
+   "y2": 135
+  },
+  {
+   "id": "vc_camp",
+   "cell": "w_ridgemere_7_12",
+   "x1": 112,
+   "y1": 102,
+   "x2": 130,
+   "y2": 114
+  },
+  {
+   "id": "vc_door",
+   "cell": "w_ridgemere_9_12",
+   "x1": 93,
+   "y1": 100,
+   "x2": 103,
+   "y2": 104
+  },
+  {
+   "id": "wl_reeds",
+   "cell": "w_ridgemere_4_13",
+   "x1": 43,
+   "y1": 100,
+   "x2": 60,
+   "y2": 116
+  },
+  {
+   "id": "lr_store",
+   "cell": "w_ridgemere_13_12",
+   "x1": 84,
+   "y1": 236,
+   "x2": 108,
+   "y2": 249
+  },
+  {
+   "id": "ws_wash",
+   "cell": "w_ridgemere_11_12",
+   "x1": 156,
+   "y1": 156,
+   "x2": 170,
+   "y2": 170
+  },
+  {
+   "id": "sm_square",
+   "cell": "w_ridgemere_8_13",
+   "x1": 93,
+   "y1": 14,
+   "x2": 108,
+   "y2": 26
+  },
+  {
+   "id": "mx_cross",
+   "cell": "w_ridgemere_5_11",
+   "x1": 183,
+   "y1": 45,
+   "x2": 195,
+   "y2": 56
+  },
+  {
+   "id": "mx_tamsin",
+   "cell": "w_ridgemere_4_13",
+   "x1": 23,
+   "y1": 102,
+   "x2": 33,
+   "y2": 104
+  }
+ ],
+ "scenes": [
+  {
+   "format": "ratw-scene",
+   "version": 1,
+   "id": "pp_kiln",
+   "title": "Words in the kiln yard",
+   "visibility": "individual",
+   "lockMovement": false,
+   "cast": [
+    {
+     "id": "bram",
+     "npc": "tn_sm_bram_harvestgarth"
+    },
+    {
+     "id": "ludo",
+     "npc": "tn_oh_ludo_beechshaw"
+    }
+   ],
+   "start": "nine",
+   "beats": [
+    {
+     "id": "nine",
+     "type": "line",
+     "speaker": "bram",
+     "seconds": 9,
+     "next": "free",
+     "text": "Nine years I fed that kiln. Nine. And the wheel goes to a wolf off a timber road who'd never seen a fen. Dark One's mire, tell me that's fair."
+    },
+    {
+     "id": "free",
+     "type": "line",
+     "speaker": "ludo",
+     "seconds": 9,
+     "next": "look",
+     "text": "I didn't ask for it, old root. The post sat empty and the rule said whoever's free. I was free. I'm still learning which clay sulks, mm?"
+    },
+    {
+     "id": "look",
+     "type": "choice",
+     "speaker": "bram",
+     "seconds": 30,
+     "mode": "first",
+     "default": "rule",
+     "text": "Well? You heard us both. Say it.",
+     "options": [
+      {
+       "id": "share",
+       "label": "He fired this kiln nine years. Share the wheel.",
+       "next": "s1"
+      },
+      {
+       "id": "rule",
+       "label": "The rule gave it fairly. Teach him the fen clay.",
+       "next": "r1"
+      }
+     ]
+    },
+    {
+     "id": "s1",
+     "type": "line",
+     "speaker": "ludo",
+     "seconds": 7,
+     "text": "Two pairs of paws on one wheel. Proper. I'll take the mornings; you take the firing."
+    },
+    {
+     "id": "r1",
+     "type": "line",
+     "speaker": "bram",
+     "seconds": 7,
+     "text": "Teach him. Fen-sure, I'll teach him. He'll learn the clay or the clay'll learn him, no?"
+    }
+   ]
+  },
+  {
+   "format": "ratw-scene",
+   "version": 1,
+   "id": "mx_tamsin",
+   "title": "At a door on Withy Creek",
+   "visibility": "individual",
+   "lockMovement": false,
+   "cast": [
+    {
+     "id": "speaker",
+     "npc": "tn_mb_tamsin_eelbank"
+    }
+   ],
+   "start": "line",
+   "beats": [
+    {
+     "id": "line",
+     "type": "line",
+     "speaker": "speaker",
+     "seconds": 10,
+     "text": "Forty names. I knew half of them, the half that could swim. I'll copy every one into my own book by the fire, Dark One take the damp. Keep his list. He'll want it back, no?"
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "Errands for any wolf who asks around the south: the Sunfields Bee Garth and the vineyard, Withy Creek and the Fenshore Kilns, the Saltpan, the Waste Road and the Mirebridge crossroads.",
+   "effects": [],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "q13-accept",
+     "on": "quest started",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-bee-garth-bear"
+     },
+     "actions": [
+      {
+       "do": "set",
+       "var": "bg_pick",
+       "value": ""
+      }
+     ]
+    },
+    {
+     "id": "q13-bear",
+     "on": "hunted",
+     "match": {
+      "target": "bear",
+      "cell": "w_ridgemere_7_12"
+     },
+     "note": "A bear was hunted near the garth: bears are about, so the kill road is offered (L1 stages one later).",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "mq_bear_about"
+      }
+     ]
+    },
+    {
+     "id": "q13-night",
+     "on": "region entered",
+     "audience": "participant",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-bee-garth-bear",
+        "status": "active"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "bg_pick"
+        },
+        "op": "=",
+        "right": "b"
+       },
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "field": "target"
+            },
+            "op": "=",
+            "right": "bg_far"
+           },
+           {
+            "test": "not",
+            "condition": {
+             "test": "objective is",
+             "quest": "mq-bee-garth-bear",
+             "objective": "comb",
+             "status": "done"
+            }
+           }
+          ]
+         },
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "field": "target"
+            },
+            "op": "=",
+            "right": "bg_garth"
+           },
+           {
+            "test": "objective is",
+            "quest": "mq-bee-garth-bear",
+            "objective": "comb",
+            "status": "done"
+           },
+           {
+            "test": "not",
+            "condition": {
+             "test": "objective is",
+             "quest": "mq-bee-garth-bear",
+             "objective": "quiet",
+             "status": "done"
+            }
+           },
+           {
+            "test": "hour between",
+            "from": 22,
+            "to": 3
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "note": "The honey smell walked to the far woods; then P-A with a watch: in the garth after dark, and still there a while later.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "target"
+        },
+        "op": "=",
+        "right": "bg_far"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-bee-garth-bear",
+          "objective": "comb",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Past the clay pits you rub the honey off on the alders. Something heavy is following the smell, a long way back.",
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "wait",
+         "days": 0.1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "wolf in region",
+          "region": "bg_garth"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-bee-garth-bear",
+            "objective": "quiet",
+            "player": "$actor"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-bee-garth-bear",
+            "objective": "done",
+            "player": "$actor"
+           }
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "You left the garth before the night was out. Sit it again after dark.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q13-progress",
+     "on": "objective completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-bee-garth-bear"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "hives"
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "mq_bear_about",
+          "is": true
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "cty_disa_fogford",
+            "id": "bg_kill",
+            "player": "$actor",
+            "once": true,
+            "words": "Kill it. It'll only come back.",
+            "reply": "#oath#. It's in the wood west of the garth, by the smell. Take friends. It won't lie down for one."
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "cty_disa_fogford",
+            "id": "bg_lead",
+            "player": "$actor",
+            "once": true,
+            "words": "Lead it off with honey. Somewhere far.",
+            "reply": "Ripe thinking, that. Hold still: a comb rubbed in your ruff, and every bear in the wood can smell you. Walk it out past the clay pits where the mud starts, then sit a night in the garth and see if it learned."
+           }
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "cty_disa_fogford",
+            "id": "bg_lead",
+            "player": "$actor",
+            "once": true,
+            "words": "Lead it off with honey. Somewhere far.",
+            "reply": "Ripe thinking, that. Hold still: a comb rubbed in your ruff, and every bear in the wood can smell you. Walk it out past the clay pits where the mud starts, then sit a night in the garth and see if it learned."
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "field": "item"
+            },
+            "op": "=",
+            "right": "kill"
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "bg_pick"
+            },
+            "op": "=",
+            "right": "a"
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-bee-garth-bear",
+            "objective": "done",
+            "player": "$actor"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "field": "item"
+            },
+            "op": "=",
+            "right": "comb"
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "bg_pick"
+            },
+            "op": "=",
+            "right": "b"
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.reveal",
+            "quest": "mq-bee-garth-bear",
+            "objective": "quiet",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q13-choice",
+     "on": "dialogue choice",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-bee-garth-bear",
+      "status": "active"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "bg_kill"
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "bg_pick",
+         "value": "a"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.reveal",
+          "quest": "mq-bee-garth-bear",
+          "objective": "kill",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-bee-garth-bear",
+          "objective": "choose",
+          "player": "$actor"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "bg_lead"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "bg_pick",
+           "value": "b"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.reveal",
+            "quest": "mq-bee-garth-bear",
+            "objective": "comb",
+            "player": "$actor"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-bee-garth-bear",
+            "objective": "choose",
+            "player": "$actor"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.ping",
+            "cell": "w_ridgemere_6_13",
+            "x": 130,
+            "y": 128,
+            "player": "$actor",
+            "label": "the far woods past the clay pits",
+            "minutes": 60,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q13-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-bee-garth-bear"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "bg_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_southmeadow_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_southmeadow_day"
+            },
+            "op": "<=",
+            "right": 13
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 10,
+            "purse": "town:southmeadow",
+            "reason": "the Sunfields hives thank you",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_southmeadow_day",
+           "value": 10
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Southmeadow's store is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "killed the bear that raided the Sunfields hives",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "honey",
+          "quantity": 1,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The bee garth bear is dead.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_disa_fogford",
+          "id": "bg_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Big as a cart, it was. The beekeeper wants the hide for the garth door. I'd rather the hives back."
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_southmeadow_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_southmeadow_day"
+            },
+            "op": "<=",
+            "right": 15
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 8,
+            "purse": "town:southmeadow",
+            "reason": "the Sunfields hives thank you",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_southmeadow_day",
+           "value": 8
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Southmeadow's store is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "led a bear off from the Sunfields hives without a drop of blood",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The bee garth bear was led off with honey.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_disa_fogford",
+          "id": "bg_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Quiet night, not a hive touched. Somewhere past the pits a bear's sniffing the alders for honey and thinking himself clever. Let him."
+         }
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_southmeadow",
+       "value": 8
+      }
+     ]
+    },
+    {
+     "id": "q13-town",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-bee-garth-bear"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "bg_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_bear_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_bear_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_bear_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_bear_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "southmeadow",
+            "text": "The bear that raided the Sunfields Bee Garth is dead, and the hives are humming again. Honey will be at the market by the next Restday.",
+            "days": 7,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "bg_pick"
+          },
+          "op": "=",
+          "right": "b"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_bear_b",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_bear_b"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_bear_b"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_bear_b"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "southmeadow",
+              "text": "The Sunfields bear was led off on a honey trail to the far woods past the clay pits. Walkers by the Sallow pits: go in daylight, and in company.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q14-accept",
+     "on": "quest started",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-vineyard-cellar"
+     },
+     "actions": [
+      {
+       "do": "set",
+       "var": "vc_pick",
+       "value": ""
+      },
+      {
+       "do": "turn off",
+       "var": "vc_spawned"
+      }
+     ]
+    },
+    {
+     "id": "q14-road",
+     "on": "region entered",
+     "audience": "participant",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-vineyard-cellar",
+        "status": "active"
+       },
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "field": "target"
+            },
+            "op": "=",
+            "right": "vc_door"
+           },
+           {
+            "test": "hour between",
+            "from": 20,
+            "to": 4
+           },
+           {
+            "test": "not",
+            "condition": {
+             "test": "objective is",
+             "quest": "mq-vineyard-cellar",
+             "objective": "cellar",
+             "status": "done"
+            }
+           }
+          ]
+         },
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "field": "target"
+            },
+            "op": "=",
+            "right": "vc_camp"
+           },
+           {
+            "test": "objective is",
+            "quest": "mq-vineyard-cellar",
+            "objective": "briar",
+            "status": "done"
+           },
+           {
+            "test": "switch",
+            "var": "vc_spawned",
+            "is": false
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "note": "The press house and its cellar are locked to wolves: the watch is kept at the door. Then the road camp (P-B).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "target"
+        },
+        "op": "=",
+        "right": "vc_door"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-vineyard-cellar",
+          "objective": "cellar",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Near midnight a cart creaks away from the press with no lamp, west toward the road. Whoever let it in has a key.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.ping",
+          "cell": "w_ridgemere_9_12",
+          "x": 98,
+          "y": 104,
+          "player": "$actor",
+          "label": "the press house door",
+          "minutes": 60,
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-vineyard-cellar",
+          "objective": "track",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "party size",
+          "op": ">=",
+          "value": 3
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "vc_camp",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "party size",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "vc_camp",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "vc_camp",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "turn on",
+         "var": "spawned_vc_camp"
+        },
+        {
+         "do": "turn on",
+         "var": "vc_spawned"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q14-progress",
+     "on": "objective completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-vineyard-cellar"
+     },
+     "note": "The camp found; the casks left by the fire once the thieves run; home: the choice.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "briar"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The cart ruts run west from the press to the road, where a rough camp sits.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.ping",
+          "cell": "w_ridgemere_7_12",
+          "x": 120,
+          "y": 107,
+          "player": "$actor",
+          "label": "the cart ruts lead here",
+          "minutes": 60,
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "fight"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.place",
+            "item": "wine",
+            "quantity": 2,
+            "cell": "w_ridgemere_7_12",
+            "x": 118,
+            "y": 107,
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "By the thieves' fire stand two good casks, and a pile of empty ones with the press house's chalk on them: the sour ones, sold out of the back door.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "home"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "tn_oh_harl_oakbough",
+            "id": "vc_truth",
+            "player": "$actor",
+            "once": true,
+            "words": "The cellar hand sold them the spoiled casks. They came back for the good ones.",
+            "reply": "Spoiled casks, out the back door. #oath#. Half a theft, and half a kindness to the road. I'll tell the vine-keeper the whole of it, and I'll tell her it's no worse than it is."
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "tn_oh_harl_oakbough",
+            "id": "vc_spare",
+            "player": "$actor",
+            "once": true,
+            "words": "It was the road wolves, start to finish.",
+            "reply": "The road lot, start to finish. I'll take your word, since I've no better. Ripe enough. Only, I'll be sitting up in that cellar myself a night or two."
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q14-choice",
+     "on": "dialogue choice",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-vineyard-cellar",
+      "status": "active"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "vc_truth"
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "vc_pick",
+         "value": "a"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-vineyard-cellar",
+          "objective": "choose",
+          "player": "$actor"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "vc_spare"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "vc_pick",
+           "value": "b"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-vineyard-cellar",
+            "objective": "choose",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q14-camp",
+     "on": "camp cleared",
+     "match": {
+      "cell": "w_ridgemere_7_12"
+     },
+     "if": {
+      "test": "switch",
+      "var": "spawned_vc_camp",
+      "is": true
+     },
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "spawned_vc_camp"
+      }
+     ]
+    },
+    {
+     "id": "q14-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-vineyard-cellar"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_southmeadow_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_southmeadow_day"
+          },
+          "op": "<=",
+          "right": 13
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 10,
+          "purse": "town:southmeadow",
+          "reason": "the Southmeadow press thanks you",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_southmeadow_day",
+         "value": 10
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Southmeadow's store is thin today. You were paid in bread.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "vc_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "found out who let the road wolves into the Southmeadow cellar",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The vine hand knows who opened the cellar door.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_oh_harl_oakbough",
+          "id": "vc_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "She's scrubbing every cask in the cellar for a month, and she's not said a word to me. Fair. I'd not say one to me either."
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "won back the Southmeadow casks from the road wolves",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The Southmeadow casks are home from the road camp.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_oh_harl_oakbough",
+          "id": "vc_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "I gave the cellar hand a smooth stone, for the press house being wrong about her. She looked at me very oddly, eh."
+         }
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_southmeadow",
+       "value": 8
+      },
+      {
+       "do": "subtract",
+       "var": "nh_threat",
+       "value": 2
+      },
+      {
+       "do": "clamp",
+       "var": "nh_threat",
+       "min": 0,
+       "max": 100
+      }
+     ]
+    },
+    {
+     "id": "q14-town",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-vineyard-cellar"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "vc_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_casks_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_casks_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_casks_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_casks_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "southmeadow",
+            "text": "The press cellar at Southmeadow is locked at dusk from now on. Spoiled casks go to the vinegar house, not out of the back door. The cellar hand is scrubbing barrels till harvest.",
+            "days": 7,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "vc_pick"
+          },
+          "op": "=",
+          "right": "b"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_casks_b",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_casks_b"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_casks_b"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_casks_b"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "southmeadow",
+              "text": "The Southmeadow casks are home from the road camp on the cart road. The vine hand sits up in the cellar some nights now. Thieves, take note.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q15-accept",
+     "on": "quest accepted",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-withy-lights"
+     },
+     "note": "Once the fen lights are laid (campaign Ch 6) the creek is dark: C6 requires later.",
+     "actions": [
+      {
+       "do": "set",
+       "var": "wl_pick",
+       "value": ""
+      },
+      {
+       "do": "turn off",
+       "var": "wl_placed"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "nh_b_lights"
+        },
+        "op": "=",
+        "right": "laid"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "quest.fail",
+          "quest": "mq-withy-lights",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Withy Creek is dark now. Whatever carried the lights has gone, and the salt raker sleeps.",
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "weather.set",
+          "place": "w_ridgemere_4_13",
+          "weather": "fog",
+          "hours": 8,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q15-reeds",
+     "on": "region entered",
+     "audience": "participant",
+     "match": {
+      "target": "wl_reeds"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-withy-lights",
+        "status": "active"
+       },
+       {
+        "test": "hour between",
+        "from": 20,
+        "to": 4
+       },
+       {
+        "test": "objective is",
+        "quest": "mq-withy-lights",
+        "objective": "fowler",
+        "status": "done"
+       },
+       {
+        "test": "switch",
+        "var": "wl_placed",
+        "is": false
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "mq-withy-lights",
+        "objective": "lights",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.place",
+        "item": "oil_lamp",
+        "quantity": 1,
+        "cell": "w_ridgemere_4_13",
+        "x": 46,
+        "y": 108,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.ping",
+        "cell": "w_ridgemere_4_13",
+        "x": 46,
+        "y": 108,
+        "player": "$actor",
+        "label": "a light in the reeds",
+        "minutes": 30,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "wl_placed"
+      }
+     ]
+    },
+    {
+     "id": "q15-progress",
+     "on": "objective completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-withy-lights",
+      "item": "lamp"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_mb_iris_pikeford",
+        "id": "wl_lamps",
+        "player": "$actor",
+        "once": true,
+        "words": "They're lamps. Somebody set float lamps in the reeds.",
+        "reply": "Lamps? #oath#. Then who's carrying them, and why on our creek? That's worse, no? The drowned at least stay put."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_mb_iris_pikeford",
+        "id": "wl_words",
+        "player": "$actor",
+        "once": true,
+        "words": "I said the words. They're quiet now.",
+        "reply": "Fen-sure? Then I'll light a candle for them tonight, and sleep. You're a kind liar or a brave one. I'll not ask which."
+       }
+      }
+     ]
+    },
+    {
+     "id": "q15-choice",
+     "on": "dialogue choice",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-withy-lights",
+      "status": "active"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "wl_lamps"
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "wl_pick",
+         "value": "a"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-withy-lights",
+          "objective": "choose",
+          "player": "$actor"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "wl_words"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "wl_pick",
+           "value": "b"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-withy-lights",
+            "objective": "choose",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q15-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-withy-lights"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_fenshore_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_fenshore_day"
+          },
+          "op": "<=",
+          "right": 13
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 8,
+          "purse": "town:fenshore",
+          "reason": "Fenside Salterns thanks you",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_fenshore_day",
+         "value": 8
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Fenshore's store is thin today. You were paid in bread.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "wl_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "brought a fen float lamp out of Withy Creek",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": ">=",
+            "right": 6
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_b_lights"
+            },
+            "op": "=",
+            "right": ""
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "The lights on Withy Creek were float lamps, the same as the ones the city talks of. Somebody's whole company moves by them.",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "tn_mb_iris_pikeford",
+            "id": "wl_since",
+            "player": "$actor",
+            "once": true,
+            "words": "How has it gone, since?",
+            "reply": "Lamps on our creek. Nobody at the Heron's laughing about the drowned now. They're counting boats."
+           }
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "The lights on Withy Creek were float lamps.",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "tn_mb_iris_pikeford",
+            "id": "wl_since",
+            "player": "$actor",
+            "once": true,
+            "words": "How has it gone, since?",
+            "reply": "Lamps on our creek. Nobody at the Heron's laughing about the drowned now. They're counting boats."
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "said the old words to the lights on Withy Creek",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "candle_tallow",
+          "quantity": 1,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The old words were said over Withy Creek.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_mb_iris_pikeford",
+          "id": "wl_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "The creek's dark tonight. I lit my candle. Dry feet to you, and to them."
+         }
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_fenshore",
+       "value": 8
+      }
+     ]
+    },
+    {
+     "id": "q15-town",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-withy-lights"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "wl_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_lights_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_lights_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_lights_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_lights_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "fenshore",
+            "text": "The lights on Withy Creek are float lamps set in the reeds, not the drowned. Fen folk: if you see one lit, tell the Watch Post, and count the boats.",
+            "days": 7,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "wl_pick"
+          },
+          "op": "=",
+          "right": "b"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_lights_b",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_lights_b"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_lights_b"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_lights_b"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "fenshore",
+              "text": "The old words have been said over Withy Creek, and the creek is dark at night. Candles for the drowned may be left at the eel house door.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q16-accept",
+     "on": "quest started",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-potters-place"
+     },
+     "actions": [
+      {
+       "do": "set",
+       "var": "pp_pick",
+       "value": ""
+      }
+     ]
+    },
+    {
+     "id": "q16-yard",
+     "on": "enter place",
+     "audience": "participant",
+     "match": {
+      "target": "cn_fenshore_pottery"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-potters-place",
+        "status": "active"
+       },
+       {
+        "test": "objective is",
+        "quest": "mq-potters-place",
+        "objective": "heron",
+        "status": "done"
+       },
+       {
+        "test": "objective is",
+        "quest": "mq-potters-place",
+        "objective": "ludo",
+        "status": "done"
+       },
+       {
+        "test": "objective is",
+        "quest": "mq-potters-place",
+        "objective": "clay",
+        "status": "done"
+       },
+       {
+        "test": "not",
+        "condition": {
+         "test": "objective is",
+         "quest": "mq-potters-place",
+         "objective": "yard",
+         "status": "done"
+        }
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "mq-potters-place",
+        "objective": "yard",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "scene.play",
+        "scene": "pp_kiln",
+        "player": "$actor",
+        "cue": "pp_kiln",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "id": "q16-scene",
+     "on": "scene choice",
+     "audience": "participant",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-potters-place",
+        "status": "active"
+       },
+       {
+        "test": "objective is",
+        "quest": "mq-potters-place",
+        "objective": "yard",
+        "status": "done"
+       },
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "pp_kiln.share"
+         },
+         {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "pp_kiln.rule"
+         }
+        ]
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "pp_kiln.share"
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "pp_pick",
+         "value": "share"
+        }
+       ],
+       "else": [
+        {
+         "do": "set",
+         "var": "pp_pick",
+         "value": "rule"
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "mq-potters-place",
+        "objective": "choose",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "q16-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-potters-place"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_fenshore_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_fenshore_day"
+          },
+          "op": "<=",
+          "right": 13
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 8,
+          "purse": "town:fenshore",
+          "reason": "the Fenshore Kilns thank you",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_fenshore_day",
+         "value": 8
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Fenshore's store is thin today. You were paid in bread.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "pp_pick"
+        },
+        "op": "=",
+        "right": "share"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "talked the Fenshore kiln into two pairs of paws",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The Fenshore wheel is shared.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_sm_bram_harvestgarth",
+          "id": "pp_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "He takes the mornings, I take the firing. His pots lean. Mine don't. We'll see who teaches who."
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "stood up for the new Fenshore potter",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The new potter keeps the wheel, and the kiln hand teaches him.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_sm_bram_harvestgarth",
+          "id": "pp_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "He's learning. Slowly. Put his paw in the slip like a tadpole in mud. I may even like him by the harvest dance."
+         }
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "If this one stays with you, it would make a Story of two scenes: the empty post, and what you said in the kiln yard.",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_fenshore",
+       "value": 8
+      }
+     ]
+    },
+    {
+     "id": "q16-town",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-potters-place"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "pp_pick"
+        },
+        "op": "=",
+        "right": "share"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_kiln_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_kiln_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_kiln_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_kiln_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "fenshore",
+            "text": "Two potters share the one wheel at the Fenshore Kilns: mornings for the new one, the firing for the old hand. Orders as before.",
+            "days": 7,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "pp_pick"
+          },
+          "op": "=",
+          "right": "rule"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_kiln_b",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_kiln_b"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_kiln_b"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_kiln_b"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "fenshore",
+              "text": "The new potter keeps the Fenshore wheel, and the kiln hand is teaching him the fen clay. Bear with a leaning pot or two.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q17-accept",
+     "on": "quest accepted",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-lost-raker"
+     },
+     "note": "The storm, the raker out on the far pans, a waterskin (once a week a wolf: a copy put aside and taken again gives no second one).",
+     "actions": [
+      {
+       "do": "set",
+       "var": "lr_pick",
+       "value": ""
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "mq_raker_posted",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "board.post",
+          "town": "saltwell",
+          "text": "Someone is already out on the pans after the raker. The eel trapper at the Saltpan has names that want carrying, for any who ask.",
+          "days": 1,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "mq_raker_posted"
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "weather.set",
+        "place": "w_ridgemere_13_12",
+        "weather": "sandstorm",
+        "hours": 4,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.move",
+        "npc": "tn_mb_ridge_eelbank",
+        "cell": "w_ridgemere_13_12",
+        "x": 60,
+        "y": 200,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.hold",
+        "npc": "tn_mb_ridge_eelbank",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "not",
+        "condition": {
+         "test": "timer",
+         "signal": "lr_stock",
+         "owner": "player"
+        }
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "waterskin",
+          "quantity": 1,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "schedule",
+         "signal": "lr_stock",
+         "days": 7,
+         "owner": "player",
+         "scope": "campaign"
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.ping",
+        "cell": "w_ridgemere_13_12",
+        "x": 60,
+        "y": 200,
+        "player": "$actor",
+        "label": "the far pans",
+        "minutes": 60,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "schedule",
+       "signal": "lr_late",
+       "days": 0.95,
+       "owner": "player",
+       "scope": "campaign"
+      }
+     ]
+    },
+    {
+     "id": "q17-stock",
+     "on": "story signal",
+     "signal": "lr_stock",
+     "actions": [
+      {
+       "do": "note",
+       "text": "A week on: the store may give this wolf a waterskin again."
+      }
+     ]
+    },
+    {
+     "id": "q17-near",
+     "on": "near resident",
+     "audience": "participant",
+     "match": {
+      "target": "tn_mb_ridge_eelbank"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-lost-raker",
+        "status": "active"
+       },
+       {
+        "test": "not",
+        "condition": {
+         "test": "objective is",
+         "quest": "mq-lost-raker",
+         "objective": "find",
+         "status": "done"
+        }
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "mq-lost-raker",
+        "objective": "find",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.follow",
+        "player": "$actor",
+        "npc": "tn_mb_ridge_eelbank",
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "nh_stage"
+        },
+        "op": ">=",
+        "right": 3
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_mb_ridge_eelbank",
+          "id": "lr_why",
+          "player": "$actor",
+          "once": true,
+          "words": "There are no rakes out here. What were you doing?",
+          "reply": "Mirage-talk, all of it. No. A sack of our salt, for a Waste Road wagon. Wolves in grey on the Waste Road pay double now salt is short, and I owe more than I earn. Truly, I am ashamed."
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_mb_ridge_eelbank",
+          "id": "lr_why",
+          "player": "$actor",
+          "once": true,
+          "words": "There are no rakes out here. What were you doing?",
+          "reply": "Mirage-talk, all of it. No. A sack of our salt, for a Waste Road wagon. They pay double now salt is short, and I owe more than I earn. Truly, I am ashamed."
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q17-water",
+     "on": "gift",
+     "audience": "participant",
+     "match": {
+      "target": "tn_mb_ridge_eelbank"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-lost-raker",
+        "status": "active"
+       },
+       {
+        "test": "objective is",
+        "quest": "mq-lost-raker",
+        "objective": "find",
+        "status": "done"
+       },
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "waterskin"
+         },
+         {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "water"
+         }
+        ]
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "mq-lost-raker",
+        "objective": "water",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "q17-store",
+     "on": "region entered",
+     "audience": "participant",
+     "match": {
+      "target": "lr_store"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-lost-raker",
+        "status": "active"
+       },
+       {
+        "test": "objective is",
+        "quest": "mq-lost-raker",
+        "objective": "water",
+        "status": "done"
+       },
+       {
+        "test": "resident in region",
+        "npc": "tn_mb_ridge_eelbank",
+        "region": "lr_store"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "mq-lost-raker",
+        "objective": "back",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.unfollow",
+        "npc": "tn_mb_ridge_eelbank",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "tn_mb_ridge_eelbank",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "id": "q17-choice",
+     "on": "dialogue choice",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-lost-raker",
+      "status": "active"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "lr_why"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_mb_ridge_eelbank",
+          "id": "lr_tell",
+          "player": "$actor",
+          "once": true,
+          "words": "Tell Fern yourself, or I will.",
+          "reply": "Then I'll tell her. Better from my mouth than the wind's. She'll be brackish with me for a month."
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_mb_ridge_eelbank",
+          "id": "lr_keep",
+          "player": "$actor",
+          "once": true,
+          "words": "It stays between us. Don't do it again.",
+          "reply": "Between us. May your well never fail. I'll not carry another sack, on bread and salt."
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "lr_tell"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "lr_pick",
+           "value": "a"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-lost-raker",
+            "objective": "choose",
+            "player": "$actor"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "lr_keep"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "lr_pick",
+           "value": "b"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-lost-raker",
+            "objective": "choose",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q17-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-lost-raker"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_saltwell_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_saltwell_day"
+          },
+          "op": "<=",
+          "right": 12
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 10,
+          "purse": "town:saltwell",
+          "reason": "the Saltpan thanks you",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_saltwell_day",
+         "value": 10
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Saltwell's store is thin today. You were paid in bread.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "brought a lost salt raker in out of the sandstorm",
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "lr_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The raker told his workmate himself.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_fern_merewick",
+          "id": "lr_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "He told me. A sack for a wagon. I could spit. But he told me, and that's more than most would."
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The raker's secret is kept.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_fern_merewick",
+          "id": "lr_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "He's quiet since. Rakes harder than he did. Whatever the wind said to him out there, it took."
+         }
+        }
+       ]
+      },
+      {
+       "do": "turn off",
+       "var": "mq_raker_posted"
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_saltwell",
+       "value": 8
+      }
+     ]
+    },
+    {
+     "id": "q17-late",
+     "on": "story signal",
+     "signal": "lr_late",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-lost-raker",
+      "status": "active"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "mq-lost-raker",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.unfollow",
+        "npc": "tn_mb_ridge_eelbank",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "tn_mb_ridge_eelbank",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn off",
+       "var": "mq_raker_posted"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The storm let the raker go, and he walked home.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "id": "q17-abandon",
+     "on": "quest abandoned",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-lost-raker"
+     },
+     "if": {
+      "test": "quest is",
+      "quest": "mq-lost-raker",
+      "status": "abandoned"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.unfollow",
+        "npc": "tn_mb_ridge_eelbank",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "tn_mb_ridge_eelbank",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn off",
+       "var": "mq_raker_posted"
+      }
+     ]
+    },
+    {
+     "id": "q17-town",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-lost-raker"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "lr_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_raker_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_raker_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_raker_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_raker_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "saltwell",
+            "text": "A raker of the Saltpan has owned to selling the pans' salt to a Waste Road wagon. He will make it good. Buyers: Saltpan salt is sold at the store, and nowhere else.",
+            "days": 7,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "lr_pick"
+          },
+          "op": "=",
+          "right": "b"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_raker_b",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_raker_b"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_raker_b"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_raker_b"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "saltwell",
+              "text": "A salt raker came in out of the sandstorm with a stranger's paw on his shoulder. In a salt wind, walk with the sun on your left, and the pans will bring you home.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q18-accept",
+     "on": "quest accepted",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-waste-road-salt"
+     },
+     "note": "Read only: once the Salt Road line has broken the buyer (board or cart), the wash is quiet.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "lq_salt"
+          },
+          "op": "=",
+          "right": "board"
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "lq_salt"
+          },
+          "op": "=",
+          "right": "cart"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "ws_pick",
+         "value": "quiet"
+        }
+       ],
+       "else": [
+        {
+         "do": "set",
+         "var": "ws_pick",
+         "value": ""
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "mq_salt_posted",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "board.post",
+          "town": "southmeadow",
+          "text": "The salt carter's away to the wash with a wolf already. The bee garth wants help, mind, and the press cellar.",
+          "days": 1,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "mq_salt_posted"
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.move",
+        "npc": "cty_tor_chalkfield",
+        "cell": "w_ridgemere_11_12",
+        "x": 163,
+        "y": 160,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.hold",
+        "npc": "cty_tor_chalkfield",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.ping",
+        "cell": "w_ridgemere_11_12",
+        "x": 163,
+        "y": 160,
+        "player": "$actor",
+        "label": "the dry wash",
+        "minutes": 60,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "schedule",
+       "signal": "ws_late",
+       "days": 0.95,
+       "owner": "player",
+       "scope": "campaign"
+      }
+     ]
+    },
+    {
+     "id": "q18-wash",
+     "on": "region entered",
+     "audience": "participant",
+     "match": {
+      "target": "ws_wash"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-waste-road-salt",
+        "status": "active"
+       },
+       {
+        "test": "not",
+        "condition": {
+         "test": "objective is",
+         "quest": "mq-waste-road-salt",
+         "objective": "meet",
+         "status": "done"
+        }
+       },
+       {
+        "test": "resident in region",
+        "npc": "cty_tor_chalkfield",
+        "region": "ws_wash"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "mq-waste-road-salt",
+        "objective": "meet",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "ws_pick"
+        },
+        "op": "=",
+        "right": "quiet"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-waste-road-salt",
+          "objective": "deal",
+          "player": "$actor"
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "if",
+         "if": {
+          "test": "party size",
+          "op": ">=",
+          "value": 3
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "ws_wash",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "party size",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "ws_wash",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "ws_wash",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "turn on",
+         "var": "spawned_ws_wash"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q18-paid",
+     "on": "paid off bandits",
+     "audience": "participant",
+     "match": {
+      "cell": "w_ridgemere_11_12"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-waste-road-salt",
+        "status": "active"
+       },
+       {
+        "test": "objective is",
+        "quest": "mq-waste-road-salt",
+        "objective": "meet",
+        "status": "done"
+       },
+       {
+        "test": "not",
+        "condition": {
+         "test": "objective is",
+         "quest": "mq-waste-road-salt",
+         "objective": "deal",
+         "status": "done"
+        }
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "set",
+       "var": "ws_pick",
+       "value": "paid"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "mq-waste-road-salt",
+        "objective": "deal",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "q18-progress",
+     "on": "objective completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-waste-road-salt"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "fight"
+         },
+         {
+          "test": "not",
+          "condition": {
+           "test": "objective is",
+           "quest": "mq-waste-road-salt",
+           "objective": "deal",
+           "status": "done"
+          }
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "ws_pick",
+         "value": "fought"
+        },
+        {
+         "do": "subtract",
+         "var": "nh_threat",
+         "value": 2
+        },
+        {
+         "do": "clamp",
+         "var": "nh_threat",
+         "min": 0,
+         "max": 100
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-waste-road-salt",
+          "objective": "deal",
+          "player": "$actor"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "deal"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.walk",
+            "npc": "cty_tor_chalkfield",
+            "cell": "w_ridgemere_8_13",
+            "x": 100,
+            "y": 20,
+            "pace": "walk",
+            "cue": "ws_in",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q18-camp",
+     "on": "camp cleared",
+     "match": {
+      "cell": "w_ridgemere_11_12"
+     },
+     "if": {
+      "test": "switch",
+      "var": "spawned_ws_wash",
+      "is": true
+     },
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "spawned_ws_wash"
+      }
+     ]
+    },
+    {
+     "id": "q18-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-waste-road-salt"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "ws_pick"
+        },
+        "op": "=",
+        "right": "paid"
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_southmeadow_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_southmeadow_day"
+            },
+            "op": "<=",
+            "right": 17
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 6,
+            "purse": "town:southmeadow",
+            "reason": "part of the toll back",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_southmeadow_day",
+           "value": 6
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Southmeadow's store is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "paid the road wolves' toll to get Southmeadow's salt home",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_tor_chalkfield",
+          "id": "ws_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "They took the coin and laughed. We got through. Next time it'll be more. It's always more, eh."
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "ws_pick"
+          },
+          "op": "=",
+          "right": "fought"
+         },
+         "then": [
+          {
+           "do": "if",
+           "if": {
+            "test": "all",
+            "conditions": [
+             {
+              "test": "switch",
+              "var": "coin_southmeadow_ok",
+              "is": true
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "coin_southmeadow_day"
+              },
+              "op": "<=",
+              "right": 11
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "character.grant",
+              "player": "$actor",
+              "coins": 12,
+              "purse": "town:southmeadow",
+              "reason": "the salt came home untolled",
+              "ifRefused": "skip"
+             }
+            },
+            {
+             "do": "add",
+             "var": "coin_southmeadow_day",
+             "value": 12
+            }
+           ],
+           "else": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "item.give",
+              "player": "$actor",
+              "item": "bread",
+              "quantity": 2,
+              "ifRefused": "when here"
+             }
+            },
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "journal.note",
+              "player": "$actor",
+              "text": "Southmeadow's store is thin today. You were paid in bread.",
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "deed.award",
+            "player": "$actor",
+            "detail": "broke a road toll on the Waste Road",
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "cty_tor_chalkfield",
+            "id": "ws_since",
+            "player": "$actor",
+            "once": true,
+            "words": "How has it gone, since?",
+            "reply": "They ran for the dunes. Sheaf and sickle, I've never seen the like. I'll drive that wash singing next time."
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_southmeadow_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_southmeadow_day"
+            },
+            "op": "<=",
+            "right": 17
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 6,
+            "purse": "town:southmeadow",
+            "reason": "the salt came home",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_southmeadow_day",
+           "value": 6
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Southmeadow's store is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "rode Southmeadow's salt home through a quiet wash",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_tor_chalkfield",
+          "id": "ws_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Not a soul in the wash. Somebody broke whoever was buying what they stole. I sang the whole way. Badly."
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q18-after",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-waste-road-salt"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "cty_tor_chalkfield",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn off",
+       "var": "mq_salt_posted"
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_southmeadow",
+       "value": 8
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "ws_pick"
+        },
+        "op": "=",
+        "right": "paid"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Southmeadow's salt is home. The toll was paid.",
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "ws_pick"
+          },
+          "op": "=",
+          "right": "fought"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Southmeadow's salt is home. The toll-takers ran.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Southmeadow's salt came home through a quiet wash.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "ws_pick"
+        },
+        "op": "=",
+        "right": "paid"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_salt_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_salt_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_salt_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_salt_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "southmeadow",
+            "text": "The salt wagon is home from Saltwell, but the toll on the dry wash was paid. Salt will be dearer by harvest. Carters crossing the Waste: go in company.",
+            "days": 7,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "ws_pick"
+          },
+          "op": "=",
+          "right": "fought"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_salt_b",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_salt_b"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_salt_b"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_salt_b"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "southmeadow",
+              "text": "The salt wagon came home across the Waste with no toll paid. The toll-takers ran for the dunes. Carters: the dry wash is safer than it was.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "ws_pick"
+          },
+          "op": "=",
+          "right": "quiet"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_salt_c",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_salt_c"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_salt_c"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_salt_c"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "southmeadow",
+              "text": "Not a soul in the dry wash: the salt wagon came home singing. Nobody buys a robbed sack now, so nobody robs one.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q18-late",
+     "on": "story signal",
+     "signal": "ws_late",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-waste-road-salt",
+      "status": "active"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "mq-waste-road-salt",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "cty_tor_chalkfield",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn off",
+       "var": "mq_salt_posted"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The carter drove home alone.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "id": "q18-abandon",
+     "on": "quest abandoned",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-waste-road-salt"
+     },
+     "if": {
+      "test": "quest is",
+      "quest": "mq-waste-road-salt",
+      "status": "abandoned"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "cty_tor_chalkfield",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn off",
+       "var": "mq_salt_posted"
+      }
+     ]
+    },
+    {
+     "id": "q19-accept",
+     "on": "quest accepted",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-crossroads-names"
+     },
+     "actions": [
+      {
+       "do": "set",
+       "var": "mx_pick",
+       "value": ""
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "paper",
+        "quantity": 1,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The eel trapper's list: forty Mirebridge names, in his own hand.",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.ping",
+        "cell": "w_ridgemere_5_11",
+        "x": 189,
+        "y": 50,
+        "player": "$actor",
+        "label": "the old Mirebridge crossroads",
+        "minutes": 60,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "resident is",
+        "npc": "tn_mb_tamsin_eelbank",
+        "state": "dead"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The old wolf at Withy Creek is gone. The mapmaker at Soundings will keep the names.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q19-cross",
+     "on": "region entered",
+     "audience": "participant",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "quest is",
+          "quest": "mq-crossroads-names",
+          "status": "active"
+         },
+         {
+          "test": "compare",
+          "left": {
+           "field": "target"
+          },
+          "op": "=",
+          "right": "mx_cross"
+         },
+         {
+          "test": "hour between",
+          "from": 18,
+          "to": 21
+         },
+         {
+          "test": "not",
+          "condition": {
+           "test": "objective is",
+           "quest": "mq-crossroads-names",
+           "objective": "cross",
+           "status": "done"
+          }
+         }
+        ]
+       },
+       {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "quest is",
+          "quest": "mq-crossroads-names",
+          "status": "active"
+         },
+         {
+          "test": "compare",
+          "left": {
+           "field": "target"
+          },
+          "op": "=",
+          "right": "mx_tamsin"
+         }
+        ]
+       }
+      ]
+     },
+     "note": "P-A: the old village said its names at dusk. The old wolf of Withy Creek never leaves her house, locked to wolves: she answers at her door, in a scene.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "target"
+        },
+        "op": "=",
+        "right": "mx_cross"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-crossroads-names",
+          "objective": "cross",
+          "player": "$actor"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "objective is",
+            "quest": "mq-crossroads-names",
+            "objective": "cross",
+            "status": "done"
+           },
+           {
+            "test": "not",
+            "condition": {
+             "test": "objective is",
+             "quest": "mq-crossroads-names",
+             "objective": "keep",
+             "status": "done"
+            }
+           },
+           {
+            "test": "resident is",
+            "npc": "tn_mb_tamsin_eelbank",
+            "state": "alive"
+           },
+           {
+            "test": "carries",
+            "op": ">=",
+            "value": 1,
+            "item": "paper"
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "mx_pick",
+           "value": "b"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "scene.play",
+            "scene": "mx_tamsin",
+            "player": "$actor",
+            "cue": "mx_tamsin",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-crossroads-names",
+            "objective": "keep",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q19-keep",
+     "on": "gift",
+     "audience": "participant",
+     "match": {
+      "item": "paper",
+      "target": "rm_imogen_nailridge"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-crossroads-names",
+        "status": "active"
+       },
+       {
+        "test": "objective is",
+        "quest": "mq-crossroads-names",
+        "objective": "cross",
+        "status": "done"
+       },
+       {
+        "test": "not",
+        "condition": {
+         "test": "objective is",
+         "quest": "mq-crossroads-names",
+         "objective": "keep",
+         "status": "done"
+        }
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "set",
+       "var": "mx_pick",
+       "value": "a"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "mq-crossroads-names",
+        "objective": "keep",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "q19-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-crossroads-names"
+     },
+     "note": "The hardest voice to raise; the Book of Names while the campaign is at stages 4 to 6.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_saltwell_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_saltwell_day"
+          },
+          "op": "<=",
+          "right": 14
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 8,
+          "purse": "town:saltwell",
+          "reason": "the Saltpan thanks you",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_saltwell_day",
+         "value": 8
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Saltwell's store is thin today. You were paid in bread.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "mx_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "carried the Mirebridge names to the city's mapmaker",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The Mirebridge names are with the city's mapmaker.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_mb_kite_bogditch",
+          "id": "mx_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "The mapmaker has them? Then they are on the realm's map, if only in ink. May your well never fail, my friend."
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "gave the Mirebridge names back to Mirebridge folk",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The Mirebridge names are with the old wolf at Withy Creek.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_mb_kite_bogditch",
+          "id": "mx_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "The old one at Withy Creek has them? Good. Mirebridge keeps its own. By salt and water, I can sleep."
+         }
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 4
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": "<=",
+          "right": 6
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "nh_names",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_mirebridge",
+       "value": 8
+      }
+     ]
+    },
+    {
+     "id": "q19-town",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-crossroads-names"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "mx_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_names_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_names_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_names_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_names_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "ridgemere",
+            "days": 7,
+            "text": "The mapmaker at Soundings keeps a list of Mirebridge names, brought up from the crossroads where the village stood. A village on the realm's map again, in ink.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "add",
+         "var": "mq_names_b",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_names_b"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_names_b"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_names_b"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "fenshore",
+            "days": 7,
+            "text": "The Mirebridge names were said at the crossroads at dusk and given back to the old wolf on Withy Creek. Mirebridge keeps its own. Dry feet to them.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "quests": [
+  {
+   "id": "mq-bee-garth-bear",
+   "title": "The Bear in the Bee Garth",
+   "summary": "A bear has torn open four hives at the Sunfields Bee Garth in two nights and will be back for the rest. Kill it, or lead it off with honey to the far woods past the clay pits.",
+   "giver": "cty_disa_fogford",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 3
+   },
+   "fail": [
+    {
+     "afterDays": 2
+    }
+   ],
+   "offer": {
+    "ask": "Trouble with the bees?",
+    "say": "#greet#. Not with the bees. With what wants their honey. A bear's torn four hives open in two nights, and it'll be back for the rest, full sure. Look at the garth. Then tell me: do we kill it, or lead it off where there's nothing worth tearing?",
+    "accept": "I'll look at the garth.",
+    "decline": "Bears are beyond me.",
+    "handIn": "The bear won't trouble the hives.",
+    "thanks": "#thanks#. The bees will settle in a day or two. They hold a grudge longer than the beekeeper does, eh."
+   },
+   "objectives": [
+    {
+     "id": "hives",
+     "label": "Look at the torn hives in the garth.",
+     "on": "region entered",
+     "match": {
+      "target": "bg_garth"
+     }
+    },
+    {
+     "id": "choose",
+     "label": "Decide: kill the bear, or lead it off.",
+     "on": "story signal",
+     "signal": "bg_chose",
+     "after": [
+      "hives"
+     ]
+    },
+    {
+     "id": "kill",
+     "label": "Hunt down the bear in the wood west of the garth. Go as a party.",
+     "on": "hunted",
+     "match": {
+      "target": "bear",
+      "cell": "w_ridgemere_7_12"
+     },
+     "after": [
+      "choose"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "comb",
+     "label": "Walk the smell of honey from the garth out to the far woods past the clay pits.",
+     "on": "story signal",
+     "signal": "bg_c",
+     "after": [
+      "choose"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "quiet",
+     "label": "Sit a night in the garth to be sure the bear has learned.",
+     "on": "story signal",
+     "signal": "bg_q",
+     "after": [
+      "comb"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "done",
+     "label": "The hives are safe.",
+     "on": "story signal",
+     "signal": "bg_d",
+     "after": [
+      "choose"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    }
+   ]
+  },
+  {
+   "id": "mq-vineyard-cellar",
+   "title": "Casks Gone Walking",
+   "summary": "Casks walk out of the Southmeadow press cellar at night, and the press house mutters about the cellar hand. The vine hand will not say what he cannot prove. Prove it.",
+   "giver": "tn_oh_harl_oakbough",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 3
+   },
+   "fail": [
+    {
+     "afterDays": 2
+    }
+   ],
+   "offer": {
+    "ask": "Something missing?",
+    "say": "#greet#. Casks. Three this week, walked out of the cellar by night. The press house says it's the cellar hand, the sly one. Maybe. I'll not say a thing I can't prove, full sure. Watch the press door after dark. Find where they go, and bring them back. Then we'll know.",
+    "accept": "I'll watch the cellar.",
+    "decline": "Not my vines.",
+    "handIn": "The casks are back.",
+    "thanks": "#thanks#. Two good casks home. I'll set a smooth stone on each lid, so I know them. I've a pocketful. The river keeps giving."
+   },
+   "objectives": [
+    {
+     "id": "cellar",
+     "label": "Keep watch on the Southmeadow press house door after dark.",
+     "on": "story signal",
+     "signal": "vc_c"
+    },
+    {
+     "id": "briar",
+     "label": "Ask the cellar hand what she knows. She walks to the press at first light.",
+     "on": "conversation",
+     "match": {
+      "target": "cty_briar_cornby"
+     },
+     "after": [
+      "cellar"
+     ]
+    },
+    {
+     "id": "track",
+     "label": "Follow the cask-cart ruts to the road camp.",
+     "on": "story signal",
+     "signal": "vc_t",
+     "after": [
+      "briar"
+     ]
+    },
+    {
+     "id": "fight",
+     "label": "Drive off the cask thieves.",
+     "on": "bandit falls",
+     "match": {
+      "cell": "w_ridgemere_7_12"
+     },
+     "goal": 2,
+     "after": [
+      "track"
+     ]
+    },
+    {
+     "id": "casks",
+     "label": "Pick up the casks the thieves left by their fire.",
+     "on": "item picked up",
+     "match": {
+      "item": "wine"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "after": [
+      "fight"
+     ]
+    },
+    {
+     "id": "home",
+     "label": "Bring the casks home to the vine hand.",
+     "on": "gift",
+     "match": {
+      "target": "tn_oh_harl_oakbough",
+      "item": "wine"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "after": [
+      "casks"
+     ]
+    },
+    {
+     "id": "choose",
+     "label": "Decide what to tell the vine hand about the cellar hand.",
+     "on": "story signal",
+     "signal": "vc_chose",
+     "after": [
+      "home"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    }
+   ]
+  },
+  {
+   "id": "mq-withy-lights",
+   "title": "Lights over Withy Creek",
+   "summary": "Lights are walking over Withy Creek again in the fog. The salt raker wants someone to say the old words to them, so the drowned lie quiet. The fowler swears one of them smelled of eel oil.",
+   "giver": "tn_mb_iris_pikeford",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 3
+   },
+   "fail": [
+    {
+     "afterDays": 2
+    }
+   ],
+   "offer": {
+    "ask": "You look like you've seen something in the fog.",
+    "say": "#greet#. Seen it every night this week. Lights, walking over Withy Creek, low on the reeds. The drowned, no? My gran said you go out and say the old words, and they lie quiet. The fowler on the creek swears one stank of eel oil. Ask him, then go and see.",
+    "accept": "I'll ask the fowler, then go out.",
+    "decline": "I'll not go near the drowned.",
+    "handIn": "I've been out to the lights.",
+    "thanks": "#thanks#. Mud and eels, you went out in that. My gran'd have given you her good boots. I've no boots, but here."
+   },
+   "objectives": [
+    {
+     "id": "fowler",
+     "label": "Ask the Withy Creek fowler what he saw.",
+     "on": "conversation",
+     "match": {
+      "target": "tn_mb_nab_bogditch"
+     }
+    },
+    {
+     "id": "lights",
+     "label": "Go out into the Withy Creek reeds after dark and find a light.",
+     "on": "story signal",
+     "signal": "wl_l",
+     "after": [
+      "fowler"
+     ]
+    },
+    {
+     "id": "lamp",
+     "label": "Take what's floating there.",
+     "on": "item picked up",
+     "match": {
+      "item": "oil_lamp"
+     },
+     "after": [
+      "lights"
+     ]
+    },
+    {
+     "id": "choose",
+     "label": "Decide what the salt raker should hear.",
+     "on": "story signal",
+     "signal": "wl_chose",
+     "after": [
+      "lamp"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    }
+   ]
+  },
+  {
+   "id": "mq-potters-place",
+   "title": "The Potter's Place",
+   "summary": "When the Fenshore potter died, her wheel went to an Oakhaven wolf nobody here had heard of. The kiln hand fired her kiln nine years and was never asked. Find out how it happened, and say whether it was fair.",
+   "giver": "tn_sm_bram_harvestgarth",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 6
+   },
+   "fail": [
+    {
+     "afterDays": 2
+    }
+   ],
+   "offer": {
+    "ask": "You look like you've a stone in your boot.",
+    "say": "#greet#. A stone, no. A wolf. The potter went up in the spring, and her wheel went to an Oakhaven wolf nobody'd heard of. I fed that kiln nine years. Find out how he came by it, would you, and bring me clay while you're at it. Four lumps from the pits.",
+    "accept": "I'll find out how, and bring clay.",
+    "decline": "Posts are the Council's business.",
+    "handIn": "You've had it out, the two of you.",
+    "thanks": "#thanks#. Boggy business. I'll fire the next batch and see if my temper comes out of the kiln harder or softer."
+   },
+   "objectives": [
+    {
+     "id": "heron",
+     "label": "Ask the pot hand at The Heron how the new potter came by the wheel.",
+     "on": "conversation",
+     "match": {
+      "target": "tn_oh_ludo_ashwood"
+     }
+    },
+    {
+     "id": "ludo",
+     "label": "Talk with the new potter.",
+     "on": "conversation",
+     "match": {
+      "target": "tn_oh_ludo_beechshaw"
+     }
+    },
+    {
+     "id": "clay",
+     "label": "Bring four lumps of clay for the next firing.",
+     "on": "gift",
+     "match": {
+      "target": "tn_sm_bram_harvestgarth",
+      "item": "clay"
+     },
+     "goal": 4,
+     "measure": "quantity"
+    },
+    {
+     "id": "yard",
+     "label": "Stand in the kiln yard while the two of them have it out.",
+     "on": "story signal",
+     "signal": "pp_y",
+     "after": [
+      "heron",
+      "ludo",
+      "clay"
+     ]
+    },
+    {
+     "id": "choose",
+     "label": "Say your piece.",
+     "on": "story signal",
+     "signal": "pp_chose",
+     "after": [
+      "yard"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "craft"
+    }
+   ]
+  },
+  {
+   "id": "mq-lost-raker",
+   "title": "Lost in the Salt Wind",
+   "summary": "A sandstorm came off the Red Waste at noon, and a salt raker went out to the far pans for the rakes and has not come back. Find him before dark, give him water, bring him in, and hear what he was really doing.",
+   "giver": "cty_fern_merewick",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 1
+   },
+   "fail": [
+    {
+     "afterDays": 1
+    }
+   ],
+   "offer": {
+    "ask": "Is everyone in from the pans?",
+    "say": "#greet#. Not everyone. The wind came off the Red Waste at noon, and my workmate went out to the far pans for the rakes. He's not come back. Take water. Find him before the dark, and bring him in. By salt and water, I'd go myself, but someone must keep the fire.",
+    "accept": "I'll find him and bring him in.",
+    "decline": "Not into that wind.",
+    "handIn": "He's in, and he's had water.",
+    "thanks": "#thanks#. The pans would be poorer without his grumbling. Sit by the fire; the salt is out of your coat already."
+   },
+   "objectives": [
+    {
+     "id": "find",
+     "label": "Find the lost raker out on the far pans.",
+     "on": "story signal",
+     "signal": "lr_f"
+    },
+    {
+     "id": "water",
+     "label": "Give him water.",
+     "on": "story signal",
+     "signal": "lr_w",
+     "after": [
+      "find"
+     ]
+    },
+    {
+     "id": "back",
+     "label": "Bring him in to the Saltpan store.",
+     "on": "story signal",
+     "signal": "lr_b",
+     "after": [
+      "water"
+     ]
+    },
+    {
+     "id": "choose",
+     "label": "He tells you what he was really doing. Decide who hears it.",
+     "on": "story signal",
+     "signal": "lr_chose",
+     "after": [
+      "find"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    }
+   ]
+  },
+  {
+   "id": "mq-waste-road-salt",
+   "title": "Salt on the Waste Road",
+   "summary": "Southmeadow's salt wagon comes home from Saltwell across the dry wash, where toll-takers stood up last time and said pay next time. Ride with the carter, and when they stand up: pay, or don't.",
+   "giver": "cty_tor_chalkfield",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 1
+   },
+   "fail": [
+    {
+     "afterDays": 1
+    }
+   ],
+   "offer": {
+    "ask": "Heading home with the salt?",
+    "say": "#greet#. Late, as ever. The salt's loaded at Saltwell, and I bring it home tomorrow. Last time they stood up out of the dry wash, five of them, and said pay next time. Ride with me? Pay them or don't; I'll not argue. Only get me home before the sun's too high.",
+    "accept": "I'll meet you at the wash.",
+    "decline": "Pay them. It's cheaper.",
+    "handIn": "The salt's in Southmeadow.",
+    "thanks": "#thanks#. Home, and only a little late. My sister's sprout wants to go into service with a great House one day. I'll tell her about you instead."
+   },
+   "objectives": [
+    {
+     "id": "meet",
+     "label": "Meet the carter at the dry wash on the Waste Road.",
+     "on": "story signal",
+     "signal": "ws_m"
+    },
+    {
+     "id": "fight",
+     "label": "Break the toll: drive the toll-takers off.",
+     "on": "bandit falls",
+     "match": {
+      "cell": "w_ridgemere_11_12"
+     },
+     "goal": 2,
+     "after": [
+      "meet"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "deal",
+     "label": "Pay the toll, or break it.",
+     "on": "story signal",
+     "signal": "ws_d",
+     "after": [
+      "meet"
+     ]
+    },
+    {
+     "id": "deliver",
+     "label": "See the salt home into Southmeadow.",
+     "on": "region entered",
+     "match": {
+      "target": "sm_square"
+     },
+     "after": [
+      "deal"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    }
+   ]
+  },
+  {
+   "id": "mq-crossroads-names",
+   "title": "Names for the Crossroads",
+   "summary": "An eel trapper at the Saltpan remembers forty Mirebridge names that nobody says aloud any more. Carry his list to the crossroads where the village stood, say them at dusk, and put them in paws that will keep them.",
+   "giver": "tn_mb_kite_bogditch",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 6
+   },
+   "fail": [
+    {
+     "afterDays": 3
+    }
+   ],
+   "offer": {
+    "ask": "They say you never forget a name.",
+    "say": "#greet#, #address#. I never do. I have forty Mirebridge names that nobody says any more, and the pans will not let me go to say them. Carry them for me? To the crossroads where the village stood, at dusk. Then give them to someone who will keep them. The well remembers who drew from it.",
+    "accept": "I'll carry them, and say them.",
+    "decline": "The dead should rest."
+   },
+   "objectives": [
+    {
+     "id": "cross",
+     "label": "Stand at the Mirebridge crossroads at dusk and say the names.",
+     "on": "story signal",
+     "signal": "mx_c"
+    },
+    {
+     "id": "keep",
+     "label": "Put the list in paws that will keep it: the city's mapmaker at Soundings, or the old wolf at her door on Withy Creek.",
+     "on": "story signal",
+     "signal": "mx_k",
+     "after": [
+      "cross"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    }
+   ],
+   "handIn": false
+  }
+ ],
+ "tests": [
+  {
+   "name": "The Bear in the Bee Garth: killed, once a bear was seen",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-disa-a",
+     "target": "run",
+     "item": "cty_disa_fogford",
+     "detail": "mq-bee-garth-bear"
+    },
+    {
+     "id": "e2",
+     "kind": "hunted",
+     "day": 1.02,
+     "actor": "player-hunter",
+     "target": "bear",
+     "cell": "w_ridgemere_7_12",
+     "detail": "a rough kill",
+     "quantity": 2
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 1.03,
+     "actor": "player-disa-a",
+     "target": "bg_garth",
+     "cell": "w_ridgemere_7_12",
+     "x": 185,
+     "y": 30
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 1.04,
+     "actor": "player-disa-a",
+     "target": "run",
+     "item": "cty_disa_fogford",
+     "detail": "bg_kill"
+    },
+    {
+     "id": "e5",
+     "kind": "hunted",
+     "day": 1.05,
+     "actor": "player-disa-a",
+     "target": "bear",
+     "cell": "w_ridgemere_7_12",
+     "detail": "a good kill",
+     "quantity": 3
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 1.06,
+     "actor": "player-disa-a",
+     "target": "run",
+     "item": "cty_disa_fogford",
+     "detail": "mq-bee-garth-bear"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "mq-bee-garth-bear": {
+     "player-disa-a": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-disa-a": {
+      "bg_pick": "a"
+     }
+    },
+    "story": {
+     "mq_bear_a": 1,
+     "mq_bear_about": true
+    }
+   }
+  },
+  {
+   "name": "The Bear in the Bee Garth: led off with honey",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-disa-b",
+     "target": "run",
+     "item": "cty_disa_fogford",
+     "detail": "mq-bee-garth-bear"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "player-disa-b",
+     "target": "bg_garth",
+     "cell": "w_ridgemere_7_12",
+     "x": 185,
+     "y": 30
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 1.03,
+     "actor": "player-disa-b",
+     "target": "run",
+     "item": "cty_disa_fogford",
+     "detail": "bg_lead"
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.04,
+     "actor": "player-disa-b",
+     "target": "bg_garth",
+     "cell": "w_ridgemere_7_12",
+     "x": 186,
+     "y": 30
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 1.05,
+     "actor": "player-disa-b",
+     "target": "bg_far",
+     "cell": "w_ridgemere_6_13",
+     "x": 130,
+     "y": 128
+    },
+    {
+     "id": "e6",
+     "kind": "region entered",
+     "day": 1.06,
+     "actor": "player-disa-b",
+     "target": "bg_garth",
+     "cell": "w_ridgemere_7_12",
+     "x": 186,
+     "y": 30,
+     "facts": {
+      "wolves": {
+       "player-disa-b": {
+        "cell": "w_ridgemere_7_11",
+        "x": 3,
+        "y": 3
+       }
+      }
+     }
+    },
+    {
+     "id": "e7",
+     "kind": "arrival",
+     "day": 1.18,
+     "actor": "player-nobody"
+    },
+    {
+     "id": "e8",
+     "kind": "region entered",
+     "day": 1.19,
+     "actor": "player-disa-b",
+     "target": "bg_garth",
+     "cell": "w_ridgemere_7_12",
+     "x": 186,
+     "y": 30,
+     "facts": {
+      "wolves": {
+       "player-disa-b": {
+        "cell": "w_ridgemere_7_12",
+        "x": 186,
+        "y": 30
+       }
+      }
+     }
+    },
+    {
+     "id": "e9",
+     "kind": "arrival",
+     "day": 1.31,
+     "actor": "player-nobody"
+    },
+    {
+     "id": "e10",
+     "kind": "quest handed in",
+     "day": 1.32,
+     "actor": "player-disa-b",
+     "target": "run",
+     "item": "cty_disa_fogford",
+     "detail": "mq-bee-garth-bear"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "world": {
+     "hour": 23,
+     "season": "summer"
+    },
+    "wolves": {
+     "player-disa-b": {
+      "cell": "w_ridgemere_7_12",
+      "x": 186,
+      "y": 30
+     }
+    }
+   },
+   "expectQuests": {
+    "mq-bee-garth-bear": {
+     "player-disa-b": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-disa-b": {
+      "bg_pick": "b"
+     }
+    },
+    "story": {
+     "mq_bear_b": 1
+    }
+   }
+  },
+  {
+   "name": "Casks Gone Walking: the whole truth",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-harl-a",
+     "target": "run",
+     "item": "tn_oh_harl_oakbough",
+     "detail": "mq-vineyard-cellar"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "player-harl-a",
+     "target": "vc_door",
+     "cell": "w_ridgemere_9_12",
+     "x": 98,
+     "y": 103
+    },
+    {
+     "id": "e3",
+     "kind": "conversation",
+     "day": 1.03,
+     "actor": "player-harl-a",
+     "target": "cty_briar_cornby"
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.04,
+     "actor": "player-harl-a",
+     "target": "vc_camp",
+     "cell": "w_ridgemere_7_12",
+     "x": 118,
+     "y": 108
+    },
+    {
+     "id": "e5",
+     "kind": "bandit falls",
+     "day": 1.05,
+     "actor": "player-harl-a",
+     "target": "camp_story_5",
+     "cell": "w_ridgemere_7_12",
+     "detail": "a cask thief"
+    },
+    {
+     "id": "e6",
+     "kind": "bandit falls",
+     "day": 1.06,
+     "actor": "player-harl-a",
+     "target": "camp_story_5",
+     "cell": "w_ridgemere_7_12",
+     "detail": "a cask thief"
+    },
+    {
+     "id": "e7",
+     "kind": "camp cleared",
+     "day": 1.07,
+     "actor": "player-harl-a",
+     "target": "camp_story_5",
+     "cell": "w_ridgemere_7_12",
+     "detail": "by a wolf"
+    },
+    {
+     "id": "e8",
+     "kind": "item picked up",
+     "day": 1.08,
+     "actor": "player-harl-a",
+     "item": "wine",
+     "cell": "w_ridgemere_7_12",
+     "quantity": 2,
+     "x": 118,
+     "y": 107
+    },
+    {
+     "id": "e9",
+     "kind": "gift",
+     "day": 1.09,
+     "actor": "player-harl-a",
+     "target": "tn_oh_harl_oakbough",
+     "item": "wine",
+     "quantity": 2
+    },
+    {
+     "id": "e10",
+     "kind": "dialogue choice",
+     "day": 1.1,
+     "actor": "player-harl-a",
+     "target": "run",
+     "item": "tn_oh_harl_oakbough",
+     "detail": "vc_truth"
+    },
+    {
+     "id": "e11",
+     "kind": "quest handed in",
+     "day": 1.11,
+     "actor": "player-harl-a",
+     "target": "run",
+     "item": "tn_oh_harl_oakbough",
+     "detail": "mq-vineyard-cellar"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "world": {
+     "hour": 21,
+     "season": "summer"
+    },
+    "wolves": {
+     "player-harl-a": {
+      "partySize": 3
+     }
+    }
+   },
+   "expectQuests": {
+    "mq-vineyard-cellar": {
+     "player-harl-a": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-harl-a": {
+      "vc_pick": "a"
+     }
+    },
+    "story": {
+     "mq_casks_a": 1
+    },
+    "world": {
+     "coin_southmeadow_day": 10
+    }
+   }
+  },
+  {
+   "name": "Casks Gone Walking: the road wolves, start to finish",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-harl-b",
+     "target": "run",
+     "item": "tn_oh_harl_oakbough",
+     "detail": "mq-vineyard-cellar"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "player-harl-b",
+     "target": "vc_door",
+     "cell": "w_ridgemere_9_12",
+     "x": 98,
+     "y": 103
+    },
+    {
+     "id": "e3",
+     "kind": "conversation",
+     "day": 1.03,
+     "actor": "player-harl-b",
+     "target": "cty_briar_cornby"
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.04,
+     "actor": "player-harl-b",
+     "target": "vc_camp",
+     "cell": "w_ridgemere_7_12",
+     "x": 118,
+     "y": 108
+    },
+    {
+     "id": "e5",
+     "kind": "bandit falls",
+     "day": 1.05,
+     "actor": "player-harl-b",
+     "target": "camp_story_5",
+     "cell": "w_ridgemere_7_12",
+     "detail": "a cask thief"
+    },
+    {
+     "id": "e6",
+     "kind": "bandit falls",
+     "day": 1.06,
+     "actor": "player-harl-b",
+     "target": "camp_story_5",
+     "cell": "w_ridgemere_7_12",
+     "detail": "a cask thief"
+    },
+    {
+     "id": "e7",
+     "kind": "camp cleared",
+     "day": 1.07,
+     "actor": "player-harl-b",
+     "target": "camp_story_5",
+     "cell": "w_ridgemere_7_12",
+     "detail": "by a wolf"
+    },
+    {
+     "id": "e8",
+     "kind": "item picked up",
+     "day": 1.08,
+     "actor": "player-harl-b",
+     "item": "wine",
+     "cell": "w_ridgemere_7_12",
+     "quantity": 2,
+     "x": 118,
+     "y": 107
+    },
+    {
+     "id": "e9",
+     "kind": "gift",
+     "day": 1.09,
+     "actor": "player-harl-b",
+     "target": "tn_oh_harl_oakbough",
+     "item": "wine",
+     "quantity": 2
+    },
+    {
+     "id": "e10",
+     "kind": "dialogue choice",
+     "day": 1.1,
+     "actor": "player-harl-b",
+     "target": "run",
+     "item": "tn_oh_harl_oakbough",
+     "detail": "vc_spare"
+    },
+    {
+     "id": "e11",
+     "kind": "quest handed in",
+     "day": 1.11,
+     "actor": "player-harl-b",
+     "target": "run",
+     "item": "tn_oh_harl_oakbough",
+     "detail": "mq-vineyard-cellar"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "world": {
+     "hour": 21,
+     "season": "summer"
+    },
+    "wolves": {
+     "player-harl-b": {
+      "partySize": 1
+     }
+    }
+   },
+   "expectQuests": {
+    "mq-vineyard-cellar": {
+     "player-harl-b": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-harl-b": {
+      "vc_pick": "b"
+     }
+    },
+    "story": {
+     "mq_casks_b": 1
+    },
+    "world": {
+     "coin_southmeadow_day": 10
+    }
+   }
+  },
+  {
+   "name": "Lights over Withy Creek: they are lamps",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-iris-a",
+     "target": "run",
+     "item": "tn_mb_iris_pikeford",
+     "detail": "mq-withy-lights"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.02,
+     "actor": "player-iris-a",
+     "target": "tn_mb_nab_bogditch"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 1.03,
+     "actor": "player-iris-a",
+     "target": "wl_reeds",
+     "cell": "w_ridgemere_4_13",
+     "x": 50,
+     "y": 110
+    },
+    {
+     "id": "e4",
+     "kind": "item picked up",
+     "day": 1.04,
+     "actor": "player-iris-a",
+     "item": "oil_lamp",
+     "cell": "w_ridgemere_4_13",
+     "quantity": 1,
+     "x": 46,
+     "y": 108
+    },
+    {
+     "id": "e5",
+     "kind": "dialogue choice",
+     "day": 1.05,
+     "actor": "player-iris-a",
+     "target": "run",
+     "item": "tn_mb_iris_pikeford",
+     "detail": "wl_lamps"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 1.06,
+     "actor": "player-iris-a",
+     "target": "run",
+     "item": "tn_mb_iris_pikeford",
+     "detail": "mq-withy-lights"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "world": {
+     "hour": 22,
+     "season": "spring"
+    }
+   },
+   "expectQuests": {
+    "mq-withy-lights": {
+     "player-iris-a": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-iris-a": {
+      "wl_pick": "a"
+     }
+    },
+    "story": {
+     "mq_lights_a": 1
+    },
+    "world": {
+     "nh_voice_fenshore": 8
+    }
+   }
+  },
+  {
+   "name": "Lights over Withy Creek: the old words said",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-iris-b",
+     "target": "run",
+     "item": "tn_mb_iris_pikeford",
+     "detail": "mq-withy-lights"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "player-iris-b",
+     "target": "wl_reeds",
+     "cell": "w_ridgemere_4_13",
+     "x": 50,
+     "y": 110
+    },
+    {
+     "id": "e3",
+     "kind": "conversation",
+     "day": 1.03,
+     "actor": "player-iris-b",
+     "target": "tn_mb_nab_bogditch"
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.04,
+     "actor": "player-iris-b",
+     "target": "wl_reeds",
+     "cell": "w_ridgemere_4_13",
+     "x": 50,
+     "y": 110
+    },
+    {
+     "id": "e5",
+     "kind": "item picked up",
+     "day": 1.05,
+     "actor": "player-iris-b",
+     "item": "oil_lamp",
+     "cell": "w_ridgemere_4_13",
+     "quantity": 1,
+     "x": 46,
+     "y": 108
+    },
+    {
+     "id": "e6",
+     "kind": "dialogue choice",
+     "day": 1.06,
+     "actor": "player-iris-b",
+     "target": "run",
+     "item": "tn_mb_iris_pikeford",
+     "detail": "wl_words"
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 1.07,
+     "actor": "player-iris-b",
+     "target": "run",
+     "item": "tn_mb_iris_pikeford",
+     "detail": "mq-withy-lights"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "world": {
+     "hour": 3,
+     "season": "spring"
+    }
+   },
+   "expectQuests": {
+    "mq-withy-lights": {
+     "player-iris-b": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-iris-b": {
+      "wl_pick": "b"
+     }
+    },
+    "story": {
+     "mq_lights_b": 1
+    }
+   }
+  },
+  {
+   "name": "The Potter's Place: share the wheel",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-bram-a",
+     "target": "run",
+     "item": "tn_sm_bram_harvestgarth",
+     "detail": "mq-potters-place"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.02,
+     "actor": "player-bram-a",
+     "target": "tn_oh_ludo_ashwood"
+    },
+    {
+     "id": "e3",
+     "kind": "enter place",
+     "day": 1.03,
+     "actor": "player-bram-a",
+     "target": "cn_fenshore_pottery",
+     "cell": "cn_fenshore_pottery",
+     "detail": "w_ridgemere_3_13"
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 1.04,
+     "actor": "player-bram-a",
+     "target": "tn_oh_ludo_beechshaw"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 1.05,
+     "actor": "player-bram-a",
+     "target": "tn_sm_bram_harvestgarth",
+     "item": "clay",
+     "quantity": 4
+    },
+    {
+     "id": "e6",
+     "kind": "enter place",
+     "day": 1.06,
+     "actor": "player-bram-a",
+     "target": "cn_fenshore_pottery",
+     "cell": "cn_fenshore_pottery",
+     "detail": "w_ridgemere_3_13"
+    },
+    {
+     "id": "e7",
+     "kind": "scene choice",
+     "day": 1.07,
+     "actor": "player-bram-a",
+     "target": "run",
+     "detail": "pp_kiln.share"
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.08,
+     "actor": "player-bram-a",
+     "target": "run",
+     "item": "tn_sm_bram_harvestgarth",
+     "detail": "mq-potters-place"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "mq-potters-place": {
+     "player-bram-a": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-bram-a": {
+      "pp_pick": "share"
+     }
+    },
+    "story": {
+     "mq_kiln_a": 1
+    }
+   }
+  },
+  {
+   "name": "The Potter's Place: the rule stands",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-bram-b",
+     "target": "run",
+     "item": "tn_sm_bram_harvestgarth",
+     "detail": "mq-potters-place"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.02,
+     "actor": "player-bram-b",
+     "target": "tn_oh_ludo_ashwood"
+    },
+    {
+     "id": "e3",
+     "kind": "enter place",
+     "day": 1.03,
+     "actor": "player-bram-b",
+     "target": "cn_fenshore_pottery",
+     "cell": "cn_fenshore_pottery",
+     "detail": "w_ridgemere_3_13"
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 1.04,
+     "actor": "player-bram-b",
+     "target": "tn_oh_ludo_beechshaw"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 1.05,
+     "actor": "player-bram-b",
+     "target": "tn_sm_bram_harvestgarth",
+     "item": "clay",
+     "quantity": 4
+    },
+    {
+     "id": "e6",
+     "kind": "enter place",
+     "day": 1.06,
+     "actor": "player-bram-b",
+     "target": "cn_fenshore_pottery",
+     "cell": "cn_fenshore_pottery",
+     "detail": "w_ridgemere_3_13"
+    },
+    {
+     "id": "e7",
+     "kind": "scene choice",
+     "day": 1.07,
+     "actor": "player-bram-b",
+     "target": "run",
+     "detail": "pp_kiln.rule"
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.08,
+     "actor": "player-bram-b",
+     "target": "run",
+     "item": "tn_sm_bram_harvestgarth",
+     "detail": "mq-potters-place"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "mq-potters-place": {
+     "player-bram-b": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-bram-b": {
+      "pp_pick": "rule"
+     }
+    },
+    "story": {
+     "mq_kiln_b": 1
+    }
+   }
+  },
+  {
+   "name": "Lost in the Salt Wind: he tells her himself",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-fern-a",
+     "target": "run",
+     "item": "cty_fern_merewick",
+     "detail": "mq-lost-raker"
+    },
+    {
+     "id": "e2",
+     "kind": "gift",
+     "day": 1.02,
+     "actor": "player-fern-a",
+     "target": "tn_mb_ridge_eelbank",
+     "item": "waterskin",
+     "quantity": 1
+    },
+    {
+     "id": "e3",
+     "kind": "near resident",
+     "day": 1.03,
+     "actor": "player-fern-a",
+     "target": "tn_mb_ridge_eelbank",
+     "quantity": 2
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 1.04,
+     "actor": "player-fern-a",
+     "target": "run",
+     "item": "tn_mb_ridge_eelbank",
+     "detail": "lr_why"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 1.05,
+     "actor": "player-fern-a",
+     "target": "tn_mb_ridge_eelbank",
+     "item": "water",
+     "quantity": 1
+    },
+    {
+     "id": "e6",
+     "kind": "dialogue choice",
+     "day": 1.06,
+     "actor": "player-fern-a",
+     "target": "run",
+     "item": "tn_mb_ridge_eelbank",
+     "detail": "lr_tell"
+    },
+    {
+     "id": "e7",
+     "kind": "region entered",
+     "day": 1.07,
+     "actor": "player-fern-a",
+     "target": "lr_store",
+     "cell": "w_ridgemere_13_12",
+     "x": 95,
+     "y": 240,
+     "facts": {
+      "residents": {
+       "tn_mb_ridge_eelbank": {
+        "alive": true,
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 240
+       }
+      }
+     }
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.08,
+     "actor": "player-fern-a",
+     "target": "run",
+     "item": "cty_fern_merewick",
+     "detail": "mq-lost-raker"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "residents": {
+     "tn_mb_ridge_eelbank": {
+      "alive": true,
+      "cell": "w_ridgemere_13_12",
+      "x": 60,
+      "y": 200
+     }
+    }
+   },
+   "expectQuests": {
+    "mq-lost-raker": {
+     "player-fern-a": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-fern-a": {
+      "lr_pick": "a"
+     }
+    },
+    "story": {
+     "mq_raker_a": 1,
+     "mq_raker_posted": false
+    }
+   }
+  },
+  {
+   "name": "Lost in the Salt Wind: kept between them; the next too late; one put aside",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-fern-b",
+     "target": "run",
+     "item": "cty_fern_merewick",
+     "detail": "mq-lost-raker"
+    },
+    {
+     "id": "e2",
+     "kind": "near resident",
+     "day": 1.02,
+     "actor": "player-fern-b",
+     "target": "tn_mb_ridge_eelbank",
+     "quantity": 3
+    },
+    {
+     "id": "e3",
+     "kind": "gift",
+     "day": 1.03,
+     "actor": "player-fern-b",
+     "target": "tn_mb_ridge_eelbank",
+     "item": "waterskin",
+     "quantity": 1
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.04,
+     "actor": "player-fern-b",
+     "target": "lr_store",
+     "cell": "w_ridgemere_13_12",
+     "x": 95,
+     "y": 240
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 1.05,
+     "actor": "player-fern-b",
+     "target": "lr_store",
+     "cell": "w_ridgemere_13_12",
+     "x": 95,
+     "y": 240,
+     "facts": {
+      "residents": {
+       "tn_mb_ridge_eelbank": {
+        "alive": true,
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 240
+       }
+      }
+     }
+    },
+    {
+     "id": "e6",
+     "kind": "dialogue choice",
+     "day": 1.06,
+     "actor": "player-fern-b",
+     "target": "run",
+     "item": "tn_mb_ridge_eelbank",
+     "detail": "lr_why"
+    },
+    {
+     "id": "e7",
+     "kind": "dialogue choice",
+     "day": 1.07,
+     "actor": "player-fern-b",
+     "target": "run",
+     "item": "tn_mb_ridge_eelbank",
+     "detail": "lr_keep"
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.08,
+     "actor": "player-fern-b",
+     "target": "run",
+     "item": "cty_fern_merewick",
+     "detail": "mq-lost-raker"
+    },
+    {
+     "id": "e9",
+     "kind": "quest accepted",
+     "day": 1.28,
+     "actor": "player-fern-c",
+     "target": "run",
+     "item": "cty_fern_merewick",
+     "detail": "mq-lost-raker"
+    },
+    {
+     "id": "e10",
+     "kind": "arrival",
+     "day": 2.25,
+     "actor": "player-nobody"
+    },
+    {
+     "id": "e11",
+     "kind": "quest accepted",
+     "day": 2.35,
+     "actor": "player-fern-a",
+     "target": "run",
+     "item": "cty_fern_merewick",
+     "detail": "mq-lost-raker"
+    },
+    {
+     "id": "e12",
+     "kind": "quest abandoned",
+     "day": 2.36,
+     "actor": "player-fern-a",
+     "target": "run",
+     "detail": "mq-lost-raker"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 2.46,
+     "actor": "player-fern-a",
+     "target": "run",
+     "item": "cty_fern_merewick",
+     "detail": "mq-lost-raker"
+    },
+    {
+     "id": "e14",
+     "kind": "arrival",
+     "day": 9.56,
+     "actor": "player-nobody"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "residents": {
+     "tn_mb_ridge_eelbank": {
+      "alive": true,
+      "cell": "w_ridgemere_13_12",
+      "x": 60,
+      "y": 200
+     }
+    }
+   },
+   "expectQuests": {
+    "mq-lost-raker": {
+     "player-fern-b": "done",
+     "player-fern-c": "failed",
+     "player-fern-a": "failed"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-fern-b": {
+      "lr_pick": "b"
+     }
+    },
+    "story": {
+     "mq_raker_b": 1
+    }
+   }
+  },
+  {
+   "name": "Salt on the Waste Road: the toll broken",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-tor-a",
+     "target": "run",
+     "item": "cty_tor_chalkfield",
+     "detail": "mq-waste-road-salt"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "player-tor-a",
+     "target": "ws_wash",
+     "cell": "w_ridgemere_11_12",
+     "x": 160,
+     "y": 160
+    },
+    {
+     "id": "e3",
+     "kind": "bandit falls",
+     "day": 1.03,
+     "actor": "player-tor-a",
+     "target": "camp_story_6",
+     "cell": "w_ridgemere_11_12",
+     "detail": "a toll-taker"
+    },
+    {
+     "id": "e4",
+     "kind": "bandit falls",
+     "day": 1.04,
+     "actor": "player-tor-a",
+     "target": "camp_story_6",
+     "cell": "w_ridgemere_11_12",
+     "detail": "a toll-taker"
+    },
+    {
+     "id": "e5",
+     "kind": "camp cleared",
+     "day": 1.05,
+     "actor": "player-tor-a",
+     "target": "camp_story_6",
+     "cell": "w_ridgemere_11_12",
+     "detail": "by a wolf"
+    },
+    {
+     "id": "e6",
+     "kind": "region entered",
+     "day": 1.06,
+     "actor": "player-tor-a",
+     "target": "sm_square",
+     "cell": "w_ridgemere_8_13",
+     "x": 100,
+     "y": 20
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 1.07,
+     "actor": "player-tor-a",
+     "target": "run",
+     "item": "cty_tor_chalkfield",
+     "detail": "mq-waste-road-salt"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "residents": {
+     "cty_tor_chalkfield": {
+      "alive": true,
+      "cell": "w_ridgemere_11_12",
+      "x": 163,
+      "y": 160
+     }
+    },
+    "wolves": {
+     "player-tor-a": {
+      "partySize": 2
+     }
+    }
+   },
+   "expectQuests": {
+    "mq-waste-road-salt": {
+     "player-tor-a": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-tor-a": {
+      "ws_pick": "fought"
+     }
+    },
+    "story": {
+     "mq_salt_b": 1
+    },
+    "world": {
+     "nh_threat": 28
+    }
+   }
+  },
+  {
+   "name": "Salt on the Waste Road: the toll paid; the next too late; one put aside",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-tor-b",
+     "target": "run",
+     "item": "cty_tor_chalkfield",
+     "detail": "mq-waste-road-salt"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "player-tor-b",
+     "target": "ws_wash",
+     "cell": "w_ridgemere_11_12",
+     "x": 160,
+     "y": 160
+    },
+    {
+     "id": "e3",
+     "kind": "paid off bandits",
+     "day": 1.03,
+     "actor": "player-tor-b",
+     "target": "camp_story_7",
+     "cell": "w_ridgemere_11_12",
+     "detail": "on the road",
+     "coins": 5
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.04,
+     "actor": "player-tor-b",
+     "target": "sm_square",
+     "cell": "w_ridgemere_8_13",
+     "x": 100,
+     "y": 20
+    },
+    {
+     "id": "e5",
+     "kind": "quest handed in",
+     "day": 1.05,
+     "actor": "player-tor-b",
+     "target": "run",
+     "item": "cty_tor_chalkfield",
+     "detail": "mq-waste-road-salt"
+    },
+    {
+     "id": "e6",
+     "kind": "quest accepted",
+     "day": 1.25,
+     "actor": "player-tor-c",
+     "target": "run",
+     "item": "cty_tor_chalkfield",
+     "detail": "mq-waste-road-salt"
+    },
+    {
+     "id": "e7",
+     "kind": "arrival",
+     "day": 2.22,
+     "actor": "player-nobody"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 2.32,
+     "actor": "player-tor-d",
+     "target": "run",
+     "item": "cty_tor_chalkfield",
+     "detail": "mq-waste-road-salt"
+    },
+    {
+     "id": "e9",
+     "kind": "quest abandoned",
+     "day": 2.33,
+     "actor": "player-tor-d",
+     "target": "run",
+     "detail": "mq-waste-road-salt"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "residents": {
+     "cty_tor_chalkfield": {
+      "alive": true,
+      "cell": "w_ridgemere_11_12",
+      "x": 163,
+      "y": 160
+     }
+    }
+   },
+   "expectQuests": {
+    "mq-waste-road-salt": {
+     "player-tor-b": "done",
+     "player-tor-c": "failed",
+     "player-tor-d": "abandoned"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-tor-b": {
+      "ws_pick": "paid"
+     }
+    },
+    "story": {
+     "mq_salt_a": 1,
+     "mq_salt_posted": false
+    }
+   }
+  },
+  {
+   "name": "Names for the Crossroads: to the mapmaker",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-kite-a",
+     "target": "run",
+     "item": "tn_mb_kite_bogditch",
+     "detail": "mq-crossroads-names"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "player-kite-a",
+     "target": "mx_cross",
+     "cell": "w_ridgemere_5_11",
+     "x": 188,
+     "y": 50
+    },
+    {
+     "id": "e3",
+     "kind": "gift",
+     "day": 1.03,
+     "actor": "player-kite-a",
+     "target": "rm_imogen_nailridge",
+     "item": "paper",
+     "quantity": 1
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.04,
+     "actor": "player-kite-a",
+     "target": "mx_cross",
+     "cell": "w_ridgemere_5_11",
+     "x": 188,
+     "y": 50,
+     "facts": {
+      "world": {
+       "hour": 19,
+       "season": "autumn"
+      }
+     }
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 1.05,
+     "actor": "player-kite-a",
+     "target": "rm_imogen_nailridge",
+     "item": "paper",
+     "quantity": 1
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "world": {
+     "hour": 12,
+     "season": "autumn"
+    },
+    "residents": {
+     "tn_mb_tamsin_eelbank": {
+      "alive": true,
+      "cell": "fs_marsh_eels_home"
+     }
+    }
+   },
+   "expectQuests": {
+    "mq-crossroads-names": {
+     "player-kite-a": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-kite-a": {
+      "mx_pick": "a"
+     }
+    },
+    "story": {
+     "mq_names_a": 1
+    },
+    "world": {
+     "nh_voice_mirebridge": 8
+    }
+   }
+  },
+  {
+   "name": "Names for the Crossroads: to Mirebridge folk",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-kite-b",
+     "target": "run",
+     "item": "tn_mb_kite_bogditch",
+     "detail": "mq-crossroads-names"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "player-kite-b",
+     "target": "mx_cross",
+     "cell": "w_ridgemere_5_11",
+     "x": 188,
+     "y": 50
+    },
+    {
+     "id": "e3",
+     "kind": "gift",
+     "day": 1.03,
+     "actor": "player-kite-b",
+     "target": "tn_mb_tamsin_eelbank",
+     "item": "paper",
+     "quantity": 1
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.04,
+     "actor": "player-kite-b",
+     "target": "mx_cross",
+     "cell": "w_ridgemere_5_11",
+     "x": 188,
+     "y": 50,
+     "facts": {
+      "world": {
+       "hour": 19,
+       "season": "autumn"
+      }
+     }
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 1.05,
+     "actor": "player-kite-b",
+     "target": "mx_tamsin",
+     "cell": "w_ridgemere_4_13",
+     "x": 28,
+     "y": 103,
+     "facts": {
+      "wolves": {
+       "player-kite-b": {
+        "carries": {
+         "paper": 1
+        }
+       }
+      }
+     }
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "world": {
+     "hour": 12,
+     "season": "autumn"
+    },
+    "residents": {
+     "tn_mb_tamsin_eelbank": {
+      "alive": true,
+      "cell": "fs_marsh_eels_home"
+     }
+    }
+   },
+   "expectQuests": {
+    "mq-crossroads-names": {
+     "player-kite-b": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-kite-b": {
+      "mx_pick": "b"
+     }
+    },
+    "story": {
+     "mq_names_b": 1
+    },
+    "world": {
+     "nh_voice_mirebridge": 8
+    }
+   }
+  }
+ ]
+}

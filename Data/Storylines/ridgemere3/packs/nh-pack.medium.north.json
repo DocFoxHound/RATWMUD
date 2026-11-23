@@ -1,0 +1,4169 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "nh-pack.medium.north",
+ "title": "Medium errands of the north",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "variables": [
+  {
+   "id": "coin_frosthollow_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "coin_frosthollow_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true
+  },
+  {
+   "id": "coin_oakhaven_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "coin_oakhaven_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true
+  },
+  {
+   "id": "coin_ridgemere_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "coin_ridgemere_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true
+  },
+  {
+   "id": "mq_oil_list",
+   "type": "wolves",
+   "scope": "world",
+   "initial": []
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "nh_threat",
+   "type": "number",
+   "scope": "world",
+   "initial": 30
+  },
+  {
+   "id": "nh_voice_frosthollow",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "nh_voice_oakhaven",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "wc_pick",
+   "type": "text",
+   "scope": "player"
+  },
+  {
+   "id": "wc_spawned",
+   "type": "switch",
+   "scope": "player"
+  },
+  {
+   "id": "spawned_wc_tree",
+   "type": "switch",
+   "scope": "story"
+  },
+  {
+   "id": "mq_cedar_posted",
+   "type": "switch",
+   "scope": "story",
+   "note": "The 'it's taken' notice is up."
+  },
+  {
+   "id": "mq_cedar_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_cedar_b",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "ld_pick",
+   "type": "text",
+   "scope": "player"
+  },
+  {
+   "id": "mq_props_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_props_b",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "lo_pick",
+   "type": "text",
+   "scope": "player"
+  },
+  {
+   "id": "mq_oil_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_oil_b",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "la_pick",
+   "type": "text",
+   "scope": "player"
+  },
+  {
+   "id": "la_placed",
+   "type": "switch",
+   "scope": "player"
+  },
+  {
+   "id": "la_landed",
+   "type": "switch",
+   "scope": "player"
+  },
+  {
+   "id": "mq_logs_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_logs_b",
+   "type": "number",
+   "scope": "story"
+  }
+ ],
+ "regions": [
+  {
+   "id": "wc_tree",
+   "cell": "w_ridgemere_4_4",
+   "x1": 202,
+   "y1": 178,
+   "x2": 220,
+   "y2": 192
+  },
+  {
+   "id": "oh_square",
+   "cell": "w_ridgemere_3_4",
+   "x1": 235,
+   "y1": 190,
+   "x2": 253,
+   "y2": 201
+  },
+  {
+   "id": "ld_mouth",
+   "cell": "w_ridgemere_9_2",
+   "x1": 200,
+   "y1": 207,
+   "x2": 216,
+   "y2": 216
+  },
+  {
+   "id": "la_shore",
+   "cell": "w_ridgemere_2_5",
+   "x1": 132,
+   "y1": 153,
+   "x2": 172,
+   "y2": 157
+  },
+  {
+   "id": "la_landing",
+   "cell": "w_ridgemere_2_5",
+   "x1": 84,
+   "y1": 66,
+   "x2": 100,
+   "y2": 73
+  }
+ ],
+ "scenes": [
+  {
+   "format": "ratw-scene",
+   "version": 1,
+   "id": "la_skipper",
+   "title": "At the Soundside landing",
+   "visibility": "individual",
+   "lockMovement": false,
+   "cast": [
+    {
+     "id": "speaker",
+     "npc": "cty_kell_reedwade"
+    }
+   ],
+   "start": "line",
+   "beats": [
+    {
+     "id": "line",
+     "type": "line",
+     "speaker": "speaker",
+     "seconds": 10,
+     "text": "Cedar off the Sound. I pay for driftwood, a fair price, and I don't ask whose axe it knew. Bring it up the landing and I'll stack it."
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "Errands for any wolf who asks around Oakhaven and Frosthollow: the Sound Road and the cut, the iron mine, the Upper hearths and the shore of Cedar Sound.",
+   "effects": [],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "q20-accept",
+     "on": "quest accepted",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-windthrown-cedar"
+     },
+     "actions": [
+      {
+       "do": "set",
+       "var": "wc_pick",
+       "value": ""
+      },
+      {
+       "do": "turn off",
+       "var": "wc_spawned"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "mq_cedar_posted",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "board.post",
+          "town": "oakhaven",
+          "text": "The carter on the Sound Road has help already. The logger at the cut wants hands for her runaway logs.",
+          "days": 1,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "mq_cedar_posted"
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.move",
+        "npc": "cty_tristram_rainridge",
+        "cell": "w_ridgemere_4_4",
+        "x": 210,
+        "y": 186,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.hold",
+        "npc": "cty_tristram_rainridge",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.ping",
+        "cell": "w_ridgemere_4_4",
+        "x": 210,
+        "y": 186,
+        "player": "$actor",
+        "label": "the windthrown cedar",
+        "minutes": 60,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "schedule",
+       "signal": "wc_late",
+       "days": 0.95,
+       "owner": "player",
+       "scope": "campaign"
+      }
+     ]
+    },
+    {
+     "id": "q20-progress",
+     "on": "objective completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-windthrown-cedar"
+     },
+     "note": "Loggers and ropes: the trunk comes off and the road lot come (P-B); held: his question.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "field": "item"
+            },
+            "op": "=",
+            "right": "loggers"
+           },
+           {
+            "test": "compare",
+            "left": {
+             "field": "item"
+            },
+            "op": "=",
+            "right": "rope"
+           }
+          ]
+         },
+         {
+          "test": "objective is",
+          "quest": "mq-windthrown-cedar",
+          "objective": "loggers",
+          "status": "done"
+         },
+         {
+          "test": "objective is",
+          "quest": "mq-windthrown-cedar",
+          "objective": "rope",
+          "status": "done"
+         },
+         {
+          "test": "switch",
+          "var": "wc_spawned",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "party size",
+          "op": ">=",
+          "value": 3
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "wc_tree",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "party size",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "wc_tree",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "wc_tree",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "turn on",
+         "var": "spawned_wc_tree"
+        },
+        {
+         "do": "turn on",
+         "var": "wc_spawned"
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "hold"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "cty_tristram_rainridge",
+            "id": "wc_ask",
+            "player": "$actor",
+            "once": true,
+            "words": "You've something to ask. Ask it.",
+            "reply": "I owe a wolf in the city, more than I'll say. If the road lot had taken one load of his timber, nobody'd blink, mm? One load. It'd clear me."
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q20-choice",
+     "on": "dialogue choice",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-windthrown-cedar",
+      "status": "active"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "wc_ask"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_tristram_rainridge",
+          "id": "wc_honest",
+          "player": "$actor",
+          "once": true,
+          "words": "Every stick goes to him. You'll clear it honestly.",
+          "reply": "Honestly. Bark and branch, you sound like my mother. Fine. Every stick, and I'll owe till my whiskers go grey."
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_tristram_rainridge",
+          "id": "wc_lie",
+          "player": "$actor",
+          "once": true,
+          "words": "The road wolves took a load. That's what I saw.",
+          "reply": "That's what you saw. Proper. I'll not forget it, old root, and I'll not say it twice."
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "wc_honest"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "wc_pick",
+           "value": "a"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-windthrown-cedar",
+            "objective": "choose",
+            "player": "$actor"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.walk",
+            "npc": "cty_tristram_rainridge",
+            "cell": "w_ridgemere_3_4",
+            "x": 244,
+            "y": 196,
+            "pace": "walk",
+            "cue": "wc_up",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "wc_lie"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "wc_pick",
+           "value": "b"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-windthrown-cedar",
+            "objective": "choose",
+            "player": "$actor"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.walk",
+            "npc": "cty_tristram_rainridge",
+            "cell": "w_ridgemere_3_4",
+            "x": 244,
+            "y": 196,
+            "pace": "walk",
+            "cue": "wc_up",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q20-camp",
+     "on": "camp cleared",
+     "match": {
+      "cell": "w_ridgemere_4_4"
+     },
+     "if": {
+      "test": "switch",
+      "var": "spawned_wc_tree",
+      "is": true
+     },
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "spawned_wc_tree"
+      }
+     ]
+    },
+    {
+     "id": "q20-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-windthrown-cedar"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_oakhaven_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_oakhaven_day"
+          },
+          "op": "<=",
+          "right": 14
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 10,
+          "purse": "town:oakhaven",
+          "reason": "the Oakhaven carriage",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_oakhaven_day",
+         "value": 10
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Oakhaven's store is thin today. You were paid in bread.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "wc_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "cleared a windthrown cedar off the Sound Road",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Every stick reached the city creditor.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_tristram_rainridge",
+          "id": "wc_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Every stick delivered. The city wolf counted it twice, the miser. I'm poorer and I sleep. Root well."
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "helped an Oakhaven carter short his Ridgemere creditor",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "One load of timber stayed in Oakhaven.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_tristram_rainridge",
+          "id": "wc_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "One load lighter, one debt lighter. Don't look at me like that. Shade keep you."
+         }
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "cty_tristram_rainridge",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn off",
+       "var": "mq_cedar_posted"
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_oakhaven",
+       "value": 4
+      },
+      {
+       "do": "subtract",
+       "var": "nh_threat",
+       "value": 2
+      },
+      {
+       "do": "clamp",
+       "var": "nh_threat",
+       "min": 0,
+       "max": 100
+      }
+     ]
+    },
+    {
+     "id": "q20-late",
+     "on": "story signal",
+     "signal": "wc_late",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-windthrown-cedar",
+      "status": "active"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "mq-windthrown-cedar",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "cty_tristram_rainridge",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn off",
+       "var": "mq_cedar_posted"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The loggers cleared the road at dawn.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "id": "q20-abandon",
+     "on": "quest abandoned",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-windthrown-cedar"
+     },
+     "if": {
+      "test": "quest is",
+      "quest": "mq-windthrown-cedar",
+      "status": "abandoned"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "cty_tristram_rainridge",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn off",
+       "var": "mq_cedar_posted"
+      }
+     ]
+    },
+    {
+     "id": "q20-town",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-windthrown-cedar"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "wc_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_cedar_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_cedar_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_cedar_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_cedar_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "oakhaven",
+            "text": "The Sound Road below the cut is clear of the windthrown cedar. The city timber went through, every stick of it. Carters: the road is open to Alder Mere.",
+            "days": 7,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "wc_pick"
+          },
+          "op": "=",
+          "right": "b"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_cedar_b",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_cedar_b"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_cedar_b"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_cedar_b"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "oakhaven",
+              "text": "The Sound Road is clear again. The road lot took a load of timber off the carter, they say. He is taking it very calmly.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q21-accept",
+     "on": "quest started",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-low-drift-props"
+     },
+     "actions": [
+      {
+       "do": "set",
+       "var": "ld_pick",
+       "value": ""
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.ping",
+        "cell": "w_ridgemere_9_2",
+        "x": 208,
+        "y": 211,
+        "player": "$actor",
+        "label": "the low drift mouth",
+        "minutes": 60,
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "id": "q21-taproom",
+     "on": "enter place",
+     "audience": "participant",
+     "match": {
+      "target": "cn_frosthollow_alehouse"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-low-drift-props",
+        "status": "active"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "ld_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       {
+        "test": "hour between",
+        "from": 18,
+        "to": 23
+       },
+       {
+        "test": "not",
+        "condition": {
+         "test": "objective is",
+         "quest": "mq-low-drift-props",
+         "objective": "taproom",
+         "status": "done"
+        }
+       }
+      ]
+     },
+     "note": "Said aloud in the taproom: the colliers sign a notice, once a game day (no resident speaks).",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "mq-low-drift-props",
+        "objective": "taproom",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "timer",
+        "signal": "ld_posted"
+       },
+       "then": [
+        {
+         "do": "note",
+         "text": "The colliers' notice is up already today."
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "board.post",
+          "town": "frosthollow",
+          "text": "Rotten props in the low drift. The good cedar went down the valley. Ask at the mine house who sold it. Signed, the colliers at the Lamp and Pick.",
+          "days": 3,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "schedule",
+         "signal": "ld_posted",
+         "days": 1,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q21-day",
+     "on": "story signal",
+     "signal": "ld_posted",
+     "actions": [
+      {
+       "do": "note",
+       "text": "A day on: the colliers may post their notice again."
+      }
+     ]
+    },
+    {
+     "id": "q21-progress",
+     "on": "objective completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-low-drift-props"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "store"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The shop's book has it: good cedar props sold down the valley this month, on the mine captain's mark.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_ebba_coalgate",
+          "id": "ld_loud",
+          "player": "$actor",
+          "once": true,
+          "words": "Say it in the Lamp and Pick. The miners should know.",
+          "reply": "Aloud, then. Cold iron, the captain won't love you for it. The taproom keeper's a fair wolf; tell him, and the whole valley hears it by the last lamp."
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_ebba_coalgate",
+          "id": "ld_quiet",
+          "player": "$actor",
+          "once": true,
+          "words": "Shore it up quietly. Let the captain keep his name.",
+          "reply": "Quiet. Aye, quiet's safer for the ones who work under him. Four beams, and we'll set them before the shift."
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "ld_pick"
+            },
+            "op": "=",
+            "right": "a"
+           },
+           {
+            "test": "objective is",
+            "quest": "mq-low-drift-props",
+            "objective": "beams",
+            "status": "done"
+           },
+           {
+            "test": "objective is",
+            "quest": "mq-low-drift-props",
+            "objective": "taproom",
+            "status": "done"
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-low-drift-props",
+            "objective": "shored",
+            "player": "$actor"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "ld_pick"
+            },
+            "op": "=",
+            "right": "b"
+           },
+           {
+            "test": "compare",
+            "left": {
+             "field": "item"
+            },
+            "op": "=",
+            "right": "beams"
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-low-drift-props",
+            "objective": "shored",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q21-choice",
+     "on": "dialogue choice",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-low-drift-props",
+      "status": "active"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "ld_loud"
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "ld_pick",
+         "value": "a"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.reveal",
+          "quest": "mq-low-drift-props",
+          "objective": "taproom",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-low-drift-props",
+          "objective": "choose",
+          "player": "$actor"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "ld_quiet"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "ld_pick",
+           "value": "b"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-low-drift-props",
+            "objective": "choose",
+            "player": "$actor"
+           }
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "objective is",
+            "quest": "mq-low-drift-props",
+            "objective": "beams",
+            "status": "done"
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "objective.complete",
+              "quest": "mq-low-drift-props",
+              "objective": "shored",
+              "player": "$actor"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q21-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-low-drift-props"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_frosthollow_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_frosthollow_day"
+          },
+          "op": "<=",
+          "right": 14
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 10,
+          "purse": "town:frosthollow",
+          "reason": "the Frosthollow store thanks you",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_frosthollow_day",
+         "value": 10
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Frosthollow's store is thin today. You were paid in bread.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "ld_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "named the rotten props in the Frosthollow mine aloud",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The rotten props were named aloud in Frosthollow.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_ebba_coalgate",
+          "id": "ld_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Half the miners were at the mine house door by morning. The captain says the props came cheap from a city yard. Funny, that."
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "shored up the Frosthollow low drift with sound beams",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The low drift is shored, quietly.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_ebba_coalgate",
+          "id": "ld_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Four sound beams in the low drift, and nobody's the wiser. The captain thanked me for 'the extra'. Black seam, the nerve."
+         }
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_frosthollow",
+       "value": 6
+      }
+     ]
+    },
+    {
+     "id": "q21-town",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-low-drift-props"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "ld_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_props_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_props_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_props_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_props_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "frosthollow",
+            "text": "Sound beams are in the low drift, and the mine house has had visitors about the cedar props that went down the valley. Colliers: look up before you go in.",
+            "days": 7,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "ld_pick"
+          },
+          "op": "=",
+          "right": "b"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_props_b",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_props_b"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_props_b"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_props_b"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "frosthollow",
+              "text": "Four sound beams went into the low drift before the shift. Nobody is saying whose. Deep thanks, whoever.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q22-accept",
+     "on": "quest started",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-lamp-oil-share"
+     },
+     "actions": [
+      {
+       "do": "set",
+       "var": "lo_pick",
+       "value": ""
+      }
+     ]
+    },
+    {
+     "id": "q22-progress",
+     "on": "objective completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-lamp-oil-share"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "tallow"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "lamp_oil",
+          "quantity": 3,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The shop rendered your tallow: three flasks of lamp oil.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_stone_acorndell",
+          "id": "lo_shelf",
+          "player": "$actor",
+          "once": true,
+          "words": "On the common shelf at the Lamp and Pick. Put my name on the list.",
+          "reply": "On the list. #oath#. You're not from here and you'd go on the list? Then you're from here now, a bit. The taproom keeper keeps the shelf. Mind he writes you down proper."
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_stone_acorndell",
+          "id": "lo_sell",
+          "player": "$actor",
+          "once": true,
+          "words": "It'll fetch three times as much in the city.",
+          "reply": "It will. Dead rock, I'll not stop you. It's yours to sell. Only, the list's not got room for coin. Never has."
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "hunt"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "deed.award",
+            "player": "$actor",
+            "detail": "hunted an ibex for Frosthollow's winter tallow",
+            "ifRefused": "when here"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "all",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "field": "item"
+              },
+              "op": "=",
+              "right": "shelf"
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "lo_pick"
+              },
+              "op": "=",
+              "right": "a"
+             }
+            ]
+           },
+           {
+            "test": "all",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "field": "item"
+              },
+              "op": "=",
+              "right": "sell"
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "lo_pick"
+              },
+              "op": "=",
+              "right": "b"
+             }
+            ]
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-lamp-oil-share",
+            "objective": "done",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q22-choice",
+     "on": "dialogue choice",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-lamp-oil-share",
+      "status": "active"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "lo_shelf"
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "lo_pick",
+         "value": "a"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.reveal",
+          "quest": "mq-lamp-oil-share",
+          "objective": "shelf",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-lamp-oil-share",
+          "objective": "choose",
+          "player": "$actor"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "lo_sell"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "lo_pick",
+           "value": "b"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.reveal",
+            "quest": "mq-lamp-oil-share",
+            "objective": "sell",
+            "player": "$actor"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-lamp-oil-share",
+            "objective": "choose",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q22-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-lamp-oil-share"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "lo_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "calendar is",
+          "what": "season",
+          "value": "winter"
+         },
+         "then": [
+          {
+           "do": "if",
+           "if": {
+            "test": "all",
+            "conditions": [
+             {
+              "test": "switch",
+              "var": "coin_frosthollow_ok",
+              "is": true
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "coin_frosthollow_day"
+              },
+              "op": "<=",
+              "right": 14
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "character.grant",
+              "player": "$actor",
+              "coins": 10,
+              "purse": "town:frosthollow",
+              "reason": "the common shelf thanks you, in the deep winter",
+              "ifRefused": "skip"
+             }
+            },
+            {
+             "do": "add",
+             "var": "coin_frosthollow_day",
+             "value": 10
+            }
+           ],
+           "else": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "item.give",
+              "player": "$actor",
+              "item": "bread",
+              "quantity": 2,
+              "ifRefused": "when here"
+             }
+            },
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "journal.note",
+              "player": "$actor",
+              "text": "Frosthollow's store is thin today. You were paid in bread.",
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "if",
+           "if": {
+            "test": "all",
+            "conditions": [
+             {
+              "test": "switch",
+              "var": "coin_frosthollow_ok",
+              "is": true
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "coin_frosthollow_day"
+              },
+              "op": "<=",
+              "right": 18
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "character.grant",
+              "player": "$actor",
+              "coins": 6,
+              "purse": "town:frosthollow",
+              "reason": "the common shelf thanks you",
+              "ifRefused": "skip"
+             }
+            },
+            {
+             "do": "add",
+             "var": "coin_frosthollow_day",
+             "value": 6
+            }
+           ],
+           "else": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "item.give",
+              "player": "$actor",
+              "item": "bread",
+              "quantity": 2,
+              "ifRefused": "when here"
+             }
+            },
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "journal.note",
+              "player": "$actor",
+              "text": "Frosthollow's store is thin today. You were paid in bread.",
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "put lamp oil on Frosthollow's common shelf for the long dark",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "list add",
+         "var": "mq_oil_list",
+         "value": {
+          "field": "actor"
+         }
+        },
+        {
+         "do": "add",
+         "var": "nh_voice_frosthollow",
+         "value": 6
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Your name is on Frosthollow's lamp-oil list.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_stone_acorndell",
+          "id": "lo_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Your name's on the list. Under the last hard winter's. I read it out at the Lamp and Pick, and nobody laughed."
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "sold Frosthollow's winter oil down in the city",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Frosthollow's winter oil was sold.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_stone_acorndell",
+          "id": "lo_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Sold it, did you. Well. City lamps burn as bright. They just don't remember who lit them."
+         }
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "If this one stays with you, it would make a Story of two scenes: the rendering, and where the oil went.",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      }
+     ]
+    },
+    {
+     "id": "q22-town",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-lamp-oil-share"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "lo_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_oil_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_oil_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_oil_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_oil_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "frosthollow",
+            "text": "Another name is on this winter's lamp-oil list at the Lamp and Pick, and not a miner's. The common shelf is fuller. Read the list by the door.",
+            "days": 7,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "lo_pick"
+          },
+          "op": "=",
+          "right": "b"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_oil_b",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_oil_b"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_oil_b"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_oil_b"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "frosthollow",
+              "text": "Frosthollow lamp oil is for sale in the city at three times the valley price. The common shelf at the Lamp and Pick is the poorer for it.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q23-accept",
+     "on": "quest accepted",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-logs-adrift"
+     },
+     "actions": [
+      {
+       "do": "set",
+       "var": "la_pick",
+       "value": ""
+      },
+      {
+       "do": "turn off",
+       "var": "la_placed"
+      },
+      {
+       "do": "turn off",
+       "var": "la_landed"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "weather.set",
+        "place": "w_ridgemere_2_5",
+        "weather": "fog",
+        "hours": 6,
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "id": "q23-shore",
+     "on": "region entered",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-logs-adrift",
+      "status": "active"
+     },
+     "note": "The logs in the shallows, and a fifth at the Soundside landing, for each wolf.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "target"
+        },
+        "op": "=",
+        "right": "la_shore"
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "la_placed",
+          "is": false
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-logs-adrift",
+            "objective": "shore",
+            "player": "$actor"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.place",
+            "item": "timber",
+            "quantity": 2,
+            "cell": "w_ridgemere_2_5",
+            "x": 144,
+            "y": 154,
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.place",
+            "item": "timber",
+            "quantity": 2,
+            "cell": "w_ridgemere_2_5",
+            "x": 160,
+            "y": 153,
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.ping",
+            "cell": "w_ridgemere_2_5",
+            "x": 152,
+            "y": 154,
+            "player": "$actor",
+            "label": "logs in the shallows",
+            "minutes": 30,
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "turn on",
+           "var": "la_placed"
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "field": "target"
+            },
+            "op": "=",
+            "right": "la_landing"
+           },
+           {
+            "test": "switch",
+            "var": "la_landed",
+            "is": false
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.place",
+            "item": "timber",
+            "quantity": 1,
+            "cell": "w_ridgemere_2_5",
+            "x": 90,
+            "y": 70,
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "turn on",
+           "var": "la_landed"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "scene.play",
+            "scene": "la_skipper",
+            "player": "$actor",
+            "cue": "la_skipper",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q23-progress",
+     "on": "objective completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-logs-adrift"
+     },
+     "note": "The choice is made by the delivery: the first of the two to be done.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "logs"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.reveal",
+          "quest": "mq-logs-adrift",
+          "objective": "home",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.reveal",
+          "quest": "mq-logs-adrift",
+          "objective": "sold",
+          "player": "$actor"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "landing"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.practice",
+            "player": "$actor",
+            "skill": "travel",
+            "ifRefused": "when here"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "field": "item"
+            },
+            "op": "=",
+            "right": "home"
+           },
+           {
+            "test": "not",
+            "condition": {
+             "test": "objective is",
+             "quest": "mq-logs-adrift",
+             "objective": "deliver",
+             "status": "done"
+            }
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "la_pick",
+           "value": "home"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.fail",
+            "quest": "mq-logs-adrift",
+            "objective": "sold",
+            "player": "$actor"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-logs-adrift",
+            "objective": "deliver",
+            "player": "$actor"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "field": "item"
+            },
+            "op": "=",
+            "right": "sold"
+           },
+           {
+            "test": "not",
+            "condition": {
+             "test": "objective is",
+             "quest": "mq-logs-adrift",
+             "objective": "deliver",
+             "status": "done"
+            }
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "la_pick",
+           "value": "sold"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.fail",
+            "quest": "mq-logs-adrift",
+            "objective": "home",
+            "player": "$actor"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-logs-adrift",
+            "objective": "deliver",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q23-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-logs-adrift"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "la_pick"
+        },
+        "op": "=",
+        "right": "home"
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_oakhaven_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_oakhaven_day"
+            },
+            "op": "<=",
+            "right": 14
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 10,
+            "purse": "town:oakhaven",
+            "reason": "the cut's carriage",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_oakhaven_day",
+           "value": 10
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Oakhaven's store is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "brought the Oakhaven cut's runaway logs home from Cedar Sound",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Four logs are back at the Oakhaven cut.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_oda_cinderdale",
+          "id": "la_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Four logs home, wet as otters. And the fog's lifted. I told it to, mind. Root well."
+         }
+        },
+        {
+         "do": "add",
+         "var": "nh_voice_oakhaven",
+         "value": 4
+        }
+       ],
+       "else": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_ridgemere_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_ridgemere_day"
+            },
+            "op": "<=",
+            "right": 121
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 14,
+            "purse": "town:ridgemere",
+            "reason": "Soundside's price for driftwood",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_ridgemere_day",
+           "value": 14
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "The city's purse is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "sold the Oakhaven cut's runaway logs at Soundside",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The Soundside skipper paid for four Oakhaven logs.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_oda_cinderdale",
+          "id": "la_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Sold to the skipper, were they? Proper price, I hope. The cut's four logs short and the fog's sorry. One of you should be."
+         }
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      }
+     ]
+    },
+    {
+     "id": "q23-town",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-logs-adrift"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "la_pick"
+        },
+        "op": "=",
+        "right": "home"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_logs_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_logs_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_logs_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_logs_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "oakhaven",
+            "days": 7,
+            "text": "The runaway logs from the broken raft are home at the cut, hauled uphill wet. The raft will be roped double from now on.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "add",
+         "var": "mq_logs_b",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_logs_b"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_logs_b"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_logs_b"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "ridgemere",
+            "days": 7,
+            "text": "Oakhaven cedar is stacked at the Soundside landing, bought as driftwood. Yards wanting timber may ask the skipper.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "quests": [
+  {
+   "id": "mq-windthrown-cedar",
+   "title": "Windthrown on the Sound Road",
+   "summary": "Last night's wind threw a cedar across the Sound Road below Oakhaven, and the carter's wagon is on the wrong side of it. The road wolves toward Alder Mere will smell a stuck wagon by dusk.",
+   "giver": "cty_tristram_rainridge",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 1
+   },
+   "fail": [
+    {
+     "afterDays": 1
+    }
+   ],
+   "offer": {
+    "ask": "Road trouble?",
+    "say": "#greet#. Road trouble, proper. Wind threw a cedar clean across the Sound Road below the cut, and my wagon's the wrong side of it, timber for the city and our winter salt. Fetch the loggers, bring me two ropes, and stand by me at dusk, mm? The lot toward Alder Mere can smell a stuck wagon a mile off.",
+    "accept": "Loggers, two ropes, and a long dusk.",
+    "decline": "Wait for the loggers.",
+    "handIn": "The wagon's in Oakhaven.",
+    "thanks": "#thanks#. Good bark, you are. I'll say nothing against your grandmother, and that's a gift from me."
+   },
+   "objectives": [
+    {
+     "id": "loggers",
+     "label": "Fetch help from the loggers at the Oakhaven cut.",
+     "on": "conversation",
+     "match": {
+      "target": "cty_frost_colddrift"
+     }
+    },
+    {
+     "id": "rope",
+     "label": "Bring two lengths of rope to haul the trunk.",
+     "on": "gift",
+     "match": {
+      "target": "cty_tristram_rainridge",
+      "item": "rope"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    },
+    {
+     "id": "hold",
+     "label": "Hold the wagon while the trunk comes off the road.",
+     "on": "bandit falls",
+     "match": {
+      "cell": "w_ridgemere_4_4"
+     },
+     "goal": 2,
+     "after": [
+      "loggers",
+      "rope"
+     ]
+    },
+    {
+     "id": "choose",
+     "label": "He asks you to help him keep a load back. Decide.",
+     "on": "story signal",
+     "signal": "wc_chose",
+     "after": [
+      "hold"
+     ]
+    },
+    {
+     "id": "road",
+     "label": "Walk the wagon up into Oakhaven.",
+     "on": "region entered",
+     "match": {
+      "target": "oh_square"
+     },
+     "after": [
+      "choose"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    }
+   ]
+  },
+  {
+   "id": "mq-low-drift-props",
+   "title": "Rotten Props in the Low Drift",
+   "summary": "Last month the Frosthollow carter hauled good cedar props up the Pass Road for the low drift. This week she watched rotten ones go in. Somebody sold the good ones down the valley.",
+   "giver": "cty_ebba_coalgate",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 6
+   },
+   "fail": [
+    {
+     "afterDays": 3
+    }
+   ],
+   "offer": {
+    "ask": "Bad road up the pass?",
+    "say": "#greet#. Road's fine. It's what came off it. Last month I hauled good cedar props up for the low drift. This week rotten ones went in. Somebody sold the good ones down the valley, and a drift with rotten props is a grave with the lid open, eh. Look at the mouth. Then ask the shop who bought cedar.",
+    "accept": "I'll look, and ask.",
+    "decline": "Mines aren't my business.",
+    "handIn": "The low drift's shored.",
+    "thanks": "Lamp's thanks. Sound beams, deep in. The miners'll never know whose paws they owe their roof to. That's how it should be."
+   },
+   "objectives": [
+    {
+     "id": "drift",
+     "label": "Look at the props at the mine mouth.",
+     "on": "region entered",
+     "match": {
+      "target": "ld_mouth"
+     }
+    },
+    {
+     "id": "store",
+     "label": "Ask the shopkeeper who bought cedar props this month.",
+     "on": "conversation",
+     "match": {
+      "target": "tn_fh_aster_coldfell"
+     }
+    },
+    {
+     "id": "beams",
+     "label": "Bring four sound beams for the low drift.",
+     "on": "gift",
+     "match": {
+      "target": "cty_ebba_coalgate",
+      "item": "beam"
+     },
+     "goal": 4,
+     "measure": "quantity"
+    },
+    {
+     "id": "choose",
+     "label": "Decide: say it aloud, or shore it up quietly.",
+     "on": "story signal",
+     "signal": "ld_chose",
+     "after": [
+      "store"
+     ]
+    },
+    {
+     "id": "taproom",
+     "label": "Say it in the Lamp and Pick in the evening, where the miners drink.",
+     "on": "story signal",
+     "signal": "ld_t",
+     "after": [
+      "choose"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "shored",
+     "label": "The low drift is shored.",
+     "on": "story signal",
+     "signal": "ld_s",
+     "after": [
+      "choose"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    }
+   ]
+  },
+  {
+   "id": "mq-lamp-oil-share",
+   "title": "Oil for the Long Dark",
+   "summary": "In the deep winters Frosthollow keeps a list of who shared their lamp oil. The colliers render the autumn kill's tallow for it. Bring the tallow, then put the oil on the common shelf, or sell it in the city.",
+   "giver": "cty_stone_acorndell",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 6
+   },
+   "fail": [
+    {
+     "afterDays": 3
+    }
+   ],
+   "offer": {
+    "ask": "Burning for the winter already?",
+    "say": "#greet#. Always, stone. In the deep winters we keep a list of who shared their lamp oil, names on it from before my grandda. Autumn tallow makes the oil. Bring four tallow to the shop to render, and we'll see where the oil goes, eh. Some sell it in the city for three times the price. Some don't.",
+    "accept": "Four tallow, to the shop.",
+    "decline": "Winter's a long way off.",
+    "handIn": "The oil's where I put it.",
+    "thanks": "Lamp's thanks. Here's a lump of coal for luck. Don't laugh. It's kept me alive twice."
+   },
+   "objectives": [
+    {
+     "id": "hunt",
+     "label": "Bring down an ibex in the high valley.",
+     "on": "hunted",
+     "match": {
+      "target": "ibex"
+     },
+     "optional": true
+    },
+    {
+     "id": "tallow",
+     "label": "Bring four tallow to the Frosthollow store for rendering.",
+     "on": "gift",
+     "match": {
+      "target": "tn_fh_aster_coldfell",
+      "item": "tallow"
+     },
+     "goal": 4,
+     "measure": "quantity"
+    },
+    {
+     "id": "choose",
+     "label": "Decide where the oil goes.",
+     "on": "story signal",
+     "signal": "lo_chose",
+     "after": [
+      "tallow"
+     ]
+    },
+    {
+     "id": "shelf",
+     "label": "Set two flasks on the common shelf at the Lamp and Pick.",
+     "on": "gift",
+     "match": {
+      "target": "tn_oh_thorn_ashwood",
+      "item": "lamp_oil"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "after": [
+      "choose"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "sell",
+     "label": "Sell two flasks of the oil, wherever it fetches most.",
+     "on": "trade done",
+     "match": {
+      "item": "lamp_oil",
+      "detail": "sold"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "after": [
+      "choose"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "done",
+     "label": "The oil is where you put it.",
+     "on": "story signal",
+     "signal": "lo_d",
+     "after": [
+      "choose"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "coal",
+     "quantity": 1
+    }
+   ]
+  },
+  {
+   "id": "mq-logs-adrift",
+   "title": "Logs Adrift on the Sound",
+   "summary": "The Oakhaven cut's raft broke up in the fog, and its logs are fetching up along the south shore of Cedar Sound. Haul four out of the shallows, and bring them home, or sell them to the Soundside skipper.",
+   "giver": "cty_oda_cinderdale",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 3
+   },
+   "fail": [
+    {
+     "afterDays": 2
+    }
+   ],
+   "offer": {
+    "ask": "Weather against you?",
+    "say": "#greet#. Told the fog to keep off the Sound, and it came anyway, mm? The raft's rope parted in the night, and my logs are fetching up all along the south shore. Haul me four out of the shallows. Bring them home if you will. The Soundside skipper buys driftwood. I'll not hold it against you. Much.",
+    "accept": "Four logs out of the shallows.",
+    "decline": "Not in this fog."
+   },
+   "objectives": [
+    {
+     "id": "shore",
+     "label": "Walk the south shore of Cedar Sound in the fog and find the logs.",
+     "on": "story signal",
+     "signal": "la_s"
+    },
+    {
+     "id": "logs",
+     "label": "Haul four logs out of the shallows.",
+     "on": "item picked up",
+     "match": {
+      "item": "timber"
+     },
+     "goal": 4,
+     "measure": "quantity",
+     "after": [
+      "shore"
+     ]
+    },
+    {
+     "id": "landing",
+     "label": "See what has fetched up at the Soundside landing.",
+     "on": "region entered",
+     "match": {
+      "target": "la_landing"
+     },
+     "optional": true
+    },
+    {
+     "id": "home",
+     "label": "Bring the logs home to the logger at the cut.",
+     "on": "gift",
+     "match": {
+      "target": "cty_oda_cinderdale",
+      "item": "timber"
+     },
+     "goal": 4,
+     "measure": "quantity",
+     "after": [
+      "logs"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "sold",
+     "label": "Or sell them to the Soundside skipper. He walks up from his boat shed at first light and at dusk.",
+     "on": "gift",
+     "match": {
+      "target": "cty_kell_reedwade",
+      "item": "timber"
+     },
+     "goal": 4,
+     "measure": "quantity",
+     "after": [
+      "logs"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "deliver",
+     "label": "The logs are where you took them.",
+     "on": "story signal",
+     "signal": "la_d",
+     "after": [
+      "logs"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    }
+   ],
+   "handIn": false
+  }
+ ],
+ "tests": [
+  {
+   "name": "Windthrown on the Sound Road: every stick",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-tristram-a",
+     "target": "run",
+     "item": "cty_tristram_rainridge",
+     "detail": "mq-windthrown-cedar"
+    },
+    {
+     "id": "e2",
+     "kind": "gift",
+     "day": 1.02,
+     "actor": "player-tristram-a",
+     "target": "cty_tristram_rainridge",
+     "item": "rope",
+     "quantity": 2
+    },
+    {
+     "id": "e3",
+     "kind": "conversation",
+     "day": 1.03,
+     "actor": "player-tristram-a",
+     "target": "cty_frost_colddrift"
+    },
+    {
+     "id": "e4",
+     "kind": "bandit falls",
+     "day": 1.04,
+     "actor": "player-tristram-a",
+     "target": "camp_story_8",
+     "cell": "w_ridgemere_4_4",
+     "detail": "a road wolf"
+    },
+    {
+     "id": "e5",
+     "kind": "bandit falls",
+     "day": 1.05,
+     "actor": "player-tristram-a",
+     "target": "camp_story_8",
+     "cell": "w_ridgemere_4_4",
+     "detail": "a road wolf"
+    },
+    {
+     "id": "e6",
+     "kind": "camp cleared",
+     "day": 1.06,
+     "actor": "oakhaven",
+     "target": "camp_story_8",
+     "cell": "w_ridgemere_4_4",
+     "detail": "by the watch"
+    },
+    {
+     "id": "e7",
+     "kind": "dialogue choice",
+     "day": 1.07,
+     "actor": "player-tristram-a",
+     "target": "run",
+     "item": "cty_tristram_rainridge",
+     "detail": "wc_ask"
+    },
+    {
+     "id": "e8",
+     "kind": "dialogue choice",
+     "day": 1.08,
+     "actor": "player-tristram-a",
+     "target": "run",
+     "item": "cty_tristram_rainridge",
+     "detail": "wc_honest"
+    },
+    {
+     "id": "e9",
+     "kind": "region entered",
+     "day": 1.09,
+     "actor": "player-tristram-a",
+     "target": "oh_square",
+     "cell": "w_ridgemere_3_4",
+     "x": 244,
+     "y": 196
+    },
+    {
+     "id": "e10",
+     "kind": "quest handed in",
+     "day": 1.1,
+     "actor": "player-tristram-a",
+     "target": "run",
+     "item": "cty_tristram_rainridge",
+     "detail": "mq-windthrown-cedar"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "wolves": {
+     "player-tristram-a": {
+      "partySize": 3
+     }
+    }
+   },
+   "expectQuests": {
+    "mq-windthrown-cedar": {
+     "player-tristram-a": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-tristram-a": {
+      "wc_pick": "a"
+     }
+    },
+    "story": {
+     "mq_cedar_a": 1,
+     "mq_cedar_posted": false
+    }
+   }
+  },
+  {
+   "name": "Windthrown on the Sound Road: one load kept back",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-tristram-b",
+     "target": "run",
+     "item": "cty_tristram_rainridge",
+     "detail": "mq-windthrown-cedar"
+    },
+    {
+     "id": "e2",
+     "kind": "gift",
+     "day": 1.02,
+     "actor": "player-tristram-b",
+     "target": "cty_tristram_rainridge",
+     "item": "rope",
+     "quantity": 2
+    },
+    {
+     "id": "e3",
+     "kind": "conversation",
+     "day": 1.03,
+     "actor": "player-tristram-b",
+     "target": "cty_frost_colddrift"
+    },
+    {
+     "id": "e4",
+     "kind": "bandit falls",
+     "day": 1.04,
+     "actor": "player-tristram-b",
+     "target": "camp_story_8",
+     "cell": "w_ridgemere_4_4",
+     "detail": "a road wolf"
+    },
+    {
+     "id": "e5",
+     "kind": "bandit falls",
+     "day": 1.05,
+     "actor": "player-tristram-b",
+     "target": "camp_story_8",
+     "cell": "w_ridgemere_4_4",
+     "detail": "a road wolf"
+    },
+    {
+     "id": "e6",
+     "kind": "camp cleared",
+     "day": 1.06,
+     "actor": "oakhaven",
+     "target": "camp_story_8",
+     "cell": "w_ridgemere_4_4",
+     "detail": "by the watch"
+    },
+    {
+     "id": "e7",
+     "kind": "dialogue choice",
+     "day": 1.07,
+     "actor": "player-tristram-b",
+     "target": "run",
+     "item": "cty_tristram_rainridge",
+     "detail": "wc_ask"
+    },
+    {
+     "id": "e8",
+     "kind": "dialogue choice",
+     "day": 1.08,
+     "actor": "player-tristram-b",
+     "target": "run",
+     "item": "cty_tristram_rainridge",
+     "detail": "wc_lie"
+    },
+    {
+     "id": "e9",
+     "kind": "region entered",
+     "day": 1.09,
+     "actor": "player-tristram-b",
+     "target": "oh_square",
+     "cell": "w_ridgemere_3_4",
+     "x": 244,
+     "y": 196
+    },
+    {
+     "id": "e10",
+     "kind": "quest handed in",
+     "day": 1.1,
+     "actor": "player-tristram-b",
+     "target": "run",
+     "item": "cty_tristram_rainridge",
+     "detail": "mq-windthrown-cedar"
+    },
+    {
+     "id": "e11",
+     "kind": "quest accepted",
+     "day": 1.3,
+     "actor": "player-tristram-c",
+     "target": "run",
+     "item": "cty_tristram_rainridge",
+     "detail": "mq-windthrown-cedar"
+    },
+    {
+     "id": "e12",
+     "kind": "arrival",
+     "day": 2.27,
+     "actor": "player-nobody"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 2.37,
+     "actor": "player-tristram-d",
+     "target": "run",
+     "item": "cty_tristram_rainridge",
+     "detail": "mq-windthrown-cedar"
+    },
+    {
+     "id": "e14",
+     "kind": "quest abandoned",
+     "day": 2.38,
+     "actor": "player-tristram-d",
+     "target": "run",
+     "detail": "mq-windthrown-cedar"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "wolves": {
+     "player-tristram-b": {
+      "partySize": 2
+     }
+    }
+   },
+   "expectQuests": {
+    "mq-windthrown-cedar": {
+     "player-tristram-b": "done",
+     "player-tristram-c": "failed",
+     "player-tristram-d": "abandoned"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-tristram-b": {
+      "wc_pick": "b"
+     }
+    },
+    "story": {
+     "mq_cedar_b": 1,
+     "mq_cedar_posted": false
+    }
+   }
+  },
+  {
+   "name": "Rotten Props: said aloud in the Lamp and Pick",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-ebba-a",
+     "target": "run",
+     "item": "cty_ebba_coalgate",
+     "detail": "mq-low-drift-props"
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 1.02,
+     "actor": "player-ebba-c",
+     "target": "run",
+     "item": "cty_ebba_coalgate",
+     "detail": "mq-low-drift-props"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 1.03,
+     "actor": "player-ebba-a",
+     "target": "ld_mouth",
+     "cell": "w_ridgemere_9_2",
+     "x": 205,
+     "y": 211
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 1.04,
+     "actor": "player-ebba-a",
+     "target": "tn_fh_aster_coldfell"
+    },
+    {
+     "id": "e5",
+     "kind": "dialogue choice",
+     "day": 1.05,
+     "actor": "player-ebba-a",
+     "target": "run",
+     "item": "cty_ebba_coalgate",
+     "detail": "ld_loud"
+    },
+    {
+     "id": "e6",
+     "kind": "enter place",
+     "day": 1.06,
+     "actor": "player-ebba-a",
+     "target": "cn_frosthollow_alehouse",
+     "cell": "cn_frosthollow_alehouse",
+     "detail": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e7",
+     "kind": "gift",
+     "day": 1.07,
+     "actor": "player-ebba-a",
+     "target": "cty_ebba_coalgate",
+     "item": "beam",
+     "quantity": 4
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.08,
+     "actor": "player-ebba-a",
+     "target": "run",
+     "item": "cty_ebba_coalgate",
+     "detail": "mq-low-drift-props"
+    },
+    {
+     "id": "e9",
+     "kind": "region entered",
+     "day": 1.09,
+     "actor": "player-ebba-c",
+     "target": "ld_mouth",
+     "cell": "w_ridgemere_9_2",
+     "x": 205,
+     "y": 211
+    },
+    {
+     "id": "e10",
+     "kind": "conversation",
+     "day": 1.1,
+     "actor": "player-ebba-c",
+     "target": "tn_fh_aster_coldfell"
+    },
+    {
+     "id": "e11",
+     "kind": "dialogue choice",
+     "day": 1.11,
+     "actor": "player-ebba-c",
+     "target": "run",
+     "item": "cty_ebba_coalgate",
+     "detail": "ld_loud"
+    },
+    {
+     "id": "e12",
+     "kind": "enter place",
+     "day": 1.12,
+     "actor": "player-ebba-c",
+     "target": "cn_frosthollow_alehouse",
+     "cell": "cn_frosthollow_alehouse",
+     "detail": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e13",
+     "kind": "gift",
+     "day": 1.13,
+     "actor": "player-ebba-c",
+     "target": "cty_ebba_coalgate",
+     "item": "beam",
+     "quantity": 4
+    },
+    {
+     "id": "e14",
+     "kind": "quest handed in",
+     "day": 1.14,
+     "actor": "player-ebba-c",
+     "target": "run",
+     "item": "cty_ebba_coalgate",
+     "detail": "mq-low-drift-props"
+    },
+    {
+     "id": "e15",
+     "kind": "arrival",
+     "day": 2.24,
+     "actor": "player-nobody"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "world": {
+     "hour": 20,
+     "season": "autumn"
+    }
+   },
+   "expectQuests": {
+    "mq-low-drift-props": {
+     "player-ebba-a": "done",
+     "player-ebba-c": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-ebba-a": {
+      "ld_pick": "a"
+     }
+    },
+    "story": {
+     "mq_props_a": 2
+    }
+   }
+  },
+  {
+   "name": "Rotten Props: shored quietly, beams first",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-ebba-b",
+     "target": "run",
+     "item": "cty_ebba_coalgate",
+     "detail": "mq-low-drift-props"
+    },
+    {
+     "id": "e2",
+     "kind": "gift",
+     "day": 1.02,
+     "actor": "player-ebba-b",
+     "target": "cty_ebba_coalgate",
+     "item": "beam",
+     "quantity": 4
+    },
+    {
+     "id": "e3",
+     "kind": "conversation",
+     "day": 1.03,
+     "actor": "player-ebba-b",
+     "target": "tn_fh_aster_coldfell"
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 1.04,
+     "actor": "player-ebba-b",
+     "target": "run",
+     "item": "cty_ebba_coalgate",
+     "detail": "ld_quiet"
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 1.05,
+     "actor": "player-ebba-b",
+     "target": "ld_mouth",
+     "cell": "w_ridgemere_9_2",
+     "x": 205,
+     "y": 211
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 1.06,
+     "actor": "player-ebba-b",
+     "target": "run",
+     "item": "cty_ebba_coalgate",
+     "detail": "mq-low-drift-props"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "mq-low-drift-props": {
+     "player-ebba-b": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-ebba-b": {
+      "ld_pick": "b"
+     }
+    },
+    "story": {
+     "mq_props_b": 1
+    }
+   }
+  },
+  {
+   "name": "Oil for the Long Dark: on the shelf in the deep winter",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-stone-a",
+     "target": "run",
+     "item": "cty_stone_acorndell",
+     "detail": "mq-lamp-oil-share"
+    },
+    {
+     "id": "e2",
+     "kind": "hunted",
+     "day": 1.02,
+     "actor": "player-stone-a",
+     "target": "ibex",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a clean kill",
+     "quantity": 3
+    },
+    {
+     "id": "e3",
+     "kind": "gift",
+     "day": 1.03,
+     "actor": "player-stone-a",
+     "target": "tn_fh_aster_coldfell",
+     "item": "tallow",
+     "quantity": 4
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 1.04,
+     "actor": "player-stone-a",
+     "target": "run",
+     "item": "cty_stone_acorndell",
+     "detail": "lo_shelf"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 1.05,
+     "actor": "player-stone-a",
+     "target": "tn_oh_thorn_ashwood",
+     "item": "lamp_oil",
+     "quantity": 2
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 1.06,
+     "actor": "player-stone-a",
+     "target": "run",
+     "item": "cty_stone_acorndell",
+     "detail": "mq-lamp-oil-share"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "world": {
+     "hour": 12,
+     "season": "winter"
+    }
+   },
+   "expectQuests": {
+    "mq-lamp-oil-share": {
+     "player-stone-a": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-stone-a": {
+      "lo_pick": "a"
+     }
+    },
+    "world": {
+     "mq_oil_list": [
+      "player-stone-a"
+     ],
+     "coin_frosthollow_day": 10
+    }
+   }
+  },
+  {
+   "name": "Oil for the Long Dark: sold",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-stone-b",
+     "target": "run",
+     "item": "cty_stone_acorndell",
+     "detail": "mq-lamp-oil-share"
+    },
+    {
+     "id": "e2",
+     "kind": "gift",
+     "day": 1.02,
+     "actor": "player-stone-b",
+     "target": "tn_fh_aster_coldfell",
+     "item": "tallow",
+     "quantity": 4
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 1.03,
+     "actor": "player-stone-b",
+     "target": "run",
+     "item": "cty_stone_acorndell",
+     "detail": "lo_sell"
+    },
+    {
+     "id": "e4",
+     "kind": "trade done",
+     "day": 1.04,
+     "actor": "player-stone-b",
+     "target": "rm_someone",
+     "item": "lamp_oil",
+     "detail": "sold",
+     "quantity": 2,
+     "coins": 12
+    },
+    {
+     "id": "e5",
+     "kind": "quest handed in",
+     "day": 1.05,
+     "actor": "player-stone-b",
+     "target": "run",
+     "item": "cty_stone_acorndell",
+     "detail": "mq-lamp-oil-share"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "world": {
+     "hour": 12,
+     "season": "autumn"
+    }
+   },
+   "expectQuests": {
+    "mq-lamp-oil-share": {
+     "player-stone-b": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-stone-b": {
+      "lo_pick": "b"
+     }
+    },
+    "story": {
+     "mq_oil_b": 1
+    },
+    "world": {
+     "coin_frosthollow_day": 0
+    }
+   }
+  },
+  {
+   "name": "Logs Adrift: home to the cut",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-oda-a",
+     "target": "run",
+     "item": "cty_oda_cinderdale",
+     "detail": "mq-logs-adrift"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "player-oda-a",
+     "target": "la_shore",
+     "cell": "w_ridgemere_2_5",
+     "x": 140,
+     "y": 155
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 1.03,
+     "actor": "player-oda-a",
+     "target": "la_shore",
+     "cell": "w_ridgemere_2_5",
+     "x": 150,
+     "y": 155
+    },
+    {
+     "id": "e4",
+     "kind": "item picked up",
+     "day": 1.04,
+     "actor": "player-oda-a",
+     "item": "timber",
+     "cell": "w_ridgemere_2_5",
+     "quantity": 2,
+     "x": 144,
+     "y": 154
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 1.05,
+     "actor": "player-oda-a",
+     "target": "la_landing",
+     "cell": "w_ridgemere_2_5",
+     "x": 90,
+     "y": 69
+    },
+    {
+     "id": "e6",
+     "kind": "item picked up",
+     "day": 1.06,
+     "actor": "player-oda-a",
+     "item": "timber",
+     "cell": "w_ridgemere_2_5",
+     "quantity": 2,
+     "x": 160,
+     "y": 153
+    },
+    {
+     "id": "e7",
+     "kind": "gift",
+     "day": 1.07,
+     "actor": "player-oda-a",
+     "target": "cty_oda_cinderdale",
+     "item": "timber",
+     "quantity": 4
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "mq-logs-adrift": {
+     "player-oda-a": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-oda-a": {
+      "la_pick": "home"
+     }
+    },
+    "story": {
+     "mq_logs_a": 1
+    },
+    "world": {
+     "nh_voice_oakhaven": 4
+    }
+   }
+  },
+  {
+   "name": "Logs Adrift: sold at Soundside",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-oda-b",
+     "target": "run",
+     "item": "cty_oda_cinderdale",
+     "detail": "mq-logs-adrift"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "player-oda-b",
+     "target": "la_shore",
+     "cell": "w_ridgemere_2_5",
+     "x": 140,
+     "y": 155
+    },
+    {
+     "id": "e3",
+     "kind": "item picked up",
+     "day": 1.03,
+     "actor": "player-oda-b",
+     "item": "timber",
+     "cell": "w_ridgemere_2_5",
+     "quantity": 4,
+     "x": 144,
+     "y": 154
+    },
+    {
+     "id": "e4",
+     "kind": "gift",
+     "day": 1.04,
+     "actor": "player-oda-b",
+     "target": "cty_kell_reedwade",
+     "item": "timber",
+     "quantity": 4
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "mq-logs-adrift": {
+     "player-oda-b": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-oda-b": {
+      "la_pick": "sold"
+     }
+    },
+    "story": {
+     "mq_logs_b": 1
+    },
+    "world": {
+     "coin_ridgemere_day": 14
+    }
+   }
+  }
+ ]
+}

@@ -905,3 +905,107 @@ this work: "Load into Ridgemere 3, verify live").
    bars. **Recommendation: wait for Phase 1a.**
 5. **The world data edit for old age** (the `protected` flag on seven residents) is needed only if Act I ships before
    C11 (Phase 1b).
+
+---
+
+## Content, today-only waves as built
+
+**Built 2026-11-22** on branch `r3-nh-content`: waves **A, C, D, E, F and G** of §9.2, each in its today-only form (only
+what `Data/Storylines/trigger-catalogue.json` has today), each reviewed once and fixed. **Not yet written:** wave B
+(Act I), H (Act II) and I (Act III), so `ninth-howl.1` … `ninth-howl.9` do not exist yet; wave J follows the engine
+phases. Nothing has been approved, published or loaded into Ridgemere 3, and no database was written.
+
+### What was written
+
+| Wave | Program (file under `Data/Storylines/ridgemere3/`) | Quests | Rehearsals |
+|---|---|---|---|
+| A | `nh-purses` (`ninth-howl/nh-purses.json`) | — | 4 |
+| A | `ninth-howl.cleanup` (`ninth-howl/ninth-howl.cleanup.json`) | — | 1 |
+| A | world variables (`ninth-howl/world-vars.json`): **122** declared, campaign §4 and every pack's own | — | — |
+| C | `nh-pack.small.city` (`packs/`), quests 1–19 and 46–48 | 22 | 8 |
+| C | `nh-pack.small.north` (`packs/`), 20–31 | 12 | 7 |
+| C | `nh-pack.small.south` (`packs/`), 32–45 | 14 | 6 |
+| D | `nh-pack.medium.city` (`packs/`), Q1–Q7 | 7 | 15 |
+| D | `nh-pack.medium.greenholt` (`packs/`), Q8–Q12 | 5 | 11 |
+| D | `nh-pack.medium.south` (`packs/`), Q13–Q19 | 7 | 14 |
+| D | `nh-pack.medium.north` (`packs/`), Q20–Q23 | 4 | 8 |
+| E | 11 large lines (`quests-large/lq-<line>.json`): salt-road, mast-cedars, old-brown, clipped-silver, blight-and-boar, runnel-fever, wreckers-light, long-run, eel-famine, vanishing-thief, black-hearths | 51 (4–5 a line) | 48 |
+| F | `nh-pack.stage` (`quests-stage/nh-pack.stage.json`), 7 phases | 22 | 7 |
+| | **21 programs** | **144 quests** (104 counting each large line once) | **129** |
+
+- **Notes beside the programs:** `ninth-howl/notes.md` (wave A and the talk library), one `.notes.md` per small pack,
+  `packs/nh-pack.medium.notes.md`, `quests-large/lq-lines-1-4.notes.md`, `lq-lines-5-8.notes.md` and one for each of
+  eel-famine, vanishing-thief and black-hearths, and `quests-stage/nh-pack.stage.notes.md`. Each says where it differs
+  from the design and why, and what its later versions add.
+- **Wave G, the talk library** (inert until C8, or until the DM seeds the keys):
+  - Part 1 (the cast, the Keepers and the campaign's givers): `Data/Talk/dialogue/resident.tree`, `watch.tree`,
+    `church.tree` and `inn.tree`. The trees gain 125 nodes, among them `nh_story`, `nh_help`, `nh_who`, `nh_ask` and
+    the `nh_*` talking paths, plus the one new `news` choice.
+  - Part 2 (gossip, helpful knowledge, recaps and scenes): 661 campaign lines and 353 pack lines, written into
+    `resident.tree` and `inn.tree` between part 2's markers. Also `Data/Talk/rules/story_ninth_howl.talk` (the
+    resident-to-resident rules) and `Data/Talk/scenes/common/story_ninth_howl.talk` (eleven scenes). The generator and its
+    sources are in `artifacts/quests/build/talk2/` (`campaign.dsl`, `extract_packs.py`, `build_packs.py`, `gen.py`).
+    Re-run `python3 artifacts/quests/build/talk2/gen.py Data/Talk` after anything rewrites those two trees; a re-run
+    reproduces the committed files exactly.
+  - `tools/dialect_allow.json` (T9): the campaign's places and titles.
+- **Tools:** `tools/nh_check.py` (the §9.3 checks) and `tools/nh_world_vars.py` (declares the world variables, or lists
+  the DM's steps).
+
+### Conventions forced by today's engine
+- **No top-level `prefix` and no `closure`**: today's validator refuses both. Every id carries its prefix by convention
+  (`nh` `sq` `mq` `lq` `st` `coin`), and `nh_check` refuses a world variable without one.
+- **Locked doors** (doc 82, `World::playerDoorLocked`): a wolf can't enter a private interior, and `door.unlock`
+  doesn't lift that. Every `enter place` into a locked building is an outdoor region at its door instead. Residents
+  who never come out speak in a one-line scene at their own door.
+- **Props are rationed per wolf** with player timers (once a game day, or once a week for laid trails). A quest set
+  aside and taken again would otherwise hand out new goods each time.
+- **Fights scale per copy**: two bandits for each wolf's copy of a player-scope quest, and one party-sized band for a
+  party quest. Story camps are switched off when they are broken or scattered, and `nh_threat` falls at most 3 a game
+  day per line.
+- **A window choice is a `dialogue choice` objective**, not a `conversation` (only a typed line logs one). No choice is
+  `once` where a wolf could pick it before the step that needs it.
+
+### The checks, as run at the commit
+- `python3 tools/nh_check.py --all`: **23 of 23 PASS** (world-vars, the 21 programs, and the talk library).
+  - For every program: `validate`, `problems(p) == []`, and `review` with no phase or trigger uncovered.
+  - References pass on Ridgemere 3, read only.
+  - Every named resident is placed, alive and reachable.
+  - The giver rule, the purse rule and the words checks all pass.
+- **Across programs** (the commit's own check): no program, quest or `npc.offer` id is used twice. No resident gives
+  or holds choices in more than one program. No resident is a target in more than two pack quests outside their own.
+- `ctest` talk_golden, talk_scorecard_quick, talk_topics, talk_library, dialogue_trees, dialect_check,
+  dialect_check_rules, talk_lint, talk_lint_rules and talk_coverage: **10 of 10 passed**.
+- **One cross-piece fix at the commit.** The talk library followed the design where the reviewed small pack had
+  changed it. A badger runs and bites only when cornered, and Saltwell's farm cart comes in most mornings. Both are
+  fixed in `build_packs.py` and the trees regenerated.
+
+### What waits for which engine phase (§8)
+| Phase | What the content gains |
+|---|---|
+| 1a (C2, R1–R3) | Act I's readiness. Wave B is still to be written, on the direction-exit stand-in or on `ready` blocks. |
+| 1b | SQ2: shop tills pay (until then the treasury or a town store pays, worded as the shop). J1: per-wolf offers (today every wolf of a story sees its choices, and a second wolf at the same giver replaces the first wolf's pick). N2: hide choices that presume a deed. C8: every gossip, helpful and `nh_coin=thin` line plays (until then the DM seeds the keys). C9: the `{fig}` figure lines. C11: `npc.unspare` in the cleanup. |
+| 2 | C1 values, M2 the purse operand in place of the floor switches, SQ1/SQ5, L2/L3 named camps and camp objectives, N4 |
+| 3 | C5 named thanks (the board-only quests' `npc.greet`), C3/C4 titles and ranks, J8, T5 |
+| 4 | C12a credit to the running chapter, C6 `requires` (e.g. the Feast Road offered only on feast days), J3 `closure`, J10, L5 |
+| 5 | L1: the bear and the boar hunts become required objectives |
+| 6 | J9 story items: today any `document_tube` or pair of shears counts |
+| 7 | C10 foes tuned to the bar |
+| 8 | J2 per-wolf state across acts, C14, L4 |
+| 9 | SQ3, M3 House purses (needs an economy run, asked first), T6 a story topic for the scenes |
+
+### Open problems
+1. **Givers behind locked doors** (medium packs, mostly). Several givers and targets live and work in buildings locked
+   to wolves, so they can only be met on their walks to and from work (about 6 and 17). Fixing this needs a world or
+   engine decision, such as opening a quest giver's workplace to wolves.
+2. **22 window lines** that the large lines' notes wrote "for wave G" are not in `resident.tree` yet: black-hearths 10,
+   eel-famine 4, lines 5–8 7, vanishing-thief 1. These are greetings gated on a line's keys. They are inert until C8,
+   and today the phase `npc.line`s carry the words. A short talk pass adds them.
+3. **Today's engine limits, accepted as they are:**
+   - A story can't take goods out of a pack without the "may act on players' wolves" permission. So Q2a's tally paper
+     and Q3b's candle stay with the wolf.
+   - Saltwell's shared meal needs someone already eating nearby. The bowl bought at the inn is the reliable path.
+   - The stage bounty depends on natural camps forming in its nine cells.
+   - "A loaf each to three wolves" can be met by giving one resident three loaves.
+   - In the Runnel Fever, if the soakaway wins after a wolf asked for the cover, the city keeps asking for the cover.
+   - Q11's first witnesses give no clue until the DM seeds `lq_hearths=undersold`.
+   - Rehearsals can't set world variables, so `nh_b_peace` in quests 46–48 was checked by reading.

@@ -1,0 +1,6285 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "lq-wreckers-light",
+ "title": "The Wreckers' Light",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "quietAfterHours": 0,
+ "variables": [
+  {
+   "id": "lq_wreck",
+   "type": "text",
+   "scope": "world",
+   "initial": "",
+   "note": "The Wreckers' Light's lasting result: named, watch or wharf (empty: not yet). Written by lq-wreckers-light."
+  },
+  {
+   "id": "coin_ridgemere_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:ridgemere by every story (day cap 135); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_ridgemere_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:ridgemere is above its floor: off below 60, on again at 80 (nh-purses only)."
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_voice_ridgemere",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Ridgemere's strand of the realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_stage",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The Ninth Howl chapter now running (read only here: from Ch 6 the oil smells of the fens)."
+  },
+  {
+   "id": "nh_threat",
+   "type": "number",
+   "scope": "world",
+   "initial": 30,
+   "note": "The Grey Captain's grip on the roads, 0-100: this line lowers it by 1 a wreckers' gang met or a cove camp cleared."
+  },
+  {
+   "id": "nh_b_wharf",
+   "type": "switch",
+   "scope": "world",
+   "initial": false,
+   "note": "Ch 5's branch: on when the wharf's dead were read (read only here)."
+  },
+  {
+   "id": "lamps_taken",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "show": "False lights put out and followed",
+   "note": "+1 a false lamp taken off the headland, +2 a dusk round followed."
+  },
+  {
+   "id": "goal",
+   "type": "number",
+   "scope": "story",
+   "initial": 5,
+   "show": "Needed before the lamplighter is faced",
+   "note": "The shared bar: 5, and 1 more for each wolf who helps."
+  },
+  {
+   "id": "helpers",
+   "type": "wolves",
+   "scope": "story",
+   "note": "Every wolf who took a lamp or followed a dusk round."
+  },
+  {
+   "id": "t_tide",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Weight for naming him at the Tide (the default)."
+  },
+  {
+   "id": "t_watch",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Weight for handing her to the Watch."
+  },
+  {
+   "id": "t_wharf",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Weight for telling the Wharf Office."
+  },
+  {
+   "id": "tally_on",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "A road has been taken: the reckoning is three game days off."
+  },
+  {
+   "id": "lamp_rocks",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "A false lamp lies on the rock shore below the walls now."
+  },
+  {
+   "id": "lamp_head",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "A false lamp lies on the headland rock now."
+  },
+  {
+   "id": "lamps_done",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Lamps brought to the skipper this season: at 3 the season has its wreck night."
+  },
+  {
+   "id": "wreck_done",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "This season has had its wreck night."
+  },
+  {
+   "id": "wreck_night",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "Tonight is the wreck night: the false lamp burns every hour."
+  },
+  {
+   "id": "wave_turn",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Which cove region the next salvage gang comes to (0 the shed, 1 the north beach)."
+  },
+  {
+   "id": "spawned_cove",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "A story gang stands round the North Cove shed (decisions 4.1: matched by cell and this switch)."
+  },
+  {
+   "id": "spawned_cove_b",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "A story gang stands on North Cove's north beach."
+  },
+  {
+   "id": "fogged",
+   "type": "timer",
+   "scope": "story",
+   "note": "When the line last brought fog to the headland (at most once a game day)."
+  },
+  {
+   "id": "named",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "The naming has been played at the Chapel of the Tide."
+  },
+  {
+   "id": "facing",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Roads under way: the lamplighter shows her first choice while any is."
+  },
+  {
+   "id": "tiding",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Tide roads under way: the lamplighter shows her second choice while any is."
+  },
+  {
+   "id": "lq_coin",
+   "type": "number",
+   "scope": "player",
+   "initial": 0,
+   "note": "What this line has paid this wolf in all (at most 35)."
+  },
+  {
+   "id": "lq_thin",
+   "type": "switch",
+   "scope": "player",
+   "initial": false,
+   "note": "This wolf was paid in kind when the purse was thin."
+  },
+  {
+   "id": "lq_lamp1",
+   "type": "text",
+   "scope": "player",
+   "initial": "",
+   "note": "How this wolf ended the false light: doused, waited (the gang came), or caught (and brought the gang down)."
+  },
+  {
+   "id": "step",
+   "type": "text",
+   "scope": "player",
+   "initial": "",
+   "note": "Where this wolf is in chapter 1: bearing (taken), found (the lamp)."
+  },
+  {
+   "id": "wait",
+   "type": "timer",
+   "scope": "player",
+   "note": "When this wolf found the lamp burning: after a game hour of waiting, the gang comes."
+  },
+  {
+   "id": "shadow_t",
+   "type": "timer",
+   "scope": "player",
+   "note": "When this wolf last followed the dusk round (once a game day counts)."
+  },
+  {
+   "id": "oil_paid",
+   "type": "switch",
+   "scope": "player",
+   "initial": false,
+   "note": "This wolf had the first-time reward of The Lamplighter's Oil."
+  },
+  {
+   "id": "road",
+   "type": "text",
+   "scope": "player",
+   "initial": "",
+   "note": "The road this wolf took in chapter 3 (tide, watch or wharf): one road a wolf, for good."
+  }
+ ],
+ "regions": [
+  {
+   "id": "rocks",
+   "cell": "w_ridgemere_0_0",
+   "x1": 105,
+   "y1": 84,
+   "x2": 112,
+   "y2": 96
+  },
+  {
+   "id": "headland",
+   "cell": "w_ridgemere_0_0",
+   "x1": 106,
+   "y1": 97,
+   "x2": 130,
+   "y2": 120
+  },
+  {
+   "id": "cove",
+   "cell": "w_ridgemere_0_4",
+   "x1": 145,
+   "y1": 37,
+   "x2": 169,
+   "y2": 61
+  },
+  {
+   "id": "cove_b",
+   "cell": "w_ridgemere_0_4",
+   "x1": 144,
+   "y1": 16,
+   "x2": 163,
+   "y2": 35
+  }
+ ],
+ "scenes": [
+  {
+   "format": "ratw-scene",
+   "version": 1,
+   "id": "tide_naming",
+   "title": "A name at the Tide",
+   "visibility": "public",
+   "lockMovement": false,
+   "area": {
+    "cell": "rm_the_chapel_of_the_tide",
+    "x1": 0,
+    "y1": 0,
+    "x2": 21,
+    "y2": 15
+   },
+   "cast": [
+    {
+     "id": "tide",
+     "npc": "rm_solveig_tarwell"
+    },
+    {
+     "id": "lamplighter",
+     "npc": "rm_ilse_coalley"
+    }
+   ],
+   "start": "b1",
+   "beats": [
+    {
+     "id": "b1",
+     "type": "line",
+     "speaker": "tide",
+     "text": "We name the drowned at the Tide, whoever wrote them down as cargo.",
+     "seconds": 8,
+     "next": "b2"
+    },
+    {
+     "id": "b2",
+     "type": "line",
+     "speaker": "lamplighter",
+     "text": "He was my brother. He was a lighterman. He was not cargo.",
+     "seconds": 8,
+     "next": "b3"
+    },
+    {
+     "id": "b3",
+     "type": "line",
+     "speaker": "tide",
+     "text": "Then the tide has him by his name, and the Bright One with it.",
+     "seconds": 8,
+     "next": "b4"
+    },
+    {
+     "id": "b4",
+     "type": "line",
+     "speaker": "lamplighter",
+     "seconds": 6,
+     "text": "There. It's said. The lamp on the headland is out, and it stays out."
+    }
+   ]
+  },
+  {
+   "format": "ratw-scene",
+   "version": 1,
+   "id": "tide_naming_wharf",
+   "title": "A name at the Tide",
+   "visibility": "public",
+   "lockMovement": false,
+   "area": {
+    "cell": "rm_the_chapel_of_the_tide",
+    "x1": 0,
+    "y1": 0,
+    "x2": 21,
+    "y2": 15
+   },
+   "cast": [
+    {
+     "id": "tide",
+     "npc": "rm_solveig_tarwell"
+    },
+    {
+     "id": "lamplighter",
+     "npc": "rm_ilse_coalley"
+    }
+   ],
+   "start": "b1",
+   "beats": [
+    {
+     "id": "b1",
+     "type": "line",
+     "speaker": "tide",
+     "text": "We read the wharf's dead in spring, whoever wrote them down as cargo. We'll read one more.",
+     "seconds": 8,
+     "next": "b2"
+    },
+    {
+     "id": "b2",
+     "type": "line",
+     "speaker": "lamplighter",
+     "text": "He was my brother. He was a lighterman. He was not cargo.",
+     "seconds": 8,
+     "next": "b3"
+    },
+    {
+     "id": "b3",
+     "type": "line",
+     "speaker": "tide",
+     "text": "Then the tide has him by his name, and the Bright One with it.",
+     "seconds": 8,
+     "next": "b4"
+    },
+    {
+     "id": "b4",
+     "type": "line",
+     "speaker": "lamplighter",
+     "seconds": 6,
+     "text": "There. It's said. The lamp on the headland is out, and it stays out."
+    }
+   ]
+  }
+ ],
+ "triggers": [
+  {
+   "id": "lay-offers",
+   "on": "day begins",
+   "note": "Each day: the clerk's and the neighbour's choices, and the lamplighter's while a road is under way.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rm_septimus_plankmarsh",
+      "id": "lq_wr_ledger",
+      "words": "What became of the lighters' crews?",
+      "reply": "Crews? Here it says cargo lost, eh, and a line under it. Same words as the one that went down in the bay years back. A crew of three, I think, and the ledger calls them cargo. Rough water, to be written down like that.",
+      "once": false
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rm_ivo_cinderham",
+      "id": "lq_wr_stair",
+      "words": "Does your neighbour go out in a blow?",
+      "reply": "Every blow, with a lamp and a jar, and back at dawn soaked through. She cries on the stair sometimes. Her brother was on a Grayrock lighter, years back. Nobody ever came to say sorry.",
+      "once": false
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "facing"
+      },
+      "op": ">",
+      "right": 0
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_ilse_coalley",
+        "id": "lq_wr_face",
+        "words": "You lit the lamp on the headland.",
+        "reply": "And they wrote my brother down as cargo. Cargo lost, a line under it. I light a lamp so the Wharf loses cargo too. Nobody drowns, mostly. I see to that. Mostly.",
+        "once": true
+       }
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "tiding"
+      },
+      "op": ">",
+      "right": 0
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_ilse_coalley",
+        "id": "lq_wr_tide",
+        "words": "Come and name him at the Tide.",
+        "reply": "Out loud, in the Chapel of the Tide? All these years and nobody once asked his name. Walk with me, then. I'll put the lamp out on the way.",
+        "once": true
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "lay-offers-now",
+   "on": "quest started",
+   "audience": "participant",
+   "once": "visit",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rm_septimus_plankmarsh",
+      "id": "lq_wr_ledger",
+      "words": "What became of the lighters' crews?",
+      "reply": "Crews? Here it says cargo lost, eh, and a line under it. Same words as the one that went down in the bay years back. A crew of three, I think, and the ledger calls them cargo. Rough water, to be written down like that.",
+      "once": false
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rm_ivo_cinderham",
+      "id": "lq_wr_stair",
+      "words": "Does your neighbour go out in a blow?",
+      "reply": "Every blow, with a lamp and a jar, and back at dawn soaked through. She cries on the stair sometimes. Her brother was on a Grayrock lighter, years back. Nobody ever came to say sorry.",
+      "once": false
+     }
+    }
+   ]
+  },
+  {
+   "id": "fog",
+   "on": "quest started",
+   "match": {
+    "detail": "lamp"
+   },
+   "audience": "participant",
+   "note": "Fog on the headland when a wolf takes the lamp, at most once a game day (a hosted world needs a Dungeon Master).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "since": "fogged"
+        },
+        "op": ">=",
+        "right": 1
+       },
+       {
+        "test": "not",
+        "condition": {
+         "test": "compare",
+         "left": {
+          "since": "fogged"
+         },
+         "op": ">=",
+         "right": 0
+        }
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "weather.set",
+        "place": "w_ridgemere_0_0",
+        "weather": "fog",
+        "hours": 6,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "start timer",
+       "var": "fogged"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "bearing",
+   "on": "objective completed",
+   "match": {
+    "detail": "lamp",
+    "item": "bearing"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "set",
+     "var": "step",
+     "value": "bearing",
+     "of": "$actor"
+    }
+   ]
+  },
+  {
+   "id": "lamp-rocks",
+   "on": "region entered",
+   "match": {
+    "target": "rocks"
+   },
+   "audience": "participant",
+   "note": "After the bearing, after dark (or on the wreck night): the false lamp burns here (again, if another wolf took it), and the wolf has found it.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "step",
+           "of": "$actor"
+          },
+          "op": "=",
+          "right": "bearing"
+         },
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "step",
+             "of": "$actor"
+            },
+            "op": "=",
+            "right": "found"
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "lq_lamp1",
+             "of": "$actor"
+            },
+            "op": "=",
+            "right": ""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "hour between",
+          "from": 19,
+          "to": 5
+         },
+         {
+          "test": "switch",
+          "var": "wreck_night",
+          "is": true
+         }
+        ]
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_wreck"
+        },
+        "op": "!=",
+        "right": "named"
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "lamp_rocks",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "oil_lamp",
+          "quantity": 1,
+          "cell": "w_ridgemere_0_0",
+          "x": 108,
+          "y": 90,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "lamp_rocks"
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.ping",
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90,
+        "player": "$actor",
+        "label": "a light on the headland",
+        "minutes": 60,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "step",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": "bearing"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "lamp",
+          "objective": "rocks",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "set",
+         "var": "step",
+         "value": "found",
+         "of": "$actor"
+        },
+        {
+         "do": "start timer",
+         "var": "wait",
+         "of": "$actor"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "lamp-headland",
+   "on": "region entered",
+   "match": {
+    "target": "headland"
+   },
+   "audience": "participant",
+   "note": "After the bearing, after dark (or on the wreck night): the false lamp burns here (again, if another wolf took it), and the wolf has found it.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "step",
+           "of": "$actor"
+          },
+          "op": "=",
+          "right": "bearing"
+         },
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "step",
+             "of": "$actor"
+            },
+            "op": "=",
+            "right": "found"
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "lq_lamp1",
+             "of": "$actor"
+            },
+            "op": "=",
+            "right": ""
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "hour between",
+          "from": 19,
+          "to": 5
+         },
+         {
+          "test": "switch",
+          "var": "wreck_night",
+          "is": true
+         }
+        ]
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_wreck"
+        },
+        "op": "!=",
+        "right": "named"
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "lamp_head",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "oil_lamp",
+          "quantity": 1,
+          "cell": "w_ridgemere_0_0",
+          "x": 118,
+          "y": 108,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "lamp_head"
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.ping",
+        "cell": "w_ridgemere_0_0",
+        "x": 118,
+        "y": 108,
+        "player": "$actor",
+        "label": "a light on the headland",
+        "minutes": 60,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "step",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": "bearing"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "lamp",
+          "objective": "rocks",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "set",
+         "var": "step",
+         "value": "found",
+         "of": "$actor"
+        },
+        {
+         "do": "start timer",
+         "var": "wait",
+         "of": "$actor"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "lamp-picked",
+   "on": "item picked up",
+   "match": {
+    "item": "oil_lamp",
+    "cell": "w_ridgemere_0_0"
+   },
+   "audience": "participant",
+   "note": "Taken before anyone came for it: the light is doused. After the gang came, taking it ends the night, won or not.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "wolf in region",
+      "region": "rocks"
+     },
+     "then": [
+      {
+       "do": "turn off",
+       "var": "lamp_rocks"
+      }
+     ],
+     "else": [
+      {
+       "do": "turn off",
+       "var": "lamp_head"
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "step",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": "found"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_lamp1",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": ""
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "lq_lamp1",
+       "value": "doused",
+       "of": "$actor"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "lamp",
+        "objective": "end",
+        "player": "$actor"
+       }
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "step",
+           "of": "$actor"
+          },
+          "op": "=",
+          "right": "found"
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "lq_lamp1",
+           "of": "$actor"
+          },
+          "op": "=",
+          "right": "waited"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "lamp",
+          "objective": "end",
+          "player": "$actor"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "wreck-wait",
+   "on": "hour",
+   "note": "A wolf who left the lamp burning and waited a game hour beside it: the salvage gang comes, sized to the party.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "step",
+           "of": "$each"
+          },
+          "op": "=",
+          "right": "found"
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "lq_lamp1",
+           "of": "$each"
+          },
+          "op": "=",
+          "right": ""
+         },
+         {
+          "test": "compare",
+          "left": {
+           "since": "wait",
+           "of": "$each"
+          },
+          "op": ">=",
+          "right": 0.04
+         },
+         {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "wolf in region",
+            "region": "rocks",
+            "who": "$each"
+           },
+           {
+            "test": "wolf in region",
+            "region": "headland",
+            "who": "$each"
+           }
+          ]
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "party size",
+          "who": "$each",
+          "op": ">=",
+          "value": 4
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "bandits.call",
+            "player": "$each",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "party size",
+            "who": "$each",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "bandits.call",
+              "player": "$each",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "bandits.call",
+            "player": "$each",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "set",
+         "var": "lq_lamp1",
+         "value": "waited",
+         "of": "$each"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.reveal",
+          "quest": "lamp",
+          "objective": "wreckers",
+          "player": "$each"
+         }
+        },
+        {
+         "do": "subtract",
+         "var": "nh_threat",
+         "value": 1
+        },
+        {
+         "do": "clamp",
+         "var": "nh_threat",
+         "min": 0,
+         "max": 100
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "wreckers-down",
+   "on": "objective completed",
+   "match": {
+    "detail": "lamp",
+    "item": "wreckers"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "lq_lamp1",
+       "of": "$actor"
+      },
+      "op": "=",
+      "right": "waited"
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "lq_lamp1",
+       "value": "caught",
+       "of": "$actor"
+      }
+     ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "lamp",
+      "objective": "end",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "lamp-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "lamp"
+   },
+   "audience": "participant",
+   "note": "Linden's thanks; the oil chapter by the journal; the third lamp of a season brings the wreck night.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "lq_lamp1",
+       "of": "$actor"
+      },
+      "op": "=",
+      "right": "caught"
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "caught wreckers at their false light on the North Headland"
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "took a wrecker's lamp off the North Headland"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 4
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_ridgemere",
+     "value": 4
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "nh_stage"
+      },
+      "op": ">=",
+      "right": 6
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "A false light to wreck ships. The oil smells of eel fat. In the fens, they say, the false lights float."
+       }
+      }
+     ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "quest.offer",
+      "quest": "oil",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "add",
+     "var": "lamps_taken",
+     "value": 1
+    },
+    {
+     "do": "add",
+     "var": "lamps_done",
+     "value": 1
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "in list",
+       "list": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      }
+     },
+     "then": [
+      {
+       "do": "list add",
+       "var": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      },
+      {
+       "do": "add",
+       "var": "goal",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "lamps_done"
+        },
+        "op": ">=",
+        "right": 3
+       },
+       {
+        "test": "switch",
+        "var": "wreck_done",
+        "is": false
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "wreck_done"
+      },
+      {
+       "do": "emit",
+       "signal": "wreck"
+      }
+     ]
+    },
+    {
+     "do": "emit",
+     "signal": "bar"
+    }
+   ]
+  },
+  {
+   "id": "wreck",
+   "on": "story signal",
+   "signal": "wreck",
+   "note": "Once a season: a ship held in a storm, the city in a gale, and salvage gangs in both coves.",
+   "actions": [
+    {
+     "do": "random",
+     "choices": [
+      {
+       "weight": 1,
+       "actions": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "ship.storm",
+          "ship": "s21",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "weight": 1,
+       "actions": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "ship.storm",
+          "ship": "s22",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "weight": 1,
+       "actions": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "ship.storm",
+          "ship": "s23",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "weight": 1,
+       "actions": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "ship.storm",
+          "ship": "s24",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "weight": 1,
+       "actions": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "ship.storm",
+          "ship": "s25",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "weather.set",
+      "town": "ridgemere",
+      "weather": "storm",
+      "hours": 12,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "turn on",
+     "var": "wreck_night"
+    },
+    {
+     "do": "schedule",
+     "signal": "wreck_over",
+     "days": 0.5,
+     "scope": "campaign"
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "spawned_cove",
+      "is": false
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "count in region",
+        "region": "cove",
+        "op": ">=",
+        "value": 5
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "cove",
+          "count": 6,
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "count in region",
+          "region": "cove",
+          "op": ">=",
+          "value": 3
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "cove",
+            "count": 4,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "count in region",
+          "region": "cove",
+          "op": ">=",
+          "value": 2
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "cove",
+            "count": 3,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "cove",
+          "count": 2,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "turn on",
+       "var": "spawned_cove"
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "spawned_cove_b",
+      "is": false
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "count in region",
+        "region": "cove_b",
+        "op": ">=",
+        "value": 5
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "cove_b",
+          "count": 6,
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "count in region",
+          "region": "cove_b",
+          "op": ">=",
+          "value": 3
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "cove_b",
+            "count": 4,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "count in region",
+          "region": "cove_b",
+          "op": ">=",
+          "value": 2
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "cove_b",
+            "count": 3,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "cove_b",
+          "count": 2,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "turn on",
+       "var": "spawned_cove_b"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "wreck-over",
+   "on": "story signal",
+   "signal": "wreck_over",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "wreck_night"
+    }
+   ]
+  },
+  {
+   "id": "wreck-lamps",
+   "on": "hour",
+   "note": "On the wreck night the false lamp burns every hour.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "wreck_night",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_wreck"
+        },
+        "op": "!=",
+        "right": "named"
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "lamp_rocks",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "oil_lamp",
+          "quantity": 1,
+          "cell": "w_ridgemere_0_0",
+          "x": 108,
+          "y": 90,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "lamp_rocks"
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "lamp_head",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "oil_lamp",
+          "quantity": 1,
+          "cell": "w_ridgemere_0_0",
+          "x": 118,
+          "y": 108,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "lamp_head"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "stormbound",
+   "on": "ship stormbound",
+   "note": "A ship held by the weather: a salvage gang comes down to North Cove, to the shed and the north beach in turn, where none stands yet. A DM may fire this by hand for a wreck.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "wave_turn"
+      },
+      "op": "=",
+      "right": 0
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "spawned_cove",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "count in region",
+          "region": "cove",
+          "op": ">=",
+          "value": 5
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "cove",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "count in region",
+            "region": "cove",
+            "op": ">=",
+            "value": 3
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "cove",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          },
+          {
+           "if": {
+            "test": "count in region",
+            "region": "cove",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "cove",
+              "count": 3,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "cove",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "turn on",
+         "var": "spawned_cove"
+        }
+       ]
+      },
+      {
+       "do": "set",
+       "var": "wave_turn",
+       "value": 1
+      }
+     ],
+     "else": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "spawned_cove_b",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "count in region",
+          "region": "cove_b",
+          "op": ">=",
+          "value": 5
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "cove_b",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "count in region",
+            "region": "cove_b",
+            "op": ">=",
+            "value": 3
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "cove_b",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          },
+          {
+           "if": {
+            "test": "count in region",
+            "region": "cove_b",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "cove_b",
+              "count": 3,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "cove_b",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "turn on",
+         "var": "spawned_cove_b"
+        }
+       ]
+      },
+      {
+       "do": "set",
+       "var": "wave_turn",
+       "value": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cove-cleared",
+   "on": "camp cleared",
+   "match": {
+    "cell": "w_ridgemere_0_4"
+   },
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "spawned_cove",
+      "is": true
+     },
+     {
+      "test": "switch",
+      "var": "spawned_cove_b",
+      "is": true
+     }
+    ]
+   },
+   "note": "A story gang at North Cove broken: matched by the cell and the spawned switches, never a camp id (decisions 4.1).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "spawned_cove",
+      "is": true
+     },
+     "then": [
+      {
+       "do": "turn off",
+       "var": "spawned_cove"
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "switch",
+        "var": "spawned_cove_b",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "turn off",
+         "var": "spawned_cove_b"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "subtract",
+     "var": "nh_threat",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "nh_threat",
+     "min": 0,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "shadow",
+   "on": "near resident",
+   "match": {
+    "target": "rm_ilse_coalley"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "hour between",
+    "from": 17,
+    "to": 22
+   },
+   "note": "Near the lamplighter between five and ten in the evening: one evening of her round followed (once a game day).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "since": "shadow_t",
+         "of": "$actor"
+        },
+        "op": ">=",
+        "right": 0.5
+       },
+       {
+        "test": "not",
+        "condition": {
+         "test": "compare",
+         "left": {
+          "since": "shadow_t",
+          "of": "$actor"
+         },
+         "op": ">=",
+         "right": 0
+        }
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.progress",
+        "quest": "oil",
+        "objective": "shadow",
+        "player": "$actor",
+        "amount": 1
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.reveal",
+        "quest": "oil",
+        "objective": "neighbour",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "start timer",
+       "var": "shadow_t",
+       "of": "$actor"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "shadow-done",
+   "on": "objective completed",
+   "match": {
+    "detail": "oil",
+    "item": "shadow"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "add",
+     "var": "lamps_taken",
+     "value": 2
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "in list",
+       "list": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      }
+     },
+     "then": [
+      {
+       "do": "list add",
+       "var": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      },
+      {
+       "do": "add",
+       "var": "goal",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "do": "emit",
+     "signal": "bar"
+    }
+   ]
+  },
+  {
+   "id": "oil-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "oil"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "oil_paid",
+      "is": false,
+      "of": "$actor"
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_ridgemere_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_ridgemere_day"
+          },
+          "op": "<=",
+          "right": 129
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "lq_coin",
+           "of": "$actor"
+          },
+          "op": "<=",
+          "right": 29
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 6,
+          "purse": "town:ridgemere",
+          "reason": "the city pays for tracing the false lamp's oil",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_ridgemere_day",
+         "value": 6
+        },
+        {
+         "do": "add",
+         "var": "lq_coin",
+         "value": 6,
+         "of": "$actor"
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "lq_thin",
+         "of": "$actor"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Coin is short in the city's treasury today, so you are paid in kind instead."
+         }
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "traced the false lamp's oil to the Lamp Store"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.practice",
+        "player": "$actor",
+        "skill": "service"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "oil_paid",
+       "of": "$actor"
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.practice",
+        "player": "$actor",
+        "skill": "service"
+       }
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "phase is",
+      "phase": "reckoning"
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "wreck_tide",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "wreck_watch",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "wreck_wharf",
+        "player": "$actor"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "bar",
+   "on": "story signal",
+   "signal": "bar",
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "phase is",
+      "phase": "open"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "var": "lamps_taken"
+      },
+      "op": ">=",
+      "right": {
+       "var": "goal"
+      }
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "each",
+     "over": "list",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "wreck_tide",
+        "player": "$each"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "wreck_watch",
+        "player": "$each"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "wreck_wharf",
+        "player": "$each"
+       }
+      }
+     ],
+     "list": "helpers"
+    },
+    {
+     "do": "schedule",
+     "signal": "reckon",
+     "days": 6,
+     "scope": "campaign"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "story.tell",
+      "to": "participants",
+      "text": "The false lamp's oil has been followed to an old lamplighter's door. What is done with her is for the wolves to choose. Your journal has the roads."
+     }
+    },
+    {
+     "do": "enter",
+     "phase": "reckoning"
+    }
+   ]
+  },
+  {
+   "id": "road-tide",
+   "on": "quest started",
+   "match": {
+    "detail": "wreck_tide"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road",
+       "of": "$actor"
+      },
+      "op": "!=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "wreck_tide",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you have already chosen what is done with the lamplighter."
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "tide",
+       "of": "$actor"
+      },
+      {
+       "do": "add",
+       "var": "t_tide",
+       "value": 1
+      },
+      {
+       "do": "add",
+       "var": "facing",
+       "value": 1
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_ilse_coalley",
+        "id": "lq_wr_face",
+        "words": "You lit the lamp on the headland.",
+        "reply": "And they wrote my brother down as cargo. Cargo lost, a line under it. I light a lamp so the Wharf loses cargo too. Nobody drowns, mostly. I see to that. Mostly.",
+        "once": true
+       }
+      },
+      {
+       "do": "add",
+       "var": "tiding",
+       "value": 1
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_ilse_coalley",
+        "id": "lq_wr_tide",
+        "words": "Come and name him at the Tide.",
+        "reply": "Out loud, in the Chapel of the Tide? All these years and nobody once asked his name. Walk with me, then. I'll put the lamp out on the way.",
+        "once": true
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "party size",
+        "op": ">=",
+        "value": 2
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_tide",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "tally_on",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "tally_on"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-watch",
+   "on": "quest started",
+   "match": {
+    "detail": "wreck_watch"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road",
+       "of": "$actor"
+      },
+      "op": "!=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "wreck_watch",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you have already chosen what is done with the lamplighter."
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "watch",
+       "of": "$actor"
+      },
+      {
+       "do": "add",
+       "var": "t_watch",
+       "value": 1
+      },
+      {
+       "do": "add",
+       "var": "facing",
+       "value": 1
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_ilse_coalley",
+        "id": "lq_wr_face",
+        "words": "You lit the lamp on the headland.",
+        "reply": "And they wrote my brother down as cargo. Cargo lost, a line under it. I light a lamp so the Wharf loses cargo too. Nobody drowns, mostly. I see to that. Mostly.",
+        "once": true
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "party size",
+        "op": ">=",
+        "value": 2
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_watch",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "tally_on",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "tally_on"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-wharf",
+   "on": "quest started",
+   "match": {
+    "detail": "wreck_wharf"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road",
+       "of": "$actor"
+      },
+      "op": "!=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "wreck_wharf",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you have already chosen what is done with the lamplighter."
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "wharf",
+       "of": "$actor"
+      },
+      {
+       "do": "add",
+       "var": "t_wharf",
+       "value": 1
+      },
+      {
+       "do": "add",
+       "var": "facing",
+       "value": 1
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_ilse_coalley",
+        "id": "lq_wr_face",
+        "words": "You lit the lamp on the headland.",
+        "reply": "And they wrote my brother down as cargo. Cargo lost, a line under it. I light a lamp so the Wharf loses cargo too. Nobody drowns, mostly. I see to that. Mostly.",
+        "once": true
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "party size",
+        "op": ">=",
+        "value": 2
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_wharf",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "tally_on",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "tally_on"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "tide-walk",
+   "on": "dialogue choice",
+   "match": {
+    "item": "rm_ilse_coalley",
+    "detail": "lq_wr_tide"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "compare",
+    "left": {
+     "var": "road",
+     "of": "$actor"
+    },
+    "op": "=",
+    "right": "tide"
+   },
+   "note": "She walks with the wolf to the Chapel of the Tide.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.follow",
+      "npc": "rm_ilse_coalley",
+      "player": "$actor",
+      "ifRefused": "skip"
+     }
+    }
+   ]
+  },
+  {
+   "id": "at-chapel",
+   "on": "near resident",
+   "match": {
+    "target": "rm_ilse_coalley"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "compare",
+      "left": {
+       "var": "road",
+       "of": "$actor"
+      },
+      "op": "=",
+      "right": "tide"
+     },
+     {
+      "test": "wolf in place",
+      "place": "rm_the_chapel_of_the_tide"
+     },
+     {
+      "test": "resident in place",
+      "npc": "rm_ilse_coalley",
+      "place": "rm_the_chapel_of_the_tide"
+     }
+    ]
+   },
+   "note": "The wolf and the lamplighter in the Chapel of the Tide together: she names her brother (the scene plays once).",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "wreck_tide",
+      "objective": "chapel",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.unfollow",
+      "npc": "rm_ilse_coalley",
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "named",
+      "is": false
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "named"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "nh_b_wharf",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "scene.play",
+          "scene": "tide_naming_wharf",
+          "player": "world",
+          "cue": "lq-tide-naming",
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "scene.play",
+          "scene": "tide_naming",
+          "player": "world",
+          "cue": "lq-tide-naming",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "at-chapel-door",
+   "on": "enter place",
+   "match": {
+    "target": "rm_the_chapel_of_the_tide"
+   },
+   "audience": "participant",
+   "note": "The same as at-chapel, for a wolf who comes through the chapel door when the lamplighter is already inside.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "road",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": "tide"
+       },
+       {
+        "test": "wolf in place",
+        "place": "rm_the_chapel_of_the_tide"
+       },
+       {
+        "test": "resident in place",
+        "npc": "rm_ilse_coalley",
+        "place": "rm_the_chapel_of_the_tide"
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "wreck_tide",
+        "objective": "chapel",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.unfollow",
+        "npc": "rm_ilse_coalley",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "named",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "named"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "nh_b_wharf",
+          "is": true
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "scene.play",
+            "scene": "tide_naming_wharf",
+            "player": "world",
+            "cue": "lq-tide-naming",
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "scene.play",
+            "scene": "tide_naming",
+            "player": "world",
+            "cue": "lq-tide-naming",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "tide-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "wreck_tide"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_ridgemere_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_ridgemere_day"
+        },
+        "op": "<=",
+        "right": 123
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin",
+         "of": "$actor"
+        },
+        "op": "<=",
+        "right": 23
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 12,
+        "purse": "town:ridgemere",
+        "reason": "the city thanks you for the headland",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_ridgemere_day",
+       "value": 12
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 12,
+       "of": "$actor"
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin",
+       "of": "$actor"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Coin is short in the city's treasury today, so you are paid in kind instead."
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 8
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_ridgemere",
+     "value": 8
+    },
+    {
+     "do": "subtract",
+     "var": "tiding",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "tiding",
+     "min": 0,
+     "max": 5000
+    },
+    {
+     "do": "subtract",
+     "var": "facing",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "facing",
+     "min": 0,
+     "max": 5000
+    }
+   ]
+  },
+  {
+   "id": "watch-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "wreck_watch"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_ridgemere_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_ridgemere_day"
+        },
+        "op": "<=",
+        "right": 123
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin",
+         "of": "$actor"
+        },
+        "op": "<=",
+        "right": 23
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 12,
+        "purse": "town:ridgemere",
+        "reason": "the city thanks you for the headland",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_ridgemere_day",
+       "value": 12
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 12,
+       "of": "$actor"
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin",
+       "of": "$actor"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Coin is short in the city's treasury today, so you are paid in kind instead."
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 8
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_ridgemere",
+     "value": 8
+    },
+    {
+     "do": "subtract",
+     "var": "facing",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "facing",
+     "min": 0,
+     "max": 5000
+    }
+   ]
+  },
+  {
+   "id": "wharf-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "wreck_wharf"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_ridgemere_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_ridgemere_day"
+        },
+        "op": "<=",
+        "right": 123
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin",
+         "of": "$actor"
+        },
+        "op": "<=",
+        "right": 23
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 12,
+        "purse": "town:ridgemere",
+        "reason": "Grayrock's thanks, through the treasury",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_ridgemere_day",
+       "value": 12
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 12,
+       "of": "$actor"
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin",
+       "of": "$actor"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Coin is short in the city's treasury today, so you are paid in kind instead."
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 2
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_ridgemere",
+     "value": 2
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "standing.adjust",
+      "player": "$actor",
+      "faction": "house_grayrock",
+      "points": 3,
+      "reason": "told the Wharf Office who lit the false lamp",
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "subtract",
+     "var": "facing",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "facing",
+     "min": 0,
+     "max": 5000
+    }
+   ]
+  },
+  {
+   "id": "reckon",
+   "on": "story signal",
+   "signal": "reckon",
+   "if": {
+    "test": "phase is",
+    "phase": "reckoning"
+   },
+   "note": "The most weight wins; a tie or nobody goes to the Tide (the default).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "t_watch"
+        },
+        "op": ">",
+        "right": {
+         "var": "t_tide"
+        }
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "t_watch"
+        },
+        "op": ">",
+        "right": {
+         "var": "t_wharf"
+        }
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "emit",
+       "signal": "res_watch"
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "t_wharf"
+          },
+          "op": ">",
+          "right": {
+           "var": "t_tide"
+          }
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "t_wharf"
+          },
+          "op": ">",
+          "right": {
+           "var": "t_watch"
+          }
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "emit",
+         "signal": "res_wharf"
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "emit",
+       "signal": "res_named"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "res-named",
+   "on": "story signal",
+   "signal": "res_named",
+   "actions": [
+    {
+     "do": "set",
+     "var": "lq_wreck",
+     "value": "named"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "story.tell",
+      "to": "participants",
+      "text": "The lamp on the North Headland is out, and a drowned lighterman has his name back."
+     }
+    },
+    {
+     "do": "enter",
+     "phase": "after_named"
+    }
+   ]
+  },
+  {
+   "id": "res-watch",
+   "on": "story signal",
+   "signal": "res_watch",
+   "actions": [
+    {
+     "do": "set",
+     "var": "lq_wreck",
+     "value": "watch"
+    },
+    {
+     "do": "schedule",
+     "signal": "release",
+     "days": 7,
+     "scope": "campaign"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "story.tell",
+      "to": "participants",
+      "text": "The headland wrecker is taken to the Watch cells at the Keep, for a week."
+     }
+    },
+    {
+     "do": "enter",
+     "phase": "after_watch"
+    }
+   ]
+  },
+  {
+   "id": "res-wharf",
+   "on": "story signal",
+   "signal": "res_wharf",
+   "actions": [
+    {
+     "do": "set",
+     "var": "lq_wreck",
+     "value": "wharf"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "story.tell",
+      "to": "participants",
+      "text": "The Grayrock Wharf Office knows who lit the false lamp. The headland is dark."
+     }
+    },
+    {
+     "do": "enter",
+     "phase": "after_wharf"
+    }
+   ]
+  },
+  {
+   "id": "release",
+   "on": "story signal",
+   "signal": "release",
+   "note": "Her week in the cells is served (L4 npc.sentence will make the week outlive the run).",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.release",
+      "npc": "rm_ilse_coalley",
+      "ifRefused": "skip"
+     }
+    }
+   ]
+  },
+  {
+   "id": "new-season",
+   "on": "season begins",
+   "note": "A new season: one more wreck night may come; after a week in the cells the lamp comes back with the fog.",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "wreck_done"
+    },
+    {
+     "do": "set",
+     "var": "lamps_done",
+     "value": 0
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "phase is",
+      "phase": "after_watch"
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "lamps_taken",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "goal",
+       "value": 5
+      },
+      {
+       "do": "list clear",
+       "var": "helpers"
+      },
+      {
+       "do": "set",
+       "var": "t_tide",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "t_watch",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "t_wharf",
+       "value": 0
+      },
+      {
+       "do": "turn off",
+       "var": "tally_on"
+      },
+      {
+       "do": "enter",
+       "phase": "open"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "In fog and in a blow, a lamp burns low on the North Headland rocks where no lamp should be.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_linden_sedgeditch",
+     "text": "Mind the North Headland in fog. There's a light there that wants ships."
+    },
+    {
+     "kind": "npc.line",
+     "npc": "rm_corwin_bilgestack",
+     "text": "Full measure for every one of us, and one draws a jar more on blowy days. Says the wind snuffs her wicks. I've not said a word, and I'd thank you not to say I did."
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "reckoning",
+   "journal": "The false lamp has been traced to an old lamplighter who lost a brother on the wharf. Now it is for the wolves to say what is done with her.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_linden_sedgeditch",
+     "text": "The lamplighter's name is out, then. What's done with it is yours to choose. Gently, I said, and I meant it."
+    },
+    {
+     "kind": "npc.line",
+     "npc": "rm_ilse_coalley",
+     "text": "You've come about the headland. I know you have. Sit, if you want. I'll not run."
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "after_named",
+   "journal": "A lighter crew the Wharf wrote down as cargo was named at the Chapel of the Tide. The headland is dark.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_linden_sedgeditch",
+     "text": "The headland's dark in a blow now, the way it should be. Somebody said a name out loud, I hear."
+    },
+    {
+     "kind": "npc.line",
+     "npc": "rm_ilse_coalley",
+     "text": "I said his name in the Chapel of the Tide, and the tide took it. The lamp's out. I sleep now, mostly."
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "still-dark",
+     "on": "season begins",
+     "actions": [
+      {
+       "do": "note",
+       "text": "The North Headland stays dark this season too."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_watch",
+   "journal": "The headland wrecker is in the Watch cells for a week.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_linden_sedgeditch",
+     "text": "They've her in the cells, I hear. A week, for two lighters. It doesn't bring the cargo back, nor her brother."
+    },
+    {
+     "kind": "npc.move",
+     "npc": "rm_ilse_coalley",
+     "cell": "r2_the_keep_down",
+     "x": 11,
+     "y": 10,
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.hold",
+     "npc": "rm_ilse_coalley",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "in-cells",
+     "on": "day begins",
+     "actions": [
+      {
+       "do": "note",
+       "text": "The lamplighter sits out her week in the Watch cells."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_wharf",
+   "journal": "The Grayrock Wharf Office knows who lit the false lamp, and the headland is dark.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_linden_sedgeditch",
+     "text": "Grayrock turned her out of the Lamp Store, they say. The Wharf got its cargo back, in a way. I'd not call it even."
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "still-dark",
+     "on": "season begins",
+     "actions": [
+      {
+       "do": "note",
+       "text": "The North Headland stays dark this season too."
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "quests": [
+  {
+   "id": "lamp",
+   "title": "A Lamp Where None Should Be",
+   "summary": "Ships steering for the Mole in fog run onto the North Headland instead. The skipper at North Cove wants the false light found.",
+   "giver": "cty_linden_sedgeditch",
+   "board": "ridgemere",
+   "scope": "player",
+   "repeat": "once",
+   "join": {
+    "cap": 12
+   },
+   "phases": [
+    "open",
+    "reckoning"
+   ],
+   "offer": {
+    "ask": "Your nets came up heavy?",
+    "say": "#greet#, #address#. Heavy with Grayrock cargo, two lighters' worth since spring. Both ran onto the North Headland in fog, steering for a light low on the rocks as if it were the Mole. Take the true bearing from the Bay Light, walk the cove, then find me that other light after dark.",
+    "accept": "The lamp room, then the rocks after dark.",
+    "decline": "Not tonight.",
+    "handIn": "Here's the lamp from the rocks.",
+    "thanks": "#thanks#. A lamp in a hood, set low to look like the Mole. City oil, the Lamp Store's own; I'd know the stink anywhere. One of the lamplighters, then. I know a story about that House and the wharf I won't repeat. Follow the oil, gently."
+   },
+   "objectives": [
+    {
+     "id": "cove",
+     "label": "Walk North Cove and see what the nets brought up.",
+     "on": "region entered",
+     "match": {
+      "target": "cove"
+     }
+    },
+    {
+     "id": "bearing",
+     "label": "Climb to the Bay Light's lamp room and take the true bearing.",
+     "on": "enter place",
+     "match": {
+      "target": "r2_the_bay_light_up"
+     }
+    },
+    {
+     "id": "rocks",
+     "label": "Find the false light on the North Headland after dark.",
+     "on": "story signal",
+     "signal": "lamp_found",
+     "after": [
+      "bearing"
+     ]
+    },
+    {
+     "id": "end",
+     "label": "Put out the false light, or wait in the dark for whoever comes to it.",
+     "on": "story signal",
+     "signal": "lamp_end",
+     "after": [
+      "rocks"
+     ]
+    },
+    {
+     "id": "wreckers",
+     "label": "Bring down the salvage gang that came to the lamp.",
+     "on": "bandit falls",
+     "match": {
+      "cell": "w_ridgemere_0_0"
+     },
+     "goal": 2,
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "take",
+     "label": "Take the lamp off the rocks.",
+     "on": "item picked up",
+     "match": {
+      "item": "oil_lamp",
+      "cell": "w_ridgemere_0_0"
+     },
+     "after": [
+      "rocks"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "smoked_fish",
+     "quantity": 3
+    }
+   ]
+  },
+  {
+   "id": "oil",
+   "title": "The Lamplighter's Oil",
+   "summary": "Find where the false lamp's oil comes from, and follow the lamplighter who draws extra.",
+   "scope": "player",
+   "repeat": "weekly",
+   "join": {
+    "cap": 12
+   },
+   "phases": [
+    "open",
+    "reckoning"
+   ],
+   "objectives": [
+    {
+     "id": "store",
+     "label": "Find where that oil is kept.",
+     "on": "enter place",
+     "match": {
+      "target": "r2_the_lamp_store"
+     }
+    },
+    {
+     "id": "corwin",
+     "label": "Ask the lamplighter who counts the oil who draws extra.",
+     "on": "conversation",
+     "match": {
+      "target": "rm_corwin_bilgestack"
+     }
+    },
+    {
+     "id": "ledger",
+     "label": "Ask the clerk at the Grayrock Wharf Office what became of the lost lighters' crews.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_septimus_plankmarsh",
+      "detail": "lq_wr_ledger"
+     }
+    },
+    {
+     "id": "shadow",
+     "label": "Follow the lamplighter on her dusk round, on two evenings.",
+     "on": "story signal",
+     "signal": "shadowed",
+     "goal": 2
+    },
+    {
+     "id": "neighbour",
+     "label": "Ask her neighbour on the Salt Row stair.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_ivo_cinderham",
+      "detail": "lq_wr_stair"
+     },
+     "hidden": true
+    },
+    {
+     "id": "salvage",
+     "label": "Drive the salvage gang off North Cove.",
+     "on": "bandit falls",
+     "match": {
+      "cell": "w_ridgemere_0_4"
+     },
+     "goal": 2,
+     "optional": true
+    }
+   ]
+  },
+  {
+   "id": "wreck_tide",
+   "title": "Name Him at the Tide",
+   "summary": "Bring the lamplighter to the Chapel of the Tide to name her drowned brother.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "open",
+    "reckoning"
+   ],
+   "objectives": [
+    {
+     "id": "face",
+     "label": "Tell the lamplighter you know she lit the lamp on the headland.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_ilse_coalley",
+      "detail": "lq_wr_face"
+     }
+    },
+    {
+     "id": "tide",
+     "label": "Ask her to come and name him at the Tide.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_ilse_coalley",
+      "detail": "lq_wr_tide"
+     },
+     "after": [
+      "face"
+     ]
+    },
+    {
+     "id": "solveig",
+     "label": "Speak to the priest at the Chapel of the Tide.",
+     "on": "conversation",
+     "match": {
+      "target": "rm_solveig_tarwell"
+     },
+     "after": [
+      "face"
+     ]
+    },
+    {
+     "id": "chapel",
+     "label": "Walk with her into the Chapel of the Tide.",
+     "on": "story signal",
+     "signal": "tide_named",
+     "after": [
+      "tide"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "brought a wrecker to the Chapel of the Tide to name her drowned brother"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "oilcloth_hat",
+     "quantity": 1
+    }
+   ]
+  },
+  {
+   "id": "wreck_watch",
+   "title": "Hand Her to the Watch",
+   "summary": "Take the false lamp to the Watch sergeant who hates Grayrock most.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "open",
+    "reckoning"
+   ],
+   "objectives": [
+    {
+     "id": "face",
+     "label": "Tell the lamplighter you know she lit the lamp on the headland.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_ilse_coalley",
+      "detail": "lq_wr_face"
+     }
+    },
+    {
+     "id": "sergeant",
+     "label": "Tell the Watch sergeant at the Keep who lit the lamp.",
+     "on": "conversation",
+     "match": {
+      "target": "rm_bettany_nailley"
+     },
+     "after": [
+      "face"
+     ]
+    },
+    {
+     "id": "lamp",
+     "label": "Give her the false lamp.",
+     "on": "gift",
+     "match": {
+      "target": "rm_bettany_nailley",
+      "item": "oil_lamp"
+     },
+     "after": [
+      "face"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "handed the headland wrecker to the Watch"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "oilcloth_hat",
+     "quantity": 1
+    }
+   ]
+  },
+  {
+   "id": "wreck_wharf",
+   "title": "Tell the Wharf Office",
+   "summary": "Take the false lamp to the Grayrock Wharf Office.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "open",
+    "reckoning"
+   ],
+   "objectives": [
+    {
+     "id": "face",
+     "label": "Tell the lamplighter you know she lit the lamp on the headland.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_ilse_coalley",
+      "detail": "lq_wr_face"
+     }
+    },
+    {
+     "id": "lamp",
+     "label": "Give the clerk at the Grayrock Wharf Office the false lamp.",
+     "on": "gift",
+     "match": {
+      "target": "rm_septimus_plankmarsh",
+      "item": "oil_lamp"
+     },
+     "after": [
+      "face"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "told the Grayrock Wharf Office who lit the false lamp"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "oilcloth_hat",
+     "quantity": 1
+    }
+   ]
+  }
+ ],
+ "tests": [
+  {
+   "name": "Three wolves douse the lamps and follow the oil; one names the brother at the Tide",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.05,
+     "detail": "Dawnday",
+     "item": "autumn",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 0.101,
+     "actor": "wolf-ash",
+     "target": "cove",
+     "cell": "w_ridgemere_0_4",
+     "detail": "run"
+    },
+    {
+     "id": "e4",
+     "kind": "enter place",
+     "day": 0.10200000000000001,
+     "actor": "wolf-ash",
+     "target": "r2_the_bay_light_up",
+     "cell": "r2_the_bay_light_up",
+     "detail": "r2_the_bay_light"
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 0.10300000000000001,
+     "actor": "wolf-ash",
+     "target": "rocks",
+     "cell": "w_ridgemere_0_0",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e6",
+     "kind": "item picked up",
+     "day": 0.17,
+     "actor": "wolf-ash",
+     "item": "oil_lamp",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 0.18,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 0.2,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e9",
+     "kind": "region entered",
+     "day": 0.201,
+     "actor": "wolf-birch",
+     "target": "cove",
+     "cell": "w_ridgemere_0_4",
+     "detail": "run"
+    },
+    {
+     "id": "e10",
+     "kind": "enter place",
+     "day": 0.202,
+     "actor": "wolf-birch",
+     "target": "r2_the_bay_light_up",
+     "cell": "r2_the_bay_light_up",
+     "detail": "r2_the_bay_light"
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 0.203,
+     "actor": "wolf-birch",
+     "target": "rocks",
+     "cell": "w_ridgemere_0_0",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "item picked up",
+     "day": 0.27,
+     "actor": "wolf-birch",
+     "item": "oil_lamp",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e13",
+     "kind": "quest handed in",
+     "day": 0.28,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e14",
+     "kind": "quest accepted",
+     "day": 0.30000000000000004,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e15",
+     "kind": "region entered",
+     "day": 0.30100000000000005,
+     "actor": "wolf-cedar",
+     "target": "cove",
+     "cell": "w_ridgemere_0_4",
+     "detail": "run"
+    },
+    {
+     "id": "e16",
+     "kind": "enter place",
+     "day": 0.30200000000000005,
+     "actor": "wolf-cedar",
+     "target": "r2_the_bay_light_up",
+     "cell": "r2_the_bay_light_up",
+     "detail": "r2_the_bay_light"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 0.30300000000000005,
+     "actor": "wolf-cedar",
+     "target": "rocks",
+     "cell": "w_ridgemere_0_0",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "item picked up",
+     "day": 0.37000000000000005,
+     "actor": "wolf-cedar",
+     "item": "oil_lamp",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e19",
+     "kind": "quest handed in",
+     "day": 0.38000000000000006,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e20",
+     "kind": "quest accepted",
+     "day": 0.4,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "oil"
+    },
+    {
+     "id": "e21",
+     "kind": "enter place",
+     "day": 0.401,
+     "actor": "wolf-ash",
+     "target": "r2_the_lamp_store",
+     "cell": "r2_the_lamp_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e22",
+     "kind": "conversation",
+     "day": 0.402,
+     "actor": "wolf-ash",
+     "target": "rm_corwin_bilgestack",
+     "cell": "r2_the_lamp_store"
+    },
+    {
+     "id": "e23",
+     "kind": "dialogue choice",
+     "day": 0.403,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_septimus_plankmarsh",
+     "detail": "lq_wr_ledger"
+    },
+    {
+     "id": "e24",
+     "kind": "near resident",
+     "day": 0.404,
+     "actor": "wolf-ash",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e25",
+     "kind": "near resident",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e26",
+     "kind": "dialogue choice",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_ivo_cinderham",
+     "detail": "lq_wr_stair"
+    },
+    {
+     "id": "e27",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "oil"
+    },
+    {
+     "id": "e28",
+     "kind": "enter place",
+     "day": 1.101,
+     "actor": "wolf-birch",
+     "target": "r2_the_lamp_store",
+     "cell": "r2_the_lamp_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e29",
+     "kind": "conversation",
+     "day": 1.102,
+     "actor": "wolf-birch",
+     "target": "rm_corwin_bilgestack",
+     "cell": "r2_the_lamp_store"
+    },
+    {
+     "id": "e30",
+     "kind": "dialogue choice",
+     "day": 1.103,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_septimus_plankmarsh",
+     "detail": "lq_wr_ledger"
+    },
+    {
+     "id": "e31",
+     "kind": "near resident",
+     "day": 1.104,
+     "actor": "wolf-birch",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e32",
+     "kind": "near resident",
+     "day": 1.7000000000000002,
+     "actor": "wolf-birch",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e33",
+     "kind": "dialogue choice",
+     "day": 1.71,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_ivo_cinderham",
+     "detail": "lq_wr_stair"
+    },
+    {
+     "id": "e34",
+     "kind": "quest accepted",
+     "day": 1.8,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "oil"
+    },
+    {
+     "id": "e35",
+     "kind": "enter place",
+     "day": 1.801,
+     "actor": "wolf-cedar",
+     "target": "r2_the_lamp_store",
+     "cell": "r2_the_lamp_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e36",
+     "kind": "conversation",
+     "day": 1.802,
+     "actor": "wolf-cedar",
+     "target": "rm_corwin_bilgestack",
+     "cell": "r2_the_lamp_store"
+    },
+    {
+     "id": "e37",
+     "kind": "dialogue choice",
+     "day": 1.803,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_septimus_plankmarsh",
+     "detail": "lq_wr_ledger"
+    },
+    {
+     "id": "e38",
+     "kind": "near resident",
+     "day": 1.804,
+     "actor": "wolf-cedar",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e39",
+     "kind": "near resident",
+     "day": 2.4,
+     "actor": "wolf-cedar",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e40",
+     "kind": "dialogue choice",
+     "day": 2.41,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_ivo_cinderham",
+     "detail": "lq_wr_stair"
+    },
+    {
+     "id": "e41",
+     "kind": "quest accepted",
+     "day": 2.5,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "wreck_tide"
+    },
+    {
+     "id": "e42",
+     "kind": "dialogue choice",
+     "day": 2.51,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_ilse_coalley",
+     "detail": "lq_wr_face"
+    },
+    {
+     "id": "e43",
+     "kind": "dialogue choice",
+     "day": 2.52,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_ilse_coalley",
+     "detail": "lq_wr_tide"
+    },
+    {
+     "id": "e44",
+     "kind": "conversation",
+     "day": 2.53,
+     "actor": "wolf-ash",
+     "target": "rm_solveig_tarwell",
+     "cell": "rm_the_chapel_of_the_tide"
+    },
+    {
+     "id": "e44b",
+     "kind": "enter place",
+     "day": 2.535,
+     "actor": "wolf-ash",
+     "target": "rm_the_chapel_of_the_tide",
+     "cell": "rm_the_chapel_of_the_tide",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e45",
+     "kind": "near resident",
+     "day": 2.54,
+     "actor": "wolf-ash",
+     "target": "rm_ilse_coalley",
+     "cell": "rm_the_chapel_of_the_tide",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "rm_the_chapel_of_the_tide",
+        "x": 10,
+        "y": 8
+       }
+      },
+      "residents": {
+       "rm_ilse_coalley": {
+        "alive": true,
+        "cell": "rm_the_chapel_of_the_tide",
+        "x": 11,
+        "y": 8
+       }
+      },
+      "world": {
+       "hour": 11
+      }
+     }
+    },
+    {
+     "id": "e46",
+     "kind": "day begins",
+     "day": 5.6,
+     "detail": "Stoneday",
+     "item": "autumn",
+     "quantity": 4
+    },
+    {
+     "id": "e47",
+     "kind": "season begins",
+     "day": 6.5,
+     "detail": "winter"
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_named"
+   ],
+   "expectQuests": {
+    "lamp": {
+     "wolf-ash": "done"
+    },
+    "oil": {
+     "wolf-ash": "done"
+    },
+    "wreck_tide": {
+     "wolf-ash": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_wreck": "named",
+     "coin_ridgemere_day": 30,
+     "nh_realm": 20
+    },
+    "player": {
+     "wolf-ash": {
+      "lq_lamp1": "doused",
+      "lq_coin": 18,
+      "road": "tide"
+     }
+    },
+    "story": {
+     "lamps_taken": 9,
+     "goal": 8,
+     "named": true,
+     "tiding": 0,
+     "facing": 0
+    }
+   }
+  },
+  {
+   "name": "A wolf waits for the gang; the third lamp brings the wreck night; the Watch holds her a week",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.05,
+     "detail": "Dawnday",
+     "item": "autumn",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 0.101,
+     "actor": "wolf-ash",
+     "target": "cove",
+     "cell": "w_ridgemere_0_4",
+     "detail": "run"
+    },
+    {
+     "id": "e4",
+     "kind": "enter place",
+     "day": 0.10200000000000001,
+     "actor": "wolf-ash",
+     "target": "r2_the_bay_light_up",
+     "cell": "r2_the_bay_light_up",
+     "detail": "r2_the_bay_light"
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 0.10300000000000001,
+     "actor": "wolf-ash",
+     "target": "rocks",
+     "cell": "w_ridgemere_0_0",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e6",
+     "kind": "hour",
+     "day": 0.15000000000000002,
+     "detail": "21",
+     "quantity": 21,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 21
+      }
+     }
+    },
+    {
+     "id": "e7",
+     "kind": "bandit falls",
+     "day": 0.16,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_0_0",
+     "detail": "a salvager"
+    },
+    {
+     "id": "e8",
+     "kind": "bandit falls",
+     "day": 0.161,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_0_0",
+     "detail": "a salvager"
+    },
+    {
+     "id": "e9",
+     "kind": "item picked up",
+     "day": 0.17,
+     "actor": "wolf-ash",
+     "item": "oil_lamp",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e10",
+     "kind": "quest handed in",
+     "day": 0.18,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e11",
+     "kind": "quest accepted",
+     "day": 0.2,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e12",
+     "kind": "region entered",
+     "day": 0.201,
+     "actor": "wolf-birch",
+     "target": "cove",
+     "cell": "w_ridgemere_0_4",
+     "detail": "run"
+    },
+    {
+     "id": "e13",
+     "kind": "enter place",
+     "day": 0.202,
+     "actor": "wolf-birch",
+     "target": "r2_the_bay_light_up",
+     "cell": "r2_the_bay_light_up",
+     "detail": "r2_the_bay_light"
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 0.203,
+     "actor": "wolf-birch",
+     "target": "rocks",
+     "cell": "w_ridgemere_0_0",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e15",
+     "kind": "item picked up",
+     "day": 0.27,
+     "actor": "wolf-birch",
+     "item": "oil_lamp",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e16",
+     "kind": "quest handed in",
+     "day": 0.28,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e17",
+     "kind": "quest accepted",
+     "day": 0.30000000000000004,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e18",
+     "kind": "region entered",
+     "day": 0.30100000000000005,
+     "actor": "wolf-cedar",
+     "target": "cove",
+     "cell": "w_ridgemere_0_4",
+     "detail": "run"
+    },
+    {
+     "id": "e19",
+     "kind": "enter place",
+     "day": 0.30200000000000005,
+     "actor": "wolf-cedar",
+     "target": "r2_the_bay_light_up",
+     "cell": "r2_the_bay_light_up",
+     "detail": "r2_the_bay_light"
+    },
+    {
+     "id": "e20",
+     "kind": "region entered",
+     "day": 0.30300000000000005,
+     "actor": "wolf-cedar",
+     "target": "rocks",
+     "cell": "w_ridgemere_0_0",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e21",
+     "kind": "item picked up",
+     "day": 0.37000000000000005,
+     "actor": "wolf-cedar",
+     "item": "oil_lamp",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e22",
+     "kind": "quest handed in",
+     "day": 0.38000000000000006,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e23",
+     "kind": "hour",
+     "day": 0.41000000000000003,
+     "detail": "22",
+     "quantity": 22,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_0_0",
+        "x": 60,
+        "y": 180
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_0_0",
+        "x": 60,
+        "y": 180
+       },
+       "wolf-cedar": {
+        "cell": "w_ridgemere_0_0",
+        "x": 60,
+        "y": 180
+       }
+      },
+      "world": {
+       "hour": 22
+      }
+     }
+    },
+    {
+     "id": "e24",
+     "kind": "bandit falls",
+     "day": 0.42000000000000004,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_0_4",
+     "detail": "a salvager"
+    },
+    {
+     "id": "e25",
+     "kind": "camp cleared",
+     "day": 0.43000000000000005,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_0_4",
+     "detail": "by a wolf"
+    },
+    {
+     "id": "e26",
+     "kind": "hour",
+     "day": 1.0,
+     "detail": "9",
+     "quantity": 9,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_0_0",
+        "x": 60,
+        "y": 180
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_0_0",
+        "x": 60,
+        "y": 180
+       },
+       "wolf-cedar": {
+        "cell": "w_ridgemere_0_0",
+        "x": 60,
+        "y": 180
+       }
+      },
+      "world": {
+       "hour": 9
+      }
+     }
+    },
+    {
+     "id": "e27",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "oil"
+    },
+    {
+     "id": "e28",
+     "kind": "enter place",
+     "day": 1.101,
+     "actor": "wolf-ash",
+     "target": "r2_the_lamp_store",
+     "cell": "r2_the_lamp_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e29",
+     "kind": "conversation",
+     "day": 1.102,
+     "actor": "wolf-ash",
+     "target": "rm_corwin_bilgestack",
+     "cell": "r2_the_lamp_store"
+    },
+    {
+     "id": "e30",
+     "kind": "dialogue choice",
+     "day": 1.103,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_septimus_plankmarsh",
+     "detail": "lq_wr_ledger"
+    },
+    {
+     "id": "e31",
+     "kind": "near resident",
+     "day": 1.104,
+     "actor": "wolf-ash",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e32",
+     "kind": "near resident",
+     "day": 1.7000000000000002,
+     "actor": "wolf-ash",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e33",
+     "kind": "dialogue choice",
+     "day": 1.71,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_ivo_cinderham",
+     "detail": "lq_wr_stair"
+    },
+    {
+     "id": "e34",
+     "kind": "quest accepted",
+     "day": 1.8,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "oil"
+    },
+    {
+     "id": "e35",
+     "kind": "enter place",
+     "day": 1.801,
+     "actor": "wolf-birch",
+     "target": "r2_the_lamp_store",
+     "cell": "r2_the_lamp_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e36",
+     "kind": "conversation",
+     "day": 1.802,
+     "actor": "wolf-birch",
+     "target": "rm_corwin_bilgestack",
+     "cell": "r2_the_lamp_store"
+    },
+    {
+     "id": "e37",
+     "kind": "dialogue choice",
+     "day": 1.803,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_septimus_plankmarsh",
+     "detail": "lq_wr_ledger"
+    },
+    {
+     "id": "e38",
+     "kind": "near resident",
+     "day": 1.804,
+     "actor": "wolf-birch",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e39",
+     "kind": "near resident",
+     "day": 2.4,
+     "actor": "wolf-birch",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e40",
+     "kind": "dialogue choice",
+     "day": 2.41,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_ivo_cinderham",
+     "detail": "lq_wr_stair"
+    },
+    {
+     "id": "e41",
+     "kind": "quest accepted",
+     "day": 2.5,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "oil"
+    },
+    {
+     "id": "e42",
+     "kind": "enter place",
+     "day": 2.501,
+     "actor": "wolf-cedar",
+     "target": "r2_the_lamp_store",
+     "cell": "r2_the_lamp_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e43",
+     "kind": "conversation",
+     "day": 2.502,
+     "actor": "wolf-cedar",
+     "target": "rm_corwin_bilgestack",
+     "cell": "r2_the_lamp_store"
+    },
+    {
+     "id": "e44",
+     "kind": "dialogue choice",
+     "day": 2.503,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_septimus_plankmarsh",
+     "detail": "lq_wr_ledger"
+    },
+    {
+     "id": "e45",
+     "kind": "near resident",
+     "day": 2.504,
+     "actor": "wolf-cedar",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e46",
+     "kind": "near resident",
+     "day": 3.1,
+     "actor": "wolf-cedar",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e47",
+     "kind": "dialogue choice",
+     "day": 3.11,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_ivo_cinderham",
+     "detail": "lq_wr_stair"
+    },
+    {
+     "id": "e48",
+     "kind": "quest accepted",
+     "day": 3.2,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "wreck_watch"
+    },
+    {
+     "id": "e49",
+     "kind": "quest accepted",
+     "day": 3.21,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "wreck_watch"
+    },
+    {
+     "id": "e50",
+     "kind": "quest accepted",
+     "day": 3.23,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "wreck_wharf"
+    },
+    {
+     "id": "e51",
+     "kind": "dialogue choice",
+     "day": 3.24,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_ilse_coalley",
+     "detail": "lq_wr_face"
+    },
+    {
+     "id": "e52",
+     "kind": "conversation",
+     "day": 3.25,
+     "actor": "wolf-birch",
+     "target": "rm_bettany_nailley",
+     "cell": "r2_the_keep"
+    },
+    {
+     "id": "e53",
+     "kind": "gift",
+     "day": 3.2600000000000002,
+     "actor": "wolf-birch",
+     "target": "rm_bettany_nailley",
+     "item": "oil_lamp",
+     "quantity": 1,
+     "cell": "r2_the_keep"
+    },
+    {
+     "id": "e54",
+     "kind": "quest accepted",
+     "day": 3.27,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "wreck_tide"
+    },
+    {
+     "id": "e55",
+     "kind": "day begins",
+     "day": 6.300000000000001,
+     "detail": "Stoneday",
+     "item": "autumn",
+     "quantity": 4
+    },
+    {
+     "id": "e56",
+     "kind": "day begins",
+     "day": 13.399999999999999,
+     "detail": "Restday",
+     "item": "autumn",
+     "quantity": 11
+    },
+    {
+     "id": "e57",
+     "kind": "season begins",
+     "day": 14.2,
+     "detail": "winter"
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_watch",
+    "open"
+   ],
+   "expectQuests": {
+    "lamp": {
+     "wolf-ash": "done",
+     "wolf-birch": "done",
+     "wolf-cedar": "done"
+    },
+    "wreck_watch": {
+     "wolf-birch": "done",
+     "wolf-cedar": "active"
+    },
+    "wreck_tide": {
+     "wolf-birch": "failed"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_wreck": "watch",
+     "nh_threat": 28
+    },
+    "player": {
+     "wolf-ash": {
+      "lq_lamp1": "caught"
+     },
+     "wolf-birch": {
+      "lq_lamp1": "doused"
+     }
+    },
+    "story": {
+     "wreck_done": false,
+     "wreck_night": false,
+     "spawned_cove": false,
+     "spawned_cove_b": true,
+     "lamps_taken": 0,
+     "goal": 5
+    }
+   }
+  },
+  {
+   "name": "The Wharf Office is told; ships held by the weather bring gangs to both coves in turn",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.05,
+     "detail": "Dawnday",
+     "item": "autumn",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 0.101,
+     "actor": "wolf-ash",
+     "target": "cove",
+     "cell": "w_ridgemere_0_4",
+     "detail": "run"
+    },
+    {
+     "id": "e4",
+     "kind": "enter place",
+     "day": 0.10200000000000001,
+     "actor": "wolf-ash",
+     "target": "r2_the_bay_light_up",
+     "cell": "r2_the_bay_light_up",
+     "detail": "r2_the_bay_light"
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 0.10300000000000001,
+     "actor": "wolf-ash",
+     "target": "headland",
+     "cell": "w_ridgemere_0_0",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_0_0",
+        "x": 118,
+        "y": 108
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e6",
+     "kind": "item picked up",
+     "day": 0.17,
+     "actor": "wolf-ash",
+     "item": "oil_lamp",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_0_0",
+        "x": 118,
+        "y": 108
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 0.18,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 0.2,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e9",
+     "kind": "region entered",
+     "day": 0.201,
+     "actor": "wolf-birch",
+     "target": "cove",
+     "cell": "w_ridgemere_0_4",
+     "detail": "run"
+    },
+    {
+     "id": "e10",
+     "kind": "enter place",
+     "day": 0.202,
+     "actor": "wolf-birch",
+     "target": "r2_the_bay_light_up",
+     "cell": "r2_the_bay_light_up",
+     "detail": "r2_the_bay_light"
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 0.203,
+     "actor": "wolf-birch",
+     "target": "headland",
+     "cell": "w_ridgemere_0_0",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_0_0",
+        "x": 118,
+        "y": 108
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "item picked up",
+     "day": 0.27,
+     "actor": "wolf-birch",
+     "item": "oil_lamp",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_0_0",
+        "x": 118,
+        "y": 108
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e13",
+     "kind": "quest handed in",
+     "day": 0.28,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e14",
+     "kind": "quest accepted",
+     "day": 0.30000000000000004,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e15",
+     "kind": "region entered",
+     "day": 0.30100000000000005,
+     "actor": "wolf-cedar",
+     "target": "cove",
+     "cell": "w_ridgemere_0_4",
+     "detail": "run"
+    },
+    {
+     "id": "e16",
+     "kind": "enter place",
+     "day": 0.30200000000000005,
+     "actor": "wolf-cedar",
+     "target": "r2_the_bay_light_up",
+     "cell": "r2_the_bay_light_up",
+     "detail": "r2_the_bay_light"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 0.30300000000000005,
+     "actor": "wolf-cedar",
+     "target": "headland",
+     "cell": "w_ridgemere_0_0",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_0_0",
+        "x": 118,
+        "y": 108
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "item picked up",
+     "day": 0.37000000000000005,
+     "actor": "wolf-cedar",
+     "item": "oil_lamp",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_0_0",
+        "x": 118,
+        "y": 108
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e19",
+     "kind": "quest handed in",
+     "day": 0.38000000000000006,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e20",
+     "kind": "quest accepted",
+     "day": 0.4,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "oil"
+    },
+    {
+     "id": "e21",
+     "kind": "enter place",
+     "day": 0.401,
+     "actor": "wolf-ash",
+     "target": "r2_the_lamp_store",
+     "cell": "r2_the_lamp_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e22",
+     "kind": "conversation",
+     "day": 0.402,
+     "actor": "wolf-ash",
+     "target": "rm_corwin_bilgestack",
+     "cell": "r2_the_lamp_store"
+    },
+    {
+     "id": "e23",
+     "kind": "dialogue choice",
+     "day": 0.403,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_septimus_plankmarsh",
+     "detail": "lq_wr_ledger"
+    },
+    {
+     "id": "e24",
+     "kind": "near resident",
+     "day": 0.404,
+     "actor": "wolf-ash",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e25",
+     "kind": "near resident",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e26",
+     "kind": "dialogue choice",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_ivo_cinderham",
+     "detail": "lq_wr_stair"
+    },
+    {
+     "id": "e27",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "oil"
+    },
+    {
+     "id": "e28",
+     "kind": "enter place",
+     "day": 1.101,
+     "actor": "wolf-birch",
+     "target": "r2_the_lamp_store",
+     "cell": "r2_the_lamp_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e29",
+     "kind": "conversation",
+     "day": 1.102,
+     "actor": "wolf-birch",
+     "target": "rm_corwin_bilgestack",
+     "cell": "r2_the_lamp_store"
+    },
+    {
+     "id": "e30",
+     "kind": "dialogue choice",
+     "day": 1.103,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_septimus_plankmarsh",
+     "detail": "lq_wr_ledger"
+    },
+    {
+     "id": "e31",
+     "kind": "near resident",
+     "day": 1.104,
+     "actor": "wolf-birch",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e32",
+     "kind": "near resident",
+     "day": 1.7000000000000002,
+     "actor": "wolf-birch",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e33",
+     "kind": "dialogue choice",
+     "day": 1.71,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_ivo_cinderham",
+     "detail": "lq_wr_stair"
+    },
+    {
+     "id": "e34",
+     "kind": "quest accepted",
+     "day": 1.8,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "oil"
+    },
+    {
+     "id": "e35",
+     "kind": "enter place",
+     "day": 1.801,
+     "actor": "wolf-cedar",
+     "target": "r2_the_lamp_store",
+     "cell": "r2_the_lamp_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e36",
+     "kind": "conversation",
+     "day": 1.802,
+     "actor": "wolf-cedar",
+     "target": "rm_corwin_bilgestack",
+     "cell": "r2_the_lamp_store"
+    },
+    {
+     "id": "e37",
+     "kind": "dialogue choice",
+     "day": 1.803,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_septimus_plankmarsh",
+     "detail": "lq_wr_ledger"
+    },
+    {
+     "id": "e38",
+     "kind": "near resident",
+     "day": 1.804,
+     "actor": "wolf-cedar",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e39",
+     "kind": "near resident",
+     "day": 2.4,
+     "actor": "wolf-cedar",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e40",
+     "kind": "dialogue choice",
+     "day": 2.41,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_ivo_cinderham",
+     "detail": "lq_wr_stair"
+    },
+    {
+     "id": "e41",
+     "kind": "ship stormbound",
+     "day": 2.5,
+     "actor": "s22",
+     "target": "ridgemere",
+     "cell": "w_ridgemere_0_0",
+     "item": "the Lark",
+     "detail": "held by the storm",
+     "quantity": 3
+    },
+    {
+     "id": "e42",
+     "kind": "ship stormbound",
+     "day": 2.51,
+     "actor": "s23",
+     "target": "ridgemere",
+     "cell": "w_ridgemere_0_0",
+     "item": "the Salt Rose",
+     "detail": "held by the storm",
+     "quantity": 3
+    },
+    {
+     "id": "e43",
+     "kind": "quest accepted",
+     "day": 2.52,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "wreck_wharf"
+    },
+    {
+     "id": "e44",
+     "kind": "dialogue choice",
+     "day": 2.53,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_ilse_coalley",
+     "detail": "lq_wr_face"
+    },
+    {
+     "id": "e45",
+     "kind": "gift",
+     "day": 2.54,
+     "actor": "wolf-ash",
+     "target": "rm_septimus_plankmarsh",
+     "item": "oil_lamp",
+     "quantity": 1,
+     "cell": "rm_the_harbourmaster_s_office"
+    },
+    {
+     "id": "e46",
+     "kind": "day begins",
+     "day": 5.6,
+     "detail": "Stoneday",
+     "item": "autumn",
+     "quantity": 4
+    },
+    {
+     "id": "e47",
+     "kind": "season begins",
+     "day": 6.5,
+     "detail": "winter"
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_wharf"
+   ],
+   "expectQuests": {
+    "wreck_wharf": {
+     "wolf-ash": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_wreck": "wharf",
+     "nh_realm": 14
+    },
+    "story": {
+     "spawned_cove": true,
+     "spawned_cove_b": true,
+     "wave_turn": 0
+    }
+   }
+  },
+  {
+   "name": "Nobody takes a road: the reckoning goes to the Tide (the default)",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.05,
+     "detail": "Dawnday",
+     "item": "autumn",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 0.101,
+     "actor": "wolf-ash",
+     "target": "cove",
+     "cell": "w_ridgemere_0_4",
+     "detail": "run"
+    },
+    {
+     "id": "e4",
+     "kind": "enter place",
+     "day": 0.10200000000000001,
+     "actor": "wolf-ash",
+     "target": "r2_the_bay_light_up",
+     "cell": "r2_the_bay_light_up",
+     "detail": "r2_the_bay_light"
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 0.10300000000000001,
+     "actor": "wolf-ash",
+     "target": "rocks",
+     "cell": "w_ridgemere_0_0",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e6",
+     "kind": "item picked up",
+     "day": 0.17,
+     "actor": "wolf-ash",
+     "item": "oil_lamp",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 0.18,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 0.2,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e9",
+     "kind": "region entered",
+     "day": 0.201,
+     "actor": "wolf-birch",
+     "target": "cove",
+     "cell": "w_ridgemere_0_4",
+     "detail": "run"
+    },
+    {
+     "id": "e10",
+     "kind": "enter place",
+     "day": 0.202,
+     "actor": "wolf-birch",
+     "target": "r2_the_bay_light_up",
+     "cell": "r2_the_bay_light_up",
+     "detail": "r2_the_bay_light"
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 0.203,
+     "actor": "wolf-birch",
+     "target": "rocks",
+     "cell": "w_ridgemere_0_0",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "item picked up",
+     "day": 0.27,
+     "actor": "wolf-birch",
+     "item": "oil_lamp",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e13",
+     "kind": "quest handed in",
+     "day": 0.28,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e14",
+     "kind": "quest accepted",
+     "day": 0.30000000000000004,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e15",
+     "kind": "region entered",
+     "day": 0.30100000000000005,
+     "actor": "wolf-cedar",
+     "target": "cove",
+     "cell": "w_ridgemere_0_4",
+     "detail": "run"
+    },
+    {
+     "id": "e16",
+     "kind": "enter place",
+     "day": 0.30200000000000005,
+     "actor": "wolf-cedar",
+     "target": "r2_the_bay_light_up",
+     "cell": "r2_the_bay_light_up",
+     "detail": "r2_the_bay_light"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 0.30300000000000005,
+     "actor": "wolf-cedar",
+     "target": "rocks",
+     "cell": "w_ridgemere_0_0",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "item picked up",
+     "day": 0.37000000000000005,
+     "actor": "wolf-cedar",
+     "item": "oil_lamp",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_0_0",
+        "x": 108,
+        "y": 90
+       }
+      },
+      "world": {
+       "hour": 20
+      }
+     }
+    },
+    {
+     "id": "e19",
+     "kind": "quest handed in",
+     "day": 0.38000000000000006,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_linden_sedgeditch",
+     "detail": "lamp"
+    },
+    {
+     "id": "e20",
+     "kind": "quest accepted",
+     "day": 0.4,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "oil"
+    },
+    {
+     "id": "e21",
+     "kind": "enter place",
+     "day": 0.401,
+     "actor": "wolf-ash",
+     "target": "r2_the_lamp_store",
+     "cell": "r2_the_lamp_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e22",
+     "kind": "conversation",
+     "day": 0.402,
+     "actor": "wolf-ash",
+     "target": "rm_corwin_bilgestack",
+     "cell": "r2_the_lamp_store"
+    },
+    {
+     "id": "e23",
+     "kind": "dialogue choice",
+     "day": 0.403,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_septimus_plankmarsh",
+     "detail": "lq_wr_ledger"
+    },
+    {
+     "id": "e24",
+     "kind": "near resident",
+     "day": 0.404,
+     "actor": "wolf-ash",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e25",
+     "kind": "near resident",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e26",
+     "kind": "dialogue choice",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_ivo_cinderham",
+     "detail": "lq_wr_stair"
+    },
+    {
+     "id": "e27",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "oil"
+    },
+    {
+     "id": "e28",
+     "kind": "enter place",
+     "day": 1.101,
+     "actor": "wolf-birch",
+     "target": "r2_the_lamp_store",
+     "cell": "r2_the_lamp_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e29",
+     "kind": "conversation",
+     "day": 1.102,
+     "actor": "wolf-birch",
+     "target": "rm_corwin_bilgestack",
+     "cell": "r2_the_lamp_store"
+    },
+    {
+     "id": "e30",
+     "kind": "dialogue choice",
+     "day": 1.103,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_septimus_plankmarsh",
+     "detail": "lq_wr_ledger"
+    },
+    {
+     "id": "e31",
+     "kind": "near resident",
+     "day": 1.104,
+     "actor": "wolf-birch",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e32",
+     "kind": "near resident",
+     "day": 1.7000000000000002,
+     "actor": "wolf-birch",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e33",
+     "kind": "dialogue choice",
+     "day": 1.71,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_ivo_cinderham",
+     "detail": "lq_wr_stair"
+    },
+    {
+     "id": "e34",
+     "kind": "quest accepted",
+     "day": 1.8,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "oil"
+    },
+    {
+     "id": "e35",
+     "kind": "enter place",
+     "day": 1.801,
+     "actor": "wolf-cedar",
+     "target": "r2_the_lamp_store",
+     "cell": "r2_the_lamp_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e36",
+     "kind": "conversation",
+     "day": 1.802,
+     "actor": "wolf-cedar",
+     "target": "rm_corwin_bilgestack",
+     "cell": "r2_the_lamp_store"
+    },
+    {
+     "id": "e37",
+     "kind": "dialogue choice",
+     "day": 1.803,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_septimus_plankmarsh",
+     "detail": "lq_wr_ledger"
+    },
+    {
+     "id": "e38",
+     "kind": "near resident",
+     "day": 1.804,
+     "actor": "wolf-cedar",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e39",
+     "kind": "near resident",
+     "day": 2.4,
+     "actor": "wolf-cedar",
+     "target": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "quantity": 3,
+     "facts": {
+      "world": {
+       "hour": 18
+      }
+     }
+    },
+    {
+     "id": "e40",
+     "kind": "dialogue choice",
+     "day": 2.41,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_ivo_cinderham",
+     "detail": "lq_wr_stair"
+    },
+    {
+     "id": "e41",
+     "kind": "day begins",
+     "day": 8.6,
+     "detail": "Restday",
+     "item": "autumn",
+     "quantity": 7
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_named"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_wreck": "named"
+    }
+   }
+  }
+ ]
+}

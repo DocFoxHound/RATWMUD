@@ -1,0 +1,4703 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "lq-clipped-silver",
+ "title": "Clipped Silver",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "variables": [
+  {
+   "id": "lq_coin",
+   "type": "number",
+   "scope": "player",
+   "note": "What this line has paid the wolf in all (35 at most)."
+  },
+  {
+   "id": "lq_thin",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf was last paid in kind (a thin purse); read by N2 later for the thin thanks."
+  },
+  {
+   "id": "road",
+   "type": "text",
+   "scope": "player",
+   "note": "The road of chapter 3 this wolf took ('' none yet)."
+  },
+  {
+   "id": "packed",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf did chapter 2 in a party: their road weighs one more."
+  },
+  {
+   "id": "helpers",
+   "type": "wolves",
+   "scope": "story",
+   "note": "Wolves who have helped the shared goal this visit (each grows the goal)."
+  },
+  {
+   "id": "reckon_called",
+   "type": "switch",
+   "scope": "story",
+   "note": "The first road was taken: the tally runs 3 game days."
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The realm's voice (campaign 4.1): packs add."
+  },
+  {
+   "id": "nh_threat",
+   "type": "number",
+   "scope": "world",
+   "initial": 30,
+   "note": "The bandit threat (campaign 4.1): packs lower it, never below 0."
+  },
+  {
+   "id": "nh_stage",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The Ninth Howl chapter now running (read only)."
+  },
+  {
+   "id": "coin_larkfield_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:larkfield (day cap 24); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_larkfield_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:larkfield is above its floor (nh-purses: off below 60, on at 80)."
+  },
+  {
+   "id": "coin_ridgemere_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:ridgemere (day cap 135); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_ridgemere_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:ridgemere is above its floor (nh-purses: off below 60, on at 80)."
+  },
+  {
+   "id": "nh_voice_larkfield",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Larkfield's strand of the realm's voice (campaign 4.1)."
+  },
+  {
+   "id": "lq_silver",
+   "type": "text",
+   "scope": "world",
+   "initial": "",
+   "note": "Clipped Silver: '' before it began, clipping while the light coin goes round, then board, mercy or cut."
+  },
+  {
+   "id": "lq_beam",
+   "type": "text",
+   "scope": "player",
+   "note": "The wolf's word on the Market Hall's grain beam: board or hushed ('' not yet)."
+  },
+  {
+   "id": "on_light",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf is on Short-Weighed now."
+  },
+  {
+   "id": "saw_beam",
+   "type": "switch",
+   "scope": "player",
+   "note": "The warden has shown the wolf the grain beam (the choice about it may be made)."
+  },
+  {
+   "id": "goal",
+   "type": "number",
+   "scope": "story",
+   "initial": 2,
+   "note": "Dies the reckoning needs taken: 2, and 1 more for every 4 wolves who help."
+  },
+  {
+   "id": "step",
+   "type": "number",
+   "scope": "story",
+   "note": "New helpers since the goal last grew (every fourth grows it)."
+  },
+  {
+   "id": "dies_taken",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "show": "Dies taken",
+   "note": "The coiners' dies taken from the Kestrel workings this season."
+  },
+  {
+   "id": "trails",
+   "type": "number",
+   "scope": "player",
+   "note": "How often the wolf has followed the silver trail."
+  },
+  {
+   "id": "trailing",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf is on The Silver Trail now (set for the party that took it)."
+  },
+  {
+   "id": "called",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf has brought the coiners' guards out on this trail (once a trail each, so nobody farms them)."
+  },
+  {
+   "id": "spawned_kestrel",
+   "type": "switch",
+   "scope": "story",
+   "note": "A story guard stands in kestrel."
+  },
+  {
+   "id": "spawned_kestrel_b",
+   "type": "switch",
+   "scope": "story",
+   "note": "A story guard stands in kestrel_b."
+  },
+  {
+   "id": "t_board",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for the Market Board."
+  },
+  {
+   "id": "t_mercy",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for paying her debt quietly."
+  },
+  {
+   "id": "t_cut",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for a share of the silver."
+  },
+  {
+   "id": "restitution",
+   "type": "number",
+   "scope": "story",
+   "note": "Silver & Rain's restitution in all (50 at most)."
+  },
+  {
+   "id": "shares_left",
+   "type": "number",
+   "scope": "player",
+   "note": "Marketday shares of the silver still owed to the wolf (4 at the start)."
+  }
+ ],
+ "regions": [
+  {
+   "id": "kestrel",
+   "cell": "w_ridgemere_8_2",
+   "x1": 0,
+   "y1": 110,
+   "x2": 19,
+   "y2": 129
+  },
+  {
+   "id": "kestrel_b",
+   "cell": "w_ridgemere_8_2",
+   "x1": 12,
+   "y1": 88,
+   "x2": 31,
+   "y2": 107
+  }
+ ],
+ "scenes": [
+  {
+   "format": "ratw-scene",
+   "version": 1,
+   "id": "lq_silver_die",
+   "title": "The die broken on the Larkfield anvil",
+   "visibility": "public",
+   "lockMovement": false,
+   "area": {
+    "cell": "w_ridgemere_6_9",
+    "x1": 130,
+    "y1": 66,
+    "x2": 150,
+    "y2": 86
+   },
+   "camera": {
+    "cell": "w_ridgemere_6_9",
+    "x": 140,
+    "y": 76
+   },
+   "cast": [
+    {
+     "id": "shopkeeper",
+     "npc": "tn_lf_pike_chalkley"
+    },
+    {
+     "id": "striker",
+     "npc": "tn_lf_harrow_larkwell"
+    }
+   ],
+   "start": "cry",
+   "beats": [
+    {
+     "id": "cry",
+     "type": "line",
+     "speaker": "shopkeeper",
+     "seconds": 8,
+     "text": "Weights and measures, Larkfield! Here's the die that struck the light pennies, out of a dead working on the Kestrel. The Market Board has seen it. Now so will you.",
+     "next": "blow"
+    },
+    {
+     "id": "blow",
+     "type": "line",
+     "speaker": "striker",
+     "seconds": 6,
+     "text": "One blow on our own anvil, and it's done. Short weight, short life.",
+     "next": "trade"
+    },
+    {
+     "id": "trade",
+     "type": "line",
+     "speaker": "shopkeeper",
+     "seconds": 6,
+     "text": "Full weight in every till from today. Good trade to you all, and count your change anyway."
+    }
+   ]
+  }
+ ],
+ "triggers": [
+  {
+   "id": "light-taken",
+   "on": "quest started",
+   "match": {
+    "detail": "light"
+   },
+   "audience": "participant",
+   "note": "Light coin goes round (world text clipping); the striker's weighing is laid.",
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "on_light"
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "lq_silver"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "lq_silver",
+       "value": "clipping"
+      }
+     ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "tn_lf_harrow_larkwell",
+      "id": "lq_silver_weigh",
+      "words": "Are these pennies true?",
+      "reply": "Short-weighed, every third one. Rims shaved and stamped again. Somebody with a jeweler's file and a good die. That's not Larkfield work. We'd have heard the hammer.",
+      "once": true
+     }
+    }
+   ]
+  },
+  {
+   "id": "beam-shown",
+   "on": "objective completed",
+   "match": {
+    "detail": "light",
+    "item": "warden"
+   },
+   "audience": "participant",
+   "note": "The warden showed the beam: the shopkeeper's two choices are laid (J1 later: per wolf).",
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "saw_beam"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "tn_lf_pike_chalkley",
+      "id": "lq_silver_beam",
+      "words": "That beam is false. The Market Board should see it.",
+      "reply": "#oath#. Then tell the warden so to his face, and I'll write it on the wall behind the counter so I never forget the look of it."
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "tn_lf_pike_chalkley",
+      "id": "lq_silver_hush",
+      "words": "Leave it with me. I'll deal with the Counting House.",
+      "reply": "You? With them? Well. Mind they don't weigh you on it."
+     }
+    }
+   ]
+  },
+  {
+   "id": "beam-board",
+   "on": "dialogue choice",
+   "match": {
+    "item": "tn_lf_pike_chalkley",
+    "detail": "lq_silver_beam"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "on_light",
+      "is": true
+     },
+     {
+      "test": "switch",
+      "var": "saw_beam",
+      "is": true
+     },
+     {
+      "test": "compare",
+      "left": {
+       "var": "lq_beam"
+      },
+      "op": "=",
+      "right": ""
+     }
+    ]
+   },
+   "note": "The Market Board should see the beam.",
+   "actions": [
+    {
+     "do": "set",
+     "var": "lq_beam",
+     "value": "board"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "light",
+      "objective": "beam",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.reveal",
+      "quest": "light",
+      "objective": "told",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "beam-hush",
+   "on": "dialogue choice",
+   "match": {
+    "item": "tn_lf_pike_chalkley",
+    "detail": "lq_silver_hush"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "on_light",
+      "is": true
+     },
+     {
+      "test": "switch",
+      "var": "saw_beam",
+      "is": true
+     },
+     {
+      "test": "compare",
+      "left": {
+       "var": "lq_beam"
+      },
+      "op": "=",
+      "right": ""
+     }
+    ]
+   },
+   "note": "Hushed: a Counting House chit, 6 (the treasury until SQ2; the Greatly Bank's till after). It writes no nh_bought (C12a later).",
+   "actions": [
+    {
+     "do": "set",
+     "var": "lq_beam",
+     "value": "hushed"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "light",
+      "objective": "beam",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_ridgemere_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_ridgemere_day"
+        },
+        "op": "<=",
+        "right": 129
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 29
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 6,
+        "purse": "town:ridgemere",
+        "reason": "a Counting House chit, cashed",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_ridgemere_day",
+       "value": 6
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 6
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "There was no coin to spare for you this time, so you were paid in bread.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "kept quiet about a crooked grain beam for the Counting House",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "beam-told",
+   "on": "objective completed",
+   "match": {
+    "detail": "light",
+    "item": "told"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "compare",
+      "left": {
+       "var": "lq_beam"
+      },
+      "op": "=",
+      "right": "board"
+     },
+     {
+      "test": "not",
+      "condition": {
+       "test": "timer",
+       "signal": "beam_week"
+      }
+     }
+    ]
+   },
+   "note": "The first wolf of each week to tell the warden: full weight at the Market Hall for a week.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "times.nudge",
+      "market": "larkfield",
+      "points": 10,
+      "days": 7,
+      "words": "full weight at the Market Hall again",
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "schedule",
+     "signal": "beam_week",
+     "days": 7,
+     "scope": "campaign"
+    }
+   ]
+  },
+  {
+   "id": "beam-week",
+   "on": "story signal",
+   "signal": "beam_week",
+   "actions": [
+    {
+     "do": "note",
+     "text": "A week of full weight at the Market Hall is over: the next wolf to tell the warden earns another."
+    }
+   ]
+  },
+  {
+   "id": "light-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "light"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "on_light"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "quest.offer",
+      "quest": "trail",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "lq_beam"
+      },
+      "op": "=",
+      "right": "board"
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_larkfield_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_larkfield_day"
+          },
+          "op": "<=",
+          "right": 18
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "lq_coin"
+          },
+          "op": "<=",
+          "right": 29
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 6,
+          "purse": "town:larkfield",
+          "reason": "the Larkfield stores pay for a true beam",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_larkfield_day",
+         "value": 6
+        },
+        {
+         "do": "add",
+         "var": "lq_coin",
+         "value": 6
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "lq_thin"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "There was no coin to spare for you this time, so you were paid in bread.",
+          "ifRefused": "when here"
+         }
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "proved the Market Hall's grain beam short-weighed Larkfield",
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_larkfield",
+       "value": 6
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "trail-taken",
+   "on": "quest started",
+   "match": {
+    "detail": "trail"
+   },
+   "audience": "participant",
+   "note": "The party follows the coin; the old wolf's answer is laid.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "party",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "trailing",
+       "of": "$each"
+      },
+      {
+       "do": "turn off",
+       "var": "called",
+       "of": "$each"
+      }
+     ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rm_dirk_rainmore",
+      "id": "lq_silver_dirk",
+      "words": "Where does the jeweler go when she shuts the shop?",
+      "reply": "Out to the old Kestrel workings, with a basket and a lamp. Says she buys silver off the tailings. There's no silver in dead tailings. I've told her so. She cries at night about the factor's chalk on our door.",
+      "once": true
+     }
+    }
+   ]
+  },
+  {
+   "id": "workings",
+   "on": "region entered",
+   "match": {
+    "target": "kestrel"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "switch",
+    "var": "trailing",
+    "is": true
+   },
+   "note": "Out at the dead Kestrel workings: the coiners' guards (2 to 6 by wolves present). Each wolf of the trail brings them out once a trail, unless a band already stands on both sites.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "trail",
+      "objective": "workings",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "called",
+      "is": false
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "called"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "spawned_kestrel",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "spawned_kestrel"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "count in region",
+          "region": "kestrel",
+          "op": ">=",
+          "value": 5
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "kestrel",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "count in region",
+            "region": "kestrel",
+            "op": ">=",
+            "value": 3
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "kestrel",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          },
+          {
+           "if": {
+            "test": "count in region",
+            "region": "kestrel",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "kestrel",
+              "count": 3,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "kestrel",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "switch",
+          "var": "spawned_kestrel_b",
+          "is": false
+         },
+         "then": [
+          {
+           "do": "turn on",
+           "var": "spawned_kestrel_b"
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "count in region",
+            "region": "kestrel_b",
+            "op": ">=",
+            "value": 5
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "kestrel_b",
+              "count": 6,
+              "ifRefused": "skip"
+             }
+            }
+           ],
+           "elif": [
+            {
+             "if": {
+              "test": "count in region",
+              "region": "kestrel_b",
+              "op": ">=",
+              "value": 3
+             },
+             "then": [
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "story.area.spawn",
+                "region": "kestrel_b",
+                "count": 4,
+                "ifRefused": "skip"
+               }
+              }
+             ]
+            },
+            {
+             "if": {
+              "test": "count in region",
+              "region": "kestrel_b",
+              "op": ">=",
+              "value": 2
+             },
+             "then": [
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "story.area.spawn",
+                "region": "kestrel_b",
+                "count": 3,
+                "ifRefused": "skip"
+               }
+              }
+             ]
+            }
+           ],
+           "else": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "kestrel_b",
+              "count": 2,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "workings-b",
+   "on": "region entered",
+   "match": {
+    "target": "kestrel_b"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "switch",
+    "var": "trailing",
+    "is": true
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "trail",
+      "objective": "workings",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "called",
+      "is": false
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "called"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "spawned_kestrel_b",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "spawned_kestrel_b"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "count in region",
+          "region": "kestrel_b",
+          "op": ">=",
+          "value": 5
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "kestrel_b",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "count in region",
+            "region": "kestrel_b",
+            "op": ">=",
+            "value": 3
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "kestrel_b",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          },
+          {
+           "if": {
+            "test": "count in region",
+            "region": "kestrel_b",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "kestrel_b",
+              "count": 3,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "kestrel_b",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "switch",
+          "var": "spawned_kestrel",
+          "is": false
+         },
+         "then": [
+          {
+           "do": "turn on",
+           "var": "spawned_kestrel"
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "count in region",
+            "region": "kestrel",
+            "op": ">=",
+            "value": 5
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "kestrel",
+              "count": 6,
+              "ifRefused": "skip"
+             }
+            }
+           ],
+           "elif": [
+            {
+             "if": {
+              "test": "count in region",
+              "region": "kestrel",
+              "op": ">=",
+              "value": 3
+             },
+             "then": [
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "story.area.spawn",
+                "region": "kestrel",
+                "count": 4,
+                "ifRefused": "skip"
+               }
+              }
+             ]
+            },
+            {
+             "if": {
+              "test": "count in region",
+              "region": "kestrel",
+              "op": ">=",
+              "value": 2
+             },
+             "then": [
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "story.area.spawn",
+                "region": "kestrel",
+                "count": 3,
+                "ifRefused": "skip"
+               }
+              }
+             ]
+            }
+           ],
+           "else": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "kestrel",
+              "count": 2,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "camp-kestrel",
+   "on": "camp cleared",
+   "match": {
+    "cell": "w_ridgemere_8_2"
+   },
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "spawned_kestrel",
+      "is": true
+     },
+     {
+      "test": "switch",
+      "var": "spawned_kestrel_b",
+      "is": true
+     }
+    ]
+   },
+   "note": "The guards broken: the clipping shears and the die lie where they stood.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "spawned_kestrel_b",
+        "is": true
+       },
+       {
+        "test": "wolf in region",
+        "region": "kestrel_b"
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "turn off",
+       "var": "spawned_kestrel_b"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.place",
+        "item": "shears",
+        "quantity": 1,
+        "cell": "w_ridgemere_8_2",
+        "x": 21,
+        "y": 97,
+        "ifRefused": "skip"
+       }
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "switch",
+        "var": "spawned_kestrel",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "turn off",
+         "var": "spawned_kestrel"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "shears",
+          "quantity": 1,
+          "cell": "w_ridgemere_8_2",
+          "x": 9,
+          "y": 119,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "if": {
+        "test": "switch",
+        "var": "spawned_kestrel_b",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "turn off",
+         "var": "spawned_kestrel_b"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "shears",
+          "quantity": 1,
+          "cell": "w_ridgemere_8_2",
+          "x": 21,
+          "y": 97,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "subtract",
+     "var": "nh_threat",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "nh_threat",
+     "min": 0,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "dirk-gone",
+   "on": "death",
+   "match": {
+    "actor": "rm_dirk_rainmore"
+   },
+   "note": "Dirk is 74 (C11 later spares him): if he dies, the trail goes on without his word.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "trailing",
+        "is": true,
+        "of": "$each"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "trail",
+          "objective": "dirk",
+          "player": "$each"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$each",
+          "text": "The old wolf at the jeweler's door has died. The neighbours say she walks out to the Kestrel workings on Stonedays.",
+          "ifRefused": "when here"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "trail-pack",
+   "on": "quest completed",
+   "match": {
+    "detail": "trail"
+   },
+   "audience": "participant",
+   "note": "A pack weighs more on the roads; once the reckoning is open, a party that takes the dies is offered them.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "party size",
+      "op": ">=",
+      "value": 2
+     },
+     "then": [
+      {
+       "do": "each",
+       "over": "party",
+       "actions": [
+        {
+         "do": "turn on",
+         "var": "packed",
+         "of": "$each"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "phase is",
+       "phase": "open"
+      }
+     },
+     "then": [
+      {
+       "do": "each",
+       "over": "party",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "road",
+           "of": "$each"
+          },
+          "op": "=",
+          "right": ""
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "silver_board",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "silver_mercy",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "silver_cut",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "trail-shears",
+   "on": "quest completed",
+   "match": {
+    "detail": "trail"
+   },
+   "audience": "participant",
+   "note": "On a wolf's first trail, each of the party besides the one who picked them up gets a pair of the shears, so every wolf can take a road; and the guards may be called again on the next trail.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "party",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "called",
+       "of": "$each"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "trails",
+           "of": "$each"
+          },
+          "op": "=",
+          "right": 0
+         },
+         {
+          "test": "compare",
+          "left": {
+           "each": true
+          },
+          "op": "!=",
+          "right": {
+           "field": "actor"
+          }
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$each",
+          "item": "shears",
+          "quantity": 1,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$each",
+          "text": "Your share of what the coiners left at the workings: a pair of their clipping shears.",
+          "ifRefused": "when here"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "trail-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "trail"
+   },
+   "audience": "participant",
+   "note": "A party took the dies: the shared goal (2, and 1 for every 4 helpers) opens the reckoning (a 7-day fallback tally).",
+   "actions": [
+    {
+     "do": "each",
+     "over": "party",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "trailing",
+       "of": "$each"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "trails",
+         "of": "$each"
+        },
+        "op": "=",
+        "right": 0
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_larkfield_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_larkfield_day"
+            },
+            "op": "<=",
+            "right": 18
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "lq_coin",
+             "of": "$each"
+            },
+            "op": "<=",
+            "right": 29
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$each",
+            "coins": 6,
+            "purse": "town:larkfield",
+            "reason": "the Larkfield stores pay for the silver trail",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_larkfield_day",
+           "value": 6
+          },
+          {
+           "do": "add",
+           "var": "lq_coin",
+           "value": 6,
+           "of": "$each"
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$each",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "turn on",
+           "var": "lq_thin",
+           "of": "$each"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$each",
+            "text": "There was no coin to spare for you this time, so you were paid in bread.",
+            "ifRefused": "when here"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$each",
+          "detail": "broke the coiners' guard at the Kestrel workings",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.practice",
+          "player": "$each",
+          "skill": "travel",
+          "ifRefused": "when here"
+         }
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "trails",
+       "value": 1,
+       "of": "$each"
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "dies_taken",
+     "value": 1
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "in list",
+       "list": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      }
+     },
+     "then": [
+      {
+       "do": "list add",
+       "var": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      },
+      {
+       "do": "add",
+       "var": "step",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "step"
+        },
+        "op": ">=",
+        "right": 4
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "step",
+         "value": 0
+        },
+        {
+         "do": "add",
+         "var": "goal",
+         "value": 1
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "phase is",
+        "phase": "open"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "dies_taken"
+        },
+        "op": ">=",
+        "right": {
+         "var": "goal"
+        }
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "schedule",
+       "signal": "reckon",
+       "days": 7,
+       "scope": "campaign"
+      },
+      {
+       "do": "schedule",
+       "signal": "lay",
+       "days": 0.002,
+       "scope": "campaign"
+      },
+      {
+       "do": "enter",
+       "phase": "reckoning"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "trail-again",
+   "on": "day begins",
+   "note": "Each day the wolves who followed the trail before are offered it again (weekly).",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "trails",
+         "of": "$each"
+        },
+        "op": ">=",
+        "right": 1
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "quest.offer",
+          "quest": "trail",
+          "player": "$each"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-board",
+   "on": "quest started",
+   "match": {
+    "detail": "silver_board"
+   },
+   "audience": "participant",
+   "note": "A road taken: it weighs 1, 2 from a pack; the first starts the 3-day tally; a second road is refused (L5 later).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "board"
+      },
+      {
+       "do": "add",
+       "var": "t_board",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "packed",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_board",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "reckoning"
+         },
+         {
+          "test": "switch",
+          "var": "reckon_called",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "reckon_called"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "silver_board",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you have chosen your road already.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-mercy",
+   "on": "quest started",
+   "match": {
+    "detail": "silver_mercy"
+   },
+   "audience": "participant",
+   "note": "A road taken: it weighs 1, 2 from a pack; the first starts the 3-day tally; a second road is refused (L5 later).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "mercy"
+      },
+      {
+       "do": "add",
+       "var": "t_mercy",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "packed",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_mercy",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "nh_stage"
+        },
+        "op": "=",
+        "right": 2
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "She's one of the Counting House's debtors; the herald's lists will want her name.",
+          "ifRefused": "when here"
+         }
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "reckoning"
+         },
+         {
+          "test": "switch",
+          "var": "reckon_called",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "reckon_called"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "silver_mercy",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you have chosen your road already.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-cut",
+   "on": "quest started",
+   "match": {
+    "detail": "silver_cut"
+   },
+   "audience": "participant",
+   "note": "A road taken: it weighs 1, 2 from a pack; the first starts the 3-day tally; a second road is refused (L5 later).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "cut"
+      },
+      {
+       "do": "add",
+       "var": "t_cut",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "packed",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_cut",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_vigdis_rainmore",
+        "id": "lq_silver_cut",
+        "words": "Keep clipping. Give me a share.",
+        "reply": "You're a cold one. A share, then, every Marketday, and you never saw my file. The chalk comes off my door by the new moon, and that's all I ever wanted."
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "reckoning"
+         },
+         {
+          "test": "switch",
+          "var": "reckon_called",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "reckon_called"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "silver_cut",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you have chosen your road already.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "board-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "silver_board"
+   },
+   "audience": "participant",
+   "note": "4 from the Larkfield stores and 8 restitution 'from Silver & Rain' (the treasury until SQ2; 50 in all).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_larkfield_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_larkfield_day"
+        },
+        "op": "<=",
+        "right": 20
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 31
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 4,
+        "purse": "town:larkfield",
+        "reason": "the Larkfield stores pay for the dies",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_larkfield_day",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 4
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "There was no coin to spare for you this time, so you were paid in bread.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_ridgemere_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_ridgemere_day"
+        },
+        "op": "<=",
+        "right": 127
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 27
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "restitution"
+        },
+        "op": "<=",
+        "right": 42
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 8,
+        "purse": "town:ridgemere",
+        "reason": "Silver & Rain pays it back",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_ridgemere_day",
+       "value": 8
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 8
+      },
+      {
+       "do": "add",
+       "var": "restitution",
+       "value": 8
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The jeweler's restitution did not come to you this time: the city purse was thin.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 12
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_larkfield",
+     "value": 12
+    }
+   ]
+  },
+  {
+   "id": "mercy-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "silver_mercy"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_larkfield_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_larkfield_day"
+        },
+        "op": "<=",
+        "right": 12
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 23
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 12,
+        "purse": "town:larkfield",
+        "reason": "the Larkfield stores pay for the light coin's end",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_larkfield_day",
+       "value": 12
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 12
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "There was no coin to spare for you this time, so you were paid in bread.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 12
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_larkfield",
+     "value": 12
+    }
+   ]
+  },
+  {
+   "id": "cut-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "silver_cut"
+   },
+   "audience": "participant",
+   "note": "A share every Marketday for four weeks: 12 in all.",
+   "actions": [
+    {
+     "do": "set",
+     "var": "shares_left",
+     "value": 4
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 12
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_larkfield",
+     "value": 3
+    }
+   ]
+  },
+  {
+   "id": "shares",
+   "on": "day begins",
+   "match": {
+    "detail": "Marketday"
+   },
+   "note": "Each Marketday: 3 'from Silver & Rain' (the treasury until SQ2) to every wolf still owed a share.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "shares_left",
+         "of": "$each"
+        },
+        "op": ">=",
+        "right": 1
+       },
+       "then": [
+        {
+         "do": "subtract",
+         "var": "shares_left",
+         "value": 1,
+         "of": "$each"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_ridgemere_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_ridgemere_day"
+            },
+            "op": "<=",
+            "right": 132
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "lq_coin",
+             "of": "$each"
+            },
+            "op": "<=",
+            "right": 32
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$each",
+            "coins": 3,
+            "purse": "town:ridgemere",
+            "reason": "a share of the silver",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_ridgemere_day",
+           "value": 3
+          },
+          {
+           "do": "add",
+           "var": "lq_coin",
+           "value": 3,
+           "of": "$each"
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$each",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "turn on",
+           "var": "lq_thin",
+           "of": "$each"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$each",
+            "text": "There was no coin to spare for you this time, so you were paid in bread.",
+            "ifRefused": "when here"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "lay-offers",
+   "on": "story signal",
+   "signal": "lay",
+   "note": "A new visit: the window choices again; in the reckoning every wolf who took the dies is offered the roads.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "phase is",
+       "phase": "open"
+      }
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_vigdis_rainmore",
+        "id": "lq_silver_cut",
+        "words": "Keep clipping. Give me a share.",
+        "reply": "You're a cold one. A share, then, every Marketday, and you never saw my file. The chalk comes off my door by the new moon, and that's all I ever wanted."
+       }
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "trails",
+             "of": "$each"
+            },
+            "op": ">=",
+            "right": 1
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "road",
+             "of": "$each"
+            },
+            "op": "=",
+            "right": ""
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "silver_board",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "silver_mercy",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "silver_cut",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_lf_harrow_larkwell",
+        "id": "lq_silver_weigh",
+        "words": "Are these pennies true?",
+        "reply": "Short-weighed, every third one. Rims shaved and stamped again. Somebody with a jeweler's file and a good die. That's not Larkfield work. We'd have heard the hammer.",
+        "once": true
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "new-season",
+   "on": "season begins",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "phase is",
+      "phase": "after_board"
+     },
+     {
+      "test": "phase is",
+      "phase": "after_mercy"
+     },
+     {
+      "test": "phase is",
+      "phase": "after_cut"
+     }
+    ]
+   },
+   "note": "A new season: light coin comes down the High Road again.",
+   "actions": [
+    {
+     "do": "set",
+     "var": "goal",
+     "value": 2
+    },
+    {
+     "do": "set",
+     "var": "step",
+     "value": 0
+    },
+    {
+     "do": "list clear",
+     "var": "helpers"
+    },
+    {
+     "do": "set",
+     "var": "dies_taken",
+     "value": 0
+    },
+    {
+     "do": "set",
+     "var": "t_board",
+     "value": 0
+    },
+    {
+     "do": "set",
+     "var": "t_mercy",
+     "value": 0
+    },
+    {
+     "do": "set",
+     "var": "t_cut",
+     "value": 0
+    },
+    {
+     "do": "turn off",
+     "var": "reckon_called"
+    },
+    {
+     "do": "set",
+     "var": "lq_silver",
+     "value": "clipping"
+    },
+    {
+     "do": "schedule",
+     "signal": "lay",
+     "days": 0.002,
+     "scope": "campaign"
+    },
+    {
+     "do": "enter",
+     "phase": "open"
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "Larkfield's grain comes home short-weighed and paid in light coin. The shopkeeper at Larkfield Stores wants to know who is light.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "tn_lf_pike_chalkley",
+     "text": "Fair price to you, and full weight, if you've got it. Count your change twice this week."
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "reckoning",
+   "journal": "The coiners' dies are out of the Kestrel workings. What is to be done with an old jeweler who shaves the realm's coin?",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "tn_lf_pike_chalkley",
+     "text": "The dies are out of the Kestrel. Now, what's to be done with an old jeweler who shaves the realm's coin? That's the hard weighing."
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "reckon",
+     "on": "story signal",
+     "signal": "reckon",
+     "note": "The tally: the road with the most weight; a tie or nobody goes before the Market (the default).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "t_mercy"
+          },
+          "op": ">",
+          "right": {
+           "var": "t_board"
+          }
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "t_mercy"
+          },
+          "op": ">",
+          "right": {
+           "var": "t_cut"
+          }
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "lq_silver",
+         "value": "mercy"
+        },
+        {
+         "do": "schedule",
+         "signal": "lay",
+         "days": 0.002,
+         "scope": "campaign"
+        },
+        {
+         "do": "enter",
+         "phase": "after_mercy"
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "t_cut"
+            },
+            "op": ">",
+            "right": {
+             "var": "t_board"
+            }
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "t_cut"
+            },
+            "op": ">",
+            "right": {
+             "var": "t_mercy"
+            }
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "lq_silver",
+           "value": "cut"
+          },
+          {
+           "do": "schedule",
+           "signal": "lay",
+           "days": 0.002,
+           "scope": "campaign"
+          },
+          {
+           "do": "enter",
+           "phase": "after_cut"
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "set",
+         "var": "lq_silver",
+         "value": "board"
+        },
+        {
+         "do": "schedule",
+         "signal": "lay",
+         "days": 0.002,
+         "scope": "campaign"
+        },
+        {
+         "do": "enter",
+         "phase": "after_board"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_board",
+   "journal": "The Market Board has broken a coiner's dies, on the Larkfield anvil.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "tn_lf_pike_chalkley",
+     "text": "Good trade. Full-weight pennies in the till again, and the die broke on our own anvil."
+    },
+    {
+     "kind": "times.nudge",
+     "market": "larkfield",
+     "points": 10,
+     "days": 14,
+     "words": "light coin called in",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "scene.play",
+     "scene": "lq_silver_die",
+     "player": "world",
+     "cue": "lq_die",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "after_mercy",
+   "journal": "Somebody paid an old jeweler's debt and broke her dies quietly. The light coin is gone.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "tn_lf_pike_chalkley",
+     "text": "The light coin's gone, and nobody in the stocks for it. Weights and measures. I'll call that a fair price."
+    },
+    {
+     "kind": "times.nudge",
+     "market": "larkfield",
+     "points": 10,
+     "days": 14,
+     "words": "light coin called in",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "after_cut",
+   "journal": "The jeweler still clips, and somebody takes a share. There is light coin about.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "tn_lf_pike_chalkley",
+     "text": "Still light. Count your change twice, customer. Somebody's getting fat on our shavings, and Larkfield will find out who."
+    },
+    {
+     "kind": "times.nudge",
+     "market": "larkfield",
+     "points": -10,
+     "days": 28,
+     "words": "light coin about",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": []
+  }
+ ],
+ "quests": [
+  {
+   "id": "light",
+   "title": "Short-Weighed",
+   "summary": "Larkfield's grain is short-weighed at the Market Hall and paid in light coin. Find out who is light.",
+   "scope": "player",
+   "repeat": "once",
+   "giver": "tn_lf_pike_chalkley",
+   "board": "larkfield",
+   "join": {
+    "cap": 40
+   },
+   "offer": {
+    "ask": "Trade slow?",
+    "say": "#greet#, #address#. Slow and light. We send full wagons of Longmead sacks to the city, and the Market Hall pays for two-thirds, in coin with the rim shaved off besides. Ask the carter, watch the Hall's beam, and take their pennies to the striker at the anvil.",
+    "accept": "Carter, beam and anvil. I'll find the light one.",
+    "decline": "Grain's grain.",
+    "handIn": "I know who's light.",
+    "thanks": "#thanks#. A Counting House beam and a jeweler's file, both. Scales and silver, a city wolf shaving the realm's coin. Follow it to the Commons, customer. I'll keep my till shut till you're back."
+   },
+   "objectives": [
+    {
+     "id": "carter",
+     "label": "Ask the carter who drives the grain down what the Hall paid.",
+     "on": "conversation",
+     "match": {
+      "target": "cty_imogen_rustford"
+     }
+    },
+    {
+     "id": "hall",
+     "label": "Watch the sacks weighed at the Market Hall.",
+     "on": "enter place",
+     "match": {
+      "target": "r2_the_market_hall"
+     }
+    },
+    {
+     "id": "warden",
+     "label": "Ask the warden of the Market Hall to show you the grain beam.",
+     "on": "conversation",
+     "match": {
+      "target": "rmx_fenwick_mossdale"
+     },
+     "after": [
+      "hall"
+     ]
+    },
+    {
+     "id": "weigh",
+     "label": "Have the striker weigh the Hall's coin on the anvil scales.",
+     "on": "conversation",
+     "match": {
+      "target": "tn_lf_harrow_larkwell"
+     }
+    },
+    {
+     "id": "beam",
+     "label": "Tell the shopkeeper what to do about the beam.",
+     "on": "story signal",
+     "signal": "beam_chosen",
+     "after": [
+      "warden"
+     ]
+    },
+    {
+     "id": "told",
+     "label": "Tell the warden the Market Board should see the beam.",
+     "on": "conversation",
+     "match": {
+      "target": "rmx_fenwick_mossdale"
+     },
+     "after": [
+      "beam"
+     ],
+     "hidden": true,
+     "optional": true
+    }
+   ],
+   "handIn": true,
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce",
+     "ifRefused": "when here"
+    }
+   ]
+  },
+  {
+   "id": "trail",
+   "title": "The Silver Trail",
+   "summary": "Follow the light coin to the jeweler's on the Commons and out to the Kestrel workings.",
+   "scope": "party",
+   "repeat": "weekly",
+   "join": {
+    "cap": 12
+   },
+   "objectives": [
+    {
+     "id": "shop",
+     "label": "Find the jeweler's the coin comes from.",
+     "on": "enter place",
+     "match": {
+      "target": "rm_silver_rain"
+     }
+    },
+    {
+     "id": "dirk",
+     "label": "Ask the old wolf at the door where she goes.",
+     "on": "conversation",
+     "match": {
+      "target": "rm_dirk_rainmore"
+     }
+    },
+    {
+     "id": "chalk",
+     "label": "Copy the factors' chalk-list at the Records Office.",
+     "on": "archive work",
+     "match": {
+      "detail": "ridgemere"
+     },
+     "optional": true
+    },
+    {
+     "id": "workings",
+     "label": "Go out to the dead Kestrel workings.",
+     "on": "story signal",
+     "signal": "at_workings"
+    },
+    {
+     "id": "guards",
+     "label": "Bring down the guards on the workings.",
+     "on": "bandit falls",
+     "match": {
+      "cell": "w_ridgemere_8_2"
+     },
+     "goal": 2,
+     "after": [
+      "workings"
+     ]
+    },
+    {
+     "id": "dies",
+     "label": "Take the clipping shears and the die.",
+     "on": "item picked up",
+     "match": {
+      "item": "shears",
+      "cell": "w_ridgemere_8_2"
+     },
+     "after": [
+      "guards"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "silver_board",
+   "title": "Before the Market",
+   "summary": "Take the shears and die to the warden of the Market Hall.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "reckoning",
+    "after_board",
+    "after_mercy",
+    "after_cut"
+   ],
+   "objectives": [
+    {
+     "id": "give",
+     "label": "Give the warden of the Market Hall the clipping shears.",
+     "on": "gift",
+     "match": {
+      "target": "rmx_fenwick_mossdale",
+      "item": "shears"
+     }
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "scales",
+     "quantity": 1,
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce",
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "laid a coiner's dies before the Market Board",
+     "ifRefused": "when here"
+    }
+   ]
+  },
+  {
+   "id": "silver_mercy",
+   "title": "A Debt Paid Quietly",
+   "summary": "Pay the jeweler's debt, and have the striker break the die.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "reckoning",
+    "after_board",
+    "after_mercy",
+    "after_cut"
+   ],
+   "objectives": [
+    {
+     "id": "pay",
+     "label": "Give the jeweler twenty pennies for the factor.",
+     "on": "gift",
+     "match": {
+      "target": "rm_vigdis_rainmore"
+     },
+     "goal": 20,
+     "measure": "coins"
+    },
+    {
+     "id": "break",
+     "label": "Give the striker the shears to break on the anvil.",
+     "on": "gift",
+     "match": {
+      "target": "tn_lf_harrow_larkwell",
+      "item": "shears"
+     }
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "silver_clip",
+     "quantity": 1,
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce",
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "paid an old jeweler's debt and broke her dies",
+     "ifRefused": "when here"
+    }
+   ]
+  },
+  {
+   "id": "silver_cut",
+   "title": "A Share of the Silver",
+   "summary": "Let her clip, and take your share.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "reckoning",
+    "after_board",
+    "after_mercy",
+    "after_cut"
+   ],
+   "objectives": [
+    {
+     "id": "cut",
+     "label": "Ask the jeweler for a share.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_vigdis_rainmore",
+      "detail": "lq_silver_cut"
+     }
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "took a share of a coiner's silver",
+     "ifRefused": "when here"
+    }
+   ]
+  }
+ ],
+ "tests": [
+  {
+   "name": "A pack: the beam before the Board, one hushed; a tie goes before the Market; a new season",
+   "cohort": [],
+   "parties": {
+    "wolf-ash": "pack1",
+    "wolf-birch": "pack1"
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1,
+     "actor": "wolf-ash",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "cty_imogen_rustford"
+    },
+    {
+     "id": "e3",
+     "kind": "enter place",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "r2_the_market_hall"
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "rmx_fenwick_mossdale"
+    },
+    {
+     "id": "e5",
+     "kind": "conversation",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "tn_lf_harrow_larkwell"
+    },
+    {
+     "id": "e6",
+     "kind": "dialogue choice",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "lq_silver_beam",
+     "target": "run"
+    },
+    {
+     "id": "e7",
+     "kind": "conversation",
+     "day": 1.06,
+     "actor": "wolf-ash",
+     "target": "rmx_fenwick_mossdale"
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.07,
+     "actor": "wolf-ash",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e9",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e10",
+     "kind": "conversation",
+     "day": 1.11,
+     "actor": "wolf-birch",
+     "target": "cty_imogen_rustford"
+    },
+    {
+     "id": "e11",
+     "kind": "enter place",
+     "day": 1.12,
+     "actor": "wolf-birch",
+     "target": "r2_the_market_hall"
+    },
+    {
+     "id": "e12",
+     "kind": "conversation",
+     "day": 1.13,
+     "actor": "wolf-birch",
+     "target": "rmx_fenwick_mossdale"
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 1.14,
+     "actor": "wolf-birch",
+     "target": "tn_lf_harrow_larkwell"
+    },
+    {
+     "id": "e14",
+     "kind": "dialogue choice",
+     "day": 1.15,
+     "actor": "wolf-birch",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "lq_silver_hush",
+     "target": "run"
+    },
+    {
+     "id": "e15",
+     "kind": "quest handed in",
+     "day": 1.17,
+     "actor": "wolf-birch",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e16",
+     "kind": "archive work",
+     "day": 1.9,
+     "actor": "wolf-ash",
+     "detail": "ridgemere"
+    },
+    {
+     "id": "e17",
+     "kind": "quest accepted",
+     "day": 2,
+     "actor": "wolf-ash",
+     "detail": "trail",
+     "target": "run"
+    },
+    {
+     "id": "e18",
+     "kind": "enter place",
+     "day": 2.01,
+     "actor": "wolf-ash",
+     "target": "rm_silver_rain"
+    },
+    {
+     "id": "e19",
+     "kind": "conversation",
+     "day": 2.02,
+     "actor": "wolf-ash",
+     "target": "rm_dirk_rainmore"
+    },
+    {
+     "id": "e20",
+     "kind": "region entered",
+     "day": 2.03,
+     "actor": "wolf-ash",
+     "target": "kestrel",
+     "cell": "w_ridgemere_8_2",
+     "x": 9,
+     "y": 119,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_8_2",
+        "x": 9,
+        "y": 119,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_8_2",
+        "x": 9,
+        "y": 119,
+        "partySize": 2
+       }
+      }
+     }
+    },
+    {
+     "id": "e21",
+     "kind": "bandit falls",
+     "day": 2.04,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e22",
+     "kind": "bandit falls",
+     "day": 2.041,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e23",
+     "kind": "bandit falls",
+     "day": 2.042,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e24",
+     "kind": "camp cleared",
+     "day": 2.05,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e25",
+     "kind": "item picked up",
+     "day": 2.06,
+     "actor": "wolf-ash",
+     "item": "shears",
+     "cell": "w_ridgemere_8_2",
+     "quantity": 1
+    },
+    {
+     "id": "e26",
+     "kind": "quest accepted",
+     "day": 2.2,
+     "actor": "wolf-dune",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e27",
+     "kind": "day begins",
+     "day": 9.4,
+     "detail": "Stoneday",
+     "item": "summer",
+     "quantity": 9
+    },
+    {
+     "id": "e28",
+     "kind": "quest accepted",
+     "day": 9.5,
+     "actor": "wolf-ash",
+     "detail": "trail",
+     "target": "run"
+    },
+    {
+     "id": "e29",
+     "kind": "enter place",
+     "day": 9.51,
+     "actor": "wolf-ash",
+     "target": "rm_silver_rain"
+    },
+    {
+     "id": "e30",
+     "kind": "conversation",
+     "day": 9.52,
+     "actor": "wolf-ash",
+     "target": "rm_dirk_rainmore"
+    },
+    {
+     "id": "e31",
+     "kind": "region entered",
+     "day": 9.53,
+     "actor": "wolf-ash",
+     "target": "kestrel_b",
+     "cell": "w_ridgemere_8_2",
+     "x": 21,
+     "y": 97,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_8_2",
+        "x": 21,
+        "y": 97,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_8_2",
+        "x": 21,
+        "y": 97,
+        "partySize": 2
+       }
+      }
+     }
+    },
+    {
+     "id": "e32",
+     "kind": "bandit falls",
+     "day": 9.54,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e33",
+     "kind": "bandit falls",
+     "day": 9.541,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e34",
+     "kind": "bandit falls",
+     "day": 9.542,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e35",
+     "kind": "camp cleared",
+     "day": 9.55,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e36",
+     "kind": "item picked up",
+     "day": 9.56,
+     "actor": "wolf-ash",
+     "item": "shears",
+     "cell": "w_ridgemere_8_2",
+     "quantity": 1
+    },
+    {
+     "id": "e37",
+     "kind": "quest accepted",
+     "day": 9.7,
+     "actor": "wolf-ash",
+     "detail": "silver_board",
+     "target": "run"
+    },
+    {
+     "id": "e38",
+     "kind": "gift",
+     "day": 9.71,
+     "actor": "wolf-ash",
+     "target": "rmx_fenwick_mossdale",
+     "item": "shears",
+     "quantity": 1
+    },
+    {
+     "id": "e39",
+     "kind": "quest accepted",
+     "day": 9.72,
+     "actor": "wolf-birch",
+     "detail": "silver_mercy",
+     "target": "run"
+    },
+    {
+     "id": "e40",
+     "kind": "gift",
+     "day": 9.73,
+     "actor": "wolf-birch",
+     "target": "rm_vigdis_rainmore",
+     "coins": 20
+    },
+    {
+     "id": "e41",
+     "kind": "gift",
+     "day": 9.74,
+     "actor": "wolf-birch",
+     "target": "tn_lf_harrow_larkwell",
+     "item": "shears",
+     "quantity": 1
+    },
+    {
+     "id": "e42",
+     "kind": "quest accepted",
+     "day": 9.75,
+     "actor": "wolf-birch",
+     "detail": "silver_cut",
+     "target": "run"
+    },
+    {
+     "id": "e43",
+     "kind": "clock",
+     "day": 13.2
+    },
+    {
+     "id": "e44",
+     "kind": "season begins",
+     "day": 29.7,
+     "detail": "autumn"
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_board",
+    "open"
+   ],
+   "expectQuests": {
+    "light": {
+     "wolf-ash": "done",
+     "wolf-birch": "done"
+    },
+    "trail": {
+     "party:pack1": "done"
+    },
+    "silver_board": {
+     "wolf-ash": "done"
+    },
+    "silver_mercy": {
+     "wolf-birch": "done"
+    },
+    "silver_cut": {
+     "wolf-birch": "failed"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_silver": "clipping"
+    },
+    "player": {
+     "wolf-ash": {
+      "lq_beam": "board",
+      "trails": 2
+     },
+     "wolf-birch": {
+      "lq_beam": "hushed",
+      "packed": true
+     }
+    }
+   }
+  },
+  {
+   "name": "Mercy wins; the old wolf at the door dies on a trail",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "cty_imogen_rustford"
+    },
+    {
+     "id": "e3",
+     "kind": "enter place",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "r2_the_market_hall"
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "rmx_fenwick_mossdale"
+    },
+    {
+     "id": "e5",
+     "kind": "conversation",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "tn_lf_harrow_larkwell"
+    },
+    {
+     "id": "e6",
+     "kind": "dialogue choice",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "lq_silver_beam",
+     "target": "run"
+    },
+    {
+     "id": "e7",
+     "kind": "conversation",
+     "day": 1.06,
+     "actor": "wolf-ash",
+     "target": "rmx_fenwick_mossdale"
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.07,
+     "actor": "wolf-ash",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e9",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e10",
+     "kind": "conversation",
+     "day": 1.11,
+     "actor": "wolf-birch",
+     "target": "cty_imogen_rustford"
+    },
+    {
+     "id": "e11",
+     "kind": "enter place",
+     "day": 1.12,
+     "actor": "wolf-birch",
+     "target": "r2_the_market_hall"
+    },
+    {
+     "id": "e12",
+     "kind": "conversation",
+     "day": 1.13,
+     "actor": "wolf-birch",
+     "target": "rmx_fenwick_mossdale"
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 1.14,
+     "actor": "wolf-birch",
+     "target": "tn_lf_harrow_larkwell"
+    },
+    {
+     "id": "e14",
+     "kind": "dialogue choice",
+     "day": 1.15,
+     "actor": "wolf-birch",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "lq_silver_beam",
+     "target": "run"
+    },
+    {
+     "id": "e15",
+     "kind": "conversation",
+     "day": 1.16,
+     "actor": "wolf-birch",
+     "target": "rmx_fenwick_mossdale"
+    },
+    {
+     "id": "e16",
+     "kind": "quest handed in",
+     "day": 1.17,
+     "actor": "wolf-birch",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e17",
+     "kind": "quest accepted",
+     "day": 1.2,
+     "actor": "wolf-cedar",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e18",
+     "kind": "conversation",
+     "day": 1.21,
+     "actor": "wolf-cedar",
+     "target": "cty_imogen_rustford"
+    },
+    {
+     "id": "e19",
+     "kind": "enter place",
+     "day": 1.22,
+     "actor": "wolf-cedar",
+     "target": "r2_the_market_hall"
+    },
+    {
+     "id": "e20",
+     "kind": "conversation",
+     "day": 1.23,
+     "actor": "wolf-cedar",
+     "target": "rmx_fenwick_mossdale"
+    },
+    {
+     "id": "e21",
+     "kind": "conversation",
+     "day": 1.24,
+     "actor": "wolf-cedar",
+     "target": "tn_lf_harrow_larkwell"
+    },
+    {
+     "id": "e22",
+     "kind": "dialogue choice",
+     "day": 1.25,
+     "actor": "wolf-cedar",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "lq_silver_beam",
+     "target": "run"
+    },
+    {
+     "id": "e23",
+     "kind": "conversation",
+     "day": 1.26,
+     "actor": "wolf-cedar",
+     "target": "rmx_fenwick_mossdale"
+    },
+    {
+     "id": "e24",
+     "kind": "quest handed in",
+     "day": 1.27,
+     "actor": "wolf-cedar",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e25",
+     "kind": "quest accepted",
+     "day": 2,
+     "actor": "wolf-ash",
+     "detail": "trail",
+     "target": "run"
+    },
+    {
+     "id": "e26",
+     "kind": "enter place",
+     "day": 2.01,
+     "actor": "wolf-ash",
+     "target": "rm_silver_rain"
+    },
+    {
+     "id": "e27",
+     "kind": "conversation",
+     "day": 2.02,
+     "actor": "wolf-ash",
+     "target": "rm_dirk_rainmore"
+    },
+    {
+     "id": "e28",
+     "kind": "region entered",
+     "day": 2.03,
+     "actor": "wolf-ash",
+     "target": "kestrel",
+     "cell": "w_ridgemere_8_2",
+     "x": 9,
+     "y": 119,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_8_2",
+        "x": 9,
+        "y": 119,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e29",
+     "kind": "bandit falls",
+     "day": 2.04,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e30",
+     "kind": "bandit falls",
+     "day": 2.041,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e31",
+     "kind": "bandit falls",
+     "day": 2.042,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e32",
+     "kind": "camp cleared",
+     "day": 2.05,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e33",
+     "kind": "item picked up",
+     "day": 2.06,
+     "actor": "wolf-ash",
+     "item": "shears",
+     "cell": "w_ridgemere_8_2",
+     "quantity": 1
+    },
+    {
+     "id": "e34",
+     "kind": "quest accepted",
+     "day": 3,
+     "actor": "wolf-birch",
+     "detail": "trail",
+     "target": "run"
+    },
+    {
+     "id": "e35",
+     "kind": "death",
+     "day": 3.01,
+     "actor": "rm_dirk_rainmore",
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e36",
+     "kind": "enter place",
+     "day": 3.02,
+     "actor": "wolf-birch",
+     "target": "rm_silver_rain"
+    },
+    {
+     "id": "e37",
+     "kind": "region entered",
+     "day": 3.03,
+     "actor": "wolf-birch",
+     "target": "kestrel",
+     "cell": "w_ridgemere_8_2",
+     "x": 9,
+     "y": 119,
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_8_2",
+        "x": 9,
+        "y": 119
+       }
+      }
+     }
+    },
+    {
+     "id": "e38",
+     "kind": "bandit falls",
+     "day": 3.04,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e39",
+     "kind": "bandit falls",
+     "day": 3.041,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e40",
+     "kind": "bandit falls",
+     "day": 3.042,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e41",
+     "kind": "camp cleared",
+     "day": 3.05,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e42",
+     "kind": "item picked up",
+     "day": 3.06,
+     "actor": "wolf-birch",
+     "item": "shears",
+     "cell": "w_ridgemere_8_2",
+     "quantity": 1
+    },
+    {
+     "id": "e43",
+     "kind": "quest accepted",
+     "day": 3.5,
+     "actor": "wolf-ash",
+     "detail": "silver_mercy",
+     "target": "run"
+    },
+    {
+     "id": "e44",
+     "kind": "quest accepted",
+     "day": 3.6,
+     "actor": "wolf-birch",
+     "detail": "silver_mercy",
+     "target": "run"
+    },
+    {
+     "id": "e45",
+     "kind": "quest accepted",
+     "day": 3.8,
+     "actor": "wolf-cedar",
+     "detail": "silver_board",
+     "target": "run"
+    },
+    {
+     "id": "e46",
+     "kind": "clock",
+     "day": 7.0
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_mercy"
+   ],
+   "expectQuests": {
+    "trail": {
+     "party:wolf-birch": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_silver": "mercy"
+    },
+    "story": {
+     "t_mercy": 2
+    }
+   }
+  },
+  {
+   "name": "The cut wins: a share every Marketday for four weeks",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "cty_imogen_rustford"
+    },
+    {
+     "id": "e3",
+     "kind": "enter place",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "r2_the_market_hall"
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "rmx_fenwick_mossdale"
+    },
+    {
+     "id": "e5",
+     "kind": "conversation",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "tn_lf_harrow_larkwell"
+    },
+    {
+     "id": "e6",
+     "kind": "dialogue choice",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "lq_silver_beam",
+     "target": "run"
+    },
+    {
+     "id": "e7",
+     "kind": "conversation",
+     "day": 1.06,
+     "actor": "wolf-ash",
+     "target": "rmx_fenwick_mossdale"
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.07,
+     "actor": "wolf-ash",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e9",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e10",
+     "kind": "conversation",
+     "day": 1.11,
+     "actor": "wolf-birch",
+     "target": "cty_imogen_rustford"
+    },
+    {
+     "id": "e11",
+     "kind": "enter place",
+     "day": 1.12,
+     "actor": "wolf-birch",
+     "target": "r2_the_market_hall"
+    },
+    {
+     "id": "e12",
+     "kind": "conversation",
+     "day": 1.13,
+     "actor": "wolf-birch",
+     "target": "rmx_fenwick_mossdale"
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 1.14,
+     "actor": "wolf-birch",
+     "target": "tn_lf_harrow_larkwell"
+    },
+    {
+     "id": "e14",
+     "kind": "dialogue choice",
+     "day": 1.15,
+     "actor": "wolf-birch",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "lq_silver_beam",
+     "target": "run"
+    },
+    {
+     "id": "e15",
+     "kind": "conversation",
+     "day": 1.16,
+     "actor": "wolf-birch",
+     "target": "rmx_fenwick_mossdale"
+    },
+    {
+     "id": "e16",
+     "kind": "quest handed in",
+     "day": 1.17,
+     "actor": "wolf-birch",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e17",
+     "kind": "quest accepted",
+     "day": 2,
+     "actor": "wolf-ash",
+     "detail": "trail",
+     "target": "run"
+    },
+    {
+     "id": "e18",
+     "kind": "enter place",
+     "day": 2.01,
+     "actor": "wolf-ash",
+     "target": "rm_silver_rain"
+    },
+    {
+     "id": "e19",
+     "kind": "conversation",
+     "day": 2.02,
+     "actor": "wolf-ash",
+     "target": "rm_dirk_rainmore"
+    },
+    {
+     "id": "e20",
+     "kind": "region entered",
+     "day": 2.03,
+     "actor": "wolf-ash",
+     "target": "kestrel",
+     "cell": "w_ridgemere_8_2",
+     "x": 9,
+     "y": 119,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_8_2",
+        "x": 9,
+        "y": 119,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e21",
+     "kind": "bandit falls",
+     "day": 2.04,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e22",
+     "kind": "bandit falls",
+     "day": 2.041,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e23",
+     "kind": "bandit falls",
+     "day": 2.042,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e24",
+     "kind": "camp cleared",
+     "day": 2.05,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e25",
+     "kind": "item picked up",
+     "day": 2.06,
+     "actor": "wolf-ash",
+     "item": "shears",
+     "cell": "w_ridgemere_8_2",
+     "quantity": 1
+    },
+    {
+     "id": "e26",
+     "kind": "quest accepted",
+     "day": 3,
+     "actor": "wolf-birch",
+     "detail": "trail",
+     "target": "run"
+    },
+    {
+     "id": "e27",
+     "kind": "enter place",
+     "day": 3.01,
+     "actor": "wolf-birch",
+     "target": "rm_silver_rain"
+    },
+    {
+     "id": "e28",
+     "kind": "conversation",
+     "day": 3.02,
+     "actor": "wolf-birch",
+     "target": "rm_dirk_rainmore"
+    },
+    {
+     "id": "e29",
+     "kind": "region entered",
+     "day": 3.03,
+     "actor": "wolf-birch",
+     "target": "kestrel_b",
+     "cell": "w_ridgemere_8_2",
+     "x": 21,
+     "y": 97,
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_8_2",
+        "x": 21,
+        "y": 97,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e30",
+     "kind": "bandit falls",
+     "day": 3.04,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e31",
+     "kind": "bandit falls",
+     "day": 3.041,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e32",
+     "kind": "bandit falls",
+     "day": 3.042,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e33",
+     "kind": "camp cleared",
+     "day": 3.05,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e34",
+     "kind": "item picked up",
+     "day": 3.06,
+     "actor": "wolf-birch",
+     "item": "shears",
+     "cell": "w_ridgemere_8_2",
+     "quantity": 1
+    },
+    {
+     "id": "e35",
+     "kind": "quest accepted",
+     "day": 3.5,
+     "actor": "wolf-ash",
+     "detail": "silver_cut",
+     "target": "run"
+    },
+    {
+     "id": "e36",
+     "kind": "dialogue choice",
+     "day": 3.51,
+     "actor": "wolf-ash",
+     "item": "rm_vigdis_rainmore",
+     "detail": "lq_silver_cut",
+     "target": "run"
+    },
+    {
+     "id": "e37",
+     "kind": "quest accepted",
+     "day": 3.6,
+     "actor": "wolf-birch",
+     "detail": "silver_cut",
+     "target": "run"
+    },
+    {
+     "id": "e38",
+     "kind": "dialogue choice",
+     "day": 3.61,
+     "actor": "wolf-birch",
+     "item": "rm_vigdis_rainmore",
+     "detail": "lq_silver_cut",
+     "target": "run"
+    },
+    {
+     "id": "e39",
+     "kind": "clock",
+     "day": 7.0
+    },
+    {
+     "id": "e40",
+     "kind": "day begins",
+     "day": 7.5,
+     "detail": "Marketday",
+     "item": "summer",
+     "quantity": 10
+    },
+    {
+     "id": "e41",
+     "kind": "day begins",
+     "day": 14.5,
+     "detail": "Marketday",
+     "item": "summer",
+     "quantity": 17
+    },
+    {
+     "id": "e42",
+     "kind": "day begins",
+     "day": 21.5,
+     "detail": "Marketday",
+     "item": "summer",
+     "quantity": 24
+    },
+    {
+     "id": "e43",
+     "kind": "day begins",
+     "day": 28.5,
+     "detail": "Marketday",
+     "item": "summer",
+     "quantity": 31
+    },
+    {
+     "id": "e44",
+     "kind": "day begins",
+     "day": 35.5,
+     "detail": "Marketday",
+     "item": "summer",
+     "quantity": 38
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_cut"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_silver": "cut"
+    },
+    "player": {
+     "wolf-ash": {
+      "shares_left": 0,
+      "lq_coin": 24
+     }
+    }
+   }
+  },
+  {
+   "name": "Nobody takes a road: before the Market",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1,
+     "actor": "wolf-ash",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "cty_imogen_rustford"
+    },
+    {
+     "id": "e3",
+     "kind": "enter place",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "r2_the_market_hall"
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "rmx_fenwick_mossdale"
+    },
+    {
+     "id": "e5",
+     "kind": "conversation",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "tn_lf_harrow_larkwell"
+    },
+    {
+     "id": "e6",
+     "kind": "dialogue choice",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "lq_silver_beam",
+     "target": "run"
+    },
+    {
+     "id": "e7",
+     "kind": "conversation",
+     "day": 1.06,
+     "actor": "wolf-ash",
+     "target": "rmx_fenwick_mossdale"
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.07,
+     "actor": "wolf-ash",
+     "item": "tn_lf_pike_chalkley",
+     "detail": "light",
+     "target": "run"
+    },
+    {
+     "id": "e9",
+     "kind": "quest accepted",
+     "day": 2,
+     "actor": "wolf-ash",
+     "detail": "trail",
+     "target": "run"
+    },
+    {
+     "id": "e10",
+     "kind": "enter place",
+     "day": 2.01,
+     "actor": "wolf-ash",
+     "target": "rm_silver_rain"
+    },
+    {
+     "id": "e11",
+     "kind": "conversation",
+     "day": 2.02,
+     "actor": "wolf-ash",
+     "target": "rm_dirk_rainmore"
+    },
+    {
+     "id": "e12",
+     "kind": "region entered",
+     "day": 2.03,
+     "actor": "wolf-ash",
+     "target": "kestrel",
+     "cell": "w_ridgemere_8_2",
+     "x": 9,
+     "y": 119,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_8_2",
+        "x": 9,
+        "y": 119,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e13",
+     "kind": "bandit falls",
+     "day": 2.04,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e14",
+     "kind": "bandit falls",
+     "day": 2.041,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e15",
+     "kind": "bandit falls",
+     "day": 2.042,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e16",
+     "kind": "camp cleared",
+     "day": 2.05,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e17",
+     "kind": "item picked up",
+     "day": 2.06,
+     "actor": "wolf-ash",
+     "item": "shears",
+     "cell": "w_ridgemere_8_2",
+     "quantity": 1
+    },
+    {
+     "id": "e18",
+     "kind": "day begins",
+     "day": 9.4,
+     "detail": "Dawnday",
+     "item": "summer",
+     "quantity": 9
+    },
+    {
+     "id": "e19",
+     "kind": "quest accepted",
+     "day": 9.5,
+     "actor": "wolf-ash",
+     "detail": "trail",
+     "target": "run"
+    },
+    {
+     "id": "e20",
+     "kind": "enter place",
+     "day": 9.51,
+     "actor": "wolf-ash",
+     "target": "rm_silver_rain"
+    },
+    {
+     "id": "e21",
+     "kind": "conversation",
+     "day": 9.52,
+     "actor": "wolf-ash",
+     "target": "rm_dirk_rainmore"
+    },
+    {
+     "id": "e22",
+     "kind": "region entered",
+     "day": 9.53,
+     "actor": "wolf-ash",
+     "target": "kestrel",
+     "cell": "w_ridgemere_8_2",
+     "x": 9,
+     "y": 119,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_8_2",
+        "x": 9,
+        "y": 119,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e23",
+     "kind": "bandit falls",
+     "day": 9.54,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e24",
+     "kind": "bandit falls",
+     "day": 9.541,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e25",
+     "kind": "bandit falls",
+     "day": 9.542,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e26",
+     "kind": "camp cleared",
+     "day": 9.55,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_8_2"
+    },
+    {
+     "id": "e27",
+     "kind": "item picked up",
+     "day": 9.56,
+     "actor": "wolf-ash",
+     "item": "shears",
+     "cell": "w_ridgemere_8_2",
+     "quantity": 1
+    },
+    {
+     "id": "e28",
+     "kind": "clock",
+     "day": 17
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_board"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_silver": "board"
+    }
+   }
+  }
+ ]
+}

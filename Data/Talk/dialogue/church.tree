@@ -15,6 +15,15 @@ say[topic.meeting=famous priority=6] You #topic.deed#, didn't you? Folk talk of 
 say[topic.meeting=famous_look priority=6] You look like the one who #topic.deed#. Are you? What brings you to us? | I've heard of a wolf like you, who #topic.deed#. What brings you to us?
 say[pair.disposition=wary priority=3] Yes? | What is it you want? | #bless#. What brings you?
 say[pair.disposition=hostile priority=10] You. Say what you want and go. | What now? | Even you are welcome here. Just.
+# ---- The Ninth Howl: the cast's own greetings (Docs/Design/86 section 6; cast-and-talk.md section 3). Each is
+# gated on talk memory the campaign writes (world.mem, self.mem, pair.mem), so none plays until a key is set.
+# rm_solveig_tarwell
+say[self.id=rm_solveig_tarwell world.mem.nh_stage=letters priority=4] Bring me a name of the wharf drowned and I'll say it over the water. That's all a rite is.
+say[self.id=rm_solveig_tarwell world.mem.nh_stage=lights priority=4] Bring me a name and I'll say it over the water. The fen ones too. Especially the fen ones.
+say[self.id=rm_solveig_tarwell world.mem.nh_stage=lights|harvest|bell|moot world.mem.nh_lights=laid priority=4] I said every name at the crossing. The fog lifted. I don't claim it. I only noticed.
+say[self.id=rm_solveig_tarwell world.mem.nh_stage=lights|harvest|bell|moot world.mem.nh_lights=faded priority=4] I went to the crossing and nobody came with names. I'll go again next year.
+say[self.id=rm_solveig_tarwell world.mem.nh_stage=moot priority=4] If the bell comes, I'll ring it as the howl comes in. If it doesn't, I'll ring the chapel's twice.
+say[self.id=rm_solveig_tarwell world.mem.nh_bell=rung priority=5] I rang the drowned bell at the Bay Light. My paws still hum.
 mood calm
 free
 choice When is the service? -> service

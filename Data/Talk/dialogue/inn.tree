@@ -35,6 +35,51 @@ say[topic.meeting=famous priority=6] You #topic.deed#, didn't you? Folk talk of 
 say[topic.meeting=famous_look priority=6] You look like the one who #topic.deed#. Are you? #inn_offer# | I've heard of a wolf like you, who #topic.deed#. #inn_offer#
 say[pair.disposition=wary priority=3] Yes? | What is it you want? | #greet#. What will it be?
 say[pair.disposition=hostile priority=10] You. Say what you want and go. | What now? | I'll serve you, and that's all.
+# >>> Ninth Howl talk, part 2 (gossip and helpful knowledge; generated, doc 86 §6.4): inn recaps
+# The campaign: a recap for a late joiner, one per stage (cast-and-talk §4.2).
+say[world.mem.nh_stage=king priority=1] The old King's gone up to the Bright One, and a Sump patrolman keeps the Palace lamp. The herald's sending word to every hearth.
+say[world.mem.nh_stage=moot_called priority=1] For anyone new on the roads: the old King's gone up, a Sump patrolman keeps the Palace lamp, and the herald's called a Moot of the whole realm.
+say[world.mem.nh_stage=reckoning priority=1] You've missed a moon of it. The herald called a Moot, and now the Counting House wants every debtor's howl by the new moon.
+say[world.mem.nh_stage=signals priority=1] Lamps on the ridges, a captain in grey taking a mark a wagon, and the Watch's own lists going round. That's how things stand.
+say[world.mem.nh_stage=howls priority=1] The herald says a Moot needs nine howls, and half the towns sang the burying one at the feast. They're finding the old ones now.
+say[world.mem.nh_stage=letters priority=1] A Moot called, debts fought, lamps put out, old howls found, and now forty letters chasing a lord who's never home. And black cloaks on the Pass.
+say[world.mem.nh_stage=lights priority=1] Now the Houses are at each other, the fens are full of lights, and a black cloak wants one howl from the Pass to the Waste on the night the Moot sits.
+say[world.mem.nh_stage=harvest priority=1] Now the Captain's at the Larkfield ford with every wolf he has, and the harvest with him.
+say[world.mem.nh_stage=bell priority=1] The Chancellor's tears, a writ the Houses buried, and a bell under the Upper Mere ice. The Moot's not far off now.
+say[world.mem.nh_stage=moot priority=1] The Moot night's close. Every post on the Line wants a keeper, and the Moot sits on Market Square.
+say[world.mem.nh_stage=moot world.mem.nh_moot=midwinter priority=1] The Midwinter Moot's close. Every post on the Line wants a keeper, and the Moot sits on Market Square.
+# The quest packs: recaps and innkeepers' own lines (quests-medium.md, quests-large.md).
+say[here.region=ridgemere self.id=rm_rosamund_tarridge world.mem.mq_wharf=named self.from=ridgemere priority=2] Our cook's brother is on the Chapel's roll at last. He's been singing over the pots all week.
+say[here.region=fenshore self.id=cty_nell_plummeadow world.mem.mq_kiln=open self.from=fenshore priority=2] The potter's wheel sat empty, and the rule gave it to whoever was free. Fen-sure, the same rule put a patrolman in the Palace.
+say[world.mem.lq_salt=raided priority=1] Salt's dear because the Saltpan carts get robbed on the Waste. The carter at Saltwell wants wolves to ride with him.
+say[here.region=oakhaven world.mem.lq_cedars=dying priority=1] Somebody's killing the old cedars in the Rainwood for masts. The feller at the Sound cut is asking for wolves to sit up in the stands.
+say[here.region=coldwater world.mem.lq_brown=rustled priority=1] Sheep going off the Greyteeth fold. Some say a bear, some say wolves. One of the shepherds there wants help.
+say[here.region=larkfield world.mem.lq_silver=clipping priority=1] Larkfield's grain comes home short-weighed and paid in light coin. The shopkeeper at the Stores wants somebody to find out who.
+say[here.region=southmeadow world.mem.lq_vines=blight priority=1] Blight in the south vine rows and boar in at night. The vine-tender wants help before the harvest's gone.
+say[here.region=ridgemere world.mem.lq_runnel=fever priority=1] There's a cough in the Sump courts by the cisterns. The nurse at the Sump Infirmary wants willow bark and legs.
+say[here.region=ridgemere world.mem.lq_wreck=lamp priority=1] Ships are going onto the North Headland in fog. A skipper at North Cove says somebody lights a lamp there.
+say[here.region=fenshore world.mem.lq_eels=weir priority=1] No eels running this season. The skipper at Fen Shore landing thinks somebody's stopped them on the river.
+say[here.region=ridgemere world.mem.lq_thief=walking priority=1] Pledges vanishing from a locked room on the Rise. The lender at Vance House wants a plain answer.
+say[here.region=frosthollow world.mem.lq_hearths=undersold priority=1] The Upper hearths' charcoal sells at half in the city. The colliers want somebody to find out why.
+# <<< Ninth Howl talk, part 2: inn recaps
+# ---- The Ninth Howl: the cast's own greetings (Docs/Design/86 section 6; cast-and-talk.md section 3). Each is
+# gated on talk memory the campaign writes (world.mem, self.mem, pair.mem), so none plays until a key is set.
+# tn_fh_loam_pinefell
+say[self.id=tn_fh_loam_pinefell self.from=coldwater world.mem.nh_stage=bell priority=4] There's a bell under the ice and wolves hauling it. I'll pour for anyone who hauls, eh? No charge.
+# tn_cw_bramble_reedford
+say[self.id=tn_cw_bramble_reedford self.from=larkfield world.mem.nh_stage=harvest priority=4] The Sheaf's open all three nights. Wolves from the ford drink at cost. Weights and measures, that's my price.
+# tn_lf_rowan_downridge
+say[self.id=tn_lf_rowan_downridge self.from=southmeadow world.mem.nh_stage=harvest priority=4] If a runner comes through at midnight, I'll ring the yard bell. Sheaf and sickle, I hope it's tonight.
+# cty_nell_plummeadow
+say[self.id=cty_nell_plummeadow self.from=fenshore world.mem.nh_stage=moot priority=4] I've a letter I never answered. I might read it at the crossing. Might not, no?
+# tn_mb_oriel_marshditch
+say[self.id=tn_mb_oriel_marshditch self.from=saltwell world.mem.nh_stage=howls priority=4] The old one at the salt pans keeps the well's roll. Every caravan that ever drank is in it, honoured guest.
+# tn_fh_tamsin_icefell
+say[self.id=tn_fh_tamsin_icefell self.from=oakhaven world.mem.nh_stage=letters world.mem.nh_hills=fell priority=4] I'll leave for Ridgemere after the Moot. The cut was the only reason to stay, mm?
+# tn_oh_thorn_ashwood
+say[self.id=tn_oh_thorn_ashwood self.from=frosthollow world.mem.nh_stage=bell priority=4] If the mine captain has something to say, he'll say it here on a Restday. I'll keep the fire up, cousin.
+# rm_mab_carlisle
+say[self.id=rm_mab_carlisle self.from=larkfield world.mem.nh_stage=letters priority=4] I've a letter for the Grayrock lord too. Every wharf wolf has. Bring him in here and I'll stand him a cup. Short-weighed one.
 mood warm
 free
 choice I'd like a bed for the night (#here.bed_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed night ; then roomed ; refused refused

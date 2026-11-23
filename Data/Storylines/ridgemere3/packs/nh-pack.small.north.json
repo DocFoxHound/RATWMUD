@@ -1,0 +1,4713 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "nh-pack.small.north",
+ "title": "Errands of the north",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "quietAfterHours": 0,
+ "variables": [
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The realm's voice (campaign 4.1): this pack adds each errand's distance-weighted points."
+  },
+  {
+   "id": "nh_voice_coldwater",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Coldwater's strand: +3 a Coldwater errand (quests 20-25)."
+  },
+  {
+   "id": "nh_voice_oakhaven",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Oakhaven's strand: +2 an Oakhaven errand (quests 26-28)."
+  },
+  {
+   "id": "nh_voice_frosthollow",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Frosthollow's strand: +3 a Frosthollow errand (quests 29-31)."
+  },
+  {
+   "id": "nh_threat",
+   "type": "number",
+   "scope": "world",
+   "initial": 30,
+   "note": "The Grey Captain's grip on the roads: packs only lower it, -1 a bounty bandit (23, 26, 31)."
+  },
+  {
+   "id": "coin_coldwater_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:coldwater (cap 21); nh-purses zeroes it, this pack only adds."
+  },
+  {
+   "id": "coin_oakhaven_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:oakhaven (cap 24); nh-purses zeroes it, this pack only adds."
+  },
+  {
+   "id": "coin_frosthollow_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:frosthollow (cap 24); nh-purses zeroes it, this pack only adds."
+  },
+  {
+   "id": "coin_coldwater_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:coldwater above its floor (nh-purses writes it; this pack only reads)."
+  },
+  {
+   "id": "coin_oakhaven_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:oakhaven above its floor (nh-purses writes it; this pack only reads)."
+  },
+  {
+   "id": "coin_frosthollow_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:frosthollow above its floor (nh-purses writes it; this pack only reads)."
+  },
+  {
+   "id": "sq_done",
+   "type": "number",
+   "scope": "player",
+   "show": "Errands for the north",
+   "note": "Errands this wolf has finished in Coldwater, Oakhaven and Frosthollow."
+  },
+  {
+   "id": "t_drag_offer",
+   "type": "timer",
+   "scope": "player",
+   "note": "When this wolf was last offered the Oakhaven rope from the square (once a game day)."
+  },
+  {
+   "id": "t_passwood_offer",
+   "type": "timer",
+   "scope": "player",
+   "note": "When this wolf was last offered the Pass House wood from the square (once a game day)."
+  },
+  {
+   "id": "t_landing_loaves",
+   "type": "timer",
+   "scope": "player",
+   "note": "When the baker last handed this wolf the landing loaves (once a game day, so taking the errand again after putting it aside mints no more bread)."
+  },
+  {
+   "id": "t_ewe_trail",
+   "type": "timer",
+   "scope": "player",
+   "note": "When a wool trail was last laid for this wolf (once a week, as N4's join.again 7 will, so putting the errand aside and taking it again mints no more wool)."
+  },
+  {
+   "id": "ewe_on_north",
+   "type": "switch",
+   "scope": "player",
+   "note": "This wolf follows the north trail of the strayed ewe (off: the south trail)."
+  },
+  {
+   "id": "ewe_n_busy",
+   "type": "switch",
+   "scope": "story",
+   "note": "The north wool trail is being followed."
+  },
+  {
+   "id": "ewe_s_busy",
+   "type": "switch",
+   "scope": "story",
+   "note": "The south wool trail is being followed."
+  }
+ ],
+ "regions": [
+  {
+   "id": "fold",
+   "cell": "w_ridgemere_9_8",
+   "x1": 213,
+   "y1": 95,
+   "x2": 233,
+   "y2": 115
+  },
+  {
+   "id": "trail_n",
+   "cell": "w_ridgemere_9_8",
+   "x1": 226,
+   "y1": 60,
+   "x2": 250,
+   "y2": 100
+  },
+  {
+   "id": "trail_s",
+   "cell": "w_ridgemere_9_8",
+   "x1": 180,
+   "y1": 112,
+   "x2": 220,
+   "y2": 150
+  },
+  {
+   "id": "oak_square",
+   "cell": "w_ridgemere_3_4",
+   "x1": 236,
+   "y1": 188,
+   "x2": 252,
+   "y2": 204
+  },
+  {
+   "id": "frost_square",
+   "cell": "w_ridgemere_9_3",
+   "x1": 0,
+   "y1": 20,
+   "x2": 12,
+   "y2": 36
+  },
+  {
+   "id": "clamp",
+   "cell": "w_ridgemere_10_3",
+   "x1": 76,
+   "y1": 165,
+   "x2": 90,
+   "y2": 179
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "Coldwater, Oakhaven and Frosthollow have small jobs for a willing wolf: ask about, or read the notice boards.",
+   "effects": [],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "feed-coldwater",
+     "on": "quest completed",
+     "audience": "participant",
+     "note": "P1: a Coldwater errand done adds 3 to the realm and to Coldwater's strand, and one to the wolf's own count.",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-fox-at-the-hen-run"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-bread-to-the-landing"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-kettle-wood"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-apple-nose"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-straw-for-the-pens"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-strayed-ewe"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 3
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_coldwater",
+       "value": 3
+      },
+      {
+       "do": "add",
+       "var": "sq_done",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "id": "feed-oakhaven",
+     "on": "quest completed",
+     "audience": "participant",
+     "note": "P1: an Oakhaven errand done adds 2 to the realm and to Oakhaven's strand, and one to the wolf's own count.",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-rope-for-the-drag"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-venison-for-the-cut"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-sleepless-logger"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 2
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_oakhaven",
+       "value": 2
+      },
+      {
+       "do": "add",
+       "var": "sq_done",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "id": "feed-frosthollow",
+     "on": "quest completed",
+     "audience": "participant",
+     "note": "P1: a Frosthollow errand done adds 3 to the realm and to Frosthollow's strand, and one to the wolf's own count.",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-lamp-oil-for-the-pit"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-clamp-watch"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-scree-goats"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 3
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_frosthollow",
+       "value": 3
+      },
+      {
+       "do": "add",
+       "var": "sq_done",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "id": "pay-coldwater-3",
+     "on": "quest completed",
+     "audience": "participant",
+     "note": "P3, the one purse rule (decisions 3.2): 3 pennies from town:coldwater while its switch is on and the day stays within 21; else two loaves.",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-fox-at-the-hen-run"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-kettle-wood"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-apple-nose"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-straw-for-the-pens"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-strayed-ewe"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_coldwater_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_coldwater_day"
+          },
+          "op": "<=",
+          "right": 18
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 3,
+          "purse": "town:coldwater",
+          "reason": "Coldwater's stores pay for an errand",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_coldwater_day",
+         "value": 3
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Coldwater's purse is thin today, so the errand is paid in bread."
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "pay-coldwater-2",
+     "on": "quest completed",
+     "audience": "participant",
+     "note": "P3, the one purse rule (decisions 3.2): 2 pennies from town:coldwater while its switch is on and the day stays within 21; else two loaves.",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-bread-to-the-landing"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_coldwater_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_coldwater_day"
+          },
+          "op": "<=",
+          "right": 19
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 2,
+          "purse": "town:coldwater",
+          "reason": "Coldwater's stores pay for an errand",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_coldwater_day",
+         "value": 2
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Coldwater's purse is thin today, so the errand is paid in bread."
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "pay-oakhaven-4",
+     "on": "quest completed",
+     "audience": "participant",
+     "note": "P3, the one purse rule (decisions 3.2): 4 pennies from town:oakhaven while its switch is on and the day stays within 24; else two loaves. The rope costs the wolf 4 in the city.",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-rope-for-the-drag"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_oakhaven_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_oakhaven_day"
+          },
+          "op": "<=",
+          "right": 20
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 4,
+          "purse": "town:oakhaven",
+          "reason": "Oakhaven's stores pay for an errand",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_oakhaven_day",
+         "value": 4
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Oakhaven's purse is thin today, so the errand is paid in bread."
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "pay-oakhaven-3",
+     "on": "quest completed",
+     "audience": "participant",
+     "note": "P3, the one purse rule (decisions 3.2): 3 pennies from town:oakhaven while its switch is on and the day stays within 24; else two loaves.",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-venison-for-the-cut"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_oakhaven_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_oakhaven_day"
+          },
+          "op": "<=",
+          "right": 21
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 3,
+          "purse": "town:oakhaven",
+          "reason": "Oakhaven's stores pay for an errand",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_oakhaven_day",
+         "value": 3
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Oakhaven's purse is thin today, so the errand is paid in bread."
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "pay-oakhaven-2",
+     "on": "quest completed",
+     "audience": "participant",
+     "note": "P3, the one purse rule (decisions 3.2): 2 pennies from town:oakhaven while its switch is on and the day stays within 24; else two loaves.",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-sleepless-logger"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_oakhaven_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_oakhaven_day"
+          },
+          "op": "<=",
+          "right": 22
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 2,
+          "purse": "town:oakhaven",
+          "reason": "Oakhaven's stores pay for an errand",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_oakhaven_day",
+         "value": 2
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Oakhaven's purse is thin today, so the errand is paid in bread."
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "pay-frosthollow-3",
+     "on": "quest completed",
+     "audience": "participant",
+     "note": "P3, the one purse rule (decisions 3.2): 3 pennies from town:frosthollow while its switch is on and the day stays within 24; else two loaves.",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-lamp-oil-for-the-pit"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-clamp-watch"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-scree-goats"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_frosthollow_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_frosthollow_day"
+          },
+          "op": "<=",
+          "right": 21
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 3,
+          "purse": "town:frosthollow",
+          "reason": "Frosthollow's stores pay for an errand",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_frosthollow_day",
+         "value": 3
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Frosthollow's purse is thin today, so the errand is paid in bread."
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "deed-fox",
+     "on": "quest completed",
+     "audience": "participant",
+     "once": "member",
+     "note": "P2: the deed on the first time only, so a repeated chore never floods the gossip.",
+     "match": {
+      "detail": "sq-fox-at-the-hen-run"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "drove the fox off the Oakhurst hen-run"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-landing",
+     "on": "quest completed",
+     "audience": "participant",
+     "once": "member",
+     "note": "P2: the deed on the first time only, so a repeated chore never floods the gossip.",
+     "match": {
+      "detail": "sq-bread-to-the-landing"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "carried the bakehouse loaves down to the Glasswater landing"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-kettle",
+     "on": "quest completed",
+     "audience": "participant",
+     "once": "member",
+     "note": "P2: the deed on the first time only, so a repeated chore never floods the gossip.",
+     "match": {
+      "detail": "sq-kettle-wood"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "kept the Coldwater Boiling House kettles fired"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-apple",
+     "on": "quest completed",
+     "audience": "participant",
+     "once": "member",
+     "note": "P2: the deed on the first time only, so a repeated chore never floods the gossip.",
+     "match": {
+      "detail": "sq-apple-nose"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "tracked a lost pup along the Upper Mere shore"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-pens",
+     "on": "quest completed",
+     "audience": "participant",
+     "once": "member",
+     "note": "P2: the deed on the first time only, so a repeated chore never floods the gossip.",
+     "match": {
+      "detail": "sq-straw-for-the-pens"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "brought clean straw for the Larkdowns lambing pens"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-ewe",
+     "on": "quest completed",
+     "audience": "participant",
+     "once": "member",
+     "note": "P2: the deed on the first time only, so a repeated chore never floods the gossip.",
+     "match": {
+      "detail": "sq-strayed-ewe"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "tracked a strayed ewe up the Larkdowns"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-drag",
+     "on": "quest completed",
+     "audience": "participant",
+     "once": "member",
+     "note": "P2: the deed on the first time only, so a repeated chore never floods the gossip.",
+     "match": {
+      "detail": "sq-rope-for-the-drag"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "brought rope for the Oakhaven timber drag"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-venison",
+     "on": "quest completed",
+     "audience": "participant",
+     "once": "member",
+     "note": "P2: the deed on the first time only, so a repeated chore never floods the gossip.",
+     "match": {
+      "detail": "sq-venison-for-the-cut"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "brought venison to the loggers at the Oakhaven cut"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-sleep",
+     "on": "quest completed",
+     "audience": "participant",
+     "once": "member",
+     "note": "P2: the deed on the first time only, so a repeated chore never floods the gossip.",
+     "match": {
+      "detail": "sq-sleepless-logger"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "brought a calming draught to a sleepless logger"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-passwood",
+     "on": "quest completed",
+     "audience": "participant",
+     "once": "member",
+     "note": "P2: the deed on the first time only, so a repeated chore never floods the gossip.",
+     "match": {
+      "detail": "sq-lamp-oil-for-the-pit"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "carried firewood up to the Pass House"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-clamp",
+     "on": "quest completed",
+     "audience": "participant",
+     "once": "member",
+     "note": "P2: the deed on the first time only, so a repeated chore never floods the gossip.",
+     "match": {
+      "detail": "sq-clamp-watch"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "sat the night watch on the Upper hearths clamp"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-goats",
+     "on": "quest completed",
+     "audience": "participant",
+     "once": "member",
+     "note": "P2: the deed on the first time only, so a repeated chore never floods the gossip.",
+     "match": {
+      "detail": "sq-scree-goats"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "drove the goats off the lime quarry scree"
+       }
+      }
+     ]
+    },
+    {
+     "id": "bounty",
+     "on": "objective completed",
+     "audience": "participant",
+     "match": {
+      "item": "bounty"
+     },
+     "note": "A bandit brought down for a bounty (quests 23, 26, 31) loosens the Grey Captain's grip by one.",
+     "actions": [
+      {
+       "do": "subtract",
+       "var": "nh_threat",
+       "value": 1
+      },
+      {
+       "do": "clamp",
+       "var": "nh_threat",
+       "min": 0,
+       "max": 100
+      }
+     ]
+    },
+    {
+     "id": "landing-loaves",
+     "on": "quest accepted",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-bread-to-the-landing"
+     },
+     "note": "The baker hands over the three loaves, once a game day a wolf: one who put the errand aside and takes it again carries the loaves they had, or three of their own.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "not",
+        "condition": {
+         "test": "compare",
+         "left": {
+          "since": "t_landing_loaves"
+         },
+         "op": "<",
+         "right": 1
+        }
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 3
+         }
+        },
+        {
+         "do": "start timer",
+         "var": "t_landing_loaves"
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "You had today's loaves from the bakehouse already. Take three loaves down to the landing, the ones you were given or your own."
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "pup-lost",
+     "on": "quest accepted",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-apple-nose"
+     },
+     "note": "P7: the pup is down the mere shore by the wild trees, held there, and the picker has a hint for this wolf.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.move",
+        "npc": "tn_sm_edric_harvestley",
+        "cell": "w_ridgemere_8_6",
+        "x": 242,
+        "y": 170
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.hold",
+        "npc": "tn_sm_edric_harvestley"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_oriel_blossomby",
+        "id": "pup-where",
+        "words": "Which way does his nose take him?",
+        "reply": "Downwind of anything sweet. The wild trees down the mere shore drop their fruit early, so follow the fallers toward the water. And mind the camp along the shore, eh? There's wolves out there with no orchard of their own.",
+        "player": "$actor",
+        "once": true
+       }
+      }
+     ]
+    },
+    {
+     "id": "pup-found",
+     "on": "near resident",
+     "audience": "participant",
+     "match": {
+      "target": "tn_sm_edric_harvestley"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "sq-apple-nose",
+        "status": "active"
+       },
+       {
+        "test": "objective is",
+        "quest": "sq-apple-nose",
+        "objective": "find",
+        "status": "to do"
+       }
+      ]
+     },
+     "note": "P7: found; he comes along with the wolf.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "tn_sm_edric_harvestley"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.follow",
+        "npc": "tn_sm_edric_harvestley",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "sq-apple-nose",
+        "objective": "find",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "pup-home",
+     "on": "near resident",
+     "audience": "participant",
+     "match": {
+      "target": "cty_oriel_blossomby"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "sq-apple-nose",
+        "status": "active"
+       },
+       {
+        "test": "objective is",
+        "quest": "sq-apple-nose",
+        "objective": "find",
+        "status": "done"
+       },
+       {
+        "test": "objective is",
+        "quest": "sq-apple-nose",
+        "objective": "home",
+        "status": "to do"
+       }
+      ]
+     },
+     "note": "P7: back with the apple picker; he goes back to his day.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.unfollow",
+        "npc": "tn_sm_edric_harvestley"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "sq-apple-nose",
+        "objective": "home",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "pup-let-go",
+     "on": "quest failed",
+     "audience": "world",
+     "match": {
+      "detail": "sq-apple-nose"
+     },
+     "note": "P7: the day ran out; the pup goes back to his own day.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.unfollow",
+        "npc": "tn_sm_edric_harvestley"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "tn_sm_edric_harvestley"
+       }
+      }
+     ]
+    },
+    {
+     "id": "pup-put-aside",
+     "on": "quest abandoned",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-apple-nose"
+     },
+     "note": "P7: put aside; the pup goes back to his own day.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.unfollow",
+        "npc": "tn_sm_edric_harvestley"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "tn_sm_edric_harvestley"
+       }
+      }
+     ]
+    },
+    {
+     "id": "fold-dusk",
+     "on": "region entered",
+     "audience": "participant",
+     "match": {
+      "target": "fold"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "quest is",
+          "quest": "sq-straw-for-the-pens",
+          "status": "active"
+         },
+         {
+          "test": "quest is",
+          "quest": "sq-straw-for-the-pens",
+          "status": "ready"
+         }
+        ]
+       },
+       {
+        "test": "calendar is",
+        "what": "period",
+        "value": "dusk"
+       }
+      ]
+     },
+     "note": "P5: only a walk of the fold at dusk counts.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "sq-straw-for-the-pens",
+        "objective": "dusk",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "ewe-trail",
+     "on": "quest accepted",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-strayed-ewe"
+     },
+     "note": "Two copies, two trails: the north one if it is free, else the south; three tufts laid along it. At most one trail a week for each wolf (until N4's join.again: 7): a wolf who put the errand aside this week has nothing to follow, and the copy ends at once.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "since": "t_ewe_trail"
+        },
+        "op": "<",
+        "right": 7
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The shepherd's ewes are all in the fold this week, and there is no wool on the thorns to follow. Ask again in a few days."
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "quest.fail",
+          "quest": "sq-strayed-ewe",
+          "player": "$actor"
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "ewe_n_busy",
+          "is": false
+         },
+         "then": [
+          {
+           "do": "turn on",
+           "var": "ewe_n_busy"
+          },
+          {
+           "do": "turn on",
+           "var": "ewe_on_north"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.place",
+            "item": "wool",
+            "quantity": 1,
+            "cell": "w_ridgemere_9_8",
+            "x": 238,
+            "y": 96
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.place",
+            "item": "wool",
+            "quantity": 1,
+            "cell": "w_ridgemere_9_8",
+            "x": 240,
+            "y": 80
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.place",
+            "item": "wool",
+            "quantity": 1,
+            "cell": "w_ridgemere_9_8",
+            "x": 244,
+            "y": 66
+           }
+          },
+          {
+           "do": "start timer",
+           "var": "t_ewe_trail"
+          }
+         ],
+         "else": [
+          {
+           "do": "turn on",
+           "var": "ewe_s_busy"
+          },
+          {
+           "do": "turn off",
+           "var": "ewe_on_north"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.place",
+            "item": "wool",
+            "quantity": 1,
+            "cell": "w_ridgemere_9_8",
+            "x": 214,
+            "y": 118
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.place",
+            "item": "wool",
+            "quantity": 1,
+            "cell": "w_ridgemere_9_8",
+            "x": 202,
+            "y": 130
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.place",
+            "item": "wool",
+            "quantity": 1,
+            "cell": "w_ridgemere_9_8",
+            "x": 190,
+            "y": 142
+           }
+          },
+          {
+           "do": "start timer",
+           "var": "t_ewe_trail"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "ewe-tuft",
+     "on": "item picked up",
+     "audience": "participant",
+     "match": {
+      "item": "wool",
+      "cell": "w_ridgemere_9_8"
+     },
+     "if": {
+      "test": "quest is",
+      "quest": "sq-strayed-ewe",
+      "status": "active"
+     },
+     "note": "A tuft counts only on the wolf's own trail, so one copy never ticks the other's.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "ewe_on_north",
+          "is": true
+         },
+         {
+          "test": "wolf in region",
+          "region": "trail_n"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.progress",
+          "quest": "sq-strayed-ewe",
+          "objective": "tufts",
+          "player": "$actor",
+          "amount": 1
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "ewe_on_north",
+            "is": false
+           },
+           {
+            "test": "wolf in region",
+            "region": "trail_s"
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.progress",
+            "quest": "sq-strayed-ewe",
+            "objective": "tufts",
+            "player": "$actor",
+            "amount": 1
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "ewe-home",
+     "on": "quest completed",
+     "audience": "world",
+     "match": {
+      "detail": "sq-strayed-ewe"
+     },
+     "note": "The trail is free again.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "ewe_n_busy"
+      },
+      {
+       "do": "turn off",
+       "var": "ewe_s_busy"
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "quest is",
+          "quest": "sq-strayed-ewe",
+          "status": "active",
+          "of": "$each"
+         },
+         "then": [
+          {
+           "do": "if",
+           "if": {
+            "test": "switch",
+            "var": "ewe_on_north",
+            "of": "$each",
+            "is": true
+           },
+           "then": [
+            {
+             "do": "turn on",
+             "var": "ewe_n_busy"
+            }
+           ],
+           "else": [
+            {
+             "do": "turn on",
+             "var": "ewe_s_busy"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "ewe-lost",
+     "on": "quest failed",
+     "audience": "world",
+     "match": {
+      "detail": "sq-strayed-ewe"
+     },
+     "note": "The day ran out: the trail is free again.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "ewe_n_busy"
+      },
+      {
+       "do": "turn off",
+       "var": "ewe_s_busy"
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "quest is",
+          "quest": "sq-strayed-ewe",
+          "status": "active",
+          "of": "$each"
+         },
+         "then": [
+          {
+           "do": "if",
+           "if": {
+            "test": "switch",
+            "var": "ewe_on_north",
+            "of": "$each",
+            "is": true
+           },
+           "then": [
+            {
+             "do": "turn on",
+             "var": "ewe_n_busy"
+            }
+           ],
+           "else": [
+            {
+             "do": "turn on",
+             "var": "ewe_s_busy"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "ewe-put-aside",
+     "on": "quest abandoned",
+     "audience": "world",
+     "match": {
+      "detail": "sq-strayed-ewe"
+     },
+     "note": "Put aside: the trail is free again.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "ewe_n_busy"
+      },
+      {
+       "do": "turn off",
+       "var": "ewe_s_busy"
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "quest is",
+          "quest": "sq-strayed-ewe",
+          "status": "active",
+          "of": "$each"
+         },
+         "then": [
+          {
+           "do": "if",
+           "if": {
+            "test": "switch",
+            "var": "ewe_on_north",
+            "of": "$each",
+            "is": true
+           },
+           "then": [
+            {
+             "do": "turn on",
+             "var": "ewe_n_busy"
+            }
+           ],
+           "else": [
+            {
+             "do": "turn on",
+             "var": "ewe_s_busy"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "drag-offer",
+     "on": "region entered",
+     "audience": "world",
+     "match": {
+      "target": "oak_square"
+     },
+     "note": "P9: the board-only rope, offered in the journal to a wolf on the Oakhaven square, once a game day.",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "not",
+        "condition": {
+         "test": "any",
+         "conditions": [
+          {
+           "test": "quest is",
+           "quest": "sq-rope-for-the-drag",
+           "status": "active"
+          },
+          {
+           "test": "quest is",
+           "quest": "sq-rope-for-the-drag",
+           "status": "ready"
+          },
+          {
+           "test": "quest is",
+           "quest": "sq-rope-for-the-drag",
+           "status": "offered"
+          }
+         ]
+        }
+       },
+       {
+        "test": "not",
+        "condition": {
+         "test": "compare",
+         "left": {
+          "since": "t_drag_offer"
+         },
+         "op": "<",
+         "right": 1
+        }
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "sq-rope-for-the-drag",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "start timer",
+       "var": "t_drag_offer"
+      }
+     ]
+    },
+    {
+     "id": "drag-close",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-rope-for-the-drag"
+     },
+     "note": "Plain narration, no resident speaks (decisions 1.2.6). Later, with C5: the carter greets the wolf.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.tell",
+        "to": "wolf",
+        "player": "$actor",
+        "text": "The carter hitches the new rope to the drag, and the cedar starts down to the Sound again."
+       }
+      },
+      {
+       "do": "start timer",
+       "var": "t_drag_offer"
+      }
+     ]
+    },
+    {
+     "id": "passwood-offer",
+     "on": "region entered",
+     "audience": "world",
+     "match": {
+      "target": "frost_square"
+     },
+     "note": "P9: the board-only wood, offered in the journal to a wolf on the Frosthollow square, once a game day.",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "not",
+        "condition": {
+         "test": "any",
+         "conditions": [
+          {
+           "test": "quest is",
+           "quest": "sq-lamp-oil-for-the-pit",
+           "status": "active"
+          },
+          {
+           "test": "quest is",
+           "quest": "sq-lamp-oil-for-the-pit",
+           "status": "ready"
+          },
+          {
+           "test": "quest is",
+           "quest": "sq-lamp-oil-for-the-pit",
+           "status": "offered"
+          }
+         ]
+        }
+       },
+       {
+        "test": "not",
+        "condition": {
+         "test": "compare",
+         "left": {
+          "since": "t_passwood_offer"
+         },
+         "op": "<",
+         "right": 1
+        }
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "sq-lamp-oil-for-the-pit",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "start timer",
+       "var": "t_passwood_offer"
+      }
+     ]
+    },
+    {
+     "id": "passwood-close",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-lamp-oil-for-the-pit"
+     },
+     "note": "Plain narration, no resident speaks (decisions 1.2.6). Later, with C5: the carter greets the wolf.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.tell",
+        "to": "wolf",
+        "player": "$actor",
+        "text": "The carters' stack by the Pass House door is high again, and somebody inside starts a song."
+       }
+      },
+      {
+       "do": "start timer",
+       "var": "t_passwood_offer"
+      }
+     ]
+    },
+    {
+     "id": "board-declined",
+     "on": "quest declined",
+     "audience": "participant",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-rope-for-the-drag"
+       },
+       {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-lamp-oil-for-the-pit"
+       }
+      ]
+     },
+     "note": "A wolf who says no to a board-only offer is not asked again on the square until tomorrow (the offer itself took a newcomer in, so its timer starts here).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-rope-for-the-drag"
+       },
+       "then": [
+        {
+         "do": "start timer",
+         "var": "t_drag_offer"
+        }
+       ],
+       "else": [
+        {
+         "do": "start timer",
+         "var": "t_passwood_offer"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "calm-valerian",
+     "on": "gift",
+     "audience": "participant",
+     "match": {
+      "target": "cty_ingram_ashleaf"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "sq-sleepless-logger",
+        "status": "active"
+       },
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "field",
+          "field": "item",
+          "op": "=",
+          "value": "valerian"
+         },
+         {
+          "test": "field",
+          "field": "item",
+          "op": "=",
+          "value": "valerian_draught"
+         }
+        ]
+       }
+      ]
+     },
+     "note": "P4: valerian root or a valerian draught does as well as chamomile (chamomile grows only in spring and summer).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "field",
+        "field": "quantity",
+        "op": ">=",
+        "value": 2
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.progress",
+          "quest": "sq-sleepless-logger",
+          "objective": "calm",
+          "player": "$actor",
+          "amount": 2
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.progress",
+          "quest": "sq-sleepless-logger",
+          "objective": "calm",
+          "player": "$actor",
+          "amount": 1
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "storm-breaks",
+     "on": "weather changed",
+     "match": {
+      "target": "w_ridgemere_3_4",
+      "detail": "storm"
+     },
+     "note": "The storm breaking over Oakhaven (its cell is watched by name, so it is seen with no wolf outdoors): every wolf who has brought the logger his herbs and is in Oakhaven, on the square or indoors in the town.",
+     "actions": [
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "quest is",
+            "quest": "sq-sleepless-logger",
+            "status": "ready",
+            "of": "$each"
+           },
+           {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "wolf in place",
+              "who": "$each",
+              "place": "w_ridgemere_3_4"
+             },
+             {
+              "test": "wolf in town",
+              "who": "$each",
+              "town": "oakhaven"
+             }
+            ]
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "sq-sleepless-logger",
+            "objective": "storm",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.tell",
+            "to": "wolf",
+            "player": "$each",
+            "text": "Thunder rolls in over Cedar Sound. Somewhere in Oakhaven a logger who never sleeps before a storm is snoring like a sawpit."
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "clamp-hour",
+     "on": "hour",
+     "match": {
+      "detail": "1"
+     },
+     "note": "P6: each wolf with the clamp quest under way who stands by the clamps as the first hour after midnight begins.",
+     "actions": [
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "quest is",
+            "quest": "sq-clamp-watch",
+            "status": "active",
+            "of": "$each"
+           },
+           {
+            "test": "wolf in region",
+            "who": "$each",
+            "region": "clamp"
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "sq-clamp-watch",
+            "objective": "watch",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "quests": [
+  {
+   "id": "sq-fox-at-the-hen-run",
+   "title": "The Fox at the Hen-Run",
+   "summary": "A fox is taking the hens that scratch round the Oakhurst pig yard. Find it in the scrub and see it off.",
+   "giver": "cty_ingram_hazelshaw",
+   "board": "coldwater",
+   "repeat": "weekly",
+   "join": {
+    "cap": 3
+   },
+   "offer": {
+    "ask": "Trouble at the yard?",
+    "say": "#greet#, #address#. There's a fox at my hens, and the pigs just stand and watch it, the great lumps. Three birds this week. Find it in the scrub round the yard and see it off for good, eh? Net and line, I'd do it myself, but it runs rings round me.",
+    "accept": "I'll find your fox.",
+    "decline": "Not this week.",
+    "handIn": "Your fox won't be back.",
+    "thanks": "#thanks#. A full net, that. Eggs from the hens that are left; they'll lay better now they can sleep. My grandmother would've had that fox for a scarf, eh? Yours too, I'd say."
+   },
+   "objectives": [
+    {
+     "id": "fox",
+     "label": "Bring down the fox in the scrub round the Oakhurst pig yard.",
+     "on": "hunted",
+     "match": {
+      "target": "fox",
+      "cell": "w_ridgemere_5_6"
+     }
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "eggs",
+     "quantity": 2
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    }
+   ]
+  },
+  {
+   "id": "sq-bread-to-the-landing",
+   "title": "Bread to the Landing",
+   "summary": "Carry three of the Coldwater Bakehouse's loaves down to the boatman at the Glasswater boat shed.",
+   "giver": "tn_lf_lichen_hedgemead",
+   "board": "coldwater",
+   "repeat": "daily",
+   "join": {
+    "cap": 3
+   },
+   "offer": {
+    "ask": "Anything need carrying?",
+    "say": "#greet#. The boat crews on the Glasswater landing go out before my oven's warm, and they come back hungry as gulls. Three loaves down to the boatman at the boat shed. It's a short walk, and the best view in the Greenholt, eh?",
+    "accept": "Three loaves to the landing.",
+    "decline": "Not today.",
+    "handIn": "The boatman has his bread.",
+    "thanks": "#thanks#. Full bellies on the water, and that's a fair catch. If you're ever going Southmeadow way, I might have a letter for you. Might, mind. #farewell#."
+   },
+   "objectives": [
+    {
+     "id": "loaves",
+     "label": "Give the three loaves to the boatman at the Glasswater boat shed.",
+     "on": "gift",
+     "match": {
+      "target": "tn_cw_grist_reedmere",
+      "item": "bread"
+     },
+     "goal": 3,
+     "measure": "quantity"
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    }
+   ]
+  },
+  {
+   "id": "sq-kettle-wood",
+   "title": "Wood for the Kettles",
+   "summary": "The Coldwater Boiling House kettles want firing all day. Bring firewood, and fat scraps if a hunt gave you any.",
+   "giver": "tn_lf_sage_wheatridge",
+   "board": "coldwater",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "What are you boiling?",
+    "say": "#greet#, #address#. Soap, and the kettles want firing from dawn to dark. My woodpile's down to bark. Five bundles of firewood, eh? And if you've fat scraps from a hunt, I'll take two and thank you twice. Deep and dark, don't let my fires go out.",
+    "accept": "Five bundles, and fat if I find it.",
+    "decline": "Not today.",
+    "handIn": "Wood for your kettles.",
+    "thanks": "#thanks#. Fair catch. Here's a cake of soap. Every wolf in Ridgemere could use one, but they won't buy soap from the lake, eh? Their loss."
+   },
+   "objectives": [
+    {
+     "id": "wood",
+     "label": "Bring five bundles of firewood to the soap boiler.",
+     "on": "gift",
+     "match": {
+      "target": "tn_lf_sage_wheatridge",
+      "item": "firewood"
+     },
+     "goal": 5,
+     "measure": "quantity"
+    },
+    {
+     "id": "fat",
+     "label": "Two fat scraps for the kettle, if a hunt gives you any (a badger gives two).",
+     "on": "gift",
+     "match": {
+      "target": "tn_lf_sage_wheatridge",
+      "item": "fat_scraps"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "soap",
+     "quantity": 1
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "fine_soap",
+     "quantity": 1
+    }
+   ]
+  },
+  {
+   "id": "sq-apple-nose",
+   "title": "The Pup Who Follows His Nose",
+   "summary": "The Meresend orchard's pup has followed his nose down the Upper Mere shore. Find him and bring him home.",
+   "giver": "cty_oriel_blossomby",
+   "repeat": "weekly",
+   "join": {
+    "cap": 1
+   },
+   "fail": [
+    {
+     "afterDays": 1
+    }
+   ],
+   "offer": {
+    "ask": "Are you looking for someone?",
+    "say": "#greet#. The orchard's pup has slipped me again, and his mother's out in the far rows. He can smell an apple a mile off and follows his nose wherever it goes. Down the shore by the wild trees, I'd wager. A pup that's missed is a pup that's loved, eh? Fetch him back.",
+    "accept": "I'll find him.",
+    "decline": "I can't today.",
+    "handIn": "Here's your pup, nose and all.",
+    "thanks": "There he is, nose first. #thanks#, #address#. Apples, the good ones off the bough. Still water finds its way back to the lake, the old ones say, and a pup finds his way back to the orchard. Mostly with help."
+   },
+   "objectives": [
+    {
+     "id": "find",
+     "label": "Find the orchard pup along the Upper Mere shore.",
+     "on": "story signal",
+     "signal": "pup-found"
+    },
+    {
+     "id": "home",
+     "label": "Bring him back to the apple picker.",
+     "on": "story signal",
+     "signal": "pup-home",
+     "after": [
+      "find"
+     ]
+    },
+    {
+     "id": "bounty",
+     "label": "Bring down a bandit on the mere shore while you are there.",
+     "on": "bandit falls",
+     "match": {
+      "cell": "w_ridgemere_8_6"
+     },
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "apples",
+     "quantity": 2
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "brought down a bandit on the Upper Mere shore"
+    }
+   ]
+  },
+  {
+   "id": "sq-straw-for-the-pens",
+   "title": "Straw for the Lambing Pens",
+   "summary": "Ewes lamb better on clean straw. Bring three bales to the Larkdowns shepherd, and walk the fold at dusk if you can.",
+   "giver": "tn_lf_rusk_downfield",
+   "board": "coldwater",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Your flock looks restless.",
+    "say": "#greet#, #address#. Ewes lamb better on clean straw, and my pens are down to dust. Three bales from the stores, eh? And if you're about at dusk, walk the fold with me. A wolf the flock knows is a wolf they don't run from.",
+    "accept": "Three bales of straw.",
+    "decline": "Another day.",
+    "handIn": "Straw for your pens.",
+    "thanks": "#thanks#. That's a full net for the flock. One day I'll have a fold of my own, and you'll be the first I ask to walk it. #farewell#."
+   },
+   "objectives": [
+    {
+     "id": "straw",
+     "label": "Bring three bales of straw to the Larkdowns shepherd (every town store keeps straw).",
+     "on": "gift",
+     "match": {
+      "target": "tn_lf_rusk_downfield",
+      "item": "straw"
+     },
+     "goal": 3,
+     "measure": "quantity"
+    },
+    {
+     "id": "dusk",
+     "label": "Walk the Larkdowns fold at dusk, so the flock learns your scent.",
+     "on": "story signal",
+     "signal": "fold-dusk",
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "wool",
+     "quantity": 1
+    }
+   ]
+  },
+  {
+   "id": "sq-strayed-ewe",
+   "title": "Wool on the Thorns",
+   "summary": "A ewe has strayed up the Larkdowns. Follow the wool she left on the thorns and say where the trail leads.",
+   "giver": "cty_brock_marshholm",
+   "repeat": "weekly",
+   "join": {
+    "cap": 2
+   },
+   "fail": [
+    {
+     "afterDays": 1
+    }
+   ],
+   "offer": {
+    "ask": "Lost one of your flock?",
+    "say": "#greet#, #address#. One of my ewes is off on the downs, and the flock won't settle without her, no? She'll have left wool on every thorn she passed. Follow the tufts, pick up three, and come and tell me how far they lead. I keep a tally, and you'll be on the good side of it.",
+    "accept": "I'll follow the wool.",
+    "decline": "Not today.",
+    "handIn": "I followed the wool to the end of it.",
+    "thanks": "That far, is it? I'll have her home before dark. #thanks#. That's a mark in my tally, fen-sure, and I keep it honest. I came up this road with nothing, and I've counted every ewe in that fold twice. Keep the wool."
+   },
+   "objectives": [
+    {
+     "id": "tufts",
+     "label": "Follow the strayed ewe's wool on the downs round the shearing barn: pick up three tufts.",
+     "on": "story signal",
+     "signal": "tuft",
+     "goal": 3
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    }
+   ]
+  },
+  {
+   "id": "sq-rope-for-the-drag",
+   "title": "Rope for the Drag",
+   "summary": "The Oakhaven carter's drag rope has gone to threads. A new coil from the Ridgemere ropewalk, carried along the Sound Road to the carter on the square. Rope is sold only in the city.",
+   "board": "oakhaven",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "objectives": [
+    {
+     "id": "rope",
+     "label": "Give a coil of rope to the Oakhaven carter on the square.",
+     "on": "gift",
+     "match": {
+      "target": "cty_tristram_rainridge",
+      "item": "rope"
+     },
+     "goal": 1,
+     "measure": "quantity"
+    },
+    {
+     "id": "bounty",
+     "label": "On the road from the city, bring down a bandit at Alder Mere (before you hand over the rope).",
+     "on": "bandit falls",
+     "match": {
+      "cell": "w_ridgemere_5_4"
+     },
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "brought down a bandit on the Oakhaven road"
+    }
+   ]
+  },
+  {
+   "id": "sq-venison-for-the-cut",
+   "title": "Venison for the Cut",
+   "summary": "The loggers at the Oakhaven cut live on bread. Bring down a roe deer in the Rainwood and carry the venison to the feller who asked.",
+   "giver": "cty_frost_colddrift",
+   "board": "oakhaven",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "The fellers look tired.",
+    "say": "#greet#. The loggers eat bread and more bread, and a wolf can't fell cedar on bread, mm? A roe deer out of the Rainwood would feed the cut for days. They're shy. Come at them downwind, slow through the trees, and pray the Bright One keeps the wind steady.",
+    "accept": "A roe deer for the cut.",
+    "decline": "Not today.",
+    "handIn": "Venison for the fellers.",
+    "thanks": "#thanks#. The Bright One sent you, I'd say, though you'd say you walked. That's a favour I owe, and I keep count. Jerky from the last one, for your road. #farewell#."
+   },
+   "objectives": [
+    {
+     "id": "deer",
+     "label": "Bring down a roe deer in the Rainwood by the cut.",
+     "on": "hunted",
+     "match": {
+      "target": "roe_deer",
+      "cell": "w_ridgemere_4_4"
+     }
+    },
+    {
+     "id": "meat",
+     "label": "Bring two cuts of the venison to the feller.",
+     "on": "gift",
+     "match": {
+      "target": "cty_frost_colddrift",
+      "item": "raw_meat"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "after": [
+      "deer"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "jerky",
+     "quantity": 2
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    }
+   ]
+  },
+  {
+   "id": "sq-sleepless-logger",
+   "title": "A Quiet Head Before the Storm",
+   "summary": "A logger at the Oakhaven cut can't sleep before a storm. Bring him chamomile or valerian to quiet his head.",
+   "giver": "cty_ingram_ashleaf",
+   "board": "oakhaven",
+   "repeat": "weekly",
+   "join": {
+    "cap": 6
+   },
+   "offer": {
+    "ask": "You look like you haven't slept.",
+    "say": "#greet#. There's a storm coming, I can feel it in my teeth, and I won't sleep a wink before it. Chamomile, if the meadows have any, or valerian from the stores. Anything to quiet the head, mm?",
+    "accept": "I'll find you something.",
+    "decline": "I can't help just now.",
+    "handIn": "Something to help you sleep.",
+    "thanks": "#thanks#. Root and rain, I'll sleep now, even if the sky falls in. You've a good root in you, #address#."
+   },
+   "objectives": [
+    {
+     "id": "calm",
+     "label": "Bring two sprigs of chamomile, or valerian, to the sleepless logger.",
+     "on": "gift",
+     "match": {
+      "target": "cty_ingram_ashleaf",
+      "item": "chamomile"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    },
+    {
+     "id": "storm",
+     "label": "Once he has his herbs, be in Oakhaven when the storm breaks.",
+     "on": "story signal",
+     "signal": "storm-breaks",
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "honey_cake",
+     "quantity": 1
+    }
+   ]
+  },
+  {
+   "id": "sq-lamp-oil-for-the-pit",
+   "title": "Wood for the Pass House",
+   "summary": "The Pass House burns through its woodpile while the carters wait on the Pass Road. Look in at the Pass House, then give four bundles of firewood for the carters' stack to the Frosthollow carter on the square. Oats for the carters' pot are welcome too: give them before the wood.",
+   "board": "frosthollow",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "objectives": [
+    {
+     "id": "look",
+     "label": "Go into the Pass House and see how low the pile is.",
+     "on": "enter place",
+     "match": {
+      "target": "cn_frosthollow_guest_inn"
+     }
+    },
+    {
+     "id": "wood",
+     "label": "Give four bundles of firewood to the Frosthollow carter on the square.",
+     "on": "gift",
+     "match": {
+      "target": "cty_ebba_coalgate",
+      "item": "firewood"
+     },
+     "goal": 4,
+     "measure": "quantity",
+     "after": [
+      "look"
+     ]
+    },
+    {
+     "id": "meal",
+     "label": "If you have them, two measures of oats for the carters' pot (give them before the last of the wood).",
+     "on": "gift",
+     "match": {
+      "target": "cty_ebba_coalgate",
+      "item": "oats"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "porridge",
+     "quantity": 1
+    }
+   ]
+  },
+  {
+   "id": "sq-clamp-watch",
+   "title": "Sit the Clamp",
+   "summary": "A charcoal clamp on the Upper hearths wants watching all night. Sit the first hour after midnight so the collier can sleep.",
+   "giver": "cty_iris_fernhaven",
+   "board": "frosthollow",
+   "repeat": "weekly",
+   "join": {
+    "cap": 2
+   },
+   "fail": [
+    {
+     "afterDays": 1
+    }
+   ],
+   "offer": {
+    "ask": "Does that clamp need watching?",
+    "say": "#greet#. A charcoal clamp wants watching all night, or it breaks out and burns to ash. My mother kept these hearths, and hers before her, and neither ever lost a clamp. Sit the first hour after midnight by the clamps on the Upper hearths, and I'll sleep.",
+    "accept": "I'll sit your clamp.",
+    "decline": "Not tonight.",
+    "handIn": "Your clamp held.",
+    "thanks": "#thanks#. Not a crack in her. I'm late for everything else, but never for a clamp. Take two sacks of the good stuff. My grandmother would have said you'd make a collier, and she said that of nobody."
+   },
+   "objectives": [
+    {
+     "id": "watch",
+     "label": "Sit by the clamps on the Upper hearths through the first hour after midnight, until one.",
+     "on": "story signal",
+     "signal": "clamp-hour"
+    },
+    {
+     "id": "wood",
+     "label": "Bring two bundles of firewood to bank the clamp.",
+     "on": "gift",
+     "match": {
+      "target": "cty_iris_fernhaven",
+      "item": "firewood"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "charcoal",
+     "quantity": 2
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    }
+   ]
+  },
+  {
+   "id": "sq-scree-goats",
+   "title": "Goats on the Scree",
+   "summary": "Mountain goats on the high lime quarry scree are kicking stones down on the kiln path. Bring one down and the rest will keep off.",
+   "giver": "cty_leif_driphand",
+   "board": "frosthollow",
+   "repeat": "weekly",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Stones on the path again?",
+    "say": "#greet#. Mountain goats on the quarry scree, kicking stones down on my kiln path. Bring one down and the rest'll keep off, #address#. And mind the road wolves that camp below the quarry. They're no friends of Frosthollow, eh.",
+    "accept": "One goat off your scree.",
+    "decline": "Not this week.",
+    "handIn": "Your scree's clear.",
+    "thanks": "#thanks#. Solid work. The kiln path's clear, and the goats know it. You're not as soft as most from down the valley, #address#."
+   },
+   "objectives": [
+    {
+     "id": "goat",
+     "label": "Bring down a mountain goat on the lime quarry scree.",
+     "on": "hunted",
+     "match": {
+      "target": "ibex",
+      "cell": "w_ridgemere_6_3"
+     }
+    },
+    {
+     "id": "bounty",
+     "label": "Bring down a bandit of the camp below the quarry.",
+     "on": "bandit falls",
+     "match": {
+      "cell": "w_ridgemere_6_3"
+     },
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "brought down a bandit below the lime quarry"
+    }
+   ]
+  }
+ ],
+ "tests": [
+  {
+   "name": "Coldwater: the fox, the loaves, the kettles and the pens, paid from the town store",
+   "cohort": [],
+   "expectTriggers": [
+    "feed-coldwater",
+    "pay-coldwater-3",
+    "deed-fox",
+    "landing-loaves",
+    "feed-coldwater",
+    "pay-coldwater-2",
+    "deed-landing",
+    "feed-coldwater",
+    "pay-coldwater-3",
+    "deed-kettle",
+    "fold-dusk",
+    "feed-coldwater",
+    "pay-coldwater-3",
+    "deed-pens"
+   ],
+   "facts": {
+    "world": {
+     "period": "day",
+     "hour": 10,
+     "season": "spring",
+     "weekday": "Marketday"
+    },
+    "wolves": {
+     "wolf-ash": {
+      "cell": "w_ridgemere_9_8",
+      "x": 150,
+      "y": 150,
+      "town": "coldwater",
+      "indoors": false
+     }
+    }
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_ingram_hazelshaw",
+     "detail": "sq-fox-at-the-hen-run"
+    },
+    {
+     "id": "e2",
+     "kind": "hunted",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "fox",
+     "cell": "w_ridgemere_5_5",
+     "detail": "a clean kill",
+     "quantity": 2
+    },
+    {
+     "id": "e3",
+     "kind": "hunted",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "fox",
+     "cell": "w_ridgemere_5_6",
+     "detail": "a clean kill",
+     "quantity": 2
+    },
+    {
+     "id": "e4",
+     "kind": "quest handed in",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_ingram_hazelshaw",
+     "detail": "sq-fox-at-the-hen-run"
+    },
+    {
+     "id": "e5",
+     "kind": "quest accepted",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_lf_lichen_hedgemead",
+     "detail": "sq-bread-to-the-landing"
+    },
+    {
+     "id": "e6",
+     "kind": "gift",
+     "day": 1.06,
+     "actor": "wolf-ash",
+     "target": "tn_cw_grist_reedmere",
+     "item": "bread",
+     "quantity": 3
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 1.07,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_lf_lichen_hedgemead",
+     "detail": "sq-bread-to-the-landing"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 1.08,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "board:coldwater",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e9",
+     "kind": "gift",
+     "day": 1.09,
+     "actor": "wolf-ash",
+     "target": "tn_lf_sage_wheatridge",
+     "item": "firewood",
+     "quantity": 3
+    },
+    {
+     "id": "e10",
+     "kind": "gift again",
+     "day": 1.1,
+     "actor": "wolf-ash",
+     "target": "tn_lf_sage_wheatridge",
+     "item": "firewood",
+     "quantity": 2
+    },
+    {
+     "id": "e11",
+     "kind": "gift",
+     "day": 1.11,
+     "actor": "wolf-ash",
+     "target": "tn_lf_sage_wheatridge",
+     "item": "fat_scraps",
+     "quantity": 2
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 1.12,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 1.13,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_lf_rusk_downfield",
+     "detail": "sq-straw-for-the-pens"
+    },
+    {
+     "id": "e14",
+     "kind": "gift",
+     "day": 1.14,
+     "actor": "wolf-ash",
+     "target": "tn_lf_rusk_downfield",
+     "item": "straw",
+     "quantity": 3
+    },
+    {
+     "id": "e15",
+     "kind": "region entered",
+     "day": 1.15,
+     "actor": "wolf-ash",
+     "target": "fold",
+     "cell": "w_ridgemere_9_8",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "period": "dusk",
+       "hour": 18,
+       "season": "spring",
+       "weekday": "Marketday"
+      },
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_8",
+        "x": 220,
+        "y": 104,
+        "town": "coldwater",
+        "indoors": false
+       }
+      }
+     }
+    },
+    {
+     "id": "e16",
+     "kind": "quest handed in",
+     "day": 1.16,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_lf_rusk_downfield",
+     "detail": "sq-straw-for-the-pens"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-fox-at-the-hen-run": {
+     "wolf-ash": "done"
+    },
+    "sq-bread-to-the-landing": {
+     "wolf-ash": "done"
+    },
+    "sq-kettle-wood": {
+     "wolf-ash": "done"
+    },
+    "sq-straw-for-the-pens": {
+     "wolf-ash": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "wolf-ash": {
+      "sq_done": 4
+     }
+    },
+    "world": {
+     "nh_realm": 12,
+     "nh_voice_coldwater": 12,
+     "coin_coldwater_day": 11,
+     "nh_threat": 30
+    }
+   }
+  },
+  {
+   "name": "The orchard pup: found, brought home with a bounty; a copy that runs out; one put aside",
+   "cohort": [],
+   "expectEffects": [
+    {
+     "phase": "open",
+     "kind": "npc.move",
+     "npc": "tn_sm_edric_harvestley",
+     "cell": "w_ridgemere_8_6",
+     "x": 242,
+     "y": 170
+    },
+    {
+     "phase": "open",
+     "kind": "npc.hold",
+     "npc": "tn_sm_edric_harvestley"
+    },
+    {
+     "phase": "open",
+     "kind": "npc.release",
+     "npc": "tn_sm_edric_harvestley"
+    },
+    {
+     "phase": "open",
+     "kind": "npc.follow",
+     "npc": "tn_sm_edric_harvestley",
+     "player": "wolf-ash"
+    },
+    {
+     "phase": "open",
+     "kind": "npc.unfollow",
+     "npc": "tn_sm_edric_harvestley"
+    },
+    {
+     "phase": "open",
+     "kind": "item.give",
+     "player": "wolf-ash",
+     "item": "apples",
+     "quantity": 2,
+     "reward": "sq-apple-nose"
+    },
+    {
+     "phase": "open",
+     "kind": "story.practice",
+     "player": "wolf-ash",
+     "skill": "watch",
+     "reward": "sq-apple-nose"
+    },
+    {
+     "phase": "open",
+     "kind": "deed.award",
+     "player": "wolf-ash",
+     "detail": "brought down a bandit on the Upper Mere shore",
+     "reward": "sq-apple-nose"
+    },
+    {
+     "phase": "open",
+     "kind": "character.grant",
+     "player": "wolf-ash",
+     "coins": 3,
+     "purse": "town:coldwater",
+     "reason": "Coldwater's stores pay for an errand",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "open",
+     "kind": "deed.award",
+     "player": "wolf-ash",
+     "detail": "tracked a lost pup along the Upper Mere shore"
+    },
+    {
+     "phase": "open",
+     "kind": "npc.move",
+     "npc": "tn_sm_edric_harvestley",
+     "cell": "w_ridgemere_8_6",
+     "x": 242,
+     "y": 170
+    },
+    {
+     "phase": "open",
+     "kind": "npc.hold",
+     "npc": "tn_sm_edric_harvestley"
+    },
+    {
+     "phase": "open",
+     "kind": "npc.release",
+     "npc": "tn_sm_edric_harvestley"
+    },
+    {
+     "phase": "open",
+     "kind": "npc.follow",
+     "npc": "tn_sm_edric_harvestley",
+     "player": "wolf-cedar"
+    },
+    {
+     "phase": "open",
+     "kind": "npc.unfollow",
+     "npc": "tn_sm_edric_harvestley"
+    },
+    {
+     "phase": "open",
+     "kind": "npc.release",
+     "npc": "tn_sm_edric_harvestley"
+    },
+    {
+     "phase": "open",
+     "kind": "npc.move",
+     "npc": "tn_sm_edric_harvestley",
+     "cell": "w_ridgemere_8_6",
+     "x": 242,
+     "y": 170
+    },
+    {
+     "phase": "open",
+     "kind": "npc.hold",
+     "npc": "tn_sm_edric_harvestley"
+    },
+    {
+     "phase": "open",
+     "kind": "npc.unfollow",
+     "npc": "tn_sm_edric_harvestley"
+    },
+    {
+     "phase": "open",
+     "kind": "npc.release",
+     "npc": "tn_sm_edric_harvestley"
+    }
+   ],
+   "expectTriggers": [
+    "pup-lost",
+    "pup-found",
+    "bounty",
+    "pup-home",
+    "feed-coldwater",
+    "pay-coldwater-3",
+    "deed-apple",
+    "pup-lost",
+    "pup-found",
+    "pup-let-go",
+    "pup-lost",
+    "pup-put-aside"
+   ],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_oriel_blossomby",
+     "detail": "sq-apple-nose"
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_oriel_blossomby",
+     "detail": "sq-apple-nose"
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_oriel_blossomby",
+     "detail": "pup-where"
+    },
+    {
+     "id": "e4",
+     "kind": "near resident",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "cty_oriel_blossomby",
+     "cell": "fs_orchard_coldwater_store",
+     "quantity": 2
+    },
+    {
+     "id": "e5",
+     "kind": "near resident",
+     "day": 1.1,
+     "actor": "wolf-ash",
+     "target": "tn_sm_edric_harvestley",
+     "cell": "w_ridgemere_8_6",
+     "quantity": 3
+    },
+    {
+     "id": "e6",
+     "kind": "bandit falls",
+     "day": 1.12,
+     "actor": "wolf-ash",
+     "target": "camp_w_ridgemere_8_6",
+     "cell": "w_ridgemere_8_6",
+     "detail": "a bandit"
+    },
+    {
+     "id": "e7",
+     "kind": "near resident",
+     "day": 1.2,
+     "actor": "wolf-ash",
+     "target": "cty_oriel_blossomby",
+     "cell": "fs_orchard_coldwater_store",
+     "quantity": 2
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.21,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_oriel_blossomby",
+     "detail": "sq-apple-nose"
+    },
+    {
+     "id": "e9",
+     "kind": "quest accepted",
+     "day": 1.3,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_oriel_blossomby",
+     "detail": "sq-apple-nose"
+    },
+    {
+     "id": "e10",
+     "kind": "near resident",
+     "day": 1.4,
+     "actor": "wolf-cedar",
+     "target": "tn_sm_edric_harvestley",
+     "cell": "w_ridgemere_8_6",
+     "quantity": 3
+    },
+    {
+     "id": "e11",
+     "kind": "near resident",
+     "day": 2.5,
+     "actor": "wolf-dun",
+     "target": "tn_sm_edric_harvestley",
+     "cell": "w_ridgemere_8_6",
+     "quantity": 3
+    },
+    {
+     "id": "e12",
+     "kind": "quest accepted",
+     "day": 2.6,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_oriel_blossomby",
+     "detail": "sq-apple-nose"
+    },
+    {
+     "id": "e13",
+     "kind": "quest abandoned",
+     "day": 2.7,
+     "actor": "wolf-dun",
+     "target": "run",
+     "detail": "sq-apple-nose"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-apple-nose": {
+     "wolf-ash": "done",
+     "wolf-birch": "none",
+     "wolf-cedar": "failed",
+     "wolf-dun": "abandoned"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "wolf-ash": {
+      "sq_done": 1
+     }
+    },
+    "world": {
+     "nh_threat": 29,
+     "nh_realm": 3,
+     "coin_coldwater_day": 3
+    }
+   }
+  },
+  {
+   "name": "Wool on the thorns: two trails at once, a tuft off the trail, one put aside, two that run out",
+   "cohort": [],
+   "expectTriggers": [
+    "ewe-trail",
+    "ewe-trail",
+    "ewe-tuft",
+    "ewe-tuft",
+    "ewe-tuft",
+    "ewe-tuft",
+    "ewe-tuft",
+    "feed-coldwater",
+    "pay-coldwater-3",
+    "deed-ewe",
+    "ewe-home",
+    "ewe-put-aside",
+    "ewe-trail",
+    "ewe-trail",
+    "ewe-lost",
+    "ewe-lost"
+   ],
+   "facts": {
+    "world": {
+     "period": "day",
+     "hour": 11
+    },
+    "wolves": {
+     "wolf-ash": {
+      "cell": "w_ridgemere_9_8",
+      "x": 238,
+      "y": 96,
+      "town": "coldwater",
+      "indoors": false
+     },
+     "wolf-birch": {
+      "cell": "w_ridgemere_9_8",
+      "x": 214,
+      "y": 118,
+      "town": "coldwater",
+      "indoors": false
+     }
+    }
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_brock_marshholm",
+     "detail": "sq-strayed-ewe"
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_brock_marshholm",
+     "detail": "sq-strayed-ewe"
+    },
+    {
+     "id": "e3",
+     "kind": "item picked up",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "item": "wool",
+     "cell": "w_ridgemere_9_8",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_8",
+        "x": 238,
+        "y": 96,
+        "town": "coldwater",
+        "indoors": false
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_8",
+        "x": 214,
+        "y": 118,
+        "town": "coldwater",
+        "indoors": false
+       }
+      }
+     }
+    },
+    {
+     "id": "e4",
+     "kind": "item picked up",
+     "day": 1.03,
+     "actor": "wolf-birch",
+     "item": "wool",
+     "cell": "w_ridgemere_9_8",
+     "quantity": 1
+    },
+    {
+     "id": "e5",
+     "kind": "item picked up",
+     "day": 1.04,
+     "actor": "wolf-birch",
+     "item": "wool",
+     "cell": "w_ridgemere_9_8",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_8",
+        "x": 238,
+        "y": 80,
+        "town": "coldwater",
+        "indoors": false
+       }
+      }
+     }
+    },
+    {
+     "id": "e6",
+     "kind": "item picked up",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "item": "wool",
+     "cell": "w_ridgemere_9_8",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_8",
+        "x": 240,
+        "y": 80,
+        "town": "coldwater",
+        "indoors": false
+       }
+      }
+     }
+    },
+    {
+     "id": "e7",
+     "kind": "item picked up",
+     "day": 1.06,
+     "actor": "wolf-ash",
+     "item": "wool",
+     "cell": "w_ridgemere_9_8",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_8",
+        "x": 244,
+        "y": 66,
+        "town": "coldwater",
+        "indoors": false
+       }
+      }
+     }
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_brock_marshholm",
+     "detail": "sq-strayed-ewe"
+    },
+    {
+     "id": "e9",
+     "kind": "quest abandoned",
+     "day": 1.2,
+     "actor": "wolf-birch",
+     "target": "run",
+     "detail": "sq-strayed-ewe"
+    },
+    {
+     "id": "e10",
+     "kind": "quest accepted",
+     "day": 1.3,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_brock_marshholm",
+     "detail": "sq-strayed-ewe"
+    },
+    {
+     "id": "e11",
+     "kind": "quest accepted",
+     "day": 1.31,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_brock_marshholm",
+     "detail": "sq-strayed-ewe"
+    },
+    {
+     "id": "e12",
+     "kind": "item picked up",
+     "day": 2.4,
+     "actor": "wolf-cedar",
+     "item": "wool",
+     "cell": "w_ridgemere_9_8",
+     "quantity": 1
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-strayed-ewe": {
+     "wolf-ash": "done",
+     "wolf-birch": "abandoned",
+     "wolf-cedar": "failed",
+     "wolf-dun": "failed"
+    }
+   },
+   "expectVariables": {
+    "story": {
+     "ewe_n_busy": false,
+     "ewe_s_busy": false
+    },
+    "player": {
+     "wolf-ash": {
+      "sq_done": 1
+     }
+    },
+    "world": {
+     "nh_voice_coldwater": 3,
+     "coin_coldwater_day": 3
+    }
+   }
+  },
+  {
+   "name": "Oakhaven: the rope, the venison, and the logger asleep in the storm once he has his herbs",
+   "expectTriggers": [
+    "drag-offer",
+    "board-declined",
+    "drag-offer",
+    "bounty",
+    "feed-oakhaven",
+    "pay-oakhaven-4",
+    "deed-drag",
+    "drag-close",
+    "feed-oakhaven",
+    "pay-oakhaven-3",
+    "deed-venison",
+    "calm-valerian",
+    "calm-valerian",
+    "storm-breaks",
+    "feed-oakhaven",
+    "pay-oakhaven-2",
+    "deed-sleep",
+    "feed-oakhaven",
+    "pay-oakhaven-2",
+    "deed-sleep"
+   ],
+   "cohort": [],
+   "facts": {
+    "world": {
+     "period": "day",
+     "hour": 12
+    },
+    "wolves": {
+     "wolf-ash": {
+      "cell": "w_ridgemere_3_4",
+      "x": 244,
+      "y": 196,
+      "town": "oakhaven",
+      "indoors": false
+     }
+    }
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "region entered",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "target": "oak_square",
+     "cell": "w_ridgemere_3_4",
+     "detail": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.1,
+     "actor": "wolf-ash",
+     "target": "oak_square",
+     "cell": "w_ridgemere_3_4",
+     "detail": "run"
+    },
+    {
+     "id": "e3",
+     "kind": "quest declined",
+     "day": 1.15,
+     "actor": "wolf-ash",
+     "target": "run",
+     "detail": "sq-rope-for-the-drag"
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.5,
+     "actor": "wolf-ash",
+     "target": "oak_square",
+     "cell": "w_ridgemere_3_4",
+     "detail": "run"
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 2.1,
+     "actor": "wolf-ash",
+     "target": "oak_square",
+     "cell": "w_ridgemere_3_4",
+     "detail": "run"
+    },
+    {
+     "id": "e6",
+     "kind": "region entered",
+     "day": 2.2,
+     "actor": "wolf-ash",
+     "target": "oak_square",
+     "cell": "w_ridgemere_3_4",
+     "detail": "run"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 2.21,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "sq-rope-for-the-drag"
+    },
+    {
+     "id": "e9",
+     "kind": "bandit falls",
+     "day": 2.23,
+     "actor": "wolf-ash",
+     "target": "camp_w_ridgemere_5_4",
+     "cell": "w_ridgemere_5_4",
+     "detail": "a bandit"
+    },
+    {
+     "id": "e8",
+     "kind": "gift",
+     "day": 2.24,
+     "actor": "wolf-ash",
+     "target": "cty_tristram_rainridge",
+     "item": "rope",
+     "quantity": 1
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 2.25,
+     "actor": "wolf-ash",
+     "target": "oak_square",
+     "cell": "w_ridgemere_3_4",
+     "detail": "run"
+    },
+    {
+     "id": "e12",
+     "kind": "quest accepted",
+     "day": 2.3,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_frost_colddrift",
+     "detail": "sq-venison-for-the-cut"
+    },
+    {
+     "id": "e13",
+     "kind": "hunted",
+     "day": 2.31,
+     "actor": "wolf-birch",
+     "target": "roe_deer",
+     "cell": "w_ridgemere_4_4",
+     "detail": "a good kill",
+     "quantity": 2
+    },
+    {
+     "id": "e13b",
+     "kind": "gift",
+     "day": 2.315,
+     "actor": "wolf-birch",
+     "target": "cty_frost_colddrift",
+     "item": "raw_meat",
+     "quantity": 2
+    },
+    {
+     "id": "e14",
+     "kind": "quest handed in",
+     "day": 2.32,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_frost_colddrift",
+     "detail": "sq-venison-for-the-cut"
+    },
+    {
+     "id": "e15",
+     "kind": "quest accepted",
+     "day": 2.4,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_ingram_ashleaf",
+     "detail": "sq-sleepless-logger"
+    },
+    {
+     "id": "e16",
+     "kind": "quest accepted",
+     "day": 2.41,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "board:oakhaven",
+     "detail": "sq-sleepless-logger"
+    },
+    {
+     "id": "e17",
+     "kind": "gift",
+     "day": 2.42,
+     "actor": "wolf-cedar",
+     "target": "cty_ingram_ashleaf",
+     "item": "valerian",
+     "quantity": 1
+    },
+    {
+     "id": "e18",
+     "kind": "gift",
+     "day": 2.43,
+     "actor": "wolf-cedar",
+     "target": "cty_ingram_ashleaf",
+     "item": "valerian_draught",
+     "quantity": 1
+    },
+    {
+     "id": "e19",
+     "kind": "gift",
+     "day": 2.44,
+     "actor": "wolf-dun",
+     "target": "cty_ingram_ashleaf",
+     "item": "chamomile",
+     "quantity": 2
+    },
+    {
+     "id": "e20",
+     "kind": "weather changed",
+     "day": 2.5,
+     "actor": "",
+     "target": "w_ridgemere_3_4",
+     "cell": "w_ridgemere_3_4",
+     "detail": "storm",
+     "item": "rain",
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_3_4",
+        "x": 244,
+        "y": 196,
+        "town": "oakhaven",
+        "indoors": false
+       },
+       "wolf-dun": {
+        "cell": "w_ridgemere_7_7",
+        "x": 244,
+        "y": 196,
+        "town": "coldwater",
+        "indoors": false
+       }
+      }
+     }
+    },
+    {
+     "id": "e21",
+     "kind": "quest handed in",
+     "day": 2.6,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_ingram_ashleaf",
+     "detail": "sq-sleepless-logger"
+    },
+    {
+     "id": "e22",
+     "kind": "quest handed in",
+     "day": 2.61,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_ingram_ashleaf",
+     "detail": "sq-sleepless-logger"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-rope-for-the-drag": {
+     "wolf-ash": "done"
+    },
+    "sq-venison-for-the-cut": {
+     "wolf-birch": "done"
+    },
+    "sq-sleepless-logger": {
+     "wolf-cedar": "done",
+     "wolf-dun": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "wolf-ash": {
+      "sq_done": 1
+     },
+     "wolf-birch": {
+      "sq_done": 1
+     },
+     "wolf-cedar": {
+      "sq_done": 1
+     }
+    },
+    "world": {
+     "nh_realm": 8,
+     "nh_voice_oakhaven": 8,
+     "coin_oakhaven_day": 11,
+     "nh_threat": 29
+    }
+   }
+  },
+  {
+   "name": "Frosthollow: wood for the Pass House, the clamp at the first hour, and goats off the scree",
+   "cohort": [],
+   "expectTriggers": [
+    "passwood-offer",
+    "feed-frosthollow",
+    "pay-frosthollow-3",
+    "deed-passwood",
+    "passwood-close",
+    "clamp-hour",
+    "feed-frosthollow",
+    "pay-frosthollow-3",
+    "deed-clamp",
+    "bounty",
+    "feed-frosthollow",
+    "pay-frosthollow-3",
+    "deed-goats",
+    "clamp-hour"
+   ],
+   "facts": {
+    "world": {
+     "period": "day",
+     "hour": 13
+    },
+    "wolves": {
+     "wolf-ash": {
+      "cell": "w_ridgemere_9_3",
+      "x": 6,
+      "y": 28,
+      "town": "frosthollow",
+      "indoors": false
+     }
+    }
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "region entered",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "target": "frost_square",
+     "cell": "w_ridgemere_9_3",
+     "detail": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "sq-lamp-oil-for-the-pit"
+    },
+    {
+     "id": "e3",
+     "kind": "gift",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "cty_ebba_coalgate",
+     "item": "firewood",
+     "quantity": 4
+    },
+    {
+     "id": "e4",
+     "kind": "enter place",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "cn_frosthollow_guest_inn",
+     "cell": "cn_frosthollow_guest_inn",
+     "detail": "w_ridgemere_8_3"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "cty_ebba_coalgate",
+     "item": "oats",
+     "quantity": 2
+    },
+    {
+     "id": "e6",
+     "kind": "gift",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "target": "cty_ebba_coalgate",
+     "item": "firewood",
+     "quantity": 4
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_iris_fernhaven",
+     "detail": "sq-clamp-watch"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 1.11,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "board:frosthollow",
+     "detail": "sq-clamp-watch"
+    },
+    {
+     "id": "e9",
+     "kind": "gift",
+     "day": 1.12,
+     "actor": "wolf-birch",
+     "target": "cty_iris_fernhaven",
+     "item": "firewood",
+     "quantity": 2
+    },
+    {
+     "id": "e10",
+     "kind": "hour",
+     "day": 1.2,
+     "actor": "",
+     "detail": "0",
+     "quantity": 0,
+     "facts": {
+      "world": {
+       "hour": 0,
+       "period": "night"
+      },
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_10_3",
+        "x": 82,
+        "y": 170,
+        "town": "frosthollow",
+        "indoors": false
+       },
+       "wolf-cedar": {
+        "cell": "w_ridgemere_10_3",
+        "x": 82,
+        "y": 170,
+        "town": "frosthollow",
+        "indoors": false
+       }
+      }
+     }
+    },
+    {
+     "id": "e11",
+     "kind": "hour",
+     "day": 1.25,
+     "actor": "",
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "world": {
+       "hour": 1,
+       "period": "night"
+      },
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_10_3",
+        "x": 82,
+        "y": 170,
+        "town": "frosthollow",
+        "indoors": false
+       },
+       "wolf-cedar": {
+        "cell": "w_ridgemere_9_3",
+        "x": 6,
+        "y": 28,
+        "town": "frosthollow",
+        "indoors": false
+       }
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 1.3,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_iris_fernhaven",
+     "detail": "sq-clamp-watch"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 1.4,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_leif_driphand",
+     "detail": "sq-scree-goats"
+    },
+    {
+     "id": "e14",
+     "kind": "hunted",
+     "day": 1.41,
+     "actor": "wolf-dun",
+     "target": "ibex",
+     "cell": "w_ridgemere_6_3",
+     "detail": "a rough kill",
+     "quantity": 2
+    },
+    {
+     "id": "e15",
+     "kind": "bandit falls",
+     "day": 1.42,
+     "actor": "wolf-dun",
+     "target": "camp_w_ridgemere_6_3",
+     "cell": "w_ridgemere_6_3",
+     "detail": "a bandit"
+    },
+    {
+     "id": "e16",
+     "kind": "quest handed in",
+     "day": 1.43,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_leif_driphand",
+     "detail": "sq-scree-goats"
+    },
+    {
+     "id": "e17",
+     "kind": "hour",
+     "day": 2.3,
+     "actor": "",
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_10_3",
+        "x": 82,
+        "y": 170,
+        "town": "frosthollow",
+        "indoors": false
+       }
+      }
+     }
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-lamp-oil-for-the-pit": {
+     "wolf-ash": "done"
+    },
+    "sq-clamp-watch": {
+     "wolf-birch": "done",
+     "wolf-cedar": "failed"
+    },
+    "sq-scree-goats": {
+     "wolf-dun": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "wolf-ash": {
+      "sq_done": 1
+     },
+     "wolf-birch": {
+      "sq_done": 1
+     },
+     "wolf-dun": {
+      "sq_done": 1
+     }
+    },
+    "world": {
+     "nh_realm": 9,
+     "nh_voice_frosthollow": 9,
+     "coin_frosthollow_day": 9,
+     "nh_threat": 29
+    }
+   }
+  },
+  {
+   "name": "Eight kettle errands in one day: seven are paid from Coldwater's store, the eighth in bread",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.0,
+     "actor": "wolf-a1",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e2",
+     "kind": "gift",
+     "day": 1.005,
+     "actor": "wolf-a1",
+     "target": "tn_lf_sage_wheatridge",
+     "item": "firewood",
+     "quantity": 5
+    },
+    {
+     "id": "e3",
+     "kind": "quest handed in",
+     "day": 1.01,
+     "actor": "wolf-a1",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e4",
+     "kind": "quest accepted",
+     "day": 1.02,
+     "actor": "wolf-a2",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 1.025,
+     "actor": "wolf-a2",
+     "target": "tn_lf_sage_wheatridge",
+     "item": "firewood",
+     "quantity": 5
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 1.03,
+     "actor": "wolf-a2",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 1.04,
+     "actor": "wolf-a3",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e8",
+     "kind": "gift",
+     "day": 1.045,
+     "actor": "wolf-a3",
+     "target": "tn_lf_sage_wheatridge",
+     "item": "firewood",
+     "quantity": 5
+    },
+    {
+     "id": "e9",
+     "kind": "quest handed in",
+     "day": 1.05,
+     "actor": "wolf-a3",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e10",
+     "kind": "quest accepted",
+     "day": 1.06,
+     "actor": "wolf-a4",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e11",
+     "kind": "gift",
+     "day": 1.065,
+     "actor": "wolf-a4",
+     "target": "tn_lf_sage_wheatridge",
+     "item": "firewood",
+     "quantity": 5
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 1.07,
+     "actor": "wolf-a4",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 1.08,
+     "actor": "wolf-a5",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e14",
+     "kind": "gift",
+     "day": 1.085,
+     "actor": "wolf-a5",
+     "target": "tn_lf_sage_wheatridge",
+     "item": "firewood",
+     "quantity": 5
+    },
+    {
+     "id": "e15",
+     "kind": "quest handed in",
+     "day": 1.09,
+     "actor": "wolf-a5",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e16",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-a6",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e17",
+     "kind": "gift",
+     "day": 1.105,
+     "actor": "wolf-a6",
+     "target": "tn_lf_sage_wheatridge",
+     "item": "firewood",
+     "quantity": 5
+    },
+    {
+     "id": "e18",
+     "kind": "quest handed in",
+     "day": 1.11,
+     "actor": "wolf-a6",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e19",
+     "kind": "quest accepted",
+     "day": 1.12,
+     "actor": "wolf-a7",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e20",
+     "kind": "gift",
+     "day": 1.125,
+     "actor": "wolf-a7",
+     "target": "tn_lf_sage_wheatridge",
+     "item": "firewood",
+     "quantity": 5
+    },
+    {
+     "id": "e21",
+     "kind": "quest handed in",
+     "day": 1.1300000000000001,
+     "actor": "wolf-a7",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e22",
+     "kind": "quest accepted",
+     "day": 1.1400000000000001,
+     "actor": "wolf-a8",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    },
+    {
+     "id": "e23",
+     "kind": "gift",
+     "day": 1.145,
+     "actor": "wolf-a8",
+     "target": "tn_lf_sage_wheatridge",
+     "item": "firewood",
+     "quantity": 5
+    },
+    {
+     "id": "e24",
+     "kind": "quest handed in",
+     "day": 1.1500000000000001,
+     "actor": "wolf-a8",
+     "target": "run",
+     "item": "tn_lf_sage_wheatridge",
+     "detail": "sq-kettle-wood"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-kettle-wood": {
+     "wolf-a1": "done",
+     "wolf-a2": "done",
+     "wolf-a3": "done",
+     "wolf-a4": "done",
+     "wolf-a5": "done",
+     "wolf-a6": "done",
+     "wolf-a7": "done",
+     "wolf-a8": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "coin_coldwater_day": 21,
+     "nh_voice_coldwater": 24
+    }
+   }
+  },
+  {
+   "name": "Taken again: no fresh loaves or wool the same day or week; storms that count for nothing",
+   "cohort": [],
+   "facts": {
+    "world": {
+     "period": "day",
+     "hour": 10
+    }
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_lf_lichen_hedgemead",
+     "detail": "sq-bread-to-the-landing"
+    },
+    {
+     "id": "e2",
+     "kind": "quest abandoned",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "run",
+     "detail": "sq-bread-to-the-landing"
+    },
+    {
+     "id": "e3",
+     "kind": "quest accepted",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_lf_lichen_hedgemead",
+     "detail": "sq-bread-to-the-landing"
+    },
+    {
+     "id": "e4",
+     "kind": "gift",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "tn_cw_grist_reedmere",
+     "item": "bread",
+     "quantity": 3
+    },
+    {
+     "id": "e5",
+     "kind": "quest handed in",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_lf_lichen_hedgemead",
+     "detail": "sq-bread-to-the-landing"
+    },
+    {
+     "id": "e6",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_brock_marshholm",
+     "detail": "sq-strayed-ewe"
+    },
+    {
+     "id": "e7",
+     "kind": "quest abandoned",
+     "day": 1.11,
+     "actor": "wolf-birch",
+     "target": "run",
+     "detail": "sq-strayed-ewe"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 1.12,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_brock_marshholm",
+     "detail": "sq-strayed-ewe"
+    },
+    {
+     "id": "e9",
+     "kind": "quest accepted",
+     "day": 1.2,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_ingram_ashleaf",
+     "detail": "sq-sleepless-logger"
+    },
+    {
+     "id": "e10",
+     "kind": "weather changed",
+     "day": 1.3,
+     "actor": "",
+     "target": "w_ridgemere_3_4",
+     "cell": "w_ridgemere_3_4",
+     "detail": "storm",
+     "item": "rain",
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_3_4",
+        "x": 244,
+        "y": 196,
+        "town": "",
+        "indoors": false
+       }
+      }
+     }
+    },
+    {
+     "id": "e11",
+     "kind": "weather changed",
+     "day": 1.31,
+     "actor": "",
+     "target": "w_ridgemere_4_4",
+     "cell": "w_ridgemere_4_4",
+     "detail": "storm",
+     "item": "rain",
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_3_4",
+        "x": 244,
+        "y": 196,
+        "town": "",
+        "indoors": false
+       }
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "gift",
+     "day": 1.32,
+     "actor": "wolf-cedar",
+     "target": "cty_ingram_ashleaf",
+     "item": "chamomile",
+     "quantity": 2
+    },
+    {
+     "id": "e13",
+     "kind": "quest handed in",
+     "day": 1.33,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_ingram_ashleaf",
+     "detail": "sq-sleepless-logger"
+    },
+    {
+     "id": "e14",
+     "kind": "quest accepted",
+     "day": 8.2,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_brock_marshholm",
+     "detail": "sq-strayed-ewe"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-bread-to-the-landing": {
+     "wolf-ash": "done"
+    },
+    "sq-strayed-ewe": {
+     "wolf-birch": "active"
+    },
+    "sq-sleepless-logger": {
+     "wolf-cedar": "done"
+    }
+   },
+   "expectVariables": {
+    "story": {
+     "ewe_n_busy": true,
+     "ewe_s_busy": false
+    },
+    "world": {
+     "coin_coldwater_day": 2,
+     "coin_oakhaven_day": 2
+    }
+   },
+   "expectTriggers": [
+    "landing-loaves",
+    "landing-loaves",
+    "feed-coldwater",
+    "pay-coldwater-2",
+    "deed-landing",
+    "ewe-trail",
+    "ewe-put-aside",
+    "ewe-trail",
+    "ewe-lost",
+    "storm-breaks",
+    "feed-oakhaven",
+    "pay-oakhaven-2",
+    "deed-sleep",
+    "ewe-trail"
+   ],
+   "expectEffects": [
+    {
+     "phase": "open",
+     "kind": "item.give",
+     "player": "wolf-ash",
+     "item": "bread",
+     "quantity": 3
+    },
+    {
+     "phase": "open",
+     "kind": "journal.note",
+     "player": "wolf-ash",
+     "text": "You had today's loaves from the bakehouse already. Take three loaves down to the landing, the ones you were given or your own."
+    },
+    {
+     "phase": "open",
+     "kind": "story.practice",
+     "player": "wolf-ash",
+     "skill": "service",
+     "reward": "sq-bread-to-the-landing"
+    },
+    {
+     "phase": "open",
+     "kind": "character.grant",
+     "player": "wolf-ash",
+     "coins": 2,
+     "purse": "town:coldwater",
+     "reason": "Coldwater's stores pay for an errand",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "open",
+     "kind": "deed.award",
+     "player": "wolf-ash",
+     "detail": "carried the bakehouse loaves down to the Glasswater landing"
+    },
+    {
+     "phase": "open",
+     "kind": "item.place",
+     "item": "wool",
+     "quantity": 1,
+     "cell": "w_ridgemere_9_8",
+     "x": 238,
+     "y": 96
+    },
+    {
+     "phase": "open",
+     "kind": "item.place",
+     "item": "wool",
+     "quantity": 1,
+     "cell": "w_ridgemere_9_8",
+     "x": 240,
+     "y": 80
+    },
+    {
+     "phase": "open",
+     "kind": "item.place",
+     "item": "wool",
+     "quantity": 1,
+     "cell": "w_ridgemere_9_8",
+     "x": 244,
+     "y": 66
+    },
+    {
+     "phase": "open",
+     "kind": "journal.note",
+     "player": "wolf-birch",
+     "text": "The shepherd's ewes are all in the fold this week, and there is no wool on the thorns to follow. Ask again in a few days."
+    },
+    {
+     "phase": "open",
+     "kind": "story.practice",
+     "player": "wolf-cedar",
+     "skill": "service",
+     "reward": "sq-sleepless-logger"
+    },
+    {
+     "phase": "open",
+     "kind": "character.grant",
+     "player": "wolf-cedar",
+     "coins": 2,
+     "purse": "town:oakhaven",
+     "reason": "Oakhaven's stores pay for an errand",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "open",
+     "kind": "deed.award",
+     "player": "wolf-cedar",
+     "detail": "brought a calming draught to a sleepless logger"
+    },
+    {
+     "phase": "open",
+     "kind": "item.place",
+     "item": "wool",
+     "quantity": 1,
+     "cell": "w_ridgemere_9_8",
+     "x": 238,
+     "y": 96
+    },
+    {
+     "phase": "open",
+     "kind": "item.place",
+     "item": "wool",
+     "quantity": 1,
+     "cell": "w_ridgemere_9_8",
+     "x": 240,
+     "y": 80
+    },
+    {
+     "phase": "open",
+     "kind": "item.place",
+     "item": "wool",
+     "quantity": 1,
+     "cell": "w_ridgemere_9_8",
+     "x": 244,
+     "y": 66
+    }
+   ]
+  }
+ ]
+}

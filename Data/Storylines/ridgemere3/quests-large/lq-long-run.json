@@ -1,0 +1,5879 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "lq-long-run",
+ "title": "The Long Run",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "quietAfterHours": 0,
+ "variables": [
+  {
+   "id": "lq_post",
+   "type": "text",
+   "scope": "world",
+   "initial": "",
+   "note": "The Long Run's last result: couriers or wagons (empty: never run). Written by lq-long-run."
+  },
+  {
+   "id": "lq_post_time",
+   "type": "text",
+   "scope": "world",
+   "initial": "",
+   "note": "The Long Run's best time band: half, day or last (empty: no record). Written by lq-long-run."
+  },
+  {
+   "id": "coin_ridgemere_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:ridgemere by every story (day cap 135); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_ridgemere_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:ridgemere is above its floor: off below 60, on again at 80 (nh-purses only)."
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_voice_oakhaven",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Oakhaven's strand of the realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_voice_ridgemere",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Ridgemere's strand of the realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_voice_frosthollow",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Frosthollow's strand of the realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_voice_coldwater",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Coldwater's strand of the realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_voice_larkfield",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Larkfield's strand of the realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_voice_mirebridge",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Mirebridge's strand of the realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_voice_fenshore",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Fenshore's strand of the realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_voice_southmeadow",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Southmeadow's strand of the realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_voice_saltwell",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Saltwell's strand of the realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_stage",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The Ninth Howl chapter now running (read only here: from Ch 4 the run rehearses the howl)."
+  },
+  {
+   "id": "nh_threat",
+   "type": "number",
+   "scope": "world",
+   "initial": 30,
+   "note": "The Grey Captain's grip on the roads (read only here: above 40 the long roads are watched)."
+  },
+  {
+   "id": "runners",
+   "type": "wolves",
+   "scope": "story",
+   "note": "Wolves who have run a trial leg and are on the Couriers' list."
+  },
+  {
+   "id": "run_set",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "The run is posted for Marketday."
+  },
+  {
+   "id": "run_t",
+   "type": "timer",
+   "scope": "story",
+   "note": "When the tube left Oakhaven this season."
+  },
+  {
+   "id": "list_t",
+   "type": "timer",
+   "scope": "story",
+   "note": "When the season's list opened (the first runner, or the season's turn): 14 game days on, one runner is enough."
+  },
+  {
+   "id": "leg_at",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "show": "Squares the tube has reached",
+   "note": "The last square the tube reached this run (0: Oakhaven, 8: Saltwell)."
+  },
+  {
+   "id": "answering",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Answers under way: the Council's clerk shows her choice while any is."
+  },
+  {
+   "id": "wagon_in",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "The Carters' Yard wagon has reached Saltwell this run."
+  },
+  {
+   "id": "lq_coin",
+   "type": "number",
+   "scope": "player",
+   "initial": 0,
+   "note": "What this line has paid this wolf in all (at most 35)."
+  },
+  {
+   "id": "lq_thin",
+   "type": "switch",
+   "scope": "player",
+   "initial": false,
+   "note": "This wolf was paid in kind when the purse was thin."
+  },
+  {
+   "id": "legs",
+   "type": "number",
+   "scope": "player",
+   "initial": 0,
+   "note": "Legs this wolf carried the tube in this season's run."
+  },
+  {
+   "id": "at_sq",
+   "type": "number",
+   "scope": "player",
+   "initial": -1,
+   "note": "The last square (0 Oakhaven to 8 Saltwell) this wolf stood in after the tube had reached it, this run: only from there may they carry it on."
+  },
+  {
+   "id": "leg_t",
+   "type": "timer",
+   "scope": "player",
+   "note": "When this wolf set out on a trial leg."
+  },
+  {
+   "id": "on_trial",
+   "type": "switch",
+   "scope": "player",
+   "initial": false,
+   "note": "This wolf is out on a trial leg now."
+  },
+  {
+   "id": "out_ok",
+   "type": "switch",
+   "scope": "player",
+   "initial": false,
+   "note": "This wolf reached Oakhaven in time on the trial leg."
+  },
+  {
+   "id": "trial_paid",
+   "type": "switch",
+   "scope": "player",
+   "initial": false,
+   "note": "This wolf had the first-time reward of the trial leg."
+  },
+  {
+   "id": "boots_given",
+   "type": "switch",
+   "scope": "player",
+   "initial": false,
+   "note": "This wolf has had the paw boots of a first Long Run."
+  },
+  {
+   "id": "answered",
+   "type": "switch",
+   "scope": "player",
+   "initial": false,
+   "note": "This wolf has carried a time-sheet to the Council once (later: the answer again, no coin)."
+  }
+ ],
+ "regions": [
+  {
+   "id": "sq_oakhaven",
+   "cell": "w_ridgemere_3_4",
+   "x1": 234,
+   "y1": 186,
+   "x2": 254,
+   "y2": 206
+  },
+  {
+   "id": "sq_ridgemere",
+   "cell": "w_ridgemere_1_1",
+   "x1": 94,
+   "y1": 46,
+   "x2": 114,
+   "y2": 66
+  },
+  {
+   "id": "sq_frosthollow",
+   "cell": "w_ridgemere_9_3",
+   "x1": 0,
+   "y1": 18,
+   "x2": 14,
+   "y2": 38
+  },
+  {
+   "id": "sq_coldwater",
+   "cell": "w_ridgemere_7_7",
+   "x1": 154,
+   "y1": 0,
+   "x2": 174,
+   "y2": 14
+  },
+  {
+   "id": "sq_larkfield",
+   "cell": "w_ridgemere_6_9",
+   "x1": 130,
+   "y1": 66,
+   "x2": 150,
+   "y2": 86
+  },
+  {
+   "id": "sq_mirebridge",
+   "cell": "w_ridgemere_5_11",
+   "x1": 178,
+   "y1": 42,
+   "x2": 198,
+   "y2": 62
+  },
+  {
+   "id": "sq_fenshore",
+   "cell": "w_ridgemere_3_13",
+   "x1": 82,
+   "y1": 138,
+   "x2": 102,
+   "y2": 158
+  },
+  {
+   "id": "sq_southmeadow",
+   "cell": "w_ridgemere_8_13",
+   "x1": 90,
+   "y1": 10,
+   "x2": 110,
+   "y2": 30
+  },
+  {
+   "id": "sq_saltwell",
+   "cell": "w_ridgemere_12_11",
+   "x1": 210,
+   "y1": 106,
+   "x2": 230,
+   "y2": 126
+  }
+ ],
+ "triggers": [
+  {
+   "id": "lay-offers",
+   "on": "day begins",
+   "note": "Each day: the timekeeper's, the courier's and the carter's choices, and the time-sheet and the clerk's while an answer is under way.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rmx_florence_pennock",
+      "id": "lq_run_time",
+      "words": "Who keeps the time?",
+      "reply": "I do, with the Office's sand-glass and the Bright One's patience. Every square has a board, and every board gets the hour the tube came through. No wagon ever had its hours written up in public.",
+      "once": true
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rmx_hanne_ash",
+      "id": "lq_run_stake",
+      "words": "What happens if we lose?",
+      "reply": "Then the wagons get the realm's post, and the Office lets half of us go. I owe a factor money by the new moon. I'd rather run till my pads bleed than lose this place.",
+      "once": true
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rmx_orm_carlisle",
+      "id": "lq_run_wager",
+      "words": "You think wagons beat paws?",
+      "reply": "Over two days with a load, every time. Over one day with a tube? Ha. I've a wager on the wagon, friend, and a wager's a wager. Run fair and I'll buy the first round at the Grey Gull, win or lose.",
+      "once": true
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "answering"
+      },
+      "op": ">",
+      "right": 0
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_florence_pennock",
+        "id": "lq_run_sheet",
+        "words": "I've come for the time-sheet.",
+        "reply": "Here it is, sealed. Every square's hour, as the tube came through. Straight to the Council's clerk with it, and the Bright One speed you.",
+        "once": false
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_philippa_pitchstack",
+        "id": "lq_run_clerk",
+        "words": "Here is the Long Run's time-sheet.",
+        "reply": "#greet#. The timekeeper's seal, and every square's hour on it. The Council will have to read this one, whatever it would rather. Much obliged.",
+        "once": false
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "lay-offers-now",
+   "on": "quest started",
+   "audience": "participant",
+   "once": "visit",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rmx_florence_pennock",
+      "id": "lq_run_time",
+      "words": "Who keeps the time?",
+      "reply": "I do, with the Office's sand-glass and the Bright One's patience. Every square has a board, and every board gets the hour the tube came through. No wagon ever had its hours written up in public.",
+      "once": true
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rmx_hanne_ash",
+      "id": "lq_run_stake",
+      "words": "What happens if we lose?",
+      "reply": "Then the wagons get the realm's post, and the Office lets half of us go. I owe a factor money by the new moon. I'd rather run till my pads bleed than lose this place.",
+      "once": true
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rmx_orm_carlisle",
+      "id": "lq_run_wager",
+      "words": "You think wagons beat paws?",
+      "reply": "Over two days with a load, every time. Over one day with a tube? Ha. I've a wager on the wagon, friend, and a wager's a wager. Run fair and I'll buy the first round at the Grey Gull, win or lose.",
+      "once": true
+     }
+    }
+   ]
+  },
+  {
+   "id": "howl-news",
+   "on": "day begins",
+   "note": "From Ch 4 the courier says the run is the howl's road (campaign 4.1 nh_stage).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "phase is",
+        "phase": "open"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "nh_stage"
+        },
+        "op": ">=",
+        "right": 4
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "enter",
+       "phase": "open_howl"
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "open_howl"
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": "<",
+          "right": 4
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "enter",
+         "phase": "open"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "set-day",
+   "on": "day begins",
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "phase is",
+        "phase": "open"
+       },
+       {
+        "test": "phase is",
+        "phase": "open_howl"
+       }
+      ]
+     },
+     {
+      "test": "switch",
+      "var": "run_set",
+      "is": false
+     },
+     {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "count": "runners"
+        },
+        "op": ">=",
+        "right": 3
+       },
+       {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "count": "runners"
+          },
+          "op": ">=",
+          "right": 1
+         },
+         {
+          "test": "compare",
+          "left": {
+           "since": "list_t"
+          },
+          "op": ">=",
+          "right": 14
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "note": "Three runners on the list (or one, 14 game days after the season's first): the run is posted on all eight boards for Marketday.",
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "run_set"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "ridgemere",
+      "text": "THE LONG RUN: the Couriers' tube comes through this square on Marketday. Stand by the board and cheer it on, or carry it to the next town. Grete Dimmock, the Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "oakhaven",
+      "text": "THE LONG RUN: the Couriers' tube comes through this square on Marketday. Stand by the board and cheer it on, or carry it to the next town. Grete Dimmock, the Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "frosthollow",
+      "text": "THE LONG RUN: the Couriers' tube comes through this square on Marketday. Stand by the board and cheer it on, or carry it to the next town. Grete Dimmock, the Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "coldwater",
+      "text": "THE LONG RUN: the Couriers' tube comes through this square on Marketday. Stand by the board and cheer it on, or carry it to the next town. Grete Dimmock, the Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "larkfield",
+      "text": "THE LONG RUN: the Couriers' tube comes through this square on Marketday. Stand by the board and cheer it on, or carry it to the next town. Grete Dimmock, the Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "fenshore",
+      "text": "THE LONG RUN: the Couriers' tube comes through this square on Marketday. Stand by the board and cheer it on, or carry it to the next town. Grete Dimmock, the Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "southmeadow",
+      "text": "THE LONG RUN: the Couriers' tube comes through this square on Marketday. Stand by the board and cheer it on, or carry it to the next town. Grete Dimmock, the Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "saltwell",
+      "text": "THE LONG RUN: the Couriers' tube comes through this square on Marketday. Stand by the board and cheer it on, or carry it to the next town. Grete Dimmock, the Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "each",
+     "over": "list",
+     "list": "runners",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$each",
+        "text": "The Long Run is set for Marketday. Be in the Oakhaven square by six in the morning to take the tube, or wait at a square on the road to carry it on."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "gun",
+   "on": "hour",
+   "match": {
+    "detail": "6"
+   },
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "phase is",
+        "phase": "open"
+       },
+       {
+        "test": "phase is",
+        "phase": "open_howl"
+       }
+      ]
+     },
+     {
+      "test": "switch",
+      "var": "run_set",
+      "is": true
+     },
+     {
+      "test": "calendar is",
+      "what": "weekday",
+      "value": "Marketday"
+     }
+    ]
+   },
+   "note": "Six on Marketday morning: the tube leaves Oakhaven.",
+   "actions": [
+    {
+     "do": "start timer",
+     "var": "run_t"
+    },
+    {
+     "do": "set",
+     "var": "leg_at",
+     "value": 0
+    },
+    {
+     "do": "turn off",
+     "var": "wagon_in"
+    },
+    {
+     "do": "schedule",
+     "signal": "go",
+     "days": 0.002,
+     "scope": "campaign"
+    },
+    {
+     "do": "schedule",
+     "signal": "wagon",
+     "days": 1.5,
+     "scope": "campaign"
+    },
+    {
+     "do": "schedule",
+     "signal": "run_timeout",
+     "days": 2,
+     "scope": "campaign"
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_oakhaven",
+     "value": 2
+    },
+    {
+     "do": "enter",
+     "phase": "race"
+    }
+   ]
+  },
+  {
+   "id": "go",
+   "on": "story signal",
+   "signal": "go",
+   "if": {
+    "test": "phase is",
+    "phase": "race"
+   },
+   "note": "Every runner on the list standing in the Oakhaven square gets a tube.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "set",
+       "var": "legs",
+       "value": 0,
+       "of": "$each"
+      },
+      {
+       "do": "set",
+       "var": "at_sq",
+       "value": -1,
+       "of": "$each"
+      }
+     ]
+    },
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "wolf in region",
+          "region": "sq_oakhaven",
+          "who": "$each"
+         },
+         {
+          "test": "in list",
+          "list": "runners",
+          "value": {
+           "each": true
+          }
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$each",
+          "item": "document_tube",
+          "quantity": 1
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "quest.start",
+          "quest": "run",
+          "player": "$each"
+         }
+        },
+        {
+         "do": "set",
+         "var": "at_sq",
+         "value": 0,
+         "of": "$each"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "leg-ridgemere",
+   "on": "region entered",
+   "match": {
+    "target": "sq_ridgemere"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "phase is",
+    "phase": "race"
+   },
+   "note": "The tube carried into the Ridgemere square, by a wolf who stood in the last square after the tube reached it: the leg is run, and bandits may be waiting on the next road. A wolf who comes in after the tube is ready to carry it on.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 0
+       },
+       {
+        "test": "carries",
+        "item": "document_tube",
+        "op": ">=",
+        "value": 1
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "at_sq",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": 0
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.start",
+        "quest": "run",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "run",
+        "objective": "leg1",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "set",
+       "var": "leg_at",
+       "value": 1
+      },
+      {
+       "do": "set",
+       "var": "at_sq",
+       "value": 1,
+       "of": "$actor"
+      },
+      {
+       "do": "add",
+       "var": "legs",
+       "value": 1,
+       "of": "$actor"
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "wolf in region",
+          "region": "sq_ridgemere",
+          "who": "$each"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "at_sq",
+           "value": 1,
+           "of": "$each"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.tell",
+        "to": "world",
+        "text": "The Couriers' tube has left Oakhaven and reached Ridgemere."
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_ridgemere",
+       "value": 2
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": ">=",
+            "right": 1
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_threat"
+            },
+            "op": ">",
+            "right": 40
+           }
+          ]
+         },
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": "<",
+            "right": 1
+           },
+           {
+            "test": "chance",
+            "percent": 30
+           }
+          ]
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "bandits.call",
+          "player": "$actor",
+          "count": 2,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 1
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "at_sq",
+         "value": 1,
+         "of": "$actor"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "leg-frosthollow",
+   "on": "region entered",
+   "match": {
+    "target": "sq_frosthollow"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "phase is",
+    "phase": "race"
+   },
+   "note": "The tube carried into Frosthollow, by a wolf who stood in the last square after the tube reached it: the leg is run, and bandits may be waiting on the next road. A wolf who comes in after the tube is ready to carry it on.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 1
+       },
+       {
+        "test": "carries",
+        "item": "document_tube",
+        "op": ">=",
+        "value": 1
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "at_sq",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": 1
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.start",
+        "quest": "run",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "run",
+        "objective": "leg2",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "set",
+       "var": "leg_at",
+       "value": 2
+      },
+      {
+       "do": "set",
+       "var": "at_sq",
+       "value": 2,
+       "of": "$actor"
+      },
+      {
+       "do": "add",
+       "var": "legs",
+       "value": 1,
+       "of": "$actor"
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "wolf in region",
+          "region": "sq_frosthollow",
+          "who": "$each"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "at_sq",
+           "value": 2,
+           "of": "$each"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.tell",
+        "to": "world",
+        "text": "The Couriers' tube has reached Frosthollow."
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_frosthollow",
+       "value": 3
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": ">=",
+            "right": 1
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_threat"
+            },
+            "op": ">",
+            "right": 40
+           }
+          ]
+         },
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": "<",
+            "right": 1
+           },
+           {
+            "test": "chance",
+            "percent": 30
+           }
+          ]
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "bandits.call",
+          "player": "$actor",
+          "count": 2,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 2
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "at_sq",
+         "value": 2,
+         "of": "$actor"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "leg-coldwater",
+   "on": "region entered",
+   "match": {
+    "target": "sq_coldwater"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "phase is",
+    "phase": "race"
+   },
+   "note": "The tube carried into Coldwater, by a wolf who stood in the last square after the tube reached it: the leg is run, and bandits may be waiting on the next road. A wolf who comes in after the tube is ready to carry it on.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 2
+       },
+       {
+        "test": "carries",
+        "item": "document_tube",
+        "op": ">=",
+        "value": 1
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "at_sq",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": 2
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.start",
+        "quest": "run",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "run",
+        "objective": "leg3",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "set",
+       "var": "leg_at",
+       "value": 3
+      },
+      {
+       "do": "set",
+       "var": "at_sq",
+       "value": 3,
+       "of": "$actor"
+      },
+      {
+       "do": "add",
+       "var": "legs",
+       "value": 1,
+       "of": "$actor"
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "wolf in region",
+          "region": "sq_coldwater",
+          "who": "$each"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "at_sq",
+           "value": 3,
+           "of": "$each"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.tell",
+        "to": "world",
+        "text": "The Couriers' tube has reached Coldwater."
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_coldwater",
+       "value": 3
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": ">=",
+            "right": 1
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_threat"
+            },
+            "op": ">",
+            "right": 40
+           }
+          ]
+         },
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": "<",
+            "right": 1
+           },
+           {
+            "test": "chance",
+            "percent": 30
+           }
+          ]
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "bandits.call",
+          "player": "$actor",
+          "count": 2,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 3
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "at_sq",
+         "value": 3,
+         "of": "$actor"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "leg-larkfield",
+   "on": "region entered",
+   "match": {
+    "target": "sq_larkfield"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "phase is",
+    "phase": "race"
+   },
+   "note": "The tube carried into Larkfield, by a wolf who stood in the last square after the tube reached it: the leg is run, and bandits may be waiting on the next road. A wolf who comes in after the tube is ready to carry it on.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 3
+       },
+       {
+        "test": "carries",
+        "item": "document_tube",
+        "op": ">=",
+        "value": 1
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "at_sq",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": 3
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.start",
+        "quest": "run",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "run",
+        "objective": "leg4",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "set",
+       "var": "leg_at",
+       "value": 4
+      },
+      {
+       "do": "set",
+       "var": "at_sq",
+       "value": 4,
+       "of": "$actor"
+      },
+      {
+       "do": "add",
+       "var": "legs",
+       "value": 1,
+       "of": "$actor"
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "wolf in region",
+          "region": "sq_larkfield",
+          "who": "$each"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "at_sq",
+           "value": 4,
+           "of": "$each"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.tell",
+        "to": "world",
+        "text": "The Couriers' tube has reached Larkfield."
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_larkfield",
+       "value": 3
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": ">=",
+            "right": 1
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_threat"
+            },
+            "op": ">",
+            "right": 40
+           }
+          ]
+         },
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": "<",
+            "right": 1
+           },
+           {
+            "test": "chance",
+            "percent": 30
+           }
+          ]
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "bandits.call",
+          "player": "$actor",
+          "count": 2,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 4
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "at_sq",
+         "value": 4,
+         "of": "$actor"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "leg-mirebridge",
+   "on": "region entered",
+   "match": {
+    "target": "sq_mirebridge"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "phase is",
+    "phase": "race"
+   },
+   "note": "The tube carried into the Mirebridge crossroads, by a wolf who stood in the last square after the tube reached it: the leg is run, and bandits may be waiting on the next road. A wolf who comes in after the tube is ready to carry it on.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 4
+       },
+       {
+        "test": "carries",
+        "item": "document_tube",
+        "op": ">=",
+        "value": 1
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "at_sq",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": 4
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.start",
+        "quest": "run",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "run",
+        "objective": "leg5",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "set",
+       "var": "leg_at",
+       "value": 5
+      },
+      {
+       "do": "set",
+       "var": "at_sq",
+       "value": 5,
+       "of": "$actor"
+      },
+      {
+       "do": "add",
+       "var": "legs",
+       "value": 1,
+       "of": "$actor"
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "wolf in region",
+          "region": "sq_mirebridge",
+          "who": "$each"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "at_sq",
+           "value": 5,
+           "of": "$each"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.tell",
+        "to": "world",
+        "text": "The Couriers' tube has reached the Mirebridge crossroads."
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_mirebridge",
+       "value": 4
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": ">=",
+            "right": 1
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_threat"
+            },
+            "op": ">",
+            "right": 40
+           }
+          ]
+         },
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": "<",
+            "right": 1
+           },
+           {
+            "test": "chance",
+            "percent": 30
+           }
+          ]
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "bandits.call",
+          "player": "$actor",
+          "count": 2,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 5
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "at_sq",
+         "value": 5,
+         "of": "$actor"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "leg-fenshore",
+   "on": "region entered",
+   "match": {
+    "target": "sq_fenshore"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "phase is",
+    "phase": "race"
+   },
+   "note": "The tube carried into Fenshore, by a wolf who stood in the last square after the tube reached it: the leg is run, and bandits may be waiting on the next road. A wolf who comes in after the tube is ready to carry it on.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 5
+       },
+       {
+        "test": "carries",
+        "item": "document_tube",
+        "op": ">=",
+        "value": 1
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "at_sq",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": 5
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.start",
+        "quest": "run",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "run",
+        "objective": "leg6",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "set",
+       "var": "leg_at",
+       "value": 6
+      },
+      {
+       "do": "set",
+       "var": "at_sq",
+       "value": 6,
+       "of": "$actor"
+      },
+      {
+       "do": "add",
+       "var": "legs",
+       "value": 1,
+       "of": "$actor"
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "wolf in region",
+          "region": "sq_fenshore",
+          "who": "$each"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "at_sq",
+           "value": 6,
+           "of": "$each"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.tell",
+        "to": "world",
+        "text": "The Couriers' tube has reached Fenshore."
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_fenshore",
+       "value": 4
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": ">=",
+            "right": 1
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_threat"
+            },
+            "op": ">",
+            "right": 40
+           }
+          ]
+         },
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": "<",
+            "right": 1
+           },
+           {
+            "test": "chance",
+            "percent": 30
+           }
+          ]
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "bandits.call",
+          "player": "$actor",
+          "count": 2,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 6
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "at_sq",
+         "value": 6,
+         "of": "$actor"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "leg-southmeadow",
+   "on": "region entered",
+   "match": {
+    "target": "sq_southmeadow"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "phase is",
+    "phase": "race"
+   },
+   "note": "The tube carried into Southmeadow, by a wolf who stood in the last square after the tube reached it: the leg is run, and bandits may be waiting on the next road. A wolf who comes in after the tube is ready to carry it on.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 6
+       },
+       {
+        "test": "carries",
+        "item": "document_tube",
+        "op": ">=",
+        "value": 1
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "at_sq",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": 6
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.start",
+        "quest": "run",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "run",
+        "objective": "leg7",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "set",
+       "var": "leg_at",
+       "value": 7
+      },
+      {
+       "do": "set",
+       "var": "at_sq",
+       "value": 7,
+       "of": "$actor"
+      },
+      {
+       "do": "add",
+       "var": "legs",
+       "value": 1,
+       "of": "$actor"
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "wolf in region",
+          "region": "sq_southmeadow",
+          "who": "$each"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "at_sq",
+           "value": 7,
+           "of": "$each"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.tell",
+        "to": "world",
+        "text": "The Couriers' tube has reached Southmeadow."
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_southmeadow",
+       "value": 4
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": ">=",
+            "right": 1
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_threat"
+            },
+            "op": ">",
+            "right": 40
+           }
+          ]
+         },
+         {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": "<",
+            "right": 1
+           },
+           {
+            "test": "chance",
+            "percent": 30
+           }
+          ]
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "bandits.call",
+          "player": "$actor",
+          "count": 2,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 7
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "at_sq",
+         "value": 7,
+         "of": "$actor"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "leg-saltwell",
+   "on": "region entered",
+   "match": {
+    "target": "sq_saltwell"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "phase is",
+    "phase": "race"
+   },
+   "note": "The tube carried into Saltwell, by a wolf who stood in the last square after the tube reached it: the leg is run; the run is in. A wolf who comes in after the tube is ready to carry it on.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 7
+       },
+       {
+        "test": "carries",
+        "item": "document_tube",
+        "op": ">=",
+        "value": 1
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "at_sq",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": 7
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.start",
+        "quest": "run",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "run",
+        "objective": "leg8",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "set",
+       "var": "leg_at",
+       "value": 8
+      },
+      {
+       "do": "set",
+       "var": "at_sq",
+       "value": 8,
+       "of": "$actor"
+      },
+      {
+       "do": "add",
+       "var": "legs",
+       "value": 1,
+       "of": "$actor"
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "wolf in region",
+          "region": "sq_saltwell",
+          "who": "$each"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "at_sq",
+           "value": 8,
+           "of": "$each"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.tell",
+        "to": "world",
+        "text": "The Couriers' tube is in Saltwell, Sound to Waste."
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_saltwell",
+       "value": 4
+      },
+      {
+       "do": "schedule",
+       "signal": "finish",
+       "days": 0.002,
+       "scope": "campaign",
+       "owner": "player"
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "leg_at"
+        },
+        "op": "=",
+        "right": 8
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "at_sq",
+         "value": 8,
+         "of": "$actor"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "finish",
+   "on": "story signal",
+   "signal": "finish",
+   "audience": "participant",
+   "if": {
+    "test": "phase is",
+    "phase": "race"
+   },
+   "note": "Inside a game day the Couriers win; later, the wagons. One wolf who ran every leg has the Lone Run deed either way.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "legs",
+         "of": "$actor"
+        },
+        "op": ">=",
+        "right": 8
+       },
+       {
+        "test": "compare",
+        "left": {
+         "since": "run_t"
+        },
+        "op": "<=",
+        "right": 2
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "ran the Long Run alone, every leg of it"
+       }
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "since": "run_t"
+      },
+      "op": "<=",
+      "right": 1
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "since": "run_t"
+        },
+        "op": "<=",
+        "right": 0.5
+       },
+       "then": [
+        {
+         "do": "emit",
+         "signal": "band_half"
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "since": "run_t"
+          },
+          "op": "<=",
+          "right": 0.9
+         },
+         "then": [
+          {
+           "do": "emit",
+           "signal": "band_day"
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "emit",
+         "signal": "band_last"
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "emit",
+       "signal": "res_wagons"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "band-half",
+   "on": "story signal",
+   "signal": "band_half",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "ridgemere",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside half a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "oakhaven",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside half a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "frosthollow",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside half a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "coldwater",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside half a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "larkfield",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside half a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "fenshore",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside half a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "southmeadow",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside half a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "saltwell",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside half a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "set",
+     "var": "lq_post_time",
+     "value": "half"
+    },
+    {
+     "do": "emit",
+     "signal": "res_couriers"
+    }
+   ]
+  },
+  {
+   "id": "band-day",
+   "on": "story signal",
+   "signal": "band_day",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "ridgemere",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "oakhaven",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "frosthollow",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "coldwater",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "larkfield",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "fenshore",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "southmeadow",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "saltwell",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, inside a day. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "lq_post_time"
+      },
+      "op": "!=",
+      "right": "half"
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "lq_post_time",
+       "value": "day"
+      }
+     ]
+    },
+    {
+     "do": "emit",
+     "signal": "res_couriers"
+    }
+   ]
+  },
+  {
+   "id": "band-last",
+   "on": "story signal",
+   "signal": "band_last",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "ridgemere",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, by the last grain of the day's sand. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "oakhaven",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, by the last grain of the day's sand. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "frosthollow",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, by the last grain of the day's sand. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "coldwater",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, by the last grain of the day's sand. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "larkfield",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, by the last grain of the day's sand. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "fenshore",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, by the last grain of the day's sand. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "southmeadow",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, by the last grain of the day's sand. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "board.post",
+      "town": "saltwell",
+      "text": "THE LONG RUN: the Couriers' tube crossed the realm, Sound to Waste, by the last grain of the day's sand. The Office keeps its charter. Our thanks to every runner and every square. The Couriers' Office.",
+      "days": 7,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "lq_post_time"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "lq_post_time",
+       "value": "last"
+      }
+     ]
+    },
+    {
+     "do": "emit",
+     "signal": "res_couriers"
+    }
+   ]
+  },
+  {
+   "id": "res-couriers",
+   "on": "story signal",
+   "signal": "res_couriers",
+   "actions": [
+    {
+     "do": "set",
+     "var": "lq_post",
+     "value": "couriers"
+    },
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "legs",
+         "of": "$each"
+        },
+        "op": ">=",
+        "right": 1
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_ridgemere_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_ridgemere_day"
+            },
+            "op": "<=",
+            "right": 129
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "lq_coin",
+             "of": "$each"
+            },
+            "op": "<=",
+            "right": 29
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$each",
+            "coins": 6,
+            "purse": "town:ridgemere",
+            "reason": "the Couriers' Office pays its runners",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_ridgemere_day",
+           "value": 6
+          },
+          {
+           "do": "add",
+           "var": "lq_coin",
+           "value": 6,
+           "of": "$each"
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$each",
+            "item": "bread",
+            "quantity": 2
+           }
+          },
+          {
+           "do": "turn on",
+           "var": "lq_thin",
+           "of": "$each"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$each",
+            "text": "Coin is short in the city's treasury today, so you are paid in kind instead."
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$each",
+          "detail": "carried the Couriers' tube on the Long Run from the Sound to the Waste"
+         }
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "boots_given",
+          "is": false,
+          "of": "$each"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$each",
+            "item": "paw_boots",
+            "quantity": 1
+           }
+          },
+          {
+           "do": "turn on",
+           "var": "boots_given",
+           "of": "$each"
+          }
+         ]
+        },
+        {
+         "do": "add",
+         "var": "nh_realm",
+         "value": 8
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "answered",
+          "is": true,
+          "of": "$each"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "answer_again",
+            "player": "$each"
+           }
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "answer",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "enter",
+     "phase": "after_couriers"
+    }
+   ]
+  },
+  {
+   "id": "res-wagons",
+   "on": "story signal",
+   "signal": "res_wagons",
+   "if": {
+    "test": "phase is",
+    "phase": "race"
+   },
+   "actions": [
+    {
+     "do": "set",
+     "var": "lq_post",
+     "value": "wagons"
+    },
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "legs",
+         "of": "$each"
+        },
+        "op": ">=",
+        "right": 1
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_ridgemere_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_ridgemere_day"
+            },
+            "op": "<=",
+            "right": 129
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "lq_coin",
+             "of": "$each"
+            },
+            "op": "<=",
+            "right": 29
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$each",
+            "coins": 6,
+            "purse": "town:ridgemere",
+            "reason": "the Couriers' Office pays its runners",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_ridgemere_day",
+           "value": 6
+          },
+          {
+           "do": "add",
+           "var": "lq_coin",
+           "value": 6,
+           "of": "$each"
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$each",
+            "item": "bread",
+            "quantity": 2
+           }
+          },
+          {
+           "do": "turn on",
+           "var": "lq_thin",
+           "of": "$each"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$each",
+            "text": "Coin is short in the city's treasury today, so you are paid in kind instead."
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$each",
+          "detail": "carried the Couriers' tube on the Long Run from the Sound to the Waste"
+         }
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "boots_given",
+          "is": false,
+          "of": "$each"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$each",
+            "item": "paw_boots",
+            "quantity": 1
+           }
+          },
+          {
+           "do": "turn on",
+           "var": "boots_given",
+           "of": "$each"
+          }
+         ]
+        },
+        {
+         "do": "add",
+         "var": "nh_realm",
+         "value": 8
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "answered",
+          "is": true,
+          "of": "$each"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "answer_again",
+            "player": "$each"
+           }
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "answer",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "enter",
+     "phase": "after_wagons"
+    }
+   ]
+  },
+  {
+   "id": "wagon",
+   "on": "story signal",
+   "signal": "wagon",
+   "if": {
+    "test": "phase is",
+    "phase": "race"
+   },
+   "note": "The wagon's time is fixed: a game day and a half.",
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "wagon_in"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "story.tell",
+      "to": "world",
+      "text": "The Carters' Yard wagon has reached Saltwell."
+     }
+    }
+   ]
+  },
+  {
+   "id": "run-timeout",
+   "on": "story signal",
+   "signal": "run_timeout",
+   "if": {
+    "test": "phase is",
+    "phase": "race"
+   },
+   "actions": [
+    {
+     "do": "emit",
+     "signal": "res_wagons"
+    }
+   ]
+  },
+  {
+   "id": "trial-start",
+   "on": "quest started",
+   "match": {
+    "detail": "trial"
+   },
+   "audience": "participant",
+   "note": "Taken in the Couriers' Office itself: the tube is handed over there and then (from the board, the wolf collects it at the Office).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "wolf in place",
+      "place": "rm_the_hall_of_records"
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "trial",
+        "objective": "tube",
+        "player": "$actor"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "tube-taken",
+   "on": "objective completed",
+   "match": {
+    "detail": "trial",
+    "item": "tube"
+   },
+   "audience": "participant",
+   "note": "The sand-glass turns.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "item.give",
+      "player": "$actor",
+      "item": "document_tube",
+      "quantity": 1
+     }
+    },
+    {
+     "do": "start timer",
+     "var": "leg_t",
+     "of": "$actor"
+    },
+    {
+     "do": "turn on",
+     "var": "on_trial",
+     "of": "$actor"
+    },
+    {
+     "do": "turn off",
+     "var": "out_ok",
+     "of": "$actor"
+    }
+   ]
+  },
+  {
+   "id": "trial-out",
+   "on": "region entered",
+   "match": {
+    "target": "sq_oakhaven"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "on_trial",
+        "is": true,
+        "of": "$actor"
+       },
+       {
+        "test": "switch",
+        "var": "out_ok",
+        "is": false,
+        "of": "$actor"
+       },
+       {
+        "test": "carries",
+        "item": "document_tube",
+        "op": ">=",
+        "value": 1
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "since": "leg_t",
+         "of": "$actor"
+        },
+        "op": "<=",
+        "right": 0.125
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "trial",
+          "objective": "out",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "out_ok",
+         "of": "$actor"
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "quest.fail",
+          "quest": "trial",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Too slow to Oakhaven for the Office's sand-glass. Ask the courier for another try."
+         }
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "race"
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "leg_at"
+          },
+          "op": "=",
+          "right": 0
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "at_sq",
+         "value": 0,
+         "of": "$actor"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "note": "The trial leg's turn at Oakhaven; on run day, a runner who comes to the Oakhaven square before the tube has left may carry it."
+  },
+  {
+   "id": "trial-back",
+   "on": "enter place",
+   "match": {
+    "target": "rm_the_hall_of_records"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "on_trial",
+      "is": true,
+      "of": "$actor"
+     },
+     {
+      "test": "switch",
+      "var": "out_ok",
+      "is": true,
+      "of": "$actor"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "since": "leg_t",
+       "of": "$actor"
+      },
+      "op": "<=",
+      "right": 0.25
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "trial",
+        "objective": "back",
+        "player": "$actor"
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "trial",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Too slow back to the Couriers' Office. Ask the courier for another try."
+       }
+      }
+     ]
+    },
+    {
+     "do": "turn off",
+     "var": "on_trial",
+     "of": "$actor"
+    }
+   ]
+  },
+  {
+   "id": "trial-failed",
+   "on": "quest failed",
+   "match": {
+    "detail": "trial"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "on_trial",
+     "of": "$actor"
+    },
+    {
+     "do": "turn off",
+     "var": "out_ok",
+     "of": "$actor"
+    }
+   ]
+  },
+  {
+   "id": "trial-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "trial"
+   },
+   "audience": "participant",
+   "note": "On the Couriers' list; the first time, a harness and the deed.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "count": "runners"
+      },
+      "op": "=",
+      "right": 0
+     },
+     "then": [
+      {
+       "do": "start timer",
+       "var": "list_t"
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "in list",
+       "list": "runners",
+       "value": {
+        "field": "actor"
+       }
+      }
+     },
+     "then": [
+      {
+       "do": "list add",
+       "var": "runners",
+       "value": {
+        "field": "actor"
+       }
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "trial_paid",
+      "is": false,
+      "of": "$actor"
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "ran the Oakhaven leg for the Couriers' Office"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "courier_harness",
+        "quantity": 1
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.practice",
+        "player": "$actor",
+        "skill": "travel"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "trial_paid",
+       "of": "$actor"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "answer-start",
+   "on": "quest started",
+   "audience": "participant",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "compare",
+      "left": {
+       "field": "detail"
+      },
+      "op": "=",
+      "right": "answer"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "field": "detail"
+      },
+      "op": "=",
+      "right": "answer_again"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "add",
+     "var": "answering",
+     "value": 1
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rmx_florence_pennock",
+      "id": "lq_run_sheet",
+      "words": "I've come for the time-sheet.",
+      "reply": "Here it is, sealed. Every square's hour, as the tube came through. Straight to the Council's clerk with it, and the Bright One speed you.",
+      "once": false
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rmx_philippa_pitchstack",
+      "id": "lq_run_clerk",
+      "words": "Here is the Long Run's time-sheet.",
+      "reply": "#greet#. The timekeeper's seal, and every square's hour on it. The Council will have to read this one, whatever it would rather. Much obliged.",
+      "once": false
+     }
+    }
+   ]
+  },
+  {
+   "id": "answer-done",
+   "on": "quest completed",
+   "audience": "participant",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "compare",
+      "left": {
+       "field": "detail"
+      },
+      "op": "=",
+      "right": "answer"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "field": "detail"
+      },
+      "op": "=",
+      "right": "answer_again"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "field": "detail"
+      },
+      "op": "=",
+      "right": "answer"
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_ridgemere_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_ridgemere_day"
+          },
+          "op": "<=",
+          "right": 123
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "lq_coin",
+           "of": "$actor"
+          },
+          "op": "<=",
+          "right": 23
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 12,
+          "purse": "town:ridgemere",
+          "reason": "the Council pays for the Long Run's time-sheet",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_ridgemere_day",
+         "value": 12
+        },
+        {
+         "do": "add",
+         "var": "lq_coin",
+         "value": 12,
+         "of": "$actor"
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "lq_thin",
+         "of": "$actor"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Coin is short in the city's treasury today, so you are paid in kind instead."
+         }
+        }
+       ]
+      },
+      {
+       "do": "turn on",
+       "var": "answered",
+       "of": "$actor"
+      }
+     ]
+    },
+    {
+     "do": "subtract",
+     "var": "answering",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "answering",
+     "min": 0,
+     "max": 5000
+    }
+   ]
+  },
+  {
+   "id": "new-season",
+   "on": "season begins",
+   "note": "Every season the Office runs it again, for a fresh copy of the run and a better time.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "phase is",
+        "phase": "after_couriers"
+       },
+       {
+        "test": "phase is",
+        "phase": "after_wagons"
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "turn off",
+       "var": "run_set"
+      },
+      {
+       "do": "set",
+       "var": "leg_at",
+       "value": 0
+      },
+      {
+       "do": "start timer",
+       "var": "list_t"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "nh_stage"
+        },
+        "op": ">=",
+        "right": 4
+       },
+       "then": [
+        {
+         "do": "enter",
+         "phase": "open_howl"
+        }
+       ],
+       "else": [
+        {
+         "do": "enter",
+         "phase": "open"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "The Couriers' Office has bet its charter on the Long Run: one tube, paw to paw, from the Sound to the Waste in a day.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rmx_grete_dimmock",
+     "text": "Legs wanted! The Couriers' Office runs the Long Run as soon as we've runners. Ask me for a trial leg."
+    }
+   ],
+   "exits": [
+    {
+     "on": "dm signal",
+     "match": {
+      "detail": "howl"
+     },
+     "to": "open_howl"
+    }
+   ]
+  },
+  {
+   "id": "open_howl",
+   "journal": "The Couriers' Office wants runners for the Long Run, the same road the howl will take on the Moot night.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rmx_grete_dimmock",
+     "text": "Same road the howl will take on the Moot night, they say. Best learn it now. Ask me for a trial leg."
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "race",
+   "journal": "The Long Run is on: the Couriers' tube is on the road from Oakhaven to Saltwell.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rmx_grete_dimmock",
+     "text": "The tube's on the road! Get to a square and cheer it through, or carry it on if you've the legs."
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "after_couriers",
+   "journal": "The Couriers beat the wagons: Sound to Waste in a day, paw to paw.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rmx_grete_dimmock",
+     "text": "Sound to Waste in a day, paw to paw. Let the Council read that sheet and argue with it."
+    },
+    {
+     "kind": "npc.line",
+     "npc": "rmx_orm_carlisle",
+     "text": "Fair run. The first round at the Grey Gull is mine, and I'll pay it smiling."
+    },
+    {
+     "kind": "npc.line",
+     "npc": "rmx_hanne_ash",
+     "text": "We keep our places! I'll run every leg of it again next season, and gladly."
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "after_wagons",
+   "journal": "The Carters' Yard wagon reached Saltwell first. The wagons have the realm's post this season.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rmx_grete_dimmock",
+     "text": "The wagons have it this season. Next season, then, and faster."
+    },
+    {
+     "kind": "npc.line",
+     "npc": "rmx_orm_carlisle",
+     "text": "Wagons it is, this season. Run again next season and I'll lose my wager gladly."
+    },
+    {
+     "kind": "npc.line",
+     "npc": "rmx_hanne_ash",
+     "text": "Half of us let go, they say. Next season, then. I'll be on the list."
+    },
+    {
+     "kind": "board.post",
+     "town": "ridgemere",
+     "days": 14,
+     "ifRefused": "skip",
+     "text": "THE LONG RUN: the Carters' Yard wagon reached Saltwell before the tube this season. We run again next season. The Couriers' Office."
+    }
+   ],
+   "exits": []
+  }
+ ],
+ "quests": [
+  {
+   "id": "trial",
+   "title": "A Trial Leg",
+   "summary": "Run the Couriers' tube to the Oakhaven square and back to the Couriers' Office against the sand-glass.",
+   "giver": "rmx_grete_dimmock",
+   "board": "ridgemere",
+   "scope": "player",
+   "repeat": "weekly",
+   "join": {
+    "cap": 40
+   },
+   "offer": {
+    "ask": "Is the Couriers' Office hiring legs?",
+    "say": "#greet#, #address#. The Carters' Yard swears its wagons beat paws across the realm, and the Council's listening. So the Office has bet its charter on the Long Run: one tube, paw to paw, every square from the Sound to the Waste in a day. Run me a trial leg.",
+    "accept": "Time me.",
+    "decline": "My legs are tired.",
+    "handIn": "There and back. How did I do?",
+    "thanks": "#thanks#. Not bad at all. You're on my list. When we've runners enough we run it for real, on a Marketday at dawn, and the whole realm watches the squares."
+   },
+   "objectives": [
+    {
+     "id": "tube",
+     "label": "Collect the courier's tube at the Couriers' Office.",
+     "on": "enter place",
+     "match": {
+      "target": "rm_the_hall_of_records"
+     }
+    },
+    {
+     "id": "out",
+     "label": "Run it to the Oakhaven square inside three hours.",
+     "on": "story signal",
+     "signal": "trial_out",
+     "after": [
+      "tube"
+     ]
+    },
+    {
+     "id": "back",
+     "label": "And back to the Couriers' Office inside six.",
+     "on": "story signal",
+     "signal": "trial_back",
+     "after": [
+      "out"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "run",
+   "title": "The Long Run",
+   "summary": "Carry the Couriers' tube, paw to paw, through every square from the Sound to the Waste in a day.",
+   "scope": "story",
+   "contributors": 1,
+   "lifetime": "phase",
+   "phases": [
+    "race"
+   ],
+   "objectives": [
+    {
+     "id": "leg1",
+     "label": "Carry the tube from Oakhaven to the Ridgemere square.",
+     "on": "story signal",
+     "signal": "leg1"
+    },
+    {
+     "id": "leg2",
+     "label": "Carry the tube from the Ridgemere square to Frosthollow.",
+     "on": "story signal",
+     "signal": "leg2",
+     "after": [
+      "leg1"
+     ]
+    },
+    {
+     "id": "leg3",
+     "label": "Carry the tube from Frosthollow to Coldwater.",
+     "on": "story signal",
+     "signal": "leg3",
+     "after": [
+      "leg2"
+     ]
+    },
+    {
+     "id": "leg4",
+     "label": "Carry the tube from Coldwater to Larkfield.",
+     "on": "story signal",
+     "signal": "leg4",
+     "after": [
+      "leg3"
+     ]
+    },
+    {
+     "id": "leg5",
+     "label": "Carry the tube from Larkfield to the Mirebridge crossroads.",
+     "on": "story signal",
+     "signal": "leg5",
+     "after": [
+      "leg4"
+     ]
+    },
+    {
+     "id": "leg6",
+     "label": "Carry the tube from the Mirebridge crossroads to Fenshore.",
+     "on": "story signal",
+     "signal": "leg6",
+     "after": [
+      "leg5"
+     ]
+    },
+    {
+     "id": "leg7",
+     "label": "Carry the tube from Fenshore to Southmeadow.",
+     "on": "story signal",
+     "signal": "leg7",
+     "after": [
+      "leg6"
+     ]
+    },
+    {
+     "id": "leg8",
+     "label": "Carry the tube from Southmeadow to Saltwell.",
+     "on": "story signal",
+     "signal": "leg8",
+     "after": [
+      "leg7"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "answer",
+   "title": "The Council's Answer",
+   "summary": "Take the time-sheet from the timekeeper to the Council's clerk.",
+   "scope": "player",
+   "repeat": "once",
+   "objectives": [
+    {
+     "id": "sheet",
+     "label": "Take the time-sheet from the timekeeper at the Couriers' Office.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rmx_florence_pennock",
+      "detail": "lq_run_sheet"
+     }
+    },
+    {
+     "id": "council",
+     "label": "Carry it to the Council's clerk in the Administrative Wing.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rmx_philippa_pitchstack",
+      "detail": "lq_run_clerk"
+     },
+     "after": [
+      "sheet"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    }
+   ]
+  },
+  {
+   "id": "answer_again",
+   "title": "The Council's Answer, Again",
+   "summary": "Another season, another time-sheet: take it from the timekeeper to the Council's clerk.",
+   "scope": "player",
+   "repeat": "weekly",
+   "objectives": [
+    {
+     "id": "sheet",
+     "label": "Take the time-sheet from the timekeeper at the Couriers' Office.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rmx_florence_pennock",
+      "detail": "lq_run_sheet"
+     }
+    },
+    {
+     "id": "council",
+     "label": "Carry it to the Council's clerk in the Administrative Wing.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rmx_philippa_pitchstack",
+      "detail": "lq_run_clerk"
+     },
+     "after": [
+      "sheet"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    }
+   ]
+  }
+ ],
+ "tests": [
+  {
+   "name": "A lone runner after 14 days: the Couriers win inside half a day, and the Council is answered",
+   "cohort": [],
+   "seed": "lone",
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.05,
+     "detail": "Dawnday",
+     "item": "spring",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_grete_dimmock",
+     "detail": "trial"
+    },
+    {
+     "id": "e3",
+     "kind": "enter place",
+     "day": 0.101,
+     "actor": "wolf-ash",
+     "target": "rm_the_hall_of_records",
+     "cell": "rm_the_hall_of_records",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 0.2,
+     "actor": "wolf-ash",
+     "target": "sq_oakhaven",
+     "cell": "w_ridgemere_3_4",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e5",
+     "kind": "enter place",
+     "day": 0.30000000000000004,
+     "actor": "wolf-ash",
+     "target": "rm_the_hall_of_records",
+     "cell": "rm_the_hall_of_records",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.31,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_grete_dimmock",
+     "detail": "trial"
+    },
+    {
+     "id": "e7",
+     "kind": "day begins",
+     "day": 14.4,
+     "detail": "Marketday",
+     "item": "spring",
+     "quantity": 15
+    },
+    {
+     "id": "e8",
+     "kind": "hour",
+     "day": 14.5,
+     "detail": "6",
+     "quantity": 6,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        },
+        "cell": "w_ridgemere_3_4",
+        "x": 239,
+        "y": 191
+       }
+      },
+      "world": {
+       "weekday": "Marketday",
+       "hour": 6
+      }
+     }
+    },
+    {
+     "id": "e9",
+     "kind": "hour",
+     "day": 14.51,
+     "detail": "6",
+     "quantity": 6
+    },
+    {
+     "id": "e10",
+     "kind": "region entered",
+     "day": 14.56,
+     "actor": "wolf-ash",
+     "target": "sq_ridgemere",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 14.610000000000001,
+     "actor": "wolf-ash",
+     "target": "sq_frosthollow",
+     "cell": "w_ridgemere_9_3",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "region entered",
+     "day": 14.660000000000002,
+     "actor": "wolf-ash",
+     "target": "sq_coldwater",
+     "cell": "w_ridgemere_7_7",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e13",
+     "kind": "region entered",
+     "day": 14.710000000000003,
+     "actor": "wolf-ash",
+     "target": "sq_larkfield",
+     "cell": "w_ridgemere_6_9",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 14.760000000000003,
+     "actor": "wolf-ash",
+     "target": "sq_mirebridge",
+     "cell": "w_ridgemere_5_11",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e15",
+     "kind": "region entered",
+     "day": 14.810000000000004,
+     "actor": "wolf-ash",
+     "target": "sq_fenshore",
+     "cell": "w_ridgemere_3_13",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e16",
+     "kind": "region entered",
+     "day": 14.860000000000005,
+     "actor": "wolf-ash",
+     "target": "sq_southmeadow",
+     "cell": "w_ridgemere_8_13",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 14.910000000000005,
+     "actor": "wolf-ash",
+     "target": "sq_saltwell",
+     "cell": "w_ridgemere_12_11",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "hour",
+     "day": 14.920000000000005,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e19",
+     "kind": "quest accepted",
+     "day": 14.930000000000005,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "answer"
+    },
+    {
+     "id": "e20",
+     "kind": "dialogue choice",
+     "day": 14.940000000000005,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_florence_pennock",
+     "detail": "lq_run_sheet"
+    },
+    {
+     "id": "e21",
+     "kind": "dialogue choice",
+     "day": 14.950000000000005,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_philippa_pitchstack",
+     "detail": "lq_run_clerk"
+    },
+    {
+     "id": "e22",
+     "kind": "season begins",
+     "day": 15.960000000000004,
+     "detail": "summer"
+    }
+   ],
+   "expect": [
+    "open",
+    "race",
+    "after_couriers",
+    "open"
+   ],
+   "expectQuests": {
+    "trial": {
+     "wolf-ash": "done"
+    },
+    "run": {
+     "story": "done"
+    },
+    "answer": {
+     "wolf-ash": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_post": "couriers",
+     "lq_post_time": "half",
+     "coin_ridgemere_day": 18,
+     "nh_realm": 8,
+     "nh_voice_saltwell": 4,
+     "nh_voice_oakhaven": 2
+    },
+    "player": {
+     "wolf-ash": {
+      "legs": 8,
+      "lq_coin": 18,
+      "boots_given": true,
+      "answered": true,
+      "trial_paid": true
+     }
+    },
+    "story": {
+     "run_set": false,
+     "answering": 0
+    }
+   }
+  },
+  {
+   "name": "Three runners: the tube stops at Coldwater, the wagon comes in, and the wagons win",
+   "cohort": [],
+   "seed": "three",
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.05,
+     "detail": "Dawnday",
+     "item": "spring",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_grete_dimmock",
+     "detail": "trial"
+    },
+    {
+     "id": "e3",
+     "kind": "enter place",
+     "day": 0.101,
+     "actor": "wolf-ash",
+     "target": "rm_the_hall_of_records",
+     "cell": "rm_the_hall_of_records",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 0.2,
+     "actor": "wolf-ash",
+     "target": "sq_oakhaven",
+     "cell": "w_ridgemere_3_4",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e5",
+     "kind": "enter place",
+     "day": 0.30000000000000004,
+     "actor": "wolf-ash",
+     "target": "rm_the_hall_of_records",
+     "cell": "rm_the_hall_of_records",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.31,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_grete_dimmock",
+     "detail": "trial"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 0.4,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rmx_grete_dimmock",
+     "detail": "trial"
+    },
+    {
+     "id": "e8",
+     "kind": "enter place",
+     "day": 0.401,
+     "actor": "wolf-birch",
+     "target": "rm_the_hall_of_records",
+     "cell": "rm_the_hall_of_records",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e9",
+     "kind": "region entered",
+     "day": 0.5,
+     "actor": "wolf-birch",
+     "target": "sq_oakhaven",
+     "cell": "w_ridgemere_3_4",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e10",
+     "kind": "enter place",
+     "day": 0.6000000000000001,
+     "actor": "wolf-birch",
+     "target": "rm_the_hall_of_records",
+     "cell": "rm_the_hall_of_records",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e11",
+     "kind": "quest handed in",
+     "day": 0.61,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rmx_grete_dimmock",
+     "detail": "trial"
+    },
+    {
+     "id": "e12",
+     "kind": "quest accepted",
+     "day": 0.7,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rmx_grete_dimmock",
+     "detail": "trial"
+    },
+    {
+     "id": "e13",
+     "kind": "enter place",
+     "day": 0.701,
+     "actor": "wolf-cedar",
+     "target": "rm_the_hall_of_records",
+     "cell": "rm_the_hall_of_records",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 0.7999999999999999,
+     "actor": "wolf-cedar",
+     "target": "sq_oakhaven",
+     "cell": "w_ridgemere_3_4",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e15",
+     "kind": "enter place",
+     "day": 0.8999999999999999,
+     "actor": "wolf-cedar",
+     "target": "rm_the_hall_of_records",
+     "cell": "rm_the_hall_of_records",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e16",
+     "kind": "quest handed in",
+     "day": 0.9099999999999999,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rmx_grete_dimmock",
+     "detail": "trial"
+    },
+    {
+     "id": "e17",
+     "kind": "day begins",
+     "day": 1.1,
+     "detail": "Hearthday",
+     "item": "spring",
+     "quantity": 2
+    },
+    {
+     "id": "e18",
+     "kind": "hour",
+     "day": 5.25,
+     "detail": "6",
+     "quantity": 6,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        },
+        "cell": "w_ridgemere_3_4",
+        "x": 239,
+        "y": 191
+       },
+       "wolf-birch": {
+        "carries": {
+         "document_tube": 1
+        },
+        "cell": "w_ridgemere_3_4",
+        "x": 239,
+        "y": 191
+       },
+       "wolf-cedar": {
+        "carries": {
+         "document_tube": 1
+        },
+        "cell": "w_ridgemere_3_4",
+        "x": 239,
+        "y": 191
+       }
+      },
+      "world": {
+       "weekday": "Marketday",
+       "hour": 6
+      }
+     }
+    },
+    {
+     "id": "e19",
+     "kind": "hour",
+     "day": 5.26,
+     "detail": "6",
+     "quantity": 6
+    },
+    {
+     "id": "e20",
+     "kind": "region entered",
+     "day": 5.31,
+     "actor": "wolf-ash",
+     "target": "sq_ridgemere",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e20b",
+     "kind": "region entered",
+     "day": 5.32,
+     "actor": "wolf-birch",
+     "target": "sq_ridgemere",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run"
+    },
+    {
+     "id": "e21",
+     "kind": "region entered",
+     "day": 5.359999999999999,
+     "actor": "wolf-birch",
+     "target": "sq_frosthollow",
+     "cell": "w_ridgemere_9_3",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e21b",
+     "kind": "region entered",
+     "day": 5.37,
+     "actor": "wolf-cedar",
+     "target": "sq_frosthollow",
+     "cell": "w_ridgemere_9_3",
+     "detail": "run"
+    },
+    {
+     "id": "e22",
+     "kind": "region entered",
+     "day": 5.409999999999999,
+     "actor": "wolf-cedar",
+     "target": "sq_coldwater",
+     "cell": "w_ridgemere_7_7",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e23",
+     "kind": "hour",
+     "day": 5.419999999999999,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e24",
+     "kind": "hour",
+     "day": 7.3,
+     "detail": "7",
+     "quantity": 7
+    },
+    {
+     "id": "e25",
+     "kind": "hour",
+     "day": 7.35,
+     "detail": "8",
+     "quantity": 8
+    }
+   ],
+   "expect": [
+    "open",
+    "race",
+    "after_wagons"
+   ],
+   "expectQuests": {
+    "answer": {
+     "wolf-ash": "offered",
+     "wolf-birch": "offered",
+     "wolf-cedar": "offered"
+    },
+    "run": {
+     "story": "expired"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_post": "wagons",
+     "lq_post_time": "",
+     "nh_realm": 24
+    },
+    "story": {
+     "wagon_in": true,
+     "leg_at": 3
+    },
+    "player": {
+     "wolf-birch": {
+      "legs": 1
+     }
+    }
+   }
+  },
+  {
+   "name": "The DM calls the howl; a slow trial run again; a lone run too slow for the Couriers",
+   "cohort": [],
+   "seed": "slow",
+   "events": [
+    {
+     "id": "e1",
+     "kind": "dm signal",
+     "day": 0.05,
+     "detail": "howl"
+    },
+    {
+     "id": "e2",
+     "kind": "day begins",
+     "day": 0.06,
+     "detail": "Dawnday",
+     "item": "spring",
+     "quantity": 1
+    },
+    {
+     "id": "e3",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-dunn",
+     "target": "run",
+     "item": "rmx_grete_dimmock",
+     "detail": "trial"
+    },
+    {
+     "id": "e4",
+     "kind": "enter place",
+     "day": 0.101,
+     "actor": "wolf-dunn",
+     "target": "rm_the_hall_of_records",
+     "cell": "rm_the_hall_of_records",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 0.30000000000000004,
+     "actor": "wolf-dunn",
+     "target": "sq_oakhaven",
+     "cell": "w_ridgemere_3_4",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-dunn": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e6",
+     "kind": "quest accepted",
+     "day": 0.4,
+     "actor": "wolf-dunn",
+     "target": "run",
+     "item": "rmx_grete_dimmock",
+     "detail": "trial"
+    },
+    {
+     "id": "e7",
+     "kind": "enter place",
+     "day": 0.401,
+     "actor": "wolf-dunn",
+     "target": "rm_the_hall_of_records",
+     "cell": "rm_the_hall_of_records",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e8",
+     "kind": "region entered",
+     "day": 0.5,
+     "actor": "wolf-dunn",
+     "target": "sq_oakhaven",
+     "cell": "w_ridgemere_3_4",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-dunn": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e9",
+     "kind": "enter place",
+     "day": 0.6000000000000001,
+     "actor": "wolf-dunn",
+     "target": "rm_the_hall_of_records",
+     "cell": "rm_the_hall_of_records",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e10",
+     "kind": "quest handed in",
+     "day": 0.61,
+     "actor": "wolf-dunn",
+     "target": "run",
+     "item": "rmx_grete_dimmock",
+     "detail": "trial"
+    },
+    {
+     "id": "e11",
+     "kind": "day begins",
+     "day": 14.7,
+     "detail": "Marketday",
+     "item": "spring",
+     "quantity": 15
+    },
+    {
+     "id": "e12",
+     "kind": "hour",
+     "day": 14.8,
+     "detail": "6",
+     "quantity": 6,
+     "facts": {
+      "wolves": {
+       "wolf-dunn": {
+        "carries": {
+         "document_tube": 1
+        },
+        "cell": "w_ridgemere_3_4",
+        "x": 239,
+        "y": 191
+       }
+      },
+      "world": {
+       "weekday": "Marketday",
+       "hour": 6
+      }
+     }
+    },
+    {
+     "id": "e13",
+     "kind": "hour",
+     "day": 14.81,
+     "detail": "6",
+     "quantity": 6
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 14.96,
+     "actor": "wolf-dunn",
+     "target": "sq_ridgemere",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-dunn": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e15",
+     "kind": "region entered",
+     "day": 15.110000000000001,
+     "actor": "wolf-dunn",
+     "target": "sq_frosthollow",
+     "cell": "w_ridgemere_9_3",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-dunn": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e16",
+     "kind": "region entered",
+     "day": 15.260000000000002,
+     "actor": "wolf-dunn",
+     "target": "sq_coldwater",
+     "cell": "w_ridgemere_7_7",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-dunn": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 15.410000000000002,
+     "actor": "wolf-dunn",
+     "target": "sq_larkfield",
+     "cell": "w_ridgemere_6_9",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-dunn": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "region entered",
+     "day": 15.560000000000002,
+     "actor": "wolf-dunn",
+     "target": "sq_mirebridge",
+     "cell": "w_ridgemere_5_11",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-dunn": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e19",
+     "kind": "region entered",
+     "day": 15.710000000000003,
+     "actor": "wolf-dunn",
+     "target": "sq_fenshore",
+     "cell": "w_ridgemere_3_13",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-dunn": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e20",
+     "kind": "region entered",
+     "day": 15.860000000000003,
+     "actor": "wolf-dunn",
+     "target": "sq_southmeadow",
+     "cell": "w_ridgemere_8_13",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-dunn": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e21",
+     "kind": "region entered",
+     "day": 16.01,
+     "actor": "wolf-dunn",
+     "target": "sq_saltwell",
+     "cell": "w_ridgemere_12_11",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-dunn": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e22",
+     "kind": "hour",
+     "day": 16.020000000000003,
+     "detail": "12",
+     "quantity": 12
+    }
+   ],
+   "expect": [
+    "open",
+    "open_howl",
+    "open",
+    "race",
+    "after_wagons"
+   ],
+   "expectQuests": {
+    "trial": {
+     "wolf-dunn": "done"
+    },
+    "answer": {
+     "wolf-dunn": "offered"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_post": "wagons"
+    },
+    "player": {
+     "wolf-dunn": {
+      "legs": 8
+     }
+    }
+   }
+  },
+  {
+   "name": "A lone runner makes it inside a day",
+   "cohort": [],
+   "seed": "day",
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.05,
+     "detail": "Dawnday",
+     "item": "spring",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_grete_dimmock",
+     "detail": "trial"
+    },
+    {
+     "id": "e3",
+     "kind": "enter place",
+     "day": 0.101,
+     "actor": "wolf-ash",
+     "target": "rm_the_hall_of_records",
+     "cell": "rm_the_hall_of_records",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 0.2,
+     "actor": "wolf-ash",
+     "target": "sq_oakhaven",
+     "cell": "w_ridgemere_3_4",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e5",
+     "kind": "enter place",
+     "day": 0.30000000000000004,
+     "actor": "wolf-ash",
+     "target": "rm_the_hall_of_records",
+     "cell": "rm_the_hall_of_records",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.31,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_grete_dimmock",
+     "detail": "trial"
+    },
+    {
+     "id": "e7",
+     "kind": "day begins",
+     "day": 14.4,
+     "detail": "Marketday",
+     "item": "spring",
+     "quantity": 15
+    },
+    {
+     "id": "e8",
+     "kind": "hour",
+     "day": 14.5,
+     "detail": "6",
+     "quantity": 6,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        },
+        "cell": "w_ridgemere_3_4",
+        "x": 239,
+        "y": 191
+       }
+      },
+      "world": {
+       "weekday": "Marketday",
+       "hour": 6
+      }
+     }
+    },
+    {
+     "id": "e9",
+     "kind": "hour",
+     "day": 14.51,
+     "detail": "6",
+     "quantity": 6
+    },
+    {
+     "id": "e10",
+     "kind": "region entered",
+     "day": 14.61,
+     "actor": "wolf-ash",
+     "target": "sq_ridgemere",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 14.709999999999999,
+     "actor": "wolf-ash",
+     "target": "sq_frosthollow",
+     "cell": "w_ridgemere_9_3",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "region entered",
+     "day": 14.809999999999999,
+     "actor": "wolf-ash",
+     "target": "sq_coldwater",
+     "cell": "w_ridgemere_7_7",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e13",
+     "kind": "region entered",
+     "day": 14.909999999999998,
+     "actor": "wolf-ash",
+     "target": "sq_larkfield",
+     "cell": "w_ridgemere_6_9",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 15.009999999999998,
+     "actor": "wolf-ash",
+     "target": "sq_mirebridge",
+     "cell": "w_ridgemere_5_11",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e15",
+     "kind": "region entered",
+     "day": 15.109999999999998,
+     "actor": "wolf-ash",
+     "target": "sq_fenshore",
+     "cell": "w_ridgemere_3_13",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e16",
+     "kind": "region entered",
+     "day": 15.209999999999997,
+     "actor": "wolf-ash",
+     "target": "sq_southmeadow",
+     "cell": "w_ridgemere_8_13",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 15.309999999999997,
+     "actor": "wolf-ash",
+     "target": "sq_saltwell",
+     "cell": "w_ridgemere_12_11",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "hour",
+     "day": 15.319999999999997,
+     "detail": "12",
+     "quantity": 12
+    }
+   ],
+   "expect": [
+    "open",
+    "race",
+    "after_couriers"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_post": "couriers",
+     "lq_post_time": "day"
+    }
+   }
+  },
+  {
+   "name": "A lone runner makes it by the last grain of the day",
+   "cohort": [],
+   "seed": "last",
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.05,
+     "detail": "Dawnday",
+     "item": "spring",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_grete_dimmock",
+     "detail": "trial"
+    },
+    {
+     "id": "e3",
+     "kind": "enter place",
+     "day": 0.101,
+     "actor": "wolf-ash",
+     "target": "rm_the_hall_of_records",
+     "cell": "rm_the_hall_of_records",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 0.2,
+     "actor": "wolf-ash",
+     "target": "sq_oakhaven",
+     "cell": "w_ridgemere_3_4",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e5",
+     "kind": "enter place",
+     "day": 0.30000000000000004,
+     "actor": "wolf-ash",
+     "target": "rm_the_hall_of_records",
+     "cell": "rm_the_hall_of_records",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.31,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_grete_dimmock",
+     "detail": "trial"
+    },
+    {
+     "id": "e7",
+     "kind": "day begins",
+     "day": 14.4,
+     "detail": "Marketday",
+     "item": "spring",
+     "quantity": 15
+    },
+    {
+     "id": "e8",
+     "kind": "hour",
+     "day": 14.5,
+     "detail": "6",
+     "quantity": 6,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        },
+        "cell": "w_ridgemere_3_4",
+        "x": 239,
+        "y": 191
+       }
+      },
+      "world": {
+       "weekday": "Marketday",
+       "hour": 6
+      }
+     }
+    },
+    {
+     "id": "e9",
+     "kind": "hour",
+     "day": 14.51,
+     "detail": "6",
+     "quantity": 6
+    },
+    {
+     "id": "e10",
+     "kind": "region entered",
+     "day": 14.629999999999999,
+     "actor": "wolf-ash",
+     "target": "sq_ridgemere",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 14.749999999999998,
+     "actor": "wolf-ash",
+     "target": "sq_frosthollow",
+     "cell": "w_ridgemere_9_3",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "region entered",
+     "day": 14.869999999999997,
+     "actor": "wolf-ash",
+     "target": "sq_coldwater",
+     "cell": "w_ridgemere_7_7",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e13",
+     "kind": "region entered",
+     "day": 14.989999999999997,
+     "actor": "wolf-ash",
+     "target": "sq_larkfield",
+     "cell": "w_ridgemere_6_9",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 15.109999999999996,
+     "actor": "wolf-ash",
+     "target": "sq_mirebridge",
+     "cell": "w_ridgemere_5_11",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e15",
+     "kind": "region entered",
+     "day": 15.229999999999995,
+     "actor": "wolf-ash",
+     "target": "sq_fenshore",
+     "cell": "w_ridgemere_3_13",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e16",
+     "kind": "region entered",
+     "day": 15.349999999999994,
+     "actor": "wolf-ash",
+     "target": "sq_southmeadow",
+     "cell": "w_ridgemere_8_13",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 15.469999999999994,
+     "actor": "wolf-ash",
+     "target": "sq_saltwell",
+     "cell": "w_ridgemere_12_11",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "hour",
+     "day": 15.479999999999993,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e19",
+     "kind": "quest accepted",
+     "day": 15.489999999999993,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "answer"
+    },
+    {
+     "id": "e20",
+     "kind": "dialogue choice",
+     "day": 15.499999999999993,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_florence_pennock",
+     "detail": "lq_run_sheet"
+    },
+    {
+     "id": "e21",
+     "kind": "dialogue choice",
+     "day": 15.509999999999993,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_philippa_pitchstack",
+     "detail": "lq_run_clerk"
+    },
+    {
+     "id": "e22",
+     "kind": "season begins",
+     "day": 16.519999999999992,
+     "detail": "summer"
+    },
+    {
+     "id": "e23",
+     "kind": "day begins",
+     "day": 31.019999999999992,
+     "detail": "Marketday",
+     "item": "summer",
+     "quantity": 15
+    },
+    {
+     "id": "e24",
+     "kind": "hour",
+     "day": 31.21999999999999,
+     "detail": "6",
+     "quantity": 6,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        },
+        "cell": "w_ridgemere_3_4",
+        "x": 239,
+        "y": 191
+       }
+      },
+      "world": {
+       "weekday": "Marketday",
+       "hour": 6
+      }
+     }
+    },
+    {
+     "id": "e25",
+     "kind": "hour",
+     "day": 31.229999999999993,
+     "detail": "6",
+     "quantity": 6
+    },
+    {
+     "id": "e26",
+     "kind": "region entered",
+     "day": 31.279999999999994,
+     "actor": "wolf-ash",
+     "target": "sq_ridgemere",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e27",
+     "kind": "region entered",
+     "day": 31.329999999999995,
+     "actor": "wolf-ash",
+     "target": "sq_frosthollow",
+     "cell": "w_ridgemere_9_3",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e28",
+     "kind": "region entered",
+     "day": 31.379999999999995,
+     "actor": "wolf-ash",
+     "target": "sq_coldwater",
+     "cell": "w_ridgemere_7_7",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e29",
+     "kind": "region entered",
+     "day": 31.429999999999996,
+     "actor": "wolf-ash",
+     "target": "sq_larkfield",
+     "cell": "w_ridgemere_6_9",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e30",
+     "kind": "region entered",
+     "day": 31.479999999999997,
+     "actor": "wolf-ash",
+     "target": "sq_mirebridge",
+     "cell": "w_ridgemere_5_11",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e31",
+     "kind": "region entered",
+     "day": 31.529999999999998,
+     "actor": "wolf-ash",
+     "target": "sq_fenshore",
+     "cell": "w_ridgemere_3_13",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e32",
+     "kind": "region entered",
+     "day": 31.58,
+     "actor": "wolf-ash",
+     "target": "sq_southmeadow",
+     "cell": "w_ridgemere_8_13",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e33",
+     "kind": "region entered",
+     "day": 31.63,
+     "actor": "wolf-ash",
+     "target": "sq_saltwell",
+     "cell": "w_ridgemere_12_11",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "carries": {
+         "document_tube": 1
+        }
+       }
+      }
+     }
+    },
+    {
+     "id": "e34",
+     "kind": "hour",
+     "day": 31.64,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e35",
+     "kind": "quest accepted",
+     "day": 31.65,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "answer_again"
+    },
+    {
+     "id": "e36",
+     "kind": "dialogue choice",
+     "day": 31.66,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_florence_pennock",
+     "detail": "lq_run_sheet"
+    },
+    {
+     "id": "e37",
+     "kind": "dialogue choice",
+     "day": 31.669999999999998,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_philippa_pitchstack",
+     "detail": "lq_run_clerk"
+    }
+   ],
+   "expect": [
+    "open",
+    "race",
+    "after_couriers",
+    "open",
+    "race",
+    "after_couriers"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_post": "couriers",
+     "lq_post_time": "half",
+     "coin_ridgemere_day": 24
+    },
+    "player": {
+     "wolf-ash": {
+      "lq_coin": 24
+     }
+    }
+   },
+   "expectQuests": {
+    "answer": {
+     "wolf-ash": "done"
+    },
+    "answer_again": {
+     "wolf-ash": "done"
+    }
+   }
+  }
+ ]
+}
