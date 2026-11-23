@@ -2589,6 +2589,7 @@ class Game
         // and amounts, the factions and numbers the stories' triggers name).
         std::set<std::string> near;
         std::set<std::pair<std::string, std::int64_t>> purses, standing;
+        std::set<std::string> purseFacts;           // Doc 86, M2: the purses whose pennies the facts report.
         bool weatherWhereWolves = false;
         bool facts() const { return !sections.empty(); }
     };
@@ -2599,7 +2600,10 @@ class Game
     double storyWatchAccumulator_ = 0, storyWeatherAccumulator_ = 0;
     int storyHour_ = -1;
     std::int64_t storyDay_ = -1;
-    std::string storyPeriod_, storySeason_;
+    std::string storyPeriod_, storySeason_, storyMoon_;   // (Doc 86, J4: the moon's quarter last seen.)
+  public:
+    static const char* moonQuarter(double phase);         // new, waxing, full or waning (Doc 86, J4).
+  private:
     std::map<std::string, std::string> storyWeather_;             // Place -> the weather last seen there.
     // Doc 85, Phase 10 (RatwGameStoryFacts.cpp, storyWorldWatch): the events Phase 8 left, each looked for only while a live
     // story listens. What each was last seen as; a first look makes no event.
@@ -2612,6 +2616,12 @@ class Game
     std::map<std::string, std::string> storyMantles_;             // Resident -> the mantle they wore.
     bool storyRelationsSeen_ = false, storyMantlesSeen_ = false;
     std::string storyPurseAccount(const std::string& purse) const;   // A reward's purse (town:<id>...) as the account it is.
+  public:
+    // Doc 86, C1b: a story's words with the name tokens its engines put in ({@w:<wolf>}, {@r:<resident>}, {@p:<place>},
+    // {@i:<item>}, {@f:<faction>}) made names, cut at `limit` characters on a word boundary (RatwGameStorylines.cpp).
+    std::string fillStoryNames(const std::string& text, std::size_t limit) const;
+  private:
+    json::Value fillQuestWords(const json::Value& v, const char* key, std::size_t limit) const;
     std::map<std::string, std::map<std::string, std::set<std::string>>> storyOccupants_;   // Run -> region -> its wolves inside.
     void storyRegionCrossed(const std::string& run, const std::string& region, const std::string& wolf, bool inside,
                             const std::string& cell, int x, int y);

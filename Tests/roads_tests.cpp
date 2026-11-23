@@ -1017,6 +1017,72 @@ void lettersCapped()
         expect(n <= 1, "staged, a cap of 1: at most one letter posted on day " + std::to_string(day) + ": " + std::to_string(n));
 }
 
+void namedStoryCamps()
+{
+    // Doc 86, L2: a story names its camp (camp: "nh_alder_mere"): the camp is camp_story_nh_alder_mere, a second spawn of
+    // that name while it stands joins it, and once it is cleared the name makes a new camp of that id; camp cleared and
+    // bandit falls carry it.
+    auto f = strip();
+    auto w = load(f);
+    w.addPlayer("player-ada", "Ada");
+    w.tick(.6);
+    w.roads().caravans.clear();
+    w.roads().camps.clear();
+    auto* ada = w.entity("player-ada");
+    ada->cellId = id(5);
+    ada->position = {8.5, 8.5};
+    run(w, 1);
+    const std::string camp = "camp_story_nh_alder_mere";
+    expect(!w.storyBandits(id(4), 2, 2, 12, 12, 2, "Alder Mere").ok, "a name of small letters, digits and _ only");
+    auto first = w.storyBandits(id(4), 2, 2, 12, 12, 2, "nh_alder_mere");
+    expect(first.ok && first.targetId == camp, "the named id: " + first.targetId);
+    expect(w.roads().camps.size() == 1 && w.roads().camps[0].strength == 6, "a camp of two");
+    auto second = w.storyBandits(id(4), 2, 2, 12, 12, 1, "nh_alder_mere");
+    expect(second.ok && second.targetId == camp && w.roads().camps.size() == 1 && w.roads().camps[0].strength == 9,
+           "a second spawn of the name while it stands joins it: " + second.message);
+    auto other = w.storyBandits(id(4), 2, 2, 12, 12, 1);
+    expect(other.ok && other.targetId != camp && other.targetId.rfind("camp_story_", 0) == 0 && w.roads().camps.size() == 2,
+           "without a name, a camp numbered as before: " + other.targetId);
+    w.roads().camps.erase(w.roads().camps.begin() + 1);
+    // Bandits called after a wolf under the same name join the same camp, which comes to stand by her (none of it out yet).
+    w.roads().camps[0].strength = 1.5;
+    auto called = w.callBandits("player-ada", 1, "nh_alder_mere");
+    expect(called.ok && called.targetId == camp && w.roads().camps.size() == 1 && w.roads().camps[0].cell == id(5),
+           "bandits called by the name join it, near Ada: " + called.message);
+    run(w, 2);
+    const auto near = bandits(w, camp);
+    expect(!near.empty(), "they come out");
+    // She clears it.
+    ada->strength = 90;
+    ada->dexterity = 90;
+    const auto* leader = w.entity("road:" + camp + ":0");
+    expect(leader, "the camp's leader is on the road");
+    ada->position = {std::max(.6, leader->position.x - 1), leader->position.y};
+    expect(w.attack("player-ada", leader->id).ok, "a fight begins");
+    bool cleared = false, fell = false, clearedEvent = false;
+    for (int t = 0; t < 6000 && !cleared; ++t)
+    {
+        auto* me = w.entity("player-ada");
+        me->stamina = std::max(me->stamina, 60.0);
+        me->hurt = 0;
+        test::playTurn(w, "player-ada");
+        w.tick(.25);
+        for (const auto& e : w.takeEvents())
+        {
+            fell |= e.kind == "bandit falls" && e.target == camp;
+            clearedEvent |= e.kind == "camp cleared" && e.target == camp && e.actor == "player-ada";
+        }
+        cleared = !w.roads().camps[0].active;
+    }
+    expect(cleared && clearedEvent, "the camp is broken: camp cleared carries its id");
+    expect(fell, "and bandit falls carries it");
+    // Cleared, the name is used again: a new camp of that id.
+    auto again = w.storyBandits(id(4), 2, 2, 12, 12, 3, "nh_alder_mere");
+    expect(again.ok && again.targetId == camp && w.roads().camps.size() == 1 && w.roads().camps[0].active &&
+               w.roads().camps[0].strength == 9 && w.roads().camps[0].cell == id(4),
+           "a cleared name is reused: " + again.message);
+}
+
 int main()
 {
     try
@@ -1033,6 +1099,7 @@ int main()
         aFight();
         beatenAndRobbed();
         banditsCalled();
+        namedStoryCamps();
         residentsTakeWork();
         shopsSellTheirGoods();
         travelKeepsToTheRoads();

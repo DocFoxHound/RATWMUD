@@ -181,5 +181,73 @@ class ParticipationProblems(unittest.TestCase):
                       'percent': 10}, '"hauls" of each wolf')
 
 
+class ValuesProblems(unittest.TestCase):
+    """Doc 86, Phase 2: what the Problems list says of values in effects, fills, filters and camps (no database)."""
+
+    def test_a_wolf_variable_in_a_resident_parameter(self):
+        import test_story_v2 as v2
+        p = v2._values_program([{'do': 'effect', 'effect': {'kind': 'npc.walk', 'npc': {'var': 'finder'}, 'cell': 'grey', 'x': 3, 'y': 4,
+                                                             'pace': 'walk', 'cue': 'c'}}])
+        found = structural(rules.problems(p))
+        self.assertTrue(found and found[0]['path'] == 'phases[0].triggers[0].actions[0]' and 'needs a resident' in found[0]['text'], found)
+
+    def test_the_sample_has_none(self):
+        self.assertEqual([x for x in rules.problems(story_v2_samples.VALUES) if x['level'] == 'error'], [])
+
+
+try:
+    import test_story_talk as talk
+    from test_world_db import database_available
+except ImportError:   # (pragma: no cover)
+    talk, database_available = None, lambda: False
+
+
+@unittest.skipUnless(talk is not None and database_available(), 'local PostgreSQL required')
+class ValuesInTheWorld(unittest.TestCase):
+    """Doc 86, Phase 2's approval checks in a throwaway world (the console's fixture): an objective's cells, a named story
+    camp, a purse a value reads, and values in effects passed to the game to refuse."""
+    setUpClass = classmethod(talk.console.ConsoleReads.setUpClass.__func__) if talk else None
+    tearDownClass = classmethod(talk.console.ConsoleReads.tearDownClass.__func__) if talk else None
+    fact = talk.console.ConsoleReads.fact if talk else None
+
+    def setUp(self):
+        talk.InTheWorld.setUp(self)
+
+    def refs(self, p, chapters=False):
+        return runner.references(self.conn, self.world, rules.validate(p), chapters=chapters)
+
+    def quest(self, objective, **more):
+        p = talk.program()
+        p['quests'] = [{'id': 'q', 'title': 'Q', 'objectives': [{'id': 'a', 'label': 'Do it.', **objective}], **more}]
+        return p
+
+    def test_an_unknown_cell_in_where_is_refused(self):
+        self.refs(self.quest({'on': 'hunted', 'where': {'cells': ['gate']}}))
+        self.assertRaisesRegex(ValueError, 'Unknown cell in this world for "where": moon', self.refs,
+                               self.quest({'on': 'hunted', 'where': {'cells': ['gate', 'moon']}}))
+        found = runner.reference_problems(self.conn, self.world, self.quest({'on': 'hunted', 'where': {'cells': ['moon']}}))
+        self.assertTrue(any('"where": moon' in x['text'] for x in found), found)
+
+    def test_a_named_camp_and_its_objective(self):
+        p = self.quest({'on': 'camp cleared', 'match': {'target': 'camp_story_sq_gate'}})
+        self.assertRaisesRegex(ValueError, 'is spawned by this story', self.refs, p)
+        p['prefix'] = 'sq'
+        p['phases'][0]['triggers'][0]['actions'] = [talk.fx('bandits.call', player='$actor', count=2, camp='sq_gate')]
+        self.refs(p)
+
+    def test_a_purse_a_value_reads(self):
+        grant = lambda purse: talk.fx('character.grant', player='$actor', purse='town:greyfen', reason='r',
+                                      coins={'min': [12, {'div': [{'purse': purse}, 20]}]})
+        self.refs(talk.program([grant('till:job:rm111')]))
+        self.assertRaisesRegex(ValueError, 'No purse till:job:nobody', self.refs, talk.program([grant('till:job:nobody')]))
+        p = self.quest({'on': 'gift', 'goal': {'max': [2, {'div': [{'purse': 'town:atlantis'}, 50]}]}})
+        self.assertRaisesRegex(ValueError, 'No town "atlantis"', self.refs, p)
+
+    def test_values_in_effects_are_the_games_to_refuse(self):
+        p = talk.program([talk.fx('npc.walk', npc={'field': 'target'}, cell='gate', x={'field': 'quantity'}, y=2, pace='walk', cue='c'),
+                          talk.fx('item.give', player={'field': 'target'}, item='bread', quantity={'field': 'quantity'})])
+        self.refs(p)
+
+
 if __name__ == '__main__':
     unittest.main()

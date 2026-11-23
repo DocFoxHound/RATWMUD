@@ -183,7 +183,7 @@ const v2: Record<string, Program> = JSON.parse(execFileSync('python3', ['-c',
 const ledger = v2['v2-ledger'];
 
 test('version 2: the samples and the 108 programs made version 2 are shown by the workbench, every nested action a sentence', () => {
-    assert.equal(Object.keys(v2).length, 112);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone.)
+    assert.equal(Object.keys(v2).length, 113);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road.)
     let nested = 0;
     for (const [name, p] of Object.entries(v2)) {
         assert.ok(editable(p), name);
@@ -371,7 +371,7 @@ test('Phase 8: the night watch opens in the workbench, every world condition and
         const words = plain(eventParts(cat, t, names));
         assert.ok(!words.includes('{'), t.on + ': ' + words);
     }
-    assert.equal(cat.events.filter(e => (e as {watch?: boolean}).watch).length, 32);   // (Phase 8's 24, Phase 10's 8.)
+    assert.equal(cat.events.filter(e => (e as {watch?: boolean}).watch).length, 33);   // (Phase 8's 24, Phase 10's 8, doc 86's moon.)
 });
 
 // ------------------------------------------------------------------------------------------ new world effects (doc 85, Phase 9)
@@ -513,4 +513,45 @@ test('doc 86, Phase 1b: talk memory, rumours, figures and holds read as sentence
     assert.deepEqual(effectValuesOf(p, ['npc.spare'], 'npc'), []);
     const purses = purseNames({towns: [{id: 'greyfen', name: 'Greyfen'}], tills: [{id: 'till:job:rm111', name: "Ivo Tarmarsh's till"}]});
     assert.deepEqual(purses, {'town:greyfen': "Greyfen's treasury", 'till:job:rm111': "Ivo Tarmarsh's till"}, 'no works, watch or church purse');
+});
+
+test('doc 86, Phase 2: values in effects, fills, filters that begin with or are one of, the moon and name tokens read as words', async () => {
+    const {fillChips, fillsOf, matchWords, tokenWords, widestFilled, isOperand} = await import('./workbench.ts');
+    const ns = namesOf({residents: [{id: 'rm111', name: 'Ivo Tarmarsh'}], towns: [{id: 'greyfen', name: 'Greyfen'}],
+        wolves: [{id: 'player-ash', name: 'Ash'}], places: [{id: 'grey', name: 'Greyfen market', kind: 'cell'}]});
+    const say = (effect: Record<string, unknown>) => plain(actionParts(cat, {do: 'effect', effect: effect as never}, ns));
+    const pay = say({kind: 'character.grant', player: '$actor', purse: 'town:greyfen', reason: 'oil',
+        coins: {min: [12, {div: [{purse: 'town:greyfen'}, 20]}]}});
+    assert.ok(pay.includes('the smaller of 12 and') && pay.includes('holds') && !pay.includes('{') && !pay.includes('[object'), pay);
+    const walk = say({kind: 'npc.walk', npc: {var: 'guide'}, cell: 'grey', x: 3, y: 4, pace: 'walk', cue: 'c'});
+    assert.ok(walk.includes('guide') && !walk.includes('[object'), walk);
+    const post = say({kind: 'board.post', town: 'greyfen', days: 3, text: '{finder} has {bar} of {bar_goal}; {{not a fill}}, {p_town.of}.'});
+    assert.ok(post.includes('⟨finder⟩') && post.includes('⟨p_town of the wolf⟩') && post.includes('{not a fill}'), post);
+    assert.equal(fillChips('a {{b}} {c}'), 'a {b} ⟨c⟩');
+    assert.deepEqual(fillsOf('{a} {b.of} {{c}}'), [{name: 'a', of: false}, {name: 'b', of: true}]);
+    const p = {variables: [{id: 'n', type: 'number', scope: 'story'}, {id: 'w', type: 'wolf', scope: 'story'}, {id: 't', type: 'text', scope: 'story'}]} as unknown as Program;
+    assert.equal(widestFilled('x{n}{w}{t}', p), 1 + 11 + 24 + 200);
+    assert.equal(matchWords({starts: 'Stood watch'}, ns), 'begins with “Stood watch”');
+    assert.equal(matchWords({in: ['rm111', 'rm112']}, ns, 'resident'), 'one of Ivo Tarmarsh, rm112');
+    assert.equal(matchWords('rm111', ns), undefined);
+    assert.ok(isOperand({purse: 'town:greyfen'}) && !isOperand({starts: 'x'}) && !isOperand({list: 'did'}));
+    const deed = plain(eventParts(cat, {on: 'deed', match: {detail: {starts: 'Stood watch at the ford'}} as never}, ns));
+    assert.ok(deed.includes('begins with “Stood watch at the ford”') && !deed.includes('[object'), deed);
+    const talk = plain(eventParts(cat, {on: 'conversation', match: {target: {in: ['rm111']}} as never}, ns));
+    assert.ok(talk.includes('one of Ivo Tarmarsh'), talk);
+    const inList = plain(conditionParts(cat, {test: 'field', field: 'cell', op: 'in', value: ['grey', 'far']} as Condition, ns));
+    assert.ok(inList.includes('is one of') && inList.includes('“grey”, “far”'), inList);
+    const moon = plain(conditionParts(cat, {test: 'calendar is', what: 'moon', value: 'new'} as unknown as Condition, ns));
+    assert.ok(moon.includes('the moon') && moon.includes('new'), moon);
+    assert.ok(plain(eventParts(cat, {on: 'moon', match: {detail: 'full'}}, ns)).includes('full'));
+    assert.equal(tokenWords('{@w:player-ash} met {@r:rm111} at {@p:grey}, {@i:rope}', ns), '«wolf: Ash» met «resident: Ivo Tarmarsh» at «place: Greyfen market», «item: rope»');
+    const spawn = say({kind: 'story.area.spawn', region: 'hollow', count: 2, camp: 'sq_beacon_camp'});
+    assert.ok(spawn.includes('sq_beacon_camp') && !spawn.includes('{'), spawn);
+    const trade = cat.events.find(e => e.id === 'trade done')!;
+    assert.ok(trade.fields.cell && !trade.tile, 'trade done has its cell (M5)');
+    for (const id of ['camp cleared', 'caravan arrives', 'ship lost', 'ship docks', 'project built', 'festival'])
+        assert.ok(cat.events.find(e => e.id === id)?.mission, id + ' is mission evidence (L3)');
+    const operands = cat.effects.flatMap(e => (e.params ?? []).filter(x => x.operand).map(x => x.type));
+    assert.ok(operands.length > 100 && operands.every(t => ['int', 'resident', 'wolf', 'place', 'item', 'faction', 'town'].includes(t)), String(operands.length));
+    assert.ok(!cat.effects.find(e => e.id === 'npc.line')!.params!.some(x => x.operand) && !cat.effects.find(e => e.id === 'story.start')!.params!.some(x => x.operand));
 });

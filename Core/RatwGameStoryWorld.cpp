@@ -101,7 +101,7 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
     // ------------------------------------------------------------------------------------- the journal and the maps
     if (kind == "journal.note")
     {
-        const auto text = p.string("text"), to = p.string("player");
+        const auto text = fillStoryNames(p.string("text"), 200), to = p.string("player");   // (Doc 86, C1b: names for tokens.)
         if (!oneLine(text, 200))
             return {false, "A journal note is one line of up to 200 characters.", run};
         if (!to.empty() && !story->takesPart(to))
@@ -340,7 +340,7 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
     }
     if (kind == "board.post")
     {
-        const auto text = p.string("text");
+        const auto text = fillStoryNames(p.string("text"), 300);   // (Doc 86, C1b: names for tokens.)
         const int days = whole(p, "days", 1, 28);
         if (!oneLine(text, 300) || days < 1)
             return {false, "A notice is one line of up to 300 characters, up 1 to 28 days.", target};

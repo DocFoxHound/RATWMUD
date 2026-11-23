@@ -3,7 +3,7 @@
 // (objectives in sentences from the catalogue: required, optional or hidden, in order or not, counted), what fails it,
 // and what it gives (rewards to each wolf with credit, coins from a named purse, never minted).
 import {useState} from 'react';
-import {eventOf, eventParts, FIELDS, isId, objectiveEvents, renameObjective, renameQuest, SIGNAL, withQuests, type FailRule, type Part,
+import {eventOf, eventParts, FIELDS, isId, objectiveEvents, operandWords, renameObjective, renameQuest, SIGNAL, withQuests, type FailRule, type Part,
     type Quest, type QuestObjective, type Ref, type Slot} from '../../lib/workbench';
 import {useBench} from './context';
 import {EventPicker, type Values} from './pickers';
@@ -20,10 +20,12 @@ const merged = (match: Record<string, string> | undefined, v: Values) => {
     return next;
 };
 const MEASURES: Record<string, string> = {count: 'times', quantity: 'items given or used', coins: 'coins'};
+// (Doc 86, SQ5: the events with a wolf it was done for.)
+const CREDIT_TARGET = ['stall sale', 'vouch', 'told the wardens', 'vouched to the wardens'];
 
 function ObjectiveRow({q, o, i, change, remove, move, rename}: {q: Quest; o: QuestObjective; i: number; change: (o: QuestObjective, mark?: string) => void;
     remove: () => void; move: (to: number) => void; rename: (to: string) => void}) {
-    const {cat, names} = useBench();
+    const {cat, names, program} = useBench();
     const [choosing, setChoosing] = useState(false);
     const [id, setId] = useState(o.id);
     const ev = eventOf(cat, o.on);
@@ -31,6 +33,9 @@ function ObjectiveRow({q, o, i, change, remove, move, rename}: {q: Quest; o: Que
     const after = new Set(o.after ?? []);
     const measures = ['count', ...(ev?.measures ?? [])];
     const filterable = (ev ? Object.keys(ev.fields) : [...FIELDS]).filter(k => (FIELDS as readonly string[]).includes(k) && !(k in (o.match ?? {})));
+    // (Doc 86, Phase 2: a goal from a number variable; where it counts; who it credits.)
+    const numbers = (program.variables ?? []).filter(v => v.type === 'number' && (v.scope === 'story' || v.scope === 'world')).map(v => v.id);
+    const regions = (program.regions ?? []).map(r => r.id);
     return <li className="wb-line wb-objective">
         <span className="wb-glyph">{i + 1}</span>
         <div className="wb-objective-body">
@@ -56,9 +61,35 @@ function ObjectiveRow({q, o, i, change, remove, move, rename}: {q: Quest; o: Que
                 change({...rest, on, ...(on === SIGNAL ? {signal: 'next'} : {})}); setChoosing(false);
             }}/>}
             <div className="wb-head">
-                <label>Goal<input type="number" min={1} max={1000000} value={o.goal ?? 1} onChange={e => {
-                    const n = Math.max(1, Math.min(1000000, Math.round(e.target.valueAsNumber || 1))); const {goal: _g, ...rest} = o; void _g;
-                    change(n === 1 ? rest : {...rest, goal: n}, `q:${q.id}:${i}:goal`); }}/></label>
+                {typeof o.goal === 'object'
+                    ? <span className="wb-chips"><span>Goal: {operandWords(o.goal, names)}</span>
+                        <button type="button" onClick={() => { const {goal: _g, goalLive: _l, ...rest} = o; void _g; void _l; change(rest); }}>a number instead</button>
+                        {q.scope === 'story' && <label className="wb-check" title="Doc 86, C1c: read again as it is credited, never below what is made">
+                            <input type="checkbox" checked={!!o.goalLive} onChange={e => { const {goalLive: _l, ...rest} = o; void _l;
+                                change(e.target.checked ? {...rest, goalLive: true} : rest); }}/>keeps up with it</label>}</span>
+                    : <label>Goal<input type="number" min={1} max={1000000} value={typeof o.goal === "number" ? o.goal : 1} onChange={e => {
+                        const n = Math.max(1, Math.min(1000000, Math.round(e.target.valueAsNumber || 1))); const {goal: _g, ...rest} = o; void _g;
+                        change(n === 1 ? rest : {...rest, goal: n}, `q:${q.id}:${i}:goal`); }}/></label>}
+                {typeof o.goal !== 'object' && numbers.length > 0 && <select value="" aria-label="The goal from a value" onChange={e => {
+                    const v = e.target.value; if (!v) return;
+                    change({...o, goal: v === '*active' ? {max: [typeof o.goal === 'number' ? o.goal : 1, {times: [{audience: 'active'}, 2]}]} : {var: v}}); }}>
+                    <option value="">or a value…</option>{numbers.map(v => <option key={v} value={v}>the number {v}</option>)}
+                    <option value="*active">this goal, or 2 for each active wolf</option></select>}
+                <label>Counts<select value={o.where ? ('cells' in o.where ? 'cells' : 'region') : ''} aria-label="Where it counts" onChange={e => {
+                    const {where: _w, ...rest} = o; void _w; const v = e.target.value;
+                    change(v === 'cells' ? {...rest, where: {cells: [typeof o.match?.cell === 'string' && o.match.cell ? o.match.cell : 'cell']}}
+                        : v === 'region' && regions.length ? {...rest, where: {region: regions[0]}} : rest); }}>
+                    <option value="">anywhere</option><option value="cells">only in some cells</option>{regions.length > 0 && <option value="region">only inside a region</option>}</select></label>
+                {o.where && 'cells' in o.where && <label>Cells<input value={o.where.cells.join(', ')} placeholder="cell ids, separated by commas" onChange={e => {
+                    const cells = [...new Set(e.target.value.split(',').map(x => x.trim()).filter(Boolean))].slice(0, 16);
+                    change({...o, where: {cells: cells.length ? cells : ['']}}, `q:${q.id}:${i}:where`); }}/></label>}
+                {o.where && 'region' in o.where && <label>Region<select value={o.where.region} onChange={e => change({...o, where: {region: e.target.value}})}>
+                    {regions.map(r => <option key={r} value={r}>{r}</option>)}</select></label>}
+                <label>Who is credited<select value={o.credit ?? 'actor'} onChange={e => { const {credit: _c, ...rest} = o; void _c;
+                    change(e.target.value === 'actor' ? rest : {...rest, credit: e.target.value as QuestObjective['credit']}); }}>
+                    <option value="actor">the acting wolf</option>
+                    {CREDIT_TARGET.includes(o.on) && <option value="target">the one it was done for</option>}
+                    {!!ev?.fields.cell && <option value="present">every wolf there</option>}</select></label>
                 <label>Counting<select value={o.measure ?? 'count'} onChange={e => { const {measure: _m, ...rest} = o; void _m;
                     change(e.target.value === 'count' ? rest : {...rest, measure: e.target.value as QuestObjective['measure']}); }}>
                     {measures.map(m => <option key={m} value={m}>{MEASURES[m] ?? m}</option>)}</select></label>
@@ -202,6 +233,9 @@ export function QuestEditor({index, select}: {index: number; select: (r: Ref) =>
                 onChange={e => setJoin('cap', e.target.value === '' ? undefined : Math.max(1, Math.min(5000, Math.round(e.target.valueAsNumber))))}/></label>
             <label>Taken in all, at most<input type="number" min={1} max={100000} value={join.limit ?? ''} placeholder="no limit"
                 onChange={e => setJoin('limit', e.target.value === '' ? undefined : Math.max(1, Math.min(100000, Math.round(e.target.valueAsNumber))))}/></label>
+            <label title="Doc 86, N4: after it ends any way (done, failed or abandoned), the same wolf waits this long">The same wolf again after (game days)
+                <input type="number" min={1} max={365} value={join.again ?? ''} placeholder="at once"
+                onChange={e => setJoin('again', e.target.value === '' ? undefined : Math.max(1, Math.min(365, Math.round(e.target.valueAsNumber))))}/></label>
         </div>
         {(join.who ?? (open ? 'anyone' : 'participants')) === 'anyone' && !open && <p className="hint">Any wolf may take it only with an open or "everyone" audience (Campaign settings).</p>}
         {(program.regions?.length ?? 0) > 0 && <div className="wb-line"><span className="wb-glyph">▭</span>

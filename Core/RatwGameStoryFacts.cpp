@@ -33,6 +33,13 @@ constexpr double WorldSeconds = 2;      // Purses, standing, stances and mantles
 std::string baseItem(const std::string& item) { return item.substr(0, item.find_first_of("~@")); }
 } // namespace
 
+// Doc 86, J4: the moon in four, by the octant its name has (calendar::calendarAt's moonName): new, waxing, full, waning.
+const char* Game::moonQuarter(double phase)
+{
+    const auto octant = static_cast<unsigned>(std::floor(phase * 8.0 + .5)) % 8;
+    return octant == 0 ? "new" : octant < 4 ? "waxing" : octant == 4 ? "full" : "waning";
+}
+
 void Game::refreshStoryWatch()
 {
     StoryWatch w;
@@ -57,6 +64,7 @@ void Game::refreshStoryWatch()
         add("residents", w.residents);
         add("cells", w.cells);
         add("events", w.events);
+        add("purseFacts", w.purseFacts);   // (Doc 86, M2: the purses a story's values read.)
         for (const auto& r : s.watch.array("relations"))
             if (r.isArray() && r.size() == 2 && r.items()[0].isString() && r.items()[1].isString() && w.relations.size() < WatchMost)
                 w.relations.insert({r.items()[0].asString(), r.items()[1].asString()});
@@ -226,6 +234,7 @@ std::string Game::storyFactsJson()
         o.add("period", date.period);
         o.add("dayOfSeason", double(date.dayOfSeason));
         o.add("year", double(date.year));
+        o.add("moon", moonQuarter(date.moonPhase));   // (Doc 86, J4.)
         doc.add("world", std::move(o));
     }
     if (w.sections.count("weather"))
@@ -250,6 +259,15 @@ std::string Game::storyFactsJson()
         }
         doc.add("weather", std::move(weather));
     }
+    if (w.sections.count("purses"))
+    {
+        // (Doc 86, M2: what each purse a story reads holds now, its account as character.grant reads it.)
+        auto purses = Value::object();
+        for (const auto& purse : w.purseFacts)
+            if (const auto* a = world_.society().account(storyPurseAccount(purse)))
+                purses.add(purse, double(a->cash));
+        doc.add("purses", std::move(purses));
+    }
     if (w.sections.count("relations"))
     {
         auto relations = Value::object();
@@ -273,6 +291,7 @@ void Game::storyWatchTick(double real)
     {
         storyHour_ = -1;
         storyDay_ = -1;
+        storyMoon_.clear();
         storyWeather_.clear();
         storyNear_.clear();
         storyPurses_.clear();
@@ -302,7 +321,11 @@ void Game::storyWatchTick(double real)
             world_.recordEvent({"dawn", {}, {}, {}, 0, 0, {}, 0, 0, {}});
         if (date.period != storyPeriod_ && date.period == "night" && w.count("night falls"))
             world_.recordEvent({"night falls", {}, {}, {}, 0, 0, {}, 0, 0, {}});
+        // (Doc 86, J4: the moon into another quarter; quantity the day of its round, 0 to 29.)
+        if (const std::string moon = moonQuarter(date.moonPhase); moon != storyMoon_ && !storyMoon_.empty() && w.count("moon"))
+            world_.recordEvent({"moon", {}, {}, {}, 0, 0, {}, int(std::floor(std::fmod(days, calendar::LunarCycleDays))), 0, moon});
     }
+    storyMoon_ = moonQuarter(date.moonPhase);
     storyHour_ = hour;
     storyDay_ = day;
     storySeason_ = season;

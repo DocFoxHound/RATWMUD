@@ -83,6 +83,84 @@ def number(v, low, high):
     return type(v) in (int, float) and low <= v <= high
 
 
+# Doc 86, Phase 2 (C12b): a filter's value is a text (the field is exactly it), {"starts": "<text>"} (the field begins with
+# it; case-sensitive) or {"in": ["a", "b"]} (the field is one of them, up to 32). The gift item rule (a gift's base id unless
+# a mark is given) applies inside both. Core/RatwStoryTriggers.cpp's matchOne is the twin.
+MATCH_IN_MOST = 32
+MATCH_PART = 120
+
+
+def match_value_ok(v, size=400):
+    if isinstance(v, str):
+        return word(v, size)
+    if not isinstance(v, dict) or len(v) != 1:
+        return False
+    if 'starts' in v:
+        return word(v['starts'], MATCH_PART)
+    if 'in' in v:
+        return (isinstance(v['in'], list) and 1 <= len(v['in']) <= MATCH_IN_MOST and all(word(x, MATCH_PART) for x in v['in'])
+                and len(set(v['in'])) == len(v['in']))
+    return False
+
+
+def match_ok(m, keys=None):
+    """A whole filter: {field: value} over the event's fields (or `keys`), each value a text, a starts or an in."""
+    return isinstance(m, dict) and all(k in (keys or FIELDS) and match_value_ok(v) for k, v in m.items())
+
+
+def _gift_base(actual, expected, gift):
+    return re.split('[~@]', actual, maxsplit=1)[0] if gift and not any(mark in expected for mark in '~@') else actual
+
+
+def match_one(expected, actual, gift=False):
+    """One filter value against the event's field (`gift`: the item of a gift, read as its base id unless marked)."""
+    if isinstance(expected, str):
+        return _gift_base(actual, expected, gift) == expected
+    if 'starts' in expected:
+        return _gift_base(actual, expected['starts'], gift).startswith(expected['starts'])
+    return any(_gift_base(actual, x, gift) == x for x in expected['in'])
+
+
+def match_words(v):
+    """A filter's value in words: the text, "begins with …", or "one of …"."""
+    if isinstance(v, str):
+        return v
+    if isinstance(v, dict) and 'starts' in v:
+        return f'begins with "{v["starts"]}"'
+    if isinstance(v, dict) and isinstance(v.get('in'), list):
+        return 'one of ' + ', '.join(str(x) for x in v['in'])
+    return str(v)
+
+
+def plain_match(m):
+    """The exact values of a filter ({field: text}): what approval can look up in the world (a starts has none; an in, its
+    first; every value of an in is in match_values)."""
+    return {k: v for k, v in (m or {}).items() if isinstance(v, str)} if isinstance(m, dict) else {}
+
+
+def match_values(v):
+    """Every exact value a filter's value names: the text, the in's values (a starts names none)."""
+    if isinstance(v, str):
+        return [v]
+    if isinstance(v, dict) and isinstance(v.get('in'), list):
+        return [x for x in v['in'] if isinstance(x, str)]
+    return []
+
+
+def stand_in_match(m):
+    """A filter as an event's fields (an admin's "fire now", the console's stand-in event): a starts gives its text, an in
+    its first value."""
+    out = {}
+    for k, v in (m or {}).items():
+        if isinstance(v, str):
+            out[k] = v
+        elif isinstance(v, dict) and 'starts' in v:
+            out[k] = v['starts']
+        elif isinstance(v, dict) and v.get('in'):
+            out[k] = v['in'][0]
+    return out
+
+
 # Mission objectives take evidence from the participant who acted. Ambient events can open or close a phase.
 MISSION_EVENTS = tuple(e['id'] for e in CATALOGUE['events'] if e.get('mission'))
 MISSION_GATE = 'missions completed'
@@ -164,7 +242,7 @@ def validate_missions(phase):
             )
             fields = o.get('match', {})
             require(
-                isinstance(fields, dict) and all(k in FIELDS and word(v, 400) for k, v in fields.items()),
+                match_ok(fields),
                 'Invalid mission event filter.',
             )
     require(
@@ -280,12 +358,16 @@ def _param_ok(param, v, regions):
         return isinstance(v, str) and TALK_VALUE.fullmatch(v) is not None
     if kind == 'figure':
         return isinstance(v, str) and FIGURE_ID.fullmatch(v) is not None
+    if kind == 'camp':
+        return isinstance(v, str) and CAMP_NAME.fullmatch(v) is not None   # (Doc 86, L2; its prefix is checked with the program's.)
     return identifier(v) or (kind == 'wolf' and v == '$actor')
 
 
 TALK_KEY = re.compile(r'[a-z][a-z0-9_]{0,39}')
 TALK_VALUE = re.compile(r'[a-z0-9_]{1,40}')
 FIGURE_ID = re.compile(r'[a-z0-9_]{3,40}')
+CAMP_NAME = re.compile(r'[a-z0-9_]{3,30}')
+PREFIX = re.compile(r'[a-z]{2,8}')
 TALK_SCOPES = {'realm': (), 'town': ('town',), 'npc': ('npc',), 'pair': ('npc', 'player')}
 PAIR_WORDS = 'Pair memory needs a wolf of the story: use it in a participant trigger (the acting wolf) or For each over wolves.'
 # (A rumour's phrase follows a name: "#x.name# was seen at the Customs House". Never an id, a symbol or a fill. A word is
@@ -332,14 +414,17 @@ def check_refusal(effect, pid):
     how = effect.get('ifRefused', 'pause')
     require(how in REFUSALS, f'{pid}: ifRefused is one of: pause, skip, when here.')
     if how == 'when here':
-        require(effect.get('kind') != 'scene.play' and isinstance(effect.get('player'), str) and effect['player'] not in ('', 'world'),
+        require(effect.get('kind') != 'scene.play' and (isinstance(effect.get('player'), dict) or isinstance(effect.get('player'), str)
+                                                         and effect['player'] not in ('', 'world')),
                 f'{pid}: "when here" holds an effect for its wolf: only an effect to one wolf may wait for them.')
     if 'waitDays' in effect:
         require(how == 'when here' and integer(effect['waitDays'], *WAIT_DAYS),
                 f'{pid}: waitDays (1 to 90) goes with ifRefused "when here".')
 
 
-def validate_effect(effect, pid, regions=None, scenes=None):
+def validate_effect(effect, pid, regions=None, scenes=None, operand=None):
+    """One effect's parameters and the parts that go together. `operand(param, value)`: how a value given for a parameter
+    marked operand is checked (doc 86, C1a: a trigger's effect and a quest's reward); without it, only literals."""
     kind = effect.get('kind') if isinstance(effect, dict) else None
     require(isinstance(kind, str) and kind in EFFECTS, f'{pid}: unknown effect.')
     # (Doc 85, Phase 6: a parameter marked "optional" may be left out. Phase 7: ifRefused and waitDays on any game effect.)
@@ -347,6 +432,12 @@ def validate_effect(effect, pid, regions=None, scenes=None):
           (*(p['key'] for p in EFFECT_PARAMS[kind] if p.get('optional')), *(REFUSAL_FIELDS if refusable(kind) else ())))
     for param in EFFECT_PARAMS[kind]:
         if param.get('optional') and param['key'] not in effect:
+            continue
+        if operand is not None and param.get('operand') and isinstance(effect[param['key']], dict):
+            try:
+                operand(param, effect[param['key']])
+            except (KeyError, TypeError, AttributeError) as error:
+                raise ValueError(f"{pid}: invalid {kind}.{param['key']} ({error}).")
             continue
         require(_param_ok(param, effect[param['key']], regions), f"{pid}: invalid {kind}.{param['key']}.")
     if refusable(kind):
@@ -380,7 +471,8 @@ def validate_effect(effect, pid, regions=None, scenes=None):
                     + (' and '.join({'town': 'the town', 'npc': 'the resident', 'player': 'the wolf'}[x] for x in parts) or 'no town, resident or wolf')
                     + ', and only that.')
         if effect['scope'] == 'pair':
-            require(effect['player'] == '$actor', f'{pid}: {PAIR_WORDS}')
+            # (Doc 86, C1a: or a value that is a wolf, worked out when it fires.)
+            require(effect['player'] == '$actor' or isinstance(effect['player'], dict), f'{pid}: {PAIR_WORDS}')
     if kind == 'belief.plant':
         check_claim(effect['claim'], pid)
     if kind == 'figure.set':
@@ -503,6 +595,9 @@ def _check_header(p):
     # (Doc 86, C2: how long a wolf counts as active after they were last seen, in game days.)
     require('activeDays' not in p or (p['version'] == 2 and integer(p['activeDays'], 1, 120)),
             'Active wolves: seen in the last 1–120 game days (a version 2 story).')
+    # (Doc 86, L2 and D2: the story's prefix, 2 to 8 small letters: its camps' names begin with it and _.)
+    require('prefix' not in p or (isinstance(p['prefix'], str) and PREFIX.fullmatch(p['prefix']) is not None),
+            'A story\'s prefix is 2 to 8 small letters (nh, sq, mq, lq, st).')
 
 
 def _check_audience(a):
@@ -573,6 +668,13 @@ def _check_entry_effect(effect, phase, speakers):
     validate_effect(effect, pid, phase.get('_regions'), phase.get('_scenes'))
     require(effect['kind'] not in quests.STORY_EFFECTS, f'{pid}: {effect["kind"]} goes in a trigger, not in what a phase sends as it opens.')
     quests.check_story_effect(effect, None, None)
+    if phase.get('_v') == 2:
+        # (Doc 86, C1b: words are filled as a trigger fires; what a phase sends as it opens is sent as written.)
+        for param in EFFECT_PARAMS[effect['kind']]:
+            v = effect.get(param['key'])
+            require(not (param.get('fills') and isinstance(v, str) and triggers.fills_in_quietly(v)),
+                    f'{pid}: {{name}} fills words in a trigger\'s effect (a trigger on "story started" or on entering), not in what a '
+                    'phase sends as it opens.')
     if effect['kind'] == 'npc.line':
         require(
             effect['npc'] not in speakers,
@@ -621,7 +723,7 @@ def _check_exit(e, phase, mission_ids):
     )
     m = e.get('match', {})
     require(
-        isinstance(m, dict) and all(k in FIELDS and word(v, 400) for k, v in m.items()),
+        match_ok(m),
         f'{pid}: invalid event filter.',
     )
     check_region_source(e, phase.get('_regions'))
@@ -657,7 +759,7 @@ def _check_exit(e, phase, mission_ids):
             )
             fields = step.get('match', {})
             require(
-                isinstance(fields, dict) and all(k in FIELDS and word(v, 400) for k, v in fields.items()),
+                match_ok(fields),
                 'Invalid prerequisite filter.',
             )
             check_region_source(step, phase.get('_regions'))
@@ -707,7 +809,7 @@ def _check_phase(p, raw, ids):
 
 READY_EXIT = 'ready'
 READY_PARTS = ('participation', 'minDays', 'value', 'test', 'missions', 'quest')
-READY_ANCHORS = ('day begins', 'hour', 'season begins', 'festival', 'dm signal')
+READY_ANCHORS = ('day begins', 'hour', 'season begins', 'festival', 'dm signal', 'moon')   # (Doc 86, J4: the moon, Phase 2.)
 READY_PARTS_MAX, READY_ANY = 8, (2, 4)
 READY_LOG = 20
 READY_DAYS = 3650
@@ -816,7 +918,7 @@ def _check_ready(p, phase, missions):
         shape(t, ('on',), ('match',))
         require(t['on'] in READY_ANCHORS, f'{pid}: Readiness waits for one of: ' + ', '.join(READY_ANCHORS) + '.')
         m = t.get('match', {})
-        require(isinstance(m, dict) and all(k in FIELDS and word(v, 400) for k, v in m.items()), f'{pid}: invalid filter of the moment.')
+        require(match_ok(m), f'{pid}: invalid filter of the moment.')
         require(t['on'] != 'dm signal' or (set(m) == {'detail'} and word(m['detail'], 80)), f'{pid}: name the DM signal it waits for.')
     exits = [e for e in phase['exits'] if isinstance(e, dict) and e.get('on') == READY_EXIT]
     require(len(exits) == 1, f'{pid}: a phase with Readiness has exactly one ready exit ({{"on": "ready", "to": ...}}).')
@@ -897,9 +999,9 @@ def _ready_part(p, phase, state, part, x, missions):
                 'need': len(part['missions'])}
     q = phase.get('_questIndex', {}).get(part['quest'], {})
     c = state.get('quests', {}).get(part['quest'], {}).get('story') or {}
-    n = sum(min(r.get('n', 0), o.get('goal', 1)) if not r.get('done') else o.get('goal', 1)
+    n = sum(min(r.get('n', 0), quests.goal_of(o, c)) if not r.get('done') else quests.goal_of(o, c)
             for o in q.get('objectives', ()) for r in [c.get('objectives', {}).get(o['id'], {})] if not o.get('optional'))
-    goal = sum(o.get('goal', 1) for o in q.get('objectives', ()) if not o.get('optional'))
+    goal = sum(quests.goal_of(o, c) for o in q.get('objectives', ()) if not o.get('optional'))
     return {'kind': kind, 'label': label or f'The quest {part["quest"]}', 'met': c.get('status') == 'done',
             'value': n, 'need': goal, 'quest': part['quest']}
 
@@ -995,9 +1097,16 @@ def ready_words(then):
     if not then:
         return 'once ready'
     detail = (then.get('match') or {}).get('detail')
+    if then['on'] == 'moon':
+        # (Doc 86, J4: "the next new moon", "the next full moon", or the next turn of the moon.)
+        return f'the next {detail} moon' if isinstance(detail, str) else 'the next turn of the moon'
     words = {'day begins': 'the next day', 'hour': 'the next hour', 'season begins': 'the next season', 'festival': 'the next festival',
              'dm signal': 'the direction'}.get(then['on'], 'the next ' + then['on'])
-    return words + (f' ({detail})' if detail else '')
+    return words + (f' ({rules_match_words(detail)})' if detail else '')
+
+
+def rules_match_words(v):
+    return match_words(v)
 
 
 def ready_anchor(phase, state, event):
@@ -1092,7 +1201,7 @@ def _check_tests(p):
 
 
 TOP_REQUIRED = ('format', 'version', 'id', 'title', 'audience', 'start', 'phases', 'tests')
-TOP_OPTIONAL = ('triggers', 'regions', 'scenes', 'quietAfterHours', 'variables', 'quests', 'activeDays')
+TOP_OPTIONAL = ('triggers', 'regions', 'scenes', 'quietAfterHours', 'variables', 'quests', 'activeDays', 'prefix')
 VARIABLES_MAX = 64
 
 
@@ -1113,7 +1222,7 @@ def _initial_ok(kind, v, regions):
 
 def _check_variable(d, names, regions):
     """One declared variable (doc 85, 3.2): a unique name, a type, a scope, and its first value, a note and a label."""
-    shape(d, ('id', 'type', 'scope'), ('initial', 'note', 'show', 'clock', 'talk'))
+    shape(d, ('id', 'type', 'scope'), ('initial', 'note', 'show', 'clock', 'talk', 'showOf', 'mirror'))
     require(identifier(d['id']) and d['id'] not in names, 'Give every variable a unique name.')
     require(d['type'] in triggers.VAR_TYPES and d['scope'] in triggers.SCOPES,
             'A variable has a type (' + ', '.join(triggers.VAR_TYPES) + ') and a scope (story, player, party, world).')
@@ -1144,6 +1253,48 @@ def _check_variables(p):
     for d in decls:
         _check_variable(d, names, regions)
     require(sum(1 for d in decls if d.get('talk')) <= TALK_VARS_MAX, f'Tell residents of up to {TALK_VARS_MAX} variables.')
+    by = {d['id']: d for d in decls}
+    for d in decls:
+        _check_show_of(d, by)
+        _check_mirror(d, by)
+
+
+MIRROR_NAMES = 16
+
+
+def _check_show_of(d, by):
+    """Doc 86, C1d: a shown number read "of" another ("This chapter: 34 / 80"): a declared number the same wolf can read."""
+    if 'showOf' not in d:
+        return
+    other = by.get(d['showOf'])
+    require(d['type'] == 'number' and d.get('show'), f'"{d["id"]}": only a shown number is shown "of" another.')
+    require(other is not None and other['type'] == 'number' and other['id'] != d['id'],
+            f'"{d["id"]}" is shown of a declared number: "{d["showOf"]}" is not one.')
+    require(other['scope'] in ('story', 'world') or other['scope'] == d['scope'],
+            f'"{d["id"]}" is shown of "{other["id"]}", which a wolf reading it cannot read: the story\'s, the world\'s or the same wolf\'s own.')
+
+
+def _check_mirror(d, by):
+    """Doc 86, N3: a wolf's shown number that mirrors a world number, the one their text `key` names (never stored)."""
+    if 'mirror' not in d:
+        return
+    m = d['mirror']
+    require(d['type'] == 'number' and d['scope'] == 'player' and d.get('show') and 'initial' not in d,
+            f'"{d["id"]}": a mirror is a shown number of each wolf (and has no first value of its own).')
+    shape(m, ('key', 'names'))
+    key = by.get(m['key'])
+    require(key is not None and key['type'] == 'text' and key['scope'] == 'player' and 'mirror' not in key,
+            f'"{d["id"]}" mirrors by a text of each wolf: "{m["key"]}" is not one.')
+    names = m['names']
+    require(isinstance(names, dict) and 1 <= len(names) <= MIRROR_NAMES, f'"{d["id"]}" mirrors 1 to {MIRROR_NAMES} world numbers.')
+    for value, name in names.items():
+        require(word(value, TEXT_MAX_MIRROR) and isinstance(name, str), f'"{d["id"]}": each value of {m["key"]} names a world number.')
+        w = by.get(name)
+        require(w is not None and w['type'] == 'number' and w['scope'] == 'world' and 'mirror' not in w,
+                f'"{d["id"]}" mirrors declared world numbers: "{name}" is not one.')
+
+
+TEXT_MAX_MIRROR = 200
 
 
 def talk_value(d, v):
@@ -1188,8 +1339,31 @@ def validate(p):
         _check_phase(p, phase, ids)
     _check_start(p, ids)
     _check_graph(p, ids)
+    _check_camps(p)
     _check_tests(p)
     return p
+
+
+def camps_of(p):
+    """Doc 86, L2: the camp names a program's spawns give (story.area.spawn and bandits.call, wherever they are)."""
+    out = set()
+    for ph in p.get('phases', []):
+        if not isinstance(ph, dict):
+            continue
+        for e in possible_effects(effective_phase(p, ph)):
+            if isinstance(e, dict) and e.get('kind') in ('story.area.spawn', 'bandits.call') and isinstance(e.get('camp'), str):
+                out.add(e['camp'])
+    return out
+
+
+def _check_camps(p):
+    names = camps_of(p)
+    if not names:
+        return
+    prefix = p.get('prefix')
+    require(prefix, 'A story that names its camps declares its prefix ("prefix": nh, sq, mq, lq, st...): a camp\'s name begins with it.')
+    for name in sorted(names):
+        require(name.startswith(prefix + '_'), f'The camp "{name}" begins with the story\'s prefix and _ ({prefix}_...).')
 
 
 def campaign_scope(p, scene_docs=None):
@@ -1272,6 +1446,11 @@ def _problems(p):
         for i, d in enumerate(decls):
             attempt(f'variables[{i}]', {'kind': 'variable', 'index': i, 'id': d.get('id') if isinstance(d, dict) else None},
                     _check_variable, d, taken, names)
+        by = {d['id']: d for d in decls if isinstance(d, dict) and isinstance(d.get('id'), str)}
+        for i, d in enumerate(decls):
+            if isinstance(d, dict) and ('showOf' in d or 'mirror' in d):
+                at = {'kind': 'variable', 'index': i, 'id': d.get('id')}
+                attempt(f'variables[{i}]', at, _check_show_of, d, by) and attempt(f'variables[{i}]', at, _check_mirror, d, by)
 
     # (Doc 85, Phase 6: each quest's problems where it is.)
     qs = p.get('quests', [])
@@ -1372,6 +1551,7 @@ def _problems(p):
         sound_phases = sound_phases and len(out) == before
     if 'start' in p:
         attempt('start', program, _check_start, p, ids)
+    attempt('', program, _check_camps, p)   # (Doc 86, L2: the camps' names and the story's prefix.)
     if sound_phases and not any(e['level'] == 'error' for e in out):
         # (Reachability and the paths into a phase need every phase sound: a broken one would only add noise.)
         attempt('phases', {'kind': 'phases'}, _check_graph, p, ids)
@@ -1572,11 +1752,10 @@ def phase_of(p, state):
 def matches(condition, event):
     if condition['on'] != event['kind']:
         return False
+    gift = condition['on'] in ('gift', 'gift again')
     for key, expected in condition.get('match', {}).items():
         actual = event.get(key, '')
-        if key == 'item' and condition['on'] in ('gift', 'gift again') and not any(mark in expected for mark in '~@'):
-            actual = re.split('[~@]', actual, 1)[0]
-        if actual != expected:
+        if not match_one(expected, actual if isinstance(actual, str) else '', gift and key == 'item'):
             return False
     return all(
         event.get(field, 0) >= condition[key]
@@ -1677,7 +1856,9 @@ def dispatch(p, phase, state, event, day, trace, elapsed, wait=None):
         else:
             target = triggers.fire(phase, state, fact, day, elapsed, ready, matches, emit, trace)
         if story_effects:
-            quests.take_story_effects(p, phase, state, day, elapsed, push)
+            quests.take_story_effects(p, phase, state, day, elapsed, push, fact)
+            if quest_run:
+                quests.keep_up(p, phase, state, day, elapsed, push, fact)
         if budget and trace is not None:
             budget.spend(len(trace) - trace_start)   # (The trace is the reply: it is bounded with the work.)
         if trace is not None and fact.get('cell') and fact.get('x') is not None and fact.get('y') is not None:
@@ -1871,6 +2052,13 @@ def _check_fact(ev):
 
 # ----------------------------------------------------------------------------------------- the world's facts (Phase 8)
 
+def _weather_cells(rule):
+    """The places a "weather changed" filter names (doc 86, C12b: each of an "in"; a "begins with" names none, so anywhere)."""
+    m = rule.get('match', {}) if isinstance(rule.get('match'), dict) else {}
+    v = m.get('target') or m.get('cell')
+    return match_values(v)
+
+
 def watch_of(p):
     """What the game is to tell this story (doc 85, 3.4 and Phase 8), worked out from the program and sent with each
     story.phase: the sections of the world's facts its conditions read (and which items, factions, towns, residents,
@@ -1883,9 +2071,9 @@ def watch_of(p):
         for e in ph.get('exits', []):
             listened.add(e.get('on'))
             if e.get('on') == 'weather changed':
-                cell = e.get('match', {}).get('target') or e.get('match', {}).get('cell')
-                weather_cells.add(cell) if cell else None
-                anywhere = anywhere or not cell
+                cells = _weather_cells(e)
+                weather_cells.update(cells)
+                anywhere = anywhere or not cells
         for m in ph.get('missions', []):
             listened.update(o.get('on') for o in m.get('objectives', []))
         then = (ph.get('ready') or {}).get('then') if isinstance(ph.get('ready'), dict) else None
@@ -1895,11 +2083,9 @@ def watch_of(p):
         listened.add(t.get('on'))
         conditions += list(triggers.rule_conditions(t))
         if t.get('on') == 'weather changed':
-            cell = t.get('match', {}).get('target') or t.get('match', {}).get('cell')
-            if cell:
-                weather_cells.add(cell)
-            else:
-                anywhere = True
+            cells = _weather_cells(t)
+            weather_cells.update(cells)
+            anywhere = anywhere or not cells
     for q in p.get('quests', []):
         listened.update(o.get('on') for o in q.get('objectives', []))
         listened.update(f.get('on') for f in q.get('fail', []) if isinstance(f, dict))
@@ -1942,6 +2128,13 @@ def watch_of(p):
         sections.add('wolves')   # (Doc 86, C2: who is online now is read from the world's signed-in wolves.)
     if weather_cells or anywhere or 'weather changed' in events:
         sections.add('weather')
+    # (Doc 86, M2: the purses a value reads, reported as the world's facts; SQ5: the wolves where an objective credits those
+    # present.)
+    held = sorted(set(triggers.purses_in([rules_, p.get('quests', []), [ph.get('ready') for ph in p.get('phases', []) if isinstance(ph, dict)]])))
+    if held:
+        sections.add('purses')
+    if any(isinstance(o, dict) and o.get('credit') == 'present' for q in p.get('quests', []) or [] for o in q.get('objectives', [])):
+        sections.add('wolves')
     out = {}
     for key, values in (('facts', sections), ('items', items), ('factions', factions), ('towns', towns), ('residents', residents),
                         ('cells', weather_cells), ('events', events)):
@@ -1957,12 +2150,15 @@ def watch_of(p):
         out['standing'] = [list(x) for x in sorted(standings)]
     if anywhere:
         out['weatherWhereWolves'] = True
+    if held:
+        out['purseFacts'] = held
     return out
-FACT_SECTIONS = ('wolves', 'residents', 'world', 'weather', 'relations')
+FACT_SECTIONS = ('wolves', 'residents', 'world', 'weather', 'relations', 'purses')   # (Doc 86, M2: what purses hold.)
 WOLF_FACTS = {'cell': str, 'x': int, 'y': int, 'indoors': bool, 'town': str, 'party': str, 'partySize': int, 'carries': dict,
               'coins': int, 'standing': dict, 'reputation': dict, 'downed': bool, 'hurt': bool, 'wanted': bool, 'held': bool}
 RESIDENT_FACTS = {'alive': bool, 'cell': str, 'x': int, 'y': int, 'indoors': bool, 'job': str, 'mood': str, 'mantle': str, 'town': str}
-WORLD_FACTS = {'day': (int, float), 'hour': int, 'minute': int, 'weekday': str, 'season': str, 'period': str, 'dayOfSeason': int, 'year': int}
+WORLD_FACTS = {'day': (int, float), 'hour': int, 'minute': int, 'weekday': str, 'season': str, 'period': str, 'dayOfSeason': int, 'year': int,
+               'moon': str}
 
 
 def _typed(v, kind):
@@ -1977,7 +2173,7 @@ def check_world_facts(f):
     """The world's facts as a rehearsal states them (and as the game writes them to game.story_facts): sections of wolves,
     residents, the world's clock, the weather by place and the factions' relations ("a>b"). A wolf or resident named with
     null is gone from the world (in a fact that changes them)."""
-    require(isinstance(f, dict) and set(f) <= set(FACT_SECTIONS), 'Facts have wolves, residents, world, weather and relations.')
+    require(isinstance(f, dict) and set(f) <= set(FACT_SECTIONS), 'Facts have wolves, residents, world, weather, relations and purses.')
     for section, fields in (('wolves', WOLF_FACTS), ('residents', RESIDENT_FACTS)):
         entries = f.get(section, {})
         require(isinstance(entries, dict) and len(entries) <= 5000, f'Facts: {section} by id.')
@@ -1991,11 +2187,14 @@ def check_world_facts(f):
                             f'Facts: {key} are numbers by id.')
     world = f.get('world', {})
     require(isinstance(world, dict) and set(world) <= set(WORLD_FACTS) and all(_typed(v, WORLD_FACTS[k]) for k, v in world.items()),
-            'Facts: the world has day, hour, minute, weekday, season, period, dayOfSeason, year.')
+            'Facts: the world has day, hour, minute, weekday, season, period, dayOfSeason, year, moon.')
     for section in ('weather', 'relations'):
         entries = f.get(section, {})
         require(isinstance(entries, dict) and all(isinstance(k, str) and (v is None or isinstance(v, str)) for k, v in entries.items()),
                 f'Facts: {section} are words by place (or by "faction>other").')
+    purses = f.get('purses', {})
+    require(isinstance(purses, dict) and all(isinstance(k, str) and (v is None or (type(v) in (int, float) and type(v) is not bool))
+                                             for k, v in purses.items()), 'Facts: purses are pennies by purse (town:<town>, till:job:<id>...).')
 
 
 def merge_facts(base, change):

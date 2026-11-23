@@ -493,7 +493,7 @@ Result Game::directSceneResident(const std::string& kind, const std::string& npc
     }
     else
     {
-        order.words = p.string("text");
+        order.words = fillStoryNames(p.string("text"), 200);   // (Doc 86, C1b: the names in a story's words.)
         if (order.words.empty() || json::utf8Prefix(order.words, 200) != order.words ||
             order.words.find_first_of("\r\n") != std::string::npos)
             return {false, "Supply a single spoken line of up to 200 characters.", npc};
@@ -1093,6 +1093,69 @@ Result Game::applyStoryCohort(storylines::Storyline& story, const Value& p)
     return {true, "The story's wolves: " + std::to_string(add.size()) + " in, " + std::to_string(remove.size()) + " out.", story.id};
 }
 
+std::string Game::fillStoryNames(const std::string& text, std::size_t limit) const
+{
+    std::string out;
+    std::size_t at = 0;
+    while (at < text.size())
+    {
+        const auto open = text.find("{@", at);
+        const auto close = open == std::string::npos ? std::string::npos : text.find('}', open);
+        if (open == std::string::npos || close == std::string::npos || open + 3 >= close || text[open + 3] != ':')
+        {
+            out += text.substr(at, open == std::string::npos ? std::string::npos : open + 2 - at);
+            if (open == std::string::npos) break;
+            at = open + 2;
+            continue;
+        }
+        out += text.substr(at, open - at);
+        const char kind = text[open + 2];
+        const auto id = text.substr(open + 4, close - open - 4);
+        std::string name;
+        if (kind == 'w' || kind == 'r')
+        {
+            const auto* e = world_.entity(id);
+            name = e ? e->name : kind == 'w' ? nameOf(id) : std::string();
+            if (name.empty() && kind == 'r')
+                if (const auto* spec = world_.society().spec(id)) name = spec->name;
+        }
+        else if (kind == 'p')
+        {
+            if (const auto* cell = world_.cell(id)) name = cell->name;
+        }
+        else if (kind == 'i')
+            name = Society::itemName(id);
+        else if (kind == 'f')
+        {
+            if (const auto* f = factions_.find(id)) name = f->name;
+        }
+        else
+        {
+            out += text.substr(open, close + 1 - open);   // (Not a token the engines make: kept as written.)
+            at = close + 1;
+            continue;
+        }
+        out += name.empty() ? (kind == 'w' ? std::string("someone") : id) : name;
+        at = close + 1;
+    }
+    if (json::utf8Prefix(out, limit) == out)
+        return out;
+    auto cut = json::utf8Prefix(out, limit);
+    if (const auto space = cut.find_last_of(' '); space != std::string::npos && space > 0 && out[cut.size()] != ' ')
+        cut.resize(space);
+    while (!cut.empty() && (cut.back() == ' ' || cut.back() == ',')) cut.pop_back();
+    return cut;
+}
+
+Value Game::fillQuestWords(const Value& v, const char* key, std::size_t limit) const
+{
+    if (!v.isObject() || !v[key].isString() || v.string(key).find("{@") == std::string::npos)
+        return v;
+    Value out = v;
+    out.set(key, fillStoryNames(v.string(key), limit));
+    return out;
+}
+
 Result Game::applyStoryQuests(storylines::Storyline& story, const Value& p)
 {
     if ((p.has("offers") && (!p["offers"].isArray() || p.array("offers").size() > StoryOffersMost)) ||
@@ -1110,7 +1173,13 @@ Result Game::applyStoryQuests(storylines::Storyline& story, const Value& p)
         if (wolf.empty() || wolf.size() > 80 || !entry.isObject() || entry.array("quests").size() > QuestViewsMost ||
             entry.array("trackers").size() > TrackersMost || (entry.has("talk") && (!entry["talk"].isObject() || entry["talk"].size() > TalkMost)))
             return {false, "Invalid quest journal for " + wolf + ".", story.id};
-    if (p.has("offers")) story.offers = p["offers"];
+    if (p.has("offers"))
+    {
+        // (Doc 86, C1b: the names in an offer's words, as the engines left them as tokens.)
+        story.offers = Value::array();
+        for (const auto& o : p.array("offers"))
+            story.offers.push(fillQuestWords(fillQuestWords(fillQuestWords(o, "say", 300), "thanks", 300), "summary", 300));
+    }
     if (p.has("choices")) story.choices = p["choices"];
     if (const auto program = p.string("program"); !program.empty() && program.size() <= 80)
         story.templateId = program;                 // (Doc 86, N2: as story.phase names it, for a run older than that.)
@@ -1118,7 +1187,21 @@ Result Game::applyStoryQuests(storylines::Storyline& story, const Value& p)
     for (const auto& [wolf, entry] : p["wolves"].fields())
     {
         auto kept = Value::object();
-        kept.add("quests", entry["quests"].isArray() ? entry["quests"] : Value::array());
+        auto quests = Value::array();
+        for (const auto& q : entry.array("quests"))
+        {
+            // (Doc 86, C1b: a quest's summary and objectives, filled for this wolf, with names for the tokens.)
+            auto view = fillQuestWords(q, "summary", 300);
+            if (view.isObject() && view["objectives"].isArray())
+            {
+                auto objectives = Value::array();
+                for (const auto& o : view.array("objectives"))
+                    objectives.push(fillQuestWords(o, "label", 180));
+                view.set("objectives", std::move(objectives));
+            }
+            quests.push(std::move(view));
+        }
+        kept.add("quests", std::move(quests));
         kept.add("trackers", entry["trackers"].isArray() ? entry["trackers"] : Value::array());
         // (Doc 86, N2: what the residents this wolf talks to know of the wolf's own values: player.story.<name>.)
         auto talk = Value::object();

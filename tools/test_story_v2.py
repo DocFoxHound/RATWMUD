@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 import story_library
 import story_program as rules
+import story_quests as quests
 import story_runner as runner
 import story_triggers as triggers
 import story_v2_samples as samples
@@ -399,6 +400,226 @@ class Participation(unittest.TestCase):
         x = counting(WOLVES12, did=WOLVES12[:5])
         judged = triggers.judge(part(40, floor=4), x.state, {'kind': 'x'}, lambda: set(), None, None, x.phase, 20)
         self.assertEqual((judged['verdict'], judged['fact']), (True, {'among': 5, 'of': 12, 'need': 5}))
+
+
+
+# ------------------------------------------------------------------- doc 86, Phase 2: values in effects, fills, the purse, the moon
+ASH, BIRCH = samples.ASH, samples.BIRCH
+
+
+def _values_program(actions, variables=(), match=None, audience='participant', extra=None):
+    p = {'format': 'ratw-story-program', 'version': 2, 'id': 'p2', 'title': 'Values', 'start': 'a',
+         'audience': {'kind': 'players', 'players': [ASH, BIRCH]},
+         'variables': [{'id': 'p_voice', 'type': 'number', 'scope': 'player'}, {'id': 'guide', 'type': 'resident', 'scope': 'story'},
+                       {'id': 'finder', 'type': 'wolf', 'scope': 'story'}, {'id': 'n', 'type': 'number', 'scope': 'story'},
+                       {'id': 'word', 'type': 'text', 'scope': 'story'}, *variables],
+         'phases': [{'id': 'a', 'journal': 'A.', 'effects': [], 'exits': [], 'triggers': [
+             {'id': 't', 'on': 'conversation', 'audience': audience, **({'match': match} if match else {}), 'actions': actions}]}],
+         'tests': [{'name': 'x', 'cohort': [ASH, BIRCH], 'events': [], 'expect': ['a']}]}
+    if extra:
+        p.update(extra)
+    return p
+
+
+def _fire(p, state_counters=None, event=None, native=False):
+    rules.validate(p)
+    state = rules.begin(p, [ASH, BIRCH], 0)
+    if state_counters:
+        state['counters'] = copy.deepcopy(state_counters)
+    phase = rules.phase_of(p, state)
+    trace = []
+    ev = {'kind': 'conversation', 'id': 1, 'actor': ASH, 'target': 'rm111', **(event or {})}
+    if native:
+        triggers.fire(phase, state, ev, 1, 0, lambda: set(), rules.matches, lambda n, e: None, trace)
+    else:
+        with patch('story_native.interpreter', return_value=None):
+            triggers.fire(phase, state, ev, 1, 0, lambda: set(), rules.matches, lambda n, e: None, trace)
+    return state.get('triggerEffects', []), trace
+
+
+class Phase2Values(unittest.TestCase):
+    def test_coins_from_a_value_clamped_and_floored(self):
+        grant = lambda coins: {'do': 'effect', 'effect': {'kind': 'character.grant', 'player': '$actor', 'purse': 'town:greyfen',
+                                                           'reason': 'r', 'coins': coins}}
+        p = _values_program([grant({'min': [20, {'var': 'p_voice', 'of': '$actor'}]})])
+        effects, _ = _fire(p, {'player': {ASH: {'p_voice': 7}}})
+        self.assertEqual(effects[0]['coins'], 7)
+        effects, _ = _fire(p, {'player': {ASH: {'p_voice': 90}}})
+        self.assertEqual(effects[0]['coins'], 20)
+        p = _values_program([grant({'times': [{'var': 'p_voice', 'of': '$actor'}, 1000]})])
+        self.assertEqual(_fire(p, {'player': {ASH: {'p_voice': 9}}})[0][0]['coins'], 2500, 'kept to the parameter\'s most')
+        p = _values_program([grant({'div': [{'var': 'n'}, 3]})])
+        self.assertEqual(_fire(p, {'story': {'n': 8}})[0][0]['coins'], 2, 'floored')
+        self.assertEqual(_fire(p, {'story': {'n': 0}})[0][0]['coins'], 1, 'kept to the least')
+
+    def test_a_missing_value_skips_with_a_note(self):
+        p = _values_program([{'do': 'effect', 'effect': {'kind': 'npc.walk', 'npc': {'var': 'guide'}, 'cell': 'grey', 'x': 3, 'y': 4,
+                                                          'pace': 'walk', 'cue': 'c'}}])
+        effects, trace = _fire(p)
+        self.assertEqual(effects, [])
+        self.assertIn('skipped: npc has no value', trace[0]['notes'])
+        effects, _ = _fire(p, {'story': {'guide': 'rm112'}})
+        self.assertEqual(effects[0]['npc'], 'rm112', 'a resident from a variable')
+        p = _values_program([{'do': 'effect', 'effect': {'kind': 'deed.award', 'player': {'field': 'target'}, 'detail': 'x'}}])
+        self.assertEqual(_fire(p, event={'target': ASH})[0][0]['player'], ASH, 'a wolf from the event')
+        p = _values_program([{'do': 'effect', 'effect': {'kind': 'story.ping', 'cell': 'grey', 'x': {'var': 'n'}, 'y': 4, 'player': '$actor',
+                                                          'label': 'here', 'minutes': {'var': 'n'}}}])
+        effects, _ = _fire(p, {'story': {'n': 0}})
+        self.assertEqual((effects[0]['x'], effects[0]['minutes']), (0, 1), 'x may be 0; minutes is kept to its least')
+
+    def test_the_kinds_are_checked(self):
+        bad = _values_program([{'do': 'effect', 'effect': {'kind': 'npc.walk', 'npc': {'var': 'finder'}, 'cell': 'grey', 'x': 3, 'y': 4,
+                                                            'pace': 'walk', 'cue': 'c'}}])
+        with self.assertRaisesRegex(ValueError, '"finder" is a wolf: the resident needs a resident'):
+            rules.validate(bad)
+        self.assertTrue(errors(bad))
+        bad = _values_program([{'do': 'effect', 'effect': {'kind': 'item.give', 'player': '$actor', 'item': 'bread', 'quantity': {'var': 'word'}}}])
+        with self.assertRaisesRegex(ValueError, 'is a number'):
+            rules.validate(bad)
+        bad = _values_program([{'do': 'effect', 'effect': {'kind': 'item.give', 'player': '$actor', 'item': 'bread', 'quantity': 2}}])
+        bad['phases'][0]['effects'] = [{'kind': 'item.give', 'player': 'player-ash', 'item': 'bread', 'quantity': {'var': 'n'}}]
+        with self.assertRaisesRegex(ValueError, 'invalid item.give.quantity'):
+            rules.validate(bad)   # (What a phase sends as it opens is literal.)
+        bad = _values_program([{'do': 'effect', 'effect': {'kind': 'npc.line', 'npc': {'var': 'guide'}, 'text': 'x'}}])
+        with self.assertRaises(ValueError):
+            rules.validate(bad)
+
+    def test_fills_in_words(self):
+        post = lambda text: [{'do': 'remember', 'var': 'finder', 'from': 'actor'}, {'do': 'set', 'var': 'n', 'value': 34},
+                             {'do': 'effect', 'effect': {'kind': 'board.post', 'town': 'greyfen', 'days': 2, 'text': text}}]
+        p = _values_program(post('{finder} counted {n}; {{braces}} stay, {p_voice.of} is theirs.'))
+        effects, _ = _fire(p, {'player': {ASH: {'p_voice': 3}}})
+        self.assertEqual(effects[0]['text'], '{@w:' + ASH + '} counted 34; {braces} stay, 3 is theirs.')
+        with self.assertRaisesRegex(ValueError, 'Declare the variable "nobody" first'):
+            rules.validate(_values_program(post('{nobody} came.')))
+        with self.assertRaisesRegex(ValueError, 'each wolf\'s own: write {p_voice.of}'):
+            rules.validate(_values_program(post('{p_voice} came.')))
+        with self.assertRaisesRegex(ValueError, 'only a variable of each wolf'):
+            rules.validate(_values_program(post('{n.of} came.')))
+        with self.assertRaisesRegex(ValueError, 'A lone'):
+            rules.validate(_values_program(post('a { lone brace')))
+        with self.assertRaisesRegex(ValueError, 'too long once filled'):
+            rules.validate(_values_program(post('{word} ' + 'x' * 100)))   # (A text fills at its widest, 200: 301 of 300.)
+        rules.validate(_values_program(post('{word} ' + 'x' * 99)))
+        p = _values_program(post('ok'))
+        p['phases'][0]['effects'] = [{'kind': 'board.post', 'town': 'greyfen', 'days': 2, 'text': 'Opened by {finder}.'}]
+        with self.assertRaisesRegex(ValueError, 'fills words in a trigger'):
+            rules.validate(p)
+        p = _values_program(post('{word} said nothing.'))
+        effects, trace = _fire(p)
+        self.assertEqual(effects[0]['text'], ' said nothing.', 'an empty text fills as nothing')
+
+    def test_a_purse_read_now(self):
+        grant = {'do': 'effect', 'effect': {'kind': 'character.grant', 'player': '$actor', 'purse': 'town:greyfen', 'reason': 'r',
+                                            'coins': {'min': [12, {'div': [{'purse': 'town:greyfen'}, 20]}]}}}
+        p = _values_program([grant])
+        effects, _ = _fire(p, event={'facts': {'purses': {'town:greyfen': 212}}})
+        self.assertEqual(effects[0]['coins'], 10, 'min(12, 212 / 20)')
+        effects, trace = _fire(p, event={'facts': {'purses': {}}})
+        self.assertEqual(effects, [])
+        self.assertIn('skipped: coins has no value', trace[0]['notes'])
+        self.assertEqual(rules.watch_of(p)['purseFacts'], ['town:greyfen'])
+        self.assertIn('purses', rules.watch_of(p)['facts'])
+        bad = _values_program([{'do': 'set', 'var': 'n', 'value': {'purse': 'nowhere'}}])
+        with self.assertRaisesRegex(ValueError, 'Name a purse'):
+            rules.validate(bad)
+
+    def test_a_mirror_reads_the_world_number_a_wolf_names(self):
+        variables = [{'id': 'p_town', 'type': 'text', 'scope': 'player'}, {'id': 'v_grey', 'type': 'number', 'scope': 'world'},
+                     {'id': 'v_cold', 'type': 'number', 'scope': 'world'},
+                     {'id': 'p_howl', 'type': 'number', 'scope': 'player', 'show': 'Your town\'s howl',
+                      'mirror': {'key': 'p_town', 'names': {'greyfen': 'v_grey', 'coldwater': 'v_cold'}}}]
+        p = _values_program([{'do': 'set', 'var': 'n', 'value': {'var': 'p_howl', 'of': '$actor'}}], variables)
+        counters = {'player': {ASH: {'p_town': 'greyfen'}, BIRCH: {'p_town': 'coldwater'}}, 'world': {'v_grey': 5, 'v_cold': 9}}
+        state = rules.begin(p, [ASH, BIRCH], 0)
+        state['counters'] = counters
+        self.assertEqual(quests.trackers(p, state, ASH), [{'label': 'Your town\'s howl', 'value': 5}])
+        self.assertEqual(quests.trackers(p, state, BIRCH), [{'label': 'Your town\'s howl', 'value': 9}])
+        state['counters'] = {'world': {'v_grey': 5}}
+        self.assertEqual(quests.trackers(p, state, ASH)[0]['value'], 0, 'no town yet: 0')
+        self.assertEqual(_fire(p, counters)[1][0]['trigger'], 't')
+        state = {**rules.begin(p, [ASH, BIRCH], 0), 'counters': counters}
+        x = triggers.Ctx(rules.phase_of(p, state), state, {}, BIRCH, 1, 0, lambda: set(), None)
+        self.assertEqual(triggers.value_of({'var': 'p_howl', 'of': '$actor'}, x), 9, 'triggers read it as any variable')
+        with self.assertRaisesRegex(ValueError, 'mirrors a world variable: it is read, never set'):
+            rules.validate(_values_program([{'do': 'set', 'var': 'p_howl', 'value': 3}], variables))
+        bad = copy.deepcopy(variables)
+        bad[-1]['mirror']['names']['greyfen'] = 'n'
+        with self.assertRaisesRegex(ValueError, 'mirrors declared world numbers'):
+            rules.validate(_values_program([{'do': 'stop'}], bad))
+
+    def test_a_tracker_of_another(self):
+        variables = [{'id': 'bar', 'type': 'number', 'scope': 'story', 'show': 'This chapter', 'showOf': 'goal'},
+                     {'id': 'goal', 'type': 'number', 'scope': 'story'}]
+        p = _values_program([{'do': 'stop'}], variables)
+        rules.validate(p)
+        state = rules.begin(p, [ASH], 0)
+        state['counters'] = {'story': {'bar': 34, 'goal': 80}}
+        self.assertEqual(quests.trackers(p, state, ASH), [{'label': 'This chapter', 'value': 34, 'goal': 80}])
+        bad = copy.deepcopy(variables)
+        bad[1] = {'id': 'goal', 'type': 'number', 'scope': 'player'}
+        with self.assertRaisesRegex(ValueError, 'cannot read'):
+            rules.validate(_values_program([{'do': 'stop'}], bad))
+
+    def test_filters_that_begin_with_or_are_one_of(self):
+        p = _values_program([{'do': 'add', 'var': 'n', 'value': 1}], match={'target': {'in': ['rm111', 'rm112']}})
+        self.assertEqual(_fire(p, event={'target': 'rm112'})[1][0]['trigger'], 't')
+        self.assertEqual(_fire(p, event={'target': 'rm113'})[1], [])
+        deed = copy.deepcopy(p)
+        deed['phases'][0]['triggers'][0].update(on='deed', match={'detail': {'starts': 'stood watch at the ford'}})
+        rules.validate(deed)
+        ev = lambda detail: {'kind': 'deed', 'id': 1, 'actor': ASH, 'detail': detail}
+        self.assertTrue(rules.matches(deed['phases'][0]['triggers'][0], ev('stood watch at the ford (d12)')))
+        self.assertFalse(rules.matches(deed['phases'][0]['triggers'][0], ev('Stood watch at the ford (d12)')), 'case-sensitive')
+        gift = {'on': 'gift', 'match': {'item': {'in': ['rope', 'axle']}}}
+        self.assertTrue(rules.matches(gift, {'kind': 'gift', 'item': 'rope~fine'}), 'the gift item rule inside "in"')
+        self.assertFalse(rules.matches({'on': 'gift', 'match': {'item': {'in': ['rope~fine']}}}, {'kind': 'gift', 'item': 'rope'}))
+        cond = _values_program([{'do': 'add', 'var': 'n', 'value': 1}])
+        cond['phases'][0]['triggers'][0]['if'] = {'test': 'field', 'field': 'target', 'op': 'starts', 'value': 'rm11'}
+        self.assertTrue(_fire(cond)[1])
+        cond['phases'][0]['triggers'][0]['if'] = {'test': 'field', 'field': 'target', 'op': 'in', 'value': ['rm2', 'rm3']}
+        self.assertFalse(_fire(cond)[1])
+        for bad, words in [({'target': {'starts': ''}}, 'Invalid trigger filters'), ({'target': {'in': []}}, 'Invalid trigger filters'),
+                           ({'target': {'in': ['x'] * 33}}, 'Invalid trigger filters'), ({'target': {'begins': 'x'}}, 'Invalid trigger filters')]:
+            with self.assertRaisesRegex(ValueError, words):
+                rules.validate(_values_program([{'do': 'stop'}], match=bad))
+        near = _values_program([{'do': 'stop'}])
+        near['phases'][0]['triggers'][0].update(on='near resident', match={'target': {'in': ['rm111']}})
+        with self.assertRaisesRegex(ValueError, 'as exact words'):
+            rules.validate(near)
+        cond['phases'][0]['triggers'][0]['if'] = {'test': 'field', 'field': 'coins', 'op': 'in', 'value': ['3']}
+        with self.assertRaisesRegex(ValueError, 'text fields'):
+            rules.validate(cond)
+
+    def test_the_moon(self):
+        p = _values_program([{'do': 'add', 'var': 'n', 'value': 1}])
+        p['phases'][0]['triggers'][0]['if'] = {'test': 'calendar is', 'what': 'moon', 'value': 'full'}
+        self.assertTrue(_fire(p, event={'facts': {'world': {'moon': 'full'}}})[1])
+        self.assertFalse(_fire(p, event={'facts': {'world': {'moon': 'new'}}})[1])
+        self.assertFalse(_fire(p)[1], 'no facts: unknown, never fires')
+        p['phases'][0]['triggers'][0]['if']['value'] = 'blue'
+        with self.assertRaisesRegex(ValueError, 'or the moon'):
+            rules.validate(p)
+        moon = _values_program([{'do': 'stop'}])
+        moon['phases'][0]['triggers'][0].update(on='moon', match={'detail': 'new'})
+        rules.validate(moon)
+        self.assertIn('moon', rules.watch_of(moon)['events'])
+
+    def test_a_camp_named_with_the_story_prefix(self):
+        spawn = lambda camp: [{'do': 'effect', 'effect': {'kind': 'bandits.call', 'player': '$actor', 'count': 2, 'camp': camp}}]
+        with self.assertRaisesRegex(ValueError, 'declares its prefix'):
+            rules.validate(_values_program(spawn('sq_alder')))
+        with self.assertRaisesRegex(ValueError, 'begins with the story\'s prefix'):
+            rules.validate(_values_program(spawn('alder_mere'), extra={'prefix': 'sq'}))
+        with self.assertRaisesRegex(ValueError, 'prefix is 2 to 8 small letters'):
+            rules.validate(_values_program(spawn('sq_alder'), extra={'prefix': 'SQ'}))
+        with self.assertRaisesRegex(ValueError, 'invalid bandits.call.camp'):
+            rules.validate(_values_program(spawn('sq_Alder Mere'), extra={'prefix': 'sq'}))
+        p = _values_program(spawn('sq_alder'), extra={'prefix': 'sq'})
+        rules.validate(p)
+        self.assertEqual(rules.camps_of(p), {'sq_alder'})
+        found = errors(_values_program(spawn('alder_mere'), extra={'prefix': 'sq'}))
+        self.assertTrue(any('prefix' in f['text'] for f in found))
 
 
 if __name__ == '__main__':

@@ -1531,8 +1531,11 @@ class World
     bool hostile(const std::string& id) const;               // A bandit, still standing.
     // Bandits called up near someone (the Dungeon Master: doc 33): a small camp of `count` (1..6) five to ten tiles away,
     // on open ground away from doors; they come out at once, as any camp does when someone is near.
-    Result callBandits(const std::string& near, int count);
-    Result storyBandits(const std::string& cellId, int x1, int y1, int x2, int y2, int count);
+    Result callBandits(const std::string& near, int count, const std::string& name = {});
+    // Doc 86, L2: `name` (a story camp's, 3 to 30 of a-z, 0-9 and _) makes the camp camp_story_<name>, joined by a second
+    // spawn while it stands and made again once cleared.
+    Result storyBandits(const std::string& cellId, int x1, int y1, int x2, int y2, int count, const std::string& name = {});
+    Result namedStoryCamp(const std::string& name, const std::string& cellId, Vec2 at, int count, const std::string& near);
     std::int64_t banditDemand(const std::string& player) const; // What bandits are asking of them now (0: nothing).
     // Things that happened to a player that no action of theirs answered (a bandit's blow, say), since the last
     // call: (player, words), oldest first. The host shows them to the player. `moved`: whether any of them speaks of coins

@@ -5,7 +5,7 @@ import {arr, bool, isObject, num, obj, str, type Json} from '../../game/json.ts'
 import type {GameState} from '../../game/state.ts';
 import {button, el} from './dom.ts';
 import {ask} from '../dialog.ts';
-import {noteLines, questButtons, questLines, questMessage, questStatus, trackerLines} from '../../game/quests.ts';
+import {noteLines, questButtons, questLines, questMessage, questStatus, trackerRows} from '../../game/quests.ts';
 
 /** Moves the record at `i` one place up (-1) or down (+1); the same order if it can't. */
 export function moveRecord(order: readonly string[], i: number, by: -1 | 1): string[] {
@@ -108,7 +108,15 @@ export function renderStoryline(box: HTMLElement, s: GameState, t: Json) {
                 });
         }
     }
-    for (const line of trackerLines(t)) el('div', 'muted small', box, line);
+    for (const row of trackerRows(t)) {
+        el('div', 'muted small', box, row.text);
+        if (row.fill !== undefined) {
+            // (Doc 86, C1d: "This chapter: 34 / 80" over a thin bar.)
+            const bar = el('div', 'story-tracker-bar', box);
+            bar.style.cssText = 'height:3px;background:rgba(255,255,255,.15);border-radius:2px;margin:1px 0 4px;overflow:hidden';
+            el('div', '', bar).style.cssText = `height:100%;width:${Math.round(row.fill * 100)}%;background:currentColor;opacity:.7`;
+        }
+    }
     // Its notes (doc 85, Phase 9: lines the story added to this wolf's journal).
     for (const line of noteLines(t)) el('div', 'small', box, line);
     const people = arr(t, 'participants').filter(isObject);

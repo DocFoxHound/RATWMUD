@@ -1160,6 +1160,10 @@ class ReadinessShapes(unittest.TestCase):
 
     def test_the_moments_and_bounds(self):
         self.p['phases'][1]['ready']['then'] = {'on': 'moon', 'match': {'detail': 'new'}}
+        rules.validate(self.p)   # (Doc 86, Phase 2: the moon is a moment now, J4.)
+        self.assertEqual(rules.ready_words(self.p['phases'][1]['ready']['then']), 'the next new moon')
+        self.setUp()
+        self.p['phases'][1]['ready']['then'] = {'on': 'month begins'}
         self.refused('Readiness waits for one of')
         self.setUp()
         self.p['phases'][0]['ready']['auto'] = True
@@ -1184,6 +1188,34 @@ class ReadinessShapes(unittest.TestCase):
     def test_the_watch_list_asks_for_its_moment(self):
         self.assertIn('day begins', rules.watch_of(self.p)['events'])
         self.assertIn('wolves', rules.watch_of(self.p).get('facts', []), 'counting who is online reads the signed-in wolves')
+
+
+class FilterForms(unittest.TestCase):
+    """Doc 86, C12b: a filter may begin with a text or be one of several, in triggers, exits, missions and objectives; a
+    deed's detail ends with "(<deed id>)", so it is matched by how it begins."""
+
+    def test_a_deed_matched_by_how_it_begins(self):
+        exit_ = {'on': 'deed', 'to': 'b', 'match': {'detail': {'starts': 'stood watch at the ford'}}}
+        self.assertTrue(rules.matches(exit_, {'kind': 'deed', 'detail': 'stood watch at the ford (d41)'}))
+        self.assertFalse(rules.matches(exit_, {'kind': 'deed', 'detail': 'kept the ford (d42)'}))
+        self.assertTrue(rules.matches({'on': 'gift', 'match': {'item': {'starts': 'rope'}}}, {'kind': 'gift', 'item': 'rope~fine'}))
+        self.assertFalse(rules.matches({'on': 'gift', 'match': {'item': {'starts': 'rope~f'}}}, {'kind': 'gift', 'item': 'rope'}))
+
+    def test_exits_missions_and_moments_take_them(self):
+        import story_v2_samples as samples
+        p = copy.deepcopy(samples.all_samples()[0])
+        p['phases'][0]['exits'].append({'on': 'deed', 'to': p['phases'][0]['id'], 'match': {'detail': {'starts': 'stood'}, 'cell': {'in': ['a', 'b']}}})
+        rules.validate(p)
+        p['phases'][0]['exits'][-1]['match'] = {'detail': {'starts': 'x', 'in': ['y']}}
+        self.assertRaisesRegex(ValueError, 'invalid event filter', rules.validate, p)
+        self.assertEqual(rules.match_words({'in': ['a', 'b']}), 'one of a, b')
+        self.assertEqual(rules.stand_in_match({'cell': {'in': ['a', 'b']}, 'detail': {'starts': 'x'}, 'item': 'rope'}),
+                         {'cell': 'a', 'detail': 'x', 'item': 'rope'})
+        self.assertEqual(rules.match_values({'in': ['a', 'b']}) + rules.match_values({'starts': 'x'}) + rules.match_values('c'), ['a', 'b', 'c'])
+        weather = {'format': 'ratw-story-program', 'version': 1, 'id': 'w', 'title': 'W', 'start': 'a', 'audience': {'kind': 'players', 'players': ['p']},
+                   'phases': [{'id': 'a', 'journal': 'A.', 'effects': [], 'exits': [{'on': 'weather changed', 'to': 'a', 'match': {'target': {'in': ['x', 'y']}}}]}],
+                   'tests': []}
+        self.assertEqual(rules.watch_of(weather).get('cells'), ['x', 'y'], 'each cell of an "in" is watched for its weather')
 
 
 if __name__ == '__main__':

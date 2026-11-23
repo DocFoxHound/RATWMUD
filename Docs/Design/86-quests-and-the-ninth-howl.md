@@ -1213,3 +1213,143 @@ catalogue), a new action group `talk`, three new parameter types (`talkkey`, `ta
   the new checkpoint fields, absent at first), the story runner from this branch, the Editor released from it. Act I's
   chapters can move onto a version that uses these by `migrate`; a version that holds residents for the campaign is approved
   as a chapter (with its campaign, or as a new version of a running chapter's run).
+
+## Phase 2 as built
+
+**Phase 2 as built** (2026-11-23, branch `r3-nh-p2`, on `r3-nh-p1b` at `f127dc89`). Engine spec items C1 (a–d), M2, C12b, N3,
+J4 (with R2's moon anchor), SQ1, SQ5, L3, L2 (with the program's `prefix`), M5 and N4. **No migration** (the spec names none
+for this phase: goals live in the copies, mirrors are never stored, camps in the roads' save). No new effect; one new event
+(`moon`, 206 events, 69 mission events, 33 watched); a new parameter type `camp`; every effect parameter of type `int`,
+`wolf`, `resident`, `place`, `item`, `faction` or `town` marked `"operand": true` (not `npc.line`, not `story.start`), and five
+text parameters marked `"fills": true`.
+- **C1a: values in effect parameters** (`story_triggers.resolve_effect`, `check_operand_param`; `Dispatch2::resolve` in the
+  native twin, which is sent the catalogue's specs of the effects its rules use as `effectSpecs`: `story_native._needs_of`).
+  In `_act` (both twins), after `$actor` and `$each`, each operand parameter given a dict is worked out with `value_of`: a
+  number floored and kept to the parameter's `min`..`max` (a `nonzero` 0 sends nothing), an id a non-empty text; a missing
+  value sends nothing and the firing's notes say "skipped: <param> has no value". The check (`validate_effect`'s new `operand`
+  callback): a number value for `int`; for an id, a variable of its kind or a text (`OPERAND_VARS`; a mirror never), the
+  event's field that holds one (`OPERAND_FIELDS`: a wolf's `actor`/`target`, a resident's `target`/`item`, a place's
+  `cell`/`target`...), the loop's value of its kind; "a wolf variable in a resident param" is refused ("“finder” is a wolf: the
+  resident needs a resident"). Phase entry effects stay literal. **Quest rewards** work theirs out when given
+  (`Run.reward`, `words_ctx`: the credited wolf as `$actor`, the fact being read as the event; no field, no loop); a reward
+  with no value is left out and noted in the state's `rewardNotes` (the last 20). `references()` and the world checks skip a
+  dict value (and a tile or item made of one), so the game refuses an unknown id at run time. A pair's `player` (C8) may now
+  be a wolf value too.
+- **C1b: fills** (`story_triggers.FILL`, `fills_in`, `fill_text`, `check_fills`; `Dispatch2::fillText`, `fillOne`). `{name}` and
+  `{name.of}` in `story.tell.text`, `board.post.text`, `journal.note.text`, `npc.speak.text`, `deed.award.detail`, a quest's
+  `summary` and objective `label`, and an offer's `say`/`thanks`; `{{`/`}}` braces, a lone brace refused. A number fills as its
+  digits (truncated, as both twins agree), a switch as `yes`/`no`, a text as it is, a `wolf`/`resident`/`place`/`item`/`faction`
+  as a token `{@w:<id>}`… (`NAME_TOKENS`); `.of` reads the acting wolf, or the looped wolf inside For each over wolves (the
+  loop's kind is carried as `Ctx.each_wolf` / `eachWolf`). Checks: declared, not a list or a timer; a wolf's own only with
+  `.of` and the story's and the world's only without; an offer's words take no `.of`; widest length (number 11, switch 3, text
+  200, wolf 24, other names 40, a mirror 11). **The game** (`Game::fillStoryNames(text, limit)`, `RatwGameStorylines.cpp`)
+  turns the tokens into names (a wolf's or a resident's name, "someone" for a wolf not known; a place's, an item's
+  `Society::itemName`, a faction's) and cuts at the limit on a word: in `applyStoryTell`, `journal.note`, `board.post`, a
+  story scene's `npc.speak`, a deed's words, and the quest views (summary, objective labels) and offers (`say`, `thanks`,
+  `summary`) of `story.quests` (`fillQuestWords`). The quest words are filled per wolf in `story_quests.view`/`views` and the
+  offers once (`offers`), only for a program whose words or goals read values (`_needs_ctx`); the journal's fingerprint then
+  follows the counters.
+- **C1c: a goal from a value** (`story_quests.goal_of`, `read_goal`, `Run.read_goals`, `live_goals`, `keep_up`). An objective's
+  `goal` may be a number value (no field, no loop), read when a copy starts into `objectives.<id>.goal` (1 to 1,000,000; not
+  known: unreachable until it is); `goalLive` (a story-scope quest only) reads it again as the copy is credited, for
+  `objective.progress`, and after every firing (`story_program.dispatch` calls `keep_up` after the story's effects), never
+  below `n`, completing at once when `n` reaches it. Every reader of a goal (`track`, `objective_done`, the views, the board,
+  Readiness's quest part, the console's objective commands) goes through `goal_of`.
+- **C1d: a tracker of another** (`_check_show_of`; `trackers` adds `goal`). The client prints "label: a / b" over a thin bar
+  (`Client/src/game/quests.ts` `trackerRows`; `archive.ts`).
+- **M2: the purse** (`{"purse": <purse>}`: `operand_type` with `check_purse`, `value_of`, `Dispatch2::value`). Read from the
+  event's facts' `purses`; the program's watch gets the facts section `purses` and the list `purseFacts` (`watch_of`,
+  `purses_in`), which `refreshStoryWatch` keeps and `storyFactsJson` reports as `{<purse>: cash}` through
+  `storyPurseAccount` (a purse with no account is left out, so no value). The native request keeps the facts when a rule
+  reads a purse. Approval checks every purse a value reads (triggers, Readiness, quests) as SQ2 does (`_purse_sites`).
+  `check_world_facts` accepts the section.
+- **C12b: `starts` and `in`** (`story_program.match_value_ok`, `match_ok`, `match_one`, `match_words`, `plain_match`,
+  `match_values`, `stand_in_match`; `matchOne`, `fieldCompare` in the native twin, both `matches` and the classic `field`
+  condition). In triggers, exits, prerequisites, missions, quest objectives and fail rules (the signal rule too), and
+  Readiness's `then`; `needsMatch` fields stay exact ("… as exact words (not "begins with" or "one of")"). The approval
+  checks read each value of an `in` (a `starts` names nothing to look up); the console's stand-in events use a `starts`'s
+  text or an `in`'s first; Why not? words the expected value; a weather filter's `in` watches each cell.
+- **N3: a mirror** (`_check_mirror`, `mirror_value`; `Dispatch2::mirror`). A shown player number with `mirror {key, names}`
+  (1 to 16, each a declared world number; the key a player text): computed when read, 0 for a key with no name, never set
+  (every write refused). `key` as a `realm` text waits for J2 (Phase 8).
+- **J4: the moon** (`Game::moonQuarter`, the octant of `moonName`: new, waxing, full, waning). The world facts' `moon`; the
+  watched event `moon` (detail the quarter, quantity the day of the round) when the quarter changes, remembered from the
+  first look (`storyMoon_`); `calendar is` `moon` in both twins; `READY_ANCHORS` gains `moon` and `ready_words` says "the next
+  new moon".
+- **SQ1, SQ5, L3: what an objective counts** (`story_quests._check_objective`, `Run.track` (rewritten to group by copy),
+  `where`, `credit_of`). `where` cells (1 to 16) or a region (a tile inside; no tile: by the cell; no place: never); `credit`
+  `actor`, `target` (stall sale, vouch, told and vouched to the Wardens) or `present` (the cohort wolves in the event's cell
+  by the facts' `wolves`, 500 at most); one fact gains a copy once, every credited wolf credited. The six events are mission
+  events; the five with no wolf need `present` ("Nobody is the actor of a wagon arriving: credit the wolves present"). The
+  approval checks the cells (`world_checks`).
+- **M5**: `trade done` has `cell` (`tile` false: the game writes no tile for it).
+- **N4: `join.again`** (1 to 365): `story_quests.again` waits that long after any end; done takes the later of it and the
+  repeat's gap. The game already shows "Not yet." by the view's `again`.
+- **L2: named camps** (`World::namedStoryCamp`, `storyBandits` and `callBandits` with a `name`; the game passes the payload's
+  `camp`). The camp is `camp_story_<name>`: a second spawn while it stands adds its strength (and moves it to the new ground
+  while none of its bandits stand in person); a cleared one is made anew under the name. The program's top-level `prefix`
+  (2 to 8 small letters) is required by a program that names a camp, and every name begins with it and `_`
+  (`_check_camps`, `camps_of`, also in the Problems list); V1's objective check accepts `camp_story_<name>` only for a name the
+  program spawns.
+- **Workbench** (`Editor/`): every operand parameter's picker has "…or a value" (the operand picker of its kind) and shows a
+  value in words (`isOperand`, `shown`); filters' and the field condition's forms in words (`matchWords`: "begins with
+  “Stood watch”", "one of Ivo Tarmarsh, …"); fills as chips in sentences (`fillChips`, `Sentence.tsx`); the text picker offers
+  the declared variables to fill in and the widest length (`fillsOf`, `widestFilled`); the rehearsal shows tokens as
+  «wolf: Ash» (`tokenWords`); the quest editor's goal "or a value…" (a number variable, or the goal or two for each active
+  wolf) with "keeps up with it", "Counts anywhere / only in some cells / only inside a region", "Who is credited", and "The
+  same wolf again after"; the variables' "Shown of" and a mirror's summary; `editable` takes a field condition's list.
+- **Guide and format**: `Docs/Story-Maker-guide.md` §6 "What a purse holds now", "Values in an effect", "Words with fills", "A
+  number shown of another, and a mirror"; §7 a goal from a value, again after a wait, "Where an objective counts", "Who an
+  objective credits", "A story's camps"; §8 filters that begin with or are one of (a deed's detail), the moon; §15 three rows;
+  §16 the limits; the reference regenerated (`story_guide.py --write`; `--check` passes). `Docs/story-programs.md` gains
+  "Values, fills and objectives". The catalogue's `about`, `types.operand`, `types.camp`, `trigger.match`.
+- **Sample** `story_v2_samples.VALUES` ("The beacon road", `v2-beacons`, prefix `sq`, in `all_samples()`, so both twins run it
+  under five seeds): a story-scope bar whose goal is `max(12, times(audience active, 4))` with `goalLive`, a tracker of its
+  goal, a pledge that sets a world number a wolf's mirror reads (and pays by it), a deed matched by how it begins (and a
+  field condition's `in`), a board post with a wolf's name and two numbers filled, a journal note to `{"field": "actor"}`, a
+  named camp spawned at the opening and cleared as a plain objective, a wagon objective with `credit: present` and `where`,
+  rewarded from what the purse holds (212 pennies pay 10), and a Readiness whose `then` is the next new moon. Its one case
+  pins the effects; it rehearses clean: nothing uncovered.
+- **Tests**: `test_story_v2` (`Phase2Values`: coins from a value, kept and floored; a missing value skipped with its note; a
+  resident from a variable, a wolf from the event; the kinds checked, entry effects literal, `npc.line` refused; fills
+  (tokens, digits, braces, undeclared, `.of` rules, a lone brace, widest length at 300 and 301, none at a phase's opening);
+  the purse (10 at 212, an unknown purse skipped, watched); the mirror (two wolves, no town 0, read by triggers, never set,
+  only world numbers); `showOf`; `starts`/`in` (case-sensitive, the gift rule, the bounds, exact `needsMatch`, text fields
+  only); the moon; the prefix and camp names), `test_story_native` (`ValuesParity`: every form over four states and four
+  events, both twins identical, notes included), `test_story_quests` (`Phase2`: `where` by cells and by region; `credit`
+  target and present, a story copy once, "by the watch" nobody; the six mission events; `trade done`'s cell; a goal from a
+  value read at the start and kept up, falling below what is made; `join.again` after abandoning and with a daily repeat; a
+  reward that follows the purse, an unknown purse noted, words filled per wolf, an offer's `.of` refused),
+  `test_story_program` (`FilterForms`; Readiness `then: moon` accepted, `month begins` still refused), `test_story_problems`
+  (`ValuesProblems`; `ValuesInTheWorld` with a throwaway database: an unknown cell in `where`, a named camp's objective, a
+  purse a value reads, values passed to the game), `Tests/story_facts_tests.cpp` (`phaseTwoMoonAndPurses`: day 88.6 new, 103.4
+  full, one event a change, the facts' moon and purse, nothing after the end), `Tests/roads_tests.cpp` (`namedStoryCamps`: the
+  id, a second spawn joins, called bandits join near the wolf, cleared by a fight with `camp cleared` and `bandit falls`
+  carrying the id, the name reused), `Tests/story_world_tests.cpp` (`phase2Names`: tokens become names, unknown kinds kept,
+  the cut, a told line, an offer's and a journal's words), `Client/src/game/quests.test.ts` (a / b and the bar),
+  `workbench.test.ts` (the new words, 113 programs). Updated counts: `test_story_catalogue` (206 events, 69 mission events;
+  the hand-written effect checks leave the optional `camp` out), `test_story_facts` and `workbench.test.ts` (33 watched),
+  `test_story_drafts` (209).
+- **Run** (with the local PostgreSQL: the tests' own throwaway `ratw_test_*` databases and `RATW_STORY_TEST_DSN` on a throwaway
+  migrated `ratw_test_nhp2_main`, all dropped after): every `tools/test_story_*.py` but the three live ones (`test_story_scenes`
+  through `unittest`), `test_dungeon_master` (two errors on a first run beside a parallel build; clean on the run after),
+  `test_dialect_check`, `test_talk_*`, all passed; ctest `-R "talk_|dialect|mantle_|story|storyline|troubles|dialogue|checkpoint|
+  save_compat|game_|world_|project|roads|camp"` (44) passed but `talk_scorecard_quick`'s latency gate under the parallel run,
+  which passes alone (as in Phase 1b); the Editor's tests (144 and 78), type check, build and render smoke (62 panels; the
+  workbench over 108, 14 and 2 programs, none edited); the Client's tests (245) and build.
+- **Left or changed, and why**: the spec's C1b fills for `npc.greet.text` and `title.give.title` and C1a's `{"share": true}`
+  in rewards come with those effects (C4, C5, C3: Phase 3). A mirror's `key` as a `realm` text waits for J2 (Phase 8). A
+  goal not known when its copy starts is out of reach (1,000,000) until it is known, rather than 1. `goalLive` is also read
+  after every firing (so a goal lowered by a trigger completes on that event), not only "at each journal sync": the journal
+  view shows the live value without storing it. SQ5's `present` makes the program watch its wolves whenever any objective
+  says it, not only while one is under way (the watch is per program). A named camp that has bandits out in person keeps
+  its ground when a second spawn joins it (its strength grows; new bandits come out the next time it is staged), rather than
+  moving under them. A fill's number is truncated toward zero and a text fill counts 200 at its widest, so a text fill does
+  not fit a 200-character note or deed (the spec's rule). A phase's entry effects take neither values nor fills (refused
+  with "fills words in a trigger's effect…"): they are not run through `_act`. The guide's §13 and §14 are unchanged (nothing
+  new is undone at a run's end). `RUNNER_VERSION` is `doc86-phase2`.
+- **Going live** on `ratw_ridgemere3` needs no migration of its own; the game server restarted from this branch (the moon,
+  the purse facts, named camps and the name tokens are the game's), the story runner from this branch with the rebuilt
+  `libratw_story.so` (a run's effects with values or fills need both twins), the Editor and the client released from it. Act
+  I's chapters can move onto a version that uses these by `migrate`; camp, wagon and festival objectives become plain
+  objectives in a new version, and the `join.cap: 1` quests may take `join.again: 7`.

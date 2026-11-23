@@ -118,7 +118,8 @@ def references(conn, world, program, chapters=False):
         for s in rules.phases_of(program)
         for e in rules.possible_effects(s)
         for key, value in e.items()
-        if key in tables and not (e['kind']=='scene.play' and key=='player' and value=='world')
+        if key in tables and isinstance(value, str)   # (Doc 86, C1a: a value worked out as it fires is the game's to refuse.)
+        and not (e['kind']=='scene.play' and key=='player' and value=='world')
         and not (e['kind'] == 'standing.adjust' and key == 'faction')   # (Standing's factions are the game's: it refuses.)
         and not (e['kind'] == 'npc.offer' and key == 'player')
     }
@@ -151,13 +152,15 @@ def references(conn, world, program, chapters=False):
     for phase in rules.phases_of(program):
         evidence = [o for m in phase.get('missions', []) for o in m['objectives']]
         for objective in [*evidence, *phase.get('triggers', [])]:
+            # (Doc 86, C12b: an "in" names each of its values; a "begins with" names none.)
             filters = objective.get('match', {})
-            if filters.get('cell'):
-                refs.add(('cell', filters['cell']))
-            if objective['on'] == 'enter place' and filters.get('target'):
-                refs.add(('place', filters['target']))
-            if objective['on'] in ('conversation', 'gift', 'gift again') and filters.get('target'):
-                refs.add(('character', filters['target']))
+            for cell in rules.match_values(filters.get('cell')):
+                refs.add(('cell', cell))
+            for target in rules.match_values(filters.get('target')):
+                if objective['on'] == 'enter place':
+                    refs.add(('place', target))
+                if objective['on'] in ('conversation', 'gift', 'gift again'):
+                    refs.add(('character', target))
     for key, value in sorted(refs):
         if key == 'character':
             rules.require(
@@ -178,6 +181,12 @@ def references(conn, world, program, chapters=False):
         )
     for s in rules.phases_of(program):
         for e in rules.possible_effects(s):
+            if any(isinstance(v, dict) for v in e.values()):
+                # (Doc 86, C1a: a value worked out as it fires is the game's to refuse; the literal parts are still checked.)
+                e = {**{k: v for k, v in e.items() if not isinstance(v, dict)},
+                     **{k: '$actor' for k, v in e.items() if isinstance(v, dict)}}
+                if any(e.get(k) == '$actor' for k in ('cell', 'x', 'y', 'item', 'door', 'npc', 'mantle', 'town')):
+                    continue
             if e['kind'] == 'storyline.give':
                 rules.require(
                     e['template']
@@ -294,6 +303,19 @@ def _purse_sites(program):
     for path, at, what, rule in _filter_sites(program):
         if rule.get('on') == 'purse crossed' and isinstance(rule.get('match', {}).get('target'), str):
             yield path, at, rule['match']['target']
+    # (Doc 86, M2: a value that reads what a purse holds: in a trigger, a quest's goal or reward, a phase's Readiness.)
+    for i, t in enumerate(program.get('triggers', []) or []):
+        for purse in sorted(set(rules.triggers.purses_in(t))):
+            yield f'triggers[{i}]', {'phase': None, 'kind': 'trigger', 'index': i, 'id': t.get('id')}, purse
+    for pi, ph in enumerate(program.get('phases', []) or []):
+        for i, t in enumerate(ph.get('triggers', []) or []):
+            for purse in sorted(set(rules.triggers.purses_in(t))):
+                yield f'phases[{pi}].triggers[{i}]', {'phase': pi, 'phaseId': ph.get('id'), 'kind': 'trigger', 'index': i, 'id': t.get('id')}, purse
+        for purse in sorted(set(rules.triggers.purses_in(ph.get('ready')))):
+            yield f'phases[{pi}].ready', {'phase': pi, 'phaseId': ph.get('id'), 'kind': 'phase'}, purse
+    for qi, q in enumerate(program.get('quests', []) or []):
+        for purse in sorted(set(rules.triggers.purses_in(q))):
+            yield f'quests[{qi}]', {'kind': 'quest', 'index': qi, 'id': q.get('id')}, purse
 
 
 def _objective_sites(program):
@@ -391,8 +413,23 @@ def world_checks(conn, world, program, chapters=False):
             elif kind == 'camp':
                 if cells is None:
                     cells = {r[0] for r in conn.execute('SELECT id FROM world.cells WHERE world_id=%s', (world,))}
-                if not (target.startswith('camp_') and (target[5:] in cells or target.startswith('camp_story_'))):
+                named = rules.camps_of(program)
+                if target.startswith('camp_story_'):
+                    # (Doc 86, L2: a story camp is one this program names when it spawns; an unnamed one's number is not known.)
+                    if target[len('camp_story_'):] not in named:
+                        add(path, at, f'No camp "{target}" is spawned by this story: name it on a spawn (camp: '
+                            f'"{target[len("camp_story_"):]}"), or match camp_<cell>.')
+                elif not (target.startswith('camp_') and target[5:] in cells):
                     add(path, at, f'No camp "{target}" in this world: a camp is camp_<cell> (a cell of the world).')
+        # (Doc 86, SQ1: the cells an objective counts in are the world's.)
+        where = o.get('where') if isinstance(o.get('where'), dict) else {}
+        if isinstance(where.get('cells'), list):
+            if cells is None:
+                cells = {r[0] for r in conn.execute('SELECT id FROM world.cells WHERE world_id=%s', (world,))}
+            for cell in where['cells']:
+                if isinstance(cell, str) and cell not in cells and not conn.execute(
+                        'SELECT 1 FROM world.areas WHERE world_id=%s AND id=%s', (world, cell)).fetchone():
+                    add(path, at, f'Unknown cell in this world for "where": {cell}')
         item = m.get('item')
         if isinstance(item, str) and item and re.split('[~@]', item, maxsplit=1)[0] not in items:
             add(path, at, f'No item "{item}" in the item catalogue: this objective could never be done.')
@@ -443,9 +480,9 @@ def world_checks(conn, world, program, chapters=False):
         if kind in ('talk.remember', 'talk.forget', 'belief.plant') and isinstance(e.get('town'), str) and e['town'] not in towns:
             add(path, at, f'Unknown town in this world: {e["town"]}')
         if kind == 'figure.set':
-            if e.get('known') == 'region' and e.get('region') not in towns:
+            if e.get('known') == 'region' and isinstance(e.get('region'), str) and e.get('region') not in towns:
                 add(path, at, f'Unknown town in this world: {e.get("region")}')
-            if e.get('known') == 'house' and not conn.execute('SELECT 1 FROM live.factions WHERE world_id=%s AND id=%s',
+            if e.get('known') == 'house' and isinstance(e.get('house'), str) and not conn.execute('SELECT 1 FROM live.factions WHERE world_id=%s AND id=%s',
                                                              (world, e.get('house'))).fetchone():
                 add(path, at, f'Unknown faction in this world: {e.get("house")}')
         if kind in ('npc.spare', 'npc.protect') and e.get('lasts') == 'campaign' and not chapters:
@@ -2760,10 +2797,11 @@ def _program_ids(program):
     ids = set(program['audience'].get('players', []))
     for phase in rules.phases_of(program):
         for e in rules.possible_effects(phase):
-            ids.update(v for k, v in e.items() if k in ('npc', 'player', 'resident', 'faction', 'other', 'cell', 'place', 'town'))
+            ids.update(v for k, v in e.items() if k in ('npc', 'player', 'resident', 'faction', 'other', 'cell', 'place', 'town')
+                       and isinstance(v, str))
         ids.update(phase.get('guestVoices', []))
         for t in [*phase['exits'], *phase.get('triggers', []), *(o for m in phase.get('missions', []) for o in m['objectives'])]:
-            ids.update(v for k, v in t.get('match', {}).items() if k in ('actor', 'target', 'cell'))
+            ids.update(x for k, v in t.get('match', {}).items() if k in ('actor', 'target', 'cell') for x in rules.match_values(v))
     for r in program.get('regions', []):
         ids.add(r['cell'])
     for scene in program.get('scenes', []):
@@ -3123,7 +3161,7 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
 # after, in the command's row and in dm.audit. A command can release only what was approved (5.1, rule 4): it fires a
 # trigger the program has, enters a phase it has, sets a counter it names; nothing adds a trigger or changes a rule.
 
-RUNNER_VERSION = 'doc86-phase1b'
+RUNNER_VERSION = 'doc86-phase2'
 COMMAND_KINDS = ('hold', 'resume', 'stop', 'signal', 'fire', 'enable', 'disable', 'enter', 'set', 'timer', 'mission',
                  'order', 'tell', 'scene', 'migrate', 'objective', 'quest', 'participant', 'advance')
 # Flow commands move the story (dispatch a fact, run actions, open a visit, send the journal): they wait while the run is
@@ -3702,7 +3740,7 @@ class Steer:
         actor = self.cohort(self.payload.get('actor', ''), required=personal)
         key = rules.triggers.trigger_key(phase, t['id'])
         _require(not (check and key in self.state.get('disabled', ())), 'It is turned off (fire it without its checks, or turn it on).')
-        stand_in = {'kind': t['on'], 'signal': t.get('signal'), 'actor': actor, 'id': None, **t.get('match', {})}
+        stand_in = {'kind': t['on'], 'signal': t.get('signal'), 'actor': actor, 'id': None, **rules.stand_in_match(t.get('match', {}))}
         owner = actor if repeat in ('player', 'member') else '*'
         bucket = 'campaignFired' if repeat in ('campaign', 'member') else 'fired'
         token = t['id'] if bucket == 'fired' or t['id'] in phase.get('_sharedIds', ()) else phase['id'] + '/' + t['id']
@@ -3947,13 +3985,14 @@ class Steer:
                 c['status'] = 'active'
         elif do == 'progress':
             _require(c['status'] == 'active', f'That copy is {c["status"]}.')
-            if rec.get('done') and self.payload['amount'] < o.get('goal', 1):
+            goal = quests.goal_of(o, c)
+            if rec.get('done') and self.payload['amount'] < goal:
                 rec.pop('done', None)
             if not rec.get('done'):
-                rec['n'] = min(self.payload['amount'], o.get('goal', 1))
+                rec['n'] = min(self.payload['amount'], goal)
                 if actor:
                     run.credit(c, actor)
-                if rec['n'] >= o.get('goal', 1):
+                if rec['n'] >= goal:
                     run.objective_done(q, holder, c, o, actor)
         elif do == 'complete':
             _require(c['status'] == 'active', f'That copy is {c["status"]}.')
@@ -4481,10 +4520,8 @@ def _filter_miss(rule, fact):
         return {'field': 'signal', 'expected': rule.get('signal'), 'actual': fact.get('signal')}
     for key, expected in rule.get('match', {}).items():
         actual = fact.get(key, '') or ''
-        if key == 'item' and rule['on'] in ('gift', 'gift again') and not any(mark in expected for mark in '~@'):
-            actual = __import__('re').split('[~@]', actual, maxsplit=1)[0]
-        if actual != expected:
-            return {'field': key, 'expected': expected, 'actual': fact.get(key, '') or ''}
+        if not rules.match_one(expected, actual if isinstance(actual, str) else '', key == 'item' and rule['on'] in ('gift', 'gift again')):
+            return {'field': key, 'expected': rules.match_words(expected), 'actual': fact.get(key, '') or ''}
     for key, field in (('minCoins', 'coins'), ('minQuantity', 'quantity')):
         if key in rule and (fact.get(field) or 0) < rule[key]:
             return {'field': field, 'expected': '>= ' + str(rule[key]), 'actual': fact.get(field) or 0}
@@ -4561,7 +4598,7 @@ def listeners(program, state, per_wolf=True, recent=None, day=None, facts=None):
             item['used'] = bool(cohort) and set(cohort) <= set(used_by)
         else:
             item['used'] = False
-        stand_in = {'kind': t['on'], 'signal': t.get('signal'), 'actor': '', 'id': None, **t.get('match', {}),
+        stand_in = {'kind': t['on'], 'signal': t.get('signal'), 'actor': '', 'id': None, **rules.stand_in_match(t.get('match', {})),
                     **({'facts': facts} if facts is not None else {})}   # (Doc 85, Phase 8: the world's facts now.)
         known = set(t.get('match', {}))
         if 'if' in t:
@@ -5148,13 +5185,14 @@ def reference_problems(conn, world, program):
     projects = {k['id'] for k in json.loads((DATA / 'Town/projects.json').read_text())['kinds']}
     for path, at, e in _effect_sites(program):
         for key, value in e.items():
-            if key in tables and value not in ('$actor', '$each') and not (e['kind'] == 'scene.play' and key == 'player' and value == 'world'):
+            if key in tables and isinstance(value, str) and value not in ('$actor', '$each') and not (
+                    e['kind'] == 'scene.play' and key == 'player' and value == 'world'):
                 if not exists(*tables[key], value):
                     add(path, at, f'Unknown {key} in this world: {value}', True)
         kind = e['kind']
         if kind == 'storyline.give' and e['template'] not in templates:
             add(path, at, 'Unknown DM quest template.', True)
-        if kind in ('npc.walk', 'npc.move', 'project.post'):
+        if kind in ('npc.walk', 'npc.move', 'project.post') and all(isinstance(e[k], (str, int)) for k in ('cell', 'x', 'y')):
             words = _tile_words(conn, world, e['cell'], e['x'], e['y'])
             if words:
                 add(path, at, words, kind == 'npc.walk')
@@ -5204,16 +5242,21 @@ def reference_problems(conn, world, program):
         filters = rule.get('match', {})
         # (Approval checks these of objectives and triggers; an exit's and a prerequisite's are new: known problem 4.)
         blocks = what in ('trigger', 'objective')
-        if filters.get('cell') and not exists('world.areas', 'id', filters['cell']):
-            add(path, at, f'Unknown cell in this world: {filters["cell"]}', blocks)
-        if rule['on'] == 'enter place' and filters.get('target') and not exists('world.areas', 'id', filters['target']):
-            add(path, at, f'Unknown place in this world: {filters["target"]}', blocks)
-        if rule['on'] in ('conversation', 'gift', 'gift again') and filters.get('target') and not character(filters['target']):
-            add(path, at, f'Unknown mission character in this world: {filters["target"]}', blocks)
-        if filters.get('actor') and not character(filters['actor']):
-            add(path, at, f'No wolf or resident "{filters["actor"]}" in this world: this never matches.', False)
-        if filters.get('item') and __import__('re').split('[~@]', filters['item'], maxsplit=1)[0] not in items:
-            add(path, at, f'No item "{filters["item"]}" in the item catalogue: this never matches.', False)
+        # (Doc 86, C12b: each value of an "in" is checked; a "begins with" names nothing to look up.)
+        for cell in rules.match_values(filters.get('cell')):
+            if not exists('world.areas', 'id', cell):
+                add(path, at, f'Unknown cell in this world: {cell}', blocks)
+        for target in rules.match_values(filters.get('target')):
+            if rule['on'] == 'enter place' and not exists('world.areas', 'id', target):
+                add(path, at, f'Unknown place in this world: {target}', blocks)
+            if rule['on'] in ('conversation', 'gift', 'gift again') and not character(target):
+                add(path, at, f'Unknown mission character in this world: {target}', blocks)
+        for actor in rules.match_values(filters.get('actor')):
+            if not character(actor):
+                add(path, at, f'No wolf or resident "{actor}" in this world: this never matches.', False)
+        for item in rules.match_values(filters.get('item')):
+            if __import__('re').split('[~@]', item, maxsplit=1)[0] not in items:
+                add(path, at, f'No item "{item}" in the item catalogue: this never matches.', False)
     # (Doc 86, Phase 1b: purses, quest objectives and boards, residents placed and alive, the new effects' towns: V1, SQ2.)
     for c in world_checks(conn, world, program, chapters=None):   # (None: whether it is a chapter is known at approval.)
         add(c['path'], c['at'], c['text'], c['blocks'])

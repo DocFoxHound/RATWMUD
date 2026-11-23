@@ -40,7 +40,7 @@ function ObjectiveLine({o, change, remove, canRemove}: {o: Omit<QuestObjective, 
                 <button type="button" onClick={() => setChoosing(!choosing)}>Change event…</button>
                 {filterable.length > 0 && <select value="" aria-label="Add a filter" onChange={e => { if (e.target.value) change({...o, match: {...o.match, [e.target.value]: ''}}); }}>
                     <option value="">+ filter: the event's…</option>{filterable.map(k => <option key={k} value={k}>{ev?.fields[k]?.label ?? k}</option>)}</select>}
-                <label>Times<input type="number" min={1} max={100} value={o.goal ?? 1} onChange={e => {
+                <label>Times<input type="number" min={1} max={100} value={typeof o.goal === 'number' ? o.goal : 1} onChange={e => {
                     const n = Math.max(1, Math.min(100, Math.round(e.target.valueAsNumber || 1))); const {goal: _g, ...rest} = o; void _g; change(n === 1 ? rest : {...rest, goal: n}); }}/></label>
                 {canRemove && <button type="button" className="wb-x" onClick={remove} aria-label="Remove this step">×</button>}
             </div>

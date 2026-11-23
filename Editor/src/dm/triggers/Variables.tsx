@@ -31,7 +31,7 @@ function Row({v, use, readOnly}: {v: Variable; use: (id: string) => void; readOn
             {!readOnly && <button type="button" className="wb-fold" onClick={() => setOpen(!open)} aria-expanded={open} title="First value, label, note">{open ? '▾' : '▸'}</button>}
             <button type="button" className="link-button" onClick={() => use(v.id)} title="Where it is used">{v.id}</button>
             <small>{types[v.type] ?? v.type} · {SCOPE_WORDS[v.scope] ?? v.scope}{v.initial !== undefined ? ` · starts ${Array.isArray(v.initial) ? v.initial.join(', ') : String(v.initial)}` : ''}
-                {v.show ? ` · shown as “${v.show}”` : ''}{v.talk ? ' · told to residents' : ''}{used ? ` · used ${used}×` : ' · unused'}</small>
+                {v.show ? ` · shown as “${v.show}”` : ''}{v.showOf ? ` of ${v.showOf}` : ''}{v.mirror ? ` · mirrors ${v.mirror.key}` : ''}{v.talk ? ' · told to residents' : ''}{used ? ` · used ${used}×` : ' · unused'}</small>
             {!readOnly && <span className="wb-tools">
                 <button type="button" className="wb-mini" title="Rename everywhere" onClick={() => {
                     const to = window.prompt(`Rename the variable "${v.id}" everywhere`, v.id)?.trim();
@@ -52,6 +52,12 @@ function Row({v, use, readOnly}: {v: Variable; use: (id: string) => void; readOn
                         onChange={e => { const value = initialOf(v.type, e.target.value); put(value === undefined ? without('initial') : {...v, initial: value}, 'v:' + v.id + ':initial'); }}/></label>}
             {['number', 'switch', 'timer'].includes(v.type) && <label>Shown as<input value={v.show ?? ''} maxLength={60} placeholder="(not shown)"
                 onChange={e => put(e.target.value ? {...v, show: e.target.value} : without('show'), 'v:' + v.id + ':show')}/></label>}
+            {v.type === 'number' && v.show && <label title="Doc 86, C1d: shown as “label: value / other”">Shown of
+                <select value={v.showOf ?? ''} onChange={e => put(e.target.value ? {...v, showOf: e.target.value} : without('showOf'))}>
+                    <option value="">(just its value)</option>{(program.variables ?? []).filter(x => x.type === 'number' && x.id !== v.id
+                        && (x.scope === 'story' || x.scope === 'world' || x.scope === v.scope)).map(x => <option key={x.id} value={x.id}>{x.id}</option>)}</select></label>}
+            {v.mirror && <p className="hint">Mirrors the world number named by each wolf's {v.mirror.key}: {Object.entries(v.mirror.names).map(([k, n]) => `${k} → ${n}`).join(', ')}
+                {' '}(never stored; edited in Source).</p>}
             {v.scope === 'player' && ['number', 'switch', 'text'].includes(v.type) && <label title="Doc 86, N2: residents' lines in the dialogue window may test it as player.story.{name}">
                 <input type="checkbox" checked={!!v.talk} onChange={e => put(e.target.checked ? {...v, talk: true} : without('talk'))}/>told to residents (player.story.{v.id})</label>}
             <label>Note<input value={v.note ?? ''} maxLength={300} placeholder="(for the author)"

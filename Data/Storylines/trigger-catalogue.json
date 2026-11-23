@@ -1,7 +1,7 @@
 {
  "format": "ratw-trigger-catalogue",
  "version": 1,
- "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions. Phase 6: quests (a version 2 story's \"quests\"), audiences \"open\" and \"everyone\", and the effects marked \"story\", which the story keeps itself (quest progress, who takes part, a choice laid over a resident's window) rather than sending to the game; events marked \"story\" are the story's own facts, sent as it runs and never in the world's log. A parameter marked \"optional\" may be left out. Phase 8: conditions marked \"facts\" read the world's facts as of the event (game.story_facts: where a wolf is, what they carry, the time, the weather, standing, a resident's state), and the events marked \"watch\" are written by the game only while a live story listens for them (its watch list, sent with each phase). Phase 9: more world effects (doc 85, 3.5): telling the wolves, the journal, map markers, trackers, taking items, warrants, strangers, mantles, holds, followers, doors, the ground, boards, the weather (never the calendar), market events, prices, projects, deeds, personal quests and stopping a scene. \"actsOnWolves\" needs \"may act on players' wolves\" on a hosted world, \"needsBuilder\" (factions: relations and standing) a builder or the owner, as approving it does. Phase 10: chapters (story.start, a campaign of stories approved together), \"story started\" and \"story ended\" from the story runner, and the events Phase 8 left (a wolf near a resident, a purse or a standing crossing a number the trigger names, a stance changed, mantles, a skill grown, an injury healed): \"needsMatch\" names the fields a trigger on it must give. \"needsBuilder\" also marks the effects that change the economy (prices, projects). Doc 86, Phase 1a: the values {\"audience\": \"all|active|online\"} (how many wolves the story has; how many were seen in the last activeDays game days, a program field, 18 when not given; how many are signed in now), {\"times\": [a, b]} and {\"div\": [a, b]} (floored toward zero; by 0, no value), and the share of the wolves who took part: {\"percent\": {\"list\": <a story or world list of wolves>} | {\"where\": <a test for each wolf>}, \"of\": \"active|all|online\"} and {\"among\": ...} (how many); the condition \"participation\" (enough of them, with a floor and a cap); a phase's Readiness (\"ready\": the parts that say it may move on, its exit {\"on\": \"ready\"}, auto, then, slowAfterDays, slowNeedsYou, autoAfterDays) and the admin's Advance. A parameter of type \"condition\" is a condition tree tested once for each wolf, the wolf as $each.",
+ "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions. Phase 6: quests (a version 2 story's \"quests\"), audiences \"open\" and \"everyone\", and the effects marked \"story\", which the story keeps itself (quest progress, who takes part, a choice laid over a resident's window) rather than sending to the game; events marked \"story\" are the story's own facts, sent as it runs and never in the world's log. A parameter marked \"optional\" may be left out. Phase 8: conditions marked \"facts\" read the world's facts as of the event (game.story_facts: where a wolf is, what they carry, the time, the weather, standing, a resident's state), and the events marked \"watch\" are written by the game only while a live story listens for them (its watch list, sent with each phase). Phase 9: more world effects (doc 85, 3.5): telling the wolves, the journal, map markers, trackers, taking items, warrants, strangers, mantles, holds, followers, doors, the ground, boards, the weather (never the calendar), market events, prices, projects, deeds, personal quests and stopping a scene. \"actsOnWolves\" needs \"may act on players' wolves\" on a hosted world, \"needsBuilder\" (factions: relations and standing) a builder or the owner, as approving it does. Phase 10: chapters (story.start, a campaign of stories approved together), \"story started\" and \"story ended\" from the story runner, and the events Phase 8 left (a wolf near a resident, a purse or a standing crossing a number the trigger names, a stance changed, mantles, a skill grown, an injury healed): \"needsMatch\" names the fields a trigger on it must give. \"needsBuilder\" also marks the effects that change the economy (prices, projects). Doc 86, Phase 1a: the values {\"audience\": \"all|active|online\"} (how many wolves the story has; how many were seen in the last activeDays game days, a program field, 18 when not given; how many are signed in now), {\"times\": [a, b]} and {\"div\": [a, b]} (floored toward zero; by 0, no value), and the share of the wolves who took part: {\"percent\": {\"list\": <a story or world list of wolves>} | {\"where\": <a test for each wolf>}, \"of\": \"active|all|online\"} and {\"among\": ...} (how many); the condition \"participation\" (enough of them, with a floor and a cap); a phase's Readiness (\"ready\": the parts that say it may move on, its exit {\"on\": \"ready\"}, auto, then, slowAfterDays, slowNeedsYou, autoAfterDays) and the admin's Advance. A parameter of type \"condition\" is a condition tree tested once for each wolf, the wolf as $each. Doc 86, Phase 2: a parameter marked \"operand\" may be a value: {\"var\"}, {\"field\"}, {\"each\"}, {\"audience\"}, {\"purse\"} or arithmetic, of the parameter's kind (a number for a whole number; a variable of its kind or a text, or the event's field, for a wolf, a resident, a place, an item, a faction or a town); worked out when the trigger fires (or a reward is given), clamped to the parameter's bounds, and with no value the effect is not sent. A text marked \"fills\" in a version 2 story may hold {name} or {name.of} (a declared variable, or the acting or looped wolf's own), filled when it is sent ({{ and }} are braces); a wolf, a resident, a place, an item or a faction fills as its name. {\"purse\": \"<purse>\"} is what a purse holds now. A filter's value may be a text, {\"starts\": \"<text>\"} or {\"in\": [...]} (begins with; one of), and the field condition takes \"starts\" and \"in\". The moon (\"calendar is\" moon; the event \"moon\"). A quest objective may say where it counts (\"where\": cells or a region) and who it credits (\"credit\": actor, target or present); camp cleared, caravan arrives, ship lost, ship docks, project built and festival are mission evidence. A story camp may be named (\"camp\", with the program's \"prefix\"). A quest's join.again waits that many game days before the same wolf takes it again. An objective's goal may be a value (\"goalLive\" keeps up with it); a shown number may show \"of\" another (showOf), or mirror a world variable named by a wolf's text (mirror).",
  "groups": [
   {
    "id": "story",
@@ -163,7 +163,7 @@
   "run": "A story release.",
   "number": "A number the event records.",
   "variable": "A declared variable of this story (version 2), of the types the parameter names.",
-  "operand": "A value: a number, on or off, a text, a variable, the event's field, a list's count, a timer's days, the loop's value, a little arithmetic (plus, minus, min, max, times, div), the story's audience counted (all, active, online), or the share (percent) or number (among) of the wolves who took part.",
+  "operand": "A value: a number, on or off, a text, a variable, the event's field, a list's count, a timer's days, the loop's value, a little arithmetic (plus, minus, min, max, times, div), the story's audience counted (all, active, online), the share (percent) or number (among) of the wolves who took part, or what a purse holds now ({\"purse\": \"town:coldwater\"}).",
   "trigger": "A trigger of this story.",
   "whose": "Whose value of a variable kept for each wolf or party: the acting wolf's, or the looped wolf's.",
   "quest": "A quest of this story (version 2).",
@@ -177,7 +177,8 @@
   "condition": "A condition tree tested once for each wolf, the wolf as $each (doc 86, R1).",
   "talkkey": "A talk memory key: lower-case letters, digits and _, up to 40, starting with a letter.",
   "talkvalue": "A talk memory value: lower-case letters, digits and _, up to 40.",
-  "figure": "A figure's id (live.figures): lower-case letters, digits and _, 3 to 40."
+  "figure": "A figure's id (live.figures): lower-case letters, digits and _, 3 to 40.",
+  "camp": "A story camp's name: lower-case letters, digits and _, 3 to 30, beginning with the story's prefix (nh_, sq_, mq_, lq_, st_); the camp is camp_story_<name>."
  },
  "trigger": {
   "once": {
@@ -223,7 +224,8 @@
   "enabled": {
    "true": "on from the start",
    "false": "off until turned on"
-  }
+  },
+  "match": "A filter's value is a text (the field is exactly it), {\"starts\": \"<text>\"} (it begins with it: 1 to 120 characters, case-sensitive) or {\"in\": [\"a\", \"b\"]} (it is one of up to 32). A gift's item is its base id unless the filter gives a mark. A field the game must know to look at (needsMatch) stays exact words."
  },
  "events": [
   {
@@ -1128,7 +1130,8 @@
     }
    },
    "tile": true,
-   "notes": "tile only when a character cleared it and stands in that cell."
+   "notes": "tile only when a character cleared it and stands in that cell.",
+   "mission": true
   },
   {
    "id": "bandits scattered",
@@ -1222,7 +1225,8 @@
      "label": "kinds of goods it carried"
     }
    },
-   "tile": false
+   "tile": false,
+   "mission": true
   },
   {
    "id": "festival",
@@ -1247,7 +1251,8 @@
      "any": "any"
     }
    },
-   "tile": false
+   "tile": false,
+   "mission": true
   },
   {
    "id": "project built",
@@ -1287,7 +1292,8 @@
     }
    },
    "tile": false,
-   "notes": "actor carries the 'town:' prefix. The project's x,y are passed in the event's time slots and overwritten, so no tile is logged."
+   "notes": "actor carries the 'town:' prefix. The project's x,y are passed in the event's time slots and overwritten, so no tile is logged.",
+   "mission": true
   },
   {
    "id": "project gift",
@@ -2428,7 +2434,8 @@
      "label": "kinds of goods it brings"
     }
    },
-   "tile": false
+   "tile": false,
+   "mission": true
   },
   {
    "id": "ship lost",
@@ -2467,7 +2474,8 @@
      "label": "kinds of goods it was bringing"
     }
    },
-   "tile": false
+   "tile": false,
+   "mission": true
   },
   {
    "id": "ship sails",
@@ -6183,6 +6191,26 @@
    "watch": true
   },
   {
+   "id": "moon",
+   "group": "time",
+   "title": "The moon turns",
+   "sentence": "the moon is {detail}",
+   "help": "The moon passed into another quarter of its round (detail: new, waxing, full or waning; quantity: the day of the moon's round, 0 to 29). Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "detail": {
+     "type": "text",
+     "label": "new, waxing, full or waning",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the day of the moon's round"
+    }
+   },
+   "tile": false,
+   "watch": true
+  },
+  {
    "id": "item picked up",
    "group": "gifts",
    "title": "A wolf picks up an item",
@@ -6285,9 +6313,14 @@
      "type": "number",
      "label": "the pennies paid or got",
      "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the wolf is",
+     "any": "anywhere"
     }
    },
-   "tile": true,
+   "tile": false,
    "watch": true,
    "mission": true,
    "measures": [
@@ -6819,7 +6852,7 @@
    "id": "field",
    "title": "The event's field",
    "sentence": "the event's {field} {op} {value}",
-   "help": "Compares one field of the event that just happened. Text takes = and !=; quantity and coins take a number.",
+   "help": "Compares one field of the event that just happened. Text takes =, !=, begins with (\"starts\": 1 to 120 characters) and is one of (\"in\": a list of up to 32 texts); quantity and coins take a number.",
    "params": [
     {
      "key": "field",
@@ -6845,8 +6878,20 @@
       ">",
       ">=",
       "<",
-      "<="
-     ]
+      "<=",
+      "starts",
+      "in"
+     ],
+     "words": {
+      "=": "=",
+      "!=": "!=",
+      ">": ">",
+      ">=": ">=",
+      "<": "<",
+      "<=": "<=",
+      "starts": "begins with",
+      "in": "is one of"
+     }
     },
     {
      "key": "value",
@@ -7883,7 +7928,7 @@
    "facts": true,
    "title": "The day, the season, the time of day",
    "sentence": "the {what} is {value}",
-   "help": "The weekday (Marketday, Restday...), the season, or the time of day (dawn, day, dusk, night).",
+   "help": "The weekday (Marketday, Restday...), the season, the time of day (dawn, day, dusk, night), or the moon (new, waxing, full, waning).",
    "params": [
     {
      "key": "what",
@@ -7892,12 +7937,14 @@
      "values": [
       "weekday",
       "season",
-      "period"
+      "period",
+      "moon"
      ],
      "words": {
       "weekday": "weekday",
       "season": "season",
-      "period": "time of day"
+      "period": "time of day",
+      "moon": "the moon"
      },
      "default": "weekday"
     },
@@ -7920,7 +7967,11 @@
       "dawn",
       "day",
       "dusk",
-      "night"
+      "night",
+      "new",
+      "waxing",
+      "full",
+      "waning"
      ],
      "default": "Restday"
     }
@@ -9325,7 +9376,8 @@
      "key": "player",
      "type": "wolf",
      "label": "who sees it",
-     "world": true
+     "world": true,
+     "operand": true
     },
     {
      "key": "cue",
@@ -9366,13 +9418,15 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "cell",
      "type": "place",
      "label": "the place",
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "x",
@@ -9380,7 +9434,8 @@
      "label": "tile x",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "y",
@@ -9388,7 +9443,8 @@
      "label": "tile y",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "pace",
@@ -9416,13 +9472,15 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "text",
      "type": "text",
      "label": "the words",
-     "max": 200
+     "max": 200,
+     "fills": true
     },
     {
      "key": "cue",
@@ -9441,7 +9499,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "posture",
@@ -9478,7 +9537,8 @@
      "type": "int",
      "label": "points",
      "min": 1,
-     "max": 99
+     "max": 99,
+     "operand": true
     }
    ]
   },
@@ -9497,14 +9557,16 @@
     {
      "key": "item",
      "type": "item",
-     "label": "the item"
+     "label": "the item",
+     "operand": true
     },
     {
      "key": "quantity",
      "type": "int",
      "label": "how many",
      "min": 1,
-     "max": 100
+     "max": 100,
+     "operand": true
     }
    ]
   },
@@ -9533,7 +9595,8 @@
      "type": "int",
      "label": "hours",
      "min": 1,
-     "max": 168
+     "max": 168,
+     "operand": true
     }
    ]
   },
@@ -9541,8 +9604,8 @@
    "id": "story.area.spawn",
    "group": "places",
    "title": "A bandit camp in a region",
-   "sentence": "A camp of {count} bandits in {region}",
-   "help": "Bandits camp in the rectangle.",
+   "sentence": "A camp of {count} bandits in {region} {camp}",
+   "help": "Bandits camp in the rectangle. Named (\"camp\"), the camp is camp_story_<name>: a second spawn of that name while it stands joins it; once it is cleared the name may be used again, and bandit falls and camp cleared carry the id.",
    "params": [
     {
      "key": "region",
@@ -9554,7 +9617,17 @@
      "type": "int",
      "label": "how many",
      "min": 1,
-     "max": 6
+     "max": 6,
+     "operand": true
+    },
+    {
+     "key": "camp",
+     "type": "camp",
+     "label": "the camp's name",
+     "optional": true,
+     "words": {
+      "": "a camp of its own"
+     }
     }
    ]
   },
@@ -9568,13 +9641,15 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "cell",
      "type": "place",
      "label": "the place",
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "x",
@@ -9582,7 +9657,8 @@
      "label": "tile x",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "y",
@@ -9590,7 +9666,8 @@
      "label": "tile y",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     }
    ]
   },
@@ -9604,7 +9681,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "lasts",
@@ -9635,7 +9713,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     }
    ]
   },
@@ -9694,7 +9773,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     }
    ]
   },
@@ -9709,7 +9789,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "add",
@@ -9749,7 +9830,8 @@
      "type": "int",
      "label": "severity",
      "min": 1,
-     "max": 3
+     "max": 3,
+     "operand": true
     }
    ]
   },
@@ -9795,7 +9877,8 @@
      "type": "int",
      "label": "days",
      "min": 1,
-     "max": 366
+     "max": 366,
+     "operand": true
     },
     {
      "key": "words",
@@ -9815,7 +9898,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "a resident of the household"
+     "label": "a resident of the household",
+     "operand": true
     },
     {
      "key": "band",
@@ -9834,7 +9918,8 @@
      "type": "int",
      "label": "days",
      "min": 1,
-     "max": 112
+     "max": 112,
+     "operand": true
     }
    ]
   },
@@ -9848,7 +9933,8 @@
     {
      "key": "town",
      "type": "town",
-     "label": "the town"
+     "label": "the town",
+     "operand": true
     },
     {
      "key": "name",
@@ -9861,7 +9947,8 @@
      "type": "int",
      "label": "days from now",
      "min": 0,
-     "max": 30
+     "max": 30,
+     "operand": true
     }
    ]
   },
@@ -9875,7 +9962,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "template",
@@ -9885,12 +9973,14 @@
     {
      "key": "resident",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "place",
      "type": "place",
-     "label": "the place"
+     "label": "the place",
+     "operand": true
     }
    ]
   },
@@ -9905,12 +9995,14 @@
     {
      "key": "faction",
      "type": "faction",
-     "label": "the faction"
+     "label": "the faction",
+     "operand": true
     },
     {
      "key": "other",
      "type": "faction",
-     "label": "the other faction"
+     "label": "the other faction",
+     "operand": true
     },
     {
      "key": "stance",
@@ -9930,7 +10022,8 @@
      "type": "int",
      "label": "disposition",
      "min": -100,
-     "max": 100
+     "max": 100,
+     "operand": true
     },
     {
      "key": "reason",
@@ -9944,20 +10037,31 @@
    "id": "bandits.call",
    "group": "wolves",
    "title": "Send bandits after a wolf",
-   "sentence": "{count} bandits come for {player}",
-   "help": "The wolf must be in the world.",
+   "sentence": "{count} bandits come for {player} {camp}",
+   "help": "The wolf must be in the world. Named (\"camp\"), the camp is camp_story_<name>: a second spawn of that name while it stands joins it; once it is cleared the name may be used again, and bandit falls and camp cleared carry the id.",
    "params": [
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "count",
      "type": "int",
      "label": "how many",
      "min": 1,
-     "max": 6
+     "max": 6,
+     "operand": true
+    },
+    {
+     "key": "camp",
+     "type": "camp",
+     "label": "the camp's name",
+     "optional": true,
+     "words": {
+      "": "a camp of its own"
+     }
     }
    ]
   },
@@ -9971,7 +10075,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "skill",
@@ -10006,14 +10111,16 @@
      "label": "points",
      "min": -100,
      "max": 100,
-     "nonzero": true
+     "nonzero": true,
+     "operand": true
     },
     {
      "key": "days",
      "type": "int",
      "label": "days",
      "min": 1,
-     "max": 366
+     "max": 366,
+     "operand": true
     },
     {
      "key": "words",
@@ -10033,13 +10140,15 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "detail",
      "type": "text",
      "label": "the deed",
-     "max": 200
+     "max": 200,
+     "fills": true
     }
    ]
   },
@@ -10053,7 +10162,8 @@
     {
      "key": "town",
      "type": "town",
-     "label": "the town"
+     "label": "the town",
+     "operand": true
     },
     {
      "key": "project",
@@ -10064,7 +10174,8 @@
      "key": "cell",
      "type": "place",
      "label": "the place",
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "x",
@@ -10072,7 +10183,8 @@
      "label": "tile x",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "y",
@@ -10080,7 +10192,8 @@
      "label": "tile y",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "title",
@@ -10105,7 +10218,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -10126,7 +10240,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -10147,7 +10262,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -10168,7 +10284,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -10194,7 +10311,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -10220,7 +10338,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -10246,7 +10365,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -10272,14 +10392,16 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "amount",
      "type": "int",
      "label": "how much",
      "min": 1,
-     "max": 1000000
+     "max": 1000000,
+     "operand": true
     }
    ],
    "v2": true,
@@ -10295,7 +10417,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -10311,7 +10434,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -10327,7 +10451,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "id",
@@ -10350,7 +10475,8 @@
      "key": "player",
      "type": "wolf",
      "label": "who sees it (empty: every wolf of the story)",
-     "optional": true
+     "optional": true,
+     "operand": true
     },
     {
      "key": "once",
@@ -10372,14 +10498,16 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "coins",
      "type": "int",
      "label": "pennies",
      "min": 1,
-     "max": 2500
+     "max": 2500,
+     "operand": true
     },
     {
      "key": "purse",
@@ -10404,19 +10532,22 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "item",
      "type": "item",
-     "label": "the item"
+     "label": "the item",
+     "operand": true
     },
     {
      "key": "quantity",
      "type": "int",
      "label": "how many",
      "min": 1,
-     "max": 20
+     "max": 20,
+     "operand": true
     }
    ]
   },
@@ -10430,12 +10561,14 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "faction",
      "type": "faction",
-     "label": "the faction"
+     "label": "the faction",
+     "operand": true
     },
     {
      "key": "points",
@@ -10443,7 +10576,8 @@
      "label": "points",
      "min": -10,
      "max": 10,
-     "nonzero": true
+     "nonzero": true,
+     "operand": true
     },
     {
      "key": "reason",
@@ -10487,7 +10621,8 @@
      "optional": true,
      "words": {
       "": ""
-     }
+     },
+     "operand": true
     },
     {
      "key": "region",
@@ -10502,7 +10637,8 @@
      "key": "text",
      "type": "text",
      "label": "the words",
-     "max": 300
+     "max": 300,
+     "fills": true
     },
     {
      "key": "from",
@@ -10511,7 +10647,8 @@
      "optional": true,
      "words": {
       "": ""
-     }
+     },
+     "operand": true
     }
    ]
   },
@@ -10529,13 +10666,15 @@
      "optional": true,
      "words": {
       "": "every wolf of the story"
-     }
+     },
+     "operand": true
     },
     {
      "key": "text",
      "type": "text",
      "label": "the note",
-     "max": 200
+     "max": 200,
+     "fills": true
     }
    ]
   },
@@ -10550,7 +10689,8 @@
      "key": "cell",
      "type": "place",
      "label": "the place",
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "x",
@@ -10558,7 +10698,8 @@
      "label": "tile x",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "y",
@@ -10566,7 +10707,8 @@
      "label": "tile y",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "player",
@@ -10575,7 +10717,8 @@
      "optional": true,
      "words": {
       "": "the story's wolves"
-     }
+     },
+     "operand": true
     },
     {
      "key": "label",
@@ -10588,7 +10731,8 @@
      "type": "int",
      "label": "minutes",
      "min": 1,
-     "max": 240
+     "max": 240,
+     "operand": true
     }
    ]
   },
@@ -10632,19 +10776,22 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "item",
      "type": "item",
-     "label": "the item"
+     "label": "the item",
+     "operand": true
     },
     {
      "key": "quantity",
      "type": "int",
      "label": "how many",
      "min": 1,
-     "max": 20
+     "max": 20,
+     "operand": true
     }
    ]
   },
@@ -10659,19 +10806,22 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "town",
      "type": "town",
-     "label": "the town"
+     "label": "the town",
+     "operand": true
     },
     {
      "key": "fine",
      "type": "int",
      "label": "the fine (pennies)",
      "min": 0,
-     "max": 200
+     "max": 200,
+     "operand": true
     },
     {
      "key": "reason",
@@ -10691,12 +10841,14 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "town",
      "type": "town",
-     "label": "the town"
+     "label": "the town",
+     "operand": true
     }
    ]
   },
@@ -10722,7 +10874,8 @@
      "key": "cell",
      "type": "place",
      "label": "the place",
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "x",
@@ -10730,7 +10883,8 @@
      "label": "tile x",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "y",
@@ -10738,14 +10892,16 @@
      "label": "tile y",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "minutes",
      "type": "int",
      "label": "minutes",
      "min": 1,
-     "max": 1440
+     "max": 1440,
+     "operand": true
     },
     {
      "key": "like",
@@ -10754,7 +10910,8 @@
      "optional": true,
      "words": {
       "": "a stranger"
-     }
+     },
+     "operand": true
     },
     {
      "key": "description",
@@ -10792,7 +10949,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "mantle",
@@ -10811,7 +10969,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     }
    ]
   },
@@ -10825,7 +10984,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     }
    ]
   },
@@ -10839,7 +10999,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     }
    ]
   },
@@ -10853,7 +11014,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     }
    ]
   },
@@ -10867,12 +11029,14 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ]
   },
@@ -10886,7 +11050,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     }
    ]
   },
@@ -10956,20 +11121,23 @@
     {
      "key": "item",
      "type": "item",
-     "label": "the item"
+     "label": "the item",
+     "operand": true
     },
     {
      "key": "quantity",
      "type": "int",
      "label": "how many",
      "min": 1,
-     "max": 5
+     "max": 5,
+     "operand": true
     },
     {
      "key": "cell",
      "type": "place",
      "label": "the place",
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "x",
@@ -10977,7 +11145,8 @@
      "label": "tile x",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "y",
@@ -10985,7 +11154,8 @@
      "label": "tile y",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     }
    ]
   },
@@ -10999,20 +11169,23 @@
     {
      "key": "town",
      "type": "town",
-     "label": "the town"
+     "label": "the town",
+     "operand": true
     },
     {
      "key": "text",
      "type": "text",
      "label": "the notice",
-     "max": 300
+     "max": 300,
+     "fills": true
     },
     {
      "key": "days",
      "type": "int",
      "label": "days",
      "min": 1,
-     "max": 28
+     "max": 28,
+     "operand": true
     }
    ]
   },
@@ -11030,7 +11203,8 @@
      "optional": true,
      "words": {
       "": ""
-     }
+     },
+     "operand": true
     },
     {
      "key": "town",
@@ -11039,7 +11213,8 @@
      "optional": true,
      "words": {
       "": ""
-     }
+     },
+     "operand": true
     },
     {
      "key": "weather",
@@ -11060,7 +11235,8 @@
      "type": "int",
      "label": "hours",
      "min": 1,
-     "max": 72
+     "max": 72,
+     "operand": true
     }
    ]
   },
@@ -11114,7 +11290,8 @@
      "type": "int",
      "label": "days from today",
      "min": 0,
-     "max": 7
+     "max": 7,
+     "operand": true
     },
     {
      "key": "hour",
@@ -11125,7 +11302,8 @@
      "optional": true,
      "words": {
       "": "9"
-     }
+     },
+     "operand": true
     }
    ]
   },
@@ -11211,7 +11389,8 @@
     {
      "key": "town",
      "type": "town",
-     "label": "the town"
+     "label": "the town",
+     "operand": true
     },
     {
      "key": "project",
@@ -11231,7 +11410,8 @@
     {
      "key": "town",
      "type": "town",
-     "label": "the town"
+     "label": "the town",
+     "operand": true
     },
     {
      "key": "project",
@@ -11251,7 +11431,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "detail",
@@ -11271,7 +11452,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "template",
@@ -11283,14 +11465,16 @@
      "type": "int",
      "label": "the step (1 is the first)",
      "min": 1,
-     "max": 10
+     "max": 10,
+     "operand": true
     },
     {
      "key": "objective",
      "type": "int",
      "label": "the objective (1 is the first)",
      "min": 1,
-     "max": 8
+     "max": 8,
+     "operand": true
     }
    ]
   },
@@ -11446,7 +11630,8 @@
      "type": "int",
      "label": "days",
      "min": 1,
-     "max": 365
+     "max": 365,
+     "operand": true
     },
     {
      "key": "keep",
@@ -11552,14 +11737,16 @@
      "type": "int",
      "label": "how many",
      "min": 1,
-     "max": 50
+     "max": 50,
+     "operand": true
     },
     {
      "key": "confidence",
      "type": "int",
      "label": "how sure (%)",
      "min": 10,
-     "max": 90
+     "max": 90,
+     "operand": true
     },
     {
      "key": "claimKind",
@@ -11664,7 +11851,8 @@
      "optional": true,
      "words": {
       "": ""
-     }
+     },
+     "operand": true
     },
     {
      "key": "house",
@@ -11673,7 +11861,8 @@
      "optional": true,
      "words": {
       "": ""
-     }
+     },
+     "operand": true
     },
     {
      "key": "about",

@@ -5,7 +5,7 @@
 import {useMemo, useState} from 'react';
 import {MapView} from '../MapView';
 import {surfaceFor} from '../../lib/surface';
-import {allActions, countersOf, figuresOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, REF_KIND, signalsOf, talkKeysOf, talkValuesOf, visitorsOf, type CatEvent, type CatItem, type Condition, type Operand, type Param,
+import {allActions, countersOf, figuresOf, fillsOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, widestFilled, REF_KIND, signalsOf, talkKeysOf, talkValuesOf, visitorsOf, type CatEvent, type CatItem, type Condition, type Operand, type Param,
     type Program, type Slot} from '../../lib/workbench';
 import {useBench} from './context';
 import {ConditionNode} from './TriggerView';
@@ -98,12 +98,26 @@ function NumberPicker({param, value, pick, step}: {param?: Param; value: unknown
 }
 
 function TextPicker({param, value, pick}: {param?: Param; value: unknown; pick: (v: string) => void}) {
+    const {program} = useBench();
     const [text, setText] = useState(typeof value === 'string' ? value : '');
     const max = param?.max ?? 400;
+    // (Doc 86, C1b: in a version 2 story, words marked "fills" may hold {name} or {name.of}; checked at their widest.)
+    const fills = !!param?.fills && isV2(program);
+    const vars = fills ? (program.variables ?? []).filter(v => !LIST_TYPES[v.type] && v.type !== 'timer') : [];
+    const used = fills ? fillsOf(text) : [];
+    const widest = fills && used.length ? widestFilled(text, program) : text.length;
     return <form className="wb-enter wb-text" onSubmit={e => { e.preventDefault(); if (text.trim() && text.length <= max) pick(text); }}>
         <label>{param?.label ?? 'Words'}<textarea autoFocus rows={2} maxLength={max} value={text} onChange={e => setText(e.target.value)}/>
-            <small className={text.length > max * 0.9 ? 'warn' : ''}>{text.length} / {max}</small></label>
-        <button type="submit" disabled={!text.trim()}>Use</button></form>;
+            <small className={widest > max * 0.9 ? 'warn' : ''}>{text.length} / {max}{used.length > 0 && ` · up to ${widest} once filled`}</small></label>
+        {fills && vars.length > 0 && <div className="wb-chips"><span>Fill in:</span>{vars.map(v => {
+            const own = v.scope === 'player' || v.scope === 'party';
+            const token = '{' + v.id + (own ? '.of' : '') + '}';
+            return <button key={v.id} type="button" title={own ? "the acting (or looped) wolf's own" : undefined} onClick={() => setText(text + token)}>
+                <u>{token}</u></button>;
+        })}</div>}
+        {used.length > 0 && <p className="hint">Filled as it is sent: {used.map(f => <u key={f.name + f.of}>{f.name}{f.of ? '.of' : ''}</u>).reduce<React.ReactNode[]>((a, x, i) => i ? [...a, ', ', x] : [x], [])}
+            {' '}(a wolf, a resident, a place, an item or a faction by name; write {'{{'} and {'}}'} for braces).</p>}
+        <button type="submit" disabled={!text.trim() || widest > max}>Use</button></form>;
 }
 
 function NamePicker({names, value, pick, noun}: {names: string[]; value: unknown; pick: (v: string) => void; noun: string}) {
@@ -251,10 +265,16 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
             {!['phase', 'region', 'scene', 'mission', 'quest'].includes(type) && <EnterId value={slot.value} pick={one}
                 label={type === 'purse' ? 'Or a purse: town:<town>, till:job:<resident>, chapter:<id>' : undefined}/>}</>;
     }
+    // (Doc 86, C1a: a parameter marked operand may be a value worked out as the trigger fires: a variable of its kind, the
+    // event's field, the loop's value, arithmetic.)
+    const valued = !!slot.param?.operand && isV2(program) && type !== 'operand';
     return <div className="wb-picker" role="dialog" aria-label={'Choose ' + (slot.label || type)} onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } }}>
         <header><strong>Choose {slot.label || type}</strong>{clearable && slot.value !== undefined && <button type="button" onClick={() => pick({[key]: undefined})}>Any (no filter)</button>}
             <button type="button" className="wb-close" onClick={close} aria-label="Close">×</button></header>
-        {body}</div>;
+        {valued && slot.value !== null && typeof slot.value === 'object' && <p className="hint">Now a value: {operandWords(slot.value as Operand, {})}</p>}
+        {body}
+        {valued && <details className="wb-or-value"><summary>…or a value</summary>
+            <OperandPicker slot={{...slot, param: {...slot.param!, kind: slot.param!.type === 'int' ? 'number' : 'text'}}} pick={one}/></details>}</div>;
 }
 
 /** "Choose an event": the catalogue's events by group, each with its help and what its fields hold (4.3). */

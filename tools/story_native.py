@@ -129,6 +129,14 @@ def _needs_of(rules):
     import story_triggers
 
     out = {'facts': False, 'quests': False, 'all': False, 'named': set(), 'audience': story_triggers.uses_audience(rules)}
+    # (Doc 86, Phase 2: the effects whose values are worked out as they fire, or whose words are filled, and their specs from
+    # the catalogue; a purse read from the world's facts.)
+    specs = story_triggers.effect_specs()
+    kinds = {a['effect']['kind'] for t in rules for _, a in story_triggers.walk(t.get('actions', []))
+             if a.get('do') == 'effect' and isinstance(a.get('effect'), dict) and a['effect'].get('kind') in specs}
+    out['specs'] = {k: specs[k] for k in sorted(kinds)}
+    if any(True for _ in story_triggers.purses_in(rules)):
+        out['facts'] = True
     for t in rules:
         # (Doc 86, R1: a test for each wolf may read the quests.)
         wheres = [c for w in story_triggers.wheres_in(t) for c in story_triggers.conditions_in(w)]
@@ -189,6 +197,8 @@ def fire_v2(dispatch, phase, state, event, day, elapsed, ready, emit, trace, wai
     if wait is not None:
         request['resume'] = wait
     needs = _needs(rules)
+    if needs['specs']:
+        request['effectSpecs'] = needs['specs']
     if needs['audience']:
         # (Doc 86, C2 and R1: the audience as the Python twin counts it, the active and online wolves by id.)
         source_event = wait['event'] if wait is not None else event

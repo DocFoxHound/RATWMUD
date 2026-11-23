@@ -68,13 +68,23 @@ export function questMessage(storyline: string, quest: string, verb: QuestButton
     return {type: 'storyline', verb, storyline, quest};
 }
 
-/** A story's trackers (its shown variables) as "label: value". */
-export function trackerLines(t: Json): string[] {
+export type TrackerRow = {text: string, fill?: number};
+
+const shown = (v: unknown) => typeof v === 'boolean' ? (v ? 'yes' : 'no') : typeof v === 'number' ? String(Math.round(v * 100) / 100) : String(v ?? '');
+
+/** A story's trackers (its shown variables) as "label: value", or (doc 86, C1d: a number shown of another) "label: a / b"
+ *  with how full its thin bar is (0 to 1). */
+export function trackerRows(t: Json): TrackerRow[] {
     return arr(t, 'trackers').filter(isObject).map(k => {
-        const v = k.value;
-        const value = typeof v === 'boolean' ? (v ? 'yes' : 'no') : typeof v === 'number' ? String(Math.round(v * 100) / 100) : String(v ?? '');
-        return `${str(k, 'label')}: ${value}`;
+        const v = k.value, goal = k.goal;
+        if (typeof v === 'number' && typeof goal === 'number')
+            return {text: `${str(k, 'label')}: ${shown(v)} / ${shown(goal)}`, fill: goal > 0 ? Math.max(0, Math.min(1, v / goal)) : v > 0 ? 1 : 0};
+        return {text: `${str(k, 'label')}: ${shown(v)}`};
     });
+}
+
+export function trackerLines(t: Json): string[] {
+    return trackerRows(t).map(r => r.text);
 }
 
 /** A world story's notes in the wolf's journal (doc 85, Phase 9: journal.note), newest last, with the day each was written. */

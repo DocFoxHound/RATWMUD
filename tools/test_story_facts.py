@@ -85,7 +85,7 @@ class Checks(unittest.TestCase):
         self.assertLessEqual({*triggers.FACTS_V2, *triggers.QUEST_V2}, ids)
         self.assertEqual(set(rules.FACT_CONDITIONS), set(triggers.FACTS_V2))
         self.assertEqual(len(triggers.FACTS_V2) + len(triggers.QUEST_V2), 23)
-        self.assertEqual(len(rules.WATCHED_EVENTS), 32)   # (Phase 8's 24 and Phase 10's 8.)
+        self.assertEqual(len(rules.WATCHED_EVENTS), 33)   # (Phase 8's 24, Phase 10's 8 and doc 86's moon.)
         for e in rules.CATALOGUE['events']:
             if e['id'] in rules.WATCHED_EVENTS:
                 self.assertTrue(e['help'].endswith('(the story\'s watch list).'), e['id'])

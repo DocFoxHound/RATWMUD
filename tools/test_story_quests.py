@@ -468,6 +468,145 @@ class QuestRuns(unittest.TestCase):
         self.assertEqual(self.one()['digest'], rules.digest(self.examples['carter-axle']))
 
 
+# -------------------------------------------------------------------------- doc 86, Phase 2: what an objective counts
+def one_quest(objective, scope='player', join=None, repeat='once', rewards=None, variables=None, regions=None, players=(ASH, BIRCH, ELM)):
+    """A story of one quest a trigger starts for each wolf who arrives: the objective as given."""
+    q = {'id': 'q', 'title': 'A thing to do', 'scope': scope, 'repeat': repeat, 'objectives': [{'id': 'o', 'label': 'Do it.', **objective}],
+         **({'join': join} if join else {}), **({'rewards': rewards} if rewards else {})}
+    p = {'format': 'ratw-story-program', 'version': 2, 'id': 'p2q', 'title': 'Phase 2', 'start': 'a',
+         'audience': {'kind': 'players', 'players': list(players)}, 'quests': [q],
+         **({'variables': variables} if variables else {}), **({'regions': regions} if regions else {}),
+         'phases': [{'id': 'a', 'journal': 'A.', 'effects': [], 'exits': [], 'triggers': [
+             {'id': 'start', 'on': 'arrival', 'audience': 'participant', 'actions': [
+                 {'do': 'effect', 'effect': {'kind': 'quest.start', 'quest': 'q', 'player': '$actor'}}]}]}],
+         'tests': [{'name': 'x', 'cohort': list(players), 'events': [], 'expect': ['a']}]}
+    rules.validate(p)
+    return p
+
+
+def statuses(p, events, facts=None, **case):
+    report, _ = play(p, events, cohort=p['audience']['players'], **({'facts': facts} if facts else {}), **case)
+    return report['quests'].get('q', {}), report
+
+
+arrive = lambda i, w, day=0.1: fact(i, 'arrival', day, w)
+
+
+class Phase2(unittest.TestCase):
+    def test_where_an_objective_counts(self):
+        p = one_quest({'on': 'hunted', 'match': {'target': 'pheasant'}, 'where': {'cells': ['w_2_0', 'w_2_2']}, 'goal': 2})
+        got, _ = statuses(p, [arrive(1, ASH), fact(2, 'hunted', 1, ASH, target='pheasant', cell='w_2_1'),
+                              fact(3, 'hunted', 1.1, ASH, target='pheasant', cell='w_2_2'), fact(4, 'hunted', 1.2, ASH, target='pheasant')])
+        self.assertEqual(got[ASH], 'active', 'one in 2_1 and one with no place do not count')
+        got, _ = statuses(p, [arrive(1, ASH), fact(2, 'hunted', 1, ASH, target='pheasant', cell='w_2_0'),
+                              fact(3, 'hunted', 1.1, ASH, target='pheasant', cell='w_2_2')])
+        self.assertEqual(got[ASH], 'done')
+        region = one_quest({'on': 'hunted', 'where': {'region': 'wood'}}, regions=[{'id': 'wood', 'cell': 'w_2_2', 'x1': 2, 'y1': 2, 'x2': 5, 'y2': 5}])
+        self.assertEqual(statuses(region, [arrive(1, ASH), fact(2, 'hunted', 1, ASH, cell='w_2_2', x=9, y=9)])[0][ASH], 'active', 'outside the rectangle')
+        self.assertEqual(statuses(region, [arrive(1, ASH), fact(2, 'hunted', 1, ASH, cell='w_2_2', x=3, y=4)])[0][ASH], 'done', 'inside')
+        self.assertEqual(statuses(region, [arrive(1, ASH), fact(2, 'hunted', 1, ASH, cell='w_2_2')])[0][ASH], 'done', 'no tile: by its cell')
+        for bad, words in [({'cells': []}, '1 to 16 cells'), ({'region': 'nowhere'}, 'region of this story'), ({'cells': ['a'], 'region': 'r'}, 'only in')]:
+            with self.assertRaisesRegex(ValueError, words):
+                one_quest({'on': 'hunted', 'where': bad})
+
+    def test_who_an_objective_credits(self):
+        sale = one_quest({'on': 'stall sale', 'credit': 'target', 'goal': 3})
+        got, _ = statuses(sale, [arrive(1, ASH), arrive(2, BIRCH), *(fact(3 + i, 'stall sale', 1 + i / 10, BIRCH, target=ASH, item='bread') for i in range(3))])
+        self.assertEqual((got[ASH], got[BIRCH]), ('done', 'active'), 'three things sold at Ash\'s stall: the keeper is credited')
+        wagon = one_quest({'on': 'caravan arrives', 'credit': 'present'})
+        facts = {'wolves': {ASH: {'cell': 'grey'}, BIRCH: {'cell': 'grey'}, ELM: {'cell': 'far'}}}
+        got, _ = statuses(wagon, [arrive(1, ASH), arrive(2, BIRCH), arrive(3, ELM), fact(4, 'caravan arrives', 1, 'cv1', target='greyfen', cell='grey')], facts)
+        self.assertEqual(got, {ASH: 'done', BIRCH: 'done', ELM: 'active'}, 'the two in the cell, not the third elsewhere')
+        story = one_quest({'on': 'festival', 'credit': 'present', 'goal': 2}, scope='story')
+        report, _ = play(story, [arrive(1, ASH), arrive(2, BIRCH), fact(3, 'festival', 1, 'greyfen', cell='grey', detail='Thaw fair')],
+                         cohort=(ASH, BIRCH, ELM), facts=facts)
+        self.assertEqual(report['quests']['q'], {'story': 'active'}, 'the story\'s one copy gains once from one festival, two wolves there')
+        with self.assertRaisesRegex(ValueError, 'Nobody is the actor of a wagon arriving: credit the wolves present'):
+            one_quest({'on': 'caravan arrives'})
+        with self.assertRaisesRegex(ValueError, 'has a wolf it was done for'):
+            one_quest({'on': 'hunted', 'credit': 'target'})
+        with self.assertRaisesRegex(ValueError, 'an event with a place'):
+            one_quest({'on': 'story signal', 'signal': 's', 'credit': 'present'})
+        camp = one_quest({'on': 'camp cleared', 'match': {'target': 'camp_grey'}})
+        self.assertEqual(statuses(camp, [arrive(1, ASH), fact(2, 'camp cleared', 1, ASH, target='camp_grey', cell='grey')])[0][ASH], 'done',
+                         'a camp cleared by a wolf credits that wolf')
+        self.assertEqual(statuses(camp, [arrive(1, ASH), fact(2, 'camp cleared', 1, 'greyfen', target='camp_grey', detail='by the watch')])[0][ASH],
+                         'active', '"by the watch" credits nobody')
+
+    def test_the_six_are_mission_events(self):
+        for kind in ('camp cleared', 'caravan arrives', 'ship lost', 'ship docks', 'project built', 'festival'):
+            self.assertIn(kind, rules.MISSION_EVENTS)
+        trade = one_quest({'on': 'trade done', 'match': {'cell': 'city', 'detail': 'sold'}})
+        self.assertEqual(statuses(trade, [arrive(1, ASH), fact(2, 'trade done', 1, ASH, target='rm1', cell='frost', detail='sold')])[0][ASH], 'active')
+        self.assertEqual(statuses(trade, [arrive(1, ASH), fact(2, 'trade done', 1, ASH, target='rm1', cell='city', detail='sold')])[0][ASH], 'done',
+                         'sold in the city (M5: trade done has its cell)')
+
+    def test_a_goal_from_a_value(self):
+        variables = [{'id': 'ch_goal', 'type': 'number', 'scope': 'story', 'initial': 3}]
+        live = one_quest({'on': 'gift', 'goal': {'var': 'ch_goal'}, 'goalLive': True}, scope='story', variables=variables, players=(ASH,))
+        live['phases'][0]['triggers'].append({'id': 'raise', 'on': 'conversation', 'actions': [{'do': 'set', 'var': 'ch_goal', 'value': 5}]})
+        live['phases'][0]['triggers'].append({'id': 'lower', 'on': 'dawn', 'actions': [{'do': 'set', 'var': 'ch_goal', 'value': 1}]})
+        gifts = [fact(10 + i, 'gift', 1 + i / 10, ASH, target='rm111', item='rope') for i in range(2)]
+        state, _ = final_state(live, [arrive(1, ASH), fact(2, 'conversation', 0.5, ASH, target='rm111'), *gifts], cohort=(ASH,))
+        c = state['quests']['q']['story']
+        self.assertEqual((c['status'], c['objectives']['o']['n'], c['objectives']['o']['goal']), ('active', 2, 5), 'the goal rose to 5 mid-run')
+        state, _ = final_state(live, [arrive(1, ASH), *gifts, fact(5, 'dawn', 2)], cohort=(ASH,))
+        self.assertEqual(state['quests']['q']['story']['status'], 'done', 'a goal below what is made completes at once')
+        kept = one_quest({'on': 'gift', 'goal': {'max': [2, {'times': [{'audience': 'active'}, 1]}]}}, variables=variables)
+        state, _ = final_state(kept, [arrive(1, ASH), arrive(2, BIRCH), arrive(3, ELM)], cohort=(ASH, BIRCH, ELM))
+        self.assertEqual(state['quests']['q'][ELM]['objectives']['o']['goal'], 3, 'read when the copy starts: three active wolves')
+        self.assertEqual(state['quests']['q'][ASH]['objectives']['o']['goal'], 2, 'Ash started when only Ash was active')
+        views = quests.views(kept, state, ASH)
+        self.assertEqual(views[0]['objectives'][0]['goal'], 2)
+        with self.assertRaisesRegex(ValueError, 'for a quest of the whole story'):
+            one_quest({'on': 'gift', 'goal': {'var': 'ch_goal'}, 'goalLive': True}, variables=variables)
+        with self.assertRaisesRegex(ValueError, 'only when the goal is a value'):
+            one_quest({'on': 'gift', 'goalLive': True}, scope='story')
+        with self.assertRaisesRegex(ValueError, 'reads no event field'):
+            one_quest({'on': 'gift', 'goal': {'field': 'quantity'}}, variables=variables)
+
+    def test_again_after_any_end(self):
+        p = one_quest({'on': 'gift'}, join={'again': 7}, repeat='daily', players=(ASH,))
+        p['quests'][0]['giver'] = 'rm111'
+        p['quests'][0]['handIn'] = False
+        accept = lambda i, day: fact(i, 'quest accepted', day, ASH, target='run', item='rm111', detail='q')
+        abandon = lambda i, day: fact(i, 'quest abandoned', day, ASH, target='run', detail='q')
+        state, _ = final_state(p, [accept(1, 1), abandon(2, 1.5), accept(3, 3)], cohort=(ASH,))
+        self.assertEqual(state['quests']['q'][ASH]['status'], 'abandoned', 'a wolf who abandons waits 7 days')
+        self.assertEqual(state['toasts'][ASH], 'A thing to do: Not again so soon.')
+        state, _ = final_state(p, [accept(1, 1), abandon(2, 1.5), accept(3, 8.6)], cohort=(ASH,))
+        self.assertEqual(state['quests']['q'][ASH]['status'], 'active', 'and may take it after')
+        three = one_quest({'on': 'gift'}, join={'again': 3}, repeat='daily', players=(ASH,))
+        three['quests'][0].update(giver='rm111', handIn=False)
+        gift = lambda i, day: fact(i, 'gift', day, ASH, target='rm111', item='rope')
+        state, _ = final_state(three, [accept(1, 1), gift(2, 1.2), accept(3, 2.5)], cohort=(ASH,))
+        c = state['quests']['q'][ASH]
+        self.assertEqual((c['status'], quests.again(three['quests'][0], c)), ('done', 4.2), 'daily with again 3: three days')
+        self.assertEqual(quests.views(three, state, ASH)[0]['again'], 4.2)
+        with self.assertRaisesRegex(ValueError, 'again after 1 to 365'):
+            one_quest({'on': 'gift'}, join={'again': 0})
+
+    def test_a_reward_that_follows_the_purse_and_words_filled_for_each_wolf(self):
+        variables = [{'id': 'p_town', 'type': 'text', 'scope': 'player'}, {'id': 'p_n', 'type': 'number', 'scope': 'player', 'initial': 4}]
+        p = one_quest({'on': 'gift', 'label': 'Give it, {p_n.of} times.'}, variables=variables, players=(ASH,),
+                      rewards=[{'kind': 'character.grant', 'player': '$actor', 'purse': 'town:greyfen', 'reason': 'r',
+                                'coins': {'min': [12, {'div': [{'purse': 'town:greyfen'}, 20]}]}}])
+        p['quests'][0]['summary'] = 'For {p_town.of}.'
+        p['phases'][0]['triggers'][0]['actions'].insert(0, {'do': 'set', 'var': 'p_town', 'value': 'greyfen'})
+        report, _ = play(p, [arrive(1, ASH), fact(2, 'gift', 1, ASH, target='rm111')], cohort=(ASH,), facts={'purses': {'town:greyfen': 212}})
+        self.assertEqual([e['coins'] for e in report['effects'] if e['kind'] == 'character.grant'], [10], 'min(12, 212 / 20) at 212')
+        report, _ = play(p, [arrive(1, ASH), fact(2, 'gift', 1, ASH, target='rm111')], cohort=(ASH,), facts={'purses': {}})
+        self.assertEqual([e for e in report['effects'] if e['kind'] == 'character.grant'], [], 'an unknown purse: not given')
+        state, _ = final_state(p, [arrive(1, ASH), fact(2, 'gift', 1, ASH, target='rm111')], cohort=(ASH,))
+        self.assertTrue(state['rewardNotes'] and state['rewardNotes'][0]['quest'] == 'q' and 'coins has no value' in state['rewardNotes'][0]['why'])
+        v = quests.views(p, state, ASH)[0]
+        self.assertEqual((v['summary'], v['objectives'][0]['label']), ('For greyfen.', 'Give it, 4 times.'), 'filled for the wolf who reads them')
+        p['quests'][0]['offer'] = {'say': 'Help {p_town.of}.'}
+        p['quests'][0]['giver'] = 'rm111'
+        with self.assertRaisesRegex(ValueError, 'the same for every wolf'):
+            rules.validate(p)
+
+
 if __name__ == '__main__':
     unittest.main()
 

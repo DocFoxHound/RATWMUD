@@ -2,6 +2,8 @@
 // fact in one phase. The host commits the resulting changes together with the fact's durable cursor.
 #include "RatwStoryRegion.h"
 #include <algorithm>
+#include <cctype>
+#include <map>
 #include <cstdint>
 #include <cmath>
 #include <optional>
@@ -35,6 +37,42 @@ static bool compare(const Value& left, const std::string& op, const Value& right
     if (op == ">") return left.asNumber() > right.asNumber();
     if (op == "<") return left.asNumber() < right.asNumber();
     throw std::invalid_argument("Unknown story comparison");
+}
+
+// Doc 86, C12b: a filter's value is a text (exactly it), {"starts": text} (begins with it) or {"in": [texts]} (one of them);
+// the gift item rule (the base id unless a mark is given) applies inside both. The twin of story_program.match_one.
+static std::string giftBase(const std::string& actual, const std::string& expected, bool gift)
+{
+    if (!gift || expected.find_first_of("~@") != std::string::npos) return actual;
+    return actual.substr(0, actual.find_first_of("~@"));
+}
+
+static bool matchOne(const Value& expected, const std::string& actual, bool gift)
+{
+    if (expected.isString()) return giftBase(actual, expected.asString(), gift) == expected.asString();
+    if (expected.has("starts"))
+    {
+        const auto want = expected.string("starts");
+        return giftBase(actual, want, gift).rfind(want, 0) == 0;
+    }
+    for (const auto& v : expected.array("in"))
+        if (v.isString() && giftBase(actual, v.asString(), gift) == v.asString()) return true;
+    return false;
+}
+
+// The field condition's comparison, with (C12b) "starts" and "in" for the event's text fields.
+static bool fieldCompare(const Value& fact, const Value& c)
+{
+    const auto key = c.string("field");
+    const auto op = c.string("op");
+    if (op == "starts" || op == "in")
+    {
+        Value expected = Value::object();
+        expected.set(op, c["value"]);
+        return matchOne(expected, fact.string(key), false);
+    }
+    const Value v = c["value"].isNumber() ? Value(fact.number(key)) : Value(fact.string(key));
+    return compare(v, op, c["value"]);
 }
 
 struct Dispatch
@@ -87,11 +125,7 @@ struct Dispatch
             const auto& store = personal ? counters["player"][actor] : counters["story"];
             value = store.number(c.string("key"));
         }
-        else if (test == "field")
-        {
-            const auto key = c.string("field");
-            value = c["value"].isNumber() ? Value(fact.number(key)) : Value(fact.string(key));
-        }
+        else if (test == "field") return fieldCompare(fact, c);
         else throw std::invalid_argument("Unknown story condition");
         return compare(value, c.string("op"), c["value"]);
     }
@@ -103,12 +137,7 @@ struct Dispatch
             return false;
         if (rule["signal"] != fact["signal"]) return false;
         for (const auto& [key, expected] : rule["match"].fields())
-        {
-            auto actual = fact.string(key);
-            if (key == "item" && (on == "gift" || on == "gift again") && expected.asString().find_first_of("~@") == std::string::npos)
-                actual = actual.substr(0, actual.find_first_of("~@"));
-            if (actual != expected.asString()) return false;
-        }
+            if (!matchOne(expected, fact.string(key), key == "item" && (on == "gift" || on == "gift again"))) return false;
         return on != "clock" || input.number("day") >= input.number("entered") + rule.number("afterDays");
     }
 
@@ -270,6 +299,7 @@ struct Dispatch2
         std::optional<Value> each;
         std::size_t firing;           // Index in `firings` that notes go to.
         int depth = 0;
+        bool eachWolf = false;        // (Doc 86, C1b: the loop is over wolves, so {name.of} reads the looped wolf.)
     };
 
     // (Doc 86, R1: a test for each of 5,000 wolves asks this for each one; the cohort is looked up in a set, made once.)
@@ -333,9 +363,34 @@ struct Dispatch2
         return v;
     }
 
+    // Doc 86, N3: a shown number of each wolf that mirrors a world number, the one the wolf's own text names (never stored).
+    std::optional<Value> mirror(const Value& d, const std::string& wolf) const
+    {
+        const auto& m = d["mirror"];
+        const auto keyName = m.string("key");
+        const auto& key = decls[keyName];
+        const auto* s = store(key.string("scope", "player"), wolf);
+        if (!s) return std::nullopt;
+        const Value v = s->has(keyName) ? (*s)[keyName] : initialOf(key);
+        const auto* name = v.isString() ? m["names"].find(v.asString()) : nullptr;
+        if (!name || !name->isString() || !decls.has(name->asString())) return Value(0);
+        const auto* world = store("world", "");
+        const Value w = world && world->has(name->asString()) ? (*world)[name->asString()] : initialOf(decls[name->asString()]);
+        return w.isNumber() ? w : Value(0);
+    }
+
     std::optional<Value> value(const Value& o, const Ctx& x) const
     {
         if (!o.isObject()) return o;
+        if (o.has("purse"))
+        {
+            // (Doc 86, M2: what a purse holds now, from the world's facts of the event; not known, no value.)
+            const auto* f = x.fact->find("facts");
+            const auto* n = f && f->isObject() && (*f)["purses"].isObject() ? (*f)["purses"].find(o.string("purse")) : nullptr;
+            if (!n || !n->isNumber()) return std::nullopt;
+            return *n;
+        }
+        if (o.has("var") && decls[o.string("var")].has("mirror")) return mirror(decls[o.string("var")], wolfOf(x, o.string("of")));
         const std::string name = o.has("var") ? o.string("var") : o.has("count") ? o.string("count") : o.string("since");
         if (o.has("var") || o.has("count") || o.has("since"))
         {
@@ -448,12 +503,7 @@ struct Dispatch2
             return box->contains(fact.string("cell"), int(fact.number("x")), int(fact.number("y")));
         }
         if (test == "mission") return includes(input["ready"], c.string("id"));
-        if (test == "field")
-        {
-            const auto key = c.string("field");
-            const Value v = c["value"].isNumber() ? Value(x.fact->number(key)) : Value(x.fact->string(key));
-            return compare(v, c.string("op"), c["value"]);
-        }
+        if (test == "field") return fieldCompare(*x.fact, c);
         throw std::invalid_argument("Unknown story condition");
     }
 
@@ -816,6 +866,102 @@ struct Dispatch2
         return run(actions, x, base, i);
     }
 
+    void note(const Ctx& x, const std::string& text)
+    {
+        auto& f = firings.items()[x.firing];
+        list(f, "notes").push(Value(text));
+    }
+
+    // ---- Doc 86, Phase 2 (C1b): a version 2 story's words with their fills, as story_triggers.fill_text makes them.
+    static bool nameChar(char c, bool first)
+    {
+        return std::isalnum(static_cast<unsigned char>(c)) || c == '_' || (!first && (c == '.' || c == ':' || c == '-'));
+    }
+
+    std::string fillOne(const std::string& name, bool of, const Ctx& x)
+    {
+        const auto* d = decls.find(name);
+        const auto missing = [&]() { note(x, "fill " + name + " has no value"); return std::string(); };
+        if (!d) return missing();
+        const std::string wolf = of ? (x.eachWolf && x.each && x.each->isString() ? x.each->asString() : x.actor) : std::string();
+        std::optional<Value> v;
+        if (d->has("mirror")) v = mirror(*d, wolf);
+        else if (const auto* s = store(d->string("scope"), wolf)) v = s->has(name) ? (*s)[name] : initialOf(*d);
+        if (!v || v->isNull()) return missing();
+        const auto type = d->string("type");
+        if (type == "switch") return v->isBool() && v->asBool() ? "yes" : "no";
+        if (type == "number" || v->isNumber())
+            return v->isNumber() ? std::to_string(static_cast<long long>(v->asNumber())) : std::string();
+        static const std::map<std::string, std::string> tokens{{"wolf", "w"}, {"resident", "r"}, {"place", "p"}, {"item", "i"}, {"faction", "f"}};
+        const auto t = tokens.find(type);
+        if (t != tokens.end()) return v->isString() && !v->asString().empty() ? "{@" + t->second + ":" + v->asString() + "}" : std::string();
+        return v->isString() ? v->asString() : std::string();
+    }
+
+    std::string fillText(const std::string& text, const Ctx& x)
+    {
+        std::string out;
+        for (std::size_t i = 0; i < text.size();)
+        {
+            if (text.compare(i, 2, "{{") == 0) { out += '{'; i += 2; continue; }
+            if (text.compare(i, 2, "}}") == 0) { out += '}'; i += 2; continue; }
+            if (text[i] == '{')
+            {
+                std::size_t j = i + 1;
+                if (j < text.size() && nameChar(text[j], true))
+                {
+                    while (j < text.size() && nameChar(text[j], false)) ++j;
+                    if (j < text.size() && text[j] == '}')
+                    {
+                        std::string name = text.substr(i + 1, j - i - 1);
+                        bool of = false;
+                        // (As the Python twin's lazy name: a trailing .of reads the wolf's own.)
+                        if (name.size() > 3 && name.compare(name.size() - 3, 3, ".of") == 0) { name.resize(name.size() - 3); of = true; }
+                        out += fillOne(name, of, x);
+                        i = j + 1;
+                        continue;
+                    }
+                }
+            }
+            out += text[i++];
+        }
+        return out;
+    }
+
+    // C1a and C1b: an effect as it is sent: its operand parameters worked out (a number floored and kept to its bounds, an id a
+    // text) and its words filled, by the specs the host sends (`effectSpecs`, from the catalogue). False when a value is
+    // missing (or a number that may not be 0 is 0): it is not sent, with a note.
+    bool resolve(Value& effect, const Ctx& x)
+    {
+        const auto& specs = input["effectSpecs"][effect.string("kind")];
+        if (!specs.isObject()) return true;
+        for (const auto& [key, p] : specs.fields())
+        {
+            auto* v = effect.find(key);
+            if (!v) continue;
+            if (p.boolean("operand") && v->isObject())
+            {
+                const auto r = value(*v, x);
+                if (p.string("type") == "int")
+                {
+                    if (!r || !r->isNumber()) { note(x, "skipped: " + key + " has no value"); return false; }
+                    double n = std::floor(r->asNumber());
+                    n = std::max(p.number("min", -Limit), std::min(p.number("max", Limit), n));
+                    if (p.boolean("nonzero") && n == 0) { note(x, "skipped: " + key + " is 0"); return false; }
+                    *v = Value(n);
+                }
+                else
+                {
+                    if (!r || !r->isString() || r->asString().empty()) { note(x, "skipped: " + key + " has no value"); return false; }
+                    *v = *r;
+                }
+            }
+            else if (p.boolean("fills") && v->isString() && v->asString().find_first_of("{}") != std::string::npos)
+                *v = Value(fillText(v->asString(), x));
+        }
+        return true;
+    }
+
     Flow act(const Value& a, Ctx& x, const Value& address)
     {
         const auto op = a.string("do");
@@ -829,7 +975,7 @@ struct Dispatch2
                 else if (v == Value("$each") && x.each) effect.set(k, *x.each);
                 else effect.set(k, v);
             }
-            list(result, "effects").push(effect);
+            if (resolve(effect, x)) list(result, "effects").push(effect);
         }
         else if (op == "schedule" || op == "cancel")
         {
@@ -862,13 +1008,16 @@ struct Dispatch2
         else if (op == "each")
         {
             const auto before = x.each;
+            const bool beforeWolf = x.eachWolf;
+            x.eachWolf = a.string("over") != "list" || decls[a.string("list")].string("type") == "wolves";
             for (const auto& wolf : loop(a, x))
             {
                 x.each = wolf;
                 const auto r = run(a["actions"], x, with(address, "actions"));
-                if (r != Flow::Go) { x.each = before; return r; }
+                if (r != Flow::Go) { x.each = before; x.eachWolf = beforeWolf; return r; }
             }
             x.each = before;
+            x.eachWolf = beforeWolf;
         }
         else if (op == "random")
         {
@@ -935,11 +1084,7 @@ struct Dispatch2
             }
         }
         else if (op == "stop") return Flow::Stop;
-        else if (op == "note")
-        {
-            auto& f = firings.items()[x.firing];
-            list(f, "notes").push(a["text"]);
-        }
+        else if (op == "note") note(x, a.string("text"));
         else if (op == "finish")
         {
             const auto who = a.string("who", "everyone");
@@ -1066,12 +1211,7 @@ struct Dispatch2
             return false;
         if (rule["signal"] != fact["signal"]) return false;
         for (const auto& [key, expected] : rule["match"].fields())
-        {
-            auto actual = fact.string(key);
-            if (key == "item" && (on == "gift" || on == "gift again") && expected.asString().find_first_of("~@") == std::string::npos)
-                actual = actual.substr(0, actual.find_first_of("~@"));
-            if (actual != expected.asString()) return false;
-        }
+            if (!matchOne(expected, fact.string(key), key == "item" && (on == "gift" || on == "gift again"))) return false;
         return on != "clock" || day >= input.number("entered") + rule.number("afterDays");
     }
 

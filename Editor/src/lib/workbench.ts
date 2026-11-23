@@ -17,6 +17,8 @@ export interface Param {
     of?: string[]; optional?: boolean; kind?: string; like?: string;
     /** (The Editor's own: an `objective` slot's quest, filled from the record beside it, so its picker lists that quest's.) */
     quest?: string;
+    /** Doc 86, Phase 2: an effect's parameter that may be a value worked out as it fires (C1a), words that may hold fills (C1b). */
+    operand?: boolean; fills?: boolean;
 }
 export interface Field {type: string; label: string; any?: string}
 export interface CatEvent {
@@ -50,7 +52,11 @@ export type Operand = number | boolean | string | {var: string; of?: string} | {
     | {max: [Operand, Operand]}
     // (Doc 86, Phase 1a: the story's audience counted; times and div; the share, or the number, of the wolves who took part.)
     | {audience: 'all' | 'active' | 'online'} | {times: [Operand, Operand]} | {div: [Operand, Operand]}
-    | {percent: ShareSource; of?: string} | {among: ShareSource; of?: string};
+    | {percent: ShareSource; of?: string} | {among: ShareSource; of?: string}
+    // (Doc 86, Phase 2, M2: what a purse holds now.)
+    | {purse: string};
+/** A filter's value (doc 86, C12b): a text, "begins with", or "one of". */
+export type MatchValue = string | {starts: string} | {in: string[]};
 /** Who counts (doc 86, R1): the wolves of a story or world list, or those for whom a test is true (the wolf as $each). */
 export type ShareSource = {list: string} | {where: Condition};
 export type Condition =
@@ -58,7 +64,7 @@ export type Condition =
     | {test: 'not'; condition: Condition}
     | {test: 'mission'; id: string}
     | {test: 'region'; region: string}
-    | {test: 'field'; field: string; op: string; value: string | number}
+    | {test: 'field'; field: string; op: string; value: string | number | string[]}
     | {test: 'counter'; scope: string; key: string; op: string; value: number}
     // (Version 2.)
     | {test: 'compare'; left: Operand; op: string; right: Operand}
@@ -108,7 +114,10 @@ export interface Trigger {
 /** A declared variable of a version 2 story (doc 85, 3.2). */
 export interface Variable {id: string; type: string; scope: string; initial?: unknown; note?: string; show?: string; clock?: string;
     /** Doc 86, N2: a wolf's own value told to the residents they talk to (player.story.<name> in the dialogue window). */
-    talk?: boolean}
+    talk?: boolean;
+    /** Doc 86, C1d: shown "of" another number ("This chapter: 34 / 80"); N3: a wolf's number that mirrors the world number
+     *  their text `key` names. */
+    showOf?: string; mirror?: {key: string; names: Record<string, string>}}
 export interface Exit {
     on: string; to: string; match?: Record<string, string>; afterDays?: number; percent?: number; players?: number; participant?: boolean;
     missions?: string[]; minCoins?: number; minQuantity?: number; prerequisites?: unknown[];
@@ -147,11 +156,16 @@ export interface Case {name: string; cohort: string[]; events: Fact[]; expect: s
     facts?: WorldFacts}
 /** A quest's objective (doc 85, 3.6): an event of a wolf with filters, a goal, what must come first, optional or hidden. */
 export interface QuestObjective {id: string; label: string; on: string; signal?: string; match?: Record<string, string>;
-    goal?: number; measure?: 'count' | 'quantity' | 'coins'; after?: string[]; optional?: boolean; hidden?: boolean}
+    goal?: number | Operand; measure?: 'count' | 'quantity' | 'coins'; after?: string[]; optional?: boolean; hidden?: boolean;
+    /** Doc 86, Phase 2: the goal kept up with as its value changes (C1c); only in some cells or a region (SQ1); who it
+     *  credits (SQ5). */
+    goalLive?: boolean; where?: {cells: string[]} | {region: string}; credit?: 'actor' | 'target' | 'present'}
 /** What fails a quest: an event (with filters), or a deadline after it starts. */
 export type FailRule = {on: string; match?: Record<string, string>; signal?: string} | {afterDays: number; clock?: 'game' | 'real'};
 export interface QuestOffer {ask?: string; say: string; accept?: string; decline?: string; handIn?: string; thanks?: string}
-export interface QuestJoin {who?: 'anyone' | 'participants'; region?: string; cap?: number; limit?: number}
+export interface QuestJoin {who?: 'anyone' | 'participants'; region?: string; cap?: number; limit?: number;
+    /** Doc 86, N4: game days before the same wolf may take it again, after any end. */
+    again?: number}
 /** A quest (doc 85, 3.6; Phase 6): a version 2 story's, offered by a resident or given by a trigger. */
 export interface Quest {
     id: string; title: string; summary?: string; scope?: 'player' | 'party' | 'story'; contributors?: number; lifetime?: 'campaign' | 'phase';
@@ -163,6 +177,8 @@ export interface Program {
     format?: string; version?: number; id: string; title: string; audience: Audience;
     start: string; phases: Phase[]; triggers?: Trigger[]; regions?: Region[]; scenes?: Scene[]; tests: Case[]; quietAfterHours?: number;
     variables?: Variable[]; quests?: Quest[];
+    /** Doc 86, L2: the story's prefix (nh, sq, mq, lq, st): its camps' names begin with it. */
+    prefix?: string; activeDays?: number;
 }
 
 export const SIGNAL = 'story signal';
@@ -248,6 +264,12 @@ const SLOT = /\{([^}]+)\}/g;
 export function shown(type: string, value: unknown, names: Names, param?: Param): string {
     if (type === 'operand') return operandWords(value as Operand, names);
     if (value === undefined || value === null || value === '') return '';
+    // (Doc 86, C1a: a parameter given a value, worked out as it fires; C12b: a filter that begins with or is one of.)
+    if (typeof value === 'object') {
+        const m = matchWords(value, names, type);
+        if (m !== undefined) return m;
+        if (isOperand(value)) return operandWords(value as Operand, names);
+    }
     if (typeof value === 'boolean') return param?.words?.[String(value)] ?? (value ? 'yes' : 'no');
     const text = String(value);
     if (param?.words && text in param.words) return param.words[text];
@@ -260,9 +282,13 @@ export function shown(type: string, value: unknown, names: Names, param?: Param)
     const name = names[type]?.[text];
     if (name && name !== text) return name;
     if (type === 'choice' || type === 'int' || type === 'days' || type === 'number') return text.replaceAll('_', ' ');
-    if (type === 'text') return '“' + text + '”';
+    // (Doc 86, C1b: a fill reads as ⟨name⟩, a wolf's own as ⟨name of the wolf⟩; Sentence.tsx shows each as a chip.)
+    if (type === 'text') return '“' + fillChips(text) + '”';
     return text;
 }
+/** A text's fills as the sentence shows them: {bar} as ⟨bar⟩, {p_town.of} as ⟨p_town of the wolf⟩, {{ and }} as braces. */
+export const fillChips = (text: string) => text.replace(/\{\{|\}\}|\{([A-Za-z0-9_][A-Za-z0-9_.:-]*?)(\.of)?\}/g,
+    (m, name?: string, of?: string) => m === '{{' ? '{' : m === '}}' ? '}' : `⟨${name}${of ? ' of the wolf' : ''}⟩`);
 
 /** A catalogue sentence cut into words and slots; `slot(name)` says what fills each. */
 export function parts(template: string, slot: (name: string) => Omit<Slot, 'slot'>): Part[] {
@@ -277,6 +303,44 @@ export function parts(template: string, slot: (name: string) => Omit<Slot, 'slot
     return out;
 }
 export const plain = (ps: Part[]) => ps.map(p => 'text' in p ? p.text : p.hidden ? '' : (p.shown || p.label)).join('').replace(/ {2,}/g, ' ').replace(/ ([,:])/g, '$1').trim();
+
+const OPERAND_KEYS = ['var', 'field', 'count', 'since', 'each', 'audience', 'purse', 'percent', 'among', 'plus', 'minus', 'min', 'max', 'times', 'div'];
+/** Whether a value is a version 2 value's form ({var}, {field}, arithmetic...), as a parameter marked operand holds one. */
+export const isOperand = (v: unknown): boolean => !!v && typeof v === 'object' && !Array.isArray(v) && OPERAND_KEYS.some(k => k in (v as object));
+
+/** A filter's value in words (doc 86, C12b): "begins with “stood watch”", "one of Coldwater, Larkfield"; undefined when it is
+ *  not a filter's form. */
+export function matchWords(v: unknown, names: Names, type = 'text'): string | undefined {
+    if (!v || typeof v !== 'object' || Array.isArray(v)) return undefined;
+    const o = v as Record<string, unknown>;
+    if (typeof o.starts === 'string' && Object.keys(o).length === 1) return `begins with “${o.starts}”`;
+    if (Array.isArray(o.in) && Object.keys(o).length === 1) return 'one of ' + o.in.map(x => shown(type === 'text' ? 'plain' : type, x, names)).join(', ');
+    return undefined;
+}
+
+/** The fills of a version 2 text (doc 86, C1b): {name} and {name.of}; {{ and }} are braces. */
+export function fillsOf(text: string): {name: string; of: boolean}[] {
+    const out: {name: string; of: boolean}[] = [];
+    for (const m of text.matchAll(/\{\{|\}\}|\{([A-Za-z0-9_][A-Za-z0-9_.:-]*?)(\.of)?\}/g)) if (m[1]) out.push({name: m[1], of: !!m[2]});
+    return out;
+}
+/** The widest a text with fills can be (story_triggers.check_fills): a number 11, a switch 3, a text 200, a wolf's name 24,
+ *  another name 40. */
+export function widestFilled(text: string, p: Program): number {
+    const base = text.replace(/\{\{|\}\}|\{([A-Za-z0-9_][A-Za-z0-9_.:-]*?)(\.of)?\}/g, m => m === '{{' ? '{' : m === '}}' ? '}' : '').length;
+    const widest: Record<string, number> = {number: 11, switch: 3, text: 200, wolf: 24};
+    return base + fillsOf(text).reduce((n, f) => {
+        const v = p.variables?.find(x => x.id === f.name);
+        return n + (v?.mirror ? 11 : widest[v?.type ?? ''] ?? 40);
+    }, 0);
+}
+
+/** The name tokens a fill leaves for the game ({@w:<wolf>}, {@r:...}, {@p:...}, {@i:...}, {@f:...}) as a rehearsal shows them
+ *  (doc 86, C1b): «wolf: Bilbo», with the rehearsal's names. */
+export function tokenWords(text: string, names: Names): string {
+    const kinds: Record<string, [string, string]> = {w: ['wolf', 'wolf'], r: ['resident', 'resident'], p: ['place', 'place'], i: ['item', 'item'], f: ['faction', 'faction']};
+    return text.replace(/\{@([wrpif]):([^}]*)\}/g, (_m, k: string, id: string) => `«${kinds[k][0]}: ${names[kinds[k][1]]?.[id] ?? id}»`);
+}
 
 const FIELD_WORDS: Record<string, string> = {actor: 'the acting wolf', target: "the event's target", cell: "the event's place", item: "the event's item",
     detail: "the event's detail", quantity: "the event's quantity", coins: "the event's coins"};
@@ -293,6 +357,7 @@ export function operandWords(o: Operand | undefined, names: Names): string {
     if ('since' in o) return 'the days since ' + whose(o) + o.since;
     if ('each' in o) return 'the looped value';
     if ('audience' in o) return AUDIENCE_WORDS[o.audience] ?? o.audience;
+    if ('purse' in o) return `what ${names.purse?.[o.purse] ?? o.purse} holds`;
     if ('percent' in o || 'among' in o) {
         const src = ('percent' in o ? o.percent : o.among) as ShareSource;
         const who = OF_WORDS[o.of ?? 'active'] ?? o.of;
@@ -438,8 +503,10 @@ export function conditionParts(cat: Catalogue, c: Condition, names: Names): Part
     if (c.test === 'field') {
         const amount = (AMOUNTS as readonly string[]).includes(c.field);
         const ps = itemParts(item, c as unknown as Json, names);
+        // (Doc 86, C12b: "begins with" a text, "is one of" a list.)
+        const value = c.op === 'in' && Array.isArray(c.value) ? (c.value as unknown[]).map(x => '“' + String(x) + '”').join(', ') : undefined;
         return ps.map(p => 'slot' in p && p.slot === 'value' ? {...p, type: amount ? 'int' : 'text',
-            shown: amount ? String(c.value) : shown('text', c.value, names)} : p);
+            shown: amount ? String(c.value) : value ?? shown('text', c.value, names)} : p);
     }
     return itemParts(item, c as unknown as Json, names);
 }
@@ -1252,7 +1319,9 @@ function editableCondition(v: unknown, depth = 0): boolean {
     if (v.test === 'region') return typeof v.region === 'string';
     if (v.test === 'mission') return typeof v.id === 'string';
     if (V2_TESTS.includes(String(v.test))) return true;   // (Version 2: shown as its sentence; the check says what is wrong.)
-    return (v.test === 'counter' || v.test === 'field') && ['string', 'number'].includes(typeof v.value);
+    // (Doc 86, C12b: the field's "is one of" takes a list of texts.)
+    return (v.test === 'counter' || v.test === 'field') && (['string', 'number'].includes(typeof v.value)
+        || (v.test === 'field' && v.op === 'in' && Array.isArray(v.value) && v.value.every(x => typeof x === 'string')));
 }
 const ACTIONS = ['enter', 'emit', 'set', 'add', 'schedule', 'cancel', 'subtract', 'multiply', 'clamp', 'turn on', 'turn off', 'toggle', 'remember',
     'list add', 'list remove', 'list clear', 'pick', 'start timer', 'stop timer', 'shift', 'wait', 'run', 'enable', 'disable', 'stop', 'note', 'finish'];
@@ -1414,7 +1483,7 @@ export function smallQuestProgram(input: SmallQuestInput): Program {
     objectives.filter(o => !o.optional).forEach((o, i) => {
         if (o.on === SIGNAL) return;   // (A signal is the story's own: a case cannot state one.)
         const fact: Fact = {id: o.id, kind: o.on, day: 0, actor: wolf, ...(o.match ?? {})};
-        const goal = o.goal ?? 1;
+        const goal = typeof o.goal === 'number' ? o.goal : 1;
         if (o.measure === 'quantity') fact.quantity = goal;
         else if (o.measure === 'coins') fact.coins = goal;
         for (let k = 0; k < (o.measure && o.measure !== 'count' ? 1 : goal); k++) events.push({...fact, id: goal > 1 && (!o.measure || o.measure === 'count') ? `${o.id}-${k + 1}` : o.id, day: 0.01 * (i + 1)});

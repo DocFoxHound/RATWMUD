@@ -22,8 +22,9 @@ def legacy_validate_effect(effect, pid, regions=None, scenes=None):
     require, integer, word, identifier = rules.require, rules.integer, rules.word, rules.identifier
     kind = effect.get('kind') if isinstance(effect, dict) else None
     require(isinstance(kind, str) and kind in rules.EFFECTS, f'{pid}: unknown effect.')
-    rules.shape(effect, ('kind', *rules.EFFECTS[kind]))
-    for k in rules.EFFECTS[kind]:
+    keys = tuple(k for k in rules.EFFECTS[kind] if k != 'camp')   # (Doc 86, L2: a camp's name came later, optional.)
+    rules.shape(effect, ('kind', *keys))
+    for k in keys:
         v = effect[k]
         if k in ('x', 'y', 'inDays'):
             ok = integer(v, 0, 30 if k == 'inDays' else 4095)
@@ -125,7 +126,7 @@ class CatalogueShape(unittest.TestCase):
         groups = {g['id'] for g in CAT['groups']}
         ids = [e['id'] for e in CAT['events']]
         self.assertEqual(len(ids), len(set(ids)))
-        self.assertEqual(len(rules.EVENTS), 205)   # (160, Phase 6's 11 quest and party events, Phase 8's 24 and Phase 10's 10.)
+        self.assertEqual(len(rules.EVENTS), 206)   # (160, Phase 6's 11 quest and party events, Phase 8's 24, Phase 10's 10; doc 86's moon.)
         self.assertEqual(set(ids) - set(rules.EVENTS), {triggers.SIGNAL, rules.MISSION_GATE, rules.READY_EXIT})   # (Doc 86: the ready exit.)
         for e in CAT['events']:
             with self.subTest(event=e['id']):
@@ -171,7 +172,12 @@ class CatalogueShape(unittest.TestCase):
 
     def test_tables_read_from_it(self):
         self.assertEqual(rules.EFFECTS['npc.walk'], ('npc', 'cell', 'x', 'y', 'pace', 'cue'))
-        self.assertEqual(len(rules.MISSION_EVENTS), 63)   # (52, and 11 of Phase 8's new events a wolf does.)
+        self.assertEqual(len(rules.MISSION_EVENTS), 69)   # (52, 11 of Phase 8's new events a wolf does, doc 86's six (L3).)
+        # (Doc 86, L3: the six events with no wolf, or a wolf only sometimes, are mission evidence; M5: trade done has a cell.)
+        self.assertLessEqual({'camp cleared', 'caravan arrives', 'ship lost', 'ship docks', 'project built', 'festival'}, set(rules.MISSION_EVENTS))
+        trade = next(e for e in CAT['events'] if e['id'] == 'trade done')
+        self.assertEqual(trade['fields']['cell']['type'], 'place')
+        self.assertFalse(trade['tile'])
         self.assertEqual(len(rules.MISSION_MEASURES['quantity']), 15)   # (Phase 8: item picked up, trade done.)
         self.assertEqual(len(rules.MISSION_MEASURES['coins']), 19)   # (Phase 8: trade done.)
         self.assertEqual(len(rules.INJURY_TYPES), 26)
@@ -192,6 +198,7 @@ class CatalogueShape(unittest.TestCase):
         for kind, keys in rules.EFFECTS.items():
             if kind == 'scene.play' or kind in PHASE6 or kind in PHASE9 or kind in PHASE1B:
                 continue   # (Needs an embedded scene: both run the same checks after the loop. Phase 6's are new: below.)
+            keys = tuple(k for k in keys if k != 'camp')   # (Doc 86, L2: optional, and the hand-written checks had none.)
             base = {'kind': kind, **{k: good[k] for k in keys}}
             self.assertEqual(verdict(rules.validate_effect, base), 'ok', kind)
             for key in keys:

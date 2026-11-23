@@ -5,6 +5,7 @@ typed variables in four scopes, conditions over the story's own state, and flow 
 else, wait, for each, random, run, enable, disable, stop, note, finish). A version 1 program runs exactly as before: every
 version 2 path is behind `phase['_v'] == 2`. Core/RatwStoryTriggers.cpp is this file's twin (tools/test_story_native.py)."""
 
+import math
 import re
 import operator
 
@@ -39,6 +40,7 @@ RUN_DEPTH = 8            # Run inside run, at most (cycles are refused when the 
 REAL_WAIT_MIN = 5 / 86400
 OUTCOMES = ('success', 'failure', 'abandoned')
 ARITH = ('plus', 'minus', 'min', 'max', 'times', 'div')
+TEXT_OPS = ('starts', 'in')   # (Doc 86, C12b: the field condition's begins with and one of.)
 # Doc 86, Phase 1a (C2, R1): the story's audience counted, and what share of it took part.
 AUDIENCES = ('all', 'active', 'online')
 ACTIVE_DAYS = 18          # (A program's activeDays when it gives none: three real days at the normal speed.)
@@ -58,7 +60,8 @@ WOLF_STATES = ('downed', 'hurt', 'wanted', 'held')
 RESIDENT_STATES = ('alive', 'dead', 'indoors', 'out of doors')
 RESIDENT_HAS = ('job', 'mood', 'mantle', 'town')
 CALENDAR = {'weekday': ('Dawnday', 'Hearthday', 'Stoneday', 'Riverday', 'Emberday', 'Marketday', 'Restday'),
-            'season': ('spring', 'summer', 'autumn', 'winter'), 'period': ('dawn', 'day', 'dusk', 'night')}
+            'season': ('spring', 'summer', 'autumn', 'winter'), 'period': ('dawn', 'day', 'dusk', 'night'),
+            'moon': ('new', 'waxing', 'full', 'waning')}   # (Doc 86, J4: the moon in four.)
 WEATHERS = ('clear', 'overcast', 'rain', 'storm', 'fog', 'snow', 'sandstorm')
 QUEST_STATES = ('none', 'offered', 'active', 'ready', 'done', 'failed', 'abandoned', 'expired')
 OBJECTIVE_STATES = ('done', 'failed', 'to do', 'hidden')
@@ -180,6 +183,20 @@ def operands_in(o):
             if key in o:
                 for child in o[key]:
                     yield from operands_in(child)
+
+
+def purses_in(v):
+    """Doc 86, M2: every purse a part of a program reads ({"purse": "<purse>"})."""
+    if isinstance(v, list):
+        for x in v:
+            yield from purses_in(x)
+    elif isinstance(v, dict):
+        if len(v) == 1 and isinstance(v.get('purse'), str):
+            yield v['purse']
+            return
+        for x in v.values():
+            if isinstance(x, (dict, list)):
+                yield from purses_in(x)
 
 
 def uses_audience(v):
@@ -308,7 +325,11 @@ def _check_condition(c, depth, phase, missions, each=None):
                 c['field'] in (*rules.FIELDS, 'quantity', 'coins'),
                 'Unknown event field.',
             )
-        if kind == 'counter' or c['field'] in ('coins', 'quantity'):
+        if kind == 'field' and c['op'] in TEXT_OPS:
+            # (Doc 86, C12b: begins with a text; one of up to 32 texts.)
+            require(c['field'] not in ('coins', 'quantity'), 'Begins with and one of are for the event\'s text fields.')
+            require(rules.match_value_ok({c['op']: c['value']}), 'Begins with: 1 to 120 characters; one of: 1 to 32 texts of up to 120.')
+        elif kind == 'counter' or c['field'] in ('coins', 'quantity'):
             require(
                 c['op'] in tuple(COMPARE) and rules.integer(c['value'], -LIMIT, LIMIT),
                 'Choose a numeric comparison.',
@@ -384,6 +405,12 @@ def operand_type(o, phase, each=None, depth=0):
         shape(o, ('each',))
         require(o['each'] is True and each is not None, 'The value of the loop is only inside For each.')
         return family(each)
+    if 'purse' in o:
+        # (Doc 86, M2: the pennies a purse holds now, from the world's facts.)
+        import story_quests
+        shape(o, ('purse',))
+        require(story_quests.check_purse(o['purse']), story_quests.PURSE_WORDS)
+        return 'number'
     if 'audience' in o:
         # (Doc 86, C2: how many wolves the story has, how many are active, how many are online now.)
         shape(o, ('audience',))
@@ -404,6 +431,75 @@ def operand_type(o, phase, each=None, depth=0):
     require(depth < 2 and isinstance(o[key], list) and len(o[key]) == 2, 'Arithmetic takes two values, two deep at most.')
     require(all(operand_type(x, phase, each, depth + 1) == 'number' for x in o[key]), 'Arithmetic is on numbers.')
     return 'number'
+
+
+# Doc 86, C1a: what may stand for an id parameter: a variable of its kind (or a text), the event's field that holds one, the
+# loop's value over a list of its kind.
+OPERAND_VARS = {'wolf': ('wolf',), 'resident': ('resident',), 'place': ('place', 'text'), 'item': ('item', 'text'),
+                'faction': ('faction', 'text'), 'town': ('text', 'region')}
+OPERAND_FIELDS = {'wolf': ('actor', 'target'), 'resident': ('target', 'item'), 'place': ('cell', 'target'), 'item': ('item',),
+                  'faction': ('target', 'detail'), 'town': ('actor', 'target', 'detail')}
+_KIND_WORDS = {'int': 'a number', 'wolf': 'a wolf', 'resident': 'a resident', 'place': 'a place', 'item': 'an item',
+               'faction': 'a faction', 'town': 'a town'}
+
+
+def check_operand_param(param, v, phase, each, reward=False):
+    """C1a: a value given for an effect's parameter marked operand, of the parameter's kind."""
+    import story_program as rules
+
+    require = rules.require
+    kind, label = param['type'], param.get('label', param['key'])
+    words = _KIND_WORDS.get(kind, 'a value')
+    if reward:
+        require(not any('field' in o or 'each' in o or o.get('of') == '$each' for o in operands_in(v)),
+                f'A reward is given when the quest is done: {label} reads no event field and no loop value.')
+    if kind == 'int':
+        require(operand_type(v, phase, each) == 'number', f'{label} is a number: give a number value.')
+        return
+    if 'var' in v:
+        rules.shape(v, ('var',), ('of',))
+        d = _decl(phase, v['var'])
+        require(d['type'] in OPERAND_VARS.get(kind, ()) and 'mirror' not in d,
+                f'"{v["var"]}" is a {d["type"]}: {label} needs {words}' + (' (or a text)' if 'text' in OPERAND_VARS.get(kind, ()) else '') + '.')
+        _check_of(v, d, each)
+        return
+    if 'field' in v:
+        rules.shape(v, ('field',))
+        allowed = OPERAND_FIELDS.get(kind, ())
+        require(v['field'] in allowed, f'{label} is {words}: the event\'s ' + ' or '.join(allowed) + ' holds one.')
+        return
+    if 'each' in v:
+        rules.shape(v, ('each',))
+        require(v['each'] is True and each is not None, 'The value of the loop is only inside For each.')
+        require(each == kind or (each == 'text' and kind not in ('wolf', 'resident')),
+                f'The loop\'s value is {"a " + each if each else "nothing"}: {label} needs {words}.')
+        return
+    raise ValueError(f'{label} is {words}: give one, or a variable, the event\'s field or the loop\'s value.')
+
+
+def check_fills(text, param, phase, each, of_allowed=True, where=None):
+    """C1b: the fills of a version 2 text ({name}, {name.of}): declared, not a list or a timer, a wolf's own only "of", and
+    the words within their limit with every fill at its widest."""
+    import story_program as rules
+
+    require = rules.require
+    limit = param.get('max', 300) if isinstance(param, dict) else param
+    label = where or (param.get('label', param.get('key', 'the words')) if isinstance(param, dict) else 'the words')
+    found = fills_in(text)
+    if not found and '{{' not in text and '}}' not in text:
+        return
+    widest = len(FILL.sub(lambda m: '{' if m.group(0) == '{{' else '}' if m.group(0) == '}}' else '', text))
+    for name, of in found:
+        d = _decl(phase, name)
+        require(d['type'] not in LISTS and d['type'] != 'timer', f'{{{name}}}: a {d["type"]} cannot fill words (a list or a timer).')
+        if of:
+            require(of_allowed, f'{label}: the same for every wolf, so it fills no wolf\'s own value ({{{name}.of}}).')
+            require(d['scope'] in PERSONAL, f'{{{name}.of}}: only a variable of each wolf or party is read "of" a wolf.')
+        else:
+            require(d['scope'] not in PERSONAL, f'{{{name}}} is each wolf\'s own: write {{{name}.of}}.')
+        widest += FILL_WIDEST.get(d['type'], FILL_NAME) if 'mirror' not in d else FILL_WIDEST['number']
+    require(widest <= limit, f'{label} is too long once filled: up to {widest} characters with every fill at its widest '
+                             f'(a number 11, a text {TEXT_MAX}, a wolf\'s name 24, another name 40); the limit is {limit}.')
 
 
 def _check_source(src, phase):
@@ -581,7 +677,7 @@ def _check_fact_condition(c, phase, each):
     elif kind == 'hour between':
         require(rules.integer(c['from'], 0, 23) and rules.integer(c['to'], 0, 23), 'Hours from 0 to 23.')
     elif kind == 'calendar is':
-        require(c['what'] in CALENDAR and c['value'] in CALENDAR[c['what']], 'A weekday, a season or a time of day, and which.')
+        require(c['what'] in CALENDAR and c['value'] in CALENDAR[c['what']], 'A weekday, a season, a time of day or the moon, and which.')
     elif kind == 'weather is':
         require(c['weather'] in WEATHERS, 'Clear, overcast, rain, storm, fog, snow or sandstorm.')
         require(c.get('where', '$actor') == '$actor' or rules.identifier(c['where']), 'Where the acting wolf is, or a place.')
@@ -626,6 +722,7 @@ def _check_action_v2(a, cx, address, depth, each, last):
     def var(d_key='var', kinds=None, words='variable'):
         d = _decl(phase, a[d_key], kinds, words)
         _check_of(a, d, each)
+        require('mirror' not in d, f'"{a[d_key]}" mirrors a world variable: it is read, never set.')   # (Doc 86, N3.)
         return d
 
     if kind in ('set', 'add', 'subtract', 'multiply'):
@@ -691,7 +788,12 @@ def _check_action_v2(a, cx, address, depth, each, last):
                     require(param['type'] == each or (param['type'] == 'character' and each in ('wolf', 'resident')),
                             f'$each is a {each}: it cannot be {param["label"]}.')
             effect = {k: (stand if v == '$each' else v) for k, v in effect.items()}
-        rules.validate_effect(effect, phase['id'], phase.get('_regions'), phase.get('_scenes'))
+        # (Doc 86, C1: a parameter marked operand may be a value of its kind; a text marked fills may hold {name}.)
+        rules.validate_effect(effect, phase['id'], phase.get('_regions'), phase.get('_scenes'),
+                              operand=lambda param, v: check_operand_param(param, v, phase, each))
+        for param in rules.EFFECT_PARAMS.get(effect['kind'], ()):
+            if param.get('fills') and isinstance(effect.get(param['key']), str):
+                check_fills(effect[param['key']], param, phase, each)
         require(effect['kind'] != 'npc.line', 'Set resident dialogue on phase entry.')
         rules.quests.check_story_effect(effect, phase, t)
         # (Doc 86, C8: what one resident remembers of one wolf is for a wolf of the story: the acting one of a participant
@@ -865,14 +967,14 @@ def _check_trigger(t, phase, ids, links, runs=None, collect=None):
     else:
         require('afterDays' not in t, 'Only timers take a delay.')
     match = t.get('match', {})
-    require(
-        isinstance(match, dict) and all(k in rules.FIELDS and rules.word(v, 400) for k, v in match.items()),
-        'Invalid trigger filters.',
-    )
+    require(rules.match_ok(match), 'Invalid trigger filters.')
     # (Doc 85, Phase 10: a watched event the game can only look for when it is told what to look at: a resident to come
-    # near, a purse and the amount it crosses, a faction and the standing.)
+    # near, a purse and the amount it crosses, a faction and the standing. Doc 86, C12b: those stay exact texts.)
     needs = rules.NEEDS_MATCH.get(t['on'], ())
     require(all(match.get(k) for k in needs), f'"{t["on"]}" needs its ' + ' and '.join(rules.MATCH_WORDS[k] for k in needs) + ' named.')
+    require(all(isinstance(match[k], str) for k in needs),
+            f'"{t["on"]}" needs its ' + ' and '.join(rules.MATCH_WORDS[k] for k in needs) + ' as exact words (not "begins with" or "one of"): '
+            'the game must know what to look at.')
     if t['on'] in ('purse crossed', 'standing crossed') and 'detail' in match:
         require(re.fullmatch(r'-?[0-9]{1,9}', match['detail']) is not None, f'"{t["on"]}" names a whole number to cross.')
     rules.check_region_source(t, phase.get('_regions'))
@@ -1037,6 +1139,7 @@ class Ctx:
         self.day, self.elapsed, self.ready, self.emit = day, elapsed, ready, emit
         self.rule, self.entry, self.firings = rule, entry, firings
         self.each, self.target, self.depth = None, None, 0
+        self.each_wolf = False   # (Doc 86, C1b: whether the loop is over wolves, so {name.of} reads the looped wolf.)
         self.vars = phase.get('_vars', {}) if phase else {}
         self._audience = None
         self.members = None   # (Doc 86, R1: the cohort as a set while a test is counted for each wolf.)
@@ -1142,6 +1245,13 @@ def value_of(o, x):
             return MISSING
         s, d = r
         return len(s) if share == 'among' else (100 * len(s) // len(d) if d else 0)
+    if 'purse' in o:
+        # (Doc 86, M2: what the purse holds now, as the world's facts of the event say; not known, no value.)
+        f = facts_of(x.event) if x.event else None
+        n = ((f or {}).get('purses') or {}).get(o['purse']) if isinstance((f or {}).get('purses'), dict) else None
+        return n if _num(n) else MISSING
+    if 'var' in o and 'mirror' in x.vars.get(o['var'], {}):
+        return mirror_value(x.vars[o['var']], x, o.get('of'))
     if 'var' in o or 'count' in o or 'since' in o:
         name = o.get('var') or o.get('count') or o.get('since')
         d = x.vars[name]
@@ -1170,6 +1280,22 @@ def value_of(o, x):
         product = a * b
         return product if abs(product) <= 2 ** 53 else float(a) * float(b)
     return a + b if key == 'plus' else a - b if key == 'minus' else min(a, b) if key == 'min' else max(a, b)
+
+
+def mirror_value(d, x, of=None, wolf=None):
+    """Doc 86, N3: a shown number of each wolf that mirrors a world variable: the wolf's `key` text names which (`names`);
+    never stored. An unknown or empty key reads 0; a wolf not in the story, no value."""
+    m = d['mirror']
+    key = x.vars.get(m['key'], {})
+    who = wolf if wolf is not None else x.wolf(of)
+    store = var_store(x.state, key.get('scope', 'player'), who, members=x.members)
+    if store is None:
+        return MISSING
+    name = m['names'].get(store.get(m['key'], initial(key)) if key else '')
+    if not name or name not in x.vars:
+        return 0
+    v = var_store(x.state, 'world', '').get(name, initial(x.vars[name]))
+    return v if _num(v) else 0
 
 
 def test_v2(c, x):
@@ -1462,6 +1588,117 @@ def count_firing(phase, state, trigger_id):
         counts.setdefault(bucket, {})[key] = counts.get(bucket, {}).get(key, 0) + 1
 
 
+# ------------------------------------------------------------------- doc 86, Phase 2 (C1): values in effects, fills in words
+
+_SPECS = {}
+# (A fill's widest, for the length check: a number, a text, a wolf's name, any other name.)
+FILL_WIDEST = {'number': 11, 'switch': 3, 'text': TEXT_MAX, 'wolf': 24}
+FILL_NAME = 40
+NAME_TOKENS = {'wolf': 'w', 'resident': 'r', 'place': 'p', 'item': 'i', 'faction': 'f'}
+FILL = re.compile(r'\{\{|\}\}|\{([A-Za-z0-9_][A-Za-z0-9_.:-]*?)(\.of)?\}|[{}]')
+
+
+def effect_specs():
+    """{effect: {param: spec}} for the parameters marked operand or fills in the catalogue (the native twin is sent the same)."""
+    if not _SPECS:
+        import story_program as rules
+        for kind, params in rules.EFFECT_PARAMS.items():
+            mine = {p['key']: {k: p[k] for k in ('type', 'min', 'max', 'nonzero', 'operand', 'fills') if k in p}
+                    for p in params if p.get('operand') or p.get('fills')}
+            if mine:
+                _SPECS[kind] = mine
+    return _SPECS
+
+
+def fills_in(text):
+    """The fills of a text: [(name, of)]; raises on a lone brace."""
+    out = []
+    for m in FILL.finditer(text):
+        token = m.group(0)
+        if token in ('{{', '}}'):
+            continue
+        if m.group(1) is None:
+            raise ValueError('A lone { or } in words: write {{ or }} for a brace, or {name} for a variable.')
+        out.append((m.group(1), bool(m.group(2))))
+    return out
+
+
+def fills_in_quietly(text):
+    """Whether a text holds any {name} fill (a lone brace is no fill)."""
+    return any(m.group(1) is not None for m in FILL.finditer(text))
+
+
+def _fill_one(name, of, x):
+    d = x.vars.get(name)
+    if d is None:
+        return MISSING, None
+    wolf = (x.each if x.each_wolf and x.each is not None else x.actor) if of else None
+    if 'mirror' in d:
+        return mirror_value(d, x, wolf=wolf if of else ''), d
+    store = var_store(x.state, d['scope'], wolf if of else '', members=x.members)
+    if store is None:
+        return MISSING, d
+    return store.get(name, initial(d)), d
+
+
+def fill_text(text, x):
+    """C1b: a version 2 story's words with their fills: a number's digits, a switch's yes or no, a text as it is, and a wolf, a
+    resident, a place, an item or a faction as a name token ({@w:<id>}...) the game turns into the name. A fill with no value is
+    nothing, with a note. {{ and }} are braces."""
+    def one(m):
+        token = m.group(0)
+        if token == '{{':
+            return '{'
+        if token == '}}':
+            return '}'
+        if m.group(1) is None:
+            return token
+        v, d = _fill_one(m.group(1), bool(m.group(2)), x)
+        if v is MISSING or v is None:
+            x.note(f'fill {m.group(1)} has no value')
+            return ''
+        kind = d['type']
+        if kind == 'switch':
+            return 'yes' if v is True else 'no'
+        if kind == 'number' or _num(v):
+            return str(int(v)) if _num(v) else ''
+        if kind in NAME_TOKENS:
+            return '{@' + NAME_TOKENS[kind] + ':' + v + '}' if isinstance(v, str) and v else ''
+        return v if isinstance(v, str) else ''
+    return FILL.sub(one, text)
+
+
+def resolve_effect(effect, x):
+    """C1a and C1b: an effect as it is sent, its operand parameters worked out (a number floored and kept to its bounds; an id
+    a text) and its words filled. None when a value is missing (or a number that may not be 0 is 0): it is not sent, and the
+    firing's history says why."""
+    specs = effect_specs().get(effect.get('kind'))
+    if not specs:
+        return effect
+    out = dict(effect)
+    for key, p in specs.items():
+        v = out.get(key)
+        if p.get('operand') and isinstance(v, dict):
+            r = value_of(v, x)
+            if p['type'] == 'int':
+                if r is MISSING or not _num(r):
+                    x.note(f'skipped: {key} has no value')
+                    return None
+                n = max(p.get('min', -LIMIT), min(p.get('max', LIMIT), math.floor(r)))
+                if p.get('nonzero') and n == 0:
+                    x.note(f'skipped: {key} is 0')
+                    return None
+                out[key] = n
+            else:
+                if not isinstance(r, str) or not r:
+                    x.note(f'skipped: {key} has no value')
+                    return None
+                out[key] = r
+        elif p.get('fills') and isinstance(v, str) and ('{' in v or '}' in v):
+            out[key] = fill_text(v, x)
+    return out
+
+
 def _act(a, x, address):
     op, state = a['do'], x.state
     if op == 'enter':
@@ -1474,7 +1711,9 @@ def _act(a, x, address):
                 effect[k] = x.actor
             elif v == '$each' and x.each is not None:
                 effect[k] = x.each
-        state.setdefault('triggerEffects', []).append(effect)
+        effect = resolve_effect(effect, x)
+        if effect is not None:
+            state.setdefault('triggerEffects', []).append(effect)
     elif op in ('schedule', 'cancel'):
         name = action_signal = a['signal']
         # A slash cannot appear in a signal ID. Shared keys stay compatible with older releases.
@@ -1510,14 +1749,15 @@ def _act(a, x, address):
         if 'else' in a:
             return _run(a['else'], x, (*address, 'else'))
     elif op == 'each':
-        before = x.each
+        before, before_wolf = x.each, x.each_wolf
+        x.each_wolf = a['over'] != 'list' or x.vars[a['list']]['type'] == 'wolves'
         for wolf in _wolves(a, x)[:EACH_MAX]:
             x.each = wolf
             r = _run(a['actions'], x, (*address, 'actions'))
             if r:
-                x.each = before
+                x.each, x.each_wolf = before, before_wolf
                 return r
-        x.each = before
+        x.each, x.each_wolf = before, before_wolf
     elif op == 'random':
         total = sum(c['weight'] for c in a['choices'])
         roll = draw(state, total)
@@ -1729,7 +1969,7 @@ def judge(c, state, event, ready, regions=None, known=None, phase=None, day=None
     if known is not None and c['field'] not in known:
         return {**node, 'value': None, 'verdict': None, 'needs': 'event'}
     value = event.get(c['field'], 0 if c['field'] in ('coins', 'quantity') else '')
-    return {**node, 'value': value, 'verdict': COMPARE[c['op']](value, c['value'])}
+    return {**node, 'value': value, 'verdict': field_compare(c['op'], value, c['value'])}
 
 
 def _shown(v):
@@ -1805,7 +2045,15 @@ def satisfied(c, state, event, ready, regions=None, phase=None, day=None, elapse
         value = counter_store(state, c['scope'], event.get('actor')).get(c['key'], 0)
     else:
         value = event.get(c['field'], 0 if c['field'] in ('coins', 'quantity') else '')
-    return COMPARE[c['op']](value, c['value'])
+    return field_compare(c['op'], value, c['value'])
+
+
+def field_compare(op, value, expected):
+    """The field condition's comparison: the six of COMPARE, and (doc 86, C12b) begins with and one of."""
+    if op in TEXT_OPS:
+        import story_program as rules
+        return rules.match_one({op: expected}, value if isinstance(value, str) else '')
+    return COMPARE[op](value, expected)
 
 
 def _firing(phase, event, actor, day, elapsed, t, via=None):

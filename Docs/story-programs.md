@@ -297,6 +297,59 @@ names (rewards, grants, `purse crossed`) must be an account of the world's lates
 (one of the world's notice boards), and that every resident named (speaker, giver, subject, face, cast, objective target) has
 a place and is alive (a face, `like`, only warns; `npc.kill` of the dead only warns; a `death` filter may name the dead).
 
+## Values, fills and objectives (doc 86, Phase 2)
+
+**Values in effects.** A version 2 trigger's effect (and a quest's reward) may give a parameter the catalogue marks
+`"operand": true` (`int`, `wolf`, `resident`, `place`, `item`, `faction`, `town`; never `npc.line` or `story.start`) a value
+instead of a literal: `{"var"}` (a variable of the parameter's kind or a text; `of: "$actor" | "$each"` for a wolf's own),
+`{"field"}` (a wolf: `actor`, `target`; a resident: `target`, `item`; a place: `cell`, `target`; an item: `item`; a faction:
+`target`, `detail`; a town: `actor`, `target`, `detail`), `{"each": true}`, arithmetic, `{"audience"}`, a share, or
+`{"purse": "<purse>"}` (the pennies a purse holds, from the world's facts: the story watches `purses` and the game reports
+`{"purses": {<purse>: cash}}`; `check_purse` and approval's account check apply). Both engines work it out as the effect is
+queued (`story_triggers.resolve_effect`, `Dispatch2::resolve`, the specs sent as the request's `effectSpecs`): a number is
+floored and kept to the parameter's `min`..`max`, a `nonzero` 0 sends nothing; an id must be a non-empty text. A missing
+value sends nothing, noted in the firing ("skipped: <param> has no value"). A reward's are worked out when it is given, the
+credited wolf as `$actor` (no `field`, no loop; with no value it is left out and noted in the state's `rewardNotes`).
+Approval passes a value to the game, which refuses an id it does not know. A phase's entry effects stay literal.
+
+**Fills.** In a version 2 story, a text parameter the catalogue marks `"fills": true` (`story.tell.text`, `board.post.text`,
+`journal.note.text`, `npc.speak.text`, `deed.award.detail`), a quest's `summary` and objective `label`, and an offer's `say`
+and `thanks` may hold `{name}` (a declared variable, not a list or a timer; the story's or the world's) and `{name.of}` (a
+wolf's own: the acting wolf's, or the looped wolf's inside For each over wolves; never in an offer's words, the same for
+every wolf); `{{` and `}}` are braces; a lone brace is refused. A number fills as its digits, a switch as `yes`/`no`, a text
+as it is, and a `wolf`, `resident`, `place`, `item` or `faction` as a token `{@w:<id>}`, `{@r:..}`, `{@p:..}`, `{@i:..}`,
+`{@f:..}` that the game turns into the name (`Game::fillStoryNames`, cutting at the limit on a word) where it applies the
+words: told, pinned, noted, spoken, a deed's words, the quest views and offers. The length is checked with every fill at its
+widest (a number 11, a switch 3, a text 200, a wolf's name 24, another name 40). A phase's entry effects take no fills.
+
+**Goals and trackers.** An objective's `goal` may be a number value (no event field, no loop), read when a copy starts and
+kept in the copy (`objectives.<id>.goal`, 1 to 1,000,000; unknown: unreachable until known); `"goalLive": true` (story
+scope) reads it again as the copy is credited and after each firing, never below `n`, completing at once when `n` reaches
+it. A shown number's `showOf` names another number the same wolf can read: the tracker row carries `goal` ("a / b" and a bar
+in the client). A `player` number with `show` may `mirror` `{key: <a player text>, names: {<value>: <world number>}}` (1 to
+16 names): its value is the world number its wolf's `key` names (0 when none), computed when read, never stored or set.
+
+**Filters.** A filter's value may be a text, `{"starts": "<1 to 120 characters>"}` or `{"in": [1 to 32 texts]}`
+(`story_program.match_one`, `matchOne` in the native twin; the gift item rule inside both), in triggers, exits,
+prerequisites, missions, a quest's objectives and fail rules, and a Readiness's `then`. The `needsMatch` fields of a watched
+event stay exact words. The condition `field` takes `op` `starts` and `in` (a list) on the event's text fields.
+
+**Objectives.** `where`: `{"cells": [1 to 16]}` or `{"region": <a region of the story>}` (tile inside the rectangle; no
+tile: by its cell; no place: never). `credit`: `actor` (default), `target` (`stall sale`, `vouch`, `told the wardens`,
+`vouched to the wardens`), `present` (every cohort wolf in the event's cell, from the facts' `wolves`; 500 at most; events with
+a `cell` field; the program then watches its wolves); a copy gains once from one event. `camp cleared`, `caravan arrives`,
+`ship lost`, `ship docks`, `project built` and `festival` are mission events; the last five require `credit: "present"`.
+`trade done` has `cell`. A quest's `join.again` (1 to 365 game days) makes every ending wait that long for the same wolf
+(`story_quests.again`; done: the later of it and the repeat's gap).
+
+**The moon.** `calendar is` with `what: "moon"` (`new`, `waxing`, `full`, `waning`, the octant of its name), the world facts'
+`moon`, and the watched event `moon` (`detail` the quarter, `quantity` the day of its round), which is also a Readiness `then`.
+
+**Camps and the prefix.** A top-level `"prefix"` (2 to 8 small letters). `story.area.spawn` and `bandits.call` take an
+optional `camp` (`[a-z0-9_]{3,30}`, beginning with the prefix and `_`; a program that names a camp must declare its prefix):
+the camp is `camp_story_<camp>`; a second spawn of the name while it stands joins it; once cleared the name makes a new
+one. Approval accepts an objective's `camp_story_<name>` only for a name the program spawns.
+
 ## Writing a program
 
 The portable format is `ratw-story-program`, version 1. A program has an ID, title, audience, opening phase, phases and rehearsal cases. The examples under `Data/Storylines/programs/` are complete programs. The catalogue returned by the author API lists every supported event and the fields of each effect.

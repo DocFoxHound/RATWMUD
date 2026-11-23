@@ -41,7 +41,8 @@ Result Game::applyStoryArea(const std::string& kind, const std::string& run, con
 
     if (kind == "story.area_spawn")
     {
-        const auto result = world_.storyBandits(area->cell, area->x1, area->y1, area->x2, area->y2, countField(payload, "count", 6));
+        const auto result = world_.storyBandits(area->cell, area->x1, area->y1, area->x2, area->y2, countField(payload, "count", 6),
+                                                payload.string("camp"));   // (Doc 86, L2: a camp the story names.)
         if (result.ok)
             record(Roads);
         return result;
@@ -148,7 +149,7 @@ Result Game::applyStoryTell(const std::string& run, const json::Value& payload)
     if (!visit || !release || release->kind != "world" || release->source != "storykeeper" || !release->live() ||
         release->sourceRef != std::to_string(visit))
         return {false, "This story visit is no longer active.", run};
-    const auto text = payload.string("text"), to = payload.string("to");
+    const auto text = fillStoryNames(payload.string("text"), 300), to = payload.string("to");   // (Doc 86, C1b: names for tokens.)
     if (text.empty() || json::utf8Prefix(text, 300) != text || text.find_first_of("\r\n") != std::string::npos)
         return {false, "A story message is one line of up to 300 characters.", run};
     std::optional<story::Region> area;

@@ -1573,8 +1573,51 @@ void World::endEncounter(const std::string& camp, double spareFor)
             ++it;
 }
 
-Result World::callBandits(const std::string& near, int count)
+// Doc 86, L2: a story camp's name (camp: "nh_alder_mere", the camp camp_story_nh_alder_mere). A name the story gives is
+// lower-case letters, digits and _, 3 to 30.
+static bool storyCampName(const std::string& name)
 {
+    return name.size() >= 3 && name.size() <= 30 &&
+           std::all_of(name.begin(), name.end(), [](char c) { return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_'; });
+}
+
+// A named story camp: while it stands, a second spawn joins it (its strength grows, and it moves to the new ground while
+// none of its bandits stand in person); once it is cleared, the name is used again for a new camp of that id.
+Result World::namedStoryCamp(const std::string& name, const std::string& cellId, Vec2 at, int count, const std::string& near)
+{
+    const std::string id = "camp_story_" + name;
+    auto found = std::find_if(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& c) { return c.id == id; });
+    const bool standing = found != roads_.camps.end() && found->active && found->strength >= .5;
+    if (found == roads_.camps.end())
+    {
+        roads_.camps.push_back(BanditCamp{id, cellId, 3.0 * count, 50, -100, true});
+        found = roads_.camps.end() - 1;
+    }
+    else if (standing)
+    {
+        const bool inPerson = std::any_of(folk_.begin(), folk_.end(), [&](const auto& f) { return f.second.kind == "bandit" && f.second.of == id; });
+        found->strength = std::min(20.0, found->strength + 3.0 * count);
+        if (!inPerson)
+        {
+            found->cell = cellId;
+            found->x = at.x;
+            found->y = at.y;
+        }
+        recordEvent({"bandits called", "dungeon master", near.empty() ? id : near, found->cell, 0, 0, {}, count, 0, id, int(found->x), int(found->y)});
+        return {true, "More bandits join the camp.", id};
+    }
+    else
+        *found = BanditCamp{id, cellId, 3.0 * count, 50, -100, true};
+    found->x = at.x;
+    found->y = at.y;
+    recordEvent({"bandits called", "dungeon master", near.empty() ? id : near, cellId, 0, 0, {}, count, 0, id, int(at.x), int(at.y)});
+    return {true, "A bandit camp gathers.", id};
+}
+
+Result World::callBandits(const std::string& near, int count, const std::string& name)
+{
+    if (!name.empty() && !storyCampName(name))
+        return {false, "A camp's name is 3 to 30 small letters, digits and _.", near};
     const auto* e = entity(near);
     if (!e || e->dead)
         return {false, "No such character.", near};
@@ -1592,6 +1635,13 @@ Result World::callBandits(const std::string& near, int count)
         }
     if (spot.x < 0)
         return {false, "There is no open ground near them for a camp.", near};
+    if (!name.empty())
+    {
+        auto r = namedStoryCamp(name, e->cellId, spot, count, near);
+        if (r.ok)
+            r.message = std::to_string(count) + (count == 1 ? " bandit gathers" : " bandits gather") + " a few strides from " + e->name + ".";
+        return r;
+    }
     int n = 0;
     for (const auto& c : roads_.camps)
         n += c.id.rfind("camp_dm_", 0) == 0;
@@ -1605,8 +1655,10 @@ Result World::callBandits(const std::string& near, int count)
 }
 
 // A scene's authored camp has an exact footprint, even when it first appears after a reload.
-Result World::storyBandits(const std::string& cellId, int x1, int y1, int x2, int y2, int count)
+Result World::storyBandits(const std::string& cellId, int x1, int y1, int x2, int y2, int count, const std::string& name)
 {
+    if (!name.empty() && !storyCampName(name))
+        return {false, "A camp's name is 3 to 30 small letters, digits and _.", cellId};
     if (!ensureLoaded(cellId).ok)
         return {false, "The camp's cell is unavailable.", cellId};
     const auto* c = cell(cellId);
@@ -1618,6 +1670,8 @@ Result World::storyBandits(const std::string& cellId, int x1, int y1, int x2, in
             const Vec2 at{x + .5, y + .5};
             if (!standable(cellId, at) || nearPortal(cellId, at, 1))
                 continue;
+            if (!name.empty())
+                return namedStoryCamp(name, cellId, at, count, {});
             const auto index = roads_.camps.size() + 1;
             std::string id = "camp_story_" + std::to_string(index);
             std::size_t next = index;

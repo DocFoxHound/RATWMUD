@@ -569,6 +569,84 @@ void phaseTenEvents()
     fs::remove_all(root);
     fs::remove(save);
 }
+
+// Doc 86, Phase 2: the moon (J4) in the world's facts and as a watched event, and what a purse a story reads holds (M2).
+void phaseTwoMoonAndPurses()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyfacts-p2-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    {
+        Town t(writeDoors(root), save, 120, true);
+        auto& w = t.g.world();
+        t.enter(t.ash, 1, "ash", "Ash", 0, 12.5);
+        std::vector<WorldEvent> seen;
+        w.setEventWatcher([&](const WorldEvent& e) { seen.push_back(e); });
+        const auto of = [&](const std::string& kind) {
+            std::vector<WorldEvent> out;
+            for (const auto& e : seen)
+                if (e.kind == kind)
+                    out.push_back(e);
+            return out;
+        };
+        expect(std::string(game::Game::moonQuarter(0.0)) == "new" && std::string(game::Game::moonQuarter(0.2)) == "waxing" &&
+                   std::string(game::Game::moonQuarter(0.5)) == "full" && std::string(game::Game::moonQuarter(0.8)) == "waning" &&
+                   std::string(game::Game::moonQuarter(0.97)) == "new",
+               "the moon in four, by the octant of its name");
+        // Day 88.6 is a new moon, 103.4 a full one (a round of 29.53 days from Spring 1's new moon).
+        const auto toDay = [&](double day) {
+            const double now = w.calendarDays();
+            const double cycles = now > day ? std::ceil((now - day) / calendar::LunarCycleDays) : 0;
+            w.advanceCalendar(day + cycles * calendar::LunarCycleDays - now);
+            t.run(.5);
+        };
+        toDay(88.6);
+        expect(calendar::calendarAt(w.calendarDays()).moonName == "new moon", "a new moon");
+        const auto& town = w.towns().front();
+        auto& society = w.society();
+        if (!society.account(town.store) || society.account(town.store)->cash < 50)
+            testPurse(society, town.store, 212);
+        const auto run = "world-the-moon";
+        auto phase = parsed(R"({"title":"The moon","phase":"wait","journal":"Wait for the moon.","visit":1})");
+        auto players = json::Value::array();
+        players.push(t.ash.entityId);
+        phase.set("players", players);
+        auto watch = parsed(R"({"events":["moon"],"facts":["world","purses"]})");
+        auto held = json::Value::array();
+        held.push("town:" + town.id);
+        held.push("till:job:nobody_here");
+        watch.set("purseFacts", held);
+        phase.set("watch", watch);
+        expect(t.g.applyDmAct({"1", "story.phase", run, "dm", json::dump(phase)}).ok, "the story opens watching the moon and a purse");
+        seen.clear();
+        t.run(2.5);
+        expect(of("moon").empty(), "the first look makes no event");
+        json::Value facts;
+        std::string error;
+        expect(json::parse(t.g.storyFactsJson(), facts, error), "the facts are a document: " + error);
+        expect(facts["world"].string("moon") == "new", "the world's facts have the moon: " + json::dump(facts["world"]));
+        expect(facts["purses"].number("town:" + town.id) == double(society.account(town.store)->cash) &&
+                   !facts["purses"].has("till:job:nobody_here"),
+               "the purse read holds what the treasury holds; one with no account is left out: " + json::dump(facts["purses"]));
+        toDay(103.4);
+        t.run(2.5);
+        auto moon = of("moon");
+        expect(moon.size() == 1 && moon[0].detail == "full" && moon[0].quantity == 14, "the moon turns full: one event, day 14 of its round (" +
+               (moon.empty() ? std::string("none") : moon[0].detail + " " + std::to_string(moon[0].quantity)) + ")");
+        t.run(2.5);
+        expect(of("moon").size() == 1, "once per change");
+        expect(json::parse(t.g.storyFactsJson(), facts, error) && facts["world"].string("moon") == "full", "and the facts say full");
+        auto end = parsed(R"({"title":"The moon","phase":"over","journal":"Over.","visit":2,"end":true})");
+        end.set("players", players);
+        expect(t.g.applyDmAct({"2", "story.phase", run, "dm", json::dump(end)}).ok, "the story ends");
+        t.run(1.5);
+        seen.clear();
+        toDay(118.2);
+        t.run(2.5);
+        expect(of("moon").empty(), "after the end: no moon");
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
 } // namespace
 
 int main()
@@ -577,6 +655,7 @@ int main()
     {
         factsAndWatchedEvents();
         phaseTenEvents();
+        phaseTwoMoonAndPurses();
     }
     catch (const std::exception& e)
     {

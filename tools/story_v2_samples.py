@@ -259,7 +259,7 @@ READY = {
 
 
 def all_samples():
-    return [copy.deepcopy(LEDGER), copy.deepcopy(FLOW), copy.deepcopy(READY), copy.deepcopy(TALK)]
+    return [copy.deepcopy(LEDGER), copy.deepcopy(FLOW), copy.deepcopy(READY), copy.deepcopy(TALK), copy.deepcopy(VALUES)]
 
 
 # ----- Doc 85, Phase 6: quests (tools/test_story_quests.py; both twins' parity, tools/test_story_native.py)
@@ -506,5 +506,100 @@ TALK = {
             quest_fact(1, 'arrival', 1, ELM),
             quest_fact(2, 'dialogue choice', 1.2, ELM, target='r', item='rm111', detail='pledge'),
         ], 'expect': ['gather'], 'expectVariables': {'player': {ELM: {'p_pledge': 'greyfen'}}}},
+    ],
+}
+
+
+# ----- Doc 86, Phase 2: values and objectives (tools/test_story_v2.py, test_story_quests.py; both twins, test_story_native.py)
+# A story-scope bar whose goal scales with the active wolves, a notice with fills, a deed matched by how it begins, a
+# Readiness that waits for the next new moon, a named camp cleared as a plain objective, a wagon objective that credits the
+# wolves present, a reward that follows what the purse holds, a tracker of another number, and a mirror of a world number.
+VALUES = {
+    'format': 'ratw-story-program', 'version': 2, 'id': 'v2-beacons', 'title': 'The beacon road', 'prefix': 'sq',
+    'audience': {'kind': 'players', 'players': [ASH, BIRCH, ELM]}, 'start': 'road',
+    'regions': [{'id': 'hollow', 'cell': 'grey', 'x1': 2, 'y1': 2, 'x2': 8, 'y2': 8}],
+    'variables': [
+        {'id': 'bar', 'type': 'number', 'scope': 'story', 'show': 'Beacon oil', 'showOf': 'bar_goal'},
+        {'id': 'bar_goal', 'type': 'number', 'scope': 'story', 'note': 'Twelve, or four for each active wolf.'},
+        {'id': 'finder', 'type': 'wolf', 'scope': 'story'},
+        {'id': 'voice_greyfen', 'type': 'number', 'scope': 'world'},
+        {'id': 'voice_coldwater', 'type': 'number', 'scope': 'world'},
+        {'id': 'p_town', 'type': 'text', 'scope': 'player'},
+        {'id': 'p_voice', 'type': 'number', 'scope': 'player', 'show': 'Your town\'s howl',
+         'mirror': {'key': 'p_town', 'names': {'greyfen': 'voice_greyfen', 'coldwater': 'voice_coldwater'}}},
+    ],
+    'quests': [
+        {'id': 'bar', 'title': 'Oil for the beacons', 'summary': 'The beacons want {bar_goal} measures of oil.', 'scope': 'story',
+         'objectives': [{'id': 'oil', 'label': 'Bring lamp oil to the beacons.', 'on': 'gift', 'match': {'item': 'lamp_oil'},
+                         'measure': 'quantity', 'goal': {'max': [12, {'times': [{'audience': 'active'}, 4]}]}, 'goalLive': True}]},
+        {'id': 'camp', 'title': 'The camp in the hollow', 'summary': 'Break the camp the story set in the hollow.',
+         'objectives': [{'id': 'break', 'label': 'Break the camp in the hollow.', 'on': 'camp cleared',
+                         'match': {'target': 'camp_story_sq_beacon_camp'}}]},
+        {'id': 'wagon', 'title': 'Meet the oil wagon', 'summary': 'Be at Greyfen when the oil wagon comes in, {p_town.of}.',
+         'join': {'again': 7},
+         'objectives': [{'id': 'meet', 'label': 'Be at the market when the wagon arrives.', 'on': 'caravan arrives',
+                         'credit': 'present', 'where': {'cells': ['grey']}}],
+         'rewards': [{'kind': 'character.grant', 'player': '$actor', 'coins': {'min': [12, {'div': [{'purse': 'town:greyfen'}, 20]}]},
+                      'purse': 'town:greyfen', 'reason': 'the carters\' thanks'}]},
+    ],
+    'phases': [
+        {'id': 'road', 'journal': 'Light the beacons on the road, before the new moon.',
+         'effects': [{'kind': 'story.area.spawn', 'region': 'hollow', 'count': 2, 'camp': 'sq_beacon_camp'}],
+         'ready': {'all': [{'quest': 'bar', 'label': 'The beacons have their oil'}], 'auto': True,
+                   'then': {'on': 'moon', 'match': {'detail': 'new'}}},
+         'exits': [{'on': 'ready', 'to': 'lit'}],
+         'triggers': [
+             {'id': 'come', 'on': 'arrival', 'audience': 'participant', 'once': 'member', 'actions': [
+                 {'do': 'effect', 'effect': {'kind': 'quest.start', 'quest': 'bar', 'player': '$actor'}},
+                 {'do': 'effect', 'effect': {'kind': 'quest.start', 'quest': 'camp', 'player': '$actor'}},
+                 {'do': 'effect', 'effect': {'kind': 'quest.start', 'quest': 'wagon', 'player': '$actor'}}]},
+             {'id': 'oil', 'on': 'gift', 'audience': 'participant', 'match': {'item': 'lamp_oil'}, 'actions': [
+                 {'do': 'add', 'var': 'bar', 'value': {'field': 'quantity'}},
+                 {'do': 'set', 'var': 'bar_goal', 'value': {'max': [12, {'times': [{'audience': 'active'}, 4]}]}}]},
+             {'id': 'pledge', 'on': 'conversation', 'audience': 'participant', 'match': {'target': {'in': ['rm111', 'rm112']}}, 'actions': [
+                 {'do': 'set', 'var': 'p_town', 'value': 'greyfen'},
+                 {'do': 'add', 'var': 'voice_greyfen', 'value': 1},
+                 {'do': 'effect', 'effect': {'kind': 'character.grant', 'player': '$actor', 'purse': 'town:greyfen', 'reason': 'a pledge',
+                                             'coins': {'max': [1, {'times': [{'var': 'p_voice', 'of': '$actor'}, 2]}]}}}]},
+             {'id': 'watch', 'on': 'deed', 'audience': 'participant', 'match': {'detail': {'starts': 'Stood watch at the ford'}},
+              'if': {'test': 'field', 'field': 'cell', 'op': 'in', 'value': ['grey', 'far']}, 'actions': [
+                 {'do': 'remember', 'var': 'finder', 'from': 'actor'},
+                 {'do': 'effect', 'effect': {'kind': 'board.post', 'town': 'greyfen', 'days': 3,
+                                             'text': '{finder} stood watch at the ford; the beacons have {bar} of {bar_goal} measures.'}},
+                 {'do': 'effect', 'effect': {'kind': 'journal.note', 'player': {'field': 'actor'}, 'text': 'You stood watch at the ford ({bar} of {bar_goal}).'}}]},
+         ]},
+        {'id': 'lit', 'journal': 'The beacons burn along the road.', 'effects': [], 'exits': []},
+    ],
+    'tests': [
+        {'name': 'The beacons lit at the new moon', 'cohort': [ASH, BIRCH, ELM],
+         'facts': {'purses': {'town:greyfen': 212},
+                   'wolves': {ASH: {'cell': 'grey'}, BIRCH: {'cell': 'grey'}, ELM: {'cell': 'far'}}},
+         'events': [
+             quest_fact(1, 'arrival', 0.5, ASH),
+             quest_fact(2, 'arrival', 0.6, BIRCH),
+             quest_fact(3, 'arrival', 0.7, ELM),
+             quest_fact(4, 'gift', 1, ASH, target='rm111', item='lamp_oil', quantity=5),
+             quest_fact(5, 'conversation', 1.1, ASH, target='rm111'),
+             quest_fact(6, 'deed', 1.2, ASH, cell='grey', detail='Stood watch at the ford (d12)'),
+             quest_fact(7, 'camp cleared', 1.3, ASH, target='camp_story_sq_beacon_camp', cell='grey', detail='by Ash'),
+             quest_fact(8, 'caravan arrives', 1.4, 'cv1', target='greyfen', cell='grey', detail='from coldwater'),
+             quest_fact(9, 'gift', 1.5, BIRCH, target='rm111', item='lamp_oil', quantity=7),
+             {'check': 'ready', 'met': True},
+             quest_fact(10, 'moon', 4, detail='new', quantity=0),
+         ], 'expect': ['road', 'lit'],
+         'expectQuests': {'bar': {'story': 'done'}, 'camp': {ASH: 'done', BIRCH: 'active', ELM: 'active'},
+                          'wagon': {ASH: 'done', BIRCH: 'done', ELM: 'active'}},
+         'expectVariables': {'story': {'bar': 12, 'bar_goal': 12, 'finder': ASH}, 'world': {'voice_greyfen': 1},
+                             'player': {ASH: {'p_town': 'greyfen'}}},
+         'expectEffects': [
+             {'phase': 'road', 'kind': 'story.area.spawn', 'region': 'hollow', 'count': 2, 'camp': 'sq_beacon_camp'},
+             {'phase': 'road', 'kind': 'character.grant', 'player': ASH, 'purse': 'town:greyfen', 'reason': 'a pledge', 'coins': 2},
+             {'phase': 'road', 'kind': 'board.post', 'town': 'greyfen', 'days': 3,
+              'text': '{@w:' + ASH + '} stood watch at the ford; the beacons have 5 of 12 measures.'},
+             {'phase': 'road', 'kind': 'journal.note', 'player': ASH, 'text': 'You stood watch at the ford (5 of 12).'},
+             {'phase': 'road', 'kind': 'character.grant', 'player': ASH, 'coins': 10, 'purse': 'town:greyfen', 'reason': 'the carters\' thanks',
+              'reward': 'wagon'},
+             {'phase': 'road', 'kind': 'character.grant', 'player': BIRCH, 'coins': 10, 'purse': 'town:greyfen', 'reason': 'the carters\' thanks',
+              'reward': 'wagon'}]},
     ],
 }

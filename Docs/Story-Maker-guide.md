@@ -265,6 +265,69 @@ does not open with no active wolves.
 A goal that grows with the crowd: `{"max": [12, {"times": [{"audience": "active"}, 2]}]}` is twelve, or two for every
 active wolf when there are more than six.
 
+**What a purse holds now:** `{"purse": "town:coldwater"}` is the pennies in that purse (a town's treasury, a till, a
+Chapter's: as a reward's purse is named), read from the world's facts as of the event; the story then watches it. A purse
+the world has no account for has no value. So a reward that follows the purse: `{"min": [12, {"div": [{"purse":
+"town:coldwater"}, 20]}]}` pays twelve, or a twentieth of the treasury when it is poorer (212 pennies pay 10). It never
+mints: the coins still come from the purse, and approval checks the purse is the world's.
+
+### Values in an effect
+
+A parameter of an effect marked **operand** in the reference (whole numbers, and the wolf, resident, place, item, faction or
+town an effect names) may be a **value**, worked out as the trigger fires: `"coins": {"min": [20, {"var": "p_voice", "of":
+"$actor"}]}`, `"npc": {"var": "guide"}` (a resident variable), `"player": {"field": "target"}` (the wolf the event was done
+for), `{"each": true}` inside For each, arithmetic, the audience, a share or a purse.
+
+- A number is floored and kept to the parameter's bounds (`coins` 1 to 2,500): 0 pennies are 1, 9,000 are 2,500. A number
+  that may not be 0 (`nonzero`) and comes out 0 sends nothing.
+- An id must come out as a text: a variable of its kind (or a text variable), the event's field that holds one (a wolf:
+  `actor` or `target`; a resident: `target` or `item`; a place: `cell`), the loop's value. A wolf variable where a resident
+  goes is refused when the story is checked.
+- **With no value** (a wolf not in the story, a variable never set, a purse not known) the effect is **not sent**, and the
+  firing's history says "skipped: coins has no value". Nothing fires on unknown.
+- A quest's reward works its values out as it is given, the wolf credited as `$actor` (it reads no event field and no loop).
+- What a phase sends as it opens is written as it is: values are for a trigger's effects and a quest's rewards. Approval
+  leaves a value to the game, which refuses an id it does not know (the effect's `ifRefused` applies).
+
+### Words with fills
+
+In a version 2 story, the words of **Tell the wolves**, **Pin to a board**, **Note in the journal**, **A resident speaks**
+and **Award a deed** (marked **fills** in the reference), a quest's summary and objectives, and an offer's words may hold
+`{name}` (a declared variable) or `{name.of}` (that variable of the acting wolf, or of the looped wolf inside For each over
+wolves). `{{` and `}}` are braces.
+
+```json
+{"kind": "board.post", "town": "coldwater", "days": 3,
+ "text": "{finder} stood watch at the ford; the beacons have {bar} of {bar_goal} measures."}
+```
+
+- A number fills as its digits, a switch as yes or no, a text as it is. A **wolf, a resident, a place, an item or a faction
+  fills as its name**: the story leaves a token the game turns into the name when it shows the words ("Ash stood watch at
+  the ford…"). A fill with no value is nothing, with a note.
+- A wolf's own variable is always written `{name.of}`; the story's and the world's without. An offer's words are the same
+  for every wolf, so they take no `{name.of}`; a quest's summary and objectives are filled for each wolf who reads them.
+- **The length is checked with each fill at its widest**: a number 11 characters, a text 200, a wolf's name 24, any other
+  name 40. A text fill fits a 300-character notice, not a 200-character note. The game cuts what is longer at a word.
+- The workbench shows fills as chips, offers the declared variables to fill in, and the widest length beside the count;
+  a rehearsal shows a name as «wolf: Ash».
+
+### A number shown of another, and a mirror
+
+A shown number may say what it is out of: `{"id": "ch_bar", "type": "number", "scope": "story", "show": "This chapter",
+"showOf": "ch_goal"}` reads "This chapter: 34 / 80" over a thin bar in the journal. `showOf` names a declared number the
+same wolf can read (the story's, the world's, or the same wolf's own).
+
+A wolf's shown number may **mirror** a world number: the one their own text names.
+
+```json
+{"id": "p_voice", "type": "number", "scope": "player", "show": "Your town's howl",
+ "mirror": {"key": "p_howl", "names": {"ridgemere": "nh_voice_ridgemere", "coldwater": "nh_voice_coldwater"}}}
+```
+
+A wolf whose `p_howl` is `coldwater` sees `nh_voice_coldwater`; one with none sees 0. It is never stored and never set
+(a Set on it is refused); triggers read it as any variable. Up to 16 names, each a declared world number. So "Your town's
+howl" needs no hourly For each over thousands of wolves.
+
 ### Counting who took part
 
 `{"percent": {"list": "ch1_did"}, "of": "active"}` is the share (0 to 100) of the active wolves who are in the list
@@ -328,9 +391,56 @@ rule above ends the quest when the carter dies.
 - **Purses that pay:** a town's treasury (`town:<town>`; the city's is the realm's treasury), a business's till
   (`till:job:<founder>`, or `till:<founder>`), a Chapter's (`chapter:<id>`). Approval refuses a purse the world (as last
   saved) has no account for; no world has a town's works, watch or church purse, so `town:<town>:works` is refused too.
+- **A goal from a value:** an objective's `goal` may be a value, `{"max": [12, {"times": [{"audience": "active"}, 4]}]}`,
+  read when a copy starts and kept in it (1 to 1,000,000). With `"goalLive": true` (a quest of the whole story only) it is
+  read again as the copy is credited and after each firing, never below what is made, and the objective is done the
+  moment what is made reaches it. A goal not known yet is out of reach until it is.
+- **Again after a wait:** `"join": {"again": 7}`: after any end (done, failed or abandoned) the same wolf waits 7 game days
+  before taking it again ("Not yet." in the window). With a `repeat`, done waits the longer of the two. Without it, a wolf
+  who failed or abandoned may take it again at once, as before.
 - **Who may take part:** audience `players` (a list), `active` (active in the last N days, frozen at publication), `open`
   (nobody at first: a wolf comes in by taking a quest, or by `participant.add`), `everyone` (the active wolves, and each who
   signs in after). Open and everyone take a `cap`, up to 5,000.
+
+### Where an objective counts
+
+`"where": {"cells": ["w_ridgemere_2_0", "w_ridgemere_2_2"]}` (1 to 16 cells) or `"where": {"region": "rainward"}` (a
+region of the story): the event counts only there. With a region, the event's tile must be inside the rectangle; an event
+with no tile counts when the region's cell is the event's. An event with no place never counts. Approval checks the cells
+are the world's.
+
+```json
+{"id": "birds", "label": "Take two pheasants in the Rainward Woods.", "on": "hunted", "match": {"target": "pheasant"},
+ "where": {"cells": ["w_ridgemere_2_0", "w_ridgemere_2_2"]}, "goal": 2}
+```
+
+### Who an objective credits
+
+`"credit": "actor"` (the default): the wolf who did it. `"credit": "target"`: the wolf it was done for, on a stall sale
+(the stall's keeper: "sell three things at your stall"), a vouch, telling or vouching to the Wardens. `"credit": "present"`:
+every wolf of the story standing in the event's cell when it is written (as the world's facts say; the story watches the
+wolves; 500 at most). A quest's one copy for the whole story gains once from one event, however many are there.
+
+The events with no wolf are objectives too: **a camp cleared** (its `actor` when that is a wolf; "by the watch" credits
+nobody), **a wagon arriving**, **a ship docking**, **a ship lost**, **a project built** and **a festival**. The last five
+never have a wolf as their actor, so their objectives must say `"credit": "present"` ("Nobody is the actor of a wagon
+arriving: credit the wolves present").
+
+```json
+{"id": "meet", "label": "Be at the market when the oil wagon comes in.", "on": "caravan arrives", "credit": "present",
+ "where": {"cells": ["grey"]}}
+```
+
+A trade done carries the wolf's `cell`, so "sell it in the city" is `"match": {"cell": "<a city cell>", "detail": "sold"}`.
+
+### A story's camps
+
+**A bandit camp in a region** and **Send bandits after a wolf** take a `camp`: its name, 3 to 30 small letters, digits and
+`_`, beginning with the story's **prefix** (`"prefix": "sq"` at the top of the program: 2 to 8 small letters; the design
+set's are `nh`, `sq`, `mq`, `lq` and `st`). The camp is `camp_story_<name>`, so `camp cleared` and `bandit falls` carry an
+id the story knows: `"match": {"target": "camp_story_sq_beacon_camp"}` is a plain objective. While that camp stands, a
+second spawn of the name joins it (its strength grows); once it is cleared the name makes a new camp. Without a name, a
+camp is numbered as before. Approval refuses an objective on a `camp_story_` the story never spawns.
 
 ## 8. The world's facts and watched events
 
@@ -353,6 +463,18 @@ in its filters:
 | `near resident` | `target`: the resident | `"match": {"target": "rm111"}`: a wolf comes within three tiles of Ivo, wherever he is |
 | `purse crossed` | `target`: the purse; `detail`: the amount | `"match": {"target": "town:greyfen", "detail": "500"}` (`item` is `up` or `down`) |
 | `standing crossed` | `target`: the faction; `detail`: the number | `"match": {"target": "watch", "detail": "-20"}` |
+
+Those filters stay exact words. Elsewhere **a filter may begin with a text or be one of several**: `"match": {"detail":
+{"starts": "Stood watch at the ford"}}` (1 to 120 characters, capitals counted) or `"match": {"target": {"in": ["rm111",
+"rm112"]}}` (up to 32), in triggers, exits, missions, a quest's objectives and fail rules, and Readiness's moment. A gift's
+item is its base id inside both, unless the filter gives a mark. A **deed's detail ends with "(<deed id>)"**, so match it
+by how it begins. The condition **The event's field** takes **begins with** (`"op": "starts"`) and **is one of** (`"op":
+"in"`, a list).
+
+**The moon.** `calendar is` reads the moon (`"what": "moon"`: `new`, `waxing`, `full` or `waning`, by the quarter its name
+falls in), and the watched event **The moon turns** (`moon`: `detail` the quarter, `quantity` the day of its round, 0 to 29)
+comes when it passes into another quarter. A Readiness may wait for the next new moon: `"then": {"on": "moon", "match":
+{"detail": "new"}}`. The moon is optional timing: a chapter is paced by participation and time.
 
 ### Talk and rumour from a story
 
@@ -561,6 +683,9 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | The share reads 0% | Readiness → the bar | No active wolves yet (none seen in the last `activeDays` game days), or the list is empty. Who is "online" is unknown until the world says (the story watches its wolves). |
 | A resident's memory line never plays | Variables & timers → **What residents remember** | Is the key there, with days left? A town's is that town's residents only; a pair's only for that wolf. The line's gate must match the key and value exactly. |
 | Approval refuses a purse | the purse | `till:job:<founder>` (or `till:<founder>`) of a till the world has; no town has works, watch or church purses. |
+| An effect was not sent | the firing's history | "skipped: coins has no value": a value it reads had none (a wolf not in the story, a purse not known). A reward with no value is kept in the run's `rewardNotes`. |
+| A name shows as «wolf: …» or a fill is empty | Rehearse → Step through | A rehearsal shows the token the game turns into a name. An empty fill had no value (noted in the firing). |
+| An objective never ticks | Quests → the objective | `where` (the cells or the region), `credit` (the actor, the target, those present: is the story watching its wolves?), and a `camp_story_` name the story spawns. |
 | Problems in the draft | Story Creator → **Problems** | Every problem at once with **Go**, and the world's warnings (a signal nothing hears, a counter nothing sets, an id the world lacks). |
 
 ## 16. Limits
@@ -583,6 +708,10 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | Talk memory | keys and values 40 small letters, digits and `_`; 1 to 365 days; 64 a town or a resident, 16 a pair; 8,192 and 20,000 in all |
 | Values told to residents | 8 a story |
 | A rumour | a phrase of 120 characters; 1 to 50 residents; 10% to 90% sure |
+| Filters | `starts` 1 to 120 characters; `in` 1 to 32 texts of 120 |
+| An objective | `where` 1 to 16 cells or a region; a goal from a value 1 to 1,000,000; `join.again` 1 to 365 game days; 500 wolves credited by one event |
+| Fills | each at its widest: a number 11, a text 200, a wolf's name 24, another name 40 |
+| A mirror; a camp's name; a prefix | 16 names; 3 to 30 of `a-z0-9_`; 2 to 8 small letters |
 
 <!-- reference:begin (made by tools/story_guide.py from Data/Storylines/trigger-catalogue.json: do not edit by hand) -->
 
@@ -592,7 +721,7 @@ Made from the trigger catalogue (`Data/Storylines/trigger-catalogue.json`), the 
 
 ### Events
 
-208 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
+209 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
 
 #### Story engine
 
@@ -1839,7 +1968,7 @@ Once a game week a new bandit camp may form in wild country along a road (never 
 {"id": "when-bandits-gather", "on": "bandits gather", "actions": [{"do": "note", "text": "Bandits make camp on a road"}]}
 ```
 
-<a id="event-camp-cleared"></a>**`camp cleared`**: A bandit camp is broken (has a tile)
+<a id="event-camp-cleared"></a>**`camp cleared`**: A bandit camp is broken (mission evidence, has a tile)
 
 A bandit camp is broken: by whoever beat its last bandits, or by a town's watch on patrol.
 
@@ -2032,7 +2161,7 @@ Bandits beat a wolf to the ground in a road fight and take half its purse.
 
 #### Caravans, wagons, carts
 
-<a id="event-caravan-arrives"></a>**`caravan arrives`**: A wagon arrives at a market
+<a id="event-caravan-arrives"></a>**`caravan arrives`**: A wagon arrives at a market (mission evidence)
 
 A wagon between markets reaches the far market and unloads.
 
@@ -2280,7 +2409,7 @@ The staged economy commits a wagon between two markets and posts its notices.
 
 #### Ships
 
-<a id="event-ship-docks"></a>**`ship docks`**: A ship comes in
+<a id="event-ship-docks"></a>**`ship docks`**: A ship comes in (mission evidence)
 
 A ship on the timetable comes in to its port with its cargo.
 
@@ -2297,7 +2426,7 @@ A ship on the timetable comes in to its port with its cargo.
 {"id": "when-ship-docks", "on": "ship docks", "actions": [{"do": "note", "text": "A ship comes in"}]}
 ```
 
-<a id="event-ship-lost"></a>**`ship lost`**: A ship is lost at sea
+<a id="event-ship-lost"></a>**`ship lost`**: A ship is lost at sea (mission evidence)
 
 A ship due at a port is lost with all its cargo (by chance or by the Dungeon Master).
 
@@ -2668,7 +2797,7 @@ The Dungeon Master nudges a market's Times up or down for some days; posted once
 {"id": "when-times-nudged", "on": "times nudged", "actions": [{"do": "note", "text": "Trade at a market is nudged"}]}
 ```
 
-<a id="event-trade-done"></a>**`trade done`**: A wolf buys or sells (watched, mission evidence, has a tile)
+<a id="event-trade-done"></a>**`trade done`**: A wolf buys or sells (watched, mission evidence)
 
 A wolf bought from or sold to a trader (a shop, a stall's keeper): detail is bought or sold, coins what changed hands. Written only while a live story listens for it (the story's watch list).
 
@@ -2680,6 +2809,7 @@ A wolf bought from or sold to a trader (a shop, a stall's keeper): detail is bou
 | `detail` | bought or sold (text) | any |
 | `quantity` | how many (number) | any |
 | `coins` | the pennies paid or got (number) | any |
+| `cell` | where the wolf is (place) | anywhere |
 
 ```json
 {"id": "when-trade-done", "on": "trade done", "match": {"target": "rm111"}, "actions": [{"do": "note", "text": "A wolf buys or sells"}]}
@@ -3055,7 +3185,7 @@ One faction's stance toward another changed (a DM's change, a story's, or the wo
 
 #### Town life
 
-<a id="event-festival"></a>**`festival`**: A festival begins
+<a id="event-festival"></a>**`festival`**: A festival begins (mission evidence)
 
 A town's festival day reaches noon and the festival starts at the square.
 
@@ -3069,7 +3199,7 @@ A town's festival day reaches noon and the festival starts at the square.
 {"id": "when-festival", "on": "festival", "actions": [{"do": "note", "text": "A festival begins"}]}
 ```
 
-<a id="event-project-built"></a>**`project built`**: A town project is finished
+<a id="event-project-built"></a>**`project built`**: A town project is finished (mission evidence)
 
 A town project has all its materials and work and stands built.
 
@@ -3865,6 +3995,19 @@ The first day of a season (detail: spring, summer, autumn or winter). Written on
 {"id": "when-season-begins", "on": "season begins", "actions": [{"do": "note", "text": "A season begins"}]}
 ```
 
+<a id="event-moon"></a>**`moon`**: The moon turns (watched)
+
+The moon passed into another quarter of its round (detail: new, waxing, full or waning; quantity: the day of the moon's round, 0 to 29). Written only while a live story listens for it (the story's watch list).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `detail` | new, waxing, full or waning (text) | any |
+| `quantity` | the day of the moon's round (number) |  |
+
+```json
+{"id": "when-moon", "on": "moon", "actions": [{"do": "note", "text": "The moon turns"}]}
+```
+
 #### Dialogue windows
 
 <a id="event-dialogue-opened"></a>**`dialogue opened`**: A wolf opens a resident's window (watched, mission evidence, has a tile)
@@ -3940,14 +4083,14 @@ True when the condition under it is false.
 
 <a id="condition-field"></a>**`field`**: The event's field
 
-Compares one field of the event that just happened. Text takes = and !=; quantity and coins take a number.
+Compares one field of the event that just happened. Text takes =, !=, begins with ("starts": 1 to 120 characters) and is one of ("in": a list of up to 32 texts); quantity and coins take a number.
 
 Reads: the event's **actor** **=** **value**
 
 | Parameter | What | Kind |
 |---|---|---|
 | `field` | the field | choice; one of: `actor`, `target`, `cell`, `item`, `detail`, `quantity`, `coins` |
-| `op` | the comparison | choice; one of: `=`, `!=`, `>`, `>=`, `<`, `<=` |
+| `op` | the comparison | choice; one of: `=`, `!=`, `>`, `>=`, `<`, `<=`, `starts`, `in` |
 | `value` | the value | value |
 
 ```json
@@ -4424,14 +4567,14 @@ Reads: the hour is from **6** to **18**
 
 <a id="condition-calendar-is"></a>**`calendar is`**: The day, the season, the time of day (v2, reads the world's facts)
 
-The weekday (Marketday, Restday...), the season, or the time of day (dawn, day, dusk, night).
+The weekday (Marketday, Restday...), the season, the time of day (dawn, day, dusk, night), or the moon (new, waxing, full, waning).
 
 Reads: the **weekday** is **Restday**
 
 | Parameter | What | Kind |
 |---|---|---|
-| `what` | what | choice; one of: `weekday`, `season`, `period`; default "weekday" |
-| `value` | is | choice; one of: `Dawnday`, `Hearthday`, `Stoneday`, `Riverday`, `Emberday`, `Marketday`, `Restday`, `spring`, `summer`, `autumn`, `winter`, `dawn`, `day`, `dusk`, `night`; default "Restday" |
+| `what` | what | choice; one of: `weekday`, `season`, `period`, `moon`; default "weekday" |
+| `value` | is | choice; one of: `Dawnday`, `Hearthday`, `Stoneday`, `Riverday`, `Emberday`, `Marketday`, `Restday`, `spring`, `summer`, `autumn`, `winter`, `dawn`, `day`, `dusk`, `night`, `new`, `waxing`, `full`, `waning`; default "Restday" |
 
 ```json
 {"test": "calendar is", "what": "weekday", "value": "Restday"}
@@ -5523,7 +5666,7 @@ Reads: Give **$actor** a **torn_flank** of severity **1**
 
 <a id="effect-bandits-call"></a>**`bandits.call`**: Send bandits after a wolf
 
-The wolf must be in the world.
+The wolf must be in the world. Named ("camp"), the camp is camp_story_<name>: a second spawn of that name while it stands joins it; once it is cleared the name may be used again, and bandit falls and camp cleared carry the id.
 
 Reads: **1** bandits come for **$actor**
 
@@ -5531,6 +5674,7 @@ Reads: **1** bandits come for **$actor**
 |---|---|---|
 | `player` | the wolf | wolf |
 | `count` | how many | int; 1 to 6 |
+| `camp` | the camp's name | camp; optional |
 
 ```json
 {"do": "effect", "effect": {"kind": "bandits.call", "player": "$actor", "count": 1}}
@@ -5758,7 +5902,7 @@ Reads: The story's wolves inside **square** are **fed** for **1** hours
 
 <a id="effect-story-area-spawn"></a>**`story.area.spawn`**: A bandit camp in a region
 
-Bandits camp in the rectangle.
+Bandits camp in the rectangle. Named ("camp"), the camp is camp_story_<name>: a second spawn of that name while it stands joins it; once it is cleared the name may be used again, and bandit falls and camp cleared carry the id.
 
 Reads: A camp of **1** bandits in **square**
 
@@ -5766,6 +5910,7 @@ Reads: A camp of **1** bandits in **square**
 |---|---|---|
 | `region` | the region | region |
 | `count` | how many | int; 1 to 6 |
+| `camp` | the camp's name | camp; optional |
 
 ```json
 {"do": "effect", "effect": {"kind": "story.area.spawn", "region": "square", "count": 1}}

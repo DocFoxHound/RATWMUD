@@ -473,6 +473,59 @@ void phase1b()
     fs::remove_all(root);
     fs::remove(save);
 }
+// Doc 86, Phase 2 (C1b): the name tokens a story's engines leave in its words ({@w:<wolf>}, {@r:...}, {@p:...}, {@i:...},
+// {@f:...}) become names where the game applies the words, cut at the limit on a word boundary.
+void phase2Names()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyworld-2-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    {
+        Town t(writeDoors(root), save);
+        auto& w = t.g.world();
+        t.enter(t.ash, 1, "ash", "Ash", 0, 8.5);
+        const auto ash = t.ash.entityId;
+        const auto* u1 = w.entity("u1");
+        expect(u1 && !u1->name.empty(), "a resident to name");
+        const auto* place = w.cell(cellId(0));
+        expect(place && !place->name.empty(), "a place to name");
+        const auto filled = t.g.fillStoryNames("{@w:" + ash + "} met {@r:u1} at {@p:" + cellId(0) + "} with {@i:rope}.", 300);
+        expect(filled == "Ash met " + u1->name + " at " + place->name + " with " + Society::itemName("rope") + ".", "the tokens are names: " + filled);
+        expect(t.g.fillStoryNames("{@x:what} {@w:} {@ and {plain}", 300) == "{@x:what} someone {@ and {plain}",
+               "what the engines do not make is kept as written; a wolf not known is someone: " + t.g.fillStoryNames("{@x:what} {@w:} {@ and {plain}", 300));
+        const auto cut = t.g.fillStoryNames("{@r:u1} walked the long road down to the ford and back again", 30);
+        expect(cut.size() <= 30 && cut.back() != ' ' && ("x " + u1->name + " walked the long road down to the ford and back again").find(cut) != std::string::npos &&
+                   (cut.size() == 30 || cut.find(' ') != std::string::npos),
+               "cut at the limit on a word boundary: \"" + cut + "\"");
+        expect(t.g.fillStoryNames("No tokens here.", 300) == "No tokens here.", "words without tokens are as they were");
+        // Told: the wolf hears the name; the quest's journal and the offer read names too.
+        const auto run = std::string("world-names");
+        auto phase = parsed(R"({"title":"Names","phase":"one","journal":"Names.","visit":1})");
+        auto players = json::Value::array();
+        players.push(ash);
+        phase.set("players", players);
+        expect(t.g.applyDmAct({"1", "story.phase", run, "dm", json::dump(phase)}).ok, "the story opens");
+        t.ash.said();
+        expect(t.g.applyDmAct({"2", "story.tell", run, "dm", R"({"visit":1,"to":"wolf","player":")" + ash + R"(","text":"{@r:u1} asks for you, {@w:)" + ash + R"(}."})"}).ok,
+               "told with tokens");
+        const auto heard = t.ash.said();
+        expect(contains(heard, u1->name + " asks for you, Ash.") && !contains(heard, "{@"), "Ash hears the names: " + heard);
+        auto quests = parsed(R"({"visit":1,"offers":[{"quest":"q1","title":"A word","npc":"u1","say":"Go to {@p:)" + cellId(0) + R"(}.","ask":"Ask"}]})");
+        auto wolves = json::Value::object();
+        wolves.set(ash, parsed(R"({"quests":[{"id":"q1","title":"A word","summary":"Find {@r:u1}.","status":"active","objectives":[{"id":"o","label":"Speak to {@r:u1}.","goal":1}]}],"trackers":[]})"));
+        quests.set("wolves", wolves);
+        expect(t.g.applyDmAct({"3", "story.quests", run, "dm", json::dump(quests)}).ok, "the quests with tokens are told");
+        const auto* story = t.g.storylineBook().find(run);
+        expect(story && story->offers.items().size() == 1 && story->offers.items()[0].string("say") == "Go to " + place->name + ".",
+               "the offer's words name the place");
+        const auto& view = story->questViews.at(ash);
+        expect(view.array("quests")[0].string("summary") == "Find " + u1->name + "." &&
+                   view.array("quests")[0].array("objectives")[0].string("label") == "Speak to " + u1->name + ".",
+               "the journal's summary and objective name the resident");
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
+
 } // namespace
 
 int main()
@@ -481,6 +534,7 @@ int main()
     {
         worldEffects();
         phase1b();
+        phase2Names();
     }
     catch (const std::exception& error)
     {

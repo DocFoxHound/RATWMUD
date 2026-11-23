@@ -190,5 +190,104 @@ class ParticipationParity(unittest.TestCase):
         self.assertEqual(len(after['counters']['story']['out']), len(forms))
 
 
+@unittest.skipUnless(story_native.interpreter(), 'Build ratw_server or set RATW_STORY_LIBRARY first.')
+class ValuesParity(unittest.TestCase):
+    """Doc 86, Phase 2: values in effect parameters (C1a), fills (C1b), the purse (M2), the mirror (N3), filters that begin
+    with or are one of (C12b) and the moon (J4), fired by both twins on the same states."""
+
+    ASH, BIRCH, ELM = 'player-ash', 'player-birch', 'player-elm'
+
+    def program(self):
+        A = self.ASH
+        variables = [{'id': 'n', 'type': 'number', 'scope': 'story'}, {'id': 'word', 'type': 'text', 'scope': 'story'},
+                     {'id': 'guide', 'type': 'resident', 'scope': 'story'}, {'id': 'finder', 'type': 'wolf', 'scope': 'story'},
+                     {'id': 'spot', 'type': 'place', 'scope': 'story'}, {'id': 'thing', 'type': 'item', 'scope': 'story'},
+                     {'id': 'side', 'type': 'faction', 'scope': 'story'}, {'id': 'lit', 'type': 'switch', 'scope': 'story'},
+                     {'id': 'p_n', 'type': 'number', 'scope': 'player'}, {'id': 'p_town', 'type': 'text', 'scope': 'player'},
+                     {'id': 'v_grey', 'type': 'number', 'scope': 'world'}, {'id': 'v_cold', 'type': 'number', 'scope': 'world'},
+                     {'id': 'p_howl', 'type': 'number', 'scope': 'player', 'show': 'Howl',
+                      'mirror': {'key': 'p_town', 'names': {'greyfen': 'v_grey', 'coldwater': 'v_cold'}}},
+                     {'id': 'out', 'type': 'numbers', 'scope': 'story'}]
+        grant = lambda coins: {'do': 'effect', 'effect': {'kind': 'character.grant', 'player': '$actor', 'purse': 'town:greyfen',
+                                                           'reason': 'r', 'coins': coins}}
+        actions = [
+            grant({'min': [20, {'var': 'p_n', 'of': '$actor'}]}),
+            grant({'div': [{'purse': 'town:greyfen'}, 20]}),
+            grant({'times': [{'var': 'p_howl', 'of': '$actor'}, 1000]}),
+            grant({'minus': [{'var': 'n'}, 50]}),
+            {'do': 'effect', 'effect': {'kind': 'npc.walk', 'npc': {'var': 'guide'}, 'cell': {'var': 'spot'}, 'x': {'var': 'n'}, 'y': 4,
+                                        'pace': 'walk', 'cue': 'c'}},
+            {'do': 'effect', 'effect': {'kind': 'item.give', 'player': {'field': 'target'}, 'item': {'var': 'thing'}, 'quantity': {'var': 'p_n', 'of': '$actor'}}},
+            {'do': 'effect', 'effect': {'kind': 'board.post', 'town': 'greyfen', 'days': 2,
+                                        'text': '{finder} met {guide} at {spot} with {thing} for {side}: {n}, {lit}, {{x}}, {p_n.of} {p_howl.of}.'}},
+            {'do': 'effect', 'effect': {'kind': 'story.tell', 'to': 'world', 'text': 'The howl is {p_howl.of}; the purse {n}; {word}.'}},
+            {'do': 'each', 'over': 'participants', 'actions': [
+                {'do': 'effect', 'effect': {'kind': 'journal.note', 'player': '$each', 'text': 'You at {p_howl.of}, {p_n.of}.'}},
+                {'do': 'effect', 'effect': {'kind': 'board.post', 'town': 'greyfen', 'days': 1, 'text': 'Seen: {p_town.of}.'}},
+                {'do': 'list add', 'var': 'out', 'value': {'var': 'p_howl', 'of': '$each'}}]},
+            {'do': 'each', 'over': 'list', 'list': 'out', 'actions': [
+                {'do': 'effect', 'effect': {'kind': 'deed.award', 'player': '$actor', 'detail': 'Counted {n}, {p_n.of}.'}}]},
+        ]
+        return {'format': 'ratw-story-program', 'version': 2, 'id': 'parity2', 'title': 'Values in both twins', 'start': 'a',
+                'audience': {'kind': 'open'}, 'variables': variables,
+                'phases': [{'id': 'a', 'journal': 'Values.', 'effects': [], 'exits': [], 'triggers': [
+                    {'id': 'all', 'on': 'conversation', 'audience': 'participant', 'actions': actions},
+                    {'id': 'starts', 'on': 'deed', 'match': {'detail': {'starts': 'Stood watch'}}, 'actions': [{'do': 'add', 'var': 'n', 'value': 1}]},
+                    {'id': 'in', 'on': 'deed', 'match': {'cell': {'in': ['grey', 'far']}, 'item': {'in': ['rope', 'axle~fine']}},
+                     'actions': [{'do': 'add', 'var': 'n', 'value': 10}]},
+                    {'id': 'field', 'on': 'deed', 'if': {'test': 'any', 'conditions': [{'test': 'field', 'field': 'detail', 'op': 'starts', 'value': 'Held'},
+                                                                 {'test': 'field', 'field': 'target', 'op': 'in', 'value': ['rm111', 'rm112']}]},
+                     'actions': [{'do': 'add', 'var': 'n', 'value': 100}]},
+                    {'id': 'moon', 'on': 'deed', 'if': {'test': 'calendar is', 'what': 'moon', 'value': 'full'},
+                     'actions': [{'do': 'add', 'var': 'n', 'value': 1000}]}]}],
+                'tests': [{'name': 'x', 'cohort': [], 'events': [], 'expect': ['a']}]}
+
+    def both(self, state, event):
+        p = self.program()
+        story_program.validate(p)
+        phase = story_program.phase_of(p, state)
+        out = []
+        for native in (True, False):
+            s = copy.deepcopy(state)
+            trace = []
+            if native:
+                story_triggers.fire(phase, s, event, 20, 0, lambda: set(), story_program.matches, lambda n, e: None, trace)
+            else:
+                with patch('story_native.interpreter', return_value=None):
+                    story_triggers.fire(phase, s, event, 20, 0, lambda: set(), story_program.matches, lambda n, e: None, trace)
+            out.append((s, trace))
+        self.assertEqual(out[0][0], out[1][0])
+        self.assertEqual(out[0][1], out[1][1])
+        return out[0][0], out[0][1]
+
+    def states(self):
+        A, B, E = self.ASH, self.BIRCH, self.ELM
+        base = {'phase': 'a', 'entered': 0, 'visits': 1, 'votes': {}, 'actor': '', 'seed': 's', 'began': 0, 'cohort': [A, B, E]}
+        full = {'story': {'n': 7, 'word': 'oak', 'guide': 'rm111', 'finder': A, 'spot': 'grey', 'thing': 'rope', 'side': 'watch', 'lit': True},
+                'player': {A: {'p_n': 4, 'p_town': 'greyfen'}, B: {'p_n': 30, 'p_town': 'coldwater'}, E: {'p_town': 'nowhere'}},
+                'world': {'v_grey': 3, 'v_cold': 8}}
+        yield 'every value known', {**base, 'counters': full}, {'purses': {'town:greyfen': 212}, 'world': {'moon': 'full'}}
+        yield 'nothing set', {**base, 'counters': {}}, None
+        yield 'no purse, no moon', {**base, 'counters': full}, {'purses': {}, 'world': {}}
+        yield 'the actor not in the story', {**base, 'cohort': [B, E], 'counters': full}, {'purses': {'town:greyfen': 5}}
+
+    def test_every_form_matches(self):
+        texts, skipped = set(), 0
+        for name, state, facts in self.states():
+            for kind, fields in [('conversation', {'target': self.BIRCH}),
+                                 ('deed', {'detail': 'Stood watch at the ford (d3)', 'cell': 'grey', 'item': 'axle~fine', 'target': 'rm112'}),
+                                 ('deed', {'detail': 'Held the gate (d4)', 'cell': 'near', 'item': 'axle', 'target': 'rm9'}),
+                                 ('deed', {'detail': 'stood watch', 'cell': 'far', 'item': 'rope~good'})]:
+                with self.subTest(state=name, kind=kind, fields=fields):
+                    event = {'kind': kind, 'id': 1, 'actor': self.ASH, **fields, **({'facts': facts} if facts is not None else {})}
+                    after, trace = self.both(state, event)
+                    for e in after.get('triggerEffects', []):
+                        texts.update(v for v in e.values() if isinstance(v, str) and ('{@' in v or v.endswith('.')))
+                    skipped += sum('skipped' in n for f in trace for n in f.get('notes', []))
+        self.assertTrue(any('{@w:' + self.ASH + '}' in t and '{@r:rm111}' in t and '{@p:grey}' in t and '{@i:rope}' in t and '{@f:watch}' in t
+                            and 'yes' in t and '{x}' in t for t in texts), texts)
+        self.assertGreater(skipped, 3, 'missing values skip with a note in both')
+
+
 if __name__ == '__main__':
     unittest.main()

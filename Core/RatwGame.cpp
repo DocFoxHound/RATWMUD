@@ -1497,7 +1497,7 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         {
             const auto weight = fame::weightOf(payload.string("weight", "great"));
             const auto id = recordDeed(payload.string("kind", "award"), {target}, payload.string("beneficiary"),
-                                       payload.string("cell", doer->cellId), "dm", json::utf8Prefix(payload.string("detail"), 160), weight);
+                                       payload.string("cell", doer->cellId), "dm", fillStoryNames(payload.string("detail"), 160), weight);
             outcome = id.empty() ? Result{false, "No such kind of deed.", target} : Result{true, "Awarded " + id + ".", target};
         }
         saveSoon();
@@ -1936,7 +1936,7 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         if (row.size() > 4 && row[4])
             json::parse(*row[4], payload, problem);
         const int count = payload.isObject() ? int(wire::number(payload, "count", 1)) : 1;
-        outcome = world_.entity(target) ? world_.callBandits(target, count)
+        outcome = world_.entity(target) ? world_.callBandits(target, count, payload.isObject() ? payload.string("camp") : std::string())
                                         : Result{false, "They aren't in the world: bandits come only where someone is.", {}};
     }
     else if (kind == "book.storyline")
