@@ -83,6 +83,19 @@ say[world.mem.lq_eels=weir here.region=fenshore] The eels never came up Withy Cr
   the Fish Hall (most are in Wave A's list already).
 
 ## Givers behind locked doors (2026-11-22, second pass; doc 86 "Givers behind locked doors")
-- **Still open.** Ivo Sootridge (giver), Jasper Greymore and Nab Bogditch (choices) work in the Fen Shore and Rivermouth
-  boat sheds and the Withy Creek eel house, locked to wolves (doc 82). Fenshore's two free residents a wolf can reach
-  now give the small pack's pans and plank. Doc 86 lists what would close it.
+- **Left open by this pass, closed by the third (below).** Ivo Sootridge (giver), Jasper Greymore and Nab Bogditch
+  (choices) work in the Fen Shore and Rivermouth boat sheds and the Withy Creek eel house, locked to wolves (doc 82).
+  Fenshore's two free residents a wolf can reach now give the small pack's pans and plank. Doc 86 lists what would close
+  it.
+
+## Doors a story unlocks (2026-11-22, third pass; doc 86 "Doors a story unlocks")
+A door a live story has unlocked (`door.unlock`) is open to wolves while the story holds it (DECISION of 2026-11-22,
+engine on branch `r3-nh-doors`; doc 86 "Doors a story unlocks"). A story never unlocks a home, and `tools/nh_check.py`
+refuses a door into one, or into a room whose stairs reach one.
+
+- Phase `open`, entry: the Fen Shore Boat Shed (`link_fs_fishing_fencoast_shed_door_a`, Ivo Sootridge), the Rivermouth
+  Boat Shed (`link_fs_fishing_delta_shed_door_a`, Jasper Greymore) and the Withy Creek Eel House
+  (`link_fs_marsh_eels_eelhouse_door_a`, Nab Bogditch).
+- No `door.lock` closes the window: the map locks no door, and `Door::locked` stops residents too, so locking a shed
+  when its phase ends would shut its own workers out until the run ends. The doors stay unlocked from the phase that
+  offers the quest until the run ends, when the game puts back what each had.

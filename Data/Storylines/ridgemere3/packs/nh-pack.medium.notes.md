@@ -46,11 +46,12 @@
   wolf of the pack heard appended to every greeting, forever, before ever taking the quest. No entry `npc.line` is
   left. No `npc.speak`, no `story.tell` with a resident's words.
 - **Doors locked to wolves** (doc 82: on Ridgemere 3 a private interior is locked to players; a merchant's workplace
-  opens in the merchant's hours; inns, alehouses and taverns stay open; `World::playerDoorLocked`, and `door.unlock`
-  does not lift it). No objective asks a wolf to enter a locked interior any more, and no step needs a resident who
-  never leaves one: those steps are an outdoor region at the door (the resident answers in a one-line scene: Piet at
-  Saltgate Row, the Grayrock steward, the Fellhall steward, the priest of the Chapel of the Tide, Tamsin Eelbank, the
-  pup at Drip Row), or the Watch, the Customs House and the press house are told or watched at their doors.
+  opens in the merchant's hours; inns, alehouses and taverns stay open; `World::playerDoorLocked`; since the third pass
+  a door the story unlocks is open to wolves, used only for workplaces, see the end of this file). No objective asks a
+  wolf to enter a locked interior any more, and no step needs a resident who never leaves one: those steps are an
+  outdoor region at the door (the resident answers in a one-line scene: Piet at Saltgate Row, the Grayrock steward, the
+  Fellhall steward, the priest of the Chapel of the Tide, Tamsin Eelbank, the pup at Drip Row), or the Watch, the
+  Customs House and the press house are told or watched at their doors.
 - **Pings** (`story.ping`, the wolf's own map, an hour) mark every region a step sends the wolf to that is not a
   named place (the ruts, the steps, the pier foot, the drips, the far pans, the wash, the cedar, the drift mouth...),
   with a journal note saying what the wolf found that points there.
@@ -150,7 +151,8 @@
 - Reads that need a resident's line (N2/C8): Q21's shopkeeper on `nh_b_seam=crooked` (Q10's steward is now a scene).
 - **The world's door rule** (not this pack's to change): see "Givers behind locked doors" below for what this pass
   changed and what is still open. Opening a producer's workplace to wolves in its hours, or a story lifting a door for
-  its wolves, would close the rest; then Vidar's hold can go.
+  its wolves, would close the rest; then Vidar's hold can go. (The third pass did the second, for workplaces only;
+  Timberland Court is Vidar's and Hilde's home, so his hold stays. See the end of this file.)
 
 ## DM steps
 1. Wave A first: the world variables declared (`tools/nh_world_vars.py --apply`, which now includes `mq_oil_list` and
@@ -172,6 +174,22 @@ wolf can reach at work, with the lines in their speech; `givers.tsv` rows moved;
 - Kept: Vidar (held at the Court's back gate by this pack), the clerks of Q3 and Q6 (Grete Dunn, Harriet Pennock,
   Lothar Abbot: every evening at an inn), Kell Reedwade in Q23 and Ragnar Wetby in Q11 (met on the walk the quest
   tells), the pups of Q4 (walked and held by the story).
-- Still open (no free resident left in the town): Q13 Disa Fogford, Q14 Harl Oakbough and the cellar hand Briar Cornby
-  (Southmeadow), Q15 Iris Pikeford and the fowler Nab Bogditch (Fenshore), Q17 Fern Merewick and Q19 Kite Bogditch
-  (Saltwell). Ridge Eelbank in Q17 is found where the story has moved him.
+- Left open by this pass, closed by the third (below; no free resident left in the town): Q13 Disa Fogford, Q14 Harl
+  Oakbough and the cellar hand Briar Cornby (Southmeadow), Q15 Iris Pikeford and the fowler Nab Bogditch (Fenshore), Q17
+  Fern Merewick and Q19 Kite Bogditch (Saltwell). Ridge Eelbank in Q17 is found where the story has moved him.
+
+## Doors a story unlocks (2026-11-22, third pass; doc 86 "Doors a story unlocks")
+A door a live story has unlocked (`door.unlock`) is open to wolves while the story holds it (DECISION of 2026-11-22,
+engine on branch `r3-nh-doors`; doc 86 "Doors a story unlocks"). A story never unlocks a home, and `tools/nh_check.py`
+refuses a door into one, or into a room whose stairs reach one.
+
+- `nh-pack.medium.south`, phase `open`, entry: the Sunfields Hive Shed (`link_fs_bees_south_hives_door_a`, Q13 Disa
+  Fogford), the Southmeadow Press House (`link_fs_vineyard_south_press_door_a`, Q14 Harl Oakbough, and Briar Cornby in
+  its cellar down the stairs), the Fenside Boiling House (`link_fs_salt_fencoast_boiling_door_a`, Q15 Iris Pikeford),
+  the Withy Creek Eel House (`link_fs_marsh_eels_eelhouse_door_a`, Q15 Nab Bogditch) and the Saltpan Salt Store
+  (`link_fs_salt_saltpan_store_door_a`, Q17 Fern Merewick and Q19 Kite Bogditch). No home is behind any of them.
+- Q14's watch is still kept at the press house door after dark, and the old wolf of Withy Creek (Q15) still answers at
+  her own door in a scene: that is her home, which no story opens.
+- No `door.lock` closes the window: the map locks no door, and `Door::locked` stops residents too, so locking a shed
+  when its phase ends would shut its own workers out until the run ends. The doors stay unlocked from the phase that
+  offers the quest until the run ends, when the game puts back what each had.

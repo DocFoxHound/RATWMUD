@@ -948,17 +948,19 @@ phases. Nothing has been approved, published or loaded into Ridgemere 3, and no 
     Re-run `python3 artifacts/quests/build/talk2/gen.py Data/Talk` after anything rewrites those two trees; a re-run
     reproduces the committed files exactly.
   - `tools/dialect_allow.json` (T9): the campaign's places and titles.
-- **Tools:** `tools/nh_check.py` (the §9.3 checks) and `tools/nh_world_vars.py` (declares the world variables, or lists
-  the DM's steps).
+- **Tools:** `tools/nh_check.py` (the §9.3 checks, and since the third pass the door rule: see "Doors a story
+  unlocks" below) and `tools/nh_world_vars.py` (declares the world variables, or lists the DM's steps).
 
 ### Conventions forced by today's engine
 - **No top-level `prefix` and no `closure`**: today's validator refuses both. Every id carries its prefix by convention
   (`nh` `sq` `mq` `lq` `st` `coin`), and `nh_check` refuses a world variable without one.
-- **Locked doors** (doc 82, `World::playerDoorLocked`): a wolf can't enter a private interior, and `door.unlock`
-  doesn't lift that. Every `enter place` into a locked building is an outdoor region at its door instead. Residents
-  who never come out speak in a one-line scene at their own door. Every quest giver, `npc.offer` holder and gift or
-  talk target is a resident a wolf can reach where they are in their working hours, or the exception is written down
-  (see "Givers behind locked doors" below).
+- **Locked doors** (doc 82, `World::playerDoorLocked`): a wolf can't enter a private interior. Since the third pass
+  (DECISION of 2026-11-22, built on branch `r3-nh-doors`) a door a live story has unlocked (`door.unlock`) is open to
+  wolves while the story holds it, and a story never unlocks a home. The programs use it only for the workplaces of
+  the residents a wolf could not otherwise reach (see "Doors a story unlocks" below). Every other `enter place` into a
+  locked building is an outdoor region at its door. Residents who never come out speak in a one-line scene at their
+  own door. Every quest giver, `npc.offer` holder and gift or talk target is a resident a wolf can reach where they are
+  in their working hours (see "Givers behind locked doors" below).
 - **Props are rationed per wolf** with player timers (once a game day, or once a week for laid trails). A quest set
   aside and taken again would otherwise hand out new goods each time.
 - **Fights scale per copy**: two bandits for each wolf's copy of a player-scope quest, and one party-sized band for a
@@ -1094,8 +1096,9 @@ lines of Halvard, Dorcas and Eleanor, and the garland line now Briar Sedgebridge
 - Bettany Nailley and Solveig Tarwell are now only in scenes at their own doors. (Bettany's wave G window line, gated
   on `lq_wreck=watch`, plays only if a wolf meets her on her walks.)
 
-**Still open: 23 residents in towns with no free resident a wolf can reach** (every one there already has a pack
-quest, or none is left):
+**Left by the second pass, closed by the third: 23 residents in towns with no free resident a wolf can reach** (every
+one there already has a pack quest, or none is left). The story now unlocks their workplaces: see "Doors a story
+unlocks" below.
 - Southmeadow: Alder Blossomcroft (`st-chorus-wrong`), Emrys Stillshore (`sq-hare-in-the-seed-rows`), Hob Meadowfield
   (`sq-smoke-for-the-hives`), Myrtle Larkcombe (`st-relief-convoy`), Disa Fogford (`mq-bee-garth-bear`), Harl Oakbough
   and the cellar hand Briar Cornby (`mq-vineyard-cellar`), and the whole `lq-blight-and-boar` line (Sloe Harvestby,
@@ -1108,15 +1111,11 @@ quest, or none is left):
 - Coldwater: `lq-old-brown` (Jessamy Greyford, Vale Pikebridge, Juniper Larkcombe). Two free residents are left (Wren
   Coldpeak, Stone Pinefell), not enough for the line's three, and half a line re-cast is worse than none.
 
-Closing these needs one of: a small engine change (`playerDoorLocked` treats a producer's workplace, never a home,
-like a merchant's, open in its posts' hours; or it skips doors a running story has unlocked, already undone at the
-run's end); a story effect that does the same (a catalogue addition); or the small quests turned board-only
-(decisions §1.2.6), which does not help the choices of the medium quests and the lines. The user decides.
+The second pass listed three ways to close these: an engine change, a story effect, or board-only quests. The
+decision taken was the second kind with no new effect: `playerDoorLocked` skips a door a live story has unlocked.
 
-Two optional objectives still ask for archive work, which Ridgemere 3 gives nowhere: `lq-clipped-silver` "trail"
-(the factors' chalk-list) and `lq-salt-road`'s three "ledger" steps. They need a records post on Ridgemere 3 (a world
-data change, or "records office" added to the posts in `Data/Lore/archives.json`) and the Records Office open to
-wolves, or rewriting.
+Two optional objectives asked for archive work, which Ridgemere 3 gives nowhere: `lq-clipped-silver` "trail" (the
+factors' chalk-list) and `lq-salt-road`'s three "ledger" steps. The third pass rewrote them (below).
 
 **The checks after this pass:** `python3 tools/nh_check.py --all` **23 of 23 PASS**; the across-programs check (ids
 unique, nobody a giver or choice holder in two programs, nobody a target in more than two programs outside their own)
@@ -1127,10 +1126,77 @@ modelled on `playerDoorLocked` (each hour's open doors, merchants' hours, stairs
 above is reachable at work in every working hour, and that the regions at the doors lie on the street beside them. The
 talk library regenerates byte for byte (`build_packs.py`, then `gen.py Data/Talk`). No database was written.
 
+### Doors a story unlocks (third pass, 2026-11-22)
+**The rule** (the DECISION, for the user to overturn; the engine side is built on branch `r3-nh-doors`):
+- A door a live story has unlocked (`door.unlock`, `World::setDoorState`, undone at the run's end) is open to wolves
+  while the story holds it, even where `World::playerDoorLocked` would lock it.
+- A story may never unlock a private home for wolves. Approval refuses a door whose interior is anyone's home and not a
+  workplace.
+- `tools/nh_check.py` (check 9) is stricter. It refuses a `door.unlock` or `door.open` on a door into anyone's home:
+  a resident's or a post's `home_area`, whether the room itself or a room its stairs and passages reach. A shop with
+  the keeper's flat up its stairs is refused too.
+- It warns of a door into a room nobody works in, and of any `door.lock`. It needs the world, so `--no-db` skips it.
+
+**What the programs unlock.** Each door is named by its street side (`link_<world.links.id>_a`, read only from
+`world.links`) and unlocked as a phase entry effect (`ifRefused: skip`). That is the phase the quest is offered in:
+the start phase for a quest without `phases`. No door here has a home behind it, nor a home its stairs reach (a
+read-only pass over `world.links`, `world.cells`, `world.interiors`, `live.npcs` and `live.profession_slots`).
+
+| Program · phase | Door | Whom it lets a wolf reach |
+|---|---|---|
+| `nh-pack.small.south` · open | Larkholm Granary (`link_fs_grain_lark_granary_door_a`) | Hob Meadowfield (`sq-smoke-for-the-hives`) |
+| | Larkholm Mill (`link_fs_grain_lark_mill_door_a`) | Emrys Stillshore (`sq-hare-in-the-seed-rows`) |
+| | Dune Rabbitry (`link_fs_warren_dunes_rabbitry_door_a`) | Leif Rainley (`sq-twine-for-the-nets`) |
+| | Redsand Rabbitry (`link_fs_warren_waste_rabbitry_door_a`) | Winifred Fogridge (`sq-salt-for-the-road`) |
+| | Ochre Press House (`link_fs_vineyard_ochre_press_door_a`) | Senna Applegarth (`sq-ochre-rabbits`) |
+| `nh-pack.medium.south` · open | Sunfields Hive Shed (`link_fs_bees_south_hives_door_a`) | Disa Fogford (Q13) |
+| | Southmeadow Press House (`link_fs_vineyard_south_press_door_a`) | Harl Oakbough, and Briar Cornby in its cellar down the stairs (Q14) |
+| | Fenside Boiling House (`link_fs_salt_fencoast_boiling_door_a`) | Iris Pikeford (Q15) |
+| | Withy Creek Eel House (`link_fs_marsh_eels_eelhouse_door_a`) | Nab Bogditch (Q15) |
+| | Saltpan Salt Store (`link_fs_salt_saltpan_store_door_a`) | Fern Merewick (Q17), Kite Bogditch (Q19) |
+| `lq-blight-and-boar` · open | Southmeadow Press House, Sunfields Hive Shed, Southwood Pig Yard (`link_fs_pigs_south_sties_door_a`) | Sloe Harvestby and Harl Oakbough, Aster Cornley, Brisk Lakemere |
+| `lq-eel-famine` · open | Fen Shore Boat Shed (`link_fs_fishing_fencoast_shed_door_a`), Rivermouth Boat Shed (`link_fs_fishing_delta_shed_door_a`), Withy Creek Eel House | Ivo Sootridge, Jasper Greymore, Nab Bogditch |
+| `lq-old-brown` · open | Greyteeth Shearing Barn (`link_fs_sheep_foothills_barn_door_a`) | Jessamy Greyford, Vale Pikebridge, Juniper Larkcombe |
+| `lq-salt-road` · open | Saltpan Salt Store | Fern Merewick, Kite Bogditch (`brackish`) |
+| `lq-salt-road` · reckoning | The Records Office (`link_r2_the_records_office_door_a`) | the copyist Hollis Shaw (the "ledger" steps) |
+| `lq-clipped-silver` · open | The Records Office | the clerk Harriet Pennock (the "chalk" step) |
+| `nh-pack.stage` · s4 / s56 / s78 | Larkholm Granary / Fen Shore Boat Shed / Larkholm Granary | Alder Blossomcroft (`st-chorus-wrong`) / Stone Marshmore (`st-fog-lanterns`) / Myrtle Larkcombe (`st-relief-convoy`) |
+
+**No `door.lock` when a window ends.** The doors stay unlocked until the run ends, when the game puts back the lock
+each door had before the story touched it (`Game::endStoryWorld`). A `door.lock` would do worse than nothing. The map
+locks no door (`world.links` has no lock, so `Door::locked` is false everywhere), and `Door::locked` stops residents
+too. Locking a shed when its quest's phase ends would shut its own workers out of it for the rest of the run, and
+nothing short of the run's end lets them back in. So the workplaces stay open from the phase that offers the quest
+until the run ends. They are workshops, never homes. A lock that only puts back what was there (a `door.release`, or
+`door.lock` that restores the story's "was") would let a window close; it is a catalogue addition, not made here.
+
+**The archive steps, rewritten.** Ridgemere 3 gives archive work nowhere, so both steps became a conversation with a
+named Records Office clerk. Each clerk is reachable at work while the story holds the Records Office open (7-18, up
+its stairs, no home behind it), and at an inn after work. What the clerk finds is a journal note, in the plain speech
+of Ridgemere's clerks (`live.npc_voice`: Ridgemere, light):
+- `lq-clipped-silver` `trail` `chalk` (optional): ask the Records clerk who keeps the old ledgers, Harriet Pennock
+  (`rmx_harriet_pennock`, the Grey Gull every evening), for the factors' chalk-list. The trigger `chalk-read` notes
+  that Silver and Rain is chalked, owing more than the shop takes in a year, due at the new moon (the design's "shows
+  she owes").
+- `lq-salt-road` `ledger` (optional, hidden, in all three road quests): ask the Records Office copyist, Hollis Shaw
+  (`rmx_hollis_shaw`, the Grey Goose after work until its cook locks up at 19), to copy the provisioner's buying out of
+  the rolls. The trigger `ledger-read` notes three times last year's Saltpan salt at Vane and Daughters, with duty paid
+  on a third of it.
+- Harriet Pennock is now a target in two quests (Q6 of `nh-pack.medium.city` and the trail), and Hollis Shaw in one
+  line. Neither gives or holds a choice anywhere. The rehearsals that did archive work now talk to the clerk after
+  taking the quest.
+
+**The checks after this pass:**
+- `python3 tools/nh_check.py --all`: **23 of 23 PASS**. Every door above is reported as "a workplace of N, no home
+  behind it".
+- A program unlocking the Southmeadow Vineyard House (Sloe Harvestby's home), or opening the Larkfield Press (the
+  keeper's rooms up its stairs), is refused, and a `door.lock` is warned of. This was tried on a copy outside the tree.
+- No database was written.
+
 ### Open problems
-1. **Givers behind locked doors**: 23 residents in Southmeadow, Saltwell, Fenshore and Coldwater's Old Brown line
-   are still met only on their walks; see "Givers behind locked doors" above for the list and the choices that would
-   close it.
+1. **Givers behind locked doors (closed 2026-11-22, third pass)**: the 23 residents are reached at work through the
+   doors their stories unlock (above). If the user overturns the DECISION, they are met only on their walks again,
+   and the second pass's other choices (board-only quests, a catalogue effect) apply.
 2. **22 window lines (closed 2026-11-22).** The large lines' notes wrote 22 lines "for wave G"; they are now in the
    trees (`build_packs.py` `NOTES` and `ALSO`; new `hub` and `watch.hub` nodes in `gen.py`), spoken by the re-cast
    residents where the line's speaker moved. They stay silent until C8 lands or the DM seeds the keys. Adding them moved

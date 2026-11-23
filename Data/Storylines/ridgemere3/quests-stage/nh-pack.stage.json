@@ -4457,7 +4457,13 @@
   {
    "id": "s4",
    "journal": "The towns are finding their howls.",
-   "effects": [],
+   "effects": [
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_grain_lark_granary_door_a",
+     "ifRefused": "skip"
+    }
+   ],
    "exits": [],
    "triggers": [
     {
@@ -5293,6 +5299,11 @@
      "kind": "npc.line",
      "npc": "cty_mogens_mudstack",
      "text": "Bounders in the hills, and green stakes where the old line ran. Walk the bounds before somebody moves them."
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_fishing_fencoast_shed_door_a",
+     "ifRefused": "skip"
     }
    ],
    "exits": [],
@@ -7146,7 +7157,13 @@
   {
    "id": "s78",
    "journal": "The harvest, the ford, and the ice on the Upper Mere.",
-   "effects": [],
+   "effects": [
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_grain_lark_granary_door_a",
+     "ifRefused": "skip"
+    }
+   ],
    "exits": [],
    "triggers": [
     {

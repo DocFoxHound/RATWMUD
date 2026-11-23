@@ -1670,6 +1670,21 @@
      "kind": "npc.line",
      "npc": "tn_oh_harl_oakbough",
      "text": "Down from the Southwood, along the stream, under the old fence. I was lost three days in that wood once. I know its paths better than I'd like. Good harvest if you find the gap."
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_vineyard_south_press_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_bees_south_hives_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_pigs_south_sties_door_a",
+     "ifRefused": "skip"
     }
    ],
    "exits": []

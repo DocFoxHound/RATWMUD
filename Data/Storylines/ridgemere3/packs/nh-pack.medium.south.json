@@ -439,7 +439,33 @@
   {
    "id": "open",
    "journal": "Errands for any wolf who asks around the south: the Sunfields Bee Garth and the vineyard, Withy Creek and the Fenshore Kilns, the Saltpan, the Waste Road and the Mirebridge crossroads.",
-   "effects": [],
+   "effects": [
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_bees_south_hives_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_vineyard_south_press_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_salt_fencoast_boiling_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_marsh_eels_eelhouse_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_salt_saltpan_store_door_a",
+     "ifRefused": "skip"
+    }
+   ],
    "exits": [],
    "triggers": [
     {

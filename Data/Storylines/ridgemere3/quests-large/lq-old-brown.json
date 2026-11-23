@@ -2300,6 +2300,11 @@
      "days": 28,
      "text": "THE GREYTEETH FOLD: shepherds want sitters for the night. Rustlers about. Bring teeth and a friend.",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_sheep_foothills_barn_door_a",
+     "ifRefused": "skip"
     }
    ],
    "exits": []

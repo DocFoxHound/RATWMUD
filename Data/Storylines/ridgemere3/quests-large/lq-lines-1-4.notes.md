@@ -138,10 +138,34 @@ The conversation objectives complete without those lines; the lines carry the cl
   - SQ2, Silver & Rain's till for the restitution and the shares.
 
 ## Givers behind locked doors (2026-11-22, second pass; doc 86 "Givers behind locked doors")
-- **The Old Brown: still open.** Jessamy Greyford (giver), Vale Pikebridge and Juniper Larkcombe (choices and targets)
-  all work in the Greyteeth shearing barn, locked to wolves (doc 82). Coldwater has two free residents left that a wolf
-  can reach at work (Wren Coldpeak, Stone Pinefell), not enough for the line's three, and half a line re-cast is worse
-  than none. Doc 86 lists what would close it.
+- **The Old Brown: left open by this pass, closed by the third (below).** Jessamy Greyford (giver), Vale Pikebridge and
+  Juniper Larkcombe (choices and targets) all work in the Greyteeth shearing barn, locked to wolves (doc 82). Coldwater
+  has two free residents left that a wolf can reach at work (Wren Coldpeak, Stone Pinefell), not enough for the line's
+  three, and half a line re-cast is worse than none. Doc 86 lists what would close it.
 - The Salt Road's Fern Merewick and Kite Bogditch (conversation targets) work in the Saltpan salt store, also locked;
   Saltwell has no free resident. Its optional "ledger" steps ask for archive work, which Ridgemere 3 gives nowhere
   (no records post), as does the Clipped Silver's optional chalk-list.
+
+## Doors a story unlocks (2026-11-22, third pass; doc 86 "Doors a story unlocks")
+A door a live story has unlocked (`door.unlock`) is open to wolves while the story holds it (DECISION of 2026-11-22,
+engine on branch `r3-nh-doors`; doc 86 "Doors a story unlocks"). A story never unlocks a home, and `tools/nh_check.py`
+refuses a door into one, or into a room whose stairs reach one.
+
+- **The Old Brown**, phase `open`, entry: the Greyteeth Shearing Barn (`link_fs_sheep_foothills_barn_door_a`). Jessamy
+  Greyford, Vale Pikebridge and Juniper Larkcombe are found at work.
+- **The Salt Road**, phase `open`, entry: the Saltpan Salt Store (`link_fs_salt_saltpan_store_door_a`) for Fern Merewick
+  and Kite Bogditch (`brackish`). Phase `reckoning`, entry: the Records Office (`link_r2_the_records_office_door_a`, no
+  home up its stairs). The optional, hidden `ledger` step of the three road quests is now a conversation with the
+  Records Office copyist Hollis Shaw (`rmx_hollis_shaw`, 7-18 up the stairs, or the Grey Goose after work until its cook
+  locks up at 19), who copies the provisioner's buying out of the rolls. Trigger `ledger-read` adds a journal note in
+  the copyist's plain Ridgemere speech: three times last year's Saltpan salt at Vane and Daughters, with duty paid on a
+  third of it.
+- **The Clipped Silver**, phase `open`, entry: the Records Office. The optional `chalk` step of `trail` is now a
+  conversation with the Records clerk who keeps the old ledgers, Harriet Pennock (`rmx_harriet_pennock`, up the stairs
+  by day, the Grey Gull every evening). Trigger `chalk-read` notes, in her plain speech, that Silver and Rain is
+  chalked, owing more than the shop takes in a year, due at the new moon (the design's "shows she owes").
+- The rehearsals that did archive work now talk to the clerk after taking the quest. Harriet is a target in two quests
+  (this and `mq-coopers-note`), Hollis in this line only; neither gives or holds a choice.
+- No `door.lock` closes the window: the map locks no door, and `Door::locked` stops residents too, so locking a shed
+  when its phase ends would shut its own workers out until the run ends. The doors stay unlocked from the phase that
+  offers the quest until the run ends, when the game puts back what each had.

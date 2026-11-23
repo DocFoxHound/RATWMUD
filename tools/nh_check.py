@@ -18,7 +18,11 @@ For each story program:
   6. the words: no forbidden word (the d-word, gods, "tells" for private messages, ...), no ids or keys in what is said;
      no npc.speak, no story.tell carrying a resident (from), no story wave matched on camp_w_<...>;
   7. its world variables are in world-vars.json with the same type, and carry a content prefix (nh_ sq_ mq_ lq_ st_ coin_);
-  8. it lives under Data/Storylines/ridgemere3/, never Data/Storylines/programs/.
+  8. it lives under Data/Storylines/ridgemere3/, never Data/Storylines/programs/;
+  9. the doors (doc 86, "Doors a story unlocks"): a door.unlock or door.open never on a door into anyone's home (a
+     resident's or a post's home_area, the room itself or one its stairs and passages reach); a door into a room
+     nobody works in is warned of, and so is door.lock (the map locks no door, so it locks the residents out too, until
+     the run ends).
 For talk files (or --talk): dialect_check --world <world>; talk_check --validate (the files given, else the story talk
 files) and --render-trees; talk_lint.
 
@@ -183,6 +187,91 @@ def mentions(cond, name):
 
 
 # ------------------------------------------------------------------------------------------------------ the checks
+
+DOOR_EFFECTS = ('door.unlock', 'door.open')
+
+
+class DoorMap:
+    """The world's doors, rooms, stairs and homes, read once (read only)."""
+
+    def __init__(self, conn, world):
+        rooms = conn.execute('SELECT id, name, outdoors FROM world.cells WHERE world_id=%s UNION ALL '
+                             'SELECT id, name, outdoors FROM world.interiors WHERE world_id=%s', (world, world)).fetchall()
+        self.name = {r[0]: r[1] for r in rooms}
+        self.outdoors = {r[0]: bool(r[2]) for r in rooms}
+        self.doors = {}
+        self.inner = collections.defaultdict(set)
+        for lid, name, kind, a, b in conn.execute('SELECT id, name, kind, a_area, b_area FROM world.links WHERE world_id=%s', (world,)):
+            if kind == 'door':
+                for key in ('link_' + lid, 'link_' + lid + '_a', 'link_' + lid + '_b'):
+                    self.doors[key] = (name, a, b)
+            elif not self.outdoors.get(a, True) and not self.outdoors.get(b, True):
+                # (Stairs and passages inside are never locked to wolves: a room is open with every room they reach.)
+                self.inner[a].add(b)
+                self.inner[b].add(a)
+        self.homes = collections.defaultdict(list)
+        for name, home in conn.execute('SELECT name, home_area FROM live.npcs WHERE world_id=%s', (world,)):
+            self.homes[home].append(name)
+        for label, home in conn.execute('SELECT work_label, home_area FROM live.profession_slots WHERE world_id=%s', (world,)):
+            self.homes[home].append(f'a post ({label})')
+        self.workers = collections.defaultdict(list)
+        for name, work in conn.execute('SELECT name, work_area FROM live.npcs WHERE world_id=%s', (world,)):
+            self.workers[work].append(name)
+
+    def reached(self, room):
+        seen, todo = {room}, [room]
+        while todo:
+            for y in self.inner[todo.pop()]:
+                if y not in seen:
+                    seen.add(y)
+                    todo.append(y)
+        return seen
+
+
+def check_doors(p, r, doors):
+    """Doc 86 (the DECISION of 2026-11-22): a door a live story unlocks is open to wolves while the story holds it, so a
+    story never unlocks or opens a door into anyone's home."""
+    found = []
+    for _, path, e, _, _ in effects_in(p):
+        if isinstance(e, dict) and str(e.get('kind', '')).startswith('door.'):
+            found.append((where(path), e))
+    # (And any other effect list a program carries, a scene's or a quest's: every dict with a door and a door kind.)
+    def scan(v, path):
+        if isinstance(v, dict):
+            if str(v.get('kind', '')).startswith('door.') and 'door' in v and not any(v is f[1] for f in found):
+                found.append((where(path), v))
+            for k, x in v.items():
+                scan(x, path + (k,))
+        elif isinstance(v, list):
+            for i, x in enumerate(v):
+                scan(x, path + (i,))
+    scan({k: x for k, x in p.items() if k != 'tests'}, ())
+    for at, e in found:
+        kind, door = e.get('kind'), e.get('door', '')
+        if kind == 'door.lock':
+            r.warn(f'{at}: door.lock {door}: the map locks no door, so this locks the residents out too, until the run ends')
+        if kind not in DOOR_EFFECTS:
+            continue
+        if door not in doors.doors:
+            r.error(f'{at}: {kind} {door}: no such door in this world')
+            continue
+        name, a, b = doors.doors[door]
+        inside = [x for x in (a, b) if not doors.outdoors.get(x, True)]
+        homes, workers = [], []
+        for room in inside:
+            for x in sorted(doors.reached(room)):
+                if doors.homes.get(x):
+                    how = 'is' if x == room else f'reaches {x} ({doors.name.get(x, x)}) by its stairs and passages, which is'
+                    who = doors.homes[x]
+                    homes.append(f'{room} {how} the home of {", ".join(who[:3])}' + (f' and {len(who) - 3} more' if len(who) > 3 else ''))
+                workers += doors.workers.get(x, [])
+        if homes:
+            r.error(f'{at}: {kind} {door} ("{name}"): a story never opens a home to wolves: ' + '; '.join(homes))
+        elif inside and not workers:
+            r.warn(f'{at}: {kind} {door} ("{name}"): nobody works behind it (a story opens a workplace, never a home)')
+        else:
+            r.note(f'doors: {kind} {door} ("{name}"), a workplace of {len(set(workers))}, no home behind it')
+
 
 def check_engine(p, r):
     try:
@@ -440,7 +529,7 @@ def check_variables(p, r, declarations):
                 r.warn(f'world variable {v["id"]} starts at {v["initial"]!r} here, {d["value"]!r} in world-vars.json')
 
 
-def check_program(path, conn, world, rows, declarations, accounts, saved):
+def check_program(path, conn, world, rows, declarations, accounts, saved, doors=None):
     r = Report(str(path.resolve().relative_to(ROOT)) if path.resolve().is_relative_to(ROOT) else str(path))
     try:
         p = json.loads(path.read_text())
@@ -465,6 +554,8 @@ def check_program(path, conn, world, rows, declarations, accounts, saved):
             conn.rollback()
             conn.execute('SET TRANSACTION READ ONLY')
         voices = check_residents(p, r, conn, world)
+        if doors is not None:
+            check_doors(p, r, doors)
         for npc, what, _ in hub_holders(p):
             if npc in voices:
                 name, age, region, accent = voices[npc]
@@ -551,8 +642,9 @@ def main(argv=None):
         world = conn.execute('SELECT id FROM world.worlds').fetchone()[0]
         accounts, saved = latest_accounts(conn, world)
     try:
+        doors = DoorMap(conn, world) if conn is not None else None
         for x in programs:
-            reports.append(check_program(x, conn, world, rows, declarations, accounts, saved))
+            reports.append(check_program(x, conn, world, rows, declarations, accounts, saved, doors))
     finally:
         if conn is not None:
             conn.rollback()

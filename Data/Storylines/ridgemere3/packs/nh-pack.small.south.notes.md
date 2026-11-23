@@ -139,9 +139,23 @@ own speech:
   Ludo Ashwood, pot hand at the Heron (mirebridge).
 - Southmeadow: `sq-festival-garlands` Briar Sedgebridge, who digs clay at the Sallow pits (plain; the garland gossip
   line is hers now, without "ripe").
-- Still open (no free resident left in the town): `sq-hare-in-the-seed-rows` (Emrys Stillshore),
-  `sq-smoke-for-the-hives` (Hob Meadowfield), `sq-twine-for-the-nets` (Leif Rainley), and Saltwell's
+- Left open by this pass, closed by the third (below; no free resident left in the town): `sq-hare-in-the-seed-rows`
+  (Emrys Stillshore), `sq-smoke-for-the-hives` (Hob Meadowfield), `sq-twine-for-the-nets` (Leif Rainley), and Saltwell's
   `sq-ochre-rabbits` (Senna Applegarth) and `sq-salt-for-the-road` (Winifred Fogridge). Doc 86 lists what would close
   them (an engine or catalogue change, or board-only).
 - Briar Greenshaw, Ludo Ashwood and Briar Sedgebridge share a first name with campaign cast: they are their towns' only
   free residents (decisions §1.2.5), and no line names them.
+
+## Doors a story unlocks (2026-11-22, third pass; doc 86 "Doors a story unlocks")
+A door a live story has unlocked (`door.unlock`) is open to wolves while the story holds it (DECISION of 2026-11-22,
+engine on branch `r3-nh-doors`; doc 86 "Doors a story unlocks"). A story never unlocks a home, and `tools/nh_check.py`
+refuses a door into one, or into a room whose stairs reach one.
+
+- Phase `open`, entry: the Larkholm Granary (`link_fs_grain_lark_granary_door_a`, Hob Meadowfield), the Larkholm Mill
+  (`link_fs_grain_lark_mill_door_a`, Emrys Stillshore), the Dune Rabbitry (`link_fs_warren_dunes_rabbitry_door_a`, Leif
+  Rainley), the Redsand Rabbitry (`link_fs_warren_waste_rabbitry_door_a`, Winifred Fogridge) and the Ochre Press House
+  (`link_fs_vineyard_ochre_press_door_a`, Senna Applegarth). Each is a workplace with no home behind it. The quests'
+  words are unchanged: the giver is at work where the wolf can now walk in.
+- No `door.lock` closes the window: the map locks no door, and `Door::locked` stops residents too, so locking a shed
+  when its phase ends would shut its own workers out until the run ends. The doors stay unlocked from the phase that
+  offers the quest until the run ends, when the game puts back what each had.

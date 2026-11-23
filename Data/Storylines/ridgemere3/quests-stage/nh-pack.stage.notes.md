@@ -147,6 +147,20 @@ free resident a wolf can reach at work, in their own speech; `givers.tsv` rows m
 - `st-feed-larkfield`: its offer and words are Clover Snowhollow's, a vat hand at the Larkfield Print House (7-19), who
   hands out Longmead's bread.
 - Kept: the three patrol guards (`st-post-night`, `st-camp-bounty`, `st-patrol-round`) walk the street patrol.
-- Still open (no free resident left in the town): `st-chorus-wrong` (Alder Blossomcroft) and `st-relief-convoy` (Myrtle
-  Larkcombe) in Southmeadow, `st-fog-lanterns` (Stone Marshmore) in Fenshore.
+- Left open by this pass, closed by the third (below; no free resident left in the town): `st-chorus-wrong` (Alder
+  Blossomcroft) and `st-relief-convoy` (Myrtle Larkcombe) in Southmeadow, `st-fog-lanterns` (Stone Marshmore) in
+  Fenshore.
 
+
+## Doors a story unlocks (2026-11-22, third pass; doc 86 "Doors a story unlocks")
+A door a live story has unlocked (`door.unlock`) is open to wolves while the story holds it (DECISION of 2026-11-22,
+engine on branch `r3-nh-doors`; doc 86 "Doors a story unlocks"). A story never unlocks a home, and `tools/nh_check.py`
+refuses a door into one, or into a room whose stairs reach one.
+
+- Each door is unlocked at the entry of the phase that offers the quest: `s4` the Larkholm Granary
+  (`link_fs_grain_lark_granary_door_a`, Alder Blossomcroft, `st-chorus-wrong`), `s56` the Fen Shore Boat Shed
+  (`link_fs_fishing_fencoast_shed_door_a`, Stone Marshmore, `st-fog-lanterns`), and `s78` the Larkholm Granary again
+  (Myrtle Larkcombe, `st-relief-convoy`; unlocking it twice is harmless).
+- No `door.lock` closes the window: the map locks no door, and `Door::locked` stops residents too, so locking a shed
+  when its phase ends would shut its own workers out until the run ends. The doors stay unlocked from the phase that
+  offers the quest until the run ends, when the game puts back what each had.

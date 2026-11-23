@@ -237,9 +237,23 @@ givers and targets as first written, is superseded by this one.
   is open only in its cook's hours (7-19): she can be found there from the end of work until 19, and all day on her days
   off. The trial is taken from the board too, but it is handed in to her. The time-sheet labels no longer send the wolf
   into the Couriers' Office by day.
-- **Blight and Boar: still open.** Sloe, Aster, Harl and Brisk all work in the Southmeadow press house, hive shed and
-  Southwood pig yard, and Southmeadow has no free resident a wolf can reach. Doc 86 lists what would close it.
+- **Blight and Boar: left open by this pass, closed by the third (below).** Sloe, Aster, Harl and Brisk all work in the
+  Southmeadow press house, hive shed and Southwood pig yard, and Southmeadow has no free resident a wolf can reach. Doc
+  86 lists what would close it.
 
 ## Purses
 At the 2026-11-23 checkpoint, the treasury held 1,358 pennies and Southmeadow's store 236. The design's day caps (135 and
 23) are kept as written.
+
+## Doors a story unlocks (2026-11-22, third pass; doc 86 "Doors a story unlocks")
+A door a live story has unlocked (`door.unlock`) is open to wolves while the story holds it (DECISION of 2026-11-22,
+engine on branch `r3-nh-doors`; doc 86 "Doors a story unlocks"). A story never unlocks a home, and `tools/nh_check.py`
+refuses a door into one, or into a room whose stairs reach one.
+
+- **Blight and Boar**, phase `open`, entry: the Southmeadow Press House (`link_fs_vineyard_south_press_door_a`, Sloe
+  Harvestby and Harl Oakbough), the Sunfields Hive Shed (`link_fs_bees_south_hives_door_a`, Aster Cornley) and the
+  Southwood Pig Yard (`link_fs_pigs_south_sties_door_a`, Brisk Lakemere). Sloe's home, the Southmeadow Vineyard House,
+  stays shut.
+- No `door.lock` closes the window: the map locks no door, and `Door::locked` stops residents too, so locking a shed
+  when its phase ends would shut its own workers out until the run ends. The doors stay unlocked from the phase that
+  offers the quest until the run ends, when the game puts back what each had.

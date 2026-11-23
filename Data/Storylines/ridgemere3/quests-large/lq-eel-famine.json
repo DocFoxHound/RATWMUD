@@ -2223,6 +2223,21 @@
      "kind": "npc.line",
      "npc": "cty_ivo_sootridge",
      "text": "Dry feet. Traps up empty again. Fen-sure, something's wrong with the river, and it isn't the drowned."
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_fishing_fencoast_shed_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_fishing_delta_shed_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_marsh_eels_eelhouse_door_a",
+     "ifRefused": "skip"
     }
    ],
    "exits": [],

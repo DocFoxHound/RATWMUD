@@ -3828,6 +3828,26 @@
      "phase": "open"
     }
    ]
+  },
+  {
+   "id": "ledger-read",
+   "on": "objective completed",
+   "match": {
+    "item": "ledger"
+   },
+   "audience": "participant",
+   "note": "The copyist has the provisioner's buying out of the rolls (Ridgemere's plain speech).",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "journal.note",
+      "player": "$actor",
+      "text": "The copyist reads out the provisioner's buying. \"Vane and Daughters. Three times last year's Saltpan salt, and duty paid on a third of it. Somebody sells it cheap.\"",
+      "ifRefused": "skip"
+     }
+    }
+   ]
   }
  ],
  "phases": [
@@ -3839,6 +3859,11 @@
      "kind": "npc.line",
      "npc": "cty_orm_sootgate",
      "text": "The salt sits in the yard and the city goes without. And this wind. Look at it. Even the weather's in on it."
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_salt_saltpan_store_door_a",
+     "ifRefused": "skip"
     }
    ],
    "exits": []
@@ -3851,6 +3876,11 @@
      "kind": "npc.line",
      "npc": "cty_orm_sootgate",
      "text": "The wagons got through. Now somebody in the city can answer for the empty ones. Hear that wind? Even the sky wants a name."
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_r2_the_records_office_door_a",
+     "ifRefused": "skip"
     }
    ],
    "exits": [],
@@ -4273,10 +4303,10 @@
     },
     {
      "id": "ledger",
-     "label": "Copy his buying out of the Records Office rolls.",
-     "on": "archive work",
+     "label": "Ask the Records Office copyist to copy his buying out of the rolls: up the stairs at the Records Office by day, at the Grey Goose after work, before the cook locks up.",
+     "on": "conversation",
      "match": {
-      "detail": "ridgemere"
+      "target": "rmx_hollis_shaw"
      },
      "optional": true,
      "hidden": true
@@ -4368,10 +4398,10 @@
     },
     {
      "id": "ledger",
-     "label": "Copy his buying out of the Records Office rolls.",
-     "on": "archive work",
+     "label": "Ask the Records Office copyist to copy his buying out of the rolls: up the stairs at the Records Office by day, at the Grey Goose after work, before the cook locks up.",
+     "on": "conversation",
      "match": {
-      "detail": "ridgemere"
+      "target": "rmx_hollis_shaw"
      },
      "optional": true,
      "hidden": true
@@ -4463,10 +4493,10 @@
     },
     {
      "id": "ledger",
-     "label": "Copy his buying out of the Records Office rolls.",
-     "on": "archive work",
+     "label": "Ask the Records Office copyist to copy his buying out of the rolls: up the stairs at the Records Office by day, at the Grey Goose after work, before the cook locks up.",
+     "on": "conversation",
      "match": {
-      "detail": "ridgemere"
+      "target": "rmx_hollis_shaw"
      },
      "optional": true,
      "hidden": true
@@ -5219,10 +5249,10 @@
     },
     {
      "id": "e73",
-     "kind": "archive work",
-     "day": 17.6,
+     "kind": "conversation",
+     "day": 17.595,
      "actor": "wolf-ash",
-     "detail": "ridgemere"
+     "target": "rmx_hollis_shaw"
     },
     {
      "id": "e74",

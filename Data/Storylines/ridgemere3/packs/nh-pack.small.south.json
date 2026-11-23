@@ -1625,7 +1625,33 @@
   {
    "id": "open",
    "journal": "Larkfield, Southmeadow, Fenshore and Saltwell have errands going: ask their folk, or read the town boards.",
-   "effects": [],
+   "effects": [
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_grain_lark_granary_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_grain_lark_mill_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_warren_dunes_rabbitry_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_warren_waste_rabbitry_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_vineyard_ochre_press_door_a",
+     "ifRefused": "skip"
+    }
+   ],
    "exits": [],
    "triggers": [
     {

@@ -2715,6 +2715,27 @@
      "phase": "open"
     }
    ]
+  },
+  {
+   "id": "chalk-read",
+   "on": "objective completed",
+   "match": {
+    "detail": "trail",
+    "item": "chalk"
+   },
+   "audience": "participant",
+   "note": "The Records clerk has the factors' chalk-list: it shows the jeweler owes (Ridgemere's plain speech).",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "journal.note",
+      "player": "$actor",
+      "text": "The clerk finds the factors' chalk-list. \"Silver and Rain. Chalked this season, owing more than that shop takes in a year. It falls due at the new moon.\"",
+      "ifRefused": "skip"
+     }
+    }
+   ]
   }
  ],
  "phases": [
@@ -2726,6 +2747,11 @@
      "kind": "npc.line",
      "npc": "tn_lf_pike_chalkley",
      "text": "Fair price to you, and full weight, if you've got it. Count your change twice this week."
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_r2_the_records_office_door_a",
+     "ifRefused": "skip"
     }
    ],
    "exits": []
@@ -3045,10 +3071,10 @@
     },
     {
      "id": "chalk",
-     "label": "Copy the factors' chalk-list at the Records Office.",
-     "on": "archive work",
+     "label": "Ask the Records clerk who keeps the old ledgers for the factors' chalk-list: up the stairs at the Records Office by day, at the Grey Gull after work.",
+     "on": "conversation",
      "match": {
-      "detail": "ridgemere"
+      "target": "rmx_harriet_pennock"
      },
      "optional": true
     },
@@ -3344,13 +3370,6 @@
      "target": "run"
     },
     {
-     "id": "e16",
-     "kind": "archive work",
-     "day": 1.9,
-     "actor": "wolf-ash",
-     "detail": "ridgemere"
-    },
-    {
      "id": "e17",
      "kind": "quest accepted",
      "day": 2,
@@ -3371,6 +3390,13 @@
      "day": 2.02,
      "actor": "wolf-ash",
      "target": "rm_dirk_rainmore"
+    },
+    {
+     "id": "e16",
+     "kind": "conversation",
+     "day": 2.025,
+     "actor": "wolf-ash",
+     "target": "rmx_harriet_pennock"
     },
     {
      "id": "e20",
