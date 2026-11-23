@@ -156,6 +156,25 @@ class ParticipationParity(unittest.TestCase):
         self.assertGreater(len(seen_hits), 2, 'the conditions came out differently across the states')
         self.assertGreater(len(sizes), 1, 'online not known gives no value (the form is skipped), known gives one')
 
+    def test_times_past_two_to_the_53_agree(self):
+        """A product past 2^53 is the double's in both twins (exact ints in Python would differ in the last digits), and a
+        `div` or a `plus` after it comes out the same."""
+        big = {'times': [{'times': [999_999_937, 999_999_929]}, 999_999_893]}
+        forms = [big, {'div': [{'times': [999_999_937, 999_999_929]}, 7]}, {'plus': [{'times': [999_999_937, 999_999_929]}, 1]},
+                 {'minus': [{'times': [999_999_937, 999_999_929]}, {'times': [999_999_929, 999_999_937]}]}]
+        self.FORMS = forms
+        original = self.program
+        def program():
+            p = original()
+            p['phases'][0]['triggers'] = [{'id': 'count', 'on': 'conversation', 'actions': [
+                {'do': 'list add', 'var': 'out', 'value': f} for f in forms]}]
+            return p
+        self.program = program
+        base = {'phase': 'a', 'entered': 0, 'visits': 1, 'votes': {}, 'actor': '', 'seed': 's', 'began': 0, 'cohort': [],
+                'seen': {}, 'counters': {'story': {'out': []}}}
+        after = self.both(base)
+        self.assertEqual(len(after['counters']['story']['out']), len(forms))
+
 
 if __name__ == '__main__':
     unittest.main()

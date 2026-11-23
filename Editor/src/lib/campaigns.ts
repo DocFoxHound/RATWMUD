@@ -217,7 +217,7 @@ export type TimelineItem =
     // (Doc 86, R2: a readiness entry from the run's own log.)
     | ({key: string; type: 'ready'; at: string | null; readyKind: ReadyLogEntry['kind']} & Omit<ReadyLogEntry, 'at'>);
 export interface WorldEvent { id: number; kind: string; actor: string; target: string; cell: string; item: string; quantity: number; coins: number; detail: string; day: number; x: number | null; y: number | null; at: string }
-export interface TimelineCursor { visit?: number; trigger?: number; order?: number; command?: number; version?: number; at?: string }
+export interface TimelineCursor { visit?: number; trigger?: number; order?: number; command?: number; version?: number; ready?: number; at?: string }
 export interface TimelinePage { run: string; items: TimelineItem[]; events: Record<string, WorldEvent>; names: Record<string, string>; before: TimelineCursor | null; since: TimelineCursor; now: string }
 
 export const nameOf = (names: Record<string, string>, id: string | null | undefined) => (id ? names[id] ?? id : '');
@@ -422,21 +422,22 @@ export function readyHeader(r: Readiness | null | undefined): {text: string; ton
     if (r.met && r.waitingFor) return {text: `Waiting for ${r.thenWords ?? r.waitingFor.on} (ready${since})`, tone: 'waiting'};
     if (r.met && r.pushed) return {text: `Pushed by ${r.pushed.by.split('#')[0]}: waiting for ${r.thenWords ?? 'its moment'}`, tone: 'waiting'};
     if (r.met) return {text: `Ready to advance to ${r.to}${since ? ` (${since.trim()})` : ''}`, tone: 'ready'};
-    const met = r.parts.filter(p => p.met).length;
-    return {text: r.auto ? `Goes on by itself when ready: ${met} of ${r.parts.length} met` : `Not ready: ${met} of ${r.parts.length} met`, tone: 'not'};
+    const parts = r.parts ?? [];
+    const met = parts.filter(p => p.met).length;
+    return {text: r.auto ? `Goes on by itself when ready: ${met} of ${parts.length} met` : `Not ready: ${met} of ${parts.length} met`, tone: 'not'};
 }
 /** The list's compact readiness: the furthest part not met, and "ready" when met. */
 export function readySummary(r: Readiness | null | undefined): {text: string; fill: number; met: boolean} | null {
     if (!r) return null;
     if (r.met) return {text: 'ready', fill: 1, met: true};
-    const left = r.parts.filter(p => !p.met).sort((a, b) => partFill(b) - partFill(a))[0];
+    const left = (r.parts ?? []).filter(p => !p.met).sort((a, b) => partFill(b) - partFill(a))[0];
     return left ? {text: `${left.label}: ${partShort(left)}`, fill: partFill(left), met: false} : {text: 'measuring…', fill: 0, met: false};
 }
 /** The chapters bar's line: "Ch 1 · 36% of 35% · day 11 of 10 · ready". */
 export function chapterReadyText(r: Readiness | null | undefined, chapter: number): string {
     if (!r) return '';
     const bits = [`Ch ${chapter}`];
-    for (const p of r.parts) {
+    for (const p of r.parts ?? []) {
         if (p.kind === 'participation' && p.count != null) bits.push(`${p.share ?? 0}% of ${p.percent}%`);
         else if (p.kind === 'minDays') bits.push(`day ${Math.floor(p.value ?? 0)} of ${dayText(p.need ?? 0)}`);
     }

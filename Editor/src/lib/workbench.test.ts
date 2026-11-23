@@ -472,3 +472,20 @@ test('doc 86: the audience, times and div, the shares, participation and the rea
     const renamed = renameVariable(muster, 'did', 'brought');
     assert.ok(!pretty(renamed.phases[0].triggers).includes('"did"'), 'a share\'s list follows a renamed variable');
 });
+
+test('doc 86: the variables and missions a Readiness reads are its uses, and follow a rename', () => {
+    const muster = v2['v2-muster'];
+    for (const id of ['did', 'cheered', 'goal', 'rope'])
+        assert.ok(usesOf(muster, {type: 'variable', id}).some(u => u.ref.kind === 'phase' && u.where.includes('Readiness')), id);
+    assert.ok(usesOf(muster, {type: 'mission', id: 'scout'}).some(u => u.ref.kind === 'phase' && u.where.includes('Readiness')));
+    const ready = (p: typeof muster) => pretty(p.phases.map(ph => ph.ready ?? null));
+    for (const [from, to] of [['did', 'brought'], ['cheered', 'roared'], ['goal', 'target'], ['rope', 'cord']]) {
+        const renamed = renameVariable(muster, from, to);
+        assert.ok(!ready(renamed).includes(`"${from}"`) && ready(renamed).includes(`"${to}"`), `Readiness follows ${from} → ${to}`);
+        assert.equal(usesOf(renamed, {type: 'variable', id: to}).length, usesOf(muster, {type: 'variable', id: from}).length);
+    }
+    // (A wolf's own variable read inside a share's test, and a participation's own test, follow it too.)
+    const hauls = renameVariable(muster, 'hauls', 'loads');
+    assert.ok(!pretty(hauls.phases[0].triggers).includes('"hauls"'));
+    assert.equal(renameVariable(muster, 'nothing', 'else').phases[0].ready, muster.phases[0].ready, 'nothing renamed: the same Readiness');
+});

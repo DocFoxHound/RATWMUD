@@ -1026,6 +1026,25 @@ language's native twin (`libratw_story.so`) only. Engine spec items C2, R1, R2 a
   `story.cohort` answer (the game does not say who is signed in there); it is the world's facts' signed-in wolves, or unknown. A
   carried story list (`carry: true`) can make the next chapter's participation part met at its opening, as the end to end showed (its
   `did` list came with it): a chapter that wants its own count names its list differently. `RUNNER_VERSION` is `doc86-phase1a`.
+- **After the review** (2026-11-22): the launch seeding query names `actor<>''`, so it uses the partial index `events_actor`
+  (without it Postgres walked the whole log backward once for each wolf never seen: 0.33 s for 20 such wolves on Ridgemere 3's
+  387K events, 0.003 s with it). `note_seen` runs again after an event is dispatched (runner and rehearsal), so a wolf who joins an
+  open story by arriving is seen, and online in a rehearsal, from that arrival. Moving onto a new version that keeps the moment it
+  was met keeps the whole readiness record (parts and `met`), `_ready_view` gives `parts: []` to a record without them, and the
+  console reads `parts ?? []` (the list, the header and Readiness.tsx no longer throw while a move waits for the game). Moving a run
+  onto a version that counts its audience seeds `seen` from the events' log as a launch does (`Steer.do_migrate`), so Act I moved
+  onto the ready version has its wolves active at once. The workbench finds a variable read by a Readiness part (participation
+  lists and tests, values, tests, inside `any`) as a use ("its Readiness reads it"), finds missions and quests named there, and
+  renames them there (and inside a share's or a participation's `where`). Advance sends `to` (the line reads "Advance to ch1_end
+  now (ready)"), and `do_advance` refuses a `to` that is no longer the phase's ready exit (a press from a page out of date). Each
+  readiness log entry has its own number (`n`, from `state.readyLogN`): the timeline's key `r:{n}` no longer shifts as the log is
+  trimmed, and an older page (`before.ready`) leaves out the entries a newer one showed. `times` past 2^53 is the double's product
+  in the Python twin too, so both twins agree. Not changed: a paused run is still not measured, `online` has no `story.cohort`
+  fallback, and R1's memoisation is not built (as above). Tests: `test_story_v2_runner.Readiness` (a joiner by arrival is seen; a
+  run moved onto a ready version is seeded, 4 of 10 met; the kept record before the move settles has its parts; the timeline's key
+  `r:1` and an older page without it), `test_story_steering.Advancing` (a `to` out of date is refused), `test_story_native`
+  (`times` past 2^53), `workbench.test.ts` (uses and renames through Readiness), `campaigns.test.ts` (a record with no parts), the
+  render smoke (Campaigns (ready, moving)).
 - **Going live** on `ratw_ridgemere3` needs no migration of its own (doc 85's 0071-0079 still apply first, as there); the story runner
   restarted from this branch with the rebuilt `libratw_story.so`; the Editor released from it. Act I's chapters can move onto a
   version with `ready` blocks by `migrate` mid-chapter.

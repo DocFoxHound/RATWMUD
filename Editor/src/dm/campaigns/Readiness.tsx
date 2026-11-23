@@ -25,9 +25,10 @@ export function Readiness({row, detail, names, steer, busy}: {row: RunRow; detai
     if (!r) return null;
     const head = readyHeader(r);
     const bars = readyBars(r, names);
-    const who = r.parts.find(p => p.kind === 'participation' && p.audience)?.audience;
-    const notMet = r.parts.filter(p => !p.met).length;
-    const left = `${r.parts.length - notMet} of ${r.parts.length} parts met`;
+    const parts = r.parts ?? [];   // (A record kept by moving onto a new version has none until it is measured again.)
+    const who = parts.find(p => p.kind === 'participation' && p.audience)?.audience;
+    const notMet = parts.filter(p => !p.met).length;
+    const left = `${parts.length - notMet} of ${parts.length} parts met`;
     const snapshot = bars.map(b => `${b.label}: ${b.text}${b.met ? ' (met)' : ''}`);
     const held = row.status === 'held';
     const canAdvance = steer && ['running', 'held', 'paused'].includes(row.status) && !!detail?.controls?.ready;
@@ -42,12 +43,12 @@ export function Readiness({row, detail, names, steer, busy}: {row: RunRow; detai
         {r.slow && <p className={r.slowNeedsYou ? 'camp-ask-warn' : 'hint'}>Slow: not ready after {r.slowAfterDays} days. Advance anyway, or wait.</p>}
         {canAdvance && <div className="camp-controls" aria-label="Move the chapter on">
             {r.met
-                ? <button className="primary" disabled={busy} onClick={() => steer!({kind: 'advance', payload: {when: 'now'}, title: `Advance to ${r.to}`,
+                ? <button className="primary" disabled={busy} onClick={() => steer!({kind: 'advance', payload: {when: 'now', to: r.to}, title: `Advance to ${r.to}`,
                     does: [`Takes the ready exit: ${r.phase} → ${r.to}, with ${r.to}'s entry effects.`, ...snapshot]})}>Advance…</button>
-                : <button disabled={busy} onClick={() => steer!({kind: 'advance', payload: {when: 'now', anyway: true}, title: `Advance to ${r.to} anyway`,
+                : <button disabled={busy} onClick={() => steer!({kind: 'advance', payload: {when: 'now', anyway: true, to: r.to}, title: `Advance to ${r.to} anyway`,
                     warn: `Not ready: ${left}. The audit keeps what you saw and why.`,
                     does: [`Takes the ready exit now: ${r.phase} → ${r.to}, although it is not ready.`, ...snapshot]})}>Advance anyway…</button>}
-            {r.then && !r.waitingFor && <button disabled={busy} onClick={() => steer!({kind: 'advance', payload: {when: 'then', ...(r.met ? {} : {anyway: true})},
+            {r.then && !r.waitingFor && <button disabled={busy} onClick={() => steer!({kind: 'advance', payload: {when: 'then', to: r.to, ...(r.met ? {} : {anyway: true})},
                 title: `Advance to ${r.to} at ${thenWords}`, ...(r.met ? {} : {warn: `Not ready: ${left}.`}),
                 does: [`Counts as ready and waits for ${thenWords}; then it moves on to ${r.to}.`, ...snapshot]})}>Advance at {thenWords}…</button>}
             {held

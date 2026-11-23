@@ -325,6 +325,10 @@ export function renderAll(): Record<string, string> {
     out['Campaigns (ready list)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignList, overview: {...campaignList.overview,
         runs: [{...readyRow, ready: {...ready, met: false, parts: [{...ready.parts[0], met: false, value: 21, share: 18, need: 42}, ready.parts[1]]}, alerts: [
             {kind: 'slow' as const, needsYou: true, days: 31, words: '21 of 118 active wolves (18%; 35% and 42 needed)'}]}]}}} />);
+    // (A record kept by moving onto a new version, not measured again until the game answers: no parts yet.)
+    const kept = {...readyRow, ready: {...ready, parts: undefined as unknown as Readiness['parts']}};
+    out['Campaigns (ready, moving)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignList, overview: {...campaignList.overview, runs: [kept]},
+        detail: {...campaignRunning.detail!, ...kept}}} />);
     out['World variables'] = renderToString(<WorldVarsPanel target="dev" names={names} mayChange initial={{declarations: true, variables: [
         {name: 'ferries-run', type: 'number', value: 4, declared: true, note: 'ferries that crossed this winter', declaredBy: 'martin', updatedBy: 'martin',
          stories: [{run: runningRow.run, story: 'winter-ferries', title: 'Ninety days on the winter ferries', type: 'number', status: 'running'}]},

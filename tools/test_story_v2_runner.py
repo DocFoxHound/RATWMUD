@@ -213,7 +213,10 @@ class Readiness(ReadyFixture, unittest.TestCase):
         self.assertEqual(self.row()['ready']['to'], 'done')
         self.assertEqual([e['kind'] for e in self.state()['readyLog']], ['ready'])
         timeline = runner.timeline(self.conn, self.world, self.run_id)
-        self.assertEqual([i['readyKind'] for i in timeline['items'] if i['type'] == 'ready'], ['ready'])
+        self.assertEqual([(i['readyKind'], i['key']) for i in timeline['items'] if i['type'] == 'ready'], [('ready', 'r:1')],
+                         'keyed by its own number, which stays as the log is trimmed')
+        older = runner.timeline(self.conn, self.world, self.run_id, before={'ready': 1})
+        self.assertEqual([i for i in older['items'] if i['type'] == 'ready'], [], 'an older page leaves out what a newer one showed')
         waiting = next(w for w in self.row()['waiting'] if w['on'] == 'ready')
         self.assertEqual((waiting['to'], waiting['auto'], waiting['met']), ('done', False, True))
 
@@ -289,6 +292,11 @@ class Readiness(ReadyFixture, unittest.TestCase):
         approved = runner.approve(self.conn, self.world, 'ann', same, rules.digest(same), self.run_id)
         status, result = self.steer('migrate', {'version': approved['version']})
         self.assertEqual(status, 'done', result)
+        # (Until the game answers the move, the kept record is what the console shows: its parts, met, and no crash.)
+        kept = self.row()['ready']
+        self.assertTrue(kept['met'])
+        self.assertEqual([x['kind'] for x in kept['parts']], ['participation', 'minDays'])
+        self.assertEqual(rules.ready_snapshot(self.state())['parts'], kept['parts'])
         self.settle()
         self.assertEqual(self.ready()['metAt'], 3.1, 'the same Readiness: still ready since day 3.1')
         changed = ready_program(minimum=5)
@@ -298,6 +306,42 @@ class Readiness(ReadyFixture, unittest.TestCase):
         self.assertEqual(status, 'done', result)
         self.settle()
         self.assertFalse(self.ready()['met'], 'a changed Readiness is measured afresh')
+
+    def test_moved_onto_a_version_with_readiness_its_wolves_seen_lately_are_active(self):
+        # (Doc 86, C2 and §7.2: Act I published before Readiness moves onto the ready version; it is seeded as a launch is.)
+        plain = ready_program()
+        del plain['phases'][0]['ready']
+        plain['phases'][0]['exits'] = [{'on': 'dm signal', 'to': 'done', 'match': {'detail': 'Move the chapter on'}}]
+        plain['tests'] = [{'name': 'Moved on by the direction', 'cohort': MUSTER, 'expect': ['work', 'done'],
+                           'events': [{'id': 's', 'kind': 'dm signal', 'day': 1, 'detail': 'Move the chapter on'}]}]
+        self.assertFalse(rules.counts_audience(plain))
+        self.ready_launch(plain)
+        self.assertNotIn('seen', self.state())
+        self.gifts(MUSTER[:4], 1)
+        self.tick()
+        ready = ready_program()
+        approved = runner.approve(self.conn, self.world, 'ann', ready, rules.digest(ready), self.run_id)
+        status, result = self.steer('migrate', {'version': approved['version']})
+        self.assertEqual(status, 'done', result)
+        self.assertEqual(sorted(self.state()['seen']), MUSTER[:10], 'the wolves seen before the move are active at once')
+        self.settle()
+        self.tick()
+        part = self.ready()['parts'][0]
+        self.assertEqual((part['value'], part['count'], part['met']), (4, 10, True))
+
+    def test_a_wolf_who_joins_an_open_story_by_arriving_is_seen(self):
+        # (Doc 86, C2: "a wolf who joins later is seen from their first event", the arrival that brought them in.)
+        p = ready_program()
+        p['audience'] = {'kind': 'everyone', 'days': 30, 'cap': 5000}
+        p['tests'][0]['cohort'] = []
+        self.ready_launch(p, active=0)
+        late = 'player-late'
+        self.rewrite(f"""INSERT INTO game.characters(world_id,key,position,data) VALUES ('{self.world}','{late}',1,'{{"name":"Late"}}'::jsonb)""")
+        self.fact('arrival', late, day=1.2)
+        self.tick()
+        self.assertIn(late, self.state()['cohort'])
+        self.assertEqual(self.state()['seen'].get(late), 1.2, 'seen from the arrival that brought them into the story')
+        self.assertEqual(self.ready()['parts'][0]['count'], len(self.state()['seen']))
 
 
 if __name__ == '__main__':

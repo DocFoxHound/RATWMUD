@@ -762,13 +762,13 @@ function operandVars(o: unknown): string[] {
     const x = o as Json;
     const own = ['var', 'count', 'since'].flatMap(k => typeof x[k] === 'string' ? [x[k] as string] : []);
     const shares = ['percent', 'among'].flatMap(k => record(x[k]) ? [...(typeof (x[k] as Json).list === 'string' ? [(x[k] as Json).list as string] : []),
-        ...(record((x[k] as Json).where) ? conditionVars((x[k] as Json).where as Condition) : [])] : []);
+        ...(record((x[k] as Json).where) ? conditionsOf((x[k] as Json).where as Condition).flatMap(conditionVars) : [])] : []);
     return [...own, ...shares, ...['plus', 'minus', 'min', 'max', 'times', 'div'].flatMap(k => Array.isArray(x[k]) ? (x[k] as unknown[]).flatMap(operandVars) : [])];
 }
 export function conditionVars(c: Condition): string[] {
     const x = c as unknown as Json;
     return [...(['switch', 'in list', 'days since', 'participation'].includes(c.test) ? [x.var, x.list].filter((v): v is string => typeof v === 'string') : []),
-        ...(c.test === 'participation' && c.where ? conditionVars(c.where) : []),
+        ...(c.test === 'participation' && c.where ? conditionsOf(c.where).flatMap(conditionVars) : []),
         ...operandVars(x.left), ...operandVars(x.right), ...operandVars(x.value)];
 }
 export function actionVars(a: Action): {reads: string[]; writes: string[]} {
@@ -776,6 +776,18 @@ export function actionVars(a: Action): {reads: string[]; writes: string[]} {
     if (a.do === 'each') return {reads: a.list ? [a.list] : [], writes: []};
     if (a.do === 'pick') return {reads: [a.list], writes: [a.var]};
     return {reads: operandVars(x.value), writes: typeof x.var === 'string' && a.do !== 'if' ? [x.var] : []};
+}
+/** Doc 86, R2: the variables a phase's Readiness reads (its participation parts' lists and tests, its values and tests,
+ *  inside an `any` group too). */
+export function readyVars(ph: Phase): string[] {
+    const part = (x: ReadyPartSpec): string[] => {
+        if ('any' in x) return x.any.flatMap(part);
+        if ('participation' in x) return 'list' in x.participation ? [x.participation.list] : conditionsOf(x.participation.where).flatMap(conditionVars);
+        if ('value' in x) return [...operandVars(x.value), ...operandVars(x.atLeast)];
+        if ('test' in x) return conditionsOf(x.test).flatMap(conditionVars);
+        return [];
+    };
+    return (ph.ready?.all ?? []).flatMap(part);
 }
 export function eachTrigger(p: Program, fn: (t: Trigger, ref: Ref) => void) {
     (p.triggers ?? []).forEach((t, index) => fn(t, {kind: 'trigger', phase: null, index}));
@@ -823,7 +835,11 @@ export function usesOf(p: Program, what: {type: string; id: string; scope?: stri
     p.phases.forEach((ph, phase) => {
         if (type === 'phase') {
             ph.exits.forEach((x, index) => { if (x.to === id) out.push({ref: {kind: 'exit', phase, index}, where: `${ph.id}: exit ${index + 1} goes there`}); });
-        } else if (type !== 'signal' && type !== 'counter' && type !== 'variable' && type !== 'trigger') {
+        } else if (type === 'variable') {
+            if (readyVars(ph).includes(id)) out.push({ref: {kind: 'phase', phase}, where: `${ph.id}: its Readiness reads it`});
+        } else if (type !== 'signal' && type !== 'counter' && type !== 'trigger') {
+            // (Doc 86, R2: a Readiness part names this phase's missions and the story's quests.)
+            if (hasValue(ph.ready)) out.push({ref: {kind: 'phase', phase}, where: `${ph.id}: its Readiness`});
             ph.exits.forEach((x, index) => { if (hasValue(x.match)) out.push({ref: {kind: 'exit', phase, index}, where: `${ph.id}: exit ${index + 1}`}); });
             if (ph.effects.some(hasValue)) out.push({ref: {kind: 'entry', phase}, where: `${ph.id}: when it opens`});
             if (ph.guestVoices?.includes(id)) out.push({ref: {kind: 'phase', phase}, where: `${ph.id}: a guest voice`});
@@ -908,7 +924,7 @@ export function renameVariable(p: Program, from: string, to: string): Program {
         if (!o || typeof o !== 'object') return o;
         const x = o as Json;
         for (const k of ['var', 'count', 'since']) if (x[k] === from) return {...x, [k]: to} as Operand;
-        for (const k of ['percent', 'among']) if (record(x[k]) && (x[k] as Json).list === from) return {...x, [k]: {...(x[k] as Json), list: to}} as Operand;
+        for (const k of ['percent', 'among']) if (record(x[k])) { const s = share(x[k] as ShareSource); if (s !== x[k]) return {...x, [k]: s} as Operand; }
         for (const k of ['plus', 'minus', 'min', 'max', 'times', 'div']) if (Array.isArray(x[k])) {
             const pair = (x[k] as Operand[]).map(op);
             return pair.some((v, i) => v !== (x[k] as Operand[])[i]) ? {[k]: pair} as Operand : o;
@@ -919,10 +935,26 @@ export function renameVariable(p: Program, from: string, to: string): Program {
         let next = x;
         for (const k of ['var', 'list']) if (next[k] === from) next = {...next, [k]: to};
         for (const k of ['left', 'right', 'value']) if (k in next) { const v = op(next[k] as Operand); if (v !== next[k]) next = {...next, [k]: v}; }
+        if (record(next.where)) { const w = cond(next.where as Condition); if (w !== next.where) next = {...next, where: w}; }   // (A participation's test.)
         return next;
     };
-    const out = rewriteTriggers(p, t => mapTriggerConditions({...t, actions: mapActions(t.actions, a => named(a as unknown as Json) as unknown as Action)},
-        c => ['compare', 'switch', 'in list', 'days since', 'participation'].includes(c.test) ? named(c as unknown as Json) as unknown as Condition : c));
+    const one = (c: Condition) => ['compare', 'switch', 'in list', 'days since', 'participation'].includes(c.test) ? named(c as unknown as Json) as unknown as Condition : c;
+    const cond = (c: Condition): Condition => mapCondition(c, one);
+    const share = (s: ShareSource): ShareSource => 'list' in s ? (s.list === from ? {list: to} : s) : (cond(s.where) === s.where ? s : {where: cond(s.where)});
+    // (Doc 86, R2: a phase's Readiness reads variables in its participation parts, its values and its tests.)
+    const readyPart = (x: ReadyPartSpec): ReadyPartSpec => {
+        if ('any' in x) { const any = x.any.map(readyPart); return any.some((y, i) => y !== x.any[i]) ? {...x, any} : x; }
+        if ('participation' in x) { const s = share(x.participation); return s === x.participation ? x : {...x, participation: s}; }
+        if ('value' in x) { const v = op(x.value), a = op(x.atLeast); return v === x.value && a === x.atLeast ? x : {...x, value: v, atLeast: a}; }
+        if ('test' in x) { const t = cond(x.test); return t === x.test ? x : {...x, test: t}; }
+        return x;
+    };
+    const renamed = rewriteTriggers(p, t => mapTriggerConditions({...t, actions: mapActions(t.actions, a => named(a as unknown as Json) as unknown as Action)}, one));
+    const out = {...renamed, phases: renamed.phases.map(ph => {
+        if (!ph.ready) return ph;
+        const all = ph.ready.all.map(readyPart);
+        return all.some((x, i) => x !== ph.ready!.all[i]) ? {...ph, ready: {...ph.ready, all}} : ph;
+    })};
     const tests = out.tests.map(c => {
         const v = c.expectVariables as Record<string, Json> | undefined;
         if (!v) return c;

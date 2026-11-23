@@ -1162,7 +1162,9 @@ def value_of(o, x):
         # (Doc 86, C2: floored toward zero, as the native twin's trunc of a double; by 0, no value.)
         return MISSING if b == 0 else int(a / b)
     if key == 'times':
-        return a * b
+        # (Exact below 2^53, as the native twin's double is; past it, the double's own product, so both twins agree.)
+        product = a * b
+        return product if abs(product) <= 2 ** 53 else float(a) * float(b)
     return a + b if key == 'plus' else a - b if key == 'minus' else min(a, b) if key == 'min' else max(a, b)
 
 

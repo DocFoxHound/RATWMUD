@@ -461,12 +461,14 @@ def launch(conn, world, run, program, who, cohort=None, carried=None, chapter_of
 
 def seen_lately(conn, world, cohort, day, active_days, cursor):
     """Doc 86, C2: {wolf: the game day of their newest event} for the wolves of the audience seen in the last `active_days`
-    game days (one query; the events' actor index, newest first)."""
+    game days (one query; the events' actor index, newest first: `actor<>''` matches the partial index events_actor, without
+    which Postgres walks the whole log backward once for each wolf never seen)."""
     if not cohort:
         return {}
     return {w: d for w, d in conn.execute(
         """SELECT a.id,e.day FROM unnest(%s::text[]) a(id) CROSS JOIN LATERAL
-           (SELECT game_day AS day FROM game.events WHERE world_id=%s AND actor=a.id AND id<=%s ORDER BY id DESC LIMIT 1) e
+           (SELECT game_day AS day FROM game.events WHERE world_id=%s AND actor=a.id AND actor<>'' AND id<=%s
+            ORDER BY id DESC LIMIT 1) e
            WHERE e.day >= %s""", (list(cohort), world, cursor, day - active_days))}
 
 
@@ -1739,7 +1741,10 @@ def _tick_run(conn, world, run, clock, holder):
                 continue   # (Another story's quest or choice.)
             if fact['kind'] == quests.LEAVES:
                 fact['mine'] = fact['target'] == run
-            if dispatch(fact, fact['day'], elapsed):
+            moved = dispatch(fact, fact['day'], elapsed)
+            if counting:
+                rules.note_seen(state, fact, fact['day'])   # (And after: a wolf who joined by this event is seen from it.)
+            if moved:
                 enter(conn, run, p, who, state, cursor, 'event ' + str(cursor))
                 holder['left'] = 'game'
                 return
@@ -2293,6 +2298,8 @@ def _ready_view(program, phase, state):
         return None
     block = phase['ready']
     r = rules.ready_snapshot(state)
+    if r and r.get('parts') is None:
+        r = {**r, 'parts': [], 'met': r.get('metAt') is not None or bool(r.get('pushed'))}   # (A record kept by a move: not measured yet.)
     if not r or r.get('phase') != phase['id'] or r.get('visit') != state['visits']:
         r = {'phase': phase['id'], 'visit': state['visits'], 'met': False, 'metAt': None, 'pushed': None, 'parts': [],
              'auto': bool(block.get('auto')), 'to': rules.ready_exit(phase)['to'], 'then': block.get('then'), 'checkedAt': None}
@@ -2697,12 +2704,14 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
                           'warnings': report.get('warnings', [])})
     if 'ready' in kinds and not wolf and not trigger and state:
         # (Doc 86, R2: readiness met, slow, pushed, advanced and taken, from the run's own log of the last 20.)
-        for n, entry in enumerate(state.get('readyLog', ())):
+        for i, entry in enumerate(state.get('readyLog', ())):
+            n = entry.get('n', i)
+            if before.get('ready') is not None and n >= before['ready']:
+                continue   # (Shown on a newer page already.)
             at = datetime.datetime.fromisoformat(entry['at']) if entry.get('at') else None
             if since and (at is None or (since.get('at') and at <= datetime.datetime.fromisoformat(since['at']) - datetime.timedelta(seconds=5))):
                 continue
-            items.append({**entry, 'key': f'r:{entry.get("visit")}:{n}:{entry.get("kind")}', 'type': 'ready',
-                          'readyKind': entry.get('kind'), 'at': at, 'seq': n})
+            items.append({**entry, 'key': f'r:{n}', 'type': 'ready', 'readyKind': entry.get('kind'), 'at': at, 'seq': n})
     # Newest first. One tick's work shares a moment: a firing (still in the visit it fired in) comes before the visit it
     # opened, and in one visit the visit opened, then its firings, then its orders, then the admin's commands (and a move
     # onto a new version after the command that made it).
@@ -2713,7 +2722,8 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
     if paging and len(items) > limit:
         more, items = True, items[:limit]
     cursor = dict(before)
-    for name, key in (('phase', 'visit'), ('trigger', 'trigger'), ('order', 'order'), ('command', 'command'), ('version', 'version')):
+    for name, key in (('phase', 'visit'), ('trigger', 'trigger'), ('order', 'order'), ('command', 'command'), ('version', 'version'),
+                      ('ready', 'ready')):
         seqs = [i['seq'] for i in items if i['type'] == name]
         if seqs:
             cursor[key] = min(seqs)
@@ -3040,6 +3050,7 @@ def _check_payload(program, kind, payload):
         rules.require(payload.get('when', 'now') in ('now', 'then') and type(payload.get('anyway', False)) is bool,
                       'Advance now or at the next moment, and say whether anyway.')
         rules.require(any(rules.ready_exit(ph) for ph in phases), 'This story has no phase with Readiness to advance.')
+        rules.require('to' not in payload or rules.identifier(payload['to']), 'Name the phase it advances to.')
     elif kind == 'migrate':
         rules.require(rules.integer(payload.get('version'), 1, 2**63 - 1), 'Name the approved version to move onto.')
         rules.require('phase' not in payload or rules.identifier(payload['phase']), 'Name the phase to land in.')
@@ -3385,6 +3396,8 @@ class Steer:
         phase = self.phase()
         way = rules.ready_exit(phase)
         _require(way, 'This phase has no Advance: use Go to phase…')
+        # (The console names where it advances to: a press made on a page that is out of date moves nothing.)
+        _require(self.payload.get('to') in (None, way['to']), f'This phase advances to {way["to"]} now, not {self.payload.get("to")}: look again.')
         if self.status == 'running' or 'ready' not in self.state:
             rules.readiness(self.program, self.state, self.day(), self.elapsed(), _now_facts(self.conn, self.world, wants_facts(self.program)).get('facts'))
         snapshot = rules.ready_snapshot(self.state)
@@ -3741,6 +3754,11 @@ class Steer:
                                         began[0] if began else None)
         self.report = report
         _require(state is not None, report['blocked'] or 'It cannot be moved as asked.')
+        if rules.counts_audience(new_program) and not state.get('seen'):
+            # (Doc 86, C2: a run moved onto a version that counts its audience is seeded as a launch is, so its wolves seen
+            # lately are active at once.)
+            state['seen'] = seen_lately(self.conn, self.world, state['cohort'], self.day(),
+                                        new_program.get('activeDays', rules.triggers.ACTIVE_DAYS), self.cursor)
         old_digest, old_program, old_phase = self.run_digest, self.program, self.state['phase']
         current = self.conn.execute("SELECT id FROM dm.story_versions WHERE run=%s AND status='current'", (self.run,)).fetchone()
         if current:

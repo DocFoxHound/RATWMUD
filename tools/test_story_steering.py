@@ -591,6 +591,16 @@ class Advancing(console.ReadyFixture, unittest.TestCase):
         cause = self.one()['history'][0]['cause']
         self.assertTrue(cause.startswith('admin martin'), cause)
 
+    def test_advance_from_a_page_out_of_date_moves_nothing(self):
+        self.ready_now()
+        status, result = self.steer('advance', {'when': 'now', 'to': 'elsewhere'})
+        self.assertEqual(status, 'refused')
+        self.assertIn('This phase advances to done now, not elsewhere', result['text'])
+        self.assertEqual(self.one()['phase'], 'work')
+        status, result = self.steer('advance', {'when': 'now', 'to': 'done'})
+        self.assertEqual(status, 'done', result)
+        self.assertEqual(self.one()['phase'], 'done')
+
     def test_not_ready_is_refused_unless_anyway(self):
         self.ready_launch(console.ready_program())
         self.gifts(console.MUSTER[:1], 1)

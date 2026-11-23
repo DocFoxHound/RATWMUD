@@ -478,3 +478,12 @@ test('alertText for ready and slow; commandLine for the three advances; typedTit
     assert.equal(waitingLines([{on: 'ready', to: 'ch1_end', auto: true, met: false, then: {on: 'day begins'}}], names, 10)[0].text,
         'goes on by itself to ch1_end when ready, at the next day begins');
 });
+
+test('doc 86: a readiness kept by moving onto a new version, with no parts yet, is shown and not a crash', () => {
+    const kept = ready({parts: undefined as unknown as Readiness['parts']});
+    assert.equal(readyHeader(kept).text, 'Not ready: 0 of 0 met');
+    assert.deepEqual(readySummary(kept), {text: 'measuring…', fill: 0, met: false});
+    assert.equal(chapterReadyText(kept, 1), 'Ch 1 · not ready');
+    assert.deepEqual(readyBars(kept), []);
+    assert.deepEqual(readySummary({...kept, met: true, metAt: 3.1}), {text: 'ready', fill: 1, met: true});
+});

@@ -853,8 +853,9 @@ def ready_digest(phase):
 
 def _ready_log(state, day, kind, text, **more):
     log = state.setdefault('readyLog', [])
+    state['readyLogN'] = state.get('readyLogN', 0) + 1   # (Each entry's own number, kept as the log is trimmed: the timeline's key.)
     log.append({'day': round(day, 4) if day is not None else None, 'kind': kind, 'text': text, 'phase': state['phase'],
-                'visit': state['visits'], **more})
+                'visit': state['visits'], 'n': state['readyLogN'], **more})
     del log[:-READY_LOG]
 
 
@@ -2021,6 +2022,8 @@ def _play_case(p, case, step=None):
                     record_entry(p, state, path, intended, visit_credits)
                 if not moved or fact['kind'] != 'clock':
                     break
+        if counting:
+            note_seen(state, ev, ev['day'])   # (And after: a wolf who joined by this event is seen from it, and online.)
         measure()
         if step:
             step(ev, state, path, trace, intended)
@@ -2689,14 +2692,15 @@ def migration(old, new, state, land=None, run='', began=None):
         same = land == here and r and r.get('phase') == here and 'ready' in old_phase and \
             ready_digest(old_phase) == ready_digest(landing)
         if same and (r.get('metAt') is not None or r.get('pushed')):
-            state['ready'] = {k: r[k] for k in ('phase', 'visit', 'metAt', 'heldAtMet', 'pushed') if k in r}
+            # (The whole record, parts and all: the console reads it until the runner measures again, after the move is settled.)
+            state['ready'] = {**r, 'met': True, 'parts': r.get('parts') or []}
             kept.append({'what': 'ready', 'key': land, 'why': f'Ready since day {r.get("metAt")}: its Readiness is unchanged.'})
         elif r and (r.get('metAt') is not None or r.get('pushed')):
             reset.append({'what': 'ready', 'key': land, 'why': 'Its Readiness changed: measured afresh (it was ready).'})
     if not counts_audience(new):
         for key in ('seen', 'online'):
             state.pop(key, None)
-    elif not counts_audience(old):
-        state.setdefault('seen', {})
+    elif not state.get('seen'):
+        state['seen'] = {}   # (Doc 86, C2: Steer.do_migrate fills it from the events' log, as a launch does.)
     state['phase'] = land
     return state, report
