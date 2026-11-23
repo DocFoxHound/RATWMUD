@@ -62,8 +62,9 @@ std::string writeDoors(const fs::path& root)
     return world;
 }
 
-// The strip with three rooms off Ridgemere's first street, under the community-door rule (cn_): a hall nobody lives or
-// works in, a private home (h1 lives there and works outside), and a shop with a flat (h2 lives and works there).
+// The strip with four rooms off Ridgemere's first street, under the community-door rule (cn_): a hall nobody lives or
+// works in, a private home (h1 lives there and works outside), a shop with a flat (h2 lives and works there), and a
+// lodging house whose ground floor is nobody's, with h3's home up its stairs (h3 works outside).
 std::string writeHouses(const fs::path& root)
 {
     const auto world = writeStrip(root, true);
@@ -75,7 +76,7 @@ std::string writeHouses(const fs::path& root)
         for (std::string line; std::getline(text, line);)
             lines.push_back(line);
         const auto grid = std::size_t(std::find(lines.begin(), lines.end(), "grid:") - lines.begin()) + 1;
-        for (const int x : {5, 7, 9})
+        for (const int x : {5, 7, 9, 11})
             lines[grid + 2][std::size_t(x)] = '+';
         std::ofstream file(path);
         for (const auto& line : lines)
@@ -83,12 +84,12 @@ std::string writeHouses(const fs::path& root)
     }
     std::ofstream m(root / "world.ratw", std::ios::app);
     int x = 5;
-    for (const std::string room : {"hall", "home", "shop"})
+    for (const std::string room : {"hall", "home", "shop", "lodge"})
     {
         const auto id = "cn_" + room;
         std::ofstream(root / "cells" / (id + ".cell"))
             << "id: " << id << "\nname: The " << room << "\ndescription: A room.\nworld: " << x * 20 << " 200 0\noutdoors: false\n"
-            << "weather: clear\nsize: 6 6\ngrid:\n.+....\n......\n......\n......\n......\n......\n";
+            << "weather: clear\nsize: 6 6\ngrid:\n.+....\n......\n......\n...." << (room == "lodge" ? '+' : '.') << ".\n......\n......\n";
         std::ofstream(root / "seams" / id) << "";
         m << "area \"" << id << "\"\nterritory \"" << id << "\" \"ridgemere\" \"-\" 0\n"
           << "door \"" << room << "_door\" \"The " << room << " door\" \"" << cellId(0) << "\" " << x + .5 << " 2.5 \"" << id
@@ -104,7 +105,15 @@ std::string writeHouses(const fs::path& root)
           << "\" 2.5 2.5 \"" << home << "\" 3.5 4.5\n";
         return r.str();
     };
-    m << lives("h1", "cn_home", cellId(1)) << lives("h2", "cn_shop", "cn_shop");
+    // (The lodging house's upstairs, by its stairs.)
+    std::ofstream(root / "cells" / "cn_lodge_up.cell")
+        << "id: cn_lodge_up\nname: The lodge, upstairs\ndescription: Rooms.\nworld: 220 300 0\noutdoors: false\n"
+        << "weather: clear\nsize: 6 6\ngrid:\n.+....\n......\n......\n......\n......\n......\n";
+    std::ofstream(root / "seams" / "cn_lodge_up") << "";
+    m << "area \"cn_lodge_up\"\nterritory \"cn_lodge_up\" \"ridgemere\" \"-\" 0\n"
+      << "door \"lodge_stair\" \"The lodge stairs\" \"cn_lodge\" 4.5 3.5 \"cn_lodge_up\" 1.5 1.5 \"lodge_down\" 0 0 0 0 \"-\"\n"
+      << "door \"lodge_down\" \"The lodge stairs\" \"cn_lodge_up\" 1.5 0.5 \"cn_lodge\" 4.5 2.5 \"lodge_stair\" 0 0 0 0 \"-\"\n";
+    m << lives("h1", "cn_home", cellId(1)) << lives("h2", "cn_shop", "cn_shop") << lives("h3", "cn_lodge_up", cellId(1));
     return world;
 }
 
@@ -138,6 +147,8 @@ void storyDoorsForWolves()
         expect(w.privateHome(*w.door("home_door")) && w.privateHome(*w.door("home_in")) && !w.privateHome(*w.door("hall_door")) &&
                    !w.privateHome(*w.door("shop_door")),
                "h1's home is a private home; the hall is nobody's, and h2's shop with a flat is a workplace");
+        expect(w.privateHome(*w.door("lodge_door")) && w.privateHome(*w.door("lodge_stair")),
+               "the lodging house is a private home too: nobody lives on its ground floor, but h3 lives up its stairs");
 
         // ---- unlocked: open to wolves (both sides), though the door itself was never locked.
         auto r = order("door.unlock", "hall_door");
@@ -146,11 +157,16 @@ void storyDoorsForWolves()
         // ---- a private home never, though the effect itself is done (its own lock is lifted for residents).
         expect(order("door.unlock", "home_door").ok && !wolves("home_door") && !w.storyOpenDoor("home_door") && !w.storyOpenDoor("home_in"),
                "a private home stays locked to wolves");
+        expect(order("door.unlock", "lodge_door").ok && !wolves("lodge_door") && !w.storyOpenDoor("lodge_door"),
+               "and so does the way up to one");
         // ---- opened, without unlocking: open to wolves too, and its lock left alone at the end.
         expect(order("door.open", "shop_door").ok && wolves("shop_door") && w.door("shop_door")->open, "the shop opened to wolves");
         expect(!book.find(run)->held["doors"]["shop_door"].has("locked"), "opening holds no lock");
-        // ---- shutting keeps it open to them; locking ends that.
-        expect(order("door.close", "hall_door").ok && wolves("hall_door"), "shut, but still unlocked for wolves");
+        // ---- shutting ends it, and leaves the door's own lock alone (its residents still go in); locking ends it too.
+        expect(order("door.close", "hall_door").ok && !wolves("hall_door") && !w.storyOpenDoor("hall_door") &&
+                   !w.door("hall_door")->locked && !w.door("hall_door")->open && !book.find(run)->held["doors"]["hall_door"].boolean("wolves"),
+               "shut: closed to wolves, still unlocked for residents");
+        expect(order("door.unlock", "hall_door").ok && wolves("hall_door"), "unlocked again");
         expect(order("door.lock", "hall_door").ok && !wolves("hall_door") && !w.storyOpenDoor("hall_door"), "locked: closed to wolves");
         expect(order("door.unlock", "hall_door").ok && wolves("hall_door"), "unlocked again");
 

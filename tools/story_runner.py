@@ -212,15 +212,30 @@ DOORS_FOR_WOLVES = ('door.unlock', 'door.open')
 
 
 def private_home(conn, world, areas):
-    """The first of these areas that is a private home (some resident's home, nobody's work, a post's even when vacant),
-    or None. A shop with a flat above is a workplace. The game keeps the same rule (World::privateHome)."""
-    row = conn.execute(
-        """SELECT room FROM unnest(%s::text[]) AS room
-           WHERE EXISTS (SELECT 1 FROM dm.story_residents WHERE world_id=%s AND home_area=room)
-             AND NOT EXISTS (SELECT 1 FROM dm.story_residents WHERE world_id=%s AND work_area=room)
-             AND NOT EXISTS (SELECT 1 FROM live.profession_slots WHERE world_id=%s AND work_area=room)
-           LIMIT 1""", (areas, world, world, world)).fetchone()
-    return row[0] if row else None
+    """The first room that makes one of these areas a private home, or None. A private home: the room, with every room
+    its stairs, passages and inner doors reach without going out of doors, is some resident's home and nobody's work (a
+    post's even when vacant). A shop with a flat above is a workplace; a lodging house's ground floor, with homes up its
+    stairs and no work, is a private home. The game keeps the same rule (World::privateHome)."""
+    for area in areas:
+        row = conn.execute(
+            """WITH RECURSIVE indoor AS (
+                   SELECT id FROM world.cells WHERE world_id=%(w)s AND NOT outdoors
+                   UNION SELECT id FROM world.interiors WHERE world_id=%(w)s AND NOT outdoors),
+               building(room) AS (
+                   SELECT %(area)s::text
+                   UNION
+                   SELECT CASE WHEN l.a_area = b.room THEN l.b_area ELSE l.a_area END
+                     FROM building b JOIN world.links l ON l.world_id=%(w)s AND b.room IN (l.a_area, l.b_area)
+                    WHERE l.a_area IN (SELECT id FROM indoor) AND l.b_area IN (SELECT id FROM indoor))
+               SELECT min(room) FROM building
+                WHERE room IN (SELECT home_area FROM dm.story_residents WHERE world_id=%(w)s)
+                  AND NOT EXISTS (SELECT 1 FROM building
+                                   WHERE room IN (SELECT work_area FROM dm.story_residents WHERE world_id=%(w)s
+                                                  UNION SELECT work_area FROM live.profession_slots WHERE world_id=%(w)s))""",
+            {'w': world, 'area': area}).fetchone()
+        if row and row[0]:
+            return row[0]
+    return None
 
 
 def phase9_references(conn, world, e):
@@ -239,7 +254,7 @@ def phase9_references(conn, world, e):
         if kind in DOORS_FOR_WOLVES:
             home = private_home(conn, world, list(link))
             rules.require(not home, f"A story may not open a private home to wolves: {e['door']} leads into {home}, "
-                                    "someone's home and nobody's work.")
+                                    "someone's home and nobody's work (or the stairs up to it).")
     if kind == 'mantle.assign':
         rules.require(conn.execute("SELECT to_regclass('live.mantles')").fetchone()[0] and conn.execute(
             "SELECT 1 FROM live.mantles WHERE world_id=%s AND id=%s AND state<>'retired'", (world, e['mantle'])).fetchone(),

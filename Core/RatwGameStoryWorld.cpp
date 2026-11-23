@@ -323,9 +323,9 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
             if (locked != -1)
                 j.set("locked", locked == 1);
             // (Doc 86: a door the story unlocked or opened is open to wolves while it holds it, a private home's never
-            // (World::setStoryOpenDoors); locking it ends that, shutting it does not.)
-            if (kind != "door.close")
-                j.set("wolves", kind != "door.lock");
+            // (World::setStoryOpenDoors); shutting it or locking it ends that. Shutting leaves its own lock alone, so its
+            // residents still go in and out: the way a story closes to wolves a workplace it opened for a quest.)
+            j.set("wolves", kind == "door.unlock" || kind == "door.open");
             changed();
         }
         saveSoon();

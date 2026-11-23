@@ -714,19 +714,24 @@ for a quest. Now:
 
 - **A door a live story has unlocked or opened is open to wolves while the story holds it**, both sides, even where the
   town's rule would lock it. The story records it with the door (`held.doors.<door>.wolves`; `door.open` is now kept
-  there too, with no lock, so its end restores none). `door.lock` closes it to wolves again; `door.close` does not (they
-  may open it). The game rebuilds the set from the live stories on every watch refresh (a restart included:
-  `Game::refreshStoryDoors` → `World::setStoryOpenDoors`), and the run's end lets it go.
-- **Never a private home**: an interior some resident lives in and nobody works in (a shop with a flat above is a
-  workplace; a post's work place counts even when vacant). Approval refuses `door.unlock` or `door.open` of such a door
+  there too, with no lock, so its end restores none). `door.close` closes it to wolves again and leaves the door's own
+  lock alone, so its residents still go in: that is how a story ends a window it opened. `door.lock` closes it to
+  wolves too, but locks the residents out as well. The game rebuilds the set from the live stories on every watch
+  refresh (a restart included: `Game::refreshStoryDoors` → `World::setStoryOpenDoors`), and the run's end lets it go.
+  A door two live stories hold is open to wolves while either still holds it open.
+- **Never a private home**: an interior some resident lives in and nobody works in, the interior being the room behind
+  the door with every room its stairs, passages and inner doors reach without going out of doors (a shop with a flat
+  above is a workplace; a lodging house's empty ground floor with homes up its stairs is a private home; a post's work
+  place counts even when vacant). Approval refuses `door.unlock` or `door.open` of such a door
   (`story_runner.phase9_references`, "A story may not open a private home to wolves", from `dm.story_residents` and
   `live.profession_slots`), so §9.3 check 2 catches it; and the game never lets one through for wolves even so
   (`World::privateHome`, from the residents' homes and works and the posts). The effect itself still works on a home
   for residents (its own lock).
-- On Ridgemere 3 today 157 of the 414 doors lead into somebody's home, 34 of them private homes; the rest are shops and
-  workshops with flats.
-- Tests: `story_world_tests` (`storyDoorsForWolves`: a hall, a private home and a shop with a flat behind community
-  doors; unlocked, opened, shut, locked, rebuilt, ended) and `test_story_effects` (the refusal, by every form of the
+- On Ridgemere 3 today (read only) 243 of the 414 doors lead into a building somebody lives in. 160 of those are private
+  homes (149 by the room behind the door alone, and 11 more into lodging houses whose homes are up the stairs); the
+  other 83 are shops, workshops and inns with homes in them.
+- Tests: `story_world_tests` (`storyDoorsForWolves`: a hall, a private home, a shop with a flat and a lodging house
+  with a home up its stairs behind community doors; unlocked, opened, shut, locked, rebuilt, ended) and `test_story_effects` (the refusal, by every form of the
   door's id, in a trigger and in a phase's opening effects; lock and close allowed; a workplace allowed).
 
 ---

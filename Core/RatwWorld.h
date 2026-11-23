@@ -733,12 +733,13 @@ class World
     // it alike. Locking shuts it; opening a locked door is refused. False for no such door, or a passage or stairs.
     Result setDoorState(const std::string& id, int open, int locked);
     // The doors a live story holds open to wolves (doc 86, "Story doors open to wolves"): door.unlock and door.open, kept
-    // while the run lasts. playerDoorLocked passes them, both sides alike, but never a private home's (privateHome).
+    // until the story shuts or locks the door, or the run ends. playerDoorLocked passes them, both sides alike, but never a private home's (privateHome).
     // Replaced whole (Game::refreshStoryWatch); an unknown id is skipped.
     void setStoryOpenDoors(const std::set<std::string>& ids);
     bool storyOpenDoor(const std::string& id) const { return storyOpenDoors_.count(id) > 0; }
-    // Whether a door leads into a private home: the interior behind it is some resident's home and nobody's work (a
-    // shop with a flat above is a workplace, not a private home).
+    // Whether a door leads into a private home: the interior behind it, with every room its stairs, passages and inner
+    // doors reach, is some resident's home and nobody's work (a shop with a flat above is a workplace, not a private home;
+    // a lodging house's ground floor, with homes up its stairs and no work, is one).
     bool privateHome(const Door& door) const;
     // Whether a wolf finds this door locked (its own lock, or a closed shop or a house: playerDoorLocked).
     bool lockedToWolves(const Door& door) const { return door.locked || playerDoorLocked(door); }

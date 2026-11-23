@@ -260,8 +260,10 @@ phase reached by one that passes. **Step through** plays one case event by event
 A Dungeon Master approves the exact version rehearsed (a digest covers the whole document). Approval checks the ids it
 names against the world (residents, wolves, places and tiles, factions, items, doors, mantles, towns, projects,
 templates), and refuses what the world does not have. It also refuses a `door.unlock` or `door.open` of a door into a
-**private home** (an interior some resident lives in and nobody works in; a shop with a flat above is a workplace): a door
-a story unlocks or opens is open to wolves while the story runs, and a story never opens someone's home to them. A publication ticket comes back, good for a day; **Publish** starts
+**private home** (an interior some resident lives in and nobody works in, counting the rooms up its stairs; a shop with a
+flat above is a workplace, a lodging house's empty ground floor with homes upstairs is not): a door a story unlocks or
+opens is open to wolves until the story closes or locks it, or ends, and a story never opens someone's home to them.
+Closing the door (`door.close`) ends a window without locking its residents out; `door.lock` locks them out too. A publication ticket comes back, good for a day; **Publish** starts
 the run: the audience is frozen (unless it is open or everyone), the first phase opens, and the game is told. A campaign of
 chapters is approved from **Campaigns → New campaign…** (section 4).
 
@@ -5422,7 +5424,7 @@ Reads: A camp of **1** bandits in **square**
 
 <a id="effect-door-lock"></a>**`door.lock`**: Lock a door (undone at the end)
 
-Both sides of the door are locked (it closes first). Unlocked again when the story ends. A door this story had opened to wolves is closed to them again.
+Both sides of the door are locked (it closes first). Unlocked again when the story ends. A door this story had opened to wolves is closed to them again. Residents are locked out too: to close a door to wolves only, close it instead.
 
 Reads: Lock **link_inn_door_a**
 
@@ -5436,7 +5438,7 @@ Reads: Lock **link_inn_door_a**
 
 <a id="effect-door-unlock"></a>**`door.unlock`**: Unlock a door (undone at the end)
 
-Both sides of a locked door are unlocked. Wolves may go through it while the story runs, even a shop's out of hours, but never into a private home (someone's home and nobody's work): approval refuses one. Locked again when the story ends.
+Both sides of a locked door are unlocked. Wolves may go through it until the story closes or locks it, or ends, even a shop's out of hours, but never into a private home (someone's home and nobody's work, or the stairs up to one): approval refuses one. Locked again when the story ends.
 
 Reads: Unlock **link_inn_door_a**
 
@@ -5450,7 +5452,7 @@ Reads: Unlock **link_inn_door_a**
 
 <a id="effect-door-open"></a>**`door.open`**: Open a door
 
-The door stands open (an unlocked one). Wolves may go through it while the story runs, even a shop's out of hours, but never into a private home (someone's home and nobody's work): approval refuses one. It stays as a wolf would leave it.
+The door stands open (an unlocked one). Wolves may go through it until the story closes or locks it, or ends, even a shop's out of hours, but never into a private home (someone's home and nobody's work, or the stairs up to one): approval refuses one. It stays as a wolf would leave it.
 
 Reads: Open **link_inn_door_a**
 
@@ -5464,7 +5466,7 @@ Reads: Open **link_inn_door_a**
 
 <a id="effect-door-close"></a>**`door.close`**: Close a door
 
-The door is shut. It stays as a wolf would leave it, and one the story opened to wolves stays open to them (they may open it).
+The door is shut. It stays as a wolf would leave it. One the story opened to wolves is closed to them again, its own lock left alone so its residents still go in: how a story ends the window it opened.
 
 Reads: Close **link_inn_door_a**
 
