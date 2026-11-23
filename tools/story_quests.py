@@ -42,7 +42,9 @@ PARTICIPANT_EFFECTS = ('participant.add', 'participant.remove')
 # (Doc 85, Phase 9: story.tracker shows or hides a shown variable among the journal's trackers: the story's own too.)
 # (Doc 85, Phase 10: story.start, the next chapter of a campaign, is the story's own too: the runner starts it.)
 CHAPTER_EFFECTS = ('story.start',)
-STORY_EFFECTS = (*QUEST_EFFECTS, *PARTICIPANT_EFFECTS, 'npc.offer', 'story.tracker', *CHAPTER_EFFECTS)
+# (Doc 86, Phase 4: news for another story (C12a), and an offer taken back from one wolf (L5), the story's own too.)
+NOTICE_EFFECTS = ('story.notify',)
+STORY_EFFECTS = (*QUEST_EFFECTS, *PARTICIPANT_EFFECTS, 'npc.offer', 'story.tracker', *CHAPTER_EFFECTS, *NOTICE_EFFECTS, 'quest.withdraw')
 # (A wolf may be named by $actor in these from a trigger of anyone in the world: each takes the wolf into the story.)
 TAKES_IN = ('participant.add', 'quest.offer', 'quest.start')
 GAME_EVENTS = ('quest accepted', 'quest declined', 'quest handed in', 'quest abandoned', 'dialogue choice')
@@ -53,6 +55,25 @@ PURSE_PREFIXES = ('town:', 'till:', 'chapter:')
 TOWN_PURSES = ('works', 'watch', 'church')
 
 DEFAULT_WORDS = {'accept': "I'll do it.", 'decline': 'Not now.'}
+# Doc 86, Phase 4: a quest that counts as a finished Story (J3; `true` is read as "line"), at most 4 a program; the conditions
+# a quest's `requires` may use (C6: over variables and quests, never the world's facts: an offer is not an event); the news
+# a story may queue for others at once (C12a).
+CLOSURES = ('line', 'side')
+CLOSURES_MOST = 4
+REQUIRES_TESTS = ('compare', 'switch', 'in list', 'days since', 'quest is', 'objective is', 'phase is')
+REQUIRES_DEPTH, REQUIRES_LEAVES = 4, 12
+NOT_YET = 'Not yet.'
+NOTICES_KEPT = 5000
+
+
+def closure_of(q):
+    """J3: the kind of Story a quest closes ("line", "side"), or None."""
+    c = q.get('closure')
+    return 'line' if c is True else c if c in CLOSURES else None
+
+
+def during_ask(q):
+    return q.get('offer', {}).get('duringAsk') or f'About {q["title"]}...'
 
 
 def ask_words(q):
@@ -216,7 +237,7 @@ def check_quest(q, p, ids):
     """One quest of a program (3.6)."""
     rules.shape(q, ('id', 'title', 'objectives'),
                 ('summary', 'scope', 'contributors', 'lifetime', 'phases', 'repeat', 'giver', 'board', 'offer', 'handIn', 'join',
-                 'abandon', 'fail', 'rewards', 'bonus', 'credit', 'creditMin'))
+                 'abandon', 'fail', 'rewards', 'bonus', 'credit', 'creditMin', 'requires', 'closure'))
     rules.require(rules.identifier(q['id']) and q['id'] not in ids, 'Give every quest a unique ID.')
     ids.add(q['id'])
     qid = q['id']
@@ -238,8 +259,12 @@ def check_quest(q, p, ids):
     rules.require('board' not in q or rules.identifier(q['board']), f'quest {qid}: choose the town whose notice board shows it.')
     if 'offer' in q:
         rules.require('giver' in q, f'quest {qid}: an offer needs a giver.')
-        rules.shape(q['offer'], ('say',), ('ask', 'accept', 'decline', 'handIn', 'thanks'))
-        for key, size in (('say', 300), ('ask', 120), ('accept', 120), ('decline', 120), ('handIn', 120), ('thanks', 300)):
+        rules.shape(q['offer'], ('say',), ('ask', 'accept', 'decline', 'handIn', 'thanks', 'during', 'duringAsk'))
+        # (Doc 86, C6: what the giver says while the wolf's copy is under way, and the choice that asks it.)
+        rules.require('duringAsk' not in q['offer'] or 'during' in q['offer'],
+                      f'quest {qid}: the choice that asks the giver while under way (duringAsk) needs what they say (during).')
+        for key, size in (('say', 300), ('ask', 120), ('accept', 120), ('decline', 120), ('handIn', 120), ('thanks', 300),
+                          ('during', 300), ('duringAsk', 120)):
             rules.require(key not in q['offer'] or rules.word(q['offer'][key], size),
                           f'quest {qid}: the offer\'s {key} is words of up to {size} characters.')
     rules.require(type(q.get('handIn', 'giver' in q)) is bool and (not q.get('handIn') or 'giver' in q),
@@ -271,7 +296,7 @@ def check_quest(q, p, ids):
         triggers.check_fills(q.get('summary', ''), 300, phase, None, of_allowed=not offered, where=f'quest {qid}: its summary')
         for o in objectives:
             triggers.check_fills(o['label'], 180, phase, None, where=f'quest {qid}: objective {o["id"]}')
-        for key, size in (('say', 300), ('thanks', 300)):
+        for key, size in (('say', 300), ('thanks', 300), ('during', 300)):
             if key in q.get('offer', {}):
                 triggers.check_fills(q['offer'][key], size, phase, None, of_allowed=False, where=f'quest {qid}: the offer\'s {key}')
     rules.require(any(not o.get('optional') for o in objectives), f'quest {qid}: at least one objective is required.')
@@ -301,6 +326,103 @@ def check_quest(q, p, ids):
             _check_reward(from_giver(e, q) if isinstance(e, dict) else e, qid, regions, scenes, phase, by_share)
     rules.require(not q.get('bonus') or any(o.get('optional') for o in objectives),
                   f'quest {qid}: a bonus is for doing the optional objectives too: add one.')
+    if 'requires' in q:
+        # (Doc 86, C6: only for the wolves for whom it holds; read when the offers are sent, and when one takes it.)
+        rules.require(phase is not None, f'quest {qid}: "Only for wolves who..." (requires) needs a version 2 story.')
+        check_requires(q['requires'], {**phase, '_questIndex': index(p), '_phaseIds': phase_ids}, qid)
+    if 'closure' in q:
+        # (Doc 86, J3: the last chapter of a quest line, or a campaign chapter's side story, counts as a finished Story.)
+        rules.require(q['closure'] is True or q['closure'] in CLOSURES,
+                      f'quest {qid}: it closes a quest line ("line", or true) or a side story ("side").')
+        rules.require(scope in ('player', 'party') and repeat == 'once',
+                      f'quest {qid}: a quest that counts as a finished Story is a wolf\'s or a party\'s, taken once.')
+
+
+def requires_reads(c):
+    """The nodes and values a `requires` tree reads (its leaves, and every value in them)."""
+    out = []
+
+    def walk(node):
+        if not isinstance(node, dict):
+            return
+        kind = node.get('test')
+        if kind in ('all', 'any'):
+            for child in node.get('conditions', ()):
+                walk(child)
+        elif kind == 'not':
+            walk(node.get('condition'))
+        else:
+            out.append(node)
+            for side in ('left', 'right', 'value'):
+                out.extend(triggers.operands_in(node.get(side)))
+    walk(c)
+    return out
+
+
+def check_requires(c, phase, qid):
+    """C6: a quest's `requires`, the v2 conditions over variables, phases and quests (the wolf as $actor); no facts, no event
+    field, no loop value; 4 deep and 12 conditions at most."""
+    leaves = []
+
+    def walk(node, depth):
+        rules.require(isinstance(node, dict) and depth <= REQUIRES_DEPTH, f'quest {qid}: "Only for wolves who..." nests {REQUIRES_DEPTH} deep at most.')
+        kind = node.get('test')
+        if kind in ('all', 'any'):
+            rules.shape(node, ('test', 'conditions'))
+            rules.require(isinstance(node['conditions'], list) and 1 <= len(node['conditions']) <= 8, 'A condition group needs 1–8 conditions.')
+            for child in node['conditions']:
+                walk(child, depth + 1)
+            return
+        if kind == 'not':
+            rules.shape(node, ('test', 'condition'))
+            walk(node['condition'], depth + 1)
+            return
+        rules.require(kind in REQUIRES_TESTS, f'quest {qid}: "Only for wolves who..." may compare values and read switches, lists, '
+                                              'days, the phase and quests: not the world\'s facts or an event (an offer is not one).')
+        leaves.append(node)
+        rules.require(len(leaves) <= REQUIRES_LEAVES, f'quest {qid}: "Only for wolves who..." has {REQUIRES_LEAVES} conditions at most.')
+        for side in ('left', 'right', 'value'):
+            for o in triggers.operands_in(node.get(side)):
+                rules.require('field' not in o and 'each' not in o and o.get('of') != '$each' and 'share' not in o,
+                              f'quest {qid}: "Only for wolves who..." reads no event field and no loop value.')
+        rules.require(node.get('of') != '$each', f'quest {qid}: "Only for wolves who..." reads the wolf ($actor) or the story.')
+        triggers._check_condition_v2(node, phase, None)
+
+    walk(c, 1)
+
+
+def requires_personal(q, p):
+    """C6 rule 1: whether a quest's `requires` reads anything of the wolf's own (a personal variable, a value of $actor, a
+    quest of the wolf): then it is worked out for each wolf of the story; else it is one gate for everyone."""
+    decls = rules.variables_of(p) if p.get('version') == 2 else {}
+    for o in requires_reads(q.get('requires')):
+        if o.get('of') == '$actor':
+            return True
+        if o.get('test') in ('quest is', 'objective is') and o.get('of', '$actor') != 'story':
+            return True
+        name = o.get('var') or o.get('list') or o.get('count') or o.get('since')
+        if name in decls and decls[name]['scope'] in triggers.PERSONAL:
+            return True
+    return False
+
+
+def check_closures(p):
+    """J3: at most 4 closure quests in a program; a line's closure ends a chain (it requires another quest of the program
+    done, and no quest of the program requires it done)."""
+    qs = [q for q in p.get('quests', []) if isinstance(q, dict) and 'closure' in q]
+    rules.require(len(qs) <= CLOSURES_MOST, f'At most {CLOSURES_MOST} quests of a story count as a finished Story (closure).')
+    ids = set(index(p))
+    for q in qs:
+        if closure_of(q) != 'line':
+            continue
+        before = {o['quest'] for o in requires_reads(q.get('requires')) if o.get('test') == 'quest is' and o.get('status') == 'done'
+                  and o.get('quest') in ids and o['quest'] != q['id']}
+        rules.require(before, f'quest {q["id"]}: the last chapter of a line (closure "line") requires another quest of the story done '
+                              '("Only for wolves who..." with that quest done).')
+        after = [o['id'] for o in p.get('quests', []) if isinstance(o, dict) and o is not q and any(
+            r.get('test') == 'quest is' and r.get('quest') == q['id'] and r.get('status') == 'done' for r in requires_reads(o.get('requires')))]
+        rules.require(not after, f'quest {q["id"]}: the last chapter of a line (closure "line") is required by no other quest: '
+                                 f'{", ".join(after)} needs it done.')
 
 
 def _words_scope(p):
@@ -335,6 +457,7 @@ def check_quests(p):
     ids = set()
     for q in qs:
         check_quest(q, p, ids)
+    check_closures(p)
 
 
 def index(p):
@@ -414,6 +537,16 @@ def remove_wolf(p, state, wolf, day):
     for qid in list(state.get('questOffers', {})):
         _withdraw(state, qid, wolf)
     return True
+
+
+def _unwithdraw(state, qid, wolf):
+    marks = state.get('withdrawn', {})
+    if wolf in marks.get(qid, ()):
+        marks[qid].remove(wolf)
+        if not marks[qid]:
+            del marks[qid]
+        if not marks:
+            state.pop('withdrawn', None)
 
 
 def _withdraw(state, qid, wolf):
@@ -582,6 +715,10 @@ class Run:
         who = q.get('join', {}).get('who', 'anyone' if joinable(self.p) else 'participants')
         if wolf not in state['cohort'] and not invited and (who == 'participants' or not joinable(self.p)):
             return 'That is only for those already in the story.'
+        if not invited and wolf in state.get('withdrawn', {}).get(q['id'], ()):
+            return 'That is not on offer just now.'   # (Doc 86, L5: taken back from this wolf.)
+        if 'requires' in q and not requires_hold(self.p, state, q, wolf, self.day):
+            return NOT_YET   # (Doc 86, C6.)
         holder, c = copy_of(q, state, wolf)
         if c is not None and c['status'] in UNDER_WAY and (holder != 'story' or q.get('scope') != 'story'):
             return 'You have taken that on already.'
@@ -650,6 +787,7 @@ class Run:
         offers = self.state.setdefault('questOffers', {}).setdefault(q['id'], [])
         if wolf not in offers:
             offers.append(wolf)
+        _unwithdraw(self.state, q['id'], wolf)   # (Doc 86, L5: offered again, the mark is cleared.)
         return ''
 
     # ---- progress
@@ -702,6 +840,14 @@ class Run:
             shares = c.get('shares', {})
             wolves = [w for w in wolves if shares.get(w, 0) >= q.get('creditMin', 1)]
         self.reward(q, q.get('rewards', []), wolves, shares)
+        kind = closure_of(q)
+        if kind:
+            # (Doc 86, J3: each wolf with credit is told by the game that a Story closed for them, with the rewards: the
+            # game pays the ledger entry, once a quest and at most 4 a program for one wolf.)
+            for wolf in wolves:
+                self.state.setdefault('triggerEffects', []).append(
+                    {'kind': 'story.closure', 'player': wolf, 'story': self.p.get('id', ''), 'quest': q['id'], 'closure': kind,
+                     'title': q['title'], 'reward': q['id']})
         optional = [o for o in q['objectives'] if o.get('optional')]
         if q.get('bonus') and optional and all(c['objectives'].get(o['id'], {}).get('done') for o in optional):
             c['bonus'] = True
@@ -976,6 +1122,13 @@ class Run:
             if not any(s['story'] == start['story'] for s in pending):
                 pending.append(start)
             return
+        if kind == 'story.notify':
+            # (Doc 86, C12a: news for another story, told by the runner after this tick; at most NOTICES_KEPT waiting.)
+            notices = state.setdefault('notices', [])
+            notices.append({'signal': effect['signal'], 'player': wolf if isinstance(wolf, str) else '',
+                            'amount': effect.get('amount', 0), **({'story': effect['story']} if effect.get('story') else {})})
+            del notices[:-NOTICES_KEPT]
+            return
         if kind == 'story.tracker':
             hidden = set(state.get('hiddenTrackers', ()))
             (hidden.discard if effect['shown'] else hidden.add)(effect['var'])
@@ -1008,7 +1161,16 @@ class Run:
                 self.toast(wolf, f'{q["title"]}: {why}')
             return
         if kind == 'quest.offer':
-            self.offer(q, wolf)
+            why = self.offer(q, wolf)
+            if why == NOT_YET:
+                self.toast(wolf, f'{q["title"]}: {why}')
+            return
+        if kind == 'quest.withdraw':
+            # (Doc 86, L5: an offer taken back from one wolf, no mark in their journal; a copy taken stays.)
+            _withdraw(state, q['id'], wolf)
+            marks = state.setdefault('withdrawn', {}).setdefault(q['id'], [])
+            if wolf not in marks and len(marks) < AUDIENCE_CAP:
+                marks.append(wolf)
             return
         holder, c = copy_of(q, state, wolf, under_way=True)
         if c is None:
@@ -1258,9 +1420,48 @@ def journal(p, state, wolf, facts=None):
     return j
 
 
+def requires_ctx(p, state, wolf, day=None):
+    scope = {'id': 'quests', '_v': 2, '_vars': rules.variables_of(p), '_regions': rules.region_index(p), '_questIndex': index(p)}
+    return triggers.Ctx(scope, state, {}, wolf or '', day if day is not None else state.get('lastDay'), 0, lambda: set(), None, None, {})
+
+
+def requires_hold(p, state, q, wolf, day=None):
+    """C6: whether a quest's `requires` holds for the wolf now (unknown is not)."""
+    return 'requires' not in q or triggers.test(q['requires'], requires_ctx(p, state, wolf, day)) is True
+
+
+_GATES = {}
+
+
+def gates(p, state):
+    """C6: each open quest's `requires` worked out now: True (everyone), False (no one), or the sorted wolves of the story it
+    holds for. Worked out once for the same state (the offers and the fingerprint ask alike)."""
+    qs = [q for q in open_quests(p, state['phase']) if 'requires' in q]
+    if not qs:
+        return {}
+    key = json.dumps([p.get('id'), [q['id'] for q in qs], state['phase'], state.get('quests'), state.get('counters'), state['cohort'],
+                      state.get('lastDay')], sort_keys=True, separators=(',', ':'), default=str)
+    if key in _GATES:
+        return _GATES[key]
+    out = {}
+    for q in qs:
+        if requires_personal(q, p):
+            out[q['id']] = [w for w in state['cohort'] if requires_hold(p, state, q, w)]
+        else:
+            out[q['id']] = requires_hold(p, state, q, '')
+    if len(_GATES) > 64:
+        _GATES.clear()
+    _GATES[key] = out
+    return out
+
+
 def offers(p, state):
-    """The givers' offers for the game's dialogue windows, in this phase."""
+    """The givers' offers for the game's dialogue windows, in this phase. Doc 86: an offer whose `requires` reads the wolf's own
+    goes with `players` (C6), one taken back from some wolves with `except` (L5), and one with words for while it is under way
+    with `during` (C6)."""
     out = []
+    held = gates(p, state)
+    withdrawn = state.get('withdrawn', {})
     # (Doc 86, C1b: an offer's words are the same for every wolf: filled with the story's and the world's values.)
     x = words_ctx(p, state, '') if _needs_ctx(p) else None
     words = (lambda t: fill(t, x)) if x is not None else (lambda t: t)
@@ -1273,6 +1474,16 @@ def offers(p, state):
                  'handIn': hand_in_words(q), 'thanks': words(o.get('thanks', '')),
                  'who': join.get('who', 'anyone' if joinable(p) else 'participants'),
                  **({'region': join['region']} if 'region' in join else {}), 'full': full(q, state)}
+        gate = held.get(q['id'], True)
+        if gate is False:
+            continue
+        if isinstance(gate, list):
+            entry['players'] = [w for w in gate if w not in withdrawn.get(q['id'], ())]
+        elif withdrawn.get(q['id']):
+            entry['except'] = sorted(withdrawn[q['id']])
+        if o.get('during'):
+            entry['during'] = words(o['during'])
+            entry['duringAsk'] = during_ask(q)
         if 'giver' in q:
             out.append({**entry, 'npc': q['giver']})
         if 'board' in q:
@@ -1347,6 +1558,8 @@ def fingerprint(p, state, facts=None):
         held = (facts or {}).get('purses') if isinstance((facts or {}).get('purses'), dict) else {}
         world = [[a['all'], a['active'], None if a['online'] is triggers.MISSING else a['online']],
                  {k: held.get(k) for k in sorted(set(triggers.purses_in(p.get('quests', []))))}]
+    # (Doc 86, C6 and L5: who each offer is for, as `requires` reads now, and the offers taken back.)
+    world = [world, gates(p, state), state.get('withdrawn')] if any('requires' in q for q in p.get('quests', [])) or state.get('withdrawn') else world
     return json.dumps([state.get('quests'), state.get('questOffers'), state.get('offers'), state['phase'],
                        state.get('toasts'), state.get('parties') if any(q.get('scope') == 'party' for q in p.get('quests', [])) else None,
                        state.get('counters') if shown else None, world], sort_keys=True, separators=(',', ':'), default=str)
@@ -1360,11 +1573,12 @@ def migrate(old, new, state, report):
     in the new version, its copies and offers dropped. `report(kind, what, why)` adds a line."""
     before, after = index(old), index(new)
     copies = state.get('quests', {})
-    for qid in sorted(set(copies) | set(state.get('questOffers', {}))):
+    for qid in sorted(set(copies) | set(state.get('questOffers', {})) | set(state.get('withdrawn', {}))):
         q_new = after.get(qid)
         if q_new is None:
             copies.pop(qid, None)
             state.get('questOffers', {}).pop(qid, None)
+            state.get('withdrawn', {}).pop(qid, None)   # (Doc 86, L5.)
             report('dropped', f'quest {qid}', 'the new version has no such quest')
             continue
         q_old = before.get(qid, {})
@@ -1388,5 +1602,7 @@ def migrate(old, new, state, report):
         report('added', f'quest {qid}', 'new in this version')
     if 'questOffers' in state and not state['questOffers']:
         del state['questOffers']
+    if 'withdrawn' in state and not state['withdrawn']:
+        del state['withdrawn']
     if 'quests' in state and not state['quests']:
         del state['quests']

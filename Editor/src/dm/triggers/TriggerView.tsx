@@ -45,8 +45,8 @@ function textOps(ps: Part[], c: Condition): Part[] {
 }
 
 /** One condition or group. `each` (doc 86, R1): a test for each wolf, where only the story's own state may be read. */
-export function ConditionNode({node, change, remove, depth, phase, problems, each}: {node: Condition; change: (c: Condition) => void; remove?: () => void; depth: number;
-    phase: number | null; problems?: string[]; each?: boolean}) {
+export function ConditionNode({node, change, remove, depth, phase, problems, each, only}: {node: Condition; change: (c: Condition) => void; remove?: () => void; depth: number;
+    phase: number | null; problems?: string[]; each?: boolean; only?: string[]}) {
     const {cat, names, program} = useBench();
     const [adding, setAdding] = useState(false);
     if (node.test === 'all' || node.test === 'any' || node.test === 'not') {
@@ -65,9 +65,9 @@ export function ConditionNode({node, change, remove, depth, phase, problems, eac
             <div className="wb-group-head"><select aria-label="Group" value={node.test} onChange={e => regroup(e.target.value as 'all' | 'any' | 'not')}>
                 <option value="all">All of these</option><option value="any">Any of these</option><option value="not">Not</option></select>
                 {remove && <button type="button" className="wb-x" onClick={remove} title="Remove this group">×</button>}</div>
-            {children.map((c, i) => <ConditionNode key={i} node={c} depth={depth + 1} phase={phase} change={x => set(i, x)} remove={() => set(i, null)} each={each}/>)}
+            {children.map((c, i) => <ConditionNode key={i} node={c} depth={depth + 1} phase={phase} change={x => set(i, x)} remove={() => set(i, null)} each={each} only={only}/>)}
             {(node.test !== 'not') && children.length < 8 && (adding
-                ? <AddCondition phase={phase} depth={depth} each={each} close={() => setAdding(false)} pick={c => { change({...node, conditions: [...children, c]}); setAdding(false); }}/>
+                ? <AddCondition phase={phase} depth={depth} each={each} only={only} close={() => setAdding(false)} pick={c => { change({...node, conditions: [...children, c]}); setAdding(false); }}/>
                 : <button type="button" className="wb-add" onClick={() => setAdding(true)}>+ condition</button>)}
         </div>;
     }
@@ -97,8 +97,11 @@ export function ConditionNode({node, change, remove, depth, phase, problems, eac
 }
 
 const EACH_TESTS = ['all', 'any', 'not', 'compare', 'switch', 'in list', 'days since', 'quest is', 'objective is'];
-function AddCondition({pick, close, phase, depth, each}: {pick: (c: Condition) => void; close: () => void; phase: number | null; depth: number; each?: boolean}) {
+function AddCondition({pick, close, phase, depth, each, only}: {pick: (c: Condition) => void; close: () => void; phase: number | null; depth: number; each?: boolean;
+    only?: string[]}) {
     const {cat, program} = useBench();
+    // (Doc 86, C6: a quest's "Only for wolves who…" names its own list; a test for each wolf (R1) has EACH_TESTS.)
+    const allowed = only ?? (each ? EACH_TESTS : null);
     return <div className="wb-picker" role="dialog" aria-label="Add a condition"><header><strong>Add a condition</strong>
         <button type="button" className="wb-close" onClick={close} aria-label="Close">×</button></header>
         {(() => {
@@ -112,8 +115,9 @@ function AddCondition({pick, close, phase, depth, each}: {pick: (c: Condition) =
                 ['The world, as of the event', list.filter(c => isWorldCondition(c) && !c.id.startsWith('quest') && !c.id.startsWith('objective'))],
                 ['Quests', list.filter(c => c.id === 'quest is' || c.id === 'objective is')]];
             return <div className="wb-options">{groups.filter(([, items]) => items.length).map(([label, items]) => <div key={label}><h6>{label}</h6>
-                {items.map(c => <button key={c.id} type="button" className="wb-action-option" disabled={each && !EACH_TESTS.includes(c.id)}
-                    title={each && !EACH_TESTS.includes(c.id) ? 'Not in a test for each wolf: it is counted outside an event' : undefined}
+                {items.map(c => <button key={c.id} type="button" className="wb-action-option" disabled={!!allowed && !allowed.includes(c.id)}
+                    title={allowed && !allowed.includes(c.id) ? (only ? 'Not here: an offer is not an event, so the world\'s facts are not read'
+                        : 'Not in a test for each wolf: it is counted outside an event') : undefined}
                     onClick={() => pick(newCondition(c.id, program, phase, cat))}>
                     <span>{c.title}</span><small>{c.help}</small></button>)}</div>)}</div>;
         })()}</div>;

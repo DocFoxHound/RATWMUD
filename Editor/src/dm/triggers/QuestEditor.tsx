@@ -3,12 +3,12 @@
 // (objectives in sentences from the catalogue: required, optional or hidden, in order or not, counted), what fails it,
 // and what it gives (rewards to each wolf with credit, coins from a named purse, never minted).
 import {useState} from 'react';
-import {eventOf, eventParts, FIELDS, isId, objectiveEvents, operandWords, renameObjective, renameQuest, SIGNAL, withQuests, type FailRule, type Part,
-    type Quest, type QuestObjective, type Ref, type Slot} from '../../lib/workbench';
+import {eventOf, eventParts, FIELDS, isId, newCondition, objectiveEvents, operandWords, renameObjective, renameQuest, REQUIRES_TESTS, SIGNAL, withQuests,
+    type Condition, type FailRule, type Part, type Quest, type QuestObjective, type Ref, type Slot} from '../../lib/workbench';
 import {useBench} from './context';
 import {EventPicker, type Values} from './pickers';
 import {Sentence} from './Sentence';
-import {EffectList} from './TriggerView';
+import {ConditionNode, EffectList} from './TriggerView';
 
 /** One slot as a sentence part (the giver, a region): the picker for its type, the name for its id. */
 function slotPart(key: string, type: string, label: string, value: unknown, shownAs: string): Slot {
@@ -230,6 +230,13 @@ export function QuestEditor({index, select}: {index: number; select: (r: Ref) =>
                 <label>The wolf hands it in<input maxLength={120} value={offer.handIn ?? ''} placeholder={`About ${q.title}: it's done.`} onChange={e => setOffer('handIn', e.target.value)}/></label>
                 <label className="wb-grow">The resident's thanks<input maxLength={300} value={offer.thanks ?? ''} placeholder="(the game's own thanks)" onChange={e => setOffer('thanks', e.target.value)}/></label>
             </div>}
+            {/* (Doc 86, C6: one choice at the giver while the wolf's copy is under way; picking it hears this, then back to the hub.) */}
+            <div className="wb-head">
+                <label className="wb-grow">While under way, the giver says…<textarea rows={2} maxLength={300} value={offer.during ?? ''} placeholder="(nothing: no choice while under way)"
+                    onChange={e => setOffer('during', e.target.value)}/></label>
+                {offer.during && <label>The wolf asks<input maxLength={120} value={offer.duringAsk ?? ''} placeholder={`About ${q.title}...`}
+                    onChange={e => setOffer('duringAsk', e.target.value)}/></label>}
+            </div>
         </div>}
 
         <h5>Who may take it</h5>
@@ -245,6 +252,22 @@ export function QuestEditor({index, select}: {index: number; select: (r: Ref) =>
                 onChange={e => setJoin('again', e.target.value === '' ? undefined : Math.max(1, Math.min(365, Math.round(e.target.valueAsNumber))))}/></label>
         </div>
         {(join.who ?? (open ? 'anyone' : 'participants')) === 'anyone' && !open && <p className="hint">Any wolf may take it only with an open or "everyone" audience (Campaign settings).</p>}
+        {/* (Doc 86, C6: a chain or a gate. Read for each wolf when it reads the wolf's own (their variables, their quests); else one
+            gate for everyone. Never the world's facts: an offer is not an event.) */}
+        <h6>Only for wolves who… {!q.requires && <small className="hint">anyone who may take it</small>}</h6>
+        {q.requires ? <ConditionNode node={(['all', 'any', 'not'] as string[]).includes(q.requires.test) ? q.requires : {test: 'all', conditions: [q.requires]} as Condition}
+            depth={1} phase={null} only={REQUIRES_TESTS} problems={problems[key + ':requires']}
+            change={c => set('requires', c.test === 'all' && c.conditions.length === 1 && q.requires?.test !== 'all' ? c.conditions[0] : c, key + ':requires')}
+            remove={() => set('requires', undefined)}/>
+            : <button type="button" className="wb-add" disabled={!v2} onClick={() => {
+                const before = quests.slice(0, index).at(-1);
+                set('requires', before ? {test: 'quest is', quest: before.id, of: '$actor', status: 'done'} as unknown as Condition : newCondition('switch', program, null));
+            }}>+ only for wolves who…</button>}
+        <label title="Doc 86, J3: done, each wolf with credit has a finished Story (the Quickening counts them); at most 4 in a story">Counts as a finished Story
+            <select value={q.closure === true ? 'line' : q.closure ?? ''} disabled={q.scope === 'story'}
+                onChange={e => set('closure', e.target.value === '' ? undefined : e.target.value as 'line' | 'side')}>
+                <option value="">no</option><option value="line">yes: the last chapter of a quest line (needs the chapter before it done)</option>
+                <option value="side">yes: a side story of a campaign chapter</option></select></label>
         {(program.regions?.length ?? 0) > 0 && <div className="wb-line"><span className="wb-glyph">▭</span>
             <Sentence parts={regionPart} clearable={() => true} pick={(_s, v) => setJoin('region', v.region === undefined ? undefined : String(v.region))}/></div>}
 

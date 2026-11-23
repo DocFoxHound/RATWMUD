@@ -260,7 +260,7 @@ READY = {
 
 def all_samples():
     return [copy.deepcopy(LEDGER), copy.deepcopy(FLOW), copy.deepcopy(READY), copy.deepcopy(TALK), copy.deepcopy(VALUES),
-            copy.deepcopy(THANKS)]
+            copy.deepcopy(THANKS), copy.deepcopy(LINE)]
 
 
 # ----- Doc 85, Phase 6: quests (tools/test_story_quests.py; both twins' parity, tools/test_story_native.py)
@@ -688,5 +688,82 @@ THANKS = {
              {'phase': 'drive', 'kind': 'title.give', 'player': BIRCH, 'title': 'the Oil-Bringer'},
              {'phase': 'drive', 'kind': 'belief.forget', 'subject': 'rm113', 'claimKind': 'story.rumour', 'town': 'greyfen', 'share': 50},
              {'phase': 'lit', 'kind': 'title.take', 'player': BIRCH, 'title': 'the Oil-Bringer'}]},
+    ],
+}
+
+
+# ----- Doc 86, Phase 4: stories that talk to each other. A line of two quests at the lamplighter's, the second only for the
+# wolves who did the first (C6 requires) with words while under way (offer.during), closing the line (J3 closure "line");
+# the other road taken back from the wolf who chose (L5 quest.withdraw); the news told to the campaign's chapters (C12a
+# story.notify) and news heard from a pack (story notified); the realm's tally changed by another story (C13a variable
+# changed), a new month and a post changing hands (C13a); a Quickened wolf, and the post a resident holds (J10, C13b).
+LINE = {
+    'format': 'ratw-story-program', 'version': 2, 'id': 'v2-lamp-line', 'title': 'The lamp line',
+    'audience': {'kind': 'players', 'players': [ASH, BIRCH, ELM]}, 'start': 'line',
+    'variables': [
+        {'id': 'p_voice', 'type': 'number', 'scope': 'player', 'show': 'Your voice in the lamp moot'},
+        {'id': 'nh_realm', 'type': 'number', 'scope': 'world', 'note': 'The realm\'s tally, which every story of the campaign keeps.'},
+        {'id': 'heard', 'type': 'number', 'scope': 'story', 'note': 'The realm\'s tally as last heard.'},
+        {'id': 'month', 'type': 'number', 'scope': 'story', 'note': 'The month that began last.'},
+        {'id': 'handovers', 'type': 'number', 'scope': 'story', 'note': 'Posts that changed hands.'},
+        {'id': 'gifted', 'type': 'number', 'scope': 'story', 'note': 'Quickened wolves seen at the gate while the Crown was held.'},
+    ],
+    'quests': [
+        {'id': 'lamp', 'title': 'The lamplighter\'s lamp', 'giver': 'rm111', 'handIn': False,
+         'offer': {'say': '#greet# My lamp went over the wall in the wind. Would you look for it?'},
+         'objectives': [{'id': 'find', 'label': 'Find the lamp and bring it back.', 'on': 'gift', 'match': {'target': 'rm111', 'item': 'lamp'}}]},
+        {'id': 'oil', 'title': 'Oil for the lamp', 'giver': 'rm111', 'handIn': False, 'closure': 'line',
+         'requires': {'test': 'quest is', 'quest': 'lamp', 'status': 'done'},
+         'offer': {'say': 'Now it wants oil. The chandler will have some.', 'during': 'Keep the oil dry on the road, #address#.',
+                   'duringAsk': 'About the oil...'},
+         'objectives': [{'id': 'fetch', 'label': 'Bring lamp oil from the chandler.', 'on': 'gift', 'match': {'target': 'rm222', 'item': 'lamp_oil'}}]},
+        {'id': 'mill', 'title': 'Ask at the mill', 'giver': 'rm113', 'offer': {'say': 'Or you could ask the miller for tallow.'},
+         'objectives': [{'id': 'ask', 'label': 'Ask the miller.', 'on': 'conversation', 'match': {'target': 'rm119'}}]},
+    ],
+    'phases': [
+        {'id': 'line', 'journal': 'The lamplighter wants his lamp lit again.', 'effects': [], 'exits': [],
+         'triggers': [
+             {'id': 'took-oil', 'on': 'quest started', 'audience': 'participant', 'match': {'detail': 'oil'}, 'actions': [
+                 {'do': 'effect', 'effect': {'kind': 'quest.withdraw', 'quest': 'mill', 'player': '$actor'}}]},
+             {'id': 'lit', 'on': 'quest completed', 'audience': 'participant', 'match': {'detail': 'oil'}, 'actions': [
+                 {'do': 'effect', 'effect': {'kind': 'story.notify', 'signal': 'lamp_lit', 'player': '$actor', 'amount': 2}},
+                 {'do': 'effect', 'effect': {'kind': 'story.notify', 'signal': 'lamp_lit', 'story': 'nh-ch1'}}]},
+             {'id': 'news', 'on': 'story notified', 'audience': 'participant', 'match': {'detail': 'voice'}, 'actions': [
+                 {'do': 'add', 'var': 'p_voice', 'value': {'field': 'quantity'}}]},
+             {'id': 'realm', 'on': 'variable changed', 'match': {'target': 'nh_realm'}, 'actions': [
+                 {'do': 'set', 'var': 'heard', 'value': {'field': 'quantity'}}]},
+             {'id': 'month', 'on': 'month begins', 'actions': [{'do': 'set', 'var': 'month', 'value': {'field': 'quantity'}}]},
+             {'id': 'handover', 'on': 'succession', 'match': {'detail': {'starts': 'reigning at the Great Palace'}}, 'actions': [
+                 {'do': 'add', 'var': 'handovers', 'value': 1}]},
+             {'id': 'gate', 'on': 'deed', 'audience': 'participant', 'match': {'detail': {'starts': 'Held the gate'}},
+              'if': {'test': 'all', 'conditions': [{'test': 'wolf has', 'what': 'tier', 'value': 'quickened'},
+                                                   {'test': 'resident has', 'npc': 'rm112', 'what': 'post', 'value': 'reigning at the Great Palace'}]},
+              'actions': [{'do': 'add', 'var': 'gifted', 'value': 1}]},
+         ]},
+    ],
+    'tests': [
+        {'name': 'Ash walks the line to its end; the realm and the calendar move', 'cohort': [ASH, BIRCH, ELM],
+         'events': [
+             quest_fact(1, 'quest accepted', 0.5, ASH, item='rm111', detail='lamp'),
+             quest_fact(2, 'gift', 0.6, ASH, target='rm111', item='lamp'),
+             quest_fact(3, 'quest accepted', 0.7, BIRCH, item='rm111', detail='oil'),
+             quest_fact(4, 'quest accepted', 0.8, ASH, item='rm111', detail='oil'),
+             quest_fact(5, 'gift', 1, ASH, target='rm222', item='lamp_oil'),
+             quest_fact(6, 'story notified', 1.1, ASH, target='nh-pack', detail='voice', quantity=3),
+             quest_fact(7, 'variable changed', 1.2, target='nh_realm', detail='4', quantity=4),
+             quest_fact(8, 'month begins', 1.3, detail='2', quantity=2),
+             quest_fact(9, 'succession', 1.4, 'rm112', target='rm119', detail='reigning at the Great Palace: a vacancy filled'),
+             {**quest_fact(10, 'deed', 1.5, ASH, detail='Held the gate (d2)'),
+              'facts': {'wolves': {ASH: {'gift': {'tier': 'quickened', 'family': 'fire'}}},
+                        'residents': {'rm112': {'alive': True, 'post': 'reigning at the Great Palace'}}}},
+             {**quest_fact(11, 'deed', 1.6, BIRCH, detail='Held the gate (d2)'),
+              'facts': {'wolves': {BIRCH: {'gift': {'tier': 'normal', 'family': ''}}},
+                        'residents': {'rm112': {'alive': True, 'post': 'reigning at the Great Palace'}}}},
+         ], 'expect': ['line'],
+         'expectQuests': {'lamp': {ASH: 'done'}, 'oil': {ASH: 'done'}},
+         'expectVariables': {'story': {'heard': 4, 'month': 2, 'handovers': 1, 'gifted': 1}, 'player': {ASH: {'p_voice': 3}}},
+         'expectEffects': [
+             {'phase': 'line', 'kind': 'story.closure', 'player': ASH, 'story': 'v2-lamp-line', 'quest': 'oil', 'closure': 'line',
+              'title': 'Oil for the lamp', 'reward': 'oil'}]},
     ],
 }

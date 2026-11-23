@@ -475,6 +475,7 @@ def world_checks(conn, world, program, chapters=False):
                     (f'{rid} has died: their looks are old.' if role == 'like' else f'{rid} has died already: the game will refuse this.'),
                     role not in ('like', 'kill'))
     # Doc 86, C8, C9, C11: the towns, factions and subjects the new effects name; a campaign's holds only in a chapter.
+    stories = None
     for path, at, e in _effect_sites(program, quests_too=True):
         kind = e.get('kind')
         if kind in ('talk.remember', 'talk.forget', 'belief.plant', 'title.give', 'belief.forget') and isinstance(e.get('town'), str) \
@@ -489,6 +490,19 @@ def world_checks(conn, world, program, chapters=False):
         if kind in ('npc.spare', 'npc.protect') and e.get('lasts') == 'campaign' and not chapters:
             add(path, at, 'A hold for the campaign is let go when its campaign ends: approve this story as a chapter of a campaign.',
                 chapters is not None)
+        if kind == 'story.notify' and isinstance(e.get('story'), str) and e['story']:
+            # (Doc 86, C12a: news for a story by its id; a pack may be approved before the chapter it feeds: a warning.)
+            if stories is None:
+                stories = {r[0] for r in conn.execute(
+                    """SELECT DISTINCT program->>'id' FROM dm.story_releases WHERE world_id=%s
+                       AND status IN ('approved','running','paused','held')""", (world,))}
+            if e['story'] not in stories and e['story'] != program.get('id'):
+                add(path, at, f'No story "{e["story"]}" is approved or running in this world yet: its news reaches nobody until one is.', False)
+    # Doc 86, J3: a side story counts as a finished Story only in a campaign chapter.
+    for qi, q in enumerate(program.get('quests', []) if isinstance(program.get('quests'), list) else []):
+        if isinstance(q, dict) and quests.closure_of(q) == 'side' and not chapters:
+            add(f'quests[{qi}].closure', {'kind': 'quest', 'index': qi, 'id': q.get('id'), 'part': 'closure'},
+                'A side story counts only in a campaign chapter: approve this story as a chapter of a campaign.', chapters is not None)
     # Doc 86, V2: the story's words (symbols, forbidden words, ids in speech, lengths, face banners refused; another dialect
     # in a resident's words, a clearing's "never" warned of), with the speakers' voices and the world's ids.
     import story_words
@@ -912,6 +926,10 @@ def order_of(conn, world, run, who, state, effect, phase):
         return 'factions.sync', faction, {'story': run, 'other': other}
     if kind == 'story.finish':
         return 'story.finish', run, {}
+    if kind == 'story.closure':
+        # (Doc 86, J3: a closure quest done: the game counts a finished Story for the wolf, keyed by the program's id.)
+        return 'story.closure', effect['player'], {'run': run, 'story': effect['story'], 'quest': effect['quest'],
+                                                   'kind': effect['closure'], 'title': effect['title']}
     if kind in HOLD_ORDERS:
         # (Doc 86, C11: a hold for this run or its campaign names them, and the game lets it go when they end. A protect
         # for good is the Dungeon Master's mark it always was.)
@@ -1329,6 +1347,7 @@ def world_save(conn, world, run, program, state, loaded):
         return
     names = _world_names(program)
     now = state.get('counters', {}).get('world', {})
+    changed = {}
     for name in sorted(names):
         if name in now and now[name] != loaded.get(name, rules.triggers.MISSING):
             conn.execute(
@@ -1336,6 +1355,41 @@ def world_save(conn, world, run, program, state, loaded):
                    ON CONFLICT (world_id,name) DO UPDATE SET type=excluded.type,value=excluded.value,run=excluded.run,updated_at=now()""",
                 (world, name, names[name]['type'], json.dumps(now[name]), run))
             loaded[name] = now[name]
+            changed[name] = (names[name]['type'], now[name])
+    if changed:
+        tell_changes(conn, world, run, changed)
+
+
+def _value_words(kind, v):
+    """A world variable's new value as `variable changed` carries it: (detail, quantity)."""
+    if kind == 'number' and isinstance(v, (int, float)) and not isinstance(v, bool):
+        return (str(int(v)) if float(v).is_integer() else str(v)), v
+    if kind == 'switch':
+        return ('yes' if v else 'no'), int(bool(v))
+    if isinstance(v, list):
+        return ', '.join(str(x) for x in v)[:80], len(v)
+    return ('' if v is None else str(v))[:80], 0
+
+
+def tell_changes(conn, world, run, changed):
+    """Doc 86, C13a: every other live story that declares a world variable this run changed, of the same type, and listens for
+    "variable changed" on it, is told through its inbox; one telling per variable per story waiting at once, with the latest
+    value (a telling not yet taken is brought up to date instead of a second). A story never hears its own changes."""
+    if not _steering(conn):
+        return 0
+    told = 0
+    for other, program, state, digest in _live_runs(conn, world, run):
+        if not state:
+            continue
+        mine = _world_names(program)
+        for name, (kind, value) in sorted(changed.items()):
+            if name not in mine or mine[name]['type'] != kind or not _listens(program, 'variable changed', 'target', name):
+                continue
+            detail, quantity = _value_words(kind, value)
+            _story_event(conn, other, state, digest, {'kind': 'variable changed', 'target': name, 'item': run, 'detail': detail,
+                                                      'quantity': quantity}, f'variable changed: {name}', coalesce=True)
+            told += 1
+    return told
 
 
 # ----- chapters and campaigns (doc 85, 3.5 "story.start" and Phase 10)
@@ -1533,11 +1587,46 @@ def start_chapters(conn, world, run, program, state, ended=False):
     return True
 
 
-def _listens(program, kind):
+def _listens(program, kind, field=None, value=None):
+    """Whether a story has a trigger or an exit on this event (doc 86, C12a and C13a: whose filter on `field` takes `value`)."""
+    def hears(t):
+        if t.get('on') != kind:
+            return False
+        m = t.get('match') if isinstance(t.get('match'), dict) else {}
+        return field is None or (field in m and rules.match_one(m[field], value))
+
     for ph in rules.phases_of(program):
-        if any(t.get('on') == kind for t in ph.get('triggers', [])) or any(e.get('on') == kind for e in ph.get('exits', [])):
+        if any(hears(t) for t in ph.get('triggers', [])) or any(hears(e) for e in ph.get('exits', [])):
             return True
-    return any(t.get('on') == kind for t in program.get('triggers', []))
+    return any(hears(t) for t in program.get('triggers', []))
+
+
+# The stories' own events (doc 85, Phase 10; doc 86, C12a and C13a): told by the runner through the inbox, never in the log.
+STORY_EVENTS = ('story started', 'story ended', 'story notified', 'variable changed')
+NOTICES_A_TICK = 200       # (Doc 86, C12a: a run's notices told in one tick; the rest wait for the next.)
+NOTICES_KEPT = 5000        # (Waiting at most: past that the oldest are dropped, and the timeline says so.)
+
+
+def _live_runs(conn, world, run):
+    return conn.execute(
+        """SELECT id,program,state,digest FROM dm.story_releases WHERE world_id=%s AND id<>%s AND status IN ('running','paused','held')""",
+        (world, run)).fetchall()
+
+
+def _story_event(conn, other, state, digest, event, reason, coalesce=False):
+    """One story event into another run's inbox: the fact lands between two of its world events, as a console command does.
+    `coalesce`: a telling of the same kind and target not yet taken is brought up to date instead (C13a)."""
+    payload = json.dumps({'event': event})
+    if coalesce and conn.execute(
+            """UPDATE dm.story_commands SET payload=%s::jsonb,reason=%s WHERE run=%s AND status='queued' AND kind='story-event'
+               AND payload->'event'->>'kind'=%s AND payload->'event'->>'target'=%s RETURNING id""",
+            (payload, reason[:300], other, event['kind'], event['target'])).fetchone():
+        return
+    conn.execute(
+        """INSERT INTO dm.story_commands(run,key,visit,digest,kind,payload,reason,requested_by)
+           VALUES (%s,%s,%s,%s,'story-event',%s::jsonb,%s,'story-runner')""",
+        (other, 'ev-' + uuid.uuid4().hex[:24], state.get('visits'), digest, payload, reason[:300]))
+    conn.execute("SELECT pg_notify('ratw_story',%s)", (json.dumps({'run': other}),))
 
 
 def tell_stories(conn, world, run, kind, story, detail=''):
@@ -1546,20 +1635,37 @@ def tell_stories(conn, world, run, kind, story, detail=''):
     if not _steering(conn):
         return 0
     told = 0
-    for other, program, state, digest in conn.execute(
-            """SELECT id,program,state,digest FROM dm.story_releases WHERE world_id=%s AND id<>%s AND status IN ('running','paused','held')""",
-            (world, run)).fetchall():
+    for other, program, state, digest in _live_runs(conn, world, run):
         if not state or not _listens(program, kind):
             continue
-        conn.execute(
-            """INSERT INTO dm.story_commands(run,key,visit,digest,kind,payload,reason,requested_by)
-               VALUES (%s,%s,%s,%s,'story-event',%s::jsonb,%s,'story-runner')""",
-            (other, 'ev-' + uuid.uuid4().hex[:24], state.get('visits'), digest,
-             json.dumps({'event': {'kind': kind, 'target': story, 'item': run, 'detail': detail or ''}}),
-             f'{kind}: {story}'))
-        conn.execute("SELECT pg_notify('ratw_story',%s)", (json.dumps({'run': other}),))
+        _story_event(conn, other, state, digest, {'kind': kind, 'target': story, 'item': run, 'detail': detail or ''}, f'{kind}: {story}')
         told += 1
     return told
+
+
+def tell_notices(conn, world, run, program, state):
+    """Doc 86, C12a: the news this run's story.notify queued (`state.notices`), told to the stories it names, or to every
+    other live story listening for that news, NOTICES_A_TICK at most (the rest wait in the state for the next tick).
+    Returns how many notices went (a notice nobody hears goes too: nothing is sent)."""
+    waiting = state.get('notices')
+    if not waiting or not _steering(conn):
+        return 0
+    now, rest = waiting[:NOTICES_A_TICK], waiting[NOTICES_A_TICK:]
+    runs = None
+    for n in now:
+        if runs is None:
+            runs = [r for r in _live_runs(conn, world, run) if r[2]]
+        for other, prog, st, digest in runs:
+            if (n.get('story') and prog.get('id') != n['story']) or not _listens(prog, 'story notified', 'detail', n['signal']):
+                continue
+            _story_event(conn, other, st, digest, {'kind': 'story notified', 'target': program['id'], 'item': run, 'detail': n['signal'],
+                                                   'actor': n.get('player', ''), 'quantity': n.get('amount', 0)},
+                         f'story notified: {n["signal"]} from {program["id"]}')
+    if rest:
+        state['notices'] = rest
+    else:
+        state.pop('notices', None)
+    return len(now)
 
 
 def run_ended(conn, world, run, program, state, how):
@@ -1945,6 +2051,13 @@ def tick_run(conn, world, run, clock):
     finally:
         if holder.get('loaded') is not None:
             world_save(conn, world, run, holder['program'], holder['state'], holder['loaded'])
+        if holder.get('state') and holder['state'].get('notices'):
+            # (Doc 86, C12a: the tick's news told after every save, and what is left kept for the next tick.)
+            tell_notices(conn, world, run, holder['program'], holder['state'])
+            rest = holder['state'].get('notices')
+            conn.execute("""UPDATE dm.story_releases SET state=CASE WHEN %s::jsonb IS NULL THEN state-'notices'
+                            ELSE jsonb_set(state,'{notices}',%s::jsonb) END WHERE id=%s""",
+                         (json.dumps(rest) if rest else None, json.dumps(rest) if rest else None, run))
     return holder.get('left')
 
 
@@ -3183,7 +3296,7 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
 # after, in the command's row and in dm.audit. A command can release only what was approved (5.1, rule 4): it fires a
 # trigger the program has, enters a phase it has, sets a counter it names; nothing adds a trigger or changes a rule.
 
-RUNNER_VERSION = 'doc86-phase3'
+RUNNER_VERSION = 'doc86-phase4'
 COMMAND_KINDS = ('hold', 'resume', 'stop', 'signal', 'fire', 'enable', 'disable', 'enter', 'set', 'timer', 'mission',
                  'order', 'tell', 'scene', 'migrate', 'objective', 'quest', 'participant', 'advance')
 # Flow commands move the story (dispatch a fact, run actions, open a visit, send the journal): they wait while the run is
@@ -3620,6 +3733,8 @@ class Steer:
 
     def save(self, status=None):
         world_save(self.conn, self.world, self.run, self.program, self.state, self.world_loaded)
+        if self.state:
+            tell_notices(self.conn, self.world, self.run, self.program, self.state)   # (Doc 86, C12a.)
         self.conn.execute(
             'UPDATE dm.story_releases SET state=%s::jsonb,cursor=%s,status=%s,problem=%s WHERE id=%s',
             (_dump(self.conn, self.run, self.state), self.cursor, status or self.status, self.problem, self.run))
@@ -3725,10 +3840,14 @@ class Steer:
         if self.status != 'running' or not _settled(self.conn, self.program, self.state, self.receipts):
             raise Wait()
         e = self.payload['event']
-        _require(isinstance(e, dict) and e.get('kind') in ('story started', 'story ended'), 'Not a story event.')
+        _require(isinstance(e, dict) and e.get('kind') in STORY_EVENTS, 'Not a story event.')
         before_phase = self.state['phase']
-        self.moved = self.dispatch({'kind': e['kind'], 'actor': '', 'target': str(e.get('target', ''))[:80],
-                                    'item': str(e.get('item', ''))[:80], 'detail': str(e.get('detail', ''))[:80], 'id': None})
+        # (Doc 86, C12a: news about a wolf names them as the actor; C13a and C12a: a number as the quantity.)
+        quantity = e.get('quantity', 0)
+        self.moved = self.dispatch({'kind': e['kind'], 'actor': str(e.get('actor', '') or '')[:80], 'target': str(e.get('target', ''))[:80],
+                                    'item': str(e.get('item', ''))[:80], 'detail': str(e.get('detail', ''))[:80],
+                                    'quantity': quantity if isinstance(quantity, (int, float)) and not isinstance(quantity, bool) else 0,
+                                    'id': None})
         fired = [t['trigger'] for t in self.trace]
         return (f'{e["kind"].capitalize()}: {e.get("target")}' + (f' ({e["detail"]})' if e.get('detail') else '')
                 + (f'; {", ".join(fired)} fired' if fired else '; nothing fired') + (f'; it moved to {self.state["phase"]}.' if self.moved else '.'),

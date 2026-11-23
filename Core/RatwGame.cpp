@@ -1715,6 +1715,15 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             outcome = {true, "The campaign's holds are let go.", target};
         }
     }
+    else if (kind == "story.closure")
+    {
+        // Doc 86, J3: a story's closure quest done by a wolf counts as a finished Story (RatwGameSocial.cpp).
+        json::Value payload;
+        std::string problem;
+        outcome = row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject()
+                      ? storyClosure(target, payload)
+                      : Result{false, "Invalid story order.", target};
+    }
     else if (kind == "title.give" || kind == "title.take" || kind == "npc.greet" || kind == "belief.forget")
     {
         // Doc 86, Phase 3: a wolf named by a title (C4), a resident's words for one wolf (C5), a rumour put to rest (J8).

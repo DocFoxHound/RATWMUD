@@ -183,6 +183,20 @@ FACT_CONDITIONS = tuple(c['id'] for c in CATALOGUE['conditions'] if c.get('facts
 # (Doc 85, Phase 10: the watched events that need a trigger's filters to say what to look at, and the words for them.)
 NEEDS_MATCH = {e['id']: tuple(e['needsMatch']) for e in CATALOGUE['events'] if e.get('needsMatch')}
 MATCH_WORDS = {'target': 'what it is about (target)', 'detail': 'number (detail)', 'actor': 'wolf (actor)'}
+# (Doc 86, Phase 4: the stories' own events name other things.)
+EVENT_MATCH_WORDS = {'story notified': {'detail': 'news (detail)'}, 'variable changed': {'target': 'world variable (target)'}}
+
+
+def match_word(event, key):
+    return EVENT_MATCH_WORDS.get(event, {}).get(key) or MATCH_WORDS[key]
+
+
+def check_variable_changed(on, match, phase, where=''):
+    """Doc 86, C13a: "variable changed" names a world variable this story declares."""
+    if on != 'variable changed' or phase is None or '_vars' not in phase:
+        return
+    d = phase['_vars'].get(match.get('target')) if isinstance(match.get('target'), str) else None
+    require(d is not None and d['scope'] == 'world', f'{where}"variable changed" names a world variable this story declares.')
 
 
 def validate_missions(phase):
@@ -750,7 +764,7 @@ def _check_exit(e, phase, mission_ids):
     needs = NEEDS_MATCH.get(e['on'], ())
     require(
         all(isinstance(m.get(k, ''), str) for k in needs),
-        f'{pid}: "{e["on"]}" needs its ' + ' and '.join(MATCH_WORDS[k] for k in needs)
+        f'{pid}: "{e["on"]}" needs its ' + ' and '.join(match_word(e['on'], k) for k in needs)
         + ' as exact words (not "begins with" or "one of"): the game must know what to look at.',
     )
     require(
@@ -842,7 +856,7 @@ def _check_phase(p, raw, ids):
 
 READY_EXIT = 'ready'
 READY_PARTS = ('participation', 'minDays', 'value', 'test', 'missions', 'quest')
-READY_ANCHORS = ('day begins', 'hour', 'season begins', 'festival', 'dm signal', 'moon')   # (Doc 86, J4: the moon, Phase 2.)
+READY_ANCHORS = ('day begins', 'hour', 'season begins', 'festival', 'dm signal', 'moon', 'month begins')   # (Doc 86: the moon (J4, Phase 2), the month (C13a, Phase 4).)
 READY_PARTS_MAX, READY_ANY = 8, (2, 4)
 READY_LOG = 20
 READY_DAYS = 3650
@@ -1135,7 +1149,7 @@ def ready_words(then):
         # (Doc 86, J4: "the next new moon", "the next full moon", or the next turn of the moon.)
         return f'the next {detail} moon' if isinstance(detail, str) else 'the next turn of the moon'
     words = {'day begins': 'the next day', 'hour': 'the next hour', 'season begins': 'the next season', 'festival': 'the next festival',
-             'dm signal': 'the direction'}.get(then['on'], 'the next ' + then['on'])
+             'dm signal': 'the direction', 'month begins': 'the next month'}.get(then['on'], 'the next ' + then['on'])
     return words + (f' ({rules_match_words(detail)})' if detail else '')
 
 
@@ -2209,8 +2223,10 @@ def watch_of(p):
     return out
 FACT_SECTIONS = ('wolves', 'residents', 'world', 'weather', 'relations', 'purses')   # (Doc 86, M2: what purses hold.)
 WOLF_FACTS = {'cell': str, 'x': int, 'y': int, 'indoors': bool, 'town': str, 'party': str, 'partySize': int, 'carries': dict,
-              'coins': int, 'standing': dict, 'reputation': dict, 'downed': bool, 'hurt': bool, 'wanted': bool, 'held': bool}
-RESIDENT_FACTS = {'alive': bool, 'cell': str, 'x': int, 'y': int, 'indoors': bool, 'job': str, 'mood': str, 'mantle': str, 'town': str}
+              'coins': int, 'standing': dict, 'reputation': dict, 'downed': bool, 'hurt': bool, 'wanted': bool, 'held': bool,
+              'gift': dict}   # (Doc 86, J10: {tier, family}.)
+RESIDENT_FACTS = {'alive': bool, 'cell': str, 'x': int, 'y': int, 'indoors': bool, 'job': str, 'mood': str, 'mantle': str, 'town': str,
+                  'post': str}   # (Doc 86, C13b: the post they hold, by its title.)
 WORLD_FACTS = {'day': (int, float), 'hour': int, 'minute': int, 'weekday': str, 'season': str, 'period': str, 'dayOfSeason': int, 'year': int,
                'moon': str}
 
@@ -2235,6 +2251,9 @@ def check_world_facts(f):
             require(identifier(k) and (v is None or (isinstance(v, dict) and set(v) <= set(fields)
                                                      and all(_typed(x, fields[key]) for key, x in v.items()))),
                     f'Facts: {section} "{k}" has unknown or mistyped facts.')
+            if isinstance(v, dict) and 'gift' in v:
+                require(set(v['gift']) <= {'tier', 'family'} and all(isinstance(x, str) for x in v['gift'].values()),
+                        'Facts: a wolf\'s gift is its tier and family, as words.')
             for key in ('carries', 'standing', 'reputation'):
                 if isinstance(v, dict) and key in v:
                     require(all(identifier(i) and type(n) in (int, float) and type(n) is not bool for i, n in v[key].items()),

@@ -1602,8 +1602,9 @@ class Game
     bool storyOfferOpen(const storylines::Storyline& s, const json::Value& offer, const std::string& wolf) const;
     struct StoryChoice
     {
-        std::string kind, run, id, words;           // kind: offer, handin, choice.
+        std::string kind, run, id, words;           // kind: offer, handin, during (doc 86, C6), choice.
     };
+    std::map<std::string, std::int64_t> storyCrowdNoted_;   // Doc 86, N1: a resident's crowded hub noted (game day + 1).
     std::vector<StoryChoice> storyChoicesFor(const std::string& wolf, const std::string& npc) const;
     const json::Value* storyOffer(const std::string& run, const std::string& quest) const;
     std::string storyHome(const talk::Tree& t, const std::string& entry) const;
@@ -2693,6 +2694,9 @@ class Game
     // opens their window (C5), and a rumour put to rest (J8).
     std::map<std::string, std::map<std::string, StoryGreet>> storyGreets_;             // npc -> wolf -> greeting
     Result applyStoryThanks(const std::string& kind, const std::string& target, const json::Value& payload);
+    // Doc 86, J3 (RatwGameSocial.cpp): a story's closure quest done by a wolf counts as a finished Story (the Quickening's
+    // closedStories): one receipt a quest, at most standing().storyQuestClosuresMost from one story's program id.
+    Result storyClosure(const std::string& wolf, const json::Value& payload);
     std::string takeStoryGreet(const std::string& npc, const std::string& wolf);       // The greeting, once ("" none).
     void dropStoryHolds(const std::string& owner);      // Every hold of "run:<run>" or "campaign:<id>" let go.
     void sparedChanged();                               // Tells the world whom old age passes by.

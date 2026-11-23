@@ -173,7 +173,9 @@ export interface QuestObjective {id: string; label: string; on: string; signal?:
     goalLive?: boolean; where?: {cells: string[]} | {region: string}; credit?: 'actor' | 'target' | 'present'}
 /** What fails a quest: an event (with filters), or a deadline after it starts. */
 export type FailRule = {on: string; match?: Record<string, string>; signal?: string} | {afterDays: number; clock?: 'game' | 'real'};
-export interface QuestOffer {ask?: string; say: string; accept?: string; decline?: string; handIn?: string; thanks?: string}
+export interface QuestOffer {ask?: string; say: string; accept?: string; decline?: string; handIn?: string; thanks?: string;
+    /** Doc 86, C6: what the giver says while the wolf's copy is under way, and the wolf's choice that asks it. */
+    during?: string; duringAsk?: string}
 export interface QuestJoin {who?: 'anyone' | 'participants'; region?: string; cap?: number; limit?: number;
     /** Doc 86, N4: game days before the same wolf may take it again, after any end. */
     again?: number}
@@ -184,7 +186,13 @@ export interface Quest {
     abandon?: boolean; objectives: QuestObjective[]; fail?: FailRule[]; rewards?: Effect[]; bonus?: Effect[];
     /** Doc 86, C3b: each credited wolf rewarded by their share ({"share": true} in the rewards), at least creditMin. */
     credit?: 'share'; creditMin?: number;
+    /** Doc 86, C6: only for the wolves for whom this holds (variables, the phase and quests; the wolf as the acting one). */
+    requires?: Condition;
+    /** Doc 86, J3: done, it counts as a finished Story for each wolf with credit (true is read as "line"). */
+    closure?: true | 'line' | 'side';
 }
+/** Doc 86, C6: the conditions a quest's "Only for wolves who…" may use (an offer is not an event: no world facts). */
+export const REQUIRES_TESTS = ['all', 'any', 'not', 'compare', 'switch', 'in list', 'days since', 'quest is', 'objective is', 'phase is'];
 export interface Audience {kind: string; days?: number; players?: string[]; cap?: number}
 export interface Program {
     format?: string; version?: number; id: string; title: string; audience: Audience;
@@ -1341,7 +1349,7 @@ const record = (v: unknown): v is Json => typeof v === 'object' && v !== null &&
 const V2_TESTS = ['compare', 'switch', 'in list', 'phase is', 'visit is', 'timer', 'fired', 'chance', 'days since',
     // (Phase 8: over the world's facts as of the event, and the story's quests.)
     'wolf here', 'wolf in region', 'wolf in place', 'wolf in town', 'wolf indoors', 'count in region', 'carries', 'coins', 'standing', 'reputation',
-    'wolf is', 'party size', 'in party with', 'resident is', 'resident in place', 'resident in region', 'resident has', 'hour between', 'calendar is',
+    'wolf is', 'wolf has', 'party size', 'in party with', 'resident is', 'resident in place', 'resident in region', 'resident has', 'hour between', 'calendar is',
     'weather is', 'relation is', 'quest is', 'objective is', 'participation'];
 function editableCondition(v: unknown, depth = 0): boolean {
     if (!record(v) || depth > 5) return false;

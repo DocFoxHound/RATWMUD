@@ -1516,3 +1516,126 @@ new event (`title given`, group fame, a mission event: 207 events, 70 mission ev
   rebuilt `libratw_story.so` (rank and tally need both twins), the Editor and the client released from it. Act I's chapters
   can move onto a version that uses titles, thanks and ranks by `migrate`. A saved character from before this branch loads
   with no titles; one saved by it loads on an older server with its titles dropped (an unknown field).
+
+## Phase 4 as built
+
+**Phase 4 as built** (2026-11-23, branch `r3-nh-p4`, on `r3-nh-p3` at `1914ce7b`). Engine spec items C12a, C13a, C13b, C6
+(with its display side), N1 (= T8), J3 (capped, answer (b)), J10 and L5. **No migration**: the notices wait in the run's
+state, the tellings go through the command inbox (0071), `withdrawn` is run state, the closure receipts are the social
+ledger's, which lives in the checkpoint (so 0082, "an index if `game.social_entries` is a table", is not needed: it is not).
+Two new story effects (84 in all: `story.notify` in Chapters, `quest.withdraw` in Quests, both the story's own, never game
+orders), four new events (211: `story notified` and `variable changed`, the runner's own, group story; `month begins`,
+watched, group time, 34 watched; `succession`, group town), one new condition (`wolf has`, a world-facts condition: 24 with
+the quest ones), `resident has` reads `post`, two quest fields (`requires`, `closure`), two offer fields (`during`,
+`duringAsk`), one runner order (`story.closure`) and one game order of that name.
+- **C12a: news for another story** (`story_quests.Run.story_effect` queues `state.notices`, 5,000 at most;
+  `story_runner.tell_notices`). After a run's tick (in `tick_run`'s `finally`, after every save, the rest patched into the
+  state) and after a command's save (`Command.save`), at most 200 notices go: to every other live run (running, paused,
+  held) whose program has a trigger or exit on `story notified` whose `match.detail` takes the signal (`_listens` now reads a
+  filter, `rules.match_one`), or, when `story` is named, only to the runs of that program that listen. Each is a
+  `story-event` command (`_story_event`, shared with `tell_stories`), taken between two events by `do_story_event`, which now
+  accepts the four story events (`STORY_EVENTS`) and carries `actor` and `quantity`. The event needs `match.detail` (exact
+  words; `match_word` says "news (detail)"). `story.notify` may name `$actor` from any trigger (it only names the wolf:
+  `NOTICE_EFFECTS` beside `TAKES_IN`). Approval warns (never refuses) of a `story` no release of the world has.
+- **C13a: a world variable changed** (`story_runner.world_save` → `tell_changes`). Every world variable a save writes that
+  changed is told to every other live run that declares it (the same name and type, world scope) and listens for
+  `variable changed` on it: `{target: name, detail: the value as words, quantity: the number (a switch's 1 or 0, a list's
+  length), item: the run}`. Coalesced: a telling of the same variable to the same run not taken yet is brought up to date
+  (an `UPDATE` of the queued command's payload) instead of a second. A run never hears its own writes. The check: the trigger's
+  `match.target` names a world variable the story declares (`rules.check_variable_changed`).
+  **`month begins`**: the game's watch writes it on the day change into a new month (`calendar::monthOfYear`, 28-day months
+  counted from the year's first day; the year's 365th day stays in the 13th, so the months are 1 to 13), `quantity` and
+  `detail` the number; it is a Readiness `then` moment now (`READY_ANCHORS`, "the next month"). **`succession`**: the careers
+  notes were already world events (`World::careerNotes`) and the story intake reads every event, so only the catalogue entry.
+- **C13b and J10 (both twins)**: the facts writer adds `residents[id].post` (the title of `Society::jobOf`, "" for none) and
+  `wolves[id].gift` (`{tier, family}`); `RESIDENT_HAS` gains `post`; the condition `wolf has` (`what` tier or family, `value`
+  checked against `GIFT_TIERS` or the playable families, `GIFT_FAMILIES`, which a test holds to `Data/Gifts/families.json`;
+  `""` is a normal wolf's family); `fact_test` and `Dispatch2::fact`; `check_world_facts` takes `gift` and `post`.
+- **C6: chains and gates** (`story_quests`: `check_requires`, `requires_personal`, `requires_hold`, `gates`, `offers`,
+  `fingerprint`, `Run.may_start`). `requires` is a condition tree of `compare`, `switch`, `in list`, `days since`,
+  `quest is`, `objective is` and `phase is` (in all, any, not; 4 deep, 12 conditions; no event field, loop value or share;
+  `REQUIRES_TESTS`), checked by the v2 checker with the program's quests and phases. `gates` works it out once per state
+  (cached by the state's quests, counters, phase, cohort and day): a tree that reads the wolf's own (`of: $actor`, a player or
+  party variable, a quest's copy not the story's) for each wolf of the story, giving the offer `players`; else one gate (false:
+  not sent). The results and the `withdrawn` marks are in the journal's fingerprint. Taking it (the giver's window, the board,
+  `quest.offer`, `quest.start`) checks it again for that wolf: "Not yet." (a toast). `offer.during` (300, fills, `#symbols#`)
+  and `duringAsk` (120, "About <title>..."): the offer carries both, filled. In the game, `storyOfferOpen` refuses a wolf not
+  in `players` or in `except` (the board's view and the window alike); `storyChoicesFor` adds a `during` choice while the
+  wolf's view of the quest is `active` with that giver, whose node `@story:<run>:during:<quest>` (`storyNode`) says the words
+  through the window's voice and goes back to the hub; the window's watched `dialogue node` event is raised as for any node.
+- **L5: an offer taken back** (`quest.withdraw`, the story's own): out of `questOffers`, into the run's `withdrawn`; the giver's
+  offer then carries `except` (or, with a personal `requires`, the wolf left out of `players`); a copy taken stays;
+  `quest.offer` to that wolf clears it; a quest gone in a new version drops its marks (`migrate`).
+- **N1: many stories at one resident** (`RatwGameWindowTalk.cpp` `windowNode`; `storyChoicesFor`). The story choices come
+  hand-ins first, then offers, then the words while under way, then choices, each in story-run order. In a resident's own tree
+  (`resident`, home `hub`), the hub takes what fits its nine, the `about` node the next (in what room it leaves), and the hub
+  gets "Ask about something else..." only if it has no way to `about` (the resident tree always has one); only what `about`
+  has no room for is left out, noted once a resident a game day (`RATW_STORY ... (a giver crowded with stories)`, the game's
+  log; `storyCrowdNoted_`). Other trees keep the hub's room and leave the rest out, noted the same way.
+- **J3: quests that count as a finished Story** (`story_quests.closure_of`, `check_quest`, `check_closures`, `Run.complete`;
+  `story_runner.order_of`, `world_checks`; `Game::storyClosure`, `SocialLedger::storyQuestClosure`). `closure` is `"line"`
+  (`true` read as it), or `"side"`; a quest of scope player or party, taken once; at most 4 a program; a `line` requires
+  another quest of the program done and is required done by none. A `side` closure outside a campaign chapter is refused at
+  approval ("A side story counts only in a campaign chapter"; a warning in the offline Problems list, which does not know).
+  Done, each wolf with credit gets the runner's order `story.closure` (target the wolf; `{run, story, quest, kind, title}`)
+  with the rewards (`ifRefused` "when here" as any reward). The game writes one `story_closure` receipt, session
+  `quest:<program>/<quest>`, keyed by the program's id (a new version or a second run never counts a quest twice: "Counted
+  already"), refuses to pay a fifth from one program for one wolf (applied: "Not counted: already 4 from this story."),
+  pays `storyQuests.closure` social (3) within the daily cap (`Data/Progression/standing.json`, read into
+  `practice::Standing`, with `closuresMost` 4), and checks the account's unlocks; `measuresOf` already counts the distinct
+  sessions into `closedStories`. Never undone.
+- **Workbench** (`Editor/`): the quest editor's **Only for wolves who…** (the trigger's condition editor, `ConditionNode`
+  with `only={REQUIRES_TESTS}`: the tests it may not use greyed out, "an offer is not an event"; **+ only for wolves who…**
+  starts with the quest before it done), **While under way, the giver says…** with the wolf's words, and **Counts as a
+  finished Story** (no, the last chapter of a line, a campaign side story); the two effects' and four events' cards and
+  sentences come from the catalogue; `wolf has` is a version 2 condition the workbench opens (`V2_TESTS`).
+- **Guide and format**: `Docs/Story-Maker-guide.md` §4 "Quest packs that feed a campaign" and "A world variable that
+  changes" (instead of looking at a variable every hour); §7 "Chains: requires", "The giver while under way", "Many stories
+  at one resident", "Quests that count as a finished Story" (the game's words never claim it); §8 the month, a post, a
+  wolf's Gift; §14 two rows; §15 two rows; §16 four rows; the reference regenerated (`story_guide.py --write`; `--check`
+  passes). `Docs/story-programs.md` gains "Stories that talk to each other". `RUNNER_VERSION` is `doc86-phase4`.
+- **Sample** `story_v2_samples.LINE` ("The lamp line", `v2-lamp-line`, in `all_samples()`, so both twins run it): part one
+  at the lamplighter's, part two only for the wolf who did it (Birch is told "Not yet."), with words while under way and
+  closing the line (its `story.closure` pinned in the case's effects); the mill road taken back from Ash when he takes part
+  two; the news told to every chapter listening and to `nh-ch1` by name; news heard from a pack raising Ash's voice; the
+  realm's tally changed by another story, a new month and a post changing hands; a Quickened wolf at the gate while the
+  Great Palace's post is held (a normal one does not count). It rehearses clean: nothing uncovered.
+- **Tests**: `test_story_quests` (`Phase4Quests`: a chain offered only to the wolf who finished part one, "Not yet." for
+  another, the words while under way in the offer; a gate for everyone, one offer or none, in the fingerprint; withdrawn
+  from one wolf and still offered to another, no journal mark, offered again clears it, a copy taken stays; a closure once,
+  `true` read as a line, its order, each member of a party one; the closure checks (a line not ending a chain either way, a
+  fifth, a daily one, a story's); the `requires` and `during` checks (world facts, event fields, an unknown quest); news
+  queued), `test_story_campaigns` (`StoriesThatTalk`, a throwaway database: a pack's news raises the running chapter's
+  `p_voice`; news nobody listens for sends nothing; 250 notices go 200 then 50; one named for a story not running reaches
+  nobody; a world variable changed wakes the chapter once with its value; two changes before it takes the first are one
+  telling with the latest; a story's own write tells nobody; the checks; a side closure refused alone and approved in a
+  campaign; a warning for news to a story not approved), `test_story_native` (`GiftParity`: `wolf has` and `resident has
+  post` over four sets of facts, the two story events, `story.notify` and `quest.withdraw` carried alike by both twins),
+  `test_story_facts` (gift and post in the made-up worlds, the checks, the playable families), `test_story_program` (the
+  month as a Readiness moment, `succession` not one), `test_story_catalogue` and `test_story_effects` (84 effects, 211
+  events), `Tests/story_facts_tests.cpp` (`phaseFourMonthGiftsAndPosts`: the month's numbering, no event inside a month, one
+  on its first day and not the next, none after the story ends; Ash's Quickened fire and Bo's none then seer; the post of a
+  resident at work), `Tests/storyline_tests.cpp` (`storyClosures`: closedStories up by one, the same quest counted once,
+  four from one story, the fifth applied and unpaid, another story pays, a resident or a bad kind refused, the receipts
+  through a restart), `Tests/dialogue_tests.cpp` (`storyChainsInTheWindow`: an offer for the wolves listed and not one it was
+  taken back from; the words while under way in the giver's voice, and the watched node; a hand-in and twelve choices at one
+  giver: the hand-in on the hub, the rest under Ask about... in order, the hub and `about` nine at most, a choice there
+  answered as on the hub), `workbench.test.ts` (115 programs; the lamp line in words; the workbench's `REQUIRES_TESTS` the
+  checks' own).
+- **Left or changed, and why**: J10's tier is read from the wolf itself (`Entity::quickened`, set when the character is made
+  and by `World::giveGift`, the way a wolf is Quickened in play), not from the account's standing record: `quickenedAt` there
+  says the account may make Quickened wolves, not that this wolf is one. L5 leaves the wolf out with an `except` list on the
+  offer, not the `players` list, unless the quest has a personal `requires`: a `players` list can only name the story's
+  wolves, and an open story's quest is for wolves who are not in it yet. A personal gate that holds for nobody is still sent,
+  with `players: []` (the game shows it to nobody). `requires` may use `phase is` too (the story's own, not the world's).
+  The month is 1 to 13 with the year's last day in the 13th (the spec's `floor(dayOfYear / 28) + 1` read one-based). The
+  closure's amount lives in `Data/Progression/standing.json` (`storyQuests`), where the social reasons and the daily cap the
+  receipt counts against are, not in `Data/Social` (which holds none of the closure amounts). N1's crowding is in the game's
+  log, not the console's Problems (which reads the programs and the world's database, not the server's log); the guide says
+  how to spread a pack's quests instead. The "words while under way" choice is placed after the offers and before the story
+  choices. The C13a runner test is in `test_story_campaigns` (with C12a's, as the phase's gate lists it), not
+  `test_story_v2_runner`. The workbench also has **Counts as a finished Story**, which the spec did not ask for.
+- **Going live** on `ratw_ridgemere3` needs no migration; the game server restarted from this branch (the window's chains,
+  the `during` node and the overflow, `story.closure`, the month, the gift and post facts), the story runner from this branch
+  with the rebuilt `libratw_story.so` (`wolf has` needs both twins), the Editor released from it. The client needs no change.
+  A pack that feeds a chapter by `story.notify` is approved alone; the chapter it names need not be approved yet (a warning).

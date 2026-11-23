@@ -189,6 +189,11 @@ std::string Game::storyFactsJson()
             f.add("hurt", e->hurt > 0 || !e->injuries.empty());
             f.add("wanted", world_.warrantFor(id) != nullptr);
             f.add("held", world_.custodyOf(id) != nullptr);
+            // (Doc 86, J10: the Gift the wolf was made with: normal (no family), gifted or quickened, and its family.)
+            auto gift = Value::object();
+            gift.add("tier", e->gift.empty() ? "normal" : e->quickened ? "quickened" : "gifted");
+            gift.add("family", e->gift);
+            f.add("gift", std::move(gift));
             wolves.add(id, std::move(f));
         }
         if (w.sections.count("wolves"))
@@ -217,6 +222,8 @@ std::string Game::storyFactsJson()
             r.add("mantle", mantle == mantleOf_.end() ? std::string() : mantle->second);
             const auto* spec = world_.society().spec(npc);
             r.add("town", townFor(spec && !spec->home.cell.empty() ? spec->home.cell : e->cellId));
+            const auto* post = world_.society().jobOf(npc);   // (Doc 86, C13b: the post they hold, by its title.)
+            r.add("post", post ? post->title : std::string());
             residents.add(npc, std::move(r));
         }
         doc.add("residents", std::move(residents));
@@ -313,6 +320,11 @@ void Game::storyWatchTick(double real)
     {
         if (day != storyDay_ && w.count("day begins"))
             world_.recordEvent({"day begins", {}, {}, {}, 0, 0, season, date.dayOfSeason, 0, calendar::weekdayName(calendar::weekdayOf(days))});
+        // (Doc 86, C13a: the first day of the economy's 28-day month; quantity and detail its number in the year, 1 to 13.)
+        if (day != storyDay_ && w.count("month begins"))
+            if (const int month = calendar::monthOfYear(date.dayOfYear);
+                month != calendar::monthOfYear(calendar::calendarAt(double(storyDay_)).dayOfYear))
+                world_.recordEvent({"month begins", {}, {}, {}, 0, 0, {}, month, 0, std::to_string(month)});
         if (season != storySeason_ && w.count("season begins"))
             world_.recordEvent({"season begins", {}, {}, {}, 0, 0, {}, 0, 0, season});
         if (hour != storyHour_ && w.count("hour"))

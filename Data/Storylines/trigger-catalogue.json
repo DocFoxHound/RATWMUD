@@ -4597,6 +4597,31 @@
    "tile": false
   },
   {
+   "id": "succession",
+   "group": "town",
+   "title": "A post changes hands",
+   "sentence": "{actor} takes up {detail} after {target}",
+   "help": "A resident took a post by the careers book's rules (a death, a retirement, a vacancy filled): actor the new holder, target the one before (may be empty), detail '<post title>: <how>'.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the new holder",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "resident",
+     "label": "who held it before",
+     "any": "anyone"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the post and how",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
    "id": "promise",
    "group": "talk",
    "title": "A promise is made",
@@ -5771,7 +5796,7 @@
    "group": "quests",
    "title": "A story's quest is done",
    "sentence": "{actor}'s quest {detail} is done",
-   "help": "The story's own fact: a copy of a quest was completed (handed in, or its last required objective done); its rewards follow.",
+   "help": "The story's own fact: a copy of a quest was completed (handed in, or its last required objective done); its rewards follow. (A closure quest also counts as a finished Story for the wolf.)",
    "fields": {
     "actor": {
      "type": "wolf",
@@ -6205,6 +6230,26 @@
     "quantity": {
      "type": "number",
      "label": "the day of the moon's round"
+    }
+   },
+   "tile": false,
+   "watch": true
+  },
+  {
+   "id": "month begins",
+   "group": "time",
+   "title": "A new month begins",
+   "sentence": "month {detail} begins",
+   "help": "The first day of the world's 28-day month (the economy's: doc 42), counted from the year's first day: detail the month's number in the year (1 to 13; the year's last day belongs to the 13th), quantity the same. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "detail": {
+     "type": "text",
+     "label": "the month's number",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the month's number"
     }
    },
    "tile": false,
@@ -6855,6 +6900,79 @@
    "tile": false,
    "story": true,
    "notes": "Sent by the story runner to every other live story of the world that listens for it; never in the world's log."
+  },
+  {
+   "id": "story notified",
+   "group": "story",
+   "title": "Another story sends news",
+   "sentence": "{target} sends the news {detail} about {actor}",
+   "help": "A story's 'Tell another story' reached this one: detail is the news's name, actor the wolf it is about (may be empty), quantity its number, target the sending story's id, item its run.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf it is about",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "story",
+     "label": "the story that sent it",
+     "any": "any story"
+    },
+    "item": {
+     "type": "run",
+     "label": "its run",
+     "any": "any run"
+    },
+    "detail": {
+     "type": "signal",
+     "label": "the news",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "its number"
+    }
+   },
+   "tile": false,
+   "story": true,
+   "needsMatch": [
+    "detail"
+   ],
+   "notes": "Sent by the story runner to every other live story of the world that listens for that news (or to the one named); never in the world's log."
+  },
+  {
+   "id": "variable changed",
+   "group": "story",
+   "title": "A world variable changes",
+   "sentence": "the world's {target} becomes {detail}",
+   "help": "Another story changed a world variable this story declares: target is its name, quantity the new number (for a number), detail the new value as text, item the run that changed it. Told once a tick at most, with the latest value; a story never hears its own changes.",
+   "fields": {
+    "target": {
+     "type": "variable",
+     "label": "the variable",
+     "any": "the variable named"
+    },
+    "detail": {
+     "type": "text",
+     "label": "its new value",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "its new number"
+    },
+    "item": {
+     "type": "run",
+     "label": "the run that changed it",
+     "any": "any run"
+    }
+   },
+   "tile": false,
+   "story": true,
+   "needsMatch": [
+    "target"
+   ],
+   "notes": "Sent by the story runner to every other live story of the world that declares the variable and listens for it; never in the world's log."
   }
  ],
  "conditions": [
@@ -7754,6 +7872,45 @@
    "reads": "wolves"
   },
   {
+   "id": "wolf has",
+   "v2": true,
+   "facts": true,
+   "title": "A wolf's Gift",
+   "sentence": "{who}'s {what} is {value}",
+   "help": "The Gift a wolf was made with (doc 43): its tier (normal, gifted or quickened) or its family (fire, earth, water, wind, sound, blinker, gravity, seer; none for a normal wolf). Never tell it in a story's words: test it, and offer what fits. Unknown for a wolf away.",
+   "params": [
+    {
+     "key": "who",
+     "type": "wolf",
+     "label": "the wolf",
+     "optional": true,
+     "default": "$actor"
+    },
+    {
+     "key": "what",
+     "type": "choice",
+     "label": "what",
+     "values": [
+      "tier",
+      "family"
+     ],
+     "words": {
+      "tier": "Gift's tier",
+      "family": "Gift's family"
+     },
+     "default": "tier"
+    },
+    {
+     "key": "value",
+     "type": "text",
+     "label": "is",
+     "max": 40,
+     "default": "normal"
+    }
+   ],
+   "reads": "wolves"
+  },
+  {
    "id": "party size",
    "v2": true,
    "facts": true,
@@ -7898,7 +8055,7 @@
    "facts": true,
    "title": "A resident's job, mood or mantle",
    "sentence": "{npc}'s {what} is {value}",
-   "help": "A named resident's job (the kind of work, as residents' talk names it: guard, merchant, smith, farmer...), their mood now (even, bright, low or sore), the mantle they wear (doc 84), or the town they live in.",
+   "help": "A named resident's job (the kind of work, as residents' talk names it: guard, merchant, smith, farmer...), their mood now (even, bright, low or sore), the mantle they wear (doc 84), or the town they live in, or the post they hold (its title as the careers book has it, e.g. reigning at the Great Palace; none: empty).",
    "params": [
     {
      "key": "npc",
@@ -7913,7 +8070,8 @@
       "job",
       "mood",
       "mantle",
-      "town"
+      "town",
+      "post"
      ],
      "default": "job"
     },
@@ -10402,6 +10560,28 @@
    "story": true
   },
   {
+   "id": "quest.withdraw",
+   "group": "quests",
+   "title": "Take back an offer",
+   "sentence": "{quest} is no longer offered to {player}",
+   "help": "Takes an offered (not yet accepted) quest back from one wolf, with no 'failed' mark in their journal: its giver and the notice board leave it out for them. A copy already taken is untouched. Offering it to the same wolf again clears the mark. Use it when a wolf takes one road and the others should close (a quest's 'Only for wolves who...' does this by itself for new stories).",
+   "params": [
+    {
+     "key": "quest",
+     "type": "quest",
+     "label": "the quest"
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "from the wolf",
+     "operand": true
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
    "id": "objective.complete",
    "group": "quests",
    "title": "Complete an objective",
@@ -11751,6 +11931,53 @@
       "now": "now, beside this one"
      },
      "optional": true
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
+   "id": "story.notify",
+   "group": "chapters",
+   "title": "Tell another story",
+   "sentence": "Tell {story} the news {signal} about {player}, worth {amount}",
+   "help": "Another live story of this world hears 'story notified' with this name, the wolf and a number, between two of its events. With no story named, every live story listening for that name hears it. A quest pack uses it to credit a wolf in whichever chapter of a campaign is running. At most 200 a tick go; the rest wait for the next.",
+   "params": [
+    {
+     "key": "signal",
+     "type": "signal",
+     "label": "the news (its name)"
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "about the wolf",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": "nobody in particular"
+     }
+    },
+    {
+     "key": "amount",
+     "type": "int",
+     "label": "a number",
+     "min": -1000000,
+     "max": 1000000,
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": "nothing"
+     }
+    },
+    {
+     "key": "story",
+     "type": "story",
+     "label": "the story",
+     "optional": true,
+     "words": {
+      "": "every story listening"
+     }
     }
    ],
    "v2": true,

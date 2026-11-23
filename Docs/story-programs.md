@@ -392,6 +392,58 @@ that quotes a resident; it warns of another dialect's phrases in a resident's wo
 accent), a face banner, `npc.speak` to a wolf, a clearing that begins "never", and a fact symbol (`#player.title#`) in a
 story's words.
 
+## Stories that talk to each other (doc 86, Phase 4)
+
+**News for other stories.** The story effect `story.notify` (`signal` a story signal name, `player` a wolf or none, `amount`
+-1,000,000 to 1,000,000 (a value), `story` a program id or none) is queued in the run's `notices` (5,000 at most). After the
+run's tick (and after a console command's save) the runner tells it, 200 a tick at most (the rest wait in the state), to
+every other live run whose program has a trigger or exit on `story notified` whose `match.detail` takes the signal, or only
+to the runs of `story` when it is named: a `story-event` command in each one's inbox (`story_runner.tell_notices`), taken
+between two of its events as the fact `{kind: "story notified", actor: <wolf>, target: <sender's program id>, item:
+<sender's run>, detail: <signal>, quantity: <amount>}`. A trigger on it needs `match.detail` (exact words). It may name the
+acting wolf from any trigger (it only names them). Approval warns of a `story` no release of the world has (approved,
+running, paused or held).
+
+**A world variable changed.** When `world_save` writes a world variable that changed, every other live run whose program
+declares it (the same name, the world scope, the same type) and listens for `variable changed` with `match.target` the
+name is told (`story_runner.tell_changes`): `{kind: "variable changed", target: <name>, detail: <the value as words: a
+number's digits, a switch's yes or no, a list's items>, quantity: <a number, a switch's 1 or 0, a list's length>, item: <the
+run that changed it>}`. A telling not yet taken is brought up to date instead of a second (one a variable a story, the
+latest value). A run never hears its own writes. A trigger on it needs `match.target`, a world variable the story declares.
+
+**The month, a post, a Gift.** The watched event `month begins` (`detail` and `quantity` the month's number in the year,
+`calendar::monthOfYear`: 28-day months, the 365th day in the 13th) is a Readiness `then` moment too. `succession` (`actor`
+the new holder, `target` the one before, `detail` "<post title>: <how>") is the careers book's own event. The world's facts
+gain `residents[id].post` (the title of the post they hold, "" for none) for `resident has` with `"what": "post"`, and
+`wolves[id].gift` (`{tier: normal | gifted | quickened, family}`) for the condition `wolf has` (`what` tier or family;
+`value` checked: a tier, or a playable family of `Data/Gifts/families.json`, or "" for a normal wolf's). Both engines.
+
+**Quests.** A quest may have:
+- `requires`: a condition tree (`compare`, `switch`, `in list`, `days since`, `quest is`, `objective is`, `phase is` in
+  `all`, `any`, `not`; 4 deep, 12 conditions; no event fields, loop values or world facts), the wolf as `$actor`. Read
+  when the offers are sent: one that reads the wolf's own (`of: "$actor"`, a player or party variable, a quest's copy not
+  the story's) is worked out for each wolf of the story and the offer goes with `players` (those it holds for); one that
+  reads only the story's own is a gate (false: the offer is not sent). Taking it (accepted at the giver or the board,
+  `quest.offer`, `quest.start`) checks it for that wolf ("Not yet."). The results are part of the journal's fingerprint.
+- `offer.during` (300, fills and `#symbols#`) and `offer.duringAsk` (120; "About <title>..." when not given): while the
+  wolf's copy is `active`, the giver's hub has that choice, whose node `@story:<run>:during:<quest>` says `during` in the
+  giver's voice. The offer the game is sent carries both.
+- `closure`: `"line"` (or `true`) or `"side"`: a quest of scope `player` or `party`, taken `once`; at most 4 a program. A
+  `line` requires (`requires`, `quest is ... done`) another quest of the program and is required done by none; a `side`
+  only in a program approved as a campaign chapter (`story_runner.world_checks`). Done, it adds for each wolf with credit the
+  runner's own order `story.closure` (target the wolf; `{run, story: <program id>, quest, kind, title}`) to the rewards;
+  the game writes one social receipt `story_closure`, session `quest:<program>/<quest>` (3 social:
+  `Data/Progression/standing.json` `storyQuests`), once a quest and at most 4 a program for one wolf (a fifth is applied
+  and pays nothing), which `closedStories` counts. Never undone.
+
+The story effect `quest.withdraw` (`quest`, `player`) takes an offered quest back from one wolf: out of `questOffers`, and
+into the run's `withdrawn` (`{quest: [wolves]}`), which the offer the game is sent carries as `except`; a copy already taken
+is untouched, and `quest.offer` to that wolf clears it.
+
+The dialogue window puts a resident's story choices in this order: hand-ins, offers, the words while under way, choices,
+each in story order. In a resident's own tree, what the hub's nine have no room for goes under `about`, and the hub has a
+way there; only what `about` has no room for either is left out (`RATW_STORY` in the game's log, once a resident a day).
+
 ## Writing a program
 
 The portable format is `ratw-story-program`, version 1. A program has an ID, title, audience, opening phase, phases and rehearsal cases. The examples under `Data/Storylines/programs/` are complete programs. The catalogue returned by the author API lists every supported event and the fields of each effect.

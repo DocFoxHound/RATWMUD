@@ -342,6 +342,8 @@ Standing buildStanding()
             st.socialReasons.push_back(r.asString({}));
     }
     st.dailyCap = int(doc.number("dailyCap", st.dailyCap));
+    st.storyQuestClosure = std::max(0, int(doc.object("storyQuests").number("closure", st.storyQuestClosure)));
+    st.storyQuestClosuresMost = std::max(0, int(doc.object("storyQuests").number("closuresMost", st.storyQuestClosuresMost)));
     return st;
 }
 } // namespace

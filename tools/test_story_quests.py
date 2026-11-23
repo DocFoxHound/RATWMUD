@@ -804,3 +804,163 @@ class Phase1b(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+def chain(closure=True, scope='player', during=True):
+    """Doc 86, Phase 4: a line of two quests at Ivo's: the second only for the wolves who did the first (C6), and it closes the
+    line (J3)."""
+    two = {'id': 'two', 'title': 'The oil', 'scope': scope, 'giver': 'rm111', 'handIn': False,
+           'offer': {'say': 'Now the oil for it.', **({'during': 'Mind you keep the oil dry.', 'duringAsk': 'About the oil...'} if during else {})},
+           'requires': {'test': 'quest is', 'quest': 'one', 'status': 'done'},
+           'objectives': [{'id': 'o', 'label': 'Bring the oil.', 'on': 'gift', 'match': {'target': 'rm222'}}]}
+    if closure is not None:
+        two['closure'] = closure
+    p = {'format': 'ratw-story-program', 'version': 2, 'id': 'the-lamp', 'title': 'The lamp', 'start': 'a',
+         'audience': {'kind': 'players', 'players': [ASH, BIRCH, ELM]},
+         'variables': [{'id': 'open', 'type': 'switch', 'scope': 'story'}],
+         'quests': [{'id': 'one', 'title': 'The lamp', 'scope': scope, 'giver': 'rm111', 'handIn': False, 'offer': {'say': 'Find my lamp.'},
+                     'objectives': [{'id': 'o', 'label': 'Find the lamp.', 'on': 'gift', 'match': {'target': 'rm111'}}]}, two],
+         'phases': [{'id': 'a', 'journal': 'A.', 'effects': [], 'exits': [], 'triggers': [
+             {'id': 'open', 'on': 'arrival', 'audience': 'participant', 'actions': [{'do': 'turn on', 'var': 'open'}]}]}],
+         'tests': [{'name': 'x', 'cohort': [ASH, BIRCH, ELM], 'events': [], 'expect': ['a']}]}
+    rules.validate(p)
+    return p
+
+
+class Phase4Quests(unittest.TestCase):
+    """Doc 86, Phase 4: C6 `requires` and `offer.during`, L5 `quest.withdraw`, J3 closure quests, C12a's notices."""
+
+    def state_after(self, p, events):
+        state, _ = final_state(p, events, cohort=(ASH, BIRCH, ELM))
+        return state
+
+    def test_a_chain_quest_is_offered_only_to_the_wolf_who_finished_part_one(self):
+        p = chain()
+        state = self.state_after(p, [fact(1, 'quest accepted', 0.1, ASH, item='rm111', detail='one'),
+                                     fact(2, 'gift', 0.2, ASH, target='rm111')])
+        self.assertEqual(state['quests']['one'][ASH]['status'], 'done')
+        offers = {o['quest']: o for o in quests.offers(p, state)}
+        self.assertNotIn('players', offers['one'], 'part one is for everyone')
+        self.assertEqual(offers['two']['players'], [ASH], 'part two only for Ash')
+        self.assertEqual((offers['two']['during'], offers['two']['duringAsk']), ('Mind you keep the oil dry.', 'About the oil...'))
+        # Birch takes part two at Ivo's anyway (a stale window): not yet.
+        report, _ = play(p, [fact(1, 'quest accepted', 0.1, BIRCH, item='rm111', detail='two')], cohort=(ASH, BIRCH, ELM))
+        self.assertEqual(report['quests'].get('two', {}), {})
+        state = self.state_after(p, [fact(1, 'quest accepted', 0.1, BIRCH, item='rm111', detail='two')])
+        self.assertEqual(state.get('toasts', {}).get(BIRCH), 'The oil: Not yet.')
+        # Ash takes it: under way, the giver's words while under way go with the offer.
+        state = self.state_after(p, [fact(1, 'quest accepted', 0.1, ASH, item='rm111', detail='one'), fact(2, 'gift', 0.2, ASH, target='rm111'),
+                                     fact(3, 'quest accepted', 0.3, ASH, item='rm111', detail='two')])
+        self.assertEqual(state['quests']['two'][ASH]['status'], 'active')
+        self.assertEqual(quests.journal(p, state, ASH)['quests'][1]['status'], 'active')
+
+    def test_a_gate_for_everyone_is_one_offer_or_none(self):
+        p = chain(closure=None)
+        p['quests'][0]['requires'] = {'test': 'switch', 'var': 'open', 'is': True}
+        rules.validate(p)
+        self.assertFalse(quests.requires_personal(p['quests'][0], p))
+        self.assertTrue(quests.requires_personal(p['quests'][1], p))
+        state = rules.begin(p, [ASH, BIRCH, ELM], 0)
+        self.assertEqual([(o['quest'], o.get('players')) for o in quests.offers(p, state)], [('two', [])],
+                         'part one closed: not sent; part two for nobody yet')
+        before = quests.fingerprint(p, state)
+        state = self.state_after(p, [fact(1, 'arrival', 0.1, ASH)])
+        offers = quests.offers(p, state)
+        self.assertEqual([(o['quest'], 'players' in o) for o in offers], [('one', False), ('two', True)])
+        self.assertNotEqual(quests.fingerprint(p, state), before, 'the gate is in the fingerprint')
+
+    def test_withdrawn_from_one_wolf_still_offered_to_another(self):
+        p = chain(closure=None)
+        state = rules.begin(p, [ASH, BIRCH, ELM], 0)
+        run = quests.Run(p, p['phases'][0], state, 1, 0, lambda f: None)
+        run.story_effect({'kind': 'quest.offer', 'quest': 'one', 'player': ASH}, ASH)
+        run.story_effect({'kind': 'quest.offer', 'quest': 'one', 'player': BIRCH}, BIRCH)
+        run.story_effect({'kind': 'quest.withdraw', 'quest': 'one', 'player': ASH}, ASH)
+        self.assertEqual(state['questOffers'], {'one': [BIRCH]})
+        self.assertEqual(state['withdrawn'], {'one': [ASH]})
+        self.assertEqual([v['status'] for v in quests.views(p, state, ASH)], [], 'no mark in the journal')
+        offer = next(o for o in quests.offers(p, state) if o['quest'] == 'one')
+        self.assertEqual(offer['except'], [ASH])
+        self.assertEqual(run.may_start(p['quests'][0], ASH), 'That is not on offer just now.')
+        self.assertEqual(run.may_start(p['quests'][0], BIRCH), '')
+        run.story_effect({'kind': 'quest.offer', 'quest': 'one', 'player': ASH}, ASH)
+        self.assertNotIn('withdrawn', state, 'offered again clears it')
+        # A copy already taken is untouched.
+        run.start(p['quests'][0], ELM)
+        run.story_effect({'kind': 'quest.withdraw', 'quest': 'one', 'player': ELM}, ELM)
+        self.assertEqual(state['quests']['one'][ELM]['status'], 'active')
+
+    def test_a_closure_quest_counts_once_for_each_wolf(self):
+        p = chain()
+        events = [fact(1, 'quest accepted', 0.1, ASH, item='rm111', detail='one'), fact(2, 'gift', 0.2, ASH, target='rm111'),
+                  fact(3, 'quest accepted', 0.3, ASH, item='rm111', detail='two'), fact(4, 'gift', 0.4, ASH, target='rm222'),
+                  fact(5, 'gift', 0.5, ASH, target='rm222')]
+        report, _ = play(p, events, cohort=(ASH, BIRCH, ELM))
+        closures = [{k: v for k, v in e.items() if k != 'phase'} for e in report['effects'] if e['kind'] == 'story.closure']
+        self.assertEqual(closures, [{'kind': 'story.closure', 'player': ASH, 'story': 'the-lamp', 'quest': 'two', 'closure': 'line',
+                                     'title': 'The oil', 'reward': 'two'}], '"true" is read as a line; once, the quest taken once')
+        order = runner.order_of(None, 'w', 'run-1', 'martin', {'actor': ASH, 'visits': 1}, closures[0], p['phases'][0])
+        self.assertEqual(order, ('story.closure', ASH, {'run': 'run-1', 'story': 'the-lamp', 'quest': 'two', 'kind': 'line', 'title': 'The oil'}))
+        # A party's copy: each member one.
+        p = chain(scope='party')
+        events = [fact(1, 'party joined', 0.05, ASH, target='p1'), fact(2, 'party joined', 0.06, BIRCH, target='p1'),
+                  fact(3, 'quest accepted', 0.1, ASH, item='rm111', detail='one'), fact(4, 'gift', 0.2, ASH, target='rm111'),
+                  fact(5, 'quest accepted', 0.3, ASH, item='rm111', detail='two'), fact(6, 'gift', 0.4, BIRCH, target='rm222')]
+        report, _ = play(p, events, cohort=(ASH, BIRCH, ELM))
+        self.assertEqual(sorted(e['player'] for e in report['effects'] if e['kind'] == 'story.closure'), [ASH, BIRCH])
+
+    def test_the_closure_checks(self):
+        p = chain()
+        p['quests'][1]['closure'] = 'side'
+        rules.validate(p)   # (A side story: approval refuses it outside a campaign chapter; test_story_campaigns.)
+        p = chain()
+        del p['quests'][1]['requires']
+        self.assertRaisesRegex(ValueError, 'requires another quest of the story done', rules.validate, p)
+        p = chain()
+        p['quests'][0]['closure'] = 'line'
+        self.assertRaisesRegex(ValueError, 'requires another quest', rules.validate, p)
+        p = chain()
+        p['quests'].append({**copy.deepcopy(p['quests'][1]), 'id': 'three', 'requires': {'test': 'quest is', 'quest': 'two', 'status': 'done'}})
+        self.assertRaisesRegex(ValueError, 'is required by no other quest: three', rules.validate, p)
+        p = chain()
+        p['quests'][1]['repeat'] = 'daily'
+        self.assertRaisesRegex(ValueError, 'taken once', rules.validate, p)
+        p = chain()
+        p['quests'][1]['scope'] = 'story'
+        p['quests'][1].pop('requires')
+        p['quests'][1]['closure'] = 'side'
+        self.assertRaisesRegex(ValueError, "a wolf's or a party's", rules.validate, p)
+        p = chain()
+        p['quests'][1]['closure'] = 'yes'
+        self.assertRaisesRegex(ValueError, 'closes a quest line', rules.validate, p)
+        p = chain()
+        for n in range(4):
+            p['quests'].append({**copy.deepcopy(p['quests'][1]), 'id': f'side{n}', 'closure': 'side'})
+        self.assertRaisesRegex(ValueError, 'At most 4 quests', rules.validate, p)
+
+    def test_the_requires_and_during_checks(self):
+        p = chain()
+        p['quests'][1]['requires'] = {'test': 'wolf in town', 'town': 'greyfen'}
+        self.assertRaisesRegex(ValueError, "not the world's facts", rules.validate, p)
+        p = chain()
+        p['quests'][1]['requires'] = {'test': 'compare', 'left': {'field': 'quantity'}, 'op': '>', 'right': 1}
+        self.assertRaisesRegex(ValueError, 'no event field', rules.validate, p)
+        p = chain()
+        p['quests'][1]['requires'] = {'test': 'quest is', 'quest': 'nope', 'status': 'done'}
+        self.assertRaisesRegex(ValueError, 'Unknown quest', rules.validate, p)
+        p = chain()
+        p['quests'][1]['offer'].pop('during')
+        self.assertRaisesRegex(ValueError, 'needs what they say', rules.validate, p)
+        p = chain(closure=None)
+        p['quests'][1]['requires'] = {'test': 'all', 'conditions': [{'test': 'quest is', 'quest': 'one', 'status': 'done'},
+                                                                    {'test': 'not', 'condition': {'test': 'switch', 'var': 'open', 'is': False}}]}
+        rules.validate(p)
+
+    def test_news_for_another_story_is_queued(self):
+        p = chain(closure=None)
+        state = rules.begin(p, [ASH, BIRCH, ELM], 0)
+        run = quests.Run(p, p['phases'][0], state, 1, 0, lambda f: None)
+        run.story_effect({'kind': 'story.notify', 'signal': 'lamp_lit', 'player': ASH, 'amount': 3}, ASH)
+        run.story_effect({'kind': 'story.notify', 'signal': 'lamp_lit', 'story': 'nh-ch1'}, '')
+        self.assertEqual(state['notices'], [{'signal': 'lamp_lit', 'player': ASH, 'amount': 3},
+                                            {'signal': 'lamp_lit', 'player': '', 'amount': 0, 'story': 'nh-ch1'}])

@@ -14,6 +14,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -1101,6 +1102,75 @@ void storyQuestsInTheGame()
     fs::remove(save);
 }
 
+// Doc 86, J3: a story's closure quest done by a wolf counts as a finished Story: one receipt a quest (the Quickening's
+// closedStories rises by one), a fifth from one story's program id pays nothing and says so (the order still applied), and
+// another story pays again.
+void storyClosures()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-closures-" + std::to_string(::getpid()));
+    const auto save = (fs::temp_directory_path() / ("ratw-closures-" + std::to_string(::getpid()) + ".json")).string();
+    fs::remove(save);
+    {
+        Town t(writeStrip(root), save);
+        t.enter(t.ash, 1, "ash", "Ash", 0, 12.5);
+        const auto wolf = t.ash.entityId;
+        int n = 0;
+        const auto close = [&](const std::string& story, const std::string& quest, const std::string& kind = "line", const std::string& to = "") {
+            auto p = json::Value::object();
+            p.add("run", "world-" + story);
+            p.add("story", story);
+            p.add("quest", quest);
+            p.add("kind", kind);
+            p.add("title", "The " + quest);
+            return t.g.applyDmAct({std::to_string(++n), "story.closure", to.empty() ? wolf : to, "dm", json::dump(p)});
+        };
+        const auto receipts = [&](const std::string& prefix) {
+            int found = 0;
+            for (const auto i : t.g.ledger().receiptsOf(wolf))
+                if (t.g.ledger().entries[i].reason == "story_closure" && t.g.ledger().entries[i].session.rfind(prefix, 0) == 0)
+                    ++found;
+            return found;
+        };
+        const auto closed = [&] {
+            // (As Game::measuresOf counts closedStories: the distinct sessions of the wolf's story_closure receipts.)
+            std::set<std::string> sessions;
+            for (const auto i : t.g.ledger().receiptsOf(wolf))
+                if (t.g.ledger().entries[i].reason == "story_closure")
+                    sessions.insert(t.g.ledger().entries[i].session);
+            return int(sessions.size());
+        };
+        const int before = closed();
+        auto r = close("lq-black-hearths", "road-a");
+        expect(r.ok && r.message.find("A finished Story") == 0 && r.message.find("(3 social)") != std::string::npos, "a line's last chapter: " + r.message);
+        expect(closed() == before + 1 && receipts("quest:lq-black-hearths/") == 1, "closedStories rises by one");
+        r = close("lq-black-hearths", "road-a");
+        expect(r.ok && r.message.find("Counted already") == 0 && receipts("quest:lq-black-hearths/") == 1 && closed() == before + 1,
+               "the same quest again (a new version, another run) counts once: " + r.message);
+        for (const auto* q : {"road-b", "road-c", "side-d"})
+            expect(close("lq-black-hearths", q, q[0] == 's' ? "side" : "line").ok, std::string("closure ") + q);
+        expect(closed() == before + 4 && receipts("quest:lq-black-hearths/") == 4, "four from one story");
+        r = close("lq-black-hearths", "road-e");
+        expect(r.ok && r.message == "Not counted: already 4 from this story.", "a fifth is applied and pays nothing: " + r.message);
+        expect(closed() == before + 4 && receipts("quest:lq-black-hearths/") == 4, "and closedStories stays");
+        r = close("lq-clipped-silver", "last");
+        expect(r.ok && closed() == before + 5, "another story pays again: " + r.message);
+        expect(!close("lq-clipped-silver", "other", "whatever").ok, "a closure is a line's or a side story's");
+        expect(!close("lq-clipped-silver", "other", "line", "u1").ok, "a wolf's, never a resident's");
+        expect(!close("", "other").ok, "it names its story");
+        t.g.save();
+    }
+    {
+        Town t(writeStrip(root), save);
+        int found = 0;
+        for (const auto& e : t.g.ledger().entries)
+            if (e.reason == "story_closure" && e.session.rfind("quest:", 0) == 0)
+                ++found;
+        expect(found == 5, "the receipts are kept through a restart: " + std::to_string(found));
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
+
 } // namespace
 
 int main()
@@ -1119,6 +1189,7 @@ int main()
         storyAlertsInTheDevConsole();
         inTheGame();
         sources();
+        storyClosures();
     }
     catch (const std::exception& error)
     {

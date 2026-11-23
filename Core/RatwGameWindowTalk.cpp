@@ -386,26 +386,58 @@ bool Game::windowNode(const std::string& playerId, const DialogueSession& d, con
     if (f == t->nodes.end())
         return false;
     out = f->second;
-    if (nodeId == storyHome(*t, d.entry))
+    const auto home = storyHome(*t, d.entry);
+    // (Doc 86, N1: in a resident's own tree, the story choices the hub has no room for go under Ask about...)
+    const bool aboutTakesRest = d.tree == "resident" && home == "hub" && t->nodes.count("about");
+    if (nodeId == home || (aboutTakesRest && nodeId == "about"))
     {
         // A world story's quests and choices with this resident (doc 85, Phase 6), on the node the window opens with for
-        // talk, before the way out, in what room it leaves (nine at most; a wearer's grafts get the rest).
+        // talk, before the way out, in what room it leaves (nine at most; a wearer's grafts get the rest). Doc 86, N1: the
+        // hand-ins first, then offers, the words while under way and choices; what doesn't fit goes under `about`, and only
+        // what doesn't fit there either is left out (noted once a day for the resident: a giver crowded with stories).
         auto story = storyChoicesFor(playerId, d.npc);
         if (!story.empty())
         {
-            auto q = dialogueQuery(playerId, d);
-            q.concept = out.concept;
-            const auto shown = talk_.choices(out, q, 0, [&](const std::string& list) { return dialogueItems(playerId, d.npc, list); });
-            const std::size_t room = shown.size() >= 9 ? 0 : 9 - shown.size();
-            std::vector<talk::TreeChoice> add;
-            for (const auto& c : story)
+            const auto roomOf = [&](const talk::TreeNode& n) {
+                auto q = dialogueQuery(playerId, d);
+                q.concept = n.concept;
+                const auto shown = talk_.choices(n, q, 0, [&](const std::string& list) { return dialogueItems(playerId, d.npc, list); });
+                return shown.size() >= 9 ? std::size_t(0) : 9 - shown.size();
+            };
+            const auto& hub = nodeId == home ? out : t->nodes.at(home);
+            std::size_t hubRoom = roomOf(hub);
+            const bool hubHasAbout = std::any_of(hub.choices.begin(), hub.choices.end(), [](const talk::TreeChoice& c) { return c.go == "about"; });
+            if (aboutTakesRest && story.size() > hubRoom && !hubHasAbout && hubRoom > 0)
+                --hubRoom;                          // (One place kept for the way to the rest.)
+            const auto first = std::min(story.size(), hubRoom);
+            std::vector<StoryChoice> mine;
+            if (nodeId == home)
+                mine.assign(story.begin(), story.begin() + std::ptrdiff_t(first));
+            else
             {
-                if (add.size() >= room)
-                    break;
+                const auto room = roomOf(out);
+                const auto last = std::min(story.size(), first + room);
+                mine.assign(story.begin() + std::ptrdiff_t(first), story.begin() + std::ptrdiff_t(last));
+            }
+            const std::size_t placed = first + (aboutTakesRest ? std::min(story.size() - first, roomOf(t->nodes.at("about"))) : 0);
+            if (placed < story.size())
+            {
+                const auto day = std::int64_t(std::floor(world_.calendarDays()));
+                if (auto& at = storyCrowdNoted_[d.npc]; at != day + 1)
+                {
+                    at = day + 1;
+                    note("warn", "RATW_STORY " + d.npc + " has " + std::to_string(story.size()) + " story choices for " + playerId + ": " +
+                                     std::to_string(story.size() - placed) + " left out (a giver crowded with stories)");
+                }
+            }
+            std::vector<talk::TreeChoice> add;
+            for (const auto& c : mine)
+            {
                 talk::TreeChoice choice;
                 choice.words = c.words;
-                const auto node = "@story:" + c.run + ":" + (c.kind == "offer" ? "offer" : c.kind == "handin" ? "thanks" : "reply") + ":" + c.id;
-                if (c.kind == "offer")
+                const auto node = "@story:" + c.run + ":" +
+                                  (c.kind == "offer" ? "offer" : c.kind == "handin" ? "thanks" : c.kind == "during" ? "during" : "reply") + ":" + c.id;
+                if (c.kind == "offer" || c.kind == "during")
                     choice.go = node;
                 else
                 {
@@ -414,6 +446,13 @@ bool Game::windowNode(const std::string& playerId, const DialogueSession& d, con
                     choice.then = node;
                 }
                 add.push_back(std::move(choice));
+            }
+            if (nodeId == home && aboutTakesRest && story.size() > first && !hubHasAbout)
+            {
+                talk::TreeChoice more;
+                more.words = "Ask about something else...";
+                more.go = "about";
+                add.push_back(std::move(more));
             }
             auto at = out.choices.end();
             if (!out.choices.empty() && (out.choices.back().go == "bye" || out.choices.back().go == "hub" || out.choices.back().go == "about"))
@@ -539,6 +578,17 @@ bool Game::storyNode(const std::string& playerId, const DialogueSession& d, cons
             out.said = "That's seen to, for now.";
             back(out);
         }
+        return true;
+    }
+    if (kind == "during")
+    {
+        // (Doc 86, C6: the giver's words while the wolf's copy is under way, in their own voice, then back to the hub.)
+        const auto* offer = storyOffer(run, id);
+        const auto* view = s->questView(playerId, id);
+        if (!offer || offer->string("npc") != d.npc || offer->string("during").empty() || !view || view->string("status") != "active")
+            return false;
+        out.said = offer->string("during");
+        back(out);
         return true;
     }
     if (kind == "thanks")

@@ -139,6 +139,28 @@ running chapter onto a new version as any run: section 12).
 chapter can wait for another), its run as the item, and for an ending how it ended (`complete`, `success`, `failure`,
 `abandoned`, `stopped`) as the detail. A story ended by an admin's Stop starts no chapter.
 
+**Quest packs that feed a campaign.** A pack (a story of its own, approved alone) tells whichever chapter is running what a
+wolf did with **Tell another story** (`story.notify`): a name for the news, the wolf it is about, and a number.
+
+```json
+{"do": "effect", "effect": {"kind": "story.notify", "signal": "lamp_lit", "player": "$actor", "amount": 2}}
+```
+
+Every other live story listening for that news hears **Another story sends news** (`story notified`: `detail` the news,
+`actor` the wolf, `quantity` the number, `target` the sending story's id, `item` its run) between two of its events, the
+next tick, through its inbox, as a console command lands. With `"story": "nh-ch1"` only that story's run hears it. A
+trigger on it needs the news named (`"match": {"detail": "lamp_lit"}`); with `"audience": "participant"` it is for a wolf
+of the hearing story, and `player`/`$actor` effects there act on that wolf. `"once": "member"` keeps a wolf from counting
+twice. At most 200 news a tick go from one story; the rest wait for the next. Naming a story that is not approved or running
+yet is a warning at approval, not a refusal: a pack may be approved before the chapter it feeds. A rehearsal may make up a
+`story notified` fact to test the hearing side.
+
+**A world variable that changes.** A story that declares a world variable may listen for **A world variable changes**
+(`variable changed`, `"match": {"target": "nh_realm"}`): when another story changes it, this one hears it once that tick,
+with the latest value (`quantity` the number, `detail` the value as words, `item` the run that changed it). A story never
+hears its own changes; two changes before it takes the first are one telling. Listen for it instead of looking at the
+variable on every hour.
+
 **Carrying state.** Three ways, from the lightest: `carry` (the next chapter's own variables start where the last left
 off), **world variables** (section 6: kept after a story ends, read by every story that declares them), and the audience
 (`same` or a list).
@@ -441,6 +463,56 @@ rule above ends the quest when the carter dies.
   (nobody at first: a wolf comes in by taking a quest, or by `participant.add`), `everyone` (the active wolves, and each who
   signs in after). Open and everyone take a `cap`, up to 5,000.
 
+### Chains: requires
+
+A quest may be **only for the wolves for whom a condition holds** (`requires`; the quest editor's **Only for wolves
+who…**): over variables, the phase and quests (`compare`, `switch`, `in list`, `days since`, `quest is`, `objective is`,
+`phase is`, in All, Any and Not, 4 deep, 12 conditions), the wolf as the acting one. Never the world's facts or an event's
+fields: an offer is not an event.
+
+```json
+{"id": "oil", "title": "Oil for the lamp", "giver": "rm111", "requires": {"test": "quest is", "quest": "lamp", "status": "done"}, ...}
+```
+
+- When it reads anything of the wolf's own (a per-wolf variable, a quest's copy for the wolf), it is worked out for each wolf
+  of the story, and the giver and the notice board offer it to those wolves only: part two of a chain shows only to the wolf
+  who finished part one. A wolf outside the story never meets such a requirement.
+- When it reads only the story's own (a story or world variable, the phase, the story's copy), it is one gate for everyone:
+  closed, the quest is not offered at all.
+- Taking it (from the giver, the board, `quest.offer` or `quest.start`) checks it again for that wolf: "Not yet."
+- **Taking an offer back:** **Take back an offer** (`quest.withdraw`) takes an offered quest back from one wolf, with no mark
+  in their journal: its giver and the board leave it out for them; a copy taken stays; offering it again clears it. With
+  `requires`, the other roads of a choice are simply never offered, so a new story rarely needs it.
+
+### The giver while under way
+
+`"offer": {"during": "Keep the oil dry on the road, #address#.", "duringAsk": "About the oil..."}`: while the wolf's copy is
+under way (not ready), the giver's hub has one choice (`duringAsk`, "About <title>..." by default) that has the giver say
+`during` in their own voice (`#symbols#` fill in), then back to the hub. It raises the watched `dialogue node` event
+(`@story:<run>:during:<quest>`), no story event. It needs a giver.
+
+### Many stories at one resident
+
+A resident's hub holds nine choices. A world story's choices there come in this order: hand-ins first, then offers, then
+the words while under way, then story choices, each in story order. What doesn't fit goes under **I want to know more about
+something...** (the resident's `about` node), and only what doesn't fit there either is left out (the game's log notes it
+once a day for that resident: a giver crowded with stories). A hand-in is never the one left out. Spread a pack's quests over
+several givers rather than lean on that.
+
+### Quests that count as a finished Story
+
+`"closure": "line"` (or `true`) on the last chapter of a quest line, or `"closure": "side"` on a campaign chapter's side
+story: when a wolf's copy is done, each wolf with credit has a **finished Story**, as the Quickening counts them
+(`closedStories`; a party's copy, each member one). The game keeps the count by the story's id: the same quest never counts
+twice (a new version, another run), and at most **4 from one story** for one wolf (a fifth is applied and pays nothing).
+It pays 3 social, and it is never undone.
+
+- A `line` closure ends a chain: it requires another quest of the story done, and no quest of the story requires it.
+- A `side` closure only in a story approved as a chapter of a campaign (approving it alone is refused).
+- Either is a wolf's or a party's quest, taken once; at most 4 closure quests a story.
+- **The game's words never claim it.** No quest text says "this counts toward your Quickening": the Quickening checklist
+  shows the count.
+
 ### Where an objective counts
 
 `"where": {"cells": ["w_ridgemere_2_0", "w_ridgemere_2_2"]}` (1 to 16 cells) or `"where": {"region": "rainward"}` (a
@@ -515,6 +587,15 @@ falls in), and the watched event **The moon turns** (`moon`: `detail` the quarte
 comes when it passes into another quarter. A Readiness may wait for the next new moon: `"then": {"on": "moon", "match":
 {"detail": "new"}}`. The detail is checked: `new`, `waxing`, `full` or `waning` (or one of them). The moon is optional
 timing: a chapter is paced by participation and time.
+
+**The month, a post, a wolf's Gift.** The watched event **A new month begins** (`month begins`: `detail` and `quantity` the
+month's number, 1 to 13) comes on the first day of the economy's 28-day month (the year's 365th day stays in the 13th); a
+Readiness may wait for it: `"then": {"on": "month begins"}`. **A post changes hands** (`succession`: `actor` the new holder,
+`target` the one before, `detail` "<post title>: <how>") comes when the careers book fills a post. **A resident's job, mood
+or mantle** reads the post they hold too (`"what": "post"`, its title as the careers book has it; empty for none), and
+**A wolf's Gift** (`wolf has`) the tier the wolf was made with (`normal`, `gifted`, `quickened`) or its family (`fire`,
+`earth`, `water`, `wind`, `sound`, `blinker`, `gravity`, `seer`; empty for a normal wolf). Test it and offer what fits;
+never tell it in a story's words.
 
 ### Talk and rumour from a story
 
@@ -718,6 +799,8 @@ takes back what the story held, as it was before the story first touched it. Wha
 | `talk.remember` | the residents forget it, unless `keep` (then it lasts its days) |
 | `belief.plant`, `belief.forget`, `figure.set` | **stay**: a rumour fades by the world's rules, and so does the doubt put on it; a figure until cleared (or undone from the timeline) |
 | `title.give`, `npc.greet` | **stay**: a title lasts its days (or for good) until `title.take`; a greeting waits its days for its wolf |
+| a closure quest's finished Story | **stays**: a record of a finished story |
+| `story.notify`, `quest.withdraw` | the story's own: news told is told; an offer taken back goes with the run |
 | `journal.note` | **stays**: the wolf's journal keeps it |
 | items given or placed, coins paid, deeds, standing, warrants, injuries, relations, market events, prices, projects, residents killed | **stay**: not a rollback |
 
@@ -746,6 +829,8 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | A greeting was never said | the resident's window | It is said once, the next time that wolf opens that resident's window (not while they sleep), within its days; a later greeting replaced it? |
 | A resident never uses a title | the line's gate | `player.titled=yes` and `#player.title#`; a title known in a town is only that town's residents'. |
 | Approval refuses words | the words | a word of `words.json` (it says what to write instead), an id in speech, a `#symbol#` the library lacks, a banner that quotes a resident: see section 10. |
+| A quest is not offered to a wolf | the quest's **Only for wolves who…** | It holds for that wolf? (A chain: is the quest before it done for them?) Taken back from them (`quest.withdraw`)? Too many stories at one giver: see "Many stories at one resident". |
+| A chapter never hears a pack | the pack's Timeline and the chapter's trigger | `story.notify`'s news name and the chapter's `"match": {"detail": ...}` the same words; a named `story` is the chapter's id, and it is running. |
 | Problems in the draft | Story Creator → **Problems** | Every problem at once with **Go**, and the world's warnings (a signal nothing hears, a counter nothing sets, an id the world lacks). |
 
 ## 16. Limits
@@ -775,6 +860,10 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | Rank; a tally | the top 1 to 500, over 5,000 wolves; a tally over 5,000, one level deep in arithmetic; neither inside For each |
 | A title; a greeting | 60 characters, 8 a wolf, 1 to 365 days or for good; 200 characters, 1 to 28 days, one a wolf a resident, 20,000 in all |
 | Putting a rumour to rest | 10% to 100% a time; forgotten at 5% |
+| News for other stories | 200 a story a tick (the rest wait); 5,000 waiting at most |
+| A quest's "Only for wolves who…" | 4 deep, 12 conditions; worked out for 5,000 wolves |
+| Closure quests | 4 a story; 4 finished Stories from one story for one wolf |
+| A resident's hub | 9 choices; what doesn't fit goes under Ask about... (9 more) |
 
 <!-- reference:begin (made by tools/story_guide.py from Data/Storylines/trigger-catalogue.json: do not edit by hand) -->
 
@@ -784,7 +873,7 @@ Made from the trigger catalogue (`Data/Storylines/trigger-catalogue.json`), the 
 
 ### Events
 
-210 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
+214 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
 
 #### Story engine
 
@@ -894,6 +983,45 @@ Sent by the story runner to every other live story of the world that listens for
 
 ```json
 {"id": "when-story-ended", "on": "story ended", "match": {"target": "the-crossing"}, "actions": [{"do": "note", "text": "Another story ends"}]}
+```
+
+<a id="event-story-notified"></a>**`story notified`**: Another story sends news (the story's own)
+
+A story's 'Tell another story' reached this one: detail is the news's name, actor the wolf it is about (may be empty), quantity its number, target the sending story's id, item its run.
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | the wolf it is about (wolf) | any wolf |
+| `target` | the story that sent it (story) | any story |
+| `item` | its run (run) | any run |
+| `detail` | the news (signal) | any |
+| `quantity` | its number (number) |  |
+
+A trigger on it must name `detail` in its filters.
+
+Sent by the story runner to every other live story of the world that listens for that news (or to the one named); never in the world's log.
+
+```json
+{"id": "when-story-notified", "on": "story notified", "match": {"detail": "500"}, "actions": [{"do": "note", "text": "Another story sends news"}]}
+```
+
+<a id="event-variable-changed"></a>**`variable changed`**: A world variable changes (the story's own)
+
+Another story changed a world variable this story declares: target is its name, quantity the new number (for a number), detail the new value as text, item the run that changed it. Told once a tick at most, with the latest value; a story never hears its own changes.
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `target` | the variable (variable) | the variable named |
+| `detail` | its new value (text) | any |
+| `quantity` | its new number (number) |  |
+| `item` | the run that changed it (run) | any run |
+
+A trigger on it must name `target` in its filters.
+
+Sent by the story runner to every other live story of the world that declares the variable and listens for it; never in the world's log.
+
+```json
+{"id": "when-variable-changed", "on": "variable changed", "match": {"target": "ropes"}, "actions": [{"do": "note", "text": "A world variable changes"}]}
 ```
 
 #### Scenes
@@ -3517,6 +3645,20 @@ A town project (built or not) is removed and its gifts refunded.
 {"id": "when-project-removed", "on": "project removed", "actions": [{"do": "note", "text": "A town project is removed"}]}
 ```
 
+<a id="event-succession"></a>**`succession`**: A post changes hands
+
+A resident took a post by the careers book's rules (a death, a retirement, a vacancy filled): actor the new holder, target the one before (may be empty), detail '<post title>: <how>'.
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | the new holder (resident) | anyone |
+| `target` | who held it before (resident) | anyone |
+| `detail` | the post and how (text) | any |
+
+```json
+{"id": "when-succession", "on": "succession", "match": {"target": "rm111"}, "actions": [{"do": "note", "text": "A post changes hands"}]}
+```
+
 #### Fame, journal and tales
 
 <a id="event-storyline-objective"></a>**`storyline objective`**: A storyline objective is met (has a tile)
@@ -3851,7 +3993,7 @@ Sent by the story itself as it runs, after the fact that caused it; the game nev
 
 <a id="event-quest-completed"></a>**`quest completed`**: A story's quest is done (the story's own, mission evidence)
 
-The story's own fact: a copy of a quest was completed (handed in, or its last required objective done); its rewards follow.
+The story's own fact: a copy of a quest was completed (handed in, or its last required objective done); its rewards follow. (A closure quest also counts as a finished Story for the wolf.)
 
 | Field | Holds | Left out means |
 |---|---|---|
@@ -4084,6 +4226,19 @@ The moon passed into another quarter of its round (detail: new, waxing, full or 
 
 ```json
 {"id": "when-moon", "on": "moon", "actions": [{"do": "note", "text": "The moon turns"}]}
+```
+
+<a id="event-month-begins"></a>**`month begins`**: A new month begins (watched)
+
+The first day of the world's 28-day month (the economy's: doc 42), counted from the year's first day: detail the month's number in the year (1 to 13; the year's last day belongs to the 13th), quantity the same. Written only while a live story listens for it (the story's watch list).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `detail` | the month's number (text) | any |
+| `quantity` | the month's number (number) |  |
+
+```json
+{"id": "when-month-begins", "on": "month begins", "actions": [{"do": "note", "text": "A new month begins"}]}
 ```
 
 #### Dialogue windows
@@ -4536,6 +4691,22 @@ Reads: **$actor** **is** **wanted by the watch**
 {"test": "wolf is", "who": "$actor", "state": "wanted", "is": true}
 ```
 
+<a id="condition-wolf-has"></a>**`wolf has`**: A wolf's Gift (v2, reads the world's facts)
+
+The Gift a wolf was made with (doc 43): its tier (normal, gifted or quickened) or its family (fire, earth, water, wind, sound, blinker, gravity, seer; none for a normal wolf). Never tell it in a story's words: test it, and offer what fits. Unknown for a wolf away.
+
+Reads: 's **Gift's tier** is **normal**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `who` | the wolf | wolf; optional; default "$actor" |
+| `what` | what | choice; one of: `tier`, `family`; default "tier" |
+| `value` | is | text; up to 40 characters; default "normal" |
+
+```json
+{"test": "wolf has", "what": "tier", "value": "normal"}
+```
+
 <a id="condition-party-size"></a>**`party size`**: A wolf's party (v2, reads the world's facts)
 
 How many wolves are in the wolf's party, the wolf included (1: alone). Unknown for a wolf away.
@@ -4614,14 +4785,14 @@ Reads: **rm111** stands in **square**
 
 <a id="condition-resident-has"></a>**`resident has`**: A resident's job, mood or mantle (v2, reads the world's facts)
 
-A named resident's job (the kind of work, as residents' talk names it: guard, merchant, smith, farmer...), their mood now (even, bright, low or sore), the mantle they wear (doc 84), or the town they live in.
+A named resident's job (the kind of work, as residents' talk names it: guard, merchant, smith, farmer...), their mood now (even, bright, low or sore), the mantle they wear (doc 84), or the town they live in, or the post they hold (its title as the careers book has it, e.g. reigning at the Great Palace; none: empty).
 
 Reads: **rm111**'s **job** is **A few words.**
 
 | Parameter | What | Kind |
 |---|---|---|
 | `npc` | the resident | resident |
-| `what` | what | choice; one of: `job`, `mood`, `mantle`, `town`; default "job" |
+| `what` | what | choice; one of: `job`, `mood`, `mantle`, `town`, `post`; default "job" |
 | `value` | is | text; up to 80 characters |
 
 ```json
@@ -5264,7 +5435,7 @@ Reads: Go to the phase **muster**
 
 ### Effects
 
-82 world effects, each one action `{"do": "effect", "effect": {...}}` (or, for a phase, one of what it sends as it opens). Each becomes an order the game applies and may refuse, with a receipt, except the story's own. On any effect the game applies, `ifRefused` says what the story does when it is refused: `pause` (the default), `skip`, or `when here` (an effect to one wolf, held until they are next in the world, `waitDays` 1 to 90).
+84 world effects, each one action `{"do": "effect", "effect": {...}}` (or, for a phase, one of what it sends as it opens). Each becomes an order the game applies and may refuse, with a receipt, except the story's own. On any effect the game applies, `ifRefused` says what the story does when it is refused: `pause` (the default), `skip`, or `when here` (an effect to one wolf, held until they are next in the world, `waitDays` 1 to 90).
 
 #### Telling the wolves
 
@@ -6462,6 +6633,21 @@ Reads: Fail **axle** for **$actor**
 {"do": "effect", "effect": {"kind": "quest.fail", "quest": "axle", "player": "$actor"}}
 ```
 
+<a id="effect-quest-withdraw"></a>**`quest.withdraw`**: Take back an offer (v2, the story's own)
+
+Takes an offered (not yet accepted) quest back from one wolf, with no 'failed' mark in their journal: its giver and the notice board leave it out for them. A copy already taken is untouched. Offering it to the same wolf again clears the mark. Use it when a wolf takes one road and the others should close (a quest's 'Only for wolves who...' does this by itself for new stories).
+
+Reads: **axle** is no longer offered to **$actor**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `quest` | the quest | quest |
+| `player` | from the wolf | wolf |
+
+```json
+{"do": "effect", "effect": {"kind": "quest.withdraw", "quest": "axle", "player": "$actor"}}
+```
+
 <a id="effect-objective-complete"></a>**`objective.complete`**: Complete an objective (v2, the story's own)
 
 Marks one objective of the copy the wolf holds done (a hidden one is shown).
@@ -6562,6 +6748,23 @@ Reads: Start the chapter **the-crossing** for **this story's wolves**, carrying 
 
 ```json
 {"do": "effect", "effect": {"kind": "story.start", "story": "the-crossing", "audience": "same", "carry": true, "when": "ended"}}
+```
+
+<a id="effect-story-notify"></a>**`story.notify`**: Tell another story (v2, the story's own)
+
+Another live story of this world hears 'story notified' with this name, the wolf and a number, between two of its events. With no story named, every live story listening for that name hears it. A quest pack uses it to credit a wolf in whichever chapter of a campaign is running. At most 200 a tick go; the rest wait for the next.
+
+Reads: Tell the news **gate-opens** about, worth
+
+| Parameter | What | Kind |
+|---|---|---|
+| `signal` | the news (its name) | signal |
+| `player` | about the wolf | wolf; optional |
+| `amount` | a number | int; -1000000 to 1000000; optional |
+| `story` | the story | story; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "story.notify", "signal": "gate-opens"}}
 ```
 
 #### Scenes

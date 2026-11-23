@@ -332,5 +332,64 @@ class RankParity(ValuesParity):
                 self.assertIn('top', after['counters']['story'])
 
 
+class GiftParity(ValuesParity):
+    """Doc 86, Phase 4: a wolf's Gift (J10), the post a resident holds (C13b), the stories' own events (C12a, C13a) and the
+    new story effects (story.notify, quest.withdraw), fired by both twins on the same states and facts."""
+
+    def program(self):
+        add = lambda n: [{'do': 'add', 'var': 'n', 'value': n}]
+        conds = [({'test': 'wolf has', 'what': 'tier', 'value': 'quickened'}, 1),
+                 ({'test': 'wolf has', 'what': 'family', 'value': 'seer', 'who': self.BIRCH}, 10),
+                 ({'test': 'not', 'condition': {'test': 'wolf has', 'what': 'tier', 'value': 'normal'}}, 100),
+                 ({'test': 'wolf has', 'what': 'family', 'value': ''}, 1000),
+                 ({'test': 'resident has', 'npc': 'rm111', 'what': 'post', 'value': 'reigning at the Great Palace'}, 10000),
+                 ({'test': 'resident has', 'npc': 'rm112', 'what': 'post', 'value': ''}, 100000)]
+        triggers = [{'id': f'c{i}', 'on': 'deed', 'if': c, 'actions': add(n)} for i, (c, n) in enumerate(conds)]
+        triggers += [
+            {'id': 'news', 'on': 'story notified', 'audience': 'participant', 'match': {'detail': 'lamp_lit'}, 'actions': [
+                {'do': 'add', 'var': 'n', 'value': {'field': 'quantity'}},
+                {'do': 'effect', 'effect': {'kind': 'story.notify', 'signal': 'thanks', 'player': '$actor', 'amount': {'var': 'n'}, 'story': 'the-lamp'}},
+                {'do': 'effect', 'effect': {'kind': 'quest.withdraw', 'quest': 'q', 'player': '$actor'}}]},
+            {'id': 'changed', 'on': 'variable changed', 'match': {'target': 'v_realm'}, 'actions': [
+                {'do': 'set', 'var': 'word', 'value': {'field': 'detail'}}, {'do': 'add', 'var': 'n', 'value': {'var': 'v_realm'}}]}]
+        return {'format': 'ratw-story-program', 'version': 2, 'id': 'parity4', 'title': 'Gifts in both twins', 'start': 'a',
+                'audience': {'kind': 'open'},
+                'variables': [{'id': 'n', 'type': 'number', 'scope': 'story'}, {'id': 'word', 'type': 'text', 'scope': 'story'},
+                              {'id': 'v_realm', 'type': 'number', 'scope': 'world'}],
+                'quests': [{'id': 'q', 'title': 'Q', 'objectives': [{'id': 'o', 'label': 'Do it.', 'on': 'gift'}]}],
+                'phases': [{'id': 'a', 'journal': 'Gifts.', 'effects': [], 'exits': [], 'triggers': triggers}],
+                'tests': [{'name': 'x', 'cohort': [], 'events': [], 'expect': ['a']}]}
+
+    def states(self):
+        A, B, E = self.ASH, self.BIRCH, self.ELM
+        base = {'phase': 'a', 'entered': 0, 'visits': 1, 'votes': {}, 'actor': '', 'seed': 's', 'began': 0, 'cohort': [A, B, E],
+                'counters': {'world': {'v_realm': 4}}}
+        wolves = {A: {'cell': 'grey', 'gift': {'tier': 'quickened', 'family': 'fire'}}, B: {'cell': 'grey', 'gift': {'tier': 'gifted', 'family': 'seer'}},
+                  E: {'cell': 'grey', 'gift': {'tier': 'normal', 'family': ''}}}
+        residents = {'rm111': {'alive': True, 'post': 'reigning at the Great Palace'}, 'rm112': {'alive': True, 'post': ''}}
+        yield 'every fact', base, {'wolves': wolves, 'residents': residents}
+        yield 'no gift written', base, {'wolves': {A: {'cell': 'grey'}}, 'residents': {'rm111': {'alive': True}}}
+        yield 'no facts', base, None
+        yield 'a normal wolf', base, {'wolves': {A: wolves[E], B: wolves[B]}, 'residents': residents}
+
+    def test_every_form_matches(self):
+        for name, state, facts in self.states():
+            for kind, fields in [('deed', {'detail': 'Held the gate'}), ('story notified', {'detail': 'lamp_lit', 'quantity': 3, 'target': 'nh-pack'}),
+                                 ('variable changed', {'target': 'v_realm', 'detail': '4', 'quantity': 4})]:
+                with self.subTest(state=name, kind=kind):
+                    event = {'kind': kind, 'id': 1, 'actor': self.ASH if kind != 'variable changed' else '', **fields,
+                             **({'facts': facts} if facts is not None else {})}
+                    after, trace = self.both(state, event)
+        after, _ = self.both(dict(self.states().__next__()[1]),
+                             {'kind': 'deed', 'id': 1, 'actor': self.ASH, 'facts': {'wolves': {self.ASH: {'gift': {'tier': 'quickened', 'family': 'fire'}},
+                                                                                                self.BIRCH: {'gift': {'tier': 'gifted', 'family': 'seer'}}},
+                                                                                     'residents': {'rm111': {'alive': True, 'post': 'reigning at the Great Palace'},
+                                                                                                   'rm112': {'alive': True, 'post': ''}}}})
+        self.assertEqual(after['counters']['story']['n'], 1 + 10 + 100 + 10000 + 100000)
+        after, _ = self.both(dict(self.states().__next__()[1]), {'kind': 'story notified', 'id': 1, 'actor': self.ASH, 'detail': 'lamp_lit', 'quantity': 3})
+        self.assertEqual([e['kind'] for e in after['triggerEffects']], ['story.notify', 'quest.withdraw'])
+        self.assertEqual(after['triggerEffects'][0]['amount'], 3)
+
+
 if __name__ == '__main__':
     unittest.main()

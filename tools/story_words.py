@@ -37,7 +37,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 WORDS = ROOT / 'Data' / 'Storylines' / 'words.json'
 TALK = ROOT / 'Data' / 'Talk'
-LIMITS = {'say': 300, 'thanks': 300, 'during': 300, 'ask': 120, 'accept': 120, 'decline': 120, 'handIn': 120}
+LIMITS = {'say': 300, 'thanks': 300, 'during': 300, 'ask': 120, 'accept': 120, 'decline': 120, 'handIn': 120, 'duringAsk': 120}
 # Facts a resident's words may read (#section.name#); a section's names are checked where facts.json lists them all.
 FACT_SECTIONS = ('self', 'a', 'b', 'x', 'topic', 'here', 'world', 'player', 'pair', 'conv', 'person', 'them', 'them2')
 CHECKED_SECTIONS = ('player',)

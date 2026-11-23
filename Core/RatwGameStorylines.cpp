@@ -1178,7 +1178,8 @@ Result Game::applyStoryQuests(storylines::Storyline& story, const Value& p)
         // (Doc 86, C1b: the names in an offer's words, as the engines left them as tokens.)
         story.offers = Value::array();
         for (const auto& o : p.array("offers"))
-            story.offers.push(fillQuestWords(fillQuestWords(fillQuestWords(o, "say", 300), "thanks", 300), "summary", 300));
+            story.offers.push(fillQuestWords(fillQuestWords(fillQuestWords(fillQuestWords(o, "say", 300), "thanks", 300), "summary", 300),
+                                             "during", 300));
     }
     if (p.has("choices")) story.choices = p["choices"];
     if (const auto program = p.string("program"); !program.empty() && program.size() <= 80)
@@ -1230,6 +1231,15 @@ bool Game::storyOfferOpen(const storylines::Storyline& s, const Value& offer, co
         return false;
     if (offer.string("who") == "participants" && !s.takesPart(wolf))
         return false;
+    // (Doc 86, C6: an offer whose "Only for wolves who..." reads the wolf's own is for the wolves listed; L5: one taken back
+    // from a wolf is not for them.)
+    const auto listed = [&](const Value& list) {
+        return std::any_of(list.items().begin(), list.items().end(), [&](const Value& w) { return w.asString("") == wolf; });
+    };
+    if (offer["players"].isArray() && !listed(offer["players"]))
+        return false;
+    if (offer["except"].isArray() && listed(offer["except"]))
+        return false;
     if (const auto region = offer.string("region"); !region.empty())
     {
         const auto r = s.regions.find(region);
@@ -1251,16 +1261,19 @@ bool Game::storyOfferOpen(const storylines::Storyline& s, const Value& offer, co
 
 std::vector<Game::StoryChoice> Game::storyChoicesFor(const std::string& wolf, const std::string& npc) const
 {
-    std::vector<StoryChoice> out;
+    // Doc 86, N1: the hand-ins first, then the offers, then the words while under way (C6), then the story choices, each in
+    // story-run order, so what does not fit the hub (Ask about... takes the rest) is never a hand-in.
+    std::vector<StoryChoice> out, offers, during, choices;
     for (const auto& [id, s] : storylines_.all())
     {
         if (s.source != "storykeeper" || !s.live())
             continue;
         for (const auto& o : s.offers.items())
             if (!npc.empty() && o.string("npc") == npc && storyOfferOpen(s, o, wolf))
-                out.push_back({"offer", id, o.string("quest"), o.string("ask", "Ask about: " + o.string("title"))});
+                offers.push_back({"offer", id, o.string("quest"), o.string("ask", "Ask about: " + o.string("title"))});
         if (const auto f = s.questViews.find(wolf); f != s.questViews.end())
             for (const auto& v : f->second.array("quests"))
+            {
                 if (v.boolean("handIn") && v.string("status") == "ready" && v.string("giver") == npc)
                 {
                     std::string words = "About " + v.string("title") + ": it's done.";
@@ -1269,6 +1282,15 @@ std::vector<Game::StoryChoice> Game::storyChoicesFor(const std::string& wolf, co
                             words = o.string("handIn");
                     out.push_back({"handin", id, v.string("id"), words});
                 }
+                // (Doc 86, C6: the giver's words while the wolf's copy is under way.)
+                if (v.string("status") == "active" && v.string("giver") == npc && !npc.empty())
+                    for (const auto& o : s.offers.items())
+                        if (o.string("quest") == v.string("id") && o.string("npc") == npc && !o.string("during").empty())
+                        {
+                            during.push_back({"during", id, v.string("id"), o.string("duringAsk", "About " + v.string("title") + "...")});
+                            break;
+                        }
+            }
         for (const auto& c : s.choices.items())
         {
             if (c.string("npc") != npc || !s.takesPart(wolf))
@@ -1281,9 +1303,11 @@ std::vector<Game::StoryChoice> Game::storyChoicesFor(const std::string& wolf, co
                 continue;
             if (c.boolean("once") && has(c["picked"]))
                 continue;
-            out.push_back({"choice", id, c.string("id"), c.string("words")});
+            choices.push_back({"choice", id, c.string("id"), c.string("words")});
         }
     }
+    for (auto* list : {&offers, &during, &choices})
+        out.insert(out.end(), list->begin(), list->end());
     return out;
 }
 

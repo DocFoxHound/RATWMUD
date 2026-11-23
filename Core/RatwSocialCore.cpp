@@ -1287,6 +1287,11 @@ SocialResult SocialLedger::close(const std::string& owner, const std::string& id
     return {true, {}, total};
 }
 
+int SocialLedger::storyQuestClosure(const std::string& actor, const std::string& session, int amount, double now)
+{
+    return pay(actor, "", "story_closure", session, amount, now, std::hash<std::string>{}("quest|" + session + "|" + actor));
+}
+
 SocialResult SocialLedger::storyStar(const std::string& giver, const std::string& recipient, const std::string& id, double now)
 {
     auto it = stories.find(id);

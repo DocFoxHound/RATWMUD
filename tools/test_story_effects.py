@@ -105,8 +105,11 @@ def effect(kind, **more):
 class Catalogue(unittest.TestCase):
     def test_the_new_effects_are_in_the_catalogue_with_typed_parameters_and_sentences(self):
         ids = [e['id'] for e in CAT['effects']]
-        self.assertEqual(len(ids), 82)   # (Phase 10's story.start, the story's own: not a game order; doc 86 Phase 1b's 7, Phase 3's 4.)
-        self.assertNotIn('story.start', runner.WORLD_ORDERS)
+        self.assertEqual(len(ids), 84)   # (Phase 10's story.start, the story's own: not a game order; doc 86 Phase 1b's 7, Phase 3's 4,
+        self.assertNotIn('story.start', runner.WORLD_ORDERS)   # Phase 4's story.notify and quest.withdraw, the story's own too.)
+        for kind in ('story.notify', 'quest.withdraw'):
+            self.assertNotIn(kind, runner.WORLD_ORDERS)
+            self.assertIn(kind, quests.STORY_EFFECTS)
         for kind in NEW:
             with self.subTest(kind=kind):
                 self.assertIn(kind, ids)

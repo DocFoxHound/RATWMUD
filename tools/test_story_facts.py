@@ -65,6 +65,12 @@ class Checks(unittest.TestCase):
         self.bad({'test': 'wolf indoors', 'is': 'yes'}, 'Yes or no')
         self.bad({'test': 'resident is', 'npc': 'rm111', 'state': 'merry'}, 'Alive, dead')
         self.bad({'test': 'resident has', 'npc': 'rm111', 'what': 'hat', 'value': 'red'}, 'job, mood')
+        # (Doc 86, J10: a tier or a playable family; Death Walkers are residents only.)
+        self.bad({'test': 'wolf has', 'what': 'tier', 'value': 'mighty'}, 'normal, gifted or quickened')
+        self.bad({'test': 'wolf has', 'what': 'family', 'value': 'death_walker'}, 'A family is one of')
+        self.bad({'test': 'wolf has', 'what': 'colour', 'value': 'grey'}, "tier or its family")
+        families = json.loads((rules.CATALOGUE_FILE.parents[1] / 'Gifts/families.json').read_text())['families']
+        self.assertEqual(triggers.GIFT_FAMILIES, tuple(f['id'] for f in families if not f.get('npcOnly')), 'the playable families')
         self.bad({'test': 'hour between', 'from': 0, 'to': 24}, 'Hours from 0')
         self.bad({'test': 'calendar is', 'what': 'weekday', 'value': 'winter'}, 'weekday, a season')
         self.bad({'test': 'weather is', 'weather': 'hail'}, 'Clear, overcast')
@@ -84,8 +90,8 @@ class Checks(unittest.TestCase):
         ids = {c['id'] for c in rules.CATALOGUE['conditions']}
         self.assertLessEqual({*triggers.FACTS_V2, *triggers.QUEST_V2}, ids)
         self.assertEqual(set(rules.FACT_CONDITIONS), set(triggers.FACTS_V2))
-        self.assertEqual(len(triggers.FACTS_V2) + len(triggers.QUEST_V2), 23)
-        self.assertEqual(len(rules.WATCHED_EVENTS), 33)   # (Phase 8's 24, Phase 10's 8 and doc 86's moon.)
+        self.assertEqual(len(triggers.FACTS_V2) + len(triggers.QUEST_V2), 24)   # (Doc 86, J10: wolf has.)
+        self.assertEqual(len(rules.WATCHED_EVENTS), 34)   # (Phase 8's 24, Phase 10's 8, doc 86's moon and month begins.)
         for e in rules.CATALOGUE['events']:
             if e['id'] in rules.WATCHED_EVENTS:
                 self.assertTrue(e['help'].endswith('(the story\'s watch list).'), e['id'])
@@ -155,7 +161,10 @@ def random_facts(rng):
                           ('coins', lambda: rng.randint(0, 50)), ('standing', lambda: {'watch': rng.randint(-50, 50)} if rng.random() < .7 else {}),
                           ('reputation', lambda: {'greyfen': rng.randint(-3, 3)} if rng.random() < .7 else {}),
                           ('downed', lambda: rng.random() < .3), ('hurt', lambda: rng.random() < .3), ('wanted', lambda: rng.random() < .3),
-                          ('held', lambda: rng.random() < .2)):
+                          ('held', lambda: rng.random() < .2),
+                          # (Doc 86, J10: the Gift the wolf was made with.)
+                          ('gift', lambda: rng.choice([{'tier': 'normal', 'family': ''}, {'tier': 'gifted', 'family': 'seer'},
+                                                       {'tier': 'quickened', 'family': 'fire'}, {'tier': 'gifted'}]))):
             if rng.random() < .85:
                 w[key] = make()
         return w
@@ -170,7 +179,8 @@ def random_facts(rng):
         f['residents'] = {r: {k: v for k, v in (('alive', rng.random() < .7), ('cell', rng.choice(['grey', 'mill'])), ('x', rng.randint(0, 8)),
                                                   ('y', rng.randint(0, 8)), ('indoors', rng.random() < .5),
                                                   ('mantle', rng.choice(['', 'carter'])), ('job', rng.choice(['guard', 'smith'])),
-                                                  ('mood', rng.choice(['even', 'low'])), ('town', 'greyfen')) if rng.random() < .85}
+                                                  ('mood', rng.choice(['even', 'low'])), ('town', 'greyfen'),
+                                                  ('post', rng.choice(['', 'reigning at the Great Palace']))) if rng.random() < .85}
                           for r in ('rm111', 'rm119') if rng.random() < .8}
     if rng.random() < .85:
         f['weather'] = {c: rng.choice(triggers.WEATHERS) for c in ('grey', 'mill', 'inn') if rng.random() < .7}
@@ -190,7 +200,10 @@ ALL = [
     {'test': 'party size', 'op': '>=', 'value': 2}, {'test': 'in party with', 'other': BIRCH}, {'test': 'in party with', 'who': BIRCH, 'other': '$actor'},
     *({'test': 'resident is', 'npc': 'rm111', 'state': s} for s in triggers.RESIDENT_STATES),
     {'test': 'resident in place', 'npc': 'rm111', 'place': 'grey'}, {'test': 'resident in region', 'npc': 'rm119', 'region': 'gate'},
-    *({'test': 'resident has', 'npc': 'rm111', 'what': w, 'value': v} for w, v in (('mantle', 'carter'), ('job', 'guard'), ('mood', 'low'), ('town', 'greyfen'))),
+    *({'test': 'resident has', 'npc': 'rm111', 'what': w, 'value': v} for w, v in (('mantle', 'carter'), ('job', 'guard'), ('mood', 'low'), ('town', 'greyfen'),
+                                                                                   ('post', 'reigning at the Great Palace'), ('post', ''))),
+    *({'test': 'wolf has', 'what': w, 'value': v} for w, v in (('tier', 'normal'), ('tier', 'quickened'), ('family', 'seer'), ('family', ''))),
+    {'test': 'wolf has', 'who': BIRCH, 'what': 'tier', 'value': 'gifted'},
     {'test': 'hour between', 'from': 6, 'to': 18}, {'test': 'hour between', 'from': 22, 'to': 4},
     *({'test': 'calendar is', 'what': w, 'value': v} for w, v in (('weekday', 'Restday'), ('season', 'winter'), ('period', 'night'))),
     {'test': 'weather is', 'weather': 'rain'}, {'test': 'weather is', 'where': 'mill', 'weather': 'clear'},

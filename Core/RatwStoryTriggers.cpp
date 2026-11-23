@@ -671,7 +671,7 @@ struct Dispatch2
     static const std::set<std::string>& factKinds()
     {
         static const std::set<std::string> kinds{"wolf here", "wolf in region", "wolf in place", "wolf in town", "wolf indoors",
-            "count in region", "carries", "coins", "standing", "reputation", "wolf is", "party size", "in party with", "resident is",
+            "count in region", "carries", "coins", "standing", "reputation", "wolf is", "wolf has", "party size", "in party with", "resident is",
             "resident in place", "resident in region", "resident has", "hour between", "calendar is", "weather is", "relation is"};
         return kinds;
     }
@@ -784,6 +784,14 @@ struct Dispatch2
         if (kind == "wolf in town") return w["town"].isString() && w.string("town") == c.string("town");
         if (kind == "wolf indoors") return flag("indoors") == c.boolean("is");
         if (kind == "wolf is") return flag(c.string("state")) == c.boolean("is");
+        if (kind == "wolf has")
+        {
+            // (Doc 86, J10: the facts' gift, {tier, family}; none written: unknown.)
+            const auto& g = w["gift"];
+            const auto& v = g.isObject() ? g[c.string("what")] : g;
+            if (!v.isString()) return std::nullopt;
+            return v.asString() == c.string("value");
+        }
         if (kind == "in party with")
         {
             const auto& o = wolves[who(x, c.string("other"))];

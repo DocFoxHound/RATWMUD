@@ -1164,6 +1164,10 @@ class ReadinessShapes(unittest.TestCase):
         self.assertEqual(rules.ready_words(self.p['phases'][1]['ready']['then']), 'the next new moon')
         self.setUp()
         self.p['phases'][1]['ready']['then'] = {'on': 'month begins'}
+        rules.validate(self.p)   # (Doc 86, Phase 4: a new month is a moment now, C13a.)
+        self.assertEqual(rules.ready_words(self.p['phases'][1]['ready']['then']), 'the next month')
+        self.setUp()
+        self.p['phases'][1]['ready']['then'] = {'on': 'succession'}
         self.refused('Readiness waits for one of')
         self.setUp()
         self.p['phases'][0]['ready']['auto'] = True

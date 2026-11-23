@@ -183,7 +183,7 @@ const v2: Record<string, Program> = JSON.parse(execFileSync('python3', ['-c',
 const ledger = v2['v2-ledger'];
 
 test('version 2: the samples and the 108 programs made version 2 are shown by the workbench, every nested action a sentence', () => {
-    assert.equal(Object.keys(v2).length, 114);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road; Phase 3: the oil drive.)
+    assert.equal(Object.keys(v2).length, 115);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road; Phase 3: the oil drive; Phase 4: the lamp line.)
     let nested = 0;
     for (const [name, p] of Object.entries(v2)) {
         assert.ok(editable(p), name);
@@ -371,7 +371,7 @@ test('Phase 8: the night watch opens in the workbench, every world condition and
         const words = plain(eventParts(cat, t, names));
         assert.ok(!words.includes('{'), t.on + ': ' + words);
     }
-    assert.equal(cat.events.filter(e => (e as {watch?: boolean}).watch).length, 33);   // (Phase 8's 24, Phase 10's 8, doc 86's moon.)
+    assert.equal(cat.events.filter(e => (e as {watch?: boolean}).watch).length, 34);   // (Phase 8's 24, Phase 10's 8, doc 86's moon and month begins.)
 });
 
 // ------------------------------------------------------------------------------------------ new world effects (doc 85, Phase 9)
@@ -572,4 +572,28 @@ test('doc 86, Phase 3: rank, a tally and a share in words; a rank reads and writ
     assert.deepEqual(actionVars(done.actions[0]), {reads: ['p_oil'], writes: ['best']});
     assert.ok(operandVars({tally: {sum: 'p_oil', where: 'p_backs', is: 'lamp', over: {list: 'best'}}}).sort().join() === 'best,p_backs,p_oil');
     assert.equal(p.quests![0].credit, 'share');
+});
+
+import {REQUIRES_TESTS} from './workbench.ts';
+
+test('doc 86, Phase 4: the lamp line in words; a quest\'s "Only for wolves who…" the story checks accept', () => {
+    const p = v2['v2-lamp-line'];
+    assert.ok(editable(p));
+    const ns = namesOf(null, p);
+    const ts = triggersOf(p, 0);
+    for (const t of ts) assert.ok(!plain(eventParts(cat, t, ns)).includes('{'), t.on);
+    assert.equal(plain(eventParts(cat, ts.find(t => t.id === 'news')!, ns)), plain(eventParts(cat, {on: 'story notified', match: {detail: 'voice'}}, ns)));
+    const gate = ts.find(t => t.id === 'gate')!;
+    const words = allConditions(gate).filter(c => c.test === 'wolf has' || c.test === 'resident has').map(c => plain(conditionParts(cat, c, ns)));
+    assert.ok(words.some(w => /Gift's tier is “quickened”/.test(w)) && words.some(w => /post is “reigning at the Great Palace”/.test(w)), words.join(' | '));
+    const notify = ts.find(t => t.id === 'lit')!;
+    assert.match(plain(actionParts(cat, notify.actions[1], ns)), /^Tell nh-ch1 the news lamp_lit about nobody in particular/);
+    assert.match(plain(actionParts(cat, ts.find(t => t.id === 'took-oil')!.actions[0], ns)), /is no longer offered to the acting wolf/);
+    const oil = p.quests!.find(q => q.id === 'oil')!;
+    assert.equal(oil.closure, 'line');
+    assert.equal(oil.offer?.duringAsk, 'About the oil...');
+    // (The tests the workbench offers for "Only for wolves who…" are the story checks' own.)
+    const python = JSON.parse(execFileSync('python3', ['-c', "import json, sys\nsys.path.insert(0, 'tools')\nimport story_quests as Q\nprint(json.dumps(Q.REQUIRES_TESTS))"],
+        {cwd: repo}).toString());
+    assert.deepEqual([...REQUIRES_TESTS].sort(), ['all', 'any', 'not', ...python].sort());
 });

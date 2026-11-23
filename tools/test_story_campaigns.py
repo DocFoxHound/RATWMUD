@@ -487,3 +487,135 @@ class ReadyChapters(console.ReadyFixture, unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+# Doc 86, Phase 4: stories that talk to each other. A quest pack's news reaches the chapter running (C12a), a world
+# variable a pack changes wakes the chapter that declares it (C13a), and a side story counts only in a campaign chapter (J3).
+def _story(pid, title, variables, triggers, quests=None):
+    return {'format': 'ratw-story-program', 'version': 2, 'id': pid, 'title': title,
+            'audience': {'kind': 'players', 'players': sorted(WOLVES)}, 'start': 'on', 'variables': variables,
+            **({'quests': quests} if quests else {}),
+            'phases': [{'id': 'on', 'journal': 'Under way.', 'effects': [], 'exits': [], 'triggers': triggers}],
+            'tests': [{'name': 'Nothing', 'cohort': sorted(WOLVES), 'events': [], 'expect': ['on']}]}
+
+
+PACK = _story('lamp-pack', 'The lamp pack', [{'id': 'nh_realm', 'type': 'number', 'scope': 'world'}], [
+    {'id': 'voice', 'on': 'conversation', 'audience': 'participant', 'match': {'target': 'rm111'},
+     'actions': [fx('story.notify', signal='voice', player='$actor', amount=2)]},
+    {'id': 'unheard', 'on': 'conversation', 'audience': 'participant', 'match': {'target': 'rm113'},
+     'actions': [fx('story.notify', signal='nobody_listens', player='$actor')]},
+    {'id': 'realm', 'on': 'conversation', 'match': {'target': 'rm112'}, 'actions': [{'do': 'add', 'var': 'nh_realm', 'value': 3}]}])
+
+CHAPTER = _story('nh-ch1', 'The chalk night', [
+    {'id': 'p_voice', 'type': 'number', 'scope': 'player'}, {'id': 'heard', 'type': 'number', 'scope': 'story'},
+    {'id': 'woken', 'type': 'number', 'scope': 'story'}, {'id': 'nh_realm', 'type': 'number', 'scope': 'world'}], [
+    {'id': 'news', 'on': 'story notified', 'audience': 'participant', 'match': {'detail': 'voice'},
+     'actions': [{'do': 'add', 'var': 'p_voice', 'value': {'field': 'quantity'}}]},
+    {'id': 'woke', 'on': 'variable changed', 'match': {'target': 'nh_realm'},
+     'actions': [{'do': 'set', 'var': 'heard', 'value': {'field': 'quantity'}}, {'do': 'add', 'var': 'woken', 'value': 1}]},
+    {'id': 'own', 'on': 'conversation', 'match': {'target': 'rm119'}, 'actions': [{'do': 'add', 'var': 'nh_realm', 'value': 100}]}])
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL required')
+class StoriesThatTalk(unittest.TestCase):
+    setUpClass = classmethod(console.ConsoleReads.setUpClass.__func__)
+    tearDownClass = classmethod(console.ConsoleReads.tearDownClass.__func__)
+    fact, tick = console.ConsoleReads.fact, console.ConsoleReads.tick
+    answer_all, settle = steering.Steering.answer_all, steering.Steering.settle
+    setUp, release, approve, lone = Campaigns.setUp, Campaigns.release, Campaigns.approve, Campaigns.lone
+
+    def commands(self, run, detail=None):
+        return self.conn.execute(
+            """SELECT payload->'event',status FROM dm.story_commands WHERE run=%s AND kind='story-event'""" +
+            (" AND payload->'event'->>'detail'=%s" if detail else '') + ' ORDER BY id', (run, detail) if detail else (run,)).fetchall()
+
+    def test_the_checks(self):
+        rules.validate(PACK)
+        rules.validate(CHAPTER)
+        bad = copy.deepcopy(CHAPTER)
+        bad['phases'][0]['triggers'][1]['match']['target'] = 'heard'
+        self.assertRaisesRegex(ValueError, 'names a world variable this story declares', rules.validate, bad)
+        bad = copy.deepcopy(CHAPTER)
+        del bad['phases'][0]['triggers'][0]['match']
+        self.assertRaisesRegex(ValueError, r'needs its news \(detail\) named', rules.validate, bad)
+        self.assertTrue(runner._listens(CHAPTER, 'story notified', 'detail', 'voice'))
+        self.assertFalse(runner._listens(CHAPTER, 'story notified', 'detail', 'other'))
+        self.assertTrue(runner._listens(CHAPTER, 'variable changed', 'target', 'nh_realm'))
+        self.assertEqual(rules.watch_of(CHAPTER), {}, 'the stories\' own events are the runner\'s: nothing for the game')
+
+    def test_a_packs_news_reaches_the_running_chapter(self):
+        chapter, pack = self.lone(CHAPTER), self.lone(PACK)
+        self.settle()
+        self.fact('conversation', ASH, 'rm111')
+        self.settle()
+        told = self.commands(chapter, 'voice')
+        self.assertEqual(len(told), 1)
+        event, status = told[0]
+        self.assertEqual((event['kind'], event['actor'], event['target'], event['item'], event['quantity'], status),
+                         ('story notified', ASH, 'lamp-pack', pack, 2, 'done'))
+        self.assertEqual(self.release(chapter)[1]['counters']['player'][ASH]['p_voice'], 2, "the chapter's voice rises for Ash")
+        self.assertNotIn('notices', self.release(pack)[1], 'told: none left waiting')
+        # News nobody listens for goes nowhere.
+        self.fact('conversation', BIRCH, 'rm113')
+        self.settle()
+        self.assertEqual(self.commands(chapter, 'nobody_listens'), [])
+        self.assertNotIn('notices', self.release(pack)[1])
+        # 200 a tick at most: the rest wait in the state for the next.
+        state = self.release(pack)[1]
+        state['notices'] = [{'signal': 'voice', 'player': ELM, 'amount': 1}] * 250
+        self.conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), pack))
+        self.answer_all()
+        self.tick()
+        self.assertLessEqual(len(self.commands(chapter, 'voice')), 1 + 200)
+        self.assertEqual(len(self.release(pack)[1].get('notices', [])), 50, '50 wait for the next tick')
+        self.settle(rounds=40)   # (The chapter takes its inbox a few dozen commands a tick.)
+        self.assertEqual(len(self.commands(chapter, 'voice')), 1 + 250)
+        self.assertEqual({s for _, s in self.commands(chapter, 'voice')}, {'done'})
+        self.assertEqual(self.release(chapter)[1]['counters']['player'][ELM]['p_voice'], 250)
+        # Named: only that story's run hears it (here, a story that is not running: nobody).
+        state = self.release(pack)[1]
+        state['notices'] = [{'signal': 'voice', 'player': ASH, 'amount': 5, 'story': 'nh-ch2'}]
+        self.conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), pack))
+        self.settle()
+        self.assertEqual(self.release(chapter)[1]['counters']['player'][ASH]['p_voice'], 2)
+
+    def test_a_world_variable_changed_wakes_the_story_that_declares_it(self):
+        chapter, pack = self.lone(CHAPTER), self.lone(PACK)
+        self.settle()
+        self.fact('conversation', ASH, 'rm112')
+        self.settle()
+        story = self.release(chapter)[1]['counters']['story']
+        self.assertEqual((story['heard'], story['woken']), (3, 1), 'woken once, with the new value')
+        [(event, status)] = self.commands(chapter)
+        self.assertEqual((event['kind'], event['target'], event['detail'], event['item'], status), ('variable changed', 'nh_realm', '3', pack, 'done'))
+        # Coalesced: two changes before the chapter takes the first are one telling, with the latest value.
+        runner.tell_changes(self.conn, self.world, pack, {'nh_realm': ('number', 6)})
+        runner.tell_changes(self.conn, self.world, pack, {'nh_realm': ('number', 9)})
+        queued = [e for e, s in self.commands(chapter) if s == 'queued']
+        self.assertEqual([(e['quantity'], e['detail']) for e in queued], [(9, '9')])
+        self.settle()
+        self.assertEqual(self.release(chapter)[1]['counters']['story']['woken'], 2)
+        # A story never hears its own changes: the chapter's own write tells the pack nothing (it does not listen) and not
+        # itself.
+        before = len(self.commands(chapter))
+        self.fact('conversation', ASH, 'rm119')
+        self.settle()
+        self.assertEqual(len(self.commands(chapter)), before)
+        self.assertEqual(self.commands(pack), [])
+        value = self.conn.execute("SELECT value FROM dm.story_world_vars WHERE world_id=%s AND name='nh_realm'", (self.world,)).fetchone()[0]
+        self.assertEqual(value, 103, 'the tellings change nothing: only a story\'s own writes do')
+
+    def test_a_side_story_counts_only_in_a_campaign_chapter(self):
+        crossing = copy.deepcopy(CROSSING)
+        crossing['quests'] = [{'id': 'ferry', 'title': 'The ferryman\'s debt', 'closure': 'side',
+                               'objectives': [{'id': 'o', 'label': 'Pay the ferryman.', 'on': 'gift', 'match': {'target': 'rm112'}}]}]
+        rules.validate(crossing)
+        self.assertRaisesRegex(ValueError, 'A side story counts only in a campaign chapter', runner.approve, self.conn, self.world,
+                               'martin', crossing, rules.digest(crossing))
+        out = self.approve(muster(), crossing)
+        self.assertTrue(out['ticket'])
+        # A story's news for a story not approved yet: a warning, not a refusal (a pack may be approved first).
+        pack = copy.deepcopy(PACK)
+        pack['phases'][0]['triggers'][0]['actions'][0]['effect']['story'] = 'nh-ch9'
+        warnings = runner.approve(self.conn, self.world, 'martin', pack, rules.digest(pack))['warnings']
+        self.assertTrue(any('No story "nh-ch9"' in w for w in warnings), warnings)

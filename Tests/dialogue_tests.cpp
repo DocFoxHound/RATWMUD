@@ -2108,6 +2108,140 @@ void storyGreetingsInTheWindow()
     fs::remove_all(root);
 }
 
+// Doc 86, Phase 4: an offer only for the wolves it lists (C6 `players`) and not for one it was taken back from (L5 `except`);
+// the giver's words while the wolf's copy is under way (C6 `during`), its node raising the watched "dialogue node"; and a
+// giver crowded with stories (N1): the hand-in on the hub first, what doesn't fit under Ask about...
+void storyChainsInTheWindow()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-dialogue-chains-" + std::to_string(::getpid()));
+    const auto worldPath = writeStrip(root / "world");
+    Town town(worldPath, (root / "save").string(), 120, true);
+    auto& w = town.g.world();
+    town.enter(town.ash, 1, "player-ash", "Ash", 1, 9.5);
+    town.enter(town.cy, 3, "player-cy", "Cy", 1, 12.5);
+    w.setTimeOfDay(12);
+    town.run(2);
+    const auto keep = [&] {
+        auto* n = w.entity("u1");
+        n->cellId = cellId(1);
+        n->position = {10.5, 9.5};
+        w.stop("u1");
+        town.place(town.ash, 1, 9.5);
+    };
+    keep();
+    std::vector<WorldEvent> nodes;
+    w.setEventWatcher([&](const WorldEvent& e) { if (e.kind == "dialogue node") nodes.push_back(e); });
+    const auto run = "world-lamp";
+    auto phase = parsed(R"({"title":"The lamp","phase":"open","journal":"The lamp.","visit":1,"watch":{"events":["dialogue node"]}})");
+    auto players = json::Value::array();
+    players.push(town.ash.entityId);
+    players.push(town.cy.entityId);
+    phase.set("players", players);
+    expect(town.g.applyDmAct({"1", "story.phase", run, "dm", json::dump(phase)}).ok, "the story opens with Ash and Cy");
+    int n = 1;
+    const auto ash = town.ash.entityId, cy = town.cy.entityId;
+    const auto tell = [&](const std::string& extraOffers, const std::string& choices, const std::string& ashViews) {
+        const auto text = R"({"visit":1,"offers":[{"quest":"one","npc":"u1","title":"The lamp","say":"Find my lamp.","ask":"About the lamp?",
+                "who":"participants","full":false,"except":[")" + cy + R"("]},
+              {"quest":"two","npc":"u1","title":"The oil","say":"Now the oil.","ask":"And the oil?","who":"participants","full":false,
+               "players":[")" + ash + R"("],"during":"Mind you keep the oil dry, #address#.","duringAsk":"About the oil..."})" + extraOffers + R"(],
+            "choices":[)" + choices + R"(],"wolves":{")" + ash + R"(":{"quests":[)" + ashViews + R"(],"trackers":[]}}})";
+        expect(town.g.applyDmAct({std::to_string(++n), "story.quests", run, "dm", text}).ok, "the quests are told");
+    };
+    const auto ids = [&](const std::string& wolf) {
+        std::string out;
+        for (const auto& c : town.g.storyChoicesFor(wolf, "u1"))
+            out += c.kind + ":" + c.id + " ";
+        return out;
+    };
+    tell("", "", "");
+    expect(ids(ash) == "offer:one offer:two ", "Ash: both, part two listed for him: " + ids(ash));
+    expect(ids(cy) == "", "Cy: part one taken back from him, part two not for him: " + ids(cy));
+    tell("", "", R"({"id":"one","title":"The lamp","status":"done","again":null,"objectives":[],"handIn":false,"abandon":false,"accept":false},
+                   {"id":"two","title":"The oil","status":"active","giver":"u1","objectives":[],"handIn":false,"abandon":true,"accept":false})");
+    expect(ids(ash) == "during:two ", "under way: the giver's words, no offer: " + ids(ash));
+    const auto open = [&]() -> const json::Value* {
+        if (const auto* d = town.g.dialogueOf(ash))
+            town.g.command(&town.ash, cmd({{"type", "dialogue_close"}, {"session", d->id}, {"why", "closed"}}));
+        keep();
+        town.ash.events.clear();
+        town.g.command(&town.ash, cmd({{"type", "dialogue_open"}, {"npc", "u1"}, {"entry", "talk"}}));
+        return lastOf(town.ash, "dialogue");
+    };
+    const auto pick = [&](const json::Value* d, const std::string& words) {
+        if (d)
+            for (const auto& c : d->array("choices"))
+                if (c.string("text") == words)
+                    return int(c.number("n"));
+        return 0;
+    };
+    const auto texts = [](const json::Value* d) {
+        std::string all;
+        if (d)
+            for (const auto& c : d->array("choices")) all += "[" + c.string("text") + "]";
+        return all;
+    };
+    const auto choose = [&](int k) -> const json::Value* {
+        const auto* d = town.g.dialogueOf(ash);
+        expect(d && k > 0, "a choice to make");
+        town.ash.events.clear();
+        auto o = json::Value::object();
+        o.add("type", "dialogue_choose");
+        o.add("session", d->id);
+        o.add("n", k);
+        town.g.command(&town.ash, json::dump(o));
+        return lastOf(town.ash, "dialogue");
+    };
+    auto* d = open();
+    expect(pick(d, "About the oil..."), "the hub asks after it: " + texts(d));
+    nodes.clear();
+    d = choose(pick(d, "About the oil..."));
+    expect(d && d->string("line").find("Mind you keep the oil dry") == 0 && d->string("line").find('#') == std::string::npos &&
+               pick(d, "Something else..."),
+           "said in the giver's voice, then back: " + (d ? d->string("line") : std::string()) + texts(d));
+    expect(!nodes.empty() && nodes.back().detail == std::string("@story:") + run + ":during:two" && nodes.back().actor == ash,
+           "the watched dialogue node, no story event");
+
+    // Crowded: a hand-in and twelve story choices at one giver.
+    std::string many;
+    for (int i = 1; i <= 12; ++i)
+        many += std::string(i > 1 ? "," : "") + R"({"id":"c)" + std::to_string(i) + R"(","npc":"u1","words":"Choice )" + std::to_string(i) +
+                R"(.","reply":"Well.","players":null,"once":false,"picked":[]})";
+    tell("", many, R"({"id":"one","title":"The lamp","status":"ready","giver":"u1","objectives":[],"handIn":true,"abandon":true,"accept":false})");
+    const auto story = town.g.storyChoicesFor(ash, "u1");
+    expect(story.size() == 14 && story.front().kind == "handin" && story[1].kind == "offer" && story.back().id == "c12",
+           "the hand-in first, then the offers, then the choices: " + ids(ash));
+    d = open();
+    const auto hub = d ? d->array("choices") : std::vector<json::Value>{};
+    int onHub = 0, onAbout = 0;
+    std::vector<std::string> order;
+    for (const auto& c : hub)
+        if (c.string("text").rfind("Choice ", 0) == 0 || c.string("text") == "About The lamp: it's done." || c.string("text") == "And the oil?")
+        {
+            ++onHub;
+            order.push_back(c.string("text"));
+        }
+    expect(hub.size() <= 9 && !hub.empty() && hub.back().string("text") == "Goodbye for now.", "the hub: nine at most, the way out last: " + texts(d));
+    expect(!order.empty() && order.front() == "About The lamp: it's done.", "the hand-in is on the hub: " + texts(d));
+    expect(pick(d, "I want to know more about something..."), "and the way to the rest: " + texts(d));
+    d = choose(pick(d, "I want to know more about something..."));
+    expect(d && d->string("node") == "about", "under Ask about...");
+    for (const auto& c : d->array("choices"))
+        if (c.string("text").rfind("Choice ", 0) == 0 || c.string("text") == "And the oil?")
+        {
+            ++onAbout;
+            order.push_back(c.string("text"));
+        }
+    expect(onAbout > 0 && d->array("choices").size() <= 9 && d->array("choices").back().string("text") == "I was wondering about something else...",
+           "the rest under Ask about..., before the way back: " + texts(d));
+    expect(order[1] == "And the oil?" && order[2] == "Choice 1.", "in order, the hub's first: " + std::to_string(order.size()));
+    for (std::size_t i = 3; i < order.size(); ++i)
+        expect(order[i] == "Choice " + std::to_string(i - 1) + ".", "in order: " + order[i]);
+    d = choose(pick(d, order.back()));
+    expect(d && d->string("line") == "Well.", "a choice under Ask about... answers as on the hub");
+    fs::remove_all(root);
+}
+
 } // namespace
 
 int main()
@@ -2127,6 +2261,7 @@ int main()
         storyQuestsInTheWindow();
         storyTalkInTheWindow();
         storyGreetingsInTheWindow();
+        storyChainsInTheWindow();
     }
     catch (const std::exception& e)
     {

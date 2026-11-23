@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <string>
@@ -79,6 +80,11 @@ struct Forecast
 // Dawn ramps smoothly 05:00–07:00; dusk 17:00–19:00. Midpoints 06:00/18:00 are
 // exactly two real hours apart in either direction, in EVERY season.
 Calendar calendarAt(double absoluteGameDays);
+
+// The economy's 28-day month (doc 42) by the day of the year (one-based): 1 for days 1-28, ... 13 for days 337-364; the
+// year's 365th day stays in the 13th (doc 86, C13a's "month begins").
+constexpr int MonthDays = 28, MonthsInYear = 13;
+constexpr int monthOfYear(int dayOfYear) { return dayOfYear < 1 ? 1 : std::min(MonthsInYear, (dayOfYear - 1) / MonthDays + 1); }
 
 // Provisional gameplay light factors, not photometric simulation:
 // nightLight=.08+.32*moonIllumination*moonTransmission. Cloud transmission is

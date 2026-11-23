@@ -51,7 +51,7 @@ WHERE_DEPTH, WHERE_LEAVES = 3, 8
 # Doc 85, Phase 8: conditions over the world's facts as of the event (game.story_facts, carried on the event as `facts`), and
 # over the story's quests. A fact that is missing (a wolf away, no facts at all) is unknown, and unknown never fires.
 FACTS_V2 = ('wolf here', 'wolf in region', 'wolf in place', 'wolf in town', 'wolf indoors', 'count in region', 'carries', 'coins',
-            'standing', 'reputation', 'wolf is', 'party size', 'in party with', 'resident is', 'resident in place',
+            'standing', 'reputation', 'wolf is', 'wolf has', 'party size', 'in party with', 'resident is', 'resident in place',
             'resident in region', 'resident has', 'hour between', 'calendar is', 'weather is', 'relation is')
 QUEST_V2 = ('quest is', 'objective is')
 CONDITIONS_V2 = ('compare', 'switch', 'in list', 'phase is', 'visit is', 'timer', 'fired', 'chance', 'days since', *FACTS_V2, *QUEST_V2,
@@ -59,7 +59,10 @@ CONDITIONS_V2 = ('compare', 'switch', 'in list', 'phase is', 'visit is', 'timer'
 STANCES = ('war', 'hostile', 'tense', 'neutral', 'friendly', 'allied')
 WOLF_STATES = ('downed', 'hurt', 'wanted', 'held')
 RESIDENT_STATES = ('alive', 'dead', 'indoors', 'out of doors')
-RESIDENT_HAS = ('job', 'mood', 'mantle', 'town')
+RESIDENT_HAS = ('job', 'mood', 'mantle', 'town', 'post')   # (Doc 86, C13b: the post they hold.)
+# Doc 86, J10: a wolf's Gift, its tier or its family (Data/Gifts/families.json, the playable ones).
+GIFT_TIERS = ('normal', 'gifted', 'quickened')
+GIFT_FAMILIES = ('fire', 'earth', 'water', 'wind', 'sound', 'blinker', 'gravity', 'seer')
 CALENDAR = {'weekday': ('Dawnday', 'Hearthday', 'Stoneday', 'Riverday', 'Emberday', 'Marketday', 'Restday'),
             'season': ('spring', 'summer', 'autumn', 'winter'), 'period': ('dawn', 'day', 'dusk', 'night'),
             'moon': ('new', 'waxing', 'full', 'waning')}   # (Doc 86, J4: the moon in four.)
@@ -71,7 +74,8 @@ FACT_SHAPES = {
     'wolf here': ((), ('who',)), 'wolf in region': (('region',), ('who',)), 'wolf in place': (('place',), ('who',)),
     'wolf in town': (('town',), ('who',)), 'wolf indoors': (('is',), ('who',)), 'count in region': (('region', 'op', 'value'), ()),
     'carries': (('item', 'op', 'value'), ('who',)), 'coins': (('op', 'value'), ('who',)), 'standing': (('faction', 'op', 'value'), ('who',)),
-    'reputation': (('town', 'op', 'value'), ('who',)), 'wolf is': (('state', 'is'), ('who',)), 'party size': (('op', 'value'), ('who',)),
+    'reputation': (('town', 'op', 'value'), ('who',)), 'wolf is': (('state', 'is'), ('who',)),
+    'wolf has': (('what', 'value'), ('who',)), 'party size': (('op', 'value'), ('who',)),
     'in party with': (('other',), ('who',)), 'resident is': (('npc', 'state'), ()), 'resident in place': (('npc', 'place'), ()),
     'resident in region': (('npc', 'region'), ()), 'resident has': (('npc', 'what', 'value'), ()), 'hour between': (('from', 'to'), ()),
     'calendar is': (('what', 'value'), ()), 'weather is': (('weather',), ('where',)), 'relation is': (('faction', 'other', 'op', 'stance'), ()),
@@ -696,7 +700,7 @@ def _check_fact_condition(c, phase, each):
     if 'op' in c:
         ops = ('=', '!=', '>=', '<=') if kind == 'relation is' else tuple(COMPARE)
         require(c['op'] in ops, 'Choose a comparison.')
-    if 'value' in c and kind not in ('resident has', 'calendar is'):
+    if 'value' in c and kind not in ('resident has', 'calendar is', 'wolf has'):
         low, high = {'standing': (-100, 100), 'reputation': (-1000, 1000), 'party size': (1, 12),
                      'count in region': (0, 5000), 'carries': (0, 100000)}.get(kind, (0, LIMIT))
         require(rules.integer(c['value'], low, high), f'A whole number from {low} to {high}.')
@@ -715,7 +719,14 @@ def _check_fact_condition(c, phase, each):
     elif kind == 'resident is':
         require(c['state'] in RESIDENT_STATES, 'Alive, dead, indoors or out of doors.')
     elif kind == 'resident has':
-        require(c['what'] in RESIDENT_HAS and rules.word(c['value'], 80), 'A job, mood, mantle or town, and what it is.')
+        require(c['what'] in RESIDENT_HAS and isinstance(c['value'], str) and (rules.word(c['value'], 80) or (c['what'] == 'post' and c['value'] == '')),
+                'A job, mood, mantle, town or post, and what it is.')
+    elif kind == 'wolf has':
+        # (Doc 86, J10: normal, gifted or quickened; or a playable family, or none: a normal wolf's.)
+        require(c['what'] in ('tier', 'family'), "A wolf's Gift: its tier or its family.")
+        require(c['value'] in GIFT_TIERS if c['what'] == 'tier' else c['value'] in ('', *GIFT_FAMILIES),
+                'A tier is normal, gifted or quickened.' if c['what'] == 'tier' else
+                'A family is one of ' + ', '.join(GIFT_FAMILIES) + ' (or none, for a normal wolf).')
     elif kind == 'hour between':
         require(rules.integer(c['from'], 0, 23) and rules.integer(c['to'], 0, 23), 'Hours from 0 to 23.')
     elif kind == 'calendar is':
@@ -862,7 +873,8 @@ def _check_action_v2(a, cx, address, depth, each, last):
         # (Doc 85, Phase 6: taking a wolf in, or offering or giving them a quest, may name the acting wolf from a trigger of
         # anyone in the world: that is how an open audience is joined.)
         require(a['effect'].get('player') != '$actor' or t.get('audience') == 'participant'
-                or effect['kind'] in rules.quests.TAKES_IN, 'An actor effect requires a participant trigger.')
+                or effect['kind'] in rules.quests.TAKES_IN or effect['kind'] in rules.quests.NOTICE_EFFECTS,
+            'An actor effect requires a participant trigger.')   # (Doc 86, C12a: news only names the wolf: any trigger may.)
     elif kind == 'enter':
         shape(a, ('do', 'phase'))
         require(rules.identifier(a['phase']) and last, 'Enter phase must be the last action.')
@@ -1030,13 +1042,14 @@ def _check_trigger(t, phase, ids, links, runs=None, collect=None):
     # (Doc 85, Phase 10: a watched event the game can only look for when it is told what to look at: a resident to come
     # near, a purse and the amount it crosses, a faction and the standing. Doc 86, C12b: those stay exact texts.)
     needs = rules.NEEDS_MATCH.get(t['on'], ())
-    require(all(match.get(k) for k in needs), f'"{t["on"]}" needs its ' + ' and '.join(rules.MATCH_WORDS[k] for k in needs) + ' named.')
+    require(all(match.get(k) for k in needs), f'"{t["on"]}" needs its ' + ' and '.join(rules.match_word(t['on'], k) for k in needs) + ' named.')
     require(all(isinstance(match[k], str) for k in needs),
-            f'"{t["on"]}" needs its ' + ' and '.join(rules.MATCH_WORDS[k] for k in needs) + ' as exact words (not "begins with" or "one of"): '
+            f'"{t["on"]}" needs its ' + ' and '.join(rules.match_word(t['on'], k) for k in needs) + ' as exact words (not "begins with" or "one of"): '
             'the game must know what to look at.')
     if t['on'] in ('purse crossed', 'standing crossed') and 'detail' in match:
         require(re.fullmatch(r'-?[0-9]{1,9}', match['detail']) is not None, f'"{t["on"]}" names a whole number to cross.')
     rules.check_moon(t['on'], match)
+    rules.check_variable_changed(t['on'], match, phase)
     rules.check_region_source(t, phase.get('_regions'))
     if 'if' in t:
         condition(t['if'], 1)
@@ -1579,6 +1592,11 @@ def fact_test(c, x):
     if kind == 'wolf is':
         v = w.get(c['state']) is True
         return v == c['is'], v
+    if kind == 'wolf has':
+        # (Doc 86, J10: the facts' gift, {tier, family}; none written: unknown.)
+        g = w.get('gift')
+        v = g.get(c['what']) if isinstance(g, dict) else None
+        return (None, None) if not isinstance(v, str) else (v == c['value'], v)
     if kind == 'in party with':
         o = wolves.get(_who(x, c['other']))
         party = w.get('party')
