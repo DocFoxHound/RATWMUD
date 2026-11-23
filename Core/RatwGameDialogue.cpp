@@ -1230,13 +1230,32 @@ void Game::dialogueOpen(Connection* c, const std::string& npcId, const std::stri
         return;
     if (!kept.asleepAtOpen)
     {
-        // Doc 86, C5: a story's greeting for this wolf, once, in the resident's own voice, instead of the usual one; and T5:
-        // the story's line for its wolves through the resident's voice too (#symbols# fill in their dialect).
+        // Doc 86, C5: a story's greeting for this wolf, once, in the resident's own voice, instead of the usual one (the
+        // talk window's opening line only: another entry's line, a fine's or an introduction's answer, is its own, and the
+        // greeting waits for Talk); and T5: the story's line for its wolves through the resident's voice too (#symbols#
+        // fill in their dialect).
         const auto voiced = [&](const std::string& words) {
-            const auto said = inVoice(npcId, playerId, words, q.facts);
-            return said.empty() ? words : said;
+            if (auto said = inVoice(npcId, playerId, words, q.facts); !said.empty())
+                return said;
+            // (Not said in their voice: a fact it reads is not known here, a title known only in another town. Its
+            // #symbols# are left out, never shown as written.)
+            std::string out;
+            for (std::size_t at = 0; at < words.size();)
+            {
+                const auto close = words[at] == '#' ? words.find('#', at + 1) : std::string::npos;
+                if (close != std::string::npos && words.find_first_of(" \t", at) > close)
+                {
+                    at = close + 1;
+                    continue;
+                }
+                if (!(words[at] == ' ' && (out.empty() || out.back() == ' ')))
+                    out += words[at];
+                ++at;
+            }
+            while (!out.empty() && out.back() == ' ') out.pop_back();
+            return out;
         };
-        const auto greet = takeStoryGreet(npcId, playerId);
+        const auto greet = base == "talk" ? takeStoryGreet(npcId, playerId) : std::string();
         auto line = worldStoryLine(npcId, playerId);
         if (!line.empty())
             line = voiced(line);

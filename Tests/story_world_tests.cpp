@@ -581,6 +581,10 @@ void phase3Thanks()
         expect(!order("title.give", "u1", R"({"title":"the Miller"})").ok, "a resident has no story titles");
         r = order("title.give", ash, R"({"title":"warden of the weir","known":"town","town":")" + here + R"(","days":20})");
         expect(r.ok && titles().size() == 2 && titles()[1].until > w.calendarDays() + 19, "given again: renewed, not doubled");
+        int namings = 0;
+        for (const auto* d : t.g.deeds().byDoer(ash))
+            namings += d->detail == "was named Warden of the Weir" || d->detail == "was named warden of the weir";
+        expect(namings == 1, "renewed: no second deed of its naming: " + std::to_string(namings));
         w.advanceCalendar(21);
         expect(t.g.storyTitleFor(ash, "u1") == "the Lamp of the Ford", "the town's lapsed: the realm's is used again");
         auto card = t.g.titlesView(*w.entity(ash));
@@ -603,6 +607,10 @@ void phase3Thanks()
         r = order("title.take", ash, "{}");
         expect(r.ok && titles().size() == 1 && titles()[0].title == "the Other's Own", "every title this story gave taken: " + r.message);
         expect(order("title.take", ash, R"({"title":"the Other's Own"})").ok && titles().size() == 1, "not another story's");
+        expect(order("title.give", ash, R"({"title":"Friend of {@w:)" + ash + R"(}"})").ok && titles().size() == 2 &&
+                   titles()[1].title == "Friend of Ash", "a title's names filled as it is given");
+        expect(order("title.take", ash, R"({"title":"Friend of {@w:)" + ash + R"(}"})").ok && titles().size() == 1,
+               "and taken back by the same words, filled the same");
         t.g.command(&t.ash, cmd({{"type", "social"}, {"verb", "hidetitles"}, {"hidden", true}}));
         expect(w.entity(ash)->titlesHidden,
                "Ash hides the titles from the card");

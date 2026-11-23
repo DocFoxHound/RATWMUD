@@ -7059,7 +7059,7 @@ void Game::command(Connection* c, const std::string& raw)
             if (!other->npc)
             {
                 if (!other->titlesHidden || target == id)
-                    if (auto titles = titlesView(*other); !titles.items().empty())
+                    if (auto titles = titlesView(*other, id); !titles.items().empty())
                         e.add("titles", std::move(titles));   // (Doc 86, C4: what the stories named them, unless they hide it.)
                 e.add("profile", std::move(profile));
                 e.add("stars", starsFor(id, other->id));   // (Their account's stars, as this viewer may see them: doc 51.)

@@ -367,7 +367,8 @@ counted without `sum`. Not inside For each or a test for each wolf; one level de
 **Rewards by share.** A quest of scope `story` or `party` may say `"credit": "share"` (and `"creditMin": 1 to 1,000,000`): the
 copy keeps `shares` (`{wolf: n}`, what each wolf's progress added to its objectives: a counted event's gain, an
 `objective.progress`, the rest of an `objective.complete`), and each reward is given for each credited wolf with
-`{"share": true}` that wolf's amount (only in that quest's `rewards` and `bonus`); a wolf below `creditMin` gets no reward.
+`{"share": true}` that wolf's amount (only in that quest's `rewards` and `bonus`); a wolf below `creditMin` (1 when not given: a wolf who
+added nothing) gets no reward.
 
 **Titles, greetings and doubt** (game orders, never undone when the run ends): `title.give` (`player`, `title` 60 one line,
 no `#` or ids, fills; `known` `realm` or `town` with `town`; `days` 0 for good to 365) keeps up to 8 titles on the
@@ -375,18 +376,21 @@ character record (`{title, known: "realm" | "town:<id>", by: <program>, run, sin
 ninth drops the oldest that lapses, else the oldest), writes a deed ("was named <title>", source `story`) and the event
 `title given` (`actor` the wolf, `target` the run, `item` where it is known, `detail` the title); the talk facts
 `player.titled` and `player.title` (the newest known where the resident lives). `title.take` (`player`, `title` optional)
-takes back this program's. `npc.greet` (`npc`, `player` a wolf of the story, `text` 200 with fills and `#symbols#`, `days`
-1 to 28, 7 when not given) is the resident's opening line in that wolf's next window with them, once, through their voice
-(`Game::inVoice`), kept in the checkpoint (`storyGreets`; one a pair, 20,000 in all). `belief.forget` (`subject`,
+takes back this program's (its title filled as it was given). A title renewed writes no second deed. `npc.greet` (`npc`, `player` a wolf of the story, `text` 200 with fills and `#symbols#`, `days`
+1 to 28, 7 when not given; in a quest's rewards `npc` is the giver when left out) is the resident's opening line in that
+wolf's next Talk window with them (other entries keep their own line, and it waits), once, through their voice
+(`Game::inVoice`; a symbol it cannot fill there is left out), kept in the checkpoint (`storyGreets`; one a pair, 20,000 in all). `belief.forget` (`subject`,
 `claimKind` one of the claims a story may put to rest, `town` optional, `share` 10 to 100) multiplies each holder's belief
 of that kind about the subject by `1 - share/100` and forgets it at 5% (`World::doubt`). A phase's `npc.line` is said
 through the speaker's voice too (its `#symbols#` fill in their dialect).
 
 **Words.** `tools/story_words.py` (approval's world checks, the Problems list, `story_author` op `words`, and its CLI) reads
-every word field and refuses what `Data/Storylines/words.json` forbids, ids in speech, unknown `#symbols#` (or any in words
-no resident says), stray brackets and unclosed `#`, lengths past their limit with fills at their widest, and a face banner
+every word field (every text parameter of the catalogue) and refuses what `Data/Storylines/words.json` forbids, ids in
+speech, unknown `#symbols#` (or any in words not said in a voice: `npc.speak`, a scene's lines, and every word no resident
+says), stray brackets and unclosed `#`, lengths past their limit with fills at their widest, and a face banner
 that quotes a resident; it warns of another dialect's phrases in a resident's words (their `live.npc_voice` origin and
-accent), a face banner, `npc.speak` to a wolf, and a clearing that begins "never".
+accent), a face banner, `npc.speak` to a wolf, a clearing that begins "never", and a fact symbol (`#player.title#`) in a
+story's words.
 
 ## Writing a program
 

@@ -659,10 +659,6 @@ class Phase2(unittest.TestCase):
         self.assertEqual([e['text'] for e in report['effects'] if e['kind'] == 'story.tell'], ['Gifts: 4.'])
 
 
-if __name__ == '__main__':
-    unittest.main()
-
-
 class Phase3Shares(unittest.TestCase):
     """Doc 86, C3b: a quest of the story (or a party) rewards each wolf by their share of what was made."""
 
@@ -695,6 +691,25 @@ class Phase3Shares(unittest.TestCase):
         self.assertEqual(paid, {ASH: 10, BIRCH: 6})
         self.assertEqual(sorted(e['player'] for e in report['effects'] if e['kind'] == 'deed.award'), sorted([ASH, BIRCH]),
                          'every reward leaves them out')
+
+    def test_a_wolf_who_added_nothing_gets_nothing(self):
+        # (No least share named: a share of 0 is no reward, not the least coin and every flat reward. Review of Phase 3.)
+        events = [arrive(1, ASH), arrive(2, BIRCH), fact(4, 'gift', 1, ASH, target='rm111', quantity=9)]
+        report, _ = play(self.shared(), events, cohort=(ASH, BIRCH, ELM))
+        self.assertEqual({e['player']: e['coins'] for e in report['effects'] if e['kind'] == 'character.grant'}, {ASH: 18})
+        self.assertEqual([e['player'] for e in report['effects'] if e['kind'] == 'deed.award'], [ASH])
+
+    def test_a_rewards_greeting_is_from_the_giver(self):
+        # (C5: a reward's greeting is from the quest's giver unless it names its resident.)
+        greet = {'kind': 'npc.greet', 'player': '$actor', 'text': 'You kept the lamps lit.', 'days': 7}
+        p = one_quest({'on': 'gift'}, rewards=[{**greet, 'npc': 'rm222', 'text': 'And I heard of it.'}])
+        p['quests'][0].update(giver='rm111', handIn=False)
+        p['quests'][0]['rewards'].insert(0, greet)
+        rules.validate(p)
+        report, _ = play(p, [arrive(1, ASH), fact(2, 'gift', 1, ASH, target='rm111')], cohort=(ASH, BIRCH, ELM))
+        self.assertEqual([(e['npc'], e['player']) for e in report['effects'] if e['kind'] == 'npc.greet'], [('rm111', ASH), ('rm222', ASH)])
+        with self.assertRaisesRegex(ValueError, 'a greeting as a reward is from the giver'):
+            one_quest({'on': 'gift'}, rewards=[greet])
 
     def test_the_checks(self):
         p = self.shared()
@@ -785,3 +800,7 @@ class Phase1b(unittest.TestCase):
         q = copy.deepcopy(base)
         q['variables'] += [{'id': f't{i}', 'type': 'number', 'scope': 'player', 'talk': True} for i in range(6)]
         self.assertRaisesRegex(ValueError, 'up to 8', rules.validate, q)
+
+
+if __name__ == '__main__':
+    unittest.main()

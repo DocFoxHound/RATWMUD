@@ -11630,6 +11630,7 @@
      "type": "text",
      "label": "the title",
      "max": 60,
+     "fills": true,
      "optional": true,
      "words": {
       "": "every title from this story"

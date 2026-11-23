@@ -1007,7 +1007,7 @@ std::string Game::storyTitleFor(const std::string& wolf, const std::string& npc)
     return best ? best->title : std::string();
 }
 
-Value Game::titlesView(const Entity& wolf) const
+Value Game::titlesView(const Entity& wolf, const std::string& viewer) const
 {
     // The card's titles (newest first), each with where it is known and when it lapses (-1: for good).
     auto list = Value::array();
@@ -1020,7 +1020,7 @@ Value Game::titlesView(const Entity& wolf) const
     for (const auto* t : live)
     {
         auto j = Value::object();
-        j.add("title", t->title);
+        j.add("title", viewer.empty() ? t->title : veilFor(viewer, t->title));
         const auto town = t->known.rfind("town:", 0) == 0 ? t->known.substr(5) : std::string();
         j.add("known", town.empty() ? std::string("realm") : std::string("town"));
         if (!town.empty())
@@ -1132,7 +1132,8 @@ Result Game::applyStoryThanks(const std::string& kind, const std::string& target
         auto& list = e->titles;
         list.erase(std::remove_if(list.begin(), list.end(), [&](const StoryTitle& o) { return o.until >= 0 && o.until < today; }), list.end());
         auto same = std::find_if(list.begin(), list.end(), [&](const StoryTitle& o) { return lowered(o.title) == lowered(title); });
-        if (same != list.end())
+        const bool renewed = same != list.end();
+        if (renewed)
             *same = t;                              // (Given again: renewed, known where it now says.)
         else
         {
@@ -1149,14 +1150,16 @@ Result Game::applyStoryThanks(const std::string& kind, const std::string& target
             }
             list.push_back(t);
         }
-        // The fame machinery carries it into gossip and the crier as any deed.
-        recordDeed("award", {target}, {}, e->cellId, "story", "was named " + title, fame::weightOf("notable"));
+        // The fame machinery carries it into gossip and the crier as any deed: once, when first given (a title renewed
+        // each chapter is no new fame).
+        if (!renewed)
+            recordDeed("award", {target}, {}, e->cellId, "story", "was named " + title, fame::weightOf("notable"));
         world_.recordEvent({"title given", target, run, {}, 0, 0, t.known, 0, 0, title});
         said = "Named " + title + ".";
     }
     else
     {
-        const auto title = p.string("title");
+        const auto title = fillStoryNames(p.string("title"), 60);   // (As it was given: its names filled.)
         const auto before = e->titles.size();
         e->titles.erase(std::remove_if(e->titles.begin(), e->titles.end(),
                                        [&](const StoryTitle& o) { return o.by == by && (title.empty() || lowered(o.title) == lowered(title)); }),

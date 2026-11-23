@@ -45,12 +45,41 @@ class Rules(unittest.TestCase):
 
     def test_symbols_through_the_library(self):
         self.assertTrue(blocks(program([{'kind': 'npc.greet', 'npc': 'rm111', 'player': '$actor', 'text': '#no_such_symbol# Hello.'}])))
-        self.assertEqual(blocks(program([{'kind': 'npc.greet', 'npc': 'rm111', 'player': '$actor', 'text': '#greet# #player.title#.'}])), [])
+        titled = program([{'kind': 'npc.greet', 'npc': 'rm111', 'player': '$actor', 'text': '#greet# #player.title#.'}])
+        self.assertEqual(blocks(titled), [])
+        self.assertTrue(warns(titled), 'a fact not every wolf has here: a warning')
         self.assertTrue(blocks(program([{'kind': 'npc.greet', 'npc': 'rm111', 'player': '$actor', 'text': '#player.no_such# there.'}])))
         self.assertTrue(blocks(program([{'kind': 'npc.greet', 'npc': 'rm111', 'player': '$actor', 'text': '#greet Hello.'}])), 'an unclosed #')
         self.assertTrue(blocks(program([{'kind': 'npc.greet', 'npc': 'rm111', 'player': '$actor', 'text': 'Hello [friend].'}])), 'a bracket')
         # (Words no resident says fill nothing: a symbol there would be shown as it is.)
         self.assertTrue(blocks(program([{'kind': 'board.post', 'town': 'greyfen', 'text': '#greet# all.', 'days': 2}])))
+
+    def test_words_said_as_written_fill_no_symbols(self):
+        # (npc.speak is said aloud as written, and a scene's lines are shown as written: a #symbol# there would be seen as
+        # it is. Review of Phase 3.)
+        self.assertTrue(blocks(program(entry=[{'kind': 'npc.speak', 'npc': 'rm111', 'text': '#greet# all.'}])))
+        scene = {'id': 's', 'cast': [{'id': 'c', 'npc': 'rm111'}],
+                 'beats': [{'id': 'b', 'type': 'line', 'speaker': 'c', 'text': '#greet# friend', 'seconds': 3},
+                           {'id': 'r', 'type': 'response', 'speaker': 'c', 'text': '#greet# again', 'seconds': 3}]}
+        self.assertEqual(len(blocks(program(scenes=[scene]))), 2)
+        # (Still a resident's words: their dialect is read.)
+        lex = W.lexicon()
+        dialect, phrase = next((d, p) for d, ps in lex.items() for p, saying in ps if not saying and ' ' in p)
+        other = next(d for d in lex if d != dialect)
+        self.assertTrue(warns(program(entry=[{'kind': 'npc.speak', 'npc': 'rm111', 'text': f'Well, {phrase} indeed.'}]), {'rm111': other}))
+
+    def test_every_text_of_the_catalogue_is_read(self):
+        for e in runner.rules.CATALOGUE['effects']:
+            for param in e['params']:
+                if param['type'] == 'text':
+                    with self.subTest(effect=e['id'], param=param['key']):
+                        self.assertTrue(param['key'] in [k for k, *_ in W.EFFECT_WORDS.get(e['id'], ())]
+                                        or f"{e['id']}.{param['key']}" in W.EXEMPT)
+        for effect in ({'kind': 'figure.set', 'role': 'villain', 'name': 'the Dog King', 'title': 'god of rot', 'about': 'A cur.'},
+                       {'kind': 'times.nudge', 'words': 'The gods frown'}, {'kind': 'festival.call', 'name': 'the Dog Days'},
+                       {'kind': 'warrant.issue', 'player': '$actor', 'town': 'greyfen', 'reason': 'kicked a dog'}):
+            with self.subTest(effect=effect['kind']):
+                self.assertTrue(blocks(program([effect])))
 
     def test_forbidden_words(self):
         for words in ('A dog barks.', 'The GODS are watching.', 'Puppies in the barn.', 'By the deities!', 'Send a tell to the warden.'):
@@ -85,6 +114,11 @@ class Rules(unittest.TestCase):
         self.assertTrue(blocks(p, ids={'greyfen-west'}), 'with the world, an id of a place')
         self.assertEqual(blocks(program([{'kind': 'npc.greet', 'npc': 'rm111', 'player': '$actor', 'text': 'Meet me at the gate.'}]), ids={'gate'}), [],
                          'a plain word that is also an id is a word')
+        # (A word joined to "wolf-" is a word: a wolf's id has digits, "wolf-" and 32 hex.)
+        q = {'id': 'q', 'title': 'The wolf-pack and the wolf-wide road', 'objectives': [{'id': 'o', 'label': 'Run', 'on': 'arrival'}]}
+        self.assertEqual(blocks(program(quests=[q])), [])
+        self.assertTrue(blocks(program([{'kind': 'journal.note', 'text': 'Ask wolf-' + '3f' * 16 + '.'}])))
+        self.assertTrue(blocks(program([{'kind': 'journal.note', 'text': 'Ask wolf-abcdefabcdef.'}])))
 
     def test_lengths_with_fills(self):
         q = {'id': 'q', 'title': 'Help', 'giver': 'rm111', 'offer': {'say': 'x' * 290 + ' {hero}'},

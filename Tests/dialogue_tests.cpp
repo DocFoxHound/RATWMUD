@@ -2057,7 +2057,7 @@ void storyGreetingsInTheWindow()
         p.set("visit", 1);
         return town.g.applyDmAct({std::to_string(++n), kind, target, "dm", json::dump(p)});
     };
-    const auto line = [&](Client& c, const std::string& npc) {
+    const auto line = [&](Client& c, const std::string& npc, const std::string& entry = "talk") {
         if (const auto* d = town.g.dialogueOf(c.entityId))
             town.g.command(&c, cmd({{"type", "dialogue_close"}, {"session", d->id}, {"why", "closed"}}));
         town.run(3.5);                              // (Past the window's quiet reopening: each opening a fresh greeting.)
@@ -2067,7 +2067,7 @@ void storyGreetingsInTheWindow()
         w.stop(npc);
         town.place(c, 1, 9.5);
         c.events.clear();
-        town.g.command(&c, cmd({{"type", "dialogue_open"}, {"npc", npc}, {"entry", "talk"}}));
+        town.g.command(&c, cmd({{"type", "dialogue_open"}, {"npc", npc}, {"entry", entry}}));
         const auto* d = lastOf(c, "dialogue");
         const auto said = d ? d->string("line") : std::string();
         if (const auto* open = town.g.dialogueOf(c.entityId))
@@ -2079,7 +2079,10 @@ void storyGreetingsInTheWindow()
     expect(order("npc.greet", "u1", R"({"player":")" + town.ash.entityId + R"(","text":"#nh_hello# Thank you for the oil.","days":2})").ok,
            "u1 will thank Ash");
     expect(line(town.bo, "u1").find("oil") == std::string::npos, "not Bo");
-    auto said = line(town.ash, "u1");
+    // (Only the talk window's opening line: another entry's own line is kept, and the greeting waits for Talk.)
+    auto said = line(town.ash, "u1", "introduce");
+    expect(!said.empty() && !contains(said, "oil"), "Introduce answers as ever: " + said);
+    said = line(town.ash, "u1");
     expect(said == "Fair day and fair trade to you. Thank you for the oil.", "once, in u1's Larkfield words, instead of the usual: " + said);
     said = line(town.ash, "u1");
     expect(!contains(said, "oil"), "and only once: " + said);

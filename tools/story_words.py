@@ -8,9 +8,12 @@
 
 It reads every word field of a program: offers (say, thanks, during, ask, accept, decline, handIn), npc.offer's words and
 reply, npc.line, npc.greet, npc.speak, story.tell, board.post, journal.note, quest titles, summaries and labels, deed
-details, titles, claims, a phase's journal, a finish's line and scene lines. It checks:
-  1. symbols: every #symbol# a resident says is in the talk library (a grammar's symbol, or a fact such as #player.title#);
-     a stray [ or ], or an unclosed #, is refused; words no resident says hold no #symbols#.
+details, titles, claims, a phase's journal, a finish's line, scene lines, and every other text of the catalogue a wolf may
+read (a figure's name, title and about; what people say of a market, a harvest or prices; a festival's name, a project's
+title, the reasons of a warrant, a payment or a standing). It checks:
+  1. symbols: every #symbol# a resident says in the window (an offer, npc.line, npc.greet, a reply) is in the talk library
+     (a grammar's symbol, or a fact such as #player.title#); a stray [ or ], or an unclosed #, is refused; words said as
+     written (npc.speak, a scene's lines, and every word no resident says) hold no #symbols#.
   2. forbidden words (Data/Storylines/words.json): dog(s), puppy, god(s), deity... and "tell" for a private message: refused.
   3. dialect by the giver (with the world's voices): a resident's words holding another dialect's set phrases (the
      dialect check's lexicon): a warning.
@@ -19,6 +22,7 @@ details, titles, claims, a phase's journal, a finish's line and scene lines. It 
   6. face banners: a story.tell from a resident is a warning, and refused when it holds quoted speech; an npc.speak that
      speaks to a wolf ("you") is a warning: a resident's words to a wolf go in the window.
   7. a clearing (story.cleared) that begins with "never" or "did not": a warning (the game says "never" itself).
+  8. a fact symbol (#player.title#, #topic.x#) in a story's words: a warning (said only where the fact is known).
 Approval runs it (story_runner.world_checks: refusals block, warnings are told), and so does the Problems list.
 """
 from __future__ import annotations
@@ -40,7 +44,8 @@ CHECKED_SECTIONS = ('player',)
 SYMBOL = re.compile(r'#([^#\s]*)#')
 FILL = re.compile(r'\{\{|\}\}|\{([A-Za-z0-9_][A-Za-z0-9_.:-]*?)(\.of)?\}|\{@[a-z]:[^}]*\}')
 QUOTED = re.compile(r'"[^"]+"|“[^”]+”|‘[^’]+’|(?<![A-Za-z])\'[^\']{2,}\'(?![A-Za-z])')
-ID_WORD = re.compile(r"(?<![A-Za-z0-9_'-])((?:wolf-[A-Za-z0-9_-]+)|[A-Za-z0-9-]*_[A-Za-z0-9_-]*|[a-z]+[0-9]+[a-z0-9]*)(?![A-Za-z0-9_-])")
+# (A wolf's id is "wolf-" and 32 hex digits: a word such as "wolf-pack" or "wolf-wide" is a word, one with a digit an id.)
+ID_WORD = re.compile(r"(?<![A-Za-z0-9_'-])((?:wolf-(?:[0-9a-f]{8,}|[A-Za-z0-9_-]*[0-9][A-Za-z0-9_-]*))|[A-Za-z0-9-]*_[A-Za-z0-9_-]*|[a-z]+[0-9]+[a-z0-9]*)(?![A-Za-z0-9_-])")
 YOU = re.compile(r'\b(you|your|yours|yourself)\b', re.I)
 
 
@@ -81,8 +86,11 @@ def dialect_of(home_region, accent):
 
 # ---------------------------------------------------------------------------------------------- the word fields
 
-def _site(path, at, text, kind, speaker=None, limit=None, spoken=False):
-    return {'path': path, 'at': at, 'text': text, 'kind': kind, 'speaker': speaker, 'limit': limit, 'spoken': spoken}
+def _site(path, at, text, kind, speaker=None, limit=None, spoken=False, voiced=None):
+    """`spoken`: a resident says it (their dialect is checked); `voiced`: said through their voice, so #symbols# fill (an
+    offer's words, npc.line, npc.greet, a choice's reply). A scene's lines and npc.speak are said as written."""
+    return {'path': path, 'at': at, 'text': text, 'kind': kind, 'speaker': speaker, 'limit': limit, 'spoken': spoken,
+            'voiced': spoken if voiced is None else voiced}
 
 
 EFFECT_WORDS = {
@@ -93,7 +101,19 @@ EFFECT_WORDS = {
     'journal.note': [('text', 'journal', None, None)], 'deed.award': [('detail', 'deed', None, None)],
     'title.give': [('title', 'title', None, None)], 'belief.plant': [('claim', 'claim', None, None)],
     'story.ping': [('label', 'label', None, None)], 'visitor.add': [('name', 'name', None, None), ('description', 'look', None, None)],
+    # (Every other text of the catalogue a wolf may read: told, posted, or said of in the world.)
+    'title.take': [('title', 'title', None, None)], 'deed.revoke': [('detail', 'deed', None, None)],
+    'figure.set': [('name', 'name', None, None), ('title', 'title', None, None), ('about', 'about', None, None)],
+    'times.nudge': [('words', 'news', None, None)], 'harvest.override': [('words', 'news', None, None)],
+    'prices.reset': [('words', 'news', None, None)], 'festival.call': [('name', 'name', None, None)],
+    'project.post': [('title', 'title', None, None)], 'warrant.issue': [('reason', 'reason', None, None)],
+    'character.grant': [('reason', 'reason', None, None)], 'standing.adjust': [('reason', 'reason', None, None)],
+    'faction.relation': [('reason', 'reason', None, None)],
 }
+# Said as written, never in a voice: a resident's words aloud (npc.speak) fill no #symbols#.
+UNVOICED = frozenset({'npc.speak'})
+# The catalogue's text parameters no wolf reads (none yet): every other is in EFFECT_WORDS (test_story_words checks).
+EXEMPT = frozenset()
 
 
 def effect_sites(program):
@@ -137,7 +157,8 @@ def sites(program):
             if not isinstance(text, str) or not text:
                 continue
             speaker = e.get(by) if by and isinstance(e.get(by), str) else (giver if what == 'greet' and not isinstance(e.get('npc'), str) else None)
-            out.append({**_site(f'{path}.{key}', at, text, what, speaker, limit, spoken=by is not None),
+            out.append({**_site(f'{path}.{key}', at, text, what, speaker, limit, spoken=by is not None,
+                                voiced=by is not None and e.get('kind') not in UNVOICED),
                         'effect': e.get('kind'), 'from': e.get('from') if e.get('kind') == 'story.tell' else None,
                         'claimKind': e.get('claimKind') if e.get('kind') == 'belief.plant' else None})
     for qi, q in enumerate(_list(program.get('quests'))):
@@ -172,7 +193,7 @@ def sites(program):
             if beat.get('type') in ('line', 'choice', 'response') and isinstance(beat.get('text'), str):
                 speaker = cast.get(beat.get('speaker')) if isinstance(cast.get(beat.get('speaker')), str) else None
                 out.append(_site(f'scenes[{si}].beats[{bi}].text', {'kind': 'scene', 'index': si, 'id': scene.get('id'), 'part': f'beats[{bi}]'},
-                                 beat['text'], 'scene', speaker, None, spoken=beat.get('type') != 'choice'))
+                                 beat['text'], 'scene', speaker, None, spoken=beat.get('type') != 'choice', voiced=False))
     return out
 
 
@@ -232,11 +253,17 @@ def check(program, voices=None, ids=None):
         if '[' in text or ']' in text:
             add(s, f'A bracket in {where}: the talk expander reads [ ] as its own; leave them out.', True)
         for name in SYMBOL.findall(text):
-            if not s['spoken']:
-                add(s, f'#{name}# in {where}: only a resident\'s words fill #symbols# (these are not said in a voice).', True)
+            if not s['voiced']:
+                add(s, f'#{name}# in {where}: only a resident\'s words in the window fill #symbols# (an offer, npc.line, npc.greet, '
+                       'a reply); these are shown as written.', True)
                 continue
             if not _symbol_known(name, grammar, player_facts):
                 add(s, f'#{name}# in {where} is not in the talk library: a grammar symbol, or a fact such as #player.title#.', True)
+            elif name.split('.')[0] not in grammar:
+                # (A fact is known only for some wolves and residents, a title only where it is known: without it the
+                # words are said with their symbols left out. A tree line gated on it says it only where it is known.)
+                add(s, f'#{name}# in {where} reads a fact not every wolf has here: without it, it is left out of the words '
+                       '(a line gated on it in the resident\'s tree says it only where it is known).', False)
         # 4. ids in speech (and in any word a wolf reads).
         for token in ID_WORD.findall(plain):
             if token.lower().startswith('wolf-') or '_' in token or re.fullmatch(r'[a-z]+[0-9]+[a-z0-9]*', token):

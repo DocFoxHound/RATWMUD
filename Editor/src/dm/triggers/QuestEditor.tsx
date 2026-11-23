@@ -187,7 +187,7 @@ export function QuestEditor({index, select}: {index: number; select: (r: Ref) =>
             {/* (Doc 86, C3b: each wolf rewarded by what they made: {"share": true} in a reward is that wolf's amount.) */}
             {(q.scope === 'story' || q.scope === 'party') && <label className="wb-check"><input type="checkbox" checked={q.credit === 'share'} onChange={e => {
                 const {credit: _s, creditMin: _m, ...rest} = q; void _s; void _m; save(e.target.checked ? {...rest, credit: 'share'} : rest); }}/>Reward each by their share</label>}
-            {q.credit === 'share' && <label>The least share<input type="number" min={1} value={q.creditMin ?? ''} placeholder="any"
+            {q.credit === 'share' && <label>The least share<input type="number" min={1} value={q.creditMin ?? ''} placeholder="1"
                 onChange={e => set('creditMin', Number.isFinite(e.target.valueAsNumber) && e.target.valueAsNumber >= 1 ? Math.round(e.target.valueAsNumber) : undefined, key + ':creditMin')}/></label>}
             <label>Lasts<select value={q.lifetime ?? 'campaign'} onChange={e => set('lifetime', e.target.value === 'phase' ? 'phase' : undefined)}>
                 <option value="campaign">the whole campaign</option><option value="phase">until the phase visit ends</option></select></label>

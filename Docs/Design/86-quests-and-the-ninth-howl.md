@@ -1425,8 +1425,8 @@ new event (`title given`, group fame, a mission event: 207 events, 70 mission ev
   Not undone at a run's end.
 - **C5: a resident's greeting** (`storyGreets_`, `takeStoryGreet`, saved as `storyGreets` beside `storyMemory`). One for each
   resident and wolf (a later replaces it), 20,000 in all (the soonest to lapse goes first), for 1 to 28 days (7 when not
-  given), the text filled to 200; for a wolf of the story. When the wolf opens that resident's window (and the resident is
-  not asleep), the greeting is the opening line, through `Game::inVoice` (`#symbols#` in the resident's dialect), once.
+  given), the text filled to 200; for a wolf of the story. When the wolf opens that resident's Talk window (and the resident
+  is not asleep), the greeting is the opening line, through `Game::inVoice` (`#symbols#` in the resident's dialect), once.
   Not undone at a run's end.
 - **T5**: the phase's `npc.line` for its wolves is said through `inVoice` too (`RatwGameDialogue.cpp`, after the greeting);
   words the expander cannot fill are said as written.
@@ -1489,8 +1489,28 @@ new event (`title given`, group fame, a mission event: 207 events, 70 mission ev
   symbol, any modifier, and the facts of the known sections (`player.*` by name); its world id rule takes only id-shaped words
   (a place whose id is a plain word, "gate", is not a refusal). V2 runs at approval and in the world's Problems, not in the
   offline Problems list (the offline drafts would otherwise warn of voices they cannot know). The greeting replaces the
-  window's opening line but the phase's `npc.line` still follows it. No undo at a run's end (nothing new in
+  Talk window's opening line but the phase's `npc.line` still follows it. No undo at a run's end (nothing new in
   `UNDONE_AT_END`). `RUNNER_VERSION` is `doc86-phase3`.
+- **After review** (the same branch): a quest by share with no `creditMin` left a wolf who added nothing in, clamped up to
+  each parameter's least (1 coin, and every flat reward): the least share is now 1 when not given (`Run.complete`;
+  `Phase3Shares.test_a_wolf_who_added_nothing_gets_nothing`). V2 let `#symbols#` into `npc.speak` and a scene's lines, which
+  the game says as written: a site now says whether it is **voiced** (a greeting, `npc.line`, an offer's words, a choice's
+  reply) apart from **spoken** (a resident's: their dialect is still read), and a symbol in an unvoiced one is refused. V2
+  now reads every text parameter of the catalogue (`EFFECT_WORDS`: a figure's name, title and about; what people say of
+  times, a harvest and prices; a festival's name, a project's title, the reasons of a warrant, a payment, a standing and a
+  relation; `title.take`'s title; `deed.revoke`'s detail), and a test holds the catalogue's text parameters to it (`EXEMPT`
+  is empty). An id is `wolf-` with a digit (or 8 hex): "wolf-pack" is a word. A fact symbol (`#player.title#`) in a story's
+  words is a warning, and the window leaves a symbol it cannot fill out rather than showing it. The greeting is taken only
+  by the Talk entry (`dialogueOpen`, `base == "talk"`): Trade, Introduce, a fine and the rest keep their own line and the
+  greeting waits (`storyGreetingsInTheWindow`: Introduce answers as ever, then Talk greets). C5's "a reward's greeting is
+  from the giver unless it says otherwise" is built: `story_quests.from_giver` fills a reward's `npc.greet` without `npc` from
+  the quest's giver (in `check_quest`, `Run.reward` and `possible_effects`), refused with no giver; the catalogue keeps `npc`
+  required for triggers. `title.take`'s title has `fills` and the game fills it as `title.give` does, so a title given with a
+  name is taken back by the same words; a title renewed writes no second "was named" deed (`phase3Thanks`). The closer look
+  veils the names in another wolf's titles as their description is (`titlesView(wolf, viewer)`). Not changed: the value
+  picker still offers the share in any number slot of a program with a quest by share, and a tally inside For each (the
+  picker does not know where its slot is; the checker refuses both, with a problem shown); the offline Problems list still
+  does not run V2 (above).
 - **Going live** on `ratw_ridgemere3` needs no migration; the game server restarted from this branch (titles on the
   character record, greetings in the checkpoint, the window's voice, doubt), the story runner from this branch with the
   rebuilt `libratw_story.so` (rank and tally need both twins), the Editor and the client released from it. Act I's chapters

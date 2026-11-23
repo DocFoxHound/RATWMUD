@@ -565,7 +565,7 @@ def possible_effects(phase):
         *phase['effects'],
         *(a['effect'] for t in phase.get('triggers', []) for _, a in triggers.walk(t['actions']) if a['do'] == 'effect'),
         # (Doc 85, Phase 6: a quest's rewards may be given in any phase: its copies outlast the phase they began in.)
-        *(e for q in phase.get('_questIndex', {}).values() for e in (*q.get('rewards', ()), *q.get('bonus', ()))),
+        *(quests.from_giver(e, q) for q in phase.get('_questIndex', {}).values() for e in (*q.get('rewards', ()), *q.get('bonus', ()))),
     ]
 
 

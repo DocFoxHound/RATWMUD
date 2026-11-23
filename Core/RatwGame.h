@@ -1529,7 +1529,8 @@ class Game
     };
     const std::map<std::string, std::map<std::string, StoryGreet>>& storyGreets() const { return storyGreets_; }
     std::string storyTitleFor(const std::string& wolf, const std::string& npc) const;
-    json::Value titlesView(const Entity& wolf) const;   // (The card's: newest first, each with where it is known.)
+    // (The card's: newest first, each with where it is known; for another viewer, the names in them veiled as theirs.)
+    json::Value titlesView(const Entity& wolf, const std::string& viewer = {}) const;
     bool approvedStoryteller(const std::string& account) const;
     // Open dice (doc 58, 6): "2d6+1" rolled from a seed, in words ("2d6 + 1: 3 + 5 + 1 = 9"); "" with why, past the limits.
     static std::string rollDice(const std::string& spec, const std::string& seed, std::string& error);

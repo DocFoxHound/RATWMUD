@@ -189,6 +189,13 @@ def reward_wolves(effect):
     return per_wolf, bool(per_wolf or reads_wolf)
 
 
+def from_giver(effect, q):
+    """Doc 86, C5: a reward's greeting is from the quest's giver unless it names its resident."""
+    if effect.get('kind') == 'npc.greet' and 'npc' not in effect and isinstance(q.get('giver'), str):
+        return {**effect, 'npc': q['giver']}
+    return effect
+
+
 def _check_reward(effect, qid, regions, scenes, phase=None, by_share=False):
     # (Doc 86, C1a: a reward's value is worked out when it is given, the credited wolf as $actor; C3b: in a quest credited by
     # share, {"share": true} is that wolf's own amount.)
@@ -289,7 +296,9 @@ def check_quest(q, p, ids):
         effects = q.get(key, [])
         rules.require(isinstance(effects, list) and len(effects) <= most, f'quest {qid}: up to {most} {key}.')
         for e in effects:
-            _check_reward(e, qid, regions, scenes, phase, by_share)
+            rules.require(not (isinstance(e, dict) and e.get('kind') == 'npc.greet' and 'npc' not in e and 'giver' not in q),
+                          f'quest {qid}: a greeting as a reward is from the giver: name the resident, or give the quest a giver.')
+            _check_reward(from_giver(e, q) if isinstance(e, dict) else e, qid, regions, scenes, phase, by_share)
     rules.require(not q.get('bonus') or any(o.get('optional') for o in objectives),
                   f'quest {qid}: a bonus is for doing the optional objectives too: add one.')
 
@@ -688,9 +697,10 @@ class Run:
         wolves = self.credited(q, c)
         shares = None
         if q.get('credit') == 'share':
-            # (C3b: each wolf's own amount; a wolf below the least share is left out.)
+            # (C3b: each wolf's own amount; a wolf below the least share is left out, and with no least share named, one
+            # who added nothing: a share of 0 is no reward, not the least of each.)
             shares = c.get('shares', {})
-            wolves = [w for w in wolves if shares.get(w, 0) >= q.get('creditMin', 0)]
+            wolves = [w for w in wolves if shares.get(w, 0) >= q.get('creditMin', 1)]
         self.reward(q, q.get('rewards', []), wolves, shares)
         optional = [o for o in q['objectives'] if o.get('optional')]
         if q.get('bonus') and optional and all(c['objectives'].get(o['id'], {}).get('done') for o in optional):
@@ -711,6 +721,7 @@ class Run:
         else once. Doc 86, C1a: a value is worked out as it is given, the credited wolf as $actor; with none, that reward is not
         given (noted in the state's rewardNotes)."""
         for effect in effects:
+            effect = from_giver(effect, q)
             per_wolf, each = reward_wolves(effect)
             for wolf in (wolves if each else [None]):
                 e = dict(effect)

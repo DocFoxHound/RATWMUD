@@ -418,13 +418,18 @@ rule above ends the quest when the carter dies.
 - **Rewards in proportion:** a quest of the whole story (or a party) with `"credit": "share"` keeps what each wolf made (the
   sum of their progress on its objectives), and in its rewards `{"share": true}` is that wolf's amount: `"coins": {"min": [20,
   {"times": [{"share": true}, 2]}]}` pays two pennies a load, at most 20. `"creditMin": 2` leaves out every reward for a wolf
-  who made less than 2. Without `credit` the rewards are the same for everyone, as before. The quest editor's **Reward each by
+  who made less than 2; with no least share, a wolf who made nothing gets nothing. Without `credit` the rewards are the same for everyone, as before. The quest editor's **Reward each by
   their share** and **The least share**.
 - **Thanks by name:** `npc.greet` (a reward or a trigger's effect for the acting wolf) has a resident greet that wolf the next
   time they open the resident's window, in the resident's own voice (`#symbols#` fill in their dialect), instead of the usual
-  greeting, once, within its days (7 when not given, 28 at most). A later greeting for the same wolf from the same resident
-  replaces it. It is a word of thanks: it stays when the run ends. In a quest's rewards it is for each wolf with credit:
-  `{"kind": "npc.greet", "npc": "rm111", "player": "$actor", "text": "#greet# You brought the axle. I'll not forget it."}`.
+  greeting (the opening line of their Talk window: Trade, a fine or Introduce keep their own, and the greeting waits), once,
+  within its days (7 when not given, 28 at most). A later greeting for the same wolf from the same resident
+  replaces it. It is a word of thanks: it stays when the run ends. In a quest's rewards it is for each wolf with credit, and
+  from the quest's giver unless it names another resident:
+  `{"kind": "npc.greet", "player": "$actor", "text": "#greet# You brought the axle. I'll not forget it."}`. Only a
+  greeting, `npc.line`, an offer's words and a choice's reply are said in a voice: `npc.speak` and a scene's lines are said as
+  written, so `#symbols#` there are refused. A fact such as `#player.title#` in a greeting is left out for a wolf who has
+  none there (the words check warns of it): a line in the resident's tree gated on `player.titled` is surer.
 - **Titles:** `title.give` names a wolf by a title (60 characters, no `#` or ids), known in the realm or one town, for good
   (0 days) or up to 365 days. It is on their character card (they may hide it from others' closer look; residents still use
   it), a deed of its naming goes into the town's talk, and the event **A wolf is given a title** (`title given`) follows. A
@@ -583,11 +588,13 @@ Approval also reads **every word the story says** (`tools/story_words.py`, also 
 instead (the young of wolves are pups; the world's two powers are the Bright One and the Dark One, never another word for
 them; a private message is never called anything else), a word that looks like
 an id in anything a wolf reads (`rm111`, `rm_eleanor_saltcot`, `wolf-…`, or any of the world's resident or place ids), a
-`#symbol#` the talk library does not have (or one in words no resident says), a stray `[` or an unclosed `#`, words too long
+`#symbol#` the talk library does not have (or one in words not said in a resident's voice: `npc.speak`, a scene's lines,
+and every word no resident says), a stray `[` or an unclosed `#`, words too long
 with every fill at its widest, and a banner with a resident's face that quotes them. It warns of a resident's words in
 another dialect's set phrases than their own (Fenshore-raised residents speak Mirebridge's; an accent of `none` is plain),
 of a banner with a resident's face at all, of `npc.speak` said to a wolf ("you": the window is the place), and of a
-clearing that begins "never" (the game says "never" itself).
+clearing that begins "never" (the game says "never" itself), and of a fact such as `#player.title#` in a story's words
+(left out for a wolf who has none there).
 
 Try a new story on a throwaway copy of the world before the live one: the live world's players are not test subjects.
 
