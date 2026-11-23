@@ -773,6 +773,7 @@ def _check_exit(e, phase, mission_ids):
         f'{pid}: "{e["on"]}" names a whole number to cross.',
     )
     check_moon(e['on'], m, pid)
+    check_variable_changed(e['on'], m, phase, f'{pid}: ')
     check_region_source(e, phase.get('_regions'))
     require(
         'participant' not in e or type(e['participant']) is bool,

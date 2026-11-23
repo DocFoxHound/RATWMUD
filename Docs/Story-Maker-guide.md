@@ -467,8 +467,10 @@ rule above ends the quest when the carter dies.
 
 A quest may be **only for the wolves for whom a condition holds** (`requires`; the quest editor's **Only for wolves
 who…**): over variables, the phase and quests (`compare`, `switch`, `in list`, `days since`, `quest is`, `objective is`,
-`phase is`, in All, Any and Not, 4 deep, 12 conditions), the wolf as the acting one. Never the world's facts or an event's
-fields: an offer is not an event.
+`phase is`, in All, Any and Not, 4 deep, 12 conditions), the wolf as the acting one. Never the world's facts (a purse, who
+is online) or an event's fields: an offer is not an event. The one field it reads is the wolf it is worked out for (the
+event's actor, `{"field": "actor"}`): "only for the wolves in the list pledged" is
+`{"test": "in list", "list": "pledged", "value": {"field": "actor"}}`.
 
 ```json
 {"id": "oil", "title": "Oil for the lamp", "giver": "rm111", "requires": {"test": "quest is", "quest": "lamp", "status": "done"}, ...}
@@ -478,7 +480,8 @@ fields: an offer is not an event.
   of the story, and the giver and the notice board offer it to those wolves only: part two of a chain shows only to the wolf
   who finished part one. A wolf outside the story never meets such a requirement.
 - When it reads only the story's own (a story or world variable, the phase, the story's copy), it is one gate for everyone:
-  closed, the quest is not offered at all.
+  closed, no wolf may take the quest; a wolf whose copy is already under way keeps it, with the giver's words while under
+  way, its hand-in and its thanks.
 - Taking it (from the giver, the board, `quest.offer` or `quest.start`) checks it again for that wolf: "Not yet."
 - **Taking an offer back:** **Take back an offer** (`quest.withdraw`) takes an offered quest back from one wolf, with no mark
   in their journal: its giver and the board leave it out for them; a copy taken stays; offering it again clears it. With

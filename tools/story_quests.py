@@ -19,6 +19,7 @@ The state it keeps (inside the run's state):
 """
 
 import bisect
+import hashlib
 import json
 
 import story_program as rules
@@ -37,14 +38,15 @@ AUDIENCE_CAP = 5000          # Wolves of one run at most (doc 85, 3.6: the cap b
 JOINABLE = ('open', 'everyone')
 
 QUEST_EFFECTS = ('quest.offer', 'quest.start', 'quest.complete', 'quest.fail', 'objective.complete', 'objective.fail',
-                 'objective.reveal', 'objective.progress')
+                 'objective.reveal', 'objective.progress', 'quest.withdraw')
 PARTICIPANT_EFFECTS = ('participant.add', 'participant.remove')
 # (Doc 85, Phase 9: story.tracker shows or hides a shown variable among the journal's trackers: the story's own too.)
 # (Doc 85, Phase 10: story.start, the next chapter of a campaign, is the story's own too: the runner starts it.)
 CHAPTER_EFFECTS = ('story.start',)
-# (Doc 86, Phase 4: news for another story (C12a), and an offer taken back from one wolf (L5), the story's own too.)
+# (Doc 86, Phase 4: news for another story (C12a) the story's own too; an offer taken back from one wolf (L5, quest.withdraw)
+# is a quest effect, its quest the program's own.)
 NOTICE_EFFECTS = ('story.notify',)
-STORY_EFFECTS = (*QUEST_EFFECTS, *PARTICIPANT_EFFECTS, 'npc.offer', 'story.tracker', *CHAPTER_EFFECTS, *NOTICE_EFFECTS, 'quest.withdraw')
+STORY_EFFECTS = (*QUEST_EFFECTS, *PARTICIPANT_EFFECTS, 'npc.offer', 'story.tracker', *CHAPTER_EFFECTS, *NOTICE_EFFECTS)
 # (A wolf may be named by $actor in these from a trigger of anyone in the world: each takes the wolf into the story.)
 TAKES_IN = ('participant.add', 'quest.offer', 'quest.start')
 GAME_EVENTS = ('quest accepted', 'quest declined', 'quest handed in', 'quest abandoned', 'dialogue choice')
@@ -383,8 +385,14 @@ def check_requires(c, phase, qid):
         rules.require(len(leaves) <= REQUIRES_LEAVES, f'quest {qid}: "Only for wolves who..." has {REQUIRES_LEAVES} conditions at most.')
         for side in ('left', 'right', 'value'):
             for o in triggers.operands_in(node.get(side)):
-                rules.require('field' not in o and 'each' not in o and o.get('of') != '$each' and 'share' not in o,
-                              f'quest {qid}: "Only for wolves who..." reads no event field and no loop value.')
+                # (The one event field it reads is the acting wolf: the wolf the offer is worked out for.)
+                rules.require(o.get('field', 'actor') == 'actor' and 'each' not in o and o.get('of') != '$each' and 'share' not in o,
+                              f'quest {qid}: "Only for wolves who..." reads no event field (but the wolf, actor) and no loop value.')
+                # (Nor what only the world's facts tell: a purse, the wolves online. An offer is worked out with none.)
+                rules.require('purse' not in o and o.get('audience') != 'online'
+                              and not (any(k in o for k in triggers.SHARES) and o.get('of', 'active') == 'online'),
+                              f'quest {qid}: "Only for wolves who..." reads no purse and not who is online: the world\'s facts '
+                              'are not known when an offer is worked out (an offer is not an event).')
         rules.require(node.get('of') != '$each', f'quest {qid}: "Only for wolves who..." reads the wolf ($actor) or the story.')
         triggers._check_condition_v2(node, phase, None)
 
@@ -396,7 +404,7 @@ def requires_personal(q, p):
     quest of the wolf): then it is worked out for each wolf of the story; else it is one gate for everyone."""
     decls = rules.variables_of(p) if p.get('version') == 2 else {}
     for o in requires_reads(q.get('requires')):
-        if o.get('of') == '$actor':
+        if o.get('of') == '$actor' or o.get('field') == 'actor':
             return True
         if o.get('test') in ('quest is', 'objective is') and o.get('of', '$actor') != 'story':
             return True
@@ -404,6 +412,22 @@ def requires_personal(q, p):
         if name in decls and decls[name]['scope'] in triggers.PERSONAL:
             return True
     return False
+
+
+def requires_done(c):
+    """The quests a `requires` tree needs done (`quest is` done, not under a `not`; under an `any`, only when every branch
+    needs one done): J3's "requires another quest done"."""
+    if not isinstance(c, dict):
+        return set()
+    kind = c.get('test')
+    if kind in ('all', 'any'):
+        parts = [requires_done(x) for x in c.get('conditions', ())]
+        if kind == 'any' and not all(parts):
+            return set()
+        return set().union(*parts)
+    if kind == 'quest is' and c.get('status') == 'done':
+        return {c.get('quest')}
+    return set()
 
 
 def check_closures(p):
@@ -415,12 +439,10 @@ def check_closures(p):
     for q in qs:
         if closure_of(q) != 'line':
             continue
-        before = {o['quest'] for o in requires_reads(q.get('requires')) if o.get('test') == 'quest is' and o.get('status') == 'done'
-                  and o.get('quest') in ids and o['quest'] != q['id']}
+        before = {d for d in requires_done(q.get('requires')) if d in ids and d != q['id']}
         rules.require(before, f'quest {q["id"]}: the last chapter of a line (closure "line") requires another quest of the story done '
                               '("Only for wolves who..." with that quest done).')
-        after = [o['id'] for o in p.get('quests', []) if isinstance(o, dict) and o is not q and any(
-            r.get('test') == 'quest is' and r.get('quest') == q['id'] and r.get('status') == 'done' for r in requires_reads(o.get('requires')))]
+        after = [o['id'] for o in p.get('quests', []) if isinstance(o, dict) and o is not q and q['id'] in requires_done(o.get('requires'))]
         rules.require(not after, f'quest {q["id"]}: the last chapter of a line (closure "line") is required by no other quest: '
                                  f'{", ".join(after)} needs it done.')
 
@@ -1422,7 +1444,9 @@ def journal(p, state, wolf, facts=None):
 
 def requires_ctx(p, state, wolf, day=None):
     scope = {'id': 'quests', '_v': 2, '_vars': rules.variables_of(p), '_regions': rules.region_index(p), '_questIndex': index(p)}
-    return triggers.Ctx(scope, state, {}, wolf or '', day if day is not None else state.get('lastDay'), 0, lambda: set(), None, None, {})
+    # (The event is the wolf alone: {"field": "actor"} reads the wolf the offer is worked out for.)
+    return triggers.Ctx(scope, state, {'actor': wolf or ''}, wolf or '', day if day is not None else state.get('lastDay'), 0, lambda: set(),
+                        None, None, {})
 
 
 def requires_hold(p, state, q, wolf, day=None):
@@ -1439,8 +1463,11 @@ def gates(p, state):
     qs = [q for q in open_quests(p, state['phase']) if 'requires' in q]
     if not qs:
         return {}
-    key = json.dumps([p.get('id'), [q['id'] for q in qs], state['phase'], state.get('quests'), state.get('counters'), state['cohort'],
-                      state.get('lastDay')], sort_keys=True, separators=(',', ':'), default=str)
+    # (A digest of what the gates read: the trees themselves, so a run moved to a new version is worked out again, and the
+    # state they read; only the digest is kept.)
+    key = hashlib.sha1(json.dumps([p.get('id'), [[q['id'], q['requires']] for q in qs], state['phase'], state.get('quests'),
+                                   state.get('counters'), state['cohort'], state.get('parties'), state.get('seen'), state.get('online'),
+                                   state.get('lastDay')], sort_keys=True, separators=(',', ':'), default=str).encode()).hexdigest()
     if key in _GATES:
         return _GATES[key]
     out = {}
@@ -1476,8 +1503,10 @@ def offers(p, state):
                  **({'region': join['region']} if 'region' in join else {}), 'full': full(q, state)}
         gate = held.get(q['id'], True)
         if gate is False:
-            continue
-        if isinstance(gate, list):
+            # (Closed to new takers, but kept: the wolves whose copy is under way still hear its words while under way, and
+            # hand it in with its own words and thanks.)
+            entry['players'] = []
+        elif isinstance(gate, list):
             entry['players'] = [w for w in gate if w not in withdrawn.get(q['id'], ())]
         elif withdrawn.get(q['id']):
             entry['except'] = sorted(withdrawn[q['id']])

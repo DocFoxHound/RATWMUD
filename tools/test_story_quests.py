@@ -861,8 +861,8 @@ class Phase4Quests(unittest.TestCase):
         self.assertFalse(quests.requires_personal(p['quests'][0], p))
         self.assertTrue(quests.requires_personal(p['quests'][1], p))
         state = rules.begin(p, [ASH, BIRCH, ELM], 0)
-        self.assertEqual([(o['quest'], o.get('players')) for o in quests.offers(p, state)], [('two', [])],
-                         'part one closed: not sent; part two for nobody yet')
+        self.assertEqual([(o['quest'], o.get('players')) for o in quests.offers(p, state)], [('one', []), ('two', [])],
+                         'part one closed: for nobody (kept for the copies under way); part two for nobody yet')
         before = quests.fingerprint(p, state)
         state = self.state_after(p, [fact(1, 'arrival', 0.1, ASH)])
         offers = quests.offers(p, state)
@@ -964,3 +964,86 @@ class Phase4Quests(unittest.TestCase):
         run.story_effect({'kind': 'story.notify', 'signal': 'lamp_lit', 'story': 'nh-ch1'}, '')
         self.assertEqual(state['notices'], [{'signal': 'lamp_lit', 'player': ASH, 'amount': 3},
                                             {'signal': 'lamp_lit', 'player': '', 'amount': 0, 'story': 'nh-ch1'}])
+
+
+class Phase4AfterReview(unittest.TestCase):
+    """Doc 86, Phase 4 after review: a closed gate keeps the words of the copies under way; the gates worked out again for a
+    new version; quest.withdraw's quest the program's own; no world's facts in `requires`, the wolf as {"field": "actor"};
+    an exit on "variable changed" checked; a line's closure needs a quest done, not one not done."""
+
+    def test_a_closed_gate_keeps_the_words_of_a_copy_under_way(self):
+        p = chain(closure=None)
+        p['quests'][1]['requires'] = {'test': 'switch', 'var': 'open', 'is': False}
+        p['quests'][1]['offer']['thanks'] = 'Dry as a bone.'
+        rules.validate(p)
+        state = rules.begin(p, [ASH, BIRCH, ELM], 0)
+        run = quests.Run(p, p['phases'][0], state, 1, 0, lambda f: None)
+        run.start(p['quests'][1], ASH)
+        state.setdefault('counters', {}).setdefault('story', {})['open'] = True
+        two = next(o for o in quests.offers(p, state) if o['quest'] == 'two')
+        self.assertEqual(two['players'], [], 'no one new may take it')
+        self.assertEqual((two['during'], two['duringAsk'], two['thanks']), ('Mind you keep the oil dry.', 'About the oil...', 'Dry as a bone.'))
+        self.assertEqual(run.may_start(p['quests'][1], BIRCH), quests.NOT_YET)
+
+    def test_the_gates_are_worked_out_again_for_a_new_version(self):
+        a = chain(closure=None)
+        a['quests'][0]['requires'] = {'test': 'switch', 'var': 'open', 'is': True}
+        rules.validate(a)
+        b = copy.deepcopy(a)
+        b['quests'][0]['requires']['is'] = False
+        rules.validate(b)
+        state = rules.begin(a, [ASH], 0)
+        shut = lambda p: [o['quest'] for o in quests.offers(p, state) if o.get('players') == []]
+        self.assertEqual(shut(a), ['one', 'two'])
+        self.assertEqual(shut(b), ['two'], 'the same ids and state, other requires: worked out again')
+        self.assertNotEqual(quests.fingerprint(a, state), quests.fingerprint(b, state))
+        self.assertTrue(all(len(k) == 40 for k in quests._GATES), 'only a digest is kept')
+
+    def test_quest_withdraw_names_a_quest_of_the_story(self):
+        p = chain(closure=None)
+        p['phases'][0]['triggers'][0]['actions'].append({'do': 'effect', 'effect': {'kind': 'quest.withdraw', 'quest': 'nope', 'player': '$actor'}})
+        self.assertRaisesRegex(ValueError, 'Unknown quest "nope"', rules.validate, p)
+
+    def test_requires_reads_no_purse_and_not_who_is_online(self):
+        for value in ({'purse': 'town:greyfen:works'}, {'audience': 'online'}, {'percent': {'list': 'open'}, 'of': 'online'}):
+            p = chain(closure=None)
+            p['quests'][0]['requires'] = {'test': 'compare', 'left': value, 'op': '>=', 'right': 0}
+            self.assertRaisesRegex(ValueError, "reads no purse and not who is online", rules.validate, p)
+        p = chain(closure=None)
+        p['quests'][0]['requires'] = {'test': 'compare', 'left': {'audience': 'active'}, 'op': '>=', 'right': 0}
+        rules.validate(p)
+
+    def test_only_for_the_wolves_in_a_list(self):
+        p = chain(closure=None)
+        p['variables'].append({'id': 'pledged', 'type': 'wolves', 'scope': 'story'})
+        p['quests'][0]['requires'] = {'test': 'in list', 'list': 'pledged', 'value': {'field': 'actor'}}
+        rules.validate(p)
+        self.assertTrue(quests.requires_personal(p['quests'][0], p), 'the wolf tested: worked out for each wolf')
+        state = rules.begin(p, [ASH, BIRCH], 0)
+        state.setdefault('counters', {}).setdefault('story', {})['pledged'] = [BIRCH]
+        self.assertEqual(next(o for o in quests.offers(p, state) if o['quest'] == 'one')['players'], [BIRCH])
+        run = quests.Run(p, p['phases'][0], state, 1, 0, lambda f: None)
+        self.assertEqual(run.may_start(p['quests'][0], ASH), quests.NOT_YET)
+        self.assertEqual(run.may_start(p['quests'][0], BIRCH), '')
+        p['quests'][0]['requires']['value'] = {'field': 'target'}
+        self.assertRaisesRegex(ValueError, 'no event field', rules.validate, p)
+
+    def test_an_exit_on_variable_changed_names_a_world_variable(self):
+        p = chain(closure=None)
+        p['phases'][0]['exits'].append({'on': 'variable changed', 'match': {'target': 'nope'}, 'to': 'a'})
+        self.assertRaisesRegex(ValueError, 'names a world variable this story declares', rules.validate, p)
+        p = chain(closure=None)
+        p['variables'].append({'id': 'realm', 'type': 'number', 'scope': 'world'})
+        p['phases'][0]['exits'].append({'on': 'variable changed', 'match': {'target': 'realm'}, 'to': 'a'})
+        rules.validate(p)
+
+    def test_a_line_needs_a_quest_done_not_one_not_done(self):
+        p = chain()
+        p['quests'][1]['requires'] = {'test': 'not', 'condition': {'test': 'quest is', 'quest': 'one', 'status': 'done'}}
+        self.assertRaisesRegex(ValueError, 'requires another quest of the story done', rules.validate, p)
+        p = chain()
+        p['quests'][1]['requires'] = {'test': 'any', 'conditions': [{'test': 'quest is', 'quest': 'one', 'status': 'done'},
+                                                                    {'test': 'switch', 'var': 'open', 'is': True}]}
+        self.assertRaisesRegex(ValueError, 'requires another quest of the story done', rules.validate, p)
+        p['quests'][1]['requires']['test'] = 'all'
+        rules.validate(p)

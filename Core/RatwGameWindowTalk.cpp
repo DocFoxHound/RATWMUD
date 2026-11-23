@@ -407,8 +407,17 @@ bool Game::windowNode(const std::string& playerId, const DialogueSession& d, con
             const auto& hub = nodeId == home ? out : t->nodes.at(home);
             std::size_t hubRoom = roomOf(hub);
             const bool hubHasAbout = std::any_of(hub.choices.begin(), hub.choices.end(), [](const talk::TreeChoice& c) { return c.go == "about"; });
-            if (aboutTakesRest && story.size() > hubRoom && !hubHasAbout && hubRoom > 0)
-                --hubRoom;                          // (One place kept for the way to the rest.)
+            // (One place kept for the way to the rest, when the hub has none: never the last place a hand-in would take, and
+            // none on a full hub.)
+            bool link = false;
+            if (aboutTakesRest && story.size() > hubRoom && !hubHasAbout)
+            {
+                if (hubRoom >= 2)
+                    --hubRoom, link = true;
+                else if (hubRoom == 1 && story.front().kind != "handin")
+                    hubRoom = 0, link = true;
+            }
+            const bool aboutReached = aboutTakesRest && (hubHasAbout || link);
             const auto first = std::min(story.size(), hubRoom);
             std::vector<StoryChoice> mine;
             if (nodeId == home)
@@ -419,7 +428,7 @@ bool Game::windowNode(const std::string& playerId, const DialogueSession& d, con
                 const auto last = std::min(story.size(), first + room);
                 mine.assign(story.begin() + std::ptrdiff_t(first), story.begin() + std::ptrdiff_t(last));
             }
-            const std::size_t placed = first + (aboutTakesRest ? std::min(story.size() - first, roomOf(t->nodes.at("about"))) : 0);
+            const std::size_t placed = first + (aboutReached ? std::min(story.size() - first, roomOf(t->nodes.at("about"))) : 0);
             if (placed < story.size())
             {
                 const auto day = std::int64_t(std::floor(world_.calendarDays()));
@@ -447,7 +456,7 @@ bool Game::windowNode(const std::string& playerId, const DialogueSession& d, con
                 }
                 add.push_back(std::move(choice));
             }
-            if (nodeId == home && aboutTakesRest && story.size() > first && !hubHasAbout)
+            if (nodeId == home && link)
             {
                 talk::TreeChoice more;
                 more.words = "Ask about something else...";

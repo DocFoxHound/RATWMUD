@@ -579,6 +579,27 @@ class StoriesThatTalk(unittest.TestCase):
         self.settle()
         self.assertEqual(self.release(chapter)[1]['counters']['player'][ASH]['p_voice'], 2)
 
+    def test_news_named_for_one_story_reaches_only_its_run(self):
+        # (Doc 86, Phase 4 after review: two chapters listening; the news names one.)
+        second = copy.deepcopy(CHAPTER)
+        second.update(id='nh-ch2', title='The second night')
+        first, other, pack = self.lone(CHAPTER), self.lone(second), self.lone(PACK)
+        self.settle()
+        state = self.release(pack)[1]
+        state['notices'] = [{'signal': 'voice', 'player': ASH, 'amount': 5, 'story': 'nh-ch2'}]
+        self.conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), pack))
+        self.settle()
+        self.assertEqual(self.commands(first, 'voice'), [], 'the chapter not named hears nothing')
+        [(event, status)] = self.commands(other, 'voice')
+        self.assertEqual((event['actor'], event['quantity'], status), (ASH, 5, 'done'))
+        self.assertEqual(self.release(other)[1]['counters']['player'][ASH]['p_voice'], 5)
+        # Unnamed, both hear it.
+        state = self.release(pack)[1]
+        state['notices'] = [{'signal': 'voice', 'player': BIRCH, 'amount': 1}]
+        self.conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), pack))
+        self.settle()
+        self.assertEqual((len(self.commands(first, 'voice')), len(self.commands(other, 'voice'))), (1, 2))
+
     def test_a_world_variable_changed_wakes_the_story_that_declares_it(self):
         chapter, pack = self.lone(CHAPTER), self.lone(PACK)
         self.settle()

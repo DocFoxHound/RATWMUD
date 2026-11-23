@@ -5,9 +5,11 @@ typed variables in four scopes, conditions over the story's own state, and flow 
 else, wait, for each, random, run, enable, disable, stop, note, finish). A version 1 program runs exactly as before: every
 version 2 path is behind `phase['_v'] == 2`. Core/RatwStoryTriggers.cpp is this file's twin (tools/test_story_native.py)."""
 
+import json
 import math
 import re
 import operator
+from pathlib import Path
 
 import story_native
 
@@ -62,7 +64,17 @@ RESIDENT_STATES = ('alive', 'dead', 'indoors', 'out of doors')
 RESIDENT_HAS = ('job', 'mood', 'mantle', 'town', 'post')   # (Doc 86, C13b: the post they hold.)
 # Doc 86, J10: a wolf's Gift, its tier or its family (Data/Gifts/families.json, the playable ones).
 GIFT_TIERS = ('normal', 'gifted', 'quickened')
-GIFT_FAMILIES = ('fire', 'earth', 'water', 'wind', 'sound', 'blinker', 'gravity', 'seer')
+
+
+def _playable_families():
+    try:
+        doc = json.loads((Path(__file__).resolve().parent.parent / 'Data' / 'Gifts' / 'families.json').read_text(encoding='utf-8'))
+        return tuple(f['id'] for f in doc['families'] if not f.get('npcOnly'))
+    except (OSError, ValueError, KeyError, TypeError):
+        return ('fire', 'earth', 'water', 'wind', 'sound', 'blinker', 'gravity', 'seer')   # (The eight of doc 43.)
+
+
+GIFT_FAMILIES = _playable_families()
 CALENDAR = {'weekday': ('Dawnday', 'Hearthday', 'Stoneday', 'Riverday', 'Emberday', 'Marketday', 'Restday'),
             'season': ('spring', 'summer', 'autumn', 'winter'), 'period': ('dawn', 'day', 'dusk', 'night'),
             'moon': ('new', 'waxing', 'full', 'waning')}   # (Doc 86, J4: the moon in four.)

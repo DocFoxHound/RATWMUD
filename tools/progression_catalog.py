@@ -113,7 +113,7 @@ def problems(doc: dict | None = None) -> list[str]:
     return found
 
 
-SOCIAL = {'qualified_session_settlement', 'gold_star', 'story_star', 'story_closure'}
+SOCIAL = {'qualified_session_settlement', 'gold_star', 'story_star', 'story_closure', 'npc_dialogue'}
 
 
 def standing_problems(doc: dict | None = None) -> list[str]:

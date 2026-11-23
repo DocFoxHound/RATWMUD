@@ -1425,7 +1425,7 @@ export function wordingOf(cat: Catalogue, flat: Record<string, string>) {
 
 /** The quest effects' kinds that name a quest (and an objective): renaming one follows them. */
 export const QUEST_EFFECTS = ['quest.offer', 'quest.start', 'quest.complete', 'quest.fail', 'objective.complete', 'objective.fail', 'objective.reveal',
-    'objective.progress'];
+    'objective.progress', 'quest.withdraw'];
 /** The events a quest's objectives may wait for: the catalogue's mission events, and a story signal. */
 export function objectiveEvents(cat: Catalogue): CatEvent[] {
     return cat.events.filter(e => e.mission || e.id === SIGNAL);
@@ -1469,12 +1469,27 @@ function mapEffects(p: Program, fn: (e: Effect) => Effect): Program {
         }),
         ...(p.quests ? {quests: p.quests.map(q => ({...q, ...(q.rewards ? {rewards: list(q.rewards)} : {}), ...(q.bonus ? {bonus: list(q.bonus)} : {})}))} : {})};
 }
+/** Every condition that reads a quest (`quest is`, `objective is`) in the triggers and in the quests' "Only for wolves who…",
+ *  passed through `fn`. */
+function mapQuestConditions(p: Program, fn: (c: {test: string; quest?: string; objective?: string}) => Record<string, unknown> | null): Program {
+    const leaf = (c: Condition): Condition => {
+        const r = c as unknown as {test: string; quest?: string; objective?: string};
+        if (r.test !== 'quest is' && r.test !== 'objective is') return c;
+        const next = fn(r);
+        return next ? {...r, ...next} as unknown as Condition : c;
+    };
+    const out = rewriteTriggers(p, t => mapTriggerConditions(t, leaf));
+    if (!out.quests) return out;
+    const quests = out.quests.map(q => { if (!q.requires) return q; const r = mapCondition(q.requires, leaf); return r === q.requires ? q : {...q, requires: r}; });
+    return quests.some((q, i) => q !== out.quests![i]) ? {...out, quests} : out;
+}
 const QUEST_FACTS = ['quest accepted', 'quest declined', 'quest handed in', 'quest abandoned', 'quest started', 'quest completed', 'quest failed', 'objective completed'];
 /** A quest renamed everywhere: its id, the quest effects naming it, objectives and fail rules waiting for its events, and the
  *  rehearsal cases (their facts and expectQuests). */
 export function renameQuest(p: Program, from: string, to: string): Program {
     if (from === to) return p;
     let out = mapEffects(p, e => QUEST_EFFECTS.includes(e.kind) && e.quest === from ? {...e, quest: to} : e);
+    out = mapQuestConditions(out, c => c.quest === from ? {quest: to} : null);
     const rule = <T extends {on?: string; match?: Record<string, string>}>(o: T): T =>
         o.on && QUEST_FACTS.includes(o.on) && o.match?.detail === from ? {...o, match: {...o.match, detail: to}} : o;
     out = rewriteTriggers(out, t => rule(t));
@@ -1488,7 +1503,8 @@ export function renameQuest(p: Program, from: string, to: string): Program {
 /** An objective renamed: its id, the others' `after` naming it, and the objective effects naming it for its quest. */
 export function renameObjective(p: Program, quest: string, from: string, to: string): Program {
     if (from === to) return p;
-    const out = mapEffects(p, e => QUEST_EFFECTS.includes(e.kind) && e.quest === quest && e.objective === from ? {...e, objective: to} : e);
+    let out = mapEffects(p, e => QUEST_EFFECTS.includes(e.kind) && e.quest === quest && e.objective === from ? {...e, objective: to} : e);
+    out = mapQuestConditions(out, c => c.test === 'objective is' && c.quest === quest && c.objective === from ? {objective: to} : null);
     return {...out, quests: (out.quests ?? []).map(q => q.id !== quest ? q : {...q, objectives: q.objectives.map(o => ({...(o.id === from ? {...o, id: to} : o),
         ...(o.after ? {after: o.after.map(a => a === from ? to : a)} : {})}))})};
 }

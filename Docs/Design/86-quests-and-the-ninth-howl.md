@@ -1553,23 +1553,29 @@ the quest ones), `resident has` reads `post`, two quest fields (`requires`, `clo
   `""` is a normal wolf's family); `fact_test` and `Dispatch2::fact`; `check_world_facts` takes `gift` and `post`.
 - **C6: chains and gates** (`story_quests`: `check_requires`, `requires_personal`, `requires_hold`, `gates`, `offers`,
   `fingerprint`, `Run.may_start`). `requires` is a condition tree of `compare`, `switch`, `in list`, `days since`,
-  `quest is`, `objective is` and `phase is` (in all, any, not; 4 deep, 12 conditions; no event field, loop value or share;
+  `quest is`, `objective is` and `phase is` (in all, any, not; 4 deep, 12 conditions; no event field but `actor`, the wolf
+  tested; no loop value or share; no purse, not who is online: the world's facts are not known when an offer is worked out;
   `REQUIRES_TESTS`), checked by the v2 checker with the program's quests and phases. `gates` works it out once per state
-  (cached by the state's quests, counters, phase, cohort and day): a tree that reads the wolf's own (`of: $actor`, a player or
-  party variable, a quest's copy not the story's) for each wolf of the story, giving the offer `players`; else one gate (false:
-  not sent). The results and the `withdrawn` marks are in the journal's fingerprint. Taking it (the giver's window, the board,
+  (cached by a digest of the trees themselves and of the state's quests, counters, parties, seen and online wolves, phase,
+  cohort and day, so a run moved to a new version is worked out again): a tree that reads the wolf's own (`of: $actor`,
+  `{"field": "actor"}`, a player or party variable, a quest's copy not the story's) for each wolf of the story, giving the
+  offer `players`; else one gate (false: the offer goes with `players: []`, closed to new takers, so the copies under way
+  keep the giver's words while under way, the hand-in's words and the thanks). The results and the `withdrawn` marks are in the journal's fingerprint. Taking it (the giver's window, the board,
   `quest.offer`, `quest.start`) checks it again for that wolf: "Not yet." (a toast). `offer.during` (300, fills, `#symbols#`)
   and `duringAsk` (120, "About <title>..."): the offer carries both, filled. In the game, `storyOfferOpen` refuses a wolf not
   in `players` or in `except` (the board's view and the window alike); `storyChoicesFor` adds a `during` choice while the
   wolf's view of the quest is `active` with that giver, whose node `@story:<run>:during:<quest>` (`storyNode`) says the words
   through the window's voice and goes back to the hub; the window's watched `dialogue node` event is raised as for any node.
-- **L5: an offer taken back** (`quest.withdraw`, the story's own): out of `questOffers`, into the run's `withdrawn`; the giver's
+- **L5: an offer taken back** (`quest.withdraw`, the story's own; a quest effect, so its quest must be the program's own and
+  the workbench's rename follows it): out of `questOffers`, into the run's `withdrawn`; the giver's
   offer then carries `except` (or, with a personal `requires`, the wolf left out of `players`); a copy taken stays;
   `quest.offer` to that wolf clears it; a quest gone in a new version drops its marks (`migrate`).
 - **N1: many stories at one resident** (`RatwGameWindowTalk.cpp` `windowNode`; `storyChoicesFor`). The story choices come
   hand-ins first, then offers, then the words while under way, then choices, each in story-run order. In a resident's own tree
   (`resident`, home `hub`), the hub takes what fits its nine, the `about` node the next (in what room it leaves), and the hub
-  gets "Ask about something else..." only if it has no way to `about` (the resident tree always has one); only what `about`
+  gets "Ask about something else..." only if it has no way to `about` (the resident tree always has one), and then only
+  with room for it and one more (or the one place left, when the first story choice is not a hand-in; on a full hub,
+  none); only what `about`
   has no room for is left out, noted once a resident a game day (`RATW_STORY ... (a giver crowded with stories)`, the game's
   log; `storyCrowdNoted_`). Other trees keep the hub's room and leave the rest out, noted the same way.
 - **J3: quests that count as a finished Story** (`story_quests.closure_of`, `check_quest`, `check_closures`, `Run.complete`;
@@ -1635,6 +1641,29 @@ the quest ones), `resident has` reads `post`, two quest fields (`requires`, `clo
   how to spread a pack's quests instead. The "words while under way" choice is placed after the offers and before the story
   choices. The C13a runner test is in `test_story_campaigns` (with C12a's, as the phase's gate lists it), not
   `test_story_v2_runner`. The workbench also has **Counts as a finished Story**, which the spec did not ask for.
+- **After review** (the review of `6ed2d785`): a gate for everyone that turns false no longer drops the offer: it goes with
+  `players: []`, so a wolf whose copy is under way keeps the giver's words while under way, the hand-in's words and the
+  thanks (`offers`). The gates' cache is keyed by a digest of the `requires` trees and of everything they read (parties, the
+  wolves seen and online too), so a run moved to a new version with other `requires` is worked out again; only the digest is
+  kept. `quest.withdraw` is a quest effect (`QUEST_EFFECTS`, both sides): its quest must be the program's own, and the
+  workbench's `renameQuest` follows it, and follows every `quest is` and `objective is` in the triggers and in the quests'
+  `requires` (`renameObjective` the `objective is`). `requires` refuses a purse, `audience: online` and a share of the wolves
+  online (the world's facts are not known when an offer is worked out), and reads `{"field": "actor"}` as the wolf tested
+  (personal, worked out for each wolf): "only for the wolves in a list" is `in list` with that value; the workbench's value
+  picker inside **Only for wolves who…** offers only that field and leaves out who is online, the loop value and a share
+  (`OfferValues`). An exit on `variable changed` must name a declared world variable, as a trigger must. A line's closure
+  needs a quest done that is not under a `not` (under an `any`, in every branch; `requires_done`). In the window, a hub with no
+  way to `about` gives "Ask about something else..." only a place it can spare (never the hand-in's last place, none on a
+  full hub), and what `about` cannot be reached for is noted as left out. `GIFT_FAMILIES` is read from
+  `Data/Gifts/families.json` (the families not `npcOnly`), and the workbench resets `wolf has`'s value when what it reads
+  changes (a tier "normal", a family none). The runner reads of the other live runs only their program and visit
+  (`_live_runs`). `tools/progression_catalog.py`'s social reasons include `npc_dialogue` (`test_progression_catalog` was
+  failing before this phase). Tests: `test_story_quests` (`Phase4AfterReview`), `test_story_campaigns`
+  (`StoriesThatTalk`: news named for one of two listening chapters reaches only its run; unnamed, both),
+  `Tests/dialogue_tests.cpp` (`storyChainsInTheWindow`: an offer closed to new takers keeps the under way choice, the
+  hand-in's words and the thanks), `workbench.test.ts` (renaming a quest and an objective follows `quest.withdraw`,
+  `quest is` and `objective is`). A test of a hub with no way to `about` needs a resident tree without one, which the game
+  does not have; it is not written.
 - **Going live** on `ratw_ridgemere3` needs no migration; the game server restarted from this branch (the window's chains,
   the `during` node and the overflow, `story.closure`, the month, the gift and post facts), the story runner from this branch
   with the rebuilt `libratw_story.so` (`wolf has` needs both twins), the Editor released from it. The client needs no change.

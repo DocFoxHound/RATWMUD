@@ -6,7 +6,7 @@ import {useState} from 'react';
 import {eventOf, eventParts, FIELDS, isId, newCondition, objectiveEvents, operandWords, renameObjective, renameQuest, REQUIRES_TESTS, SIGNAL, withQuests,
     type Condition, type FailRule, type Part, type Quest, type QuestObjective, type Ref, type Slot} from '../../lib/workbench';
 import {useBench} from './context';
-import {EventPicker, type Values} from './pickers';
+import {EventPicker, OfferValues, type Values} from './pickers';
 import {Sentence} from './Sentence';
 import {ConditionNode, EffectList} from './TriggerView';
 
@@ -255,10 +255,10 @@ export function QuestEditor({index, select}: {index: number; select: (r: Ref) =>
         {/* (Doc 86, C6: a chain or a gate. Read for each wolf when it reads the wolf's own (their variables, their quests); else one
             gate for everyone. Never the world's facts: an offer is not an event.) */}
         <h6>Only for wolves who… {!q.requires && <small className="hint">anyone who may take it</small>}</h6>
-        {q.requires ? <ConditionNode node={(['all', 'any', 'not'] as string[]).includes(q.requires.test) ? q.requires : {test: 'all', conditions: [q.requires]} as Condition}
+        {q.requires ? <OfferValues.Provider value={true}><ConditionNode node={(['all', 'any', 'not'] as string[]).includes(q.requires.test) ? q.requires : {test: 'all', conditions: [q.requires]} as Condition}
             depth={1} phase={null} only={REQUIRES_TESTS} problems={problems[key + ':requires']}
             change={c => set('requires', c.test === 'all' && c.conditions.length === 1 && q.requires?.test !== 'all' ? c.conditions[0] : c, key + ':requires')}
-            remove={() => set('requires', undefined)}/>
+            remove={() => set('requires', undefined)}/></OfferValues.Provider>
             : <button type="button" className="wb-add" disabled={!v2} onClick={() => {
                 const before = quests.slice(0, index).at(-1);
                 set('requires', before ? {test: 'quest is', quest: before.id, of: '$actor', status: 'done'} as unknown as Condition : newCondition('switch', program, null));

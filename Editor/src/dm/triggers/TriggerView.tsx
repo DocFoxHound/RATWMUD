@@ -84,6 +84,11 @@ export function ConditionNode({node, change, remove, depth, phase, problems, eac
                 const own = (program.variables ?? []).find(x => x.scope === 'player' && x.type === 'number')?.id ?? 'progress';
                 next = rest.source === 'where' ? {...rest, where: {test: 'compare', left: {var: own, of: '$each'}, op: '>=', right: 1}} : {...rest, list: wolves};
             }
+            if (slot.slot === 'what' && (next.test as string) === 'wolf has') {
+                // (Doc 86, J10: a tier is normal, gifted or quickened; a family starts at none, a normal wolf's.)
+                const r = next as unknown as {what: string; value: string};
+                if (r.what !== (node as unknown as {what?: string}).what) next = {...r, value: r.what === 'family' ? '' : 'normal'} as unknown as Condition;
+            }
             if (slot.slot === 'field' && next.test === 'field' && node.test === 'field') {
                 const amount = (AMOUNTS as readonly string[]).includes(next.field);
                 if (amount !== (AMOUNTS as readonly string[]).includes(node.field)) next = {...next, op: '=', value: amount ? 0 : ''};

@@ -2160,6 +2160,24 @@ void storyChainsInTheWindow()
     tell("", "", R"({"id":"one","title":"The lamp","status":"done","again":null,"objectives":[],"handIn":false,"abandon":false,"accept":false},
                    {"id":"two","title":"The oil","status":"active","giver":"u1","objectives":[],"handIn":false,"abandon":true,"accept":false})");
     expect(ids(ash) == "during:two ", "under way: the giver's words, no offer: " + ids(ash));
+    // (A gate for everyone turned false while Ash's copy is under way: the offer is for nobody new (`players` empty), and its
+    // words while under way, its hand-in and its thanks stay.)
+    const auto closed = [&](const std::string& status) {
+        const auto text = R"({"visit":1,"offers":[{"quest":"two","npc":"u1","title":"The oil","say":"Now the oil.","ask":"And the oil?",
+               "who":"participants","full":false,"players":[],"during":"Mind you keep the oil dry.","duringAsk":"About the oil...",
+               "handIn":"The oil, as you asked.","thanks":"Dry as a bone. Good."}],"choices":[],
+            "wolves":{")" + ash + R"(":{"quests":[{"id":"two","title":"The oil","status":")" + status + R"(","giver":"u1","objectives":[],
+               "handIn":true,"abandon":true,"accept":false}],"trackers":[]}}})";
+        expect(town.g.applyDmAct({std::to_string(++n), "story.quests", run, "dm", text}).ok, "the quests are told");
+    };
+    closed("active");
+    expect(ids(ash) == "during:two " && ids(cy) == "", "closed to new takers, still under way for Ash: " + ids(ash) + "/" + ids(cy));
+    closed("ready");
+    const auto in = town.g.storyChoicesFor(ash, "u1");
+    expect(in.size() == 1 && in[0].kind == "handin" && in[0].words == "The oil, as you asked.", "handed in with its own words");
+    const auto* thanks = town.g.storyOffer(run, "two");
+    expect(thanks && thanks->string("thanks") == "Dry as a bone. Good.", "and its thanks kept");
+    closed("active");
     const auto open = [&]() -> const json::Value* {
         if (const auto* d = town.g.dialogueOf(ash))
             town.g.command(&town.ash, cmd({{"type", "dialogue_close"}, {"session", d->id}, {"why", "closed"}}));

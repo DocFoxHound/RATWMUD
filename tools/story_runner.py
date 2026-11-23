@@ -1608,8 +1608,11 @@ NOTICES_KEPT = 5000        # (Waiting at most: past that the oldest are dropped,
 
 
 def _live_runs(conn, world, run):
+    """The world's other live runs, to be told: their program (what they listen for), and of their state only the visit a
+    telling is for (none: not begun); never the whole state, which a run of thousands of wolves makes large."""
     return conn.execute(
-        """SELECT id,program,state,digest FROM dm.story_releases WHERE world_id=%s AND id<>%s AND status IN ('running','paused','held')""",
+        """SELECT id,program,CASE WHEN jsonb_typeof(state)='object' THEN jsonb_build_object('visits',state->'visits') END,digest
+           FROM dm.story_releases WHERE world_id=%s AND id<>%s AND status IN ('running','paused','held')""",
         (world, run)).fetchall()
 
 

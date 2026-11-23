@@ -420,16 +420,19 @@ gain `residents[id].post` (the title of the post they hold, "" for none) for `re
 
 **Quests.** A quest may have:
 - `requires`: a condition tree (`compare`, `switch`, `in list`, `days since`, `quest is`, `objective is`, `phase is` in
-  `all`, `any`, `not`; 4 deep, 12 conditions; no event fields, loop values or world facts), the wolf as `$actor`. Read
-  when the offers are sent: one that reads the wolf's own (`of: "$actor"`, a player or party variable, a quest's copy not
-  the story's) is worked out for each wolf of the story and the offer goes with `players` (those it holds for); one that
-  reads only the story's own is a gate (false: the offer is not sent). Taking it (accepted at the giver or the board,
+  `all`, `any`, `not`; 4 deep, 12 conditions; no event field but `{"field": "actor"}`, the wolf tested; no loop values, no
+  world facts: no purse, not `audience: online` or a share of the wolves online), the wolf as `$actor`. Read
+  when the offers are sent: one that reads the wolf's own (`of: "$actor"`, `{"field": "actor"}`, a player or party variable, a quest's
+  copy not the story's) is worked out for each wolf of the story and the offer goes with `players` (those it holds for); one that
+  reads only the story's own is a gate (false: the offer goes with `players: []`, so the copies under way keep its words
+  while under way, its hand-in and its thanks). Taking it (accepted at the giver or the board,
   `quest.offer`, `quest.start`) checks it for that wolf ("Not yet."). The results are part of the journal's fingerprint.
 - `offer.during` (300, fills and `#symbols#`) and `offer.duringAsk` (120; "About <title>..." when not given): while the
   wolf's copy is `active`, the giver's hub has that choice, whose node `@story:<run>:during:<quest>` says `during` in the
   giver's voice. The offer the game is sent carries both.
 - `closure`: `"line"` (or `true`) or `"side"`: a quest of scope `player` or `party`, taken `once`; at most 4 a program. A
-  `line` requires (`requires`, `quest is ... done`) another quest of the program and is required done by none; a `side`
+  `line` requires (`requires`, `quest is ... done`, not under a `not`; under an `any`, in every branch) another quest of
+  the program and is required done by none; a `side`
   only in a program approved as a campaign chapter (`story_runner.world_checks`). Done, it adds for each wolf with credit the
   runner's own order `story.closure` (target the wolf; `{run, story: <program id>, quest, kind, title}`) to the rewards;
   the game writes one social receipt `story_closure`, session `quest:<program>/<quest>` (3 social:

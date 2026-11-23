@@ -2,7 +2,7 @@
 // and wolves by name, places and tiles on the map, items from the catalogue by category, factions, towns, markets, ships,
 // harvest areas, templates and projects from the world, and the story's own phases, regions, missions, scenes, signals
 // and counters. "Enter an id" stays, for what the world does not list (or a world the refs could not be read from).
-import {useMemo, useState} from 'react';
+import {createContext, useContext, useMemo, useState} from 'react';
 import {MapView} from '../MapView';
 import {surfaceFor} from '../../lib/surface';
 import {allActions, countersOf, figuresOf, fillsOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, widestFilled, REF_KIND, signalsOf, talkKeysOf, talkValuesOf, visitorsOf, type CatEvent, type CatItem, type Condition, type Operand, type Param,
@@ -149,10 +149,15 @@ const OPERAND_VARS: Record<string, string[]> = {wolf: ['wolf'], resident: ['resi
 const OPERAND_FIELDS: Record<string, string[]> = {wolf: ['actor', 'target'], resident: ['target', 'item'], place: ['cell', 'target'], item: ['item'],
     faction: ['target', 'detail'], town: ['actor', 'target', 'detail']};
 
+/** Doc 86, C6: inside a quest's "Only for wolves who…": an offer is not an event, so the values offered are the story's own and
+ *  the wolf's (the event's actor is the wolf tested); no other event field, no loop value, no share, not who is online. */
+export const OfferValues = createContext(false);
+
 /** Version 2: a value (doc 85, 3.4): a number, on or off, a text, a variable, the event's field, a list's count, a timer's
  *  days, the loop's value, or a variable plus or minus a number. `kind` narrows it: number, switch or text. */
 function OperandPicker({slot, pick}: {slot: Slot; pick: (v: Operand) => void}) {
     const {program} = useBench();
+    const offer = useContext(OfferValues);
     const kind = slot.param?.kind ?? '';
     const idKind = slot.param?.idKind && OPERAND_VARS[slot.param.idKind] ? slot.param.idKind : '';
     const vars = (program.variables ?? []).filter(v => !LIST_TYPES[v.type] && v.type !== 'timer'
@@ -162,8 +167,8 @@ function OperandPicker({slot, pick}: {slot: Slot; pick: (v: Operand) => void}) {
     const wolfLists = (program.variables ?? []).filter(v => v.type === 'wolves' && ['story', 'world'].includes(v.scope));
     const [text, setText] = useState(typeof slot.value === 'string' ? slot.value : '');
     const [num, setNum] = useState(typeof slot.value === 'number' ? String(slot.value) : '');
-    const fields = idKind ? OPERAND_FIELDS[idKind] : kind === 'number' ? ['quantity', 'coins'] : kind === 'text' ? ['actor', 'target', 'cell', 'item', 'detail'] : kind === 'switch' ? []
-        : ['actor', 'target', 'cell', 'item', 'detail', 'quantity', 'coins'];
+    const fields = (idKind ? OPERAND_FIELDS[idKind] : kind === 'number' ? ['quantity', 'coins'] : kind === 'text' ? ['actor', 'target', 'cell', 'item', 'detail'] : kind === 'switch' ? []
+        : ['actor', 'target', 'cell', 'item', 'detail', 'quantity', 'coins']).filter(f => !offer || f === 'actor');
     const n = Number(num);
     return <div className="wb-operand">
         <p className="hint">Now: {operandWords(slot.value as Operand, {}) || 'nothing'}</p>
@@ -174,19 +179,19 @@ function OperandPicker({slot, pick}: {slot: Slot; pick: (v: Operand) => void}) {
             <label>A text<input value={text} maxLength={200} onChange={e => setText(e.target.value)}/></label><button type="submit">Use</button></form>}
         {vars.length > 0 && <div className="wb-chips"><span>A variable:</span>{vars.map(v => <button key={v.id} type="button" onClick={() => pick({var: v.id})}>{v.id}</button>)}
             {vars.some(v => v.scope === 'player' || v.scope === 'party') && <small className="hint">(a wolf's own: the acting wolf's)</small>}</div>}
-        {fields.length > 0 && <div className="wb-chips"><span>The event's:</span>{fields.map(f => <button key={f} type="button" onClick={() => pick({field: f})}>{f}</button>)}</div>}
+        {fields.length > 0 && <div className="wb-chips"><span>{offer ? 'The wolf:' : "The event's:"}</span>{fields.map(f => <button key={f} type="button" onClick={() => pick({field: f})}>{offer ? 'the one it is offered to' : f}</button>)}</div>}
         {(!kind || kind === 'number') && lists.length > 0 && <div className="wb-chips"><span>How many in:</span>{lists.map(v => <button key={v.id} type="button" onClick={() => pick({count: v.id})}>{v.id}</button>)}</div>}
         {(!kind || kind === 'number') && timers.length > 0 && <div className="wb-chips"><span>Days since:</span>{timers.map(v => <button key={v.id} type="button" onClick={() => pick({since: v.id})}>{v.id}</button>)}</div>}
-        {(!kind || kind === 'text') && <div className="wb-chips"><span>Inside For each:</span><button type="button" onClick={() => pick({each: true})}>the looped value</button></div>}
+        {(!kind || kind === 'text') && !offer && <div className="wb-chips"><span>Inside For each:</span><button type="button" onClick={() => pick({each: true})}>the looped value</button></div>}
         {(!kind || kind === 'number') && isV2(program) && <div className="wb-chips"><span>The story's wolves (doc 86):</span>
-            {(['all', 'active', 'online'] as const).map(a => <button key={a} type="button" onClick={() => pick({audience: a})}>how many {a === 'all' ? 'it has' : `are ${a}`}</button>)}
+            {(['all', 'active', 'online'] as const).filter(a => !offer || a !== 'online').map(a => <button key={a} type="button" onClick={() => pick({audience: a})}>how many {a === 'all' ? 'it has' : `are ${a}`}</button>)}
             {num !== '' && Number.isFinite(n) && <button type="button" onClick={() => pick({max: [n, {times: [{audience: 'active'}, 2]}]})}>{n}, or 2 for each active wolf</button>}</div>}
         {(!kind || kind === 'number') && isV2(program) && <div className="wb-chips"><span>Over every wolf (doc 86, tally):</span>
             <button type="button" onClick={() => pick({tally: {}})}>how many wolves the story has</button>
             {(program.variables ?? []).filter(v => v.type === 'number' && v.scope === 'player' && !v.mirror).map(v =>
                 <button key={v.id} type="button" onClick={() => pick({tally: {sum: v.id}})}>every wolf's {v.id}, added up</button>)}
             <small className="hint">(only some wolves, or over a list: edited in Source)</small></div>}
-        {(!kind || kind === 'number') && (program.quests ?? []).some(q => q.credit === 'share') && <div className="wb-chips"><span>In a reward by share:</span>
+        {(!kind || kind === 'number') && !offer && (program.quests ?? []).some(q => q.credit === 'share') && <div className="wb-chips"><span>In a reward by share:</span>
             <button type="button" onClick={() => pick({share: true})}>the wolf's share</button></div>}
         {(!kind || kind === 'number') && wolfLists.length > 0 && <div className="wb-chips"><span>Of the active wolves:</span>
             {wolfLists.map(v => <span key={v.id}><button type="button" onClick={() => pick({percent: {list: v.id}, of: 'active'})}>the share in {v.id}</button>

@@ -597,3 +597,18 @@ test('doc 86, Phase 4: the lamp line in words; a quest\'s "Only for wolves whoâ€
         {cwd: repo}).toString());
     assert.deepEqual([...REQUIRES_TESTS].sort(), ['all', 'any', 'not', ...python].sort());
 });
+
+test('doc 86, Phase 4 after review: renaming a quest follows its quest.withdraw and every "quest is" and "objective is" that reads it', () => {
+    const p = v2['v2-lamp-line'];
+    const read = {...p, phases: p.phases.map(ph => ({...ph, triggers: [...(ph.triggers ?? []), {id: 'reads', on: 'deed', actions: [],
+        if: {test: 'objective is', quest: 'mill', objective: 'ask', status: 'done'} as unknown as Condition}]}))} as Program;
+    const renamed = renameQuest(renameQuest(read, 'mill', 'tallow'), 'lamp', 'the-lamp');
+    const ts = triggersOf(renamed, 0);
+    assert.equal((ts.find(t => t.id === 'took-oil')!.actions[0] as {effect: {quest: string}}).effect.quest, 'tallow', 'quest.withdraw follows');
+    assert.equal((ts.find(t => t.id === 'reads')!.if as unknown as {quest: string}).quest, 'tallow', "a trigger's objective is follows");
+    assert.equal((renamed.quests!.find(q => q.id === 'oil')!.requires as unknown as {quest: string}).quest, 'the-lamp', '"Only for wolves whoâ€¦" follows');
+    assert.equal(pretty(renameQuest(renameQuest(renamed, 'the-lamp', 'lamp'), 'tallow', 'mill')), pretty(read));
+    const moved = renameObjective(read, 'mill', 'ask', 'asked');
+    assert.equal((triggersOf(moved, 0).find(t => t.id === 'reads')!.if as unknown as {objective: string}).objective, 'asked');
+    assert.equal(pretty(renameObjective(moved, 'mill', 'asked', 'ask')), pretty(read));
+});
