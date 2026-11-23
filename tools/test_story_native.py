@@ -69,6 +69,20 @@ class NativeAuthoringParity(unittest.TestCase):
             with self.subTest(program=program['id']):
                 self.same(program)
 
+    def test_the_talk_effects_match(self):
+        """Doc 86, Phase 1b: what residents remember of the acting wolf and of the looped one, a rumour, a figure and the
+        holds: carried by both twins as any effect, $actor and $each filled alike."""
+        self.same(story_v2_samples.TALK)
+        p = copy.deepcopy(story_v2_samples.TALK)
+        p['phases'][1]['triggers'] = [{'id': 'all', 'on': 'conversation', 'audience': 'world', 'actions': [
+            {'do': 'each', 'over': 'participants', 'actions': [
+                {'do': 'effect', 'effect': {'kind': 'talk.remember', 'scope': 'pair', 'npc': 'rm111', 'player': '$each', 'key': 'nh_heard',
+                                            'value': 'yes', 'days': 5}},
+                {'do': 'effect', 'effect': {'kind': 'npc.spare', 'npc': 'rm113'}}]}]}]
+        p['tests'][0]['events'].append({'id': 'e9', 'kind': 'conversation', 'day': 2, 'actor': story_v2_samples.ELM, 'target': 'rm111'})
+        p['tests'][0].pop('expectVariables')
+        self.same(p)
+
     def test_world_facts_match(self):
         """Doc 85, Phase 8: conditions over the world's facts as of the event, and over quests, the same in both twins (the
         native one sent only the wolves its conditions read)."""

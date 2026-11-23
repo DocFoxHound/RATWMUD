@@ -111,6 +111,7 @@ def references(conn, world, program, chapters=False):
         # (Doc 85, Phase 9: who says a story's line, whom a stranger looks like.)
         'from': ('dm.story_residents', 'id'),
         'like': ('dm.story_residents', 'id'),
+        'subject': ('dm.story_residents', 'id'),   # (Doc 86, C8: whom a rumour is about.)
     }
     refs = {
         (key, value)
@@ -205,6 +206,11 @@ def references(conn, world, program, chapters=False):
                     'Unknown town project.',
                 )
             phase9_references(conn, world, e)
+    warnings = []
+    for c in world_checks(conn, world, program, chapters=chapters):
+        rules.require(not c['blocks'], c['text'])
+        warnings.append(c['text'])
+    return warnings
 
 
 def phase9_references(conn, world, e):
@@ -236,6 +242,202 @@ def phase9_references(conn, world, e):
     if kind == 'storyline.tick':
         rules.require(e['template'] in {t['id'] for t in json.loads((DATA / 'Storylines/templates.json').read_text())['templates']
                                         if t.get('source') == 'dm'}, 'Unknown DM quest template.')
+
+
+# ----- doc 86, Phase 1b (engine spec V1 and SQ2): what approval checks that it missed. Each check gives where it is, its
+# words, and whether approval refuses it (`blocks`) or only warns; references() raises the first refusal and returns the
+# warnings, reference_problems() lists them all for the Problems panel.
+OBJECTIVE_TARGETS = {'conversation': 'character', 'gift': 'character', 'gift again': 'character', 'near resident': 'resident',
+                     'enter place': 'place', 'camp cleared': 'camp', 'bandit falls': 'camp'}
+NAMED_RESIDENT_KEYS = ('npc', 'giver', 'from', 'like', 'subject')
+ALIVE_WARNED = ('npc.kill', 'foe.outlaw')   # (They may die before the effect runs: the game refuses it then.)
+
+
+def checkpoint_accounts(conn, world, names):
+    """Of these account names, the ones the world's latest checkpoint has (society.accounts); None with no checkpoint, or
+    one that has saved no accounts yet (a new world)."""
+    saved = conn.execute("""SELECT jsonb_typeof(payload->'society'->'accounts')='object' AND payload->'society'->'accounts'<>'{}'::jsonb
+                            FROM game.checkpoints WHERE world_id=%s""", (world,)).fetchone()
+    if not saved or not saved[0]:
+        return None
+    return {r[0] for r in conn.execute(
+        """SELECT k FROM game.checkpoints c CROSS JOIN LATERAL (SELECT c.payload->'society'->'accounts' AS a) x
+           CROSS JOIN LATERAL jsonb_object_keys(CASE WHEN jsonb_typeof(x.a)='object' THEN x.a ELSE '{}'::jsonb END) k
+           WHERE c.world_id=%s AND k=ANY(%s)""", (world, sorted(names)))}
+
+
+def purse_account(purse, accounts, towns):
+    """The account a purse pays from, as Game::storyPurseAccount maps it: a town's store (the city's is the treasury, as
+    Society::treasuryOf has it), a business's till by either spelling, or the name itself."""
+    parts = purse.split(':')
+    if parts[0] == 'town' and len(parts) == 2:
+        own = 'stores:' + parts[1]
+        return own if own in accounts or parts[1] not in towns else 'treasury'
+    if parts[0] == 'till' and len(parts) == 2 and purse not in accounts:
+        return 'till:job:' + parts[1]
+    return purse
+
+
+def _purse_sites(program):
+    """Every purse a program names, with where: rewards and grants (character.grant), and purse crossed triggers."""
+    for path, at, e in _effect_sites(program, quests_too=True):
+        if e.get('kind') == 'character.grant' and isinstance(e.get('purse'), str):
+            yield path, at, e['purse']
+    for path, at, what, rule in _filter_sites(program):
+        if rule.get('on') == 'purse crossed' and isinstance(rule.get('match', {}).get('target'), str):
+            yield path, at, rule['match']['target']
+
+
+def _objective_sites(program):
+    """Quest objectives, with where."""
+    for qi, q in enumerate(program.get('quests', []) or []):
+        for oi, o in enumerate(q.get('objectives', [])):
+            yield f'quests[{qi}].objectives[{oi}]', {'kind': 'quest', 'index': qi, 'id': q.get('id'), 'part': f'objectives[{oi}]'}, o
+
+
+def _resident_sites(program):
+    """Every resident a program names as a speaker, a giver, a subject, a face, a scene's cast or an objective's target:
+    (path, at, id, role) with role the key or 'kill' (an effect that may find them dead), 'cast', 'target'."""
+    for path, at, e in _effect_sites(program, quests_too=True):
+        params = {p['key']: p for p in rules.EFFECT_PARAMS.get(e.get('kind'), ())}
+        for key, value in e.items():
+            if not isinstance(value, str) or value in ('$actor', '$each', '') or key == 'kind':
+                continue
+            if key in NAMED_RESIDENT_KEYS or params.get(key, {}).get('type') == 'resident':
+                yield path, at, value, ('kill' if e['kind'] in ALIVE_WARNED and key == 'npc' else key)
+    for qi, q in enumerate(program.get('quests', []) or []):
+        if isinstance(q.get('giver'), str):
+            yield f'quests[{qi}].giver', {'kind': 'quest', 'index': qi, 'id': q.get('id'), 'part': 'giver'}, q['giver'], 'giver'
+    for si, scene in enumerate(program.get('scenes', []) or []):
+        for role in scene.get('cast', []):
+            if isinstance(role, dict) and isinstance(role.get('npc'), str):
+                yield f'scenes[{si}].cast', {'kind': 'scene', 'index': si, 'id': scene.get('id')}, role['npc'], 'cast'
+    for path, at, o in [*_objective_sites(program), *((p, a, r) for p, a, w, r in _filter_sites(program) if w in ('objective', 'trigger'))]:
+        target = (o.get('match') or {}).get('target')
+        if isinstance(target, str) and OBJECTIVE_TARGETS.get(o.get('on')) in ('character', 'resident'):
+            yield path, at, target, 'target'
+
+
+def talk_names(program):
+    """The variables a program tells residents of (doc 86, N2: `talk: true`, player or realm scope)."""
+    return sorted(d['id'] for d in (program.get('variables') or []) if isinstance(d, dict) and d.get('talk'))
+
+
+def world_checks(conn, world, program, chapters=False):
+    """Doc 86, Phase 1b: the world's checks approval missed (V1, SQ2, and the new effects' C8, C9, C11, N2): a list of
+    {path, at, text, blocks}."""
+    out = []
+
+    def add(path, at, text, blocks=True):
+        out.append({'path': path, 'at': at, 'text': text, 'blocks': blocks})
+
+    towns = {r[0] for r in conn.execute(
+        """SELECT region FROM world.cells WHERE world_id=%s AND region<>'unassigned' UNION SELECT region FROM world.interiors
+           WHERE world_id=%s AND region<>'unassigned'""", (world, world))}
+    # SQ2: every purse pays from an account the world has (as last saved); a town's works, watch or church is none.
+    purses = list(_purse_sites(program))
+    if purses:
+        wanted = set()
+        for _, _, purse in purses:
+            wanted.update({purse, 'till:job:' + purse.split(':', 1)[-1], 'stores:' + purse.split(':', 1)[-1], 'treasury'})
+        accounts = checkpoint_accounts(conn, world, wanted)
+        for path, at, purse in purses:
+            parts = purse.split(':')
+            if parts[0] == 'town' and len(parts) == 3:
+                add(path, at, f'This world has no works, watch or church purse ({purse}): pay from the town (town:{parts[1]}).')
+            elif accounts is None:
+                add(path, at, f'This world has no checkpoint yet: the purse {purse} is checked once it has one.', False)
+            elif parts[0] == 'town' and parts[1] not in towns and 'stores:' + parts[1] not in accounts:
+                add(path, at, f'No town "{parts[1]}" in this world pays: name a town (town:<town>).')
+            elif purse_account(purse, accounts, towns) not in accounts:
+                add(path, at, f'No purse {purse} in this world (as last saved): name a town, a business\'s till (till:job:<resident>) '
+                    'or a Chapter that has one.')
+    # V1.1: what a quest's objectives name.
+    items = {item['id'] for item in json.loads((DATA / 'Items/items.json').read_text())['items']}
+    cells = None
+    for path, at, o in _objective_sites(program):
+        m, kind = o.get('match') or {}, OBJECTIVE_TARGETS.get(o.get('on'))
+        target = m.get('target')
+        if isinstance(target, str) and target and kind:
+            if kind in ('character', 'resident'):
+                found = conn.execute('SELECT 1 FROM dm.story_residents WHERE world_id=%s AND id=%s' + (
+                    ' UNION ALL SELECT 1 FROM game.characters WHERE world_id=%s AND key=%s' if kind == 'character' else ''),
+                    (world, target, world, target) if kind == 'character' else (world, target)).fetchone()
+                if not found:
+                    add(path, at, f'Unknown {"character" if kind == "character" else "resident"} for this objective: {target}')
+            elif kind == 'place':
+                if not conn.execute('SELECT 1 FROM world.areas WHERE world_id=%s AND id=%s', (world, target)).fetchone():
+                    add(path, at, f'Unknown place for this objective: {target}')
+            elif kind == 'camp':
+                if cells is None:
+                    cells = {r[0] for r in conn.execute('SELECT id FROM world.cells WHERE world_id=%s', (world,))}
+                if not (target.startswith('camp_') and (target[5:] in cells or target.startswith('camp_story_'))):
+                    add(path, at, f'No camp "{target}" in this world: a camp is camp_<cell> (a cell of the world).')
+        item = m.get('item')
+        if isinstance(item, str) and item and re.split('[~@]', item, maxsplit=1)[0] not in items:
+            add(path, at, f'No item "{item}" in the item catalogue: this objective could never be done.')
+    # V1.3: a quest's notice board is one of the world's boards (its market towns).
+    boards = [(qi, q) for qi, q in enumerate(program.get('quests', []) or []) if isinstance(q.get('board'), str)]
+    if boards:
+        society = conn.execute("SELECT payload::jsonb->'society' FROM game.checkpoints WHERE world_id=%s", (world,)).fetchone()
+        society = society[0] if society and isinstance(society[0], dict) else {}
+        report = society.get('report') if isinstance(society.get('report'), dict) else {}
+        board = society.get('board') if isinstance(society.get('board'), dict) else {}
+        markets = {m.get('id') for m in report.get('markets', []) if isinstance(m, dict)} or set(board.get('cell') or {})
+        for qi, q in boards:
+            at = {'kind': 'quest', 'index': qi, 'id': q.get('id'), 'part': 'board'}
+            if not markets:
+                add(f'quests[{qi}].board', at, f'This world has no notice boards as last saved: the board of {q["board"]} is checked once it has.', False)
+            elif q['board'] not in markets:
+                add(f'quests[{qi}].board', at, f'No notice board in "{q["board"]}": the boards are in {", ".join(sorted(markets))}.')
+    # V1.4: residents named must be placed and alive (a face may be a warning; a death's actor and words are not named).
+    sites = list(_resident_sites(program))
+    if sites:
+        ids = sorted({s[2] for s in sites})
+        alive_known = conn.execute("SELECT to_regclass('live.npc_state')").fetchone()[0] is not None
+        rows = {}
+        for rid, placed, alive in conn.execute(
+                'SELECT r.id, bool_or(coalesce(r.home_area,\'\')<>\'\' OR coalesce(r.work_area,\'\')<>\'\'), ' +
+                ('bool_and(coalesce(s.alive, true))' if alive_known else 'true') +
+                ' FROM dm.story_residents r ' + ('LEFT JOIN live.npc_state s ON s.world_id=r.world_id AND s.npc_id=r.id ' if alive_known else '') +
+                'WHERE r.world_id=%s AND r.id=ANY(%s) GROUP BY r.id', (world, ids)):
+            rows[rid] = (placed, alive)
+        seen = set()
+        for path, at, rid, role in sites:
+            if rid not in rows or (path, rid) in seen:
+                continue   # (Unknown ones: references' own check names them.)
+            seen.add((path, rid))
+            placed, alive = rows[rid]
+            if not placed:
+                add(path, at, f'{rid} has no place in the world yet: place them first, or name someone who is.', role != 'like')
+            elif not alive:
+                add(path, at, f'{rid} has died: name someone living.' if role not in ('like', 'kill') else
+                    (f'{rid} has died: their looks are old.' if role == 'like' else f'{rid} has died already: the game will refuse this.'),
+                    role not in ('like', 'kill'))
+    # Doc 86, C8, C9, C11: the towns, factions and subjects the new effects name; a campaign's holds only in a chapter.
+    for path, at, e in _effect_sites(program, quests_too=True):
+        kind = e.get('kind')
+        if kind in ('talk.remember', 'talk.forget', 'belief.plant') and isinstance(e.get('town'), str) and e['town'] not in towns:
+            add(path, at, f'Unknown town in this world: {e["town"]}')
+        if kind == 'figure.set':
+            if e.get('known') == 'region' and e.get('region') not in towns:
+                add(path, at, f'Unknown town in this world: {e.get("region")}')
+            if e.get('known') == 'house' and not conn.execute('SELECT 1 FROM live.factions WHERE world_id=%s AND id=%s',
+                                                             (world, e.get('house'))).fetchone():
+                add(path, at, f'Unknown faction in this world: {e.get("house")}')
+        if kind in ('npc.spare', 'npc.protect') and e.get('lasts') == 'campaign' and not chapters:
+            add(path, at, 'A hold for the campaign is let go when its campaign ends: approve this story as a chapter of a campaign.',
+                chapters is not None)
+    # N2: a variable told to residents by another live story too (the newest run's value wins).
+    names = talk_names(program)
+    if names and conn.execute("SELECT to_regclass('dm.story_releases')").fetchone()[0]:
+        for other, title, name in conn.execute(
+                """SELECT DISTINCT r.program->>'id', r.program->>'title', v->>'id' FROM dm.story_releases r,
+                   jsonb_array_elements(CASE WHEN jsonb_typeof(r.program->'variables')='array' THEN r.program->'variables' ELSE '[]'::jsonb END) v
+                   WHERE r.world_id=%s AND r.status IN ('approved','running','paused','held') AND (v->>'talk')::boolean IS TRUE
+                   AND v->>'id'=ANY(%s) AND r.program->>'id'<>%s""", (world, names, program.get('id', ''))):
+            add('variables', {'kind': 'settings'}, f'{name} is also told to residents by {title or other}: the newest run\'s value is the one they know.', False)
+    return out
 
 
 def approve(conn, world, who, program, digest, for_run=None):
@@ -318,6 +520,7 @@ def enter(conn, run, program, who, state, cursor, cause, quiet=False):
             'phase': state['phase'],
             'journal': phase['journal'],
             'title': program['title'],
+            'program': program['id'],   # (Doc 86, N2: the game names the window's player.quest.<program>/<quest> by it.)
             'players': state['cohort'],
             'visit': state['visits'],
             'end': not rules.ongoing(phase)
@@ -480,6 +683,8 @@ def action(effect, actor):
         'npc.move': 'npc',
         'npc.protect': 'npc',
         'npc.unprotect': 'npc',
+        'npc.spare': 'npc',     # (Doc 86, C11.)
+        'npc.unspare': 'npc',
         'npc.revive': 'npc',
         'character.injury': 'player',
         'ship.storm': 'ship',
@@ -638,9 +843,100 @@ def order_of(conn, world, run, who, state, effect, phase):
         return 'factions.sync', faction, {'story': run, 'other': other}
     if kind == 'story.finish':
         return 'story.finish', run, {}
+    if kind in HOLD_ORDERS:
+        # (Doc 86, C11: a hold for this run or its campaign names them, and the game lets it go when they end. A protect
+        # for good is the Dungeon Master's mark it always was.)
+        order = action(effect, state['actor'])
+        if kind != 'npc.protect' or effect.get('lasts') in ('run', 'campaign'):
+            cid = _campaign_of(conn, run)
+            order[2].update({'run': run, 'visit': state['visits'], **({'campaign': cid} if cid else {})})
+        return order
+    if kind in ('figure.set', 'figure.clear'):
+        # (Doc 86, C9: written as the Dungeon Master's figures are, the row it replaced kept in the run's history, then
+        # the game reads the figures again.)
+        previous = write_figure(conn, world, effect, actor=state['actor'], remove=kind == 'figure.clear')
+        conn.execute('INSERT INTO dm.story_trigger_history(run,visit,entry) VALUES (%s,%s,%s::jsonb)',
+                     (run, state['visits'], json.dumps({'trigger': kind, 'scope': 'order', 'phase': state['phase'],
+                                                        'notes': [f'The figure {effect["figure"]} ' + ('cleared.' if kind == 'figure.clear' else 'set.')],
+                                                        'actions': [], 'effects': [], 'figure': {'id': effect['figure'], 'previous': previous}})))
+        return 'voice.sync', effect['figure'], {'story': run}
     if kind in WORLD_ORDERS:
         return world_order(effect, state['actor'], run, state['visits'], phase)
     return action(effect, state['actor'])
+
+
+HOLD_ORDERS = ('npc.protect', 'npc.unprotect', 'npc.spare', 'npc.unspare')
+FIGURE_KNOWN = re.compile(r'realm|region:[a-z_]+|house:[a-z_]+')
+FIGURE_COLUMNS = ('name', 'title', 'role', 'known_in', 'about', 'npc_id', 'position')
+
+
+def write_figure(conn, world, figure, actor=None, remove=False, keep_npc=None):
+    """A figure of the realm written to live.figures (doc 62, decision 8; doc 86, C9), as the Dungeon Master's Figures panel
+    writes one (dungeon_master.save_figure) and as a story's figure.set: its id, a role (facts.json's figure_<role>), a name
+    (a resident's, a wolf's at this moment, or the words given), where it is known. Returns the row it replaced (None)."""
+    fid = figure.get('figure', figure.get('id', ''))
+    rules.require(isinstance(fid, str) and re.fullmatch(r'[a-z0-9_]{1,40}', fid), 'A figure needs an id: small letters, digits and _, up to 40.')
+    row = conn.execute('SELECT ' + ','.join(FIGURE_COLUMNS) + ' FROM live.figures WHERE world_id=%s AND id=%s FOR UPDATE',
+                       (world, fid)).fetchone()
+    previous = dict(zip(FIGURE_COLUMNS, row)) if row else None
+    if remove:
+        conn.execute('DELETE FROM live.figures WHERE world_id=%s AND id=%s', (world, fid))
+        return previous
+    npc, wolf = figure.get('npc') or '', figure.get('player') or ''
+    if wolf == '$actor':
+        wolf = actor or ''
+    name, npc_id = str(figure.get('name', '')).strip(), None
+    if npc:
+        found = conn.execute('SELECT name FROM dm.story_residents WHERE world_id=%s AND id=%s', (world, npc)).fetchone()
+        rules.require(found, 'No such resident for the figure to be: ' + npc)
+        name = found[0] or npc
+        npc_id = npc if conn.execute('SELECT 1 FROM live.npcs WHERE world_id=%s AND id=%s', (world, npc)).fetchone() else None
+    elif wolf:
+        found = conn.execute("SELECT data->>'name' FROM game.characters WHERE world_id=%s AND key=%s", (world, wolf)).fetchone()
+        rules.require(found and found[0], 'No such wolf for the figure to be: ' + wolf)
+        name = found[0]
+    known = figure.get('knownIn') or {'realm': 'realm', 'region': 'region:' + str(figure.get('region', '')),
+                                      'house': 'house:' + str(figure.get('house', ''))}.get(figure.get('known', 'realm'), '')
+    title, role, about = str(figure.get('title', '')).strip(), str(figure.get('role', '')).strip(), str(figure.get('about', '')).strip()
+    roles = rules.figure_roles()
+    rules.require(1 <= len(name) <= 120 and len(title) <= 120 and role in roles and len(about) <= 600 and FIGURE_KNOWN.fullmatch(known),
+                  f'A figure needs a name, a role ({", ".join(roles)}), where they are known (realm, region:<name>, house:<name>) and at '
+                  'most 600 characters about them.')
+    if keep_npc:
+        npc_id = keep_npc   # (The Dungeon Master's: a figure by its own name who is that resident once they arrive.)
+    conn.execute('''INSERT INTO live.figures (world_id, id, name, title, role, known_in, about, npc_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (world_id, id) DO UPDATE SET name = excluded.name, title = excluded.title, role = excluded.role,
+                        known_in = excluded.known_in, about = excluded.about, npc_id = excluded.npc_id, updated_at = now()''',
+                 (world, fid, name, title, role, known, about, npc_id))
+    return previous
+
+
+def restore_figure(conn, world, who, history_id):
+    """The console's "Undo this figure" (doc 86, C9): the row a story's figure.set or figure.clear replaced put back (or
+    the figure taken away, when there was none), and the game told to read the figures again."""
+    rules.require(isinstance(history_id, int) and not isinstance(history_id, bool), 'Name the history entry.')
+    row = conn.execute('''SELECT h.entry FROM dm.story_trigger_history h JOIN dm.story_releases r ON r.id=h.run
+                          WHERE h.id=%s AND r.world_id=%s''', (history_id, world)).fetchone()
+    rules.require(row and isinstance(row[0], dict) and isinstance(row[0].get('figure'), dict), 'That history entry set no figure.')
+    fid, previous = row[0]['figure']['id'], row[0]['figure'].get('previous')
+    if previous:
+        conn.execute('''INSERT INTO live.figures (world_id, id, name, title, role, known_in, about, npc_id, position)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (world_id, id) DO UPDATE SET name=excluded.name, title=excluded.title,
+                        role=excluded.role, known_in=excluded.known_in, about=excluded.about, npc_id=excluded.npc_id,
+                        position=excluded.position, updated_at=now()''',
+                     (world, fid, *(previous.get(k) for k in ('name', 'title', 'role', 'known_in', 'about', 'npc_id')), previous.get('position') or 0))
+    else:
+        conn.execute('DELETE FROM live.figures WHERE world_id=%s AND id=%s', (world, fid))
+    receipt = queue(conn, who, 'voice.sync', fid, {'undo': history_id})
+    return {'figure': fid, 'restored': bool(previous), 'receipt': receipt}
+
+
+def release_campaign(conn, world, who, campaign):
+    """The console's "Let go of the campaign's holds" (doc 86, C11): for an act stopped early, the residents its chapters
+    spared or protected for the campaign are let go now (the game's story.campaign.end)."""
+    rules.require(isinstance(campaign, str) and campaign and _campaigns_table(conn) and conn.execute(
+        'SELECT 1 FROM dm.story_campaigns WHERE world_id=%s AND id=%s', (world, campaign)).fetchone(), 'No such campaign.')
+    return {'campaign': campaign, 'receipt': queue(conn, who, 'story.campaign.end', campaign, {'by': who})}
 
 
 # Doc 85, Phase 9: the new world effects, each the game order of its own name. The target is what it acts on (a wolf, a
@@ -655,6 +951,8 @@ WORLD_ORDERS = {
     'door.lock': 'door', 'door.unlock': 'door', 'door.open': 'door', 'door.close': 'door',
     'board.post': 'town', 'weather.set': None, 'event.add': 'market', 'event.cancel': 'market', 'prices.reset': 'market',
     'project.complete': 'town', 'project.cancel': 'town',
+    # (Doc 86, C8 and T7: what residents remember of the story, and a rumour it starts about a resident.)
+    'talk.remember': None, 'talk.forget': None, 'belief.plant': 'subject',
 }
 
 
@@ -1204,7 +1502,11 @@ def run_ended(conn, world, run, program, state, how):
         live = conn.execute("""SELECT count(*) FROM dm.story_releases WHERE world_id=%s AND campaign=%s AND id<>%s
                                AND status IN ('running','paused','held','stopping')""", (world, cid, run)).fetchone()[0]
         if not live:
-            conn.execute("UPDATE dm.story_campaigns SET status='ended' WHERE world_id=%s AND id=%s", (world, cid))
+            ended = conn.execute("UPDATE dm.story_campaigns SET status='ended' WHERE world_id=%s AND id=%s AND status<>'ended' RETURNING id",
+                                 (world, cid)).fetchone()
+            if ended:
+                # (Doc 86, C11: the residents its chapters held for the campaign are let go, once.)
+                queue(conn, 'story-runner', 'story.campaign.end', cid, {'run': run})
 
 
 def campaigns(conn, world):
@@ -1496,6 +1798,15 @@ def sync_journal(conn, run, program, state, who, collect=None):
     wolves = {}
     for wolf in sorted(now | set(marks)):
         j = quests.journal(program, state, wolf) if wolf in now else {'quests': [], 'trackers': []}
+        unsaid = quests.talk_unsaid(program, state, wolf) if wolf in now else []
+        noted = state.setdefault('talkUnsaid', [])
+        for name in unsaid:
+            if name not in noted:
+                noted.append(name)
+                _note(conn, run, state, 'Not told to residents',
+                      f'{wolf}\'s {name} holds words no line could test (small letters, digits and _, up to 40): kept, not told.')
+        if not noted:
+            state.pop('talkUnsaid', None)
         m = _mark(j)
         if marks.get(wolf) != m:
             wolves[wolf] = j
@@ -1509,6 +1820,7 @@ def sync_journal(conn, run, program, state, who, collect=None):
         payload['wolves'] = wolves
     state.pop('toasts', None)
     if len(payload) > 1:
+        payload['program'] = program['id']   # (Doc 86, N2: the window's player.quest.<program>/<quest>.)
         receipts.append(send(conn, who, 'story.quests', run, payload))
     state['journalMark'] = _mark([quests.fingerprint(program, state), state['cohort']])
     if collect is not None:
@@ -2567,10 +2879,35 @@ def status(conn, world, run=None, before_visit=None, before_trigger=None, since=
         'chapterStarts': (state or {}).get('chapterStarts', []),
         'chaptersStarted': (state or {}).get('chaptersStarted', []),
         'chapterOf': (state or {}).get('chapterOf'),
+        # (Doc 86, C8: what the residents remember of this run, as the game last saved it.)
+        'memory': run_memory(conn, world, run) if _remembers(program) else [],
     }
     if have != row[3]:
         result['program'] = program
     return result
+
+
+def _remembers(program):
+    return any(e.get('kind') == 'talk.remember' for _, _, e in _effect_sites(program, quests_too=True))
+
+
+def run_memory(conn, world, run):
+    """The console's "What residents remember" (doc 86, C8): the memories a run gave, from the last checkpoint (the game
+    keeps them beside talk's own): who remembers (the realm, a town, a resident, a resident about a wolf), the key and
+    value, the days left and whether they outlast the story."""
+    row = conn.execute("""SELECT payload->'people'->'storyMemory', payload->'calendarDays' FROM game.checkpoints WHERE world_id=%s""",
+                       (world,)).fetchone()
+    if not row or not isinstance(row[0], dict):
+        return []
+    day = row[1] if isinstance(row[1], (int, float)) else 0
+    out = []
+    for owner, kept in sorted(row[0].items()):
+        for key, m in sorted((kept or {}).items()):
+            if isinstance(m, dict) and m.get('run') == run:
+                until = m.get('until', -1)
+                out.append({'owner': owner, 'key': key, 'value': m.get('value', ''), 'keep': bool(m.get('keep')),
+                            'daysLeft': None if until is None or until < 0 else round(max(0, until - day), 1)})
+    return out[:500]
 
 
 def _campaign_view(conn, world, run):
@@ -2759,7 +3096,7 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
 # after, in the command's row and in dm.audit. A command can release only what was approved (5.1, rule 4): it fires a
 # trigger the program has, enters a phase it has, sets a counter it names; nothing adds a trigger or changes a rule.
 
-RUNNER_VERSION = 'doc86-phase1a'
+RUNNER_VERSION = 'doc86-phase1b'
 COMMAND_KINDS = ('hold', 'resume', 'stop', 'signal', 'fire', 'enable', 'disable', 'enter', 'set', 'timer', 'mission',
                  'order', 'tell', 'scene', 'migrate', 'objective', 'quest', 'participant', 'advance')
 # Flow commands move the story (dispatch a fact, run actions, open a visit, send the journal): they wait while the run is
@@ -3083,7 +3420,7 @@ def _may_release(program, kind, payload, may):
     rules.require(may.get('relations', True) or 'faction.relation' not in kinds,
                   'This story changes faction relations: only a builder or the owner may move it on (5.7).')
     rules.require(may.get('relations', True) or not (kinds & BUILDER_EFFECTS),
-                  'This story changes standing with a faction or the economy: only a builder or the owner may move it on (5.7).')
+                  'This story changes standing with a faction, the economy or the realm\'s figures: only a builder or the owner may move it on (5.7).')
     rules.require(may.get('wolves', True) or not (kinds & WOLF_EFFECTS),
                   'This story can hurt players\' wolves: moving it on needs "may act on players\' wolves" (5.7).')
 
@@ -3780,7 +4117,7 @@ class Steer:
             state.update(playerRows=True, cohortSent=list(state['cohort']))
         state.pop('journalMark', None)
         receipt = queue(self.conn, self.by, 'story.phase', self.run, {
-            'revise': True, 'phase': state['phase'], 'journal': phase['journal'], 'title': new_program['title'],
+            'revise': True, 'phase': state['phase'], 'journal': phase['journal'], 'title': new_program['title'], 'program': new_program['id'],
             'players': state['cohort'], 'visit': state['visits'], 'end': False, 'guestVoices': phase.get('guestVoices', []),
             'missions': rules.mission_snapshot(phase, state), 'previousMissions': [], 'regions': new_program.get('regions', []),
             'lines': [e for e in phase['effects'] if e['kind'] == 'npc.line'], 'watch': watch(new_program)})
@@ -4698,8 +5035,15 @@ def _beat_alerts(conn, world):
 
 # ----- every problem of a draft, with the world's (doc 85, Phase 3; known problem 4)
 
-def _effect_sites(program):
-    """Every effect of a program with where it is: entry effects, and the effects of every trigger's actions."""
+def _effect_sites(program, quests_too=False):
+    """Every effect of a program with where it is: entry effects, and the effects of every trigger's actions (and, with
+    `quests_too`, every quest's rewards and bonus)."""
+    if quests_too:
+        for qi, q in enumerate(program.get('quests', []) or []):
+            for part in ('rewards', 'bonus'):
+                for ei, e in enumerate(q.get(part, []) or []):
+                    if isinstance(e, dict):
+                        yield f'quests[{qi}].{part}[{ei}]', {'kind': 'quest', 'index': qi, 'id': q.get('id'), 'part': f'{part}[{ei}]'}, e
     for pi, ph in enumerate(program['phases']):
         for ei, e in enumerate(ph['effects']):
             yield f'phases[{pi}].effects[{ei}]', {'phase': pi, 'phaseId': ph['id'], 'kind': 'effect', 'index': ei}, e
@@ -4760,7 +5104,8 @@ def reference_problems(conn, world, program):
         if words:
             add(f'regions[{i}]', {'kind': 'region', 'index': i, 'id': r['id']}, words, True)
     tables = {'npc': ('dm.story_residents', 'id'), 'resident': ('dm.story_residents', 'id'), 'player': ('game.characters', 'key'),
-              'faction': ('live.factions', 'id'), 'other': ('live.factions', 'id'), 'place': ('world.areas', 'id'), 'cell': ('world.areas', 'id')}
+              'faction': ('live.factions', 'id'), 'other': ('live.factions', 'id'), 'place': ('world.areas', 'id'), 'cell': ('world.areas', 'id'),
+              'subject': ('dm.story_residents', 'id')}
     society = conn.execute("SELECT payload::jsonb->'society' FROM game.checkpoints WHERE world_id=%s", (world,)).fetchone()
     society = society[0] if society and isinstance(society[0], dict) else {}
     report = society.get('report') if isinstance(society.get('report'), dict) else {}
@@ -4842,6 +5187,9 @@ def reference_problems(conn, world, program):
             add(path, at, f'No wolf or resident "{filters["actor"]}" in this world: this never matches.', False)
         if filters.get('item') and __import__('re').split('[~@]', filters['item'], maxsplit=1)[0] not in items:
             add(path, at, f'No item "{filters["item"]}" in the item catalogue: this never matches.', False)
+    # (Doc 86, Phase 1b: purses, quest objectives and boards, residents placed and alive, the new effects' towns: V1, SQ2.)
+    for c in world_checks(conn, world, program, chapters=None):   # (None: whether it is a chapter is known at approval.)
+        add(c['path'], c['at'], c['text'], c['blocks'])
     return out
 
 
@@ -4934,6 +5282,13 @@ def refs(conn, world):
     out['stories'] = sorted(stories.values(), key=lambda v: (v['name'], v['id']))
     out['worldVars'] = [{'id': v['name'], 'name': v['name'], 'type': v['type'], 'note': v.get('note', '')}
                         for v in world_vars(conn, world)['variables'] if v.get('declared')]
+    # (Doc 86, SQ2: the businesses' tills a reward may pay from, as the last checkpoint has them, by their founder's name.)
+    tills = sorted(r[0] for r in conn.execute(
+        """SELECT k FROM game.checkpoints c CROSS JOIN LATERAL (SELECT c.payload->'society'->'accounts' AS a) x
+           CROSS JOIN LATERAL jsonb_object_keys(CASE WHEN jsonb_typeof(x.a)='object' THEN x.a ELSE '{}'::jsonb END) k
+           WHERE c.world_id=%s AND k LIKE 'till:job:%%' LIMIT %s""", (world, REFS_LIMIT)))
+    founders = {r['id']: r['name'] for r in out['residents']}
+    out['tills'] = [{'id': t, 'name': f"{founders.get(t[9:], t[9:])}'s till"} for t in tills]
     return out
 
 

@@ -5,10 +5,12 @@
 // ends is kept with the story (Storyline::held): a lock, a hold, a follower, a stranger, a mantle, a notice, the weather,
 // a marker. A story may set the weather for a while, never the calendar or the hour.
 #include "RatwGame.h"
+#include "RatwClaims.h"
 #include "RatwItems.h"
 #include "RatwNames.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <set>
 
@@ -456,6 +458,14 @@ std::string Game::storyStoryline(const std::string& wolf, const std::string& tem
 
 void Game::endStoryWorld(storylines::Storyline& story)
 {
+    // (Doc 86, C11 and C8: its holds on residents let go; what it had residents remember forgotten, unless it was kept.)
+    dropStoryHolds("run:" + story.id);
+    for (auto it = storyMemory_.begin(); it != storyMemory_.end();)
+    {
+        for (auto m = it->second.begin(); m != it->second.end();)
+            m = m->second.run == story.id && !m->second.keep ? it->second.erase(m) : std::next(m);
+        it = it->second.empty() ? storyMemory_.erase(it) : std::next(it);
+    }
     if (!story.held.isObject() || !story.held.size())
         return;
     auto& h = story.held;
@@ -607,5 +617,338 @@ Value Game::storyJournalExtras(const storylines::Storyline& s, const std::string
     if (pings.size())
         out.add("pings", std::move(pings));
     return out;
+}
+
+// ---- Doc 86, Phase 1b: a story's holds on a resident (C11: spared from old age, protected for a while) and what the
+// residents remember and come to believe from it (C8, T7). Each hold has owners, "run:<run>" (let go when the run ends)
+// or "campaign:<id>" (let go when the runner says the campaign has ended: story.campaign.end); a resident is spared or
+// protected while any owner holds them. A memory belongs to an owner as talk's own does (realm, town:<region>,
+// person:<npc>, pair:<a>|<b>), kept apart from talk's so a story's is never evicted by talk's, and recalled under it.
+namespace
+{
+constexpr std::size_t MemoryPerOwner = 64, MemoryMost = 8192, PairPerOwner = 16, PairMost = 20000;
+
+bool talkWord(const std::string& v, bool key)
+{
+    if (v.empty() || v.size() > 40 || (key && !(v[0] >= 'a' && v[0] <= 'z')))
+        return false;
+    return std::all_of(v.begin(), v.end(), [](char c) { return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_'; });
+}
+
+// (A rumour's phrase never holds an id: a word with _ or -, or letters run into digits, rm111. As story_program.CLAIM_ID.)
+bool idInWords(const std::string& text)
+{
+    std::size_t i = 0;
+    while (i < text.size())
+    {
+        while (i < text.size() && !std::isalnum(static_cast<unsigned char>(text[i])) && text[i] != '_')
+            ++i;
+        const auto start = i;
+        bool under = false, digit = false, letter = false;
+        while (i < text.size() && (std::isalnum(static_cast<unsigned char>(text[i])) || text[i] == '_' || text[i] == '-'))
+        {
+            under |= text[i] == '_';
+            digit |= std::isdigit(static_cast<unsigned char>(text[i])) != 0;
+            letter |= std::isalpha(static_cast<unsigned char>(text[i])) != 0;
+            ++i;
+        }
+        const auto word = text.substr(start, i - start);
+        if (under || (digit && letter) || word.rfind("wolf-", 0) == 0)
+            return true;
+    }
+    return false;
+}
+
+std::uint64_t storyHash(const std::string& text)
+{
+    std::uint64_t h = 1469598103934665603ULL;
+    for (const unsigned char c : text)
+        h = (h ^ c) * 1099511628211ULL;
+    return h;
+}
+} // namespace
+
+std::set<std::string> Game::storyHoldOwners(const std::string& kind, const std::string& npc) const
+{
+    const auto k = storyHolds_.find(kind);
+    if (k == storyHolds_.end())
+        return {};
+    const auto n = k->second.find(npc);
+    return n == k->second.end() ? std::set<std::string>{} : n->second;
+}
+
+void Game::sparedChanged()
+{
+    std::set<std::string> spared;
+    if (const auto k = storyHolds_.find("spare"); k != storyHolds_.end())
+        for (const auto& [npc, owners] : k->second)
+            if (!owners.empty())
+                spared.insert(npc);
+    world_.setStorySpared(std::move(spared));
+}
+
+void Game::dropStoryHolds(const std::string& owner)
+{
+    bool changed = false;
+    for (auto& [kind, npcs] : storyHolds_)
+        for (auto it = npcs.begin(); it != npcs.end();)
+        {
+            changed |= it->second.erase(owner) > 0;
+            it = it->second.empty() ? npcs.erase(it) : std::next(it);
+        }
+    if (changed)
+    {
+        sparedChanged();
+        saveSoon();
+    }
+}
+
+Result Game::applyStoryHold(const std::string& kind, const std::string& npc, const Value& p)
+{
+    // npc.spare / npc.unspare, and npc.protect / npc.unprotect with `lasts` run or campaign: the payload's run (and its
+    // campaign) owns the hold. A Dungeon Master's protect (no run, or `lasts` ever) is the mark it always was.
+    if (!world_.society().resident(npc))
+        return {false, "No such resident.", npc};
+    const auto run = p.string("run"), campaign = p.string("campaign");
+    const bool sparing = kind == "npc.spare" || kind == "npc.unspare";
+    const auto holdKind = sparing ? std::string("spare") : std::string("protect");
+    if (kind == "npc.spare" || kind == "npc.protect")
+    {
+        const auto lasts = p.string("lasts", sparing ? "run" : "ever");
+        if (lasts != "run" && lasts != "campaign")
+            return {false, "A story's hold lasts for its run or its campaign.", npc};
+        if (lasts == "campaign" && campaign.empty())
+            return {false, "Only a chapter of a campaign holds a resident for the campaign.", npc};
+        if (const auto* s = run.empty() ? nullptr : storylines_.find(run); !s || s->source != "storykeeper" || !s->live())
+            return {false, "A story's hold names its run, and that story is running.", npc};
+        if (!sparing && unprotectedMarks_.count(npc))
+            return {false, "A Dungeon Master has taken that resident's protection off.", npc};
+        storyHolds_[holdKind][npc].insert(lasts == "campaign" ? "campaign:" + campaign : "run:" + run);
+        if (sparing)
+            sparedChanged();
+        saveSoon();
+        return {true, std::string(sparing ? "Spared from old age " : "Protected ") +
+                          (lasts == "campaign" ? "while the campaign runs." : "while the story runs."), npc};
+    }
+    // npc.unspare (npc.unprotect drops its holds beside the mark: RatwGame.cpp): this run's and its campaign's owners go.
+    bool any = false;
+    if (auto k = storyHolds_.find(holdKind); k != storyHolds_.end())
+        if (auto n = k->second.find(npc); n != k->second.end())
+        {
+            any |= n->second.erase("run:" + run) > 0;
+            if (!campaign.empty())
+                any |= n->second.erase("campaign:" + campaign) > 0;
+            if (n->second.empty())
+                k->second.erase(n);
+        }
+    if (sparing)
+        sparedChanged();
+    saveSoon();
+    const bool still = !storyHoldOwners(holdKind, npc).empty();
+    return {true, std::string(any ? "No longer spared by this story" : "This story was not sparing them") +
+                      (still ? " (another story still does)." : "."), npc};
+}
+
+void Game::storyRecall(const std::string& owner, const std::string& prefix, talk::Facts& into)
+{
+    const auto found = storyMemory_.find(owner);
+    if (found == storyMemory_.end())
+        return;
+    const double today = world_.calendarDays();
+    for (const auto& [key, m] : found->second)
+        if (m.until < 0 || m.until >= today)
+            into[prefix + "mem." + key] = m.value;
+}
+
+Result Game::applyStoryTalk(const std::string& kind, const std::string& target, const Value& p)
+{
+    const auto run = p.string("run");
+    auto* story = storylines_.find(run);
+    if (!story || story->kind != "world" || story->source != "storykeeper" || !story->live())
+        return {false, "That story is not running.", target};
+    const auto& society = world_.society();
+    if (kind == "belief.plant")
+    {
+        // A rumour (T7: or its clearing) about a resident, believed by `count` residents of a town: placed, living, not
+        // the one it is about, chosen by the run's seed so the same story picks the same.
+        const auto subject = target, town = p.string("town"), claim = p.string("claim"), claimKind = p.string("claimKind", "story.rumour");
+        const int count = whole(p, "count", 1, 50), confidence = whole(p, "confidence", 10, 90);
+        if (!society.resident(subject))
+            return {false, "No such resident to be talked of.", subject};
+        if (claimKind != "story.rumour" && claimKind != "story.cleared")
+            return {false, "A story's rumour is story.rumour or story.cleared.", subject};
+        if (town.empty() || claim.empty() || !oneLine(claim, 120) || claim.find('#') != std::string::npos || claims::rawId(claim) || idInWords(claim) ||
+            count < 1 || confidence < 10)
+            return {false, "A rumour needs a town, a phrase of up to 120 characters (no ids), how many and how sure.", subject};
+        std::vector<std::pair<std::uint64_t, std::string>> holders;
+        for (const auto& [id, e] : world_.entities())
+        {
+            const auto* life = society.resident(id);
+            if (!e.npc || e.dead || e.transient || id == subject || !life || life->homeCell.empty() || world_.townIdOf(life->homeCell) != town)
+                continue;
+            holders.push_back({storyHash(run + "|" + subject + "|" + claim + "|" + id), id});
+        }
+        if (holders.empty())
+            return {false, "Nobody lives in " + town + " to hear it.", subject};
+        std::sort(holders.begin(), holders.end());
+        // (A clearing keeps words of its own: "never took the silver", so it never merges with the rumour it answers.)
+        const auto words = claimKind == "story.cleared" ? "never " + claim : claim;
+        std::size_t n = 0;
+        for (const auto& [h, id] : holders)
+        {
+            if (n >= std::size_t(count))
+                break;
+            Belief b;
+            b.holder = id;
+            b.subject = subject;
+            b.claim = words;
+            b.source = "story:" + run;
+            b.confidence = confidence / 100.0;
+            b.kind = claimKind;
+            world_.believe(b);
+            ++n;
+        }
+        saveSoon();
+        return {true, std::to_string(n) + " residents of " + town + " believe it now.", subject};
+    }
+    // talk.remember / talk.forget: the owner as talk names it.
+    const auto scope = p.string("scope", "town"), key = p.string("key");
+    std::string owner;
+    if (scope == "realm")
+        owner = "realm";
+    else if (scope == "town")
+        owner = p.string("town").empty() ? std::string() : "town:" + p.string("town");
+    else if (scope == "npc")
+        owner = society.resident(p.string("npc")) ? "person:" + p.string("npc") : std::string();
+    else if (scope == "pair")
+    {
+        const auto npc = p.string("npc"), wolf = p.string("player");
+        if (!society.resident(npc) || wolf.empty() || !story->takesPart(wolf))
+            return {false, "Pair memory names a resident and a wolf of the story.", target};
+        owner = "pair:" + std::min(npc, wolf) + "|" + std::max(npc, wolf);
+    }
+    if (owner.empty())
+        return {false, "Name whose memory: the realm, a town, a resident, or a resident and a wolf.", target};
+    if (!talkWord(key, true))
+        return {false, "A talk memory's key is small letters, digits and _, up to 40.", target};
+    if (kind == "talk.forget")
+    {
+        bool gone = false;
+        if (auto found = storyMemory_.find(owner); found != storyMemory_.end())
+        {
+            gone = found->second.erase(key) > 0;
+            if (found->second.empty())
+                storyMemory_.erase(found);
+        }
+        saveSoon();
+        return {true, gone ? "Forgotten." : "Nobody remembered that.", target};
+    }
+    const auto value = p.string("value");
+    const int days = whole(p, "days", 1, 365);
+    if (!talkWord(value, false) || days < 1)
+        return {false, "A talk memory's value is small letters, digits and _ (up to 40), for 1 to 365 days.", target};
+    const bool pair = owner.rfind("pair:", 0) == 0;
+    auto& memos = storyMemory_[owner];
+    memos[key] = {value, world_.calendarDays() + days, run, p.boolean("keep")};
+    // The caps: an owner's (64, a pair's 16) and all of them (8,192; pairs 20,000): the soonest to be forgotten goes first.
+    const auto soonestOf = [](std::map<std::string, StoryMemo>& m) {
+        auto s = m.begin();
+        for (auto it = m.begin(); it != m.end(); ++it)
+            if (it->second.until < s->second.until)
+                s = it;
+        return s;
+    };
+    bool dropped = false;
+    while (memos.size() > (pair ? PairPerOwner : MemoryPerOwner))
+        memos.erase(soonestOf(memos)), dropped = true;
+    std::size_t total = 0;
+    for (const auto& [o, m] : storyMemory_)
+        if ((o.rfind("pair:", 0) == 0) == pair)
+            total += m.size();
+    while (total > (pair ? PairMost : MemoryMost))
+    {
+        std::string ownerOf, keyOf;
+        double until = 1e300;
+        for (auto& [o, m] : storyMemory_)
+            if ((o.rfind("pair:", 0) == 0) == pair)
+                for (auto& [k, memo] : m)
+                    if (memo.until < until)
+                        until = memo.until, ownerOf = o, keyOf = k;
+        if (ownerOf.empty())
+            break;
+        storyMemory_[ownerOf].erase(keyOf);
+        if (storyMemory_[ownerOf].empty())
+            storyMemory_.erase(ownerOf);
+        --total, dropped = true;
+    }
+    if (dropped && std::floor(world_.calendarDays()) != storyMemoryWarnedDay_)
+    {
+        storyMemoryWarnedDay_ = std::floor(world_.calendarDays());
+        note("warn", "RATW_STORY_MEMORY full: the residents forgot the soonest-to-go of the stories' memories to remember " + key + ".");
+    }
+    auto& held = section(*story, "memory", true);
+    if (!listed(held, owner + "#" + key))
+        held.push(owner + "#" + key);
+    storiesHolding_.insert(story->id);
+    storylines_.touch();
+    record(StoryBook);
+    saveSoon();
+    return {true, "Remembered (" + owner + ": " + key + " = " + value + ", " + std::to_string(days) + " days).", target};
+}
+
+void Game::storyTalkSave(Value& root) const
+{
+    auto holds = Value::object();
+    for (const auto& [kind, npcs] : storyHolds_)
+    {
+        auto byNpc = Value::object();
+        for (const auto& [npc, owners] : npcs)
+        {
+            auto list = Value::array();
+            for (const auto& o : owners)
+                list.push(o);
+            if (list.size())
+                byNpc.add(npc, std::move(list));
+        }
+        if (byNpc.size())
+            holds.add(kind, std::move(byNpc));
+    }
+    root.add("storyHolds", std::move(holds));
+    auto memory = Value::object();
+    for (const auto& [owner, memos] : storyMemory_)
+    {
+        auto kept = Value::object();
+        for (const auto& [key, m] : memos)
+            if (m.until < 0 || m.until >= world_.calendarDays())
+            {
+                auto j = Value::object();
+                j.add("value", m.value);
+                j.add("until", m.until);
+                j.add("run", m.run);
+                if (m.keep)
+                    j.add("keep", true);
+                kept.add(key, std::move(j));
+            }
+        if (kept.size())
+            memory.add(owner, std::move(kept));
+    }
+    root.add("storyMemory", std::move(memory));
+}
+
+void Game::storyTalkLoad(const Value& saved)
+{
+    storyHolds_.clear();
+    for (const auto& [kind, npcs] : saved.object("storyHolds").fields())
+        if (kind == "spare" || kind == "protect")
+            for (const auto& [npc, owners] : npcs.fields())
+                for (const auto& o : owners.items())
+                    if (o.isString() && npc.size() <= 80 && (o.asString().rfind("run:", 0) == 0 || o.asString().rfind("campaign:", 0) == 0))
+                        storyHolds_[kind][npc].insert(o.asString());
+    storyMemory_.clear();
+    for (const auto& [owner, kept] : saved.object("storyMemory").fields())
+        for (const auto& [key, j] : kept.fields())
+            if (talkWord(key, true) && talkWord(j.string("value"), false) && storyMemory_[owner].size() < MemoryPerOwner)
+                storyMemory_[owner][key] = {j.string("value"), j.number("until", -1), j.string("run"), j.boolean("keep")};
+    sparedChanged();
 }
 } // namespace ratw::game

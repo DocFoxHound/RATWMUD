@@ -1508,6 +1508,18 @@ class Game
     // events; "" when none asks), and whether a live story listens for a watched event.
     std::string storyFactsJson();
     bool storyWatches(const std::string& kind) const { return storyWatch_.events.count(kind) > 0; }
+    // Doc 86, Phase 1b (for tests and the console): whether a resident is protected now, and what the stories hold them by
+    // ("spare", "protect") with its owners ("run:<run>", "campaign:<id>"); what the residents remember from the stories.
+    bool residentProtected(const std::string& id) const { return isProtected(id); }
+    std::set<std::string> storyHoldOwners(const std::string& kind, const std::string& npc) const;
+    struct StoryMemo
+    {
+        std::string value;
+        double until = -1;                          // (The world's day it is forgotten.)
+        std::string run;
+        bool keep = false;                          // (Kept after its run ends, until `until`.)
+    };
+    const std::map<std::string, std::map<std::string, StoryMemo>>& storyMemory() const { return storyMemory_; }
     bool approvedStoryteller(const std::string& account) const;
     // Open dice (doc 58, 6): "2d6+1" rolled from a seed, in words ("2d6 + 1: 3 + 5 + 1 = 9"); "" with why, past the limits.
     static std::string rollDice(const std::string& spec, const std::string& seed, std::string& error);
@@ -2649,6 +2661,18 @@ class Game
     double storyWorldAccumulator_ = 0;
     bool heldByAnotherStory(const std::string& npc, const std::string& run) const;
     void noteStoryHeld(const json::Value& payload, const char* key, const std::string& id);   // (A stranger, a mantle.)
+    // Doc 86, Phase 1b (RatwGameStoryWorld.cpp): residents a story spares from old age or protects for a while (C11), and
+    // what residents remember and come to believe from a story (C8, T7).
+    std::map<std::string, std::map<std::string, std::set<std::string>>> storyHolds_;   // kind -> npc -> owners
+    std::map<std::string, std::map<std::string, StoryMemo>> storyMemory_;              // owner -> key -> memo
+    double storyMemoryWarnedDay_ = -1;
+    Result applyStoryHold(const std::string& kind, const std::string& npc, const json::Value& payload);
+    Result applyStoryTalk(const std::string& kind, const std::string& target, const json::Value& payload);
+    void dropStoryHolds(const std::string& owner);      // Every hold of "run:<run>" or "campaign:<id>" let go.
+    void sparedChanged();                               // Tells the world whom old age passes by.
+    void storyRecall(const std::string& owner, const std::string& prefix, talk::Facts& into);
+    void storyTalkSave(json::Value& root) const;
+    void storyTalkLoad(const json::Value& saved);
     // An order a story sends that the DM's own tools send too, with the story's way of naming what it acts on: a town's
     // project of a kind, a wolf's deed in its words, a wolf's personal quest from a template ("" when none is found).
     std::string storyProject(const std::string& town, const std::string& kind) const;

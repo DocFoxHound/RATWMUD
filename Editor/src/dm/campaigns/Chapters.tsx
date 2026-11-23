@@ -13,8 +13,16 @@ function ChapterReady({ready, chapter, run, open}: {ready?: Readiness; chapter: 
         {run && <> · <button type="button" className="link-button" onClick={() => open(run)}>Advance…</button></>}</small>;
 }
 
-export function CampaignCards({campaigns, open, runs}: {campaigns: Campaign[]; open: (run: string) => void; runs?: RunRow[]}) {
+export function CampaignCards({campaigns, open, runs, target, maySteer}: {campaigns: Campaign[]; open: (run: string) => void; runs?: RunRow[];
+    /** Doc 86, C11: may let go of a campaign's holds on residents (steering). */
+    target?: Target; maySteer?: boolean}) {
+    const [said, setSaid] = useState('');
     if (!campaigns.length) return null;
+    const release = async (c: Campaign) => {
+        if (!target || !window.confirm(`Let go of the residents ${c.title} spares or protects for the campaign? Old age and fights may take them again.`)) return;
+        try { await storyProgram(target, 'campaign-release', {campaign: c.id}); setSaid(`${c.title}: its holds are let go.`); }
+        catch (e) { setSaid((e as Error).message); }
+    };
     const byRun = new Map((runs ?? []).map(r => [r.run, r]));
     return <div className="camp-campaigns" aria-label="Campaigns of chapters">
         {campaigns.map(c => {
@@ -24,8 +32,11 @@ export function CampaignCards({campaigns, open, runs}: {campaigns: Campaign[]; o
                 <b>{c.title}</b> <small className="hint">{campaignText(c)} · approved by {c.approvedBy}</small>
                 <ChapterChips campaign={c} open={open} />
                 {live && <ChapterReady ready={byRun.get(live.run)?.ready} chapter={n + 1} run={live.run} open={open} />}
+                {!live && target && maySteer && c.status !== 'approved' && <small> · <button type="button" className="link-button"
+                    title="For an act stopped early: the residents its chapters held for the campaign (doc 86)" onClick={() => void release(c)}>Let go of the campaign's holds…</button></small>}
             </div>;
         })}
+        {said && <p className="hint">{said}</p>}
     </div>;
 }
 

@@ -178,6 +178,7 @@ void Game::troublesSave(Value& root) const
     for (const auto& id : unprotectedMarks_)
         marks.add(id, false);
     root.add("protectedMarks", marks);
+    storyTalkSave(root);                            // (Doc 86: the stories' holds on residents, and what residents remember.)
 }
 
 void Game::troublesLoad(const Value& saved)
@@ -203,6 +204,7 @@ void Game::troublesLoad(const Value& saved)
     for (const auto& [id, on] : saved.object("protectedMarks").fields())
         if (on.isBool() && id.size() <= 80)
             (on.asBool() ? protectedMarks_ : unprotectedMarks_).insert(id);
+    storyTalkLoad(saved);
 }
 
 // ------------------------------------------------------------------ Phase 2: solving them
@@ -495,6 +497,9 @@ bool Game::isProtected(const std::string& id) const
         return false;
     if (protectedMarks_.count(id))
         return true;
+    if (const auto k = storyHolds_.find("protect"); k != storyHolds_.end())
+        if (const auto n = k->second.find(id); n != k->second.end() && !n->second.empty())
+            return true;                            // (A story protects them while it, or its campaign, runs: doc 86, C11.)
     const auto& society = world_.society();
     if (const auto* spec = society.spec(id); spec && spec->protectedNpc)
         return true;

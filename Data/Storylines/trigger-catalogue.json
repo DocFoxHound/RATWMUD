@@ -102,6 +102,10 @@
    "label": "Residents"
   },
   {
+   "id": "talk",
+   "label": "Talk, rumour and figures"
+  },
+  {
    "id": "wolves",
    "label": "Players' wolves"
   },
@@ -164,13 +168,16 @@
   "whose": "Whose value of a variable kept for each wolf or party: the acting wolf's, or the looped wolf's.",
   "quest": "A quest of this story (version 2).",
   "objective": "An objective of the quest named beside it.",
-  "purse": "Who pays: a town's treasury (town:<town>), its works, watch or church (town:<town>:works), a business's till (till:<id>) or a Chapter's treasury (chapter:<id>). Never minted.",
+  "purse": "Who pays: a town's treasury (town:<town>), a business's till (till:job:<founder>, or till:<founder>) or a Chapter's treasury (chapter:<id>). Never minted; approval checks the world has it.",
   "offer": "A story choice's name: what a dialogue choice event comes back with.",
   "door": "A door of the world (its id: link_<link>_a or _b; a story locks both sides).",
   "mantle": "A mantle (doc 84): a part a resident takes up, with its own lines.",
   "visitor": "A temporary resident's id, given by the story (letters, digits, - and _).",
   "story": "Another story of this world, by its id: a chapter of the same campaign (Phase 10).",
-  "condition": "A condition tree tested once for each wolf, the wolf as $each (doc 86, R1)."
+  "condition": "A condition tree tested once for each wolf, the wolf as $each (doc 86, R1).",
+  "talkkey": "A talk memory key: lower-case letters, digits and _, up to 40, starting with a letter.",
+  "talkvalue": "A talk memory value: lower-case letters, digits and _, up to 40.",
+  "figure": "A figure's id (live.figures): lower-case letters, digits and _, 3 to 40."
  },
  "trigger": {
   "once": {
@@ -6539,7 +6546,7 @@
    "group": "money",
    "title": "A purse crosses an amount",
    "sentence": "the purse {target} goes {item} past {detail}p",
-   "help": "A town's treasury, its works, watch or church, a till or a Chapter's purse (as a reward names one: town:<town>, town:<town>:works, till:<id>, chapter:<id>) goes up or down past an amount the trigger names in its detail (quantity: what it holds now). Name the purse and the amount. Written only while a live story listens for it (the story's watch list).",
+   "help": "A town's treasury, a business's till or a Chapter's purse (as a reward names one: town:<town>, till:job:<resident>, chapter:<id>) goes up or down past an amount the trigger names in its detail (quantity: what it holds now). Name the purse and the amount. Written only while a live story listens for it (the story's watch list).",
    "fields": {
     "target": {
      "type": "purse",
@@ -9591,13 +9598,30 @@
    "id": "npc.protect",
    "group": "residents",
    "title": "Protect a resident",
-   "sentence": "{npc} cannot be killed",
-   "help": "Marks the resident as one who cannot be killed.",
+   "sentence": "{npc} cannot be killed {lasts}",
+   "help": "Marks the resident as one who cannot be killed: for good (until Unprotect), while this story runs, or while its campaign runs (let go when the campaign ends).",
    "params": [
     {
      "key": "npc",
      "type": "resident",
      "label": "the resident"
+    },
+    {
+     "key": "lasts",
+     "type": "choice",
+     "label": "for",
+     "values": [
+      "ever",
+      "run",
+      "campaign"
+     ],
+     "words": {
+      "ever": "for good (until Unprotect)",
+      "run": "while this story runs",
+      "campaign": "while the campaign runs"
+     },
+     "optional": true,
+     "default": "ever"
     }
    ]
   },
@@ -9612,6 +9636,51 @@
      "key": "npc",
      "type": "resident",
      "label": "the resident"
+    }
+   ]
+  },
+  {
+   "id": "npc.spare",
+   "group": "residents",
+   "title": "Spare a resident from old age",
+   "sentence": "{npc} does not die of old age while {lasts}",
+   "help": "Old age passes the resident by (stories and fights still can't kill a protected one: Protect them too). For this story, or for its whole campaign (let go when the campaign ends).",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "operand": true
+    },
+    {
+     "key": "lasts",
+     "type": "choice",
+     "label": "for",
+     "values": [
+      "run",
+      "campaign"
+     ],
+     "words": {
+      "run": "this story runs",
+      "campaign": "the campaign runs"
+     },
+     "optional": true,
+     "default": "run"
+    }
+   ]
+  },
+  {
+   "id": "npc.unspare",
+   "group": "residents",
+   "title": "Let old age take its course",
+   "sentence": "{npc} is no longer spared by this story",
+   "help": "Ends this story's (or its campaign's) sparing; another story may still spare them.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "operand": true
     }
    ]
   },
@@ -10253,7 +10322,7 @@
    "group": "residents",
    "title": "Offer a choice in a resident's window",
    "sentence": "{npc} offers the choice {id} to {player}: the wolf says {words}, {npc} replies {reply} (once: {once})",
-   "help": "While this phase visit is open, the resident's dialogue window shows a story choice to the wolf (or every wolf of the story): the wolf's words, the resident's reply in their own voice. Picking it makes a 'dialogue choice' event.",
+   "help": "While this phase visit is open, the resident's dialogue window shows a story choice to the wolf (or every wolf of the story): the wolf's words, the resident's reply in their own voice. Picking it makes a 'dialogue choice' event. Offered again to another wolf with the same name, it is added for them; each wolf sees it until they pick it (once) or the visit ends.",
    "params": [
     {
      "key": "npc",
@@ -10298,7 +10367,7 @@
    "group": "wolves",
    "title": "Pay a wolf from a purse",
    "sentence": "Pay {player} {coins} pennies from {purse}: {reason}",
-   "help": "Coins from a named purse (a town, its works, a business's till, a Chapter), never made from nothing: refused when the purse is short or over the wolf's day of grants.",
+   "help": "Coins from a named purse (a town's treasury, a business's till, a Chapter), never made from nothing: refused when the purse is short or over the wolf's day of grants. Approval checks the world has the purse.",
    "params": [
     {
      "key": "player",
@@ -11306,6 +11375,329 @@
    ],
    "v2": true,
    "story": true
+  },
+  {
+   "id": "talk.remember",
+   "group": "talk",
+   "title": "Residents remember something",
+   "sentence": "{scope} {town} {npc} {player} remembers {key} = {value} for {days} days (after the story: {keep})",
+   "help": "Talk memory residents' lines can test (world.mem.<key> for the realm or a town, self.mem.<key> for one resident, pair.mem.<key> for one resident about one wolf: Data/Talk lines gated on it play). Realm: every resident; a town: its residents (the whole city is one town); a resident: that one; a resident and a wolf: that resident, when that wolf is the one they talk to. Taken back when the story ends unless kept.",
+   "params": [
+    {
+     "key": "scope",
+     "type": "choice",
+     "label": "who",
+     "values": [
+      "realm",
+      "town",
+      "npc",
+      "pair"
+     ],
+     "words": {
+      "realm": "the realm",
+      "town": "the town of",
+      "npc": "the resident",
+      "pair": "the resident, about the wolf,"
+     },
+     "default": "town"
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "key",
+     "type": "talkkey",
+     "label": "what (a key)"
+    },
+    {
+     "key": "value",
+     "type": "talkvalue",
+     "label": "its value"
+    },
+    {
+     "key": "days",
+     "type": "int",
+     "label": "days",
+     "min": 1,
+     "max": 365
+    },
+    {
+     "key": "keep",
+     "type": "bool",
+     "label": "kept after the story",
+     "optional": true,
+     "words": {
+      "true": "kept",
+      "false": "taken back"
+     }
+    }
+   ]
+  },
+  {
+   "id": "talk.forget",
+   "group": "talk",
+   "title": "Residents forget something",
+   "sentence": "{scope} {town} {npc} {player} forgets {key}",
+   "help": "Takes away a memory a story gave (any story's, by key).",
+   "params": [
+    {
+     "key": "scope",
+     "type": "choice",
+     "label": "who",
+     "values": [
+      "realm",
+      "town",
+      "npc",
+      "pair"
+     ],
+     "words": {
+      "realm": "the realm",
+      "town": "the town of",
+      "npc": "the resident",
+      "pair": "the resident, about the wolf,"
+     },
+     "default": "town"
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "key",
+     "type": "talkkey",
+     "label": "what (a key)"
+    }
+   ]
+  },
+  {
+   "id": "belief.plant",
+   "group": "talk",
+   "title": "Start a rumour",
+   "sentence": "{count} residents of {town} come to believe {claimKind} {subject} {claim} ({confidence}% sure)",
+   "help": "Residents of a town (chosen by the story's seed: placed, living, not the one it is about) believe something of a resident, as if they had heard it: it is told in gossip ('#x.name# <claim>') and spreads along friendships and caravans as any belief does. About residents only, never a wolf. A clearing (story.cleared) is told as '<Name> never <claim>': write the claim as the thing not done.",
+   "params": [
+    {
+     "key": "subject",
+     "type": "resident",
+     "label": "about",
+     "operand": true
+    },
+    {
+     "key": "claim",
+     "type": "text",
+     "label": "that they (a phrase)",
+     "max": 120
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "in the town",
+     "operand": true
+    },
+    {
+     "key": "count",
+     "type": "int",
+     "label": "how many",
+     "min": 1,
+     "max": 50
+    },
+    {
+     "key": "confidence",
+     "type": "int",
+     "label": "how sure (%)",
+     "min": 10,
+     "max": 90
+    },
+    {
+     "key": "claimKind",
+     "type": "choice",
+     "label": "the kind of claim",
+     "values": [
+      "story.rumour",
+      "story.cleared"
+     ],
+     "words": {
+      "story.rumour": "that",
+      "story.cleared": "that it is not true that"
+     },
+     "optional": true,
+     "default": "story.rumour"
+    }
+   ]
+  },
+  {
+   "id": "figure.set",
+   "group": "talk",
+   "title": "Name a figure of the realm",
+   "needsBuilder": true,
+   "sentence": "The figure {figure}: {npc} {player} {name} is the realm's {role}, {title}, known {known} {region} {house} ({about})",
+   "help": "Who residents mean by the ruler, the lord, the captain, the high priest, the hero or the villain (#world.figure_<role># in their lines), where they are known. A resident, a wolf, or a name only. It stays after the story; Clear the figure takes it away.",
+   "params": [
+    {
+     "key": "figure",
+     "type": "figure",
+     "label": "its id"
+    },
+    {
+     "key": "role",
+     "type": "choice",
+     "label": "the role",
+     "values": [
+      "ruler",
+      "lord",
+      "captain",
+      "high_priest",
+      "hero",
+      "villain"
+     ]
+    },
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "a resident",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "a wolf",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "name",
+     "type": "text",
+     "label": "or a name",
+     "max": 120,
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "title",
+     "type": "text",
+     "label": "their title",
+     "max": 120,
+     "optional": true
+    },
+    {
+     "key": "known",
+     "type": "choice",
+     "label": "known",
+     "values": [
+      "realm",
+      "region",
+      "house"
+     ],
+     "words": {
+      "realm": "in the realm",
+      "region": "in",
+      "house": "among"
+     },
+     "default": "realm"
+    },
+    {
+     "key": "region",
+     "type": "town",
+     "label": "the town or land",
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "house",
+     "type": "faction",
+     "label": "the House",
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "about",
+     "type": "text",
+     "label": "about them",
+     "max": 600,
+     "optional": true
+    }
+   ]
+  },
+  {
+   "id": "figure.clear",
+   "group": "talk",
+   "title": "Clear a figure",
+   "needsBuilder": true,
+   "sentence": "Residents no longer speak of the figure {figure}",
+   "help": "Takes a figure away (one a story or a Dungeon Master set).",
+   "params": [
+    {
+     "key": "figure",
+     "type": "figure",
+     "label": "its id"
+    }
+   ]
   }
  ],
  "variables": {

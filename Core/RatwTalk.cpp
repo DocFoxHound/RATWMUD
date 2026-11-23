@@ -435,6 +435,8 @@ bool Library::readSchema(const std::string& text, std::string& problem)
                 continue;                           // (player's own note: doc 84 Phase 13.)
             const auto full = std::string(ns) + "." + name;
             kindOf(full, v, shared_[full]);
+            if (name.size() > 2 && name.compare(name.size() - 2, 2, ".*") == 0)
+                continue;                           // (A pattern, player.quest.*: written in full only. Doc 86, N2.)
             if (person_.count(name))
                 continue;                           // (A person's name too, world.mood beside self.mood: written in full only.)
             if (aliases_.count(name))
@@ -1008,6 +1010,10 @@ bool Library::criterion(const std::string& token, Where where, int speaker, Crit
             c.full = key;
             if (const auto k = shared_.find(key); k != shared_.end())
                 kind = &k->second;
+            // (A pattern's key, player.quest.<program>/<quest> by player.quest.*: doc 86, N2.)
+            else if (const auto sub = c.name.find('.'); sub != std::string::npos && sub + 1 < c.name.size())
+                if (const auto pat = shared_.find(ns + "." + c.name.substr(0, sub) + ".*"); pat != shared_.end())
+                    kind = &pat->second;
         }
         if (memory || kept)
             kind = &Remembered;

@@ -746,6 +746,9 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
     if (!revise && ((!prior && visit != 1) || (prior && prior->sourceRef != std::to_string(int(visit) - 1))))
         return {false, "World story phases arrived out of order.", run};
     storylines::Storyline story = prior ? *prior : storylines::Storyline{};
+    // (Doc 86, N2: a storykeeper story's program, kept as its template: the window's player.quest.<program>/<quest>.)
+    if (const auto program = p.string("program"); !program.empty() && program.size() <= 80)
+        story.templateId = program;
     if (!storylines::readRegions(p["regions"], story.regions))
         return {false, "Invalid world story region.", run};
     // What the story asks the game to tell it (doc 85, Phase 8): the world's facts and the watched events it names.
@@ -1044,7 +1047,7 @@ void Game::offerChain(const Contract& done)
 namespace
 {
 constexpr std::size_t StoryAudienceMost = 5000, StoryOffersMost = 64, StoryChoicesMost = 64, QuestViewsMost = 64,
-                      TrackersMost = 16;
+                      TrackersMost = 16, TalkMost = 8;
 
 bool plainId(const Value& v)
 {
@@ -1105,17 +1108,26 @@ Result Game::applyStoryQuests(storylines::Storyline& story, const Value& p)
             return {false, "A story choice needs its name, words and a resident.", story.id};
     for (const auto& [wolf, entry] : p["wolves"].fields())
         if (wolf.empty() || wolf.size() > 80 || !entry.isObject() || entry.array("quests").size() > QuestViewsMost ||
-            entry.array("trackers").size() > TrackersMost)
+            entry.array("trackers").size() > TrackersMost || (entry.has("talk") && (!entry["talk"].isObject() || entry["talk"].size() > TalkMost)))
             return {false, "Invalid quest journal for " + wolf + ".", story.id};
     if (p.has("offers")) story.offers = p["offers"];
     if (p.has("choices")) story.choices = p["choices"];
+    if (const auto program = p.string("program"); !program.empty() && program.size() <= 80)
+        story.templateId = program;                 // (Doc 86, N2: as story.phase names it, for a run older than that.)
     std::size_t wolves = 0;
     for (const auto& [wolf, entry] : p["wolves"].fields())
     {
         auto kept = Value::object();
         kept.add("quests", entry["quests"].isArray() ? entry["quests"] : Value::array());
         kept.add("trackers", entry["trackers"].isArray() ? entry["trackers"] : Value::array());
-        if (!kept.array("quests").size() && !kept.array("trackers").size())
+        // (Doc 86, N2: what the residents this wolf talks to know of the wolf's own values: player.story.<name>.)
+        auto talk = Value::object();
+        for (const auto& [name, v] : entry.object("talk").fields())
+            if (!name.empty() && name.size() <= 80 && v.isString() && v.asString().size() <= 40)
+                talk.add(name, v.asString());
+        if (talk.size())
+            kept.add("talk", std::move(talk));
+        if (!kept.array("quests").size() && !kept.array("trackers").size() && !kept.object("talk").size())
             story.questViews.erase(wolf);
         else
             story.questViews[wolf] = std::move(kept);

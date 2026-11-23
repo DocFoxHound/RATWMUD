@@ -487,3 +487,13 @@ test('doc 86: a readiness kept by moving onto a new version, with no parts yet, 
     assert.deepEqual(readyBars(kept), []);
     assert.deepEqual(readySummary({...kept, met: true, metAt: 3.1}), {text: 'ready', fill: 1, met: true});
 });
+
+test('doc 86, Phase 1b: who remembers, in words; undoing a figure', async () => {
+    const {figureUndoText, memoryOwnerText} = await import('./campaigns.ts');
+    assert.equal(memoryOwnerText('realm', names), 'the realm');
+    assert.equal(memoryOwnerText('town:greyfen', {...names, greyfen: 'Greyfen'}), 'the town of Greyfen');
+    assert.equal(memoryOwnerText('person:rm111', names), 'Ivo Tarmarsh');
+    assert.equal(memoryOwnerText('pair:player-ash|rm111', names), 'Ivo Tarmarsh, about Ash Greymantle');
+    assert.equal(figureUndoText({id: 'nh_villain', previous: null}), 'Take the figure nh_villain away (there was none before)');
+    assert.ok(figureUndoText({id: 'nh_villain', previous: {name: 'Old Brown', role: 'villain'}}).includes('Old Brown'));
+});

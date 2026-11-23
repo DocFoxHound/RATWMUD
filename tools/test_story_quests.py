@@ -470,3 +470,64 @@ class QuestRuns(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class Phase1b(unittest.TestCase):
+    """Doc 86, Phase 1b: a story choice kept for a list of wolves (J1), and the values a story tells residents of each wolf
+    (N2: the `talk` map beside the journal's views)."""
+
+    def run_of(self, p=None, state=None):
+        p = rules.validate(program(p or SMALL))
+        phase = rules.phases_of(p)[0]
+        state = state if state is not None else {'phase': phase['id'], 'cohort': [ASH, BIRCH], 'counters': {}}
+        return p, state, quests.Run(p, phase, state, 1, 0, lambda *a: None)
+
+    def test_a_choice_offered_to_one_wolf_then_another_is_both_of_theirs(self):
+        p, state, run = self.run_of()
+        offer = {'kind': 'npc.offer', 'npc': 'rm111', 'id': 'pledge', 'words': 'I stand with you.', 'reply': 'Then stand.',
+                 'player': '$actor', 'once': True}
+        run.story_effect(offer, ASH)
+        run.story_effect({**offer, 'reply': 'Stand, then.'}, BIRCH)
+        [c] = quests.choices(state)
+        self.assertEqual((c['players'], c['reply']), ([ASH, BIRCH], 'Stand, then.'), 'both see it; the words are the latest')
+        run.game_event({'kind': 'dialogue choice', 'actor': ASH, 'detail': 'pledge', 'item': 'rm111'})
+        run.story_effect(offer, ASH)
+        [c] = quests.choices(state)
+        self.assertEqual((c['players'], c['picked']), ([ASH, BIRCH], [ASH]), 'Ash picked it (once); Birch still sees it')
+        run.story_effect({k: v for k, v in offer.items() if k != 'player'}, ASH)
+        [c] = quests.choices(state)
+        self.assertEqual((c['players'], c['picked']), (None, []), 'offered to every wolf: everyone\'s, as before')
+
+    def test_an_older_state_reads_its_one_wolf_as_a_list(self):
+        state = {'offers': {'old': {'npc': 'rm111', 'words': 'x', 'reply': 'y', 'player': ASH, 'once': False, 'picked': []}}}
+        self.assertEqual(quests.choices(state)[0]['players'], [ASH])
+        p, state2, run = self.run_of(state={'phase': 'open', 'cohort': [ASH, BIRCH], 'counters': {}, **state})
+        run.story_effect({'kind': 'npc.offer', 'npc': 'rm111', 'id': 'old', 'words': 'x', 'reply': 'y', 'player': '$actor'}, BIRCH)
+        self.assertEqual(quests.choices(state2)[0]['players'], [ASH, BIRCH])
+
+    def test_the_views_carry_the_talk_map(self):
+        base = copy.deepcopy(SMALL)
+        base['variables'] = [*base.get('variables', []),
+                             {'id': 'p_howl', 'type': 'text', 'scope': 'player', 'talk': True},
+                             {'id': 'p_backs', 'type': 'number', 'scope': 'player', 'talk': True},
+                             {'id': 'p_advice', 'type': 'switch', 'scope': 'player', 'talk': True},
+                             {'id': 'p_quiet', 'type': 'number', 'scope': 'player'}]
+        p = rules.validate(base)
+        state = {'phase': p['start'], 'cohort': [ASH, BIRCH],
+                 'counters': {'player': {ASH: {'p_howl': 'coldwater', 'p_backs': 3, 'p_advice': True, 'p_quiet': 9},
+                                         BIRCH: {'p_howl': 'Cold Water'}}}}
+        self.assertEqual(quests.journal(p, state, ASH)['talk'], {'p_howl': 'coldwater', 'p_backs': '3', 'p_advice': 'yes'})
+        self.assertNotIn('talk', quests.journal(p, state, BIRCH), 'words no line could test are kept, not told')
+        self.assertEqual(quests.talk_unsaid(p, state, BIRCH), ['p_howl'])
+        self.assertNotIn('talk', quests.journal(p, state, ELM), 'only wolves with a stored value')
+        self.assertTrue(quests.relevant(p))
+        for bad, words in [({'id': 'x', 'type': 'wolf', 'scope': 'player', 'talk': True}, 'number, switch or text'),
+                           ({'id': 'x', 'type': 'number', 'scope': 'story', 'talk': True}, 'number, switch or text'),
+                           ({'id': 'x', 'type': 'text', 'scope': 'player', 'talk': True, 'initial': 'Two words'}, 'small letters')]:
+            with self.subTest(words=words):
+                q = copy.deepcopy(base)
+                q['variables'].append(bad)
+                self.assertRaisesRegex(ValueError, words, rules.validate, q)
+        q = copy.deepcopy(base)
+        q['variables'] += [{'id': f't{i}', 'type': 'number', 'scope': 'player', 'talk': True} for i in range(6)]
+        self.assertRaisesRegex(ValueError, 'up to 8', rules.validate, q)

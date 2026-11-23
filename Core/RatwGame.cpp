@@ -36,6 +36,17 @@ using json::Value;
 
 namespace
 {
+
+// Doc 86, C11: an npc.protect a story sends for a while (lasts run or campaign), not for good.
+bool storyHoldLasts(const std::vector<std::optional<std::string>>& row)
+{
+    json::Value payload;
+    std::string problem;
+    if (row.size() <= 4 || !row[4] || !json::parse(*row[4], payload, problem) || !payload.isObject())
+        return false;
+    const auto lasts = payload.string("lasts");
+    return lasts == "run" || lasts == "campaign";
+}
 #if defined(__unix__) || defined(__APPLE__)
 // A rename on the disk: the folder holding `file` synced (best effort: a folder that can't be opened is left).
 void syncFolderOf(const std::string& file)
@@ -1684,6 +1695,35 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         }
         saveSoon();
     }
+    else if (kind == "npc.spare" || kind == "npc.unspare" || (kind == "npc.protect" && storyHoldLasts(row)))
+    {
+        // Doc 86, C11: a story's hold on a resident (spared from old age; protected while the story or its campaign runs).
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        outcome = applyStoryHold(kind, target, payload.isObject() ? payload : json::Value::object());
+    }
+    else if (kind == "story.campaign.end")
+    {
+        // Doc 86, C11: the runner says a campaign has ended; its holds are let go (target: the campaign's id).
+        if (target.empty() || target.size() > 80)
+            outcome = {false, "Name the campaign.", target};
+        else
+        {
+            dropStoryHolds("campaign:" + target);
+            outcome = {true, "The campaign's holds are let go.", target};
+        }
+    }
+    else if (kind == "talk.remember" || kind == "talk.forget" || kind == "belief.plant")
+    {
+        // Doc 86, C8 and T7: what residents remember of a story, and a rumour it starts (RatwGameStoryWorld.cpp).
+        json::Value payload;
+        std::string problem;
+        outcome = row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject()
+                      ? applyStoryTalk(kind, target, payload)
+                      : Result{false, "Invalid story talk.", target};
+    }
     else if (kind == "npc.protect" || kind == "npc.unprotect")
     {
         // Protected residents (doc 57, 6): marked, or unmarked (even one Atlas or the game's rule protects).
@@ -1691,6 +1731,22 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             outcome = {false, "No such resident.", target};
         else
         {
+            if (kind == "npc.unprotect")
+            {
+                // (Doc 86, C11: a story's Unprotect also lets go of its own holds.)
+                json::Value payload;
+                std::string problem;
+                if (row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject() && payload.has("run"))
+                    if (auto k = storyHolds_.find("protect"); k != storyHolds_.end())
+                        if (auto n = k->second.find(target); n != k->second.end())
+                        {
+                            n->second.erase("run:" + payload.string("run"));
+                            if (payload.has("campaign"))
+                                n->second.erase("campaign:" + payload.string("campaign"));
+                            if (n->second.empty())
+                                k->second.erase(n);
+                        }
+            }
             (kind == "npc.protect" ? unprotectedMarks_ : protectedMarks_).erase(target);
             (kind == "npc.protect" ? protectedMarks_ : unprotectedMarks_).insert(target);
             outcome = {true, kind == "npc.protect" ? "Protected." : "No longer protected.", target};

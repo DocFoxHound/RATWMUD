@@ -183,7 +183,7 @@ const v2: Record<string, Program> = JSON.parse(execFileSync('python3', ['-c',
 const ledger = v2['v2-ledger'];
 
 test('version 2: the samples and the 108 programs made version 2 are shown by the workbench, every nested action a sentence', () => {
-    assert.equal(Object.keys(v2).length, 111);   // (Doc 86, Phase 1a: the muster at the ford, a third sample.)
+    assert.equal(Object.keys(v2).length, 112);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone.)
     let nested = 0;
     for (const [name, p] of Object.entries(v2)) {
         assert.ok(editable(p), name);
@@ -488,4 +488,29 @@ test('doc 86: the variables and missions a Readiness reads are its uses, and fol
     const hauls = renameVariable(muster, 'hauls', 'loads');
     assert.ok(!pretty(hauls.phases[0].triggers).includes('"hauls"'));
     assert.equal(renameVariable(muster, 'nothing', 'else').phases[0].ready, muster.phases[0].ready, 'nothing renamed: the same Readiness');
+});
+
+test('doc 86, Phase 1b: talk memory, rumours, figures and holds read as sentences; their keys, values and figures offered back', async () => {
+    const {effectValuesOf, figuresOf, purseNames, talkKeysOf, talkValuesOf} = await import('./workbench.ts');
+    const ns = namesOf({residents: [{id: 'rm111', name: 'Ivo Tarmarsh'}], towns: [{id: 'greyfen', name: 'Greyfen'}],
+        tills: [{id: 'till:job:rm111', name: "Ivo Tarmarsh's till"}]});
+    const say = (effect: Record<string, unknown>) => plain(actionParts(cat, {do: 'effect', effect: effect as never}, ns));
+    const pair = say({kind: 'talk.remember', scope: 'pair', npc: 'rm111', player: '$actor', key: 'nh_stone', value: 'brought', days: 60, keep: true});
+    assert.ok(pair.includes('Ivo Tarmarsh') && pair.includes('nh_stone') && pair.includes('brought') && pair.includes('60') && !pair.includes('{'), pair);
+    const rumour = say({kind: 'belief.plant', subject: 'rm111', claim: 'took the silver', town: 'greyfen', count: 4, confidence: 70, claimKind: 'story.cleared'});
+    assert.ok(rumour.includes('not true') && rumour.includes('took the silver') && !rumour.includes('{'), rumour);
+    for (const e of [{kind: 'npc.spare', npc: 'rm111', lasts: 'campaign'}, {kind: 'npc.unspare', npc: 'rm111'},
+        {kind: 'figure.set', figure: 'nh_villain', role: 'villain', name: 'The Ledger Keeper', known: 'realm'}, {kind: 'figure.clear', figure: 'nh_villain'},
+        {kind: 'npc.protect', npc: 'rm111', lasts: 'run'}, {kind: 'talk.forget', scope: 'realm', key: 'nh_stage'}])
+        assert.ok(!say(e).includes('{'), say(e));
+    const p = {format: 'ratw-story-program', version: 2, id: 'x', title: 'X', audience: {kind: 'players', players: []}, start: 'a', tests: [],
+        phases: [{id: 'a', journal: 'A.', exits: [], effects: [{kind: 'talk.remember', scope: 'realm', key: 'nh_stage', value: 'waking', days: 3},
+            {kind: 'figure.set', figure: 'nh_villain', role: 'villain', name: 'N', known: 'realm'}],
+            triggers: [{id: 't', on: 'arrival', actions: [{do: 'effect', effect: {kind: 'talk.forget', scope: 'realm', key: 'nh_debts'}}]}]}]} as unknown as Program;
+    assert.deepEqual(talkKeysOf(p), ['nh_debts', 'nh_stage']);
+    assert.deepEqual(talkValuesOf(p), ['waking']);
+    assert.deepEqual(figuresOf(p), ['nh_villain']);
+    assert.deepEqual(effectValuesOf(p, ['npc.spare'], 'npc'), []);
+    const purses = purseNames({towns: [{id: 'greyfen', name: 'Greyfen'}], tills: [{id: 'till:job:rm111', name: "Ivo Tarmarsh's till"}]});
+    assert.deepEqual(purses, {'town:greyfen': "Greyfen's treasury", 'till:job:rm111': "Ivo Tarmarsh's till"}, 'no works, watch or church purse');
 });

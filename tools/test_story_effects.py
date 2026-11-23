@@ -66,7 +66,12 @@ GOOD = {
     'deed.revoke': {'player': '$actor', 'detail': 'Held the bridge.'},
     'storyline.tick': {'player': '$actor', 'template': 'the-debt', 'step': 2, 'objective': 1},
     'scene.stop': {},
+    # (Doc 86, Phase 1b: what residents remember of a story, and a rumour it starts; tools/test_story_talk.py tests them.)
+    'talk.remember': {'scope': 'town', 'town': 'greyfen', 'key': 'nh_stage', 'value': 'reckoning', 'days': 30},
+    'talk.forget': {'scope': 'town', 'town': 'greyfen', 'key': 'nh_stage'},
+    'belief.plant': {'subject': 'rm111', 'claim': 'was seen at the mill at midnight', 'town': 'greyfen', 'count': 3, 'confidence': 60},
 }
+PHASE1B_ORDERS = ('talk.remember', 'talk.forget', 'belief.plant')
 
 
 def program(effects=(), entry=(), audience=None):
@@ -94,7 +99,7 @@ def effect(kind, **more):
 class Catalogue(unittest.TestCase):
     def test_the_new_effects_are_in_the_catalogue_with_typed_parameters_and_sentences(self):
         ids = [e['id'] for e in CAT['effects']]
-        self.assertEqual(len(ids), 71)   # (Phase 10's story.start, the story's own: not a game order.)
+        self.assertEqual(len(ids), 78)   # (Phase 10's story.start, the story's own: not a game order; doc 86 Phase 1b's 7.)
         self.assertNotIn('story.start', runner.WORLD_ORDERS)
         for kind in NEW:
             with self.subTest(kind=kind):
@@ -104,7 +109,7 @@ class Catalogue(unittest.TestCase):
                 self.assertIn(item['group'], {g['id'] for g in CAT['actionGroups']})
                 for p in item['params']:
                     self.assertIn(p['type'], CAT['types'])
-        self.assertEqual(set(NEW) - {'story.tracker'}, set(runner.WORLD_ORDERS), 'every game order has its mapping')
+        self.assertEqual(set(NEW) - {'story.tracker'} | set(PHASE1B_ORDERS), set(runner.WORLD_ORDERS), 'every game order has its mapping')
         self.assertIn('story.tracker', quests.STORY_EFFECTS, 'the tracker is the story\'s own')
 
     def test_the_lists_the_catalogue_names_are_the_games(self):
@@ -119,7 +124,8 @@ class Catalogue(unittest.TestCase):
     def test_who_may_send_them_on_a_hosted_world(self):
         self.assertEqual(rules.WOLF_EFFECTS, {'character.injury', 'story.area.damage', 'item.take', 'warrant.issue'})
         # (Doc 85, Phase 10: the economy's effects need a builder or the owner too: prices and projects.)
-        self.assertEqual(rules.BUILDER_EFFECTS, {'faction.relation', 'standing.adjust', 'prices.reset', 'project.complete', 'project.cancel'})
+        self.assertEqual(rules.BUILDER_EFFECTS, {'faction.relation', 'standing.adjust', 'prices.reset', 'project.complete', 'project.cancel',
+                                                 'figure.set', 'figure.clear'})   # (Doc 86, C9: the realm's figures.)
         self.assertEqual(studio.STORY_WOLF_KINDS, rules.WOLF_EFFECTS)
         self.assertEqual(runner.WOLF_EFFECTS, rules.WOLF_EFFECTS)
         p = program([effect('item.take')])

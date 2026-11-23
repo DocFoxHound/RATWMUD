@@ -178,6 +178,8 @@ export interface Firing {
     changes?: Change[]; byHand?: boolean; checked?: boolean; command?: number; by?: string;
     /** Version 2: Note actions' lines, and how it fired (by a Run, or resumed after a Wait). */
     notes?: string[]; via?: 'run' | 'wait';
+    /** Doc 86, C9: a figure of the realm the story set or cleared, and the row it replaced (null: there was none). */
+    figure?: {id: string; previous: Record<string, unknown> | null};
 }
 export interface RunDetail extends RunRow {
     state: RunState | null; program?: Record<string, unknown> & {title: string; id: string}; approvedBy: string; cursor: number; now: Now;
@@ -193,6 +195,8 @@ export interface RunDetail extends RunRow {
     /** Phase 10: the campaign it is a chapter of; the chapters it waits to start, has started, and the one that started it. */
     campaign?: Campaign | null; chapterStarts?: ChapterStart[]; chaptersStarted?: {story: string; run?: string; refused?: string}[];
     chapterOf?: {campaign: string; from: string; story: string; chapter: number} | null;
+    /** Doc 86, C8: what the residents remember of this run, as the game last saved it. */
+    memory?: Memory[];
     /** Doc 86, R2: readiness met, slow, pushed, advanced and taken (the last 20). */
     readyLog?: ReadyLogEntry[];
 }
@@ -1148,4 +1152,25 @@ export function parseWorldValue(type: string, text: string): {value: Value} | {p
         return {value: parts as unknown as Value};
     }
     return t.length <= 200 ? {value: t} : {problem: 'At most 200 characters.'};
+}
+
+/** Doc 86, C9: what "Undo this figure" does, in words. */
+export function figureUndoText(f: {id: string; previous: Record<string, unknown> | null}): string {
+    return f.previous ? `Put the figure ${f.id} back as it was (${String(f.previous.name ?? f.id)}, ${String(f.previous.role ?? '')})`
+        : `Take the figure ${f.id} away (there was none before)`;
+}
+
+/** Doc 86, C8: one thing residents remember of a story: whose memory (realm, town:<id>, person:<npc>, pair:<a>|<b>). */
+export interface Memory {owner: string; key: string; value: string; keep: boolean; daysLeft: number | null}
+/** Who remembers, in words: "the realm", "the town of Coldwater", "Ivo Tarmarsh", "Ivo Tarmarsh, about Ash". */
+export function memoryOwnerText(owner: string, names: Record<string, string>): string {
+    if (owner === 'realm') return 'the realm';
+    if (owner.startsWith('town:')) return 'the town of ' + nameOf(names, owner.slice(5));
+    if (owner.startsWith('person:')) return nameOf(names, owner.slice(7));
+    if (owner.startsWith('pair:')) {
+        const [a, b] = owner.slice(5).split('|');
+        const wolfFirst = a.startsWith('wolf-') || a.startsWith('player-');
+        return `${nameOf(names, wolfFirst ? b : a)}, about ${nameOf(names, wolfFirst ? a : b)}`;
+    }
+    return owner;
 }

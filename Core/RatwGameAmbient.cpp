@@ -570,6 +570,8 @@ talk::Query Game::talkBeat(AmbientTalk& t, int speaker, int to)
         q.facts["here.fishers"] = std::to_string(townFishers(region->second));
         talkRecall("town:" + region->second, "world.", q.facts);
     }
+    else
+        storyRecall("realm", "world.", q.facts);   // (Doc 86, C8: the realm's, wherever they are.)
     for (auto* s : {&q.a, &q.b})
     {
         if (s == &q.b && q.alone)

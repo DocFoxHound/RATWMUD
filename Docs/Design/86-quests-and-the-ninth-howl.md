@@ -1048,3 +1048,140 @@ language's native twin (`libratw_story.so`) only. Engine spec items C2, R1, R2 a
 - **Going live** on `ratw_ridgemere3` needs no migration of its own (doc 85's 0071-0079 still apply first, as there); the story runner
   restarted from this branch with the rebuilt `libratw_story.so`; the Editor released from it. Act I's chapters can move onto a
   version with `ready` blocks by `migrate` mid-chapter.
+
+## Phase 1b as built
+
+**Phase 1b as built** (2026-11-22, branch `r3-nh-p1b`, on `r3-nh-p1a` at `db0fdae9`). Engine spec items V1 (with the alive
+check), SQ2, V3, J1, C11 (with `npc.protect`'s `lasts`), C9, C8 (with the pair owner), T7 and N2 (with `player.story`). **No
+migration**: the stories' talk memory and holds on residents live in the game's checkpoint (`people.storyMemory`,
+`people.storyHolds`, beside the protected marks), figures in `live.figures` (0050), the program's id on the storyline's
+template field, so 0080 is left for Phase 3's greets and titles and Phase 8's `dm.story_posts`. Seven new effects (78 in the
+catalogue), a new action group `talk`, three new parameter types (`talkkey`, `talkvalue`, `figure`).
+- **SQ2: tills that pay** (`tools/story_quests.py` `check_purse`, `PURSE_WORDS`; `Core/RatwGameStoryFacts.cpp`
+  `Game::storyPurseAccount`). `till:job:<founder>` (three parts, the second `job`) is a purse; `till:<founder>` maps to
+  `till:job:<founder>` when it is no account itself, for `character.grant`, `purse crossed` and later M2. Both refusal messages
+  say "town:<town>, till:job:<resident> or chapter:<id>". **Approval** (`story_runner.world_checks`, run by `references()` and
+  by `reference_problems()` for the Problems panel) refuses a purse (rewards, grants, `purse crossed` filters) whose account
+  (`purse_account`: a town's `stores:<town>`, the city's `treasury`, a till by either spelling, a Chapter's by its name) is not
+  in the latest checkpoint's `society.accounts`; `town:<town>:works|watch|church` is refused with "this world has no works,
+  watch or church purse"; a checkpoint with no accounts saved yet only warns. The catalogue's `purse` type, `character.grant`
+  and `purse crossed` help drop the works, watch and church. The workbench's purse picker lists the towns' treasuries and the
+  world's tills (`refs.tills`, from the checkpoint, named "<founder>'s till"); `PURSE` takes `till:job:`.
+- **V1: approval checks what it missed** (`world_checks`). A quest's objectives: a `conversation`/`gift`/`gift again` target
+  is a resident or a wolf, `near resident` a resident, `enter place` a place, `camp cleared`/`bandit falls` a `camp_<cell>` of a
+  cell of the world (or `camp_story_<name>`, for L2); an objective's `item` is in the item catalogue. A quest's `board` is one
+  of the world's notice boards (the checkpoint's markets; a warning when none is saved). **Residents named** as `npc`,
+  `giver`, `from`, `like`, `subject`, any `resident` parameter, a scene's cast or an objective's target must have a home or a
+  work place (`dm.story_residents`) and be alive (`live.npc_state.alive`): "<id> has no place in the world yet", "<id> has
+  died". A `like` only warns, so does `npc.kill` of the dead; a `death` filter's `actor` and words may name the dead.
+  `references()` now returns its warnings (approval ignores them); `reference_problems()` lists every check with `blocks`.
+- **V3: the guide.** §7's fail rule filters `death` on `actor`, with the sentence, and a note that the examples use the test
+  town's ids (§2's reward words name the till, not the works).
+- **J1: one choice for several wolves** (`story_quests.Run.story_effect`, `choices`, `_offer_players`). An `npc.offer` with a
+  `player` is kept as `players` (a set of up to 5,000); the same id offered to another wolf adds them, the words and reply
+  the latest, who picked it kept; offered to everyone it replaces as before. An older state's `player` reads as a list of one.
+  The game already read `players`. The catalogue's help says so; the guide §7 "A choice for one wolf".
+- **N2: what the window knows of the wolf's own part.** The runner sends the program's id with `story.phase` (also a revise)
+  and `story.quests`; the game keeps it as the storyline's `templateId` (saved as ever). `Game::windowFacts` sets
+  `player.quest.<program>/<quest>` to each quest view's status and `player.story.<name>` from the view's new `talk` map, live
+  storykeeper stories in the order they began (the newest last, so its value wins). A version 2 variable may say `"talk":
+  true` (a `player` number, switch or text; `realm` accepted for J2; at most 8; a text's first value `[a-z0-9_]{1,40}`):
+  `story_quests.talk_map` puts each wolf's stored value in their journal entry as `talk` (digits, `yes`/`no`, the text), a text
+  no line could test is kept, not told, and noted once in the timeline ("Not told to residents"). `facts.json` "player" gains
+  the patterns `quest.*` (its seven states) and `story.*`; `talk::Library` reads a key by its pattern
+  (`player.quest.ninth-howl.1/where_king`) and never aliases a pattern. Approval warns when another live story tells residents
+  of a variable of the same name. The workbench's variable gets "told to residents (player.story.<name>)".
+- **C11: spared and protected for a while** (`Core/RatwGameStoryWorld.cpp` `applyStoryHold`, `dropStoryHolds`,
+  `sparedChanged`; `RatwGameTroubles.cpp` `isProtected`; `RatwWorld.cpp` `tendOldAge`). `npc.spare {npc, lasts: run |
+  campaign}` and `npc.unspare {npc}`; `npc.protect` gains `lasts` (`ever`, the default, the Dungeon Master's mark as it always
+  was; `run`; `campaign`). The runner's `order_of` sends the run, its visit and its campaign (`HOLD_ORDERS`); the game keeps
+  `storyHolds_[spare|protect][npc]` = owners (`run:<run>`, `campaign:<id>`), refuses a hold whose run is not a live story or a
+  campaign hold without a campaign, and a protect hold on a resident a Dungeon Master unprotected; the world skips a spared
+  resident in old age (`World::setStorySpared`; the world already had a `spared_`, the bandits'); a resident with a protect
+  owner is protected (after the Dungeon Master's unprotect mark). A story's `npc.unprotect` also drops its own protect owners.
+  `endStoryWorld` drops the run's owners (before its early return, so a story that held nothing else lets go too); the
+  runner sends `story.campaign.end {campaign}` once, when `run_ended` marks the campaign ended (`status<>'ended' RETURNING`), and
+  the game drops that campaign's owners. Saved with the checkpoint (`troublesSave`, `storyTalkSave`). `lasts: campaign` is
+  refused by `references(chapters=False)` (a warning in the Problems panel, which cannot know). The Campaigns list's campaign
+  card has **Let go of the campaign's holds…** when no chapter runs (op `campaign-release`, the owner or "may steer
+  campaigns": `release_campaign` queues `story.campaign.end`).
+- **C9: figures of the realm** (`story_runner.write_figure`, `restore_figure`, `order_of`; `dungeon_master.save_figure` now
+  calls `write_figure`). `figure.set {figure, role, npc | player | name, title?, known: realm | region | house, region?, house?,
+  about?}` and `figure.clear {figure}`, both `needsBuilder`: written to `live.figures` in the runner, as `faction.relation`
+  is; a resident's name from `dm.story_residents` (`npc_id` when they are in `live.npcs`), a wolf's from `game.characters` at
+  that moment; the row it replaced kept in the run's history (`entry.figure.previous`), then `voice.sync` with the figure's id.
+  The checks: exactly one of npc, player, name; `region` exactly with `known: region`, `house` with `house`; the role one of
+  `facts.json`'s `figure_<role>`; approval checks the town and the faction. The timeline's history row has **Undo this
+  figure…** (op `figure-undo {history}`, a builder on a hosted world): the old row put back, or the figure taken away.
+  `_may_release` and the hosted approval's words name the realm's figures.
+- **C8: talk memory** (`applyStoryTalk`, `storyRecall`; `Game::talkRecall`). `talk.remember {scope, town?, npc?, player?, key,
+  value, days, keep?}` and `talk.forget` (game orders, the run as target): owners `realm`, `town:<region>`,
+  `person:<npc>`, `pair:<min>|<max>` (talk's own pair key), in `Game::storyMemory_`, apart from talk's own memory. Caps: 64 an
+  owner and 8,192 in all; a pair 16 and 20,000 pair entries; the soonest to be forgotten goes first, noted once a game day
+  (`RATW_STORY_MEMORY`). **Recall**: `talkRecall` first recalls the story's for the same owner (and the realm's before a town's),
+  so talk's own overrides; a query with no `here.region` still gets the realm's. So `world.mem.<k>`, `self.mem.<k>` and
+  `pair.mem.<k>` lines play in the window and in ambient talk (a pair of two residents never matches a story's pair).
+  **Checks** (`validate_effect`, `_check_action_v2`, `_check_entry_effect`): the owner's parts exactly; a pair's `player` is
+  `$actor` in a participant trigger or `$each` in For each (a named wolf, a phase's opening or a world trigger's `$actor` are
+  refused: "Pair memory needs a wolf of the story"); keys `[a-z][a-z0-9_]{0,39}`, values `[a-z0-9_]{1,40}`; approval checks the
+  town. **Undo**: a run's memories without `keep` are forgotten at its end; `held.memory` lists what it wrote. Saved with the
+  checkpoint (`storyMemory`). The run's **Variables & timers** tab has **What residents remember** (`status`'s `memory`, read
+  from the checkpoint's `people.storyMemory`, for a program that remembers).
+- **C8 and T7: rumours** (`belief.plant`; `Data/Talk/claims.json` kinds `story.rumour` and `story.cleared`). `{subject,
+  claim, town, count 1-50, confidence 10-90, claimKind?}`, the subject as target: residents of the town (alive, with a home,
+  not the subject) ordered by `fnv(run|subject|claim|id)` believe it (`World::believe` with the kind set, source
+  `story:<run>`); planting again strengthens the same beliefs. The clearing is believed as **"never <claim>"** with the wording
+  "#x.name# #claim.text#", so it never merges with the rumour it answers (a holder's beliefs are kept one per subject and
+  words). The claim is a phrase that follows a name: a small letter first, 120 characters, no `#`, brackets or ids (Python's
+  `CLAIM_ID`, the game's `idInWords`).
+- **Workbench and console** (`Editor/`): pickers for `talkkey`, `talkvalue` and `figure` (the keys, values and figures the
+  program already uses: `effectValuesOf`), the purse picker's tills, the variable's "told to residents", the Timeline's Undo
+  this figure, the campaign card's Let go of the campaign's holds, What residents remember, `memoryOwnerText`,
+  `figureUndoText`. The render smoke's refs have a till.
+- **Guide and format**: `Docs/Story-Maker-guide.md` §4 "Campaign-long holds", §6 "Told to residents", §7 "A choice for one
+  wolf", "Its state in the window", "Purses that pay", §8 "Talk and rumour from a story" (the memory table, the recall order,
+  writing the lines, rumours and clearings, figures), §13 (figures need a builder; undo; letting go), §14 (holds, memory,
+  rumours and figures), §15 (a memory line that never plays; a refused purse), §16 (the limits); the reference regenerated
+  (`story_guide.py --write`; `--check` passes; examples for the five new effects that need agreeing values).
+  `Docs/story-programs.md` gains "Talk, rumours, figures, holds and purses".
+- **Sample** `story_v2_samples.TALK` ("The pledge at the stone", `v2-pledge`, in `all_samples()`, so both twins run it under
+  five seeds): two phases; a choice offered to each wolf who comes (J1), Ivo spared and Wren protected for the campaign, a
+  villain named, the realm's memory, a pair memory of each wolf who pledges and a value told to residents, three pennies from
+  Ivo's till, then a rumour, a clearing and the town's memory; two cases. It rehearses clean: nothing uncovered.
+- **Tests**: `Tests/story_world_tests.cpp` `phase1b` (a till by both spellings, and one nobody has; spared at 120 lives, the
+  unspared dies; two stories spare one, one lets go; protect for the run and Unprotect; realm, town, resident and pair recall
+  and order, Bo not seeing Ash's pair memory; the caps; forget; a rumour's three holders, the same three again, a clearing in
+  its own words, both wordings through claims.json, an id refused; all through a save; the run's end lets go and forgets but
+  for `keep`; the campaign's hold outlasts the chapter until `story.campaign.end`), `Tests/dialogue_tests.cpp`
+  `storyTalkInTheWindow` (with the test's own lines in a copy of Data/Talk: a choice for two wolves, one picked; a
+  `world.mem`, a `pair.mem` (Ash's, not Bo's), a `player.quest`, a `player.story` and a `self.mem` line played in the window;
+  `Town` takes a talk folder), `tools/test_story_talk.py` (the catalogue, purses and their accounts, the checks, the orders,
+  the sample; with a database: purses, residents placed and alive, quests' boards and objectives, the new effects' towns and a
+  campaign's hold, a figure written and put back), `test_story_quests.Phase1b` (J1, an older state, the `talk` map and its
+  checks), `test_story_native` (`test_the_talk_effects_match`, with `$each` pair memory), `test_story_campaigns`
+  (`story.campaign.end` once; an act stopped early let go), `workbench.test.ts` and `campaigns.test.ts` (the sentences, the
+  pickers' values, the purse names; who remembers; undo). Updated: the catalogue counts (78), the builder effects, the order
+  table, the guide's examples, the v2 sample count (112), the fixtures' residents placed (`fixture-homes`: V1 refuses an
+  unplaced one).
+- **Run**: ctest `-R "talk_|dialect|mantle_|story|storyline|troubles|dialogue|checkpoint|save_compat"` (38, all passed but
+  `save_compat_pg` skipped without a database) and the game, world and project behaviours, every `tools/test_story_*.py` but the three live ones, `test_dungeon_master`,
+  `test_talk_*`, `test_dialect_check`, `talk_lint` (unchanged baseline), the Editor's tests (143 and 78), type check, build and
+  render smoke (62 panels; the workbench over 108, 13 and 2 programs). A scratch Greyfen server built from this branch started
+  (port printed, page served) and was stopped. **Not run**: every test that needs the local PostgreSQL (`RATW_STORY_TEST_DSN`
+  and the throwaway databases) skipped here, because this worktree has no database settings and reading the main checkout's
+  was not allowed; so `references()` against a migrated database, the DB parts of `test_story_talk`, `test_story_campaigns`,
+  `test_story_effects` and the console tests, and a scratch Ridgemere 3 server, are still to run before the merge.
+- **Left or changed, and why**: the spec's `belief.plant` parameter `kind` is **`claimKind`** (an effect's `kind` is its own
+  name). `story.rumour` and `story.cleared` have the family `other` (an existing `claim_kind`, so the old replies answer them),
+  not a new `rumour`. The clearing is believed as "never <claim>" (above) rather than worded with `never`. `belief.forget`'s
+  `story.cleared` value and V2's "never"/"did not" warning wait for Phase 3 (J8, V2). Talk memory and the holds are saved
+  in the checkpoint's people section, not in the session hand-off's (`c->server`) or `carried` memory copies. The 400-day test
+  of a spared ninety-year-old is a 120-year-old for three days (a year's chance of one: the unspared one dies the first day,
+  every time). `figure.set`'s sentence names the figure's id and what is said about them (the catalogue asks every parameter
+  to be a slot). A figure written by the Dungeon Master keeps ids of 1 to 40 characters; a story's are 3 to 40. A pair's
+  `player` as a wolf variable or `{"field": "actor"}` waits for C1 (operands in effect parameters, Phase 2). Names of
+  residents in a claim are V2's (Phase 3). `RUNNER_VERSION` is `doc86-phase1b`.
+- **Going live** on `ratw_ridgemere3` needs no migration of its own; the game server restarted from this branch (it reads
+  the new checkpoint fields, absent at first), the story runner from this branch, the Editor released from it. Act I's
+  chapters can move onto a version that uses these by `migrate`; a version that holds residents for the campaign must be
+  approved as a chapter.

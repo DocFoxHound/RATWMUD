@@ -62,7 +62,7 @@ export function CampaignList({overview, live, names, open, holdAll, target, mayR
         {ruling && target && overview.thresholds && <AlertRules target={target} thresholds={overview.thresholds} done={() => setRuling(false)} />}
         {panel === 'vars' && target && <WorldVarsPanel target={target} names={names} mayChange={!!maySteerWorld} />}
         {panel === 'new' && target && <NewCampaign target={target} done={run => { setPanel(''); if (run) open(run); }} />}
-        <CampaignCards campaigns={overview.campaigns ?? []} open={open} runs={overview.runs} />
+        <CampaignCards campaigns={overview.campaigns ?? []} open={open} runs={overview.runs} target={target} maySteer={!!maySteerWorld} />
         {overview.runs.length === 0 ? <p className="hint camp-pad">No world stories in this world yet. Write one in Story Creator, rehearse it, approve and publish it: it shows here.</p>
             : <table className="dm-table camp-table"><thead><tr>
                 <th>Story</th><th>Status</th><th>Phase</th><th>Ready</th><th>Wolves</th><th>Missions</th><th>Last happened</th><th>Waiting on</th>

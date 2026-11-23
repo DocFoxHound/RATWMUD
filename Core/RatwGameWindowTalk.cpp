@@ -191,6 +191,23 @@ void Game::windowFacts(const std::string& playerId, const DialogueSession& d, ta
         else if (k == "asked_person" && f["player.asked"] == "none")
             f["player.asked"] = "person", f["here.person_asked"] = v.substr(0, bar);
     }
+    // Doc 86, N2: the wolf's own part in the live stories: each quest's state (player.quest.<program>/<quest>) and the values
+    // a story tells residents of (player.story.<name>), the newest run's last.
+    std::vector<const storylines::Storyline*> stories;
+    for (const auto& [id, s] : storylines_.all())
+        if (s.source == "storykeeper" && s.live() && s.questViews.count(playerId))
+            stories.push_back(&s);
+    std::stable_sort(stories.begin(), stories.end(), [](const auto* a, const auto* b) { return a->began < b->began; });
+    for (const auto* s : stories)
+    {
+        const auto& view = s->questViews.at(playerId);
+        if (!s->templateId.empty())
+            for (const auto& q : view.array("quests"))
+                if (const auto id = q.string("id"); !id.empty())
+                    f["player.quest." + s->templateId + "/" + id] = q.string("status");
+        for (const auto& [name, v] : view.object("talk").fields())
+            f["player.story." + name] = v.asString("");
+    }
     // The new lists' counts.
     for (const char* list : {"here.opinions", "here.kin", "here.people", "here.heard"})
         f[list] = std::to_string(windowItems(playerId, npcId, list).size());

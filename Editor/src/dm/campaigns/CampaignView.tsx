@@ -114,7 +114,8 @@ export function CampaignView({me, target, row, detail, items, events, names, now
                     <details><summary>The approved program (read only)</summary><pre className="camp-json">{JSON.stringify(detail.program, null, 2)}</pre></details>
                 </div>
                 : tab === 'timeline' ? <Timeline items={items} events={events} names={names} now={now.at} earlier={earlier} onMap={showOnMap}
-                    triggers={[...new Set(items.flatMap(i => (i.type === 'trigger' ? [i.trigger] : [])))]} cohort={state?.cohort ?? []} />
+                    triggers={[...new Set(items.flatMap(i => (i.type === 'trigger' ? [i.trigger] : [])))]} cohort={state?.cohort ?? []}
+                    undoFigure={canDirect ? (history, words) => { if (window.confirm(words + '?')) void act(() => storyProgram(target, 'figure-undo', {history}), 'The figure is put back.'); } : undefined} />
                 : tab === 'triggers' ? <TriggersPanel detail={detail} names={names} canSteer={canSteer} steer={setAsk} busy={busy} counts={firingCounts(items)}
                     target={steerable(row.status) ? target : undefined} />
                 : tab === 'state' ? <StatePanel detail={detail} names={names} now={now} items={items} steer={canSteer ? setAsk : undefined} busy={busy} />

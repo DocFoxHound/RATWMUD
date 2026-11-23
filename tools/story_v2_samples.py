@@ -259,7 +259,7 @@ READY = {
 
 
 def all_samples():
-    return [copy.deepcopy(LEDGER), copy.deepcopy(FLOW), copy.deepcopy(READY)]
+    return [copy.deepcopy(LEDGER), copy.deepcopy(FLOW), copy.deepcopy(READY), copy.deepcopy(TALK)]
 
 
 # ----- Doc 85, Phase 6: quests (tools/test_story_quests.py; both twins' parity, tools/test_story_native.py)
@@ -443,5 +443,68 @@ FACTS_WATCH = {
             quest_fact(1, 'conversation', 1, ASH, target='rm111'),
             quest_fact(2, 'trade done', 1.1, ASH, target='rm111', item='rope', detail='bought', quantity=1, coins=4),
         ], 'expect': ['watch'], 'expectVariables': {'player': {ASH: {'wolf': 0}}, 'story': {'world': 0}}},
+    ],
+}
+
+
+# ----- Doc 86, Phase 1b: a choice for each wolf who comes (J1), residents spared and protected for the campaign (C11), a
+# villain named (C9), the realm's memory and one resident's of each wolf (C8), a rumour and its clearing (T7), a value the
+# residents are told (N2), and a till that pays (SQ2). Approved as a chapter of a campaign (its holds last the campaign).
+TALK = {
+    'format': 'ratw-story-program', 'version': 2, 'id': 'v2-pledge', 'title': 'The pledge at the stone',
+    'audience': {'kind': 'players', 'players': [ASH, BIRCH, ELM]}, 'start': 'gather',
+    'variables': [
+        {'id': 'pledged', 'type': 'wolves', 'scope': 'story', 'note': 'Who pledged at the stone.'},
+        {'id': 'p_pledge', 'type': 'text', 'scope': 'player', 'talk': True, 'note': 'Told to residents: player.story.p_pledge.'},
+    ],
+    'phases': [
+        {'id': 'gather', 'journal': 'Ivo keeps the old stone: pledge to the town there, or do not.',
+         'effects': [
+             {'kind': 'npc.spare', 'npc': 'rm111', 'lasts': 'campaign'},
+             {'kind': 'npc.protect', 'npc': 'rm112', 'lasts': 'campaign'},
+             {'kind': 'figure.set', 'figure': 'nh_villain', 'role': 'villain', 'name': 'The Ledger Keeper', 'title': 'the keeper of the black ledger',
+              'known': 'realm', 'about': 'Nobody in Greyfen has seen the keeper; everyone has paid.'},
+             {'kind': 'talk.remember', 'scope': 'realm', 'key': 'nh_stage', 'value': 'waking', 'days': 30},
+         ],
+         'exits': [],
+         'triggers': [
+             {'id': 'came', 'on': 'arrival', 'audience': 'participant', 'actions': [
+                 {'do': 'effect', 'effect': {'kind': 'npc.offer', 'npc': 'rm111', 'id': 'pledge', 'words': 'I pledge to Greyfen.',
+                                             'reply': 'Then the stone knows you.', 'player': '$actor', 'once': True}}]},
+             {'id': 'pledge', 'on': 'dialogue choice', 'audience': 'participant', 'match': {'detail': 'pledge'}, 'once': 'member', 'actions': [
+                 {'do': 'set', 'var': 'p_pledge', 'value': 'greyfen'},
+                 {'do': 'list add', 'var': 'pledged', 'value': {'field': 'actor'}},
+                 {'do': 'effect', 'effect': {'kind': 'talk.remember', 'scope': 'pair', 'npc': 'rm111', 'player': '$actor', 'key': 'nh_pledge',
+                                             'value': 'pledged', 'days': 120, 'keep': True}},
+                 {'do': 'effect', 'effect': {'kind': 'character.grant', 'player': '$actor', 'coins': 3, 'purse': 'till:job:rm111',
+                                             'reason': 'the stone-keeper\'s penny'}},
+                 {'do': 'if', 'if': {'test': 'compare', 'left': {'among': {'list': 'pledged'}, 'of': 'all'}, 'op': '>=', 'right': 2},
+                  'then': [{'do': 'enter', 'phase': 'rumour'}]},
+             ]},
+         ]},
+        {'id': 'rumour', 'journal': 'Two have pledged; the town starts to talk.',
+         'effects': [
+             {'kind': 'belief.plant', 'subject': 'rm112', 'claim': 'was seen at the Customs House at midnight', 'town': 'greyfen',
+              'count': 6, 'confidence': 60},
+             {'kind': 'belief.plant', 'subject': 'rm113', 'claim': 'took the Customs House silver', 'town': 'greyfen', 'count': 4,
+              'confidence': 70, 'claimKind': 'story.cleared'},
+             {'kind': 'talk.remember', 'scope': 'town', 'town': 'greyfen', 'key': 'nh_stage', 'value': 'reckoning', 'days': 30},
+             {'kind': 'talk.forget', 'scope': 'realm', 'key': 'nh_stage'},
+         ],
+         'exits': []},
+    ],
+    'tests': [
+        {'name': 'Two wolves pledge; the town talks', 'cohort': [ASH, BIRCH, ELM], 'events': [
+            quest_fact(1, 'arrival', 1, ASH),
+            quest_fact(2, 'arrival', 1.1, BIRCH),
+            quest_fact(3, 'dialogue choice', 1.2, ASH, target='r', item='rm111', detail='pledge'),
+            quest_fact(4, 'dialogue choice', 1.3, ASH, target='r', item='rm111', detail='pledge'),
+            quest_fact(5, 'dialogue choice', 1.4, BIRCH, target='r', item='rm111', detail='pledge'),
+        ], 'expect': ['gather', 'rumour'],
+         'expectVariables': {'player': {ASH: {'p_pledge': 'greyfen'}, BIRCH: {'p_pledge': 'greyfen'}}}},
+        {'name': 'One wolf alone: the town stays quiet', 'cohort': [ASH, BIRCH, ELM], 'events': [
+            quest_fact(1, 'arrival', 1, ELM),
+            quest_fact(2, 'dialogue choice', 1.2, ELM, target='r', item='rm111', detail='pledge'),
+        ], 'expect': ['gather'], 'expectVariables': {'player': {ELM: {'p_pledge': 'greyfen'}}}},
     ],
 }

@@ -118,9 +118,11 @@ class ConsoleReads(unittest.TestCase):
             owner.execute('INSERT INTO world.worlds(id,name) VALUES (%s,%s)', (cls.world, 'Test world'))
             owner.execute('INSERT INTO game.checkpoints(world_id,schema_version,revision,payload) VALUES (%s,1,1,%s)',
                           (cls.world, '{"calendarDays":10}'))
+            # (Placed, with a home: doc 86's V1 refuses a resident with no place in the world.)
+            owner.execute("INSERT INTO world.areas(world_id,id,kind) VALUES (%s,'fixture-homes','cell')", (cls.world,))
             for npc, name in RESIDENTS.items():
                 owner.execute("""INSERT INTO live.npcs(world_id,id,name,role,age,voice,appearance,hours_start,hours_end,
-                    home_x,home_y,work_x,work_y,evening_x,evening_y) VALUES (%s,%s,%s,'civilian',4,1,'{}',8,12,0,0,0,0,0,0)""",
+                    home_area,home_x,home_y,work_x,work_y,evening_x,evening_y) VALUES (%s,%s,%s,'civilian',4,1,'{}',8,12,'fixture-homes',0,0,0,0,0,0)""",
                               (cls.world, npc, name))
             for wolf, name in WOLVES.items():
                 owner.execute('INSERT INTO game.characters(world_id,key,position,data) VALUES (%s,%s,1,%s::jsonb)',

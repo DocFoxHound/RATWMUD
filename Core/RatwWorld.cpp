@@ -3536,6 +3536,8 @@ void World::tendOldAge()
             continue;
         if (const auto* spec = society_.spec(id); spec && spec->protectedNpc)
             continue;
+        if (storySpared_.count(id))
+            continue;                               // (A story spares them: doc 86, C11.)
         // A year's chance by age (doc 64, Phase 8: Gompertz, doc 63's model): DeathA * e^(DeathB * age), and more for
         // the very young; about 1% at forty, 7% at sixty, 15% at seventy, a third at eighty. A day's share of it.
         const double yearly = std::min(1., Society::DeathA * std::exp(Society::DeathB * e.age) + (e.age < 5 ? Society::InfantDeath : 0.));

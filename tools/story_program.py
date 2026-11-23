@@ -273,7 +273,35 @@ def _param_ok(param, v, regions):
         return identifier(v) and v in (regions or {})
     if kind == 'bool':
         return type(v) is bool
+    # (Doc 86, C8 and C9: talk memory's keys and values, so a line's gate can test them; a figure's id, as live.figures has it.)
+    if kind == 'talkkey':
+        return isinstance(v, str) and TALK_KEY.fullmatch(v) is not None
+    if kind == 'talkvalue':
+        return isinstance(v, str) and TALK_VALUE.fullmatch(v) is not None
+    if kind == 'figure':
+        return isinstance(v, str) and FIGURE_ID.fullmatch(v) is not None
     return identifier(v) or (kind == 'wolf' and v == '$actor')
+
+
+TALK_KEY = re.compile(r'[a-z][a-z0-9_]{0,39}')
+TALK_VALUE = re.compile(r'[a-z0-9_]{1,40}')
+FIGURE_ID = re.compile(r'[a-z0-9_]{3,40}')
+TALK_SCOPES = {'realm': (), 'town': ('town',), 'npc': ('npc',), 'pair': ('npc', 'player')}
+PAIR_WORDS = 'Pair memory needs a wolf of the story: use it in a participant trigger (the acting wolf) or For each over wolves.'
+# (A rumour's phrase follows a name: "#x.name# was seen at the Customs House". Never an id, a symbol or a fill.)
+CLAIM_ID = re.compile(r'\b([a-z]{1,4}\d+[a-z0-9]*|[a-z0-9]+_[a-z0-9_]+|wolf-[a-z0-9-]+)\b')
+
+
+def figure_roles():
+    """The roles a figure may have: the talk library's world facts figure_<role> (Data/Talk/facts.json)."""
+    facts = json.loads((CATALOGUE_FILE.parents[1] / 'Talk/facts.json').read_text(encoding='utf-8'))
+    return tuple(k.removeprefix('figure_') for k in facts['world'] if k.startswith('figure_'))
+
+
+def check_claim(claim, pid):
+    require(claim == claim.strip() and claim[:1].islower() and not any(ch in claim for ch in '#[]{}\n') and not CLAIM_ID.search(claim),
+            f'{pid}: a rumour\'s claim is a phrase that follows a name, in small letters at first ("was seen at the Customs House"), '
+            'with no ids, # or brackets.')
 
 
 # Doc 85, 3.5 and Phase 7: what the runner does when the game refuses an effect it sent. Any effect the game applies may
@@ -314,7 +342,7 @@ def validate_effect(effect, pid, regions=None, scenes=None):
     if refusable(kind):
         check_refusal(effect, pid)
     if kind == 'character.grant':
-        require(quests.check_purse(effect['purse']), f'{pid}: name a purse that pays: town:<town>, town:<town>:works, till:<id> or chapter:<id>.')
+        require(quests.check_purse(effect['purse']), f'{pid}: n' + quests.PURSE_WORDS[1:])
     if kind == 'scene.play':
         scene = (scenes or {}).get(effect['scene'])
         require(
@@ -334,6 +362,24 @@ def validate_effect(effect, pid, regions=None, scenes=None):
         require(effect['text'].strip() == effect['text'] and '\n' not in effect['text'], f'{pid}: a story message is one line.')
     if kind == 'weather.set':
         require(('place' in effect) != ('town' in effect), f'{pid}: set the weather of one place or one town\'s streets.')
+    # (Doc 86, Phase 1b: talk memory's owner parts, a rumour's phrase, a figure's one name and where it is known.)
+    if kind in ('talk.remember', 'talk.forget'):
+        parts = TALK_SCOPES[effect['scope']]
+        for part in ('town', 'npc', 'player'):
+            require((part in effect) == (part in parts), f'{pid}: {"the realm" if not parts else effect["scope"]} memory names '
+                    + (' and '.join({'town': 'the town', 'npc': 'the resident', 'player': 'the wolf'}[x] for x in parts) or 'no town, resident or wolf')
+                    + ', and only that.')
+        if effect['scope'] == 'pair':
+            require(effect['player'] == '$actor', f'{pid}: {PAIR_WORDS}')
+    if kind == 'belief.plant':
+        check_claim(effect['claim'], pid)
+    if kind == 'figure.set':
+        require(sum(k in effect for k in ('npc', 'player', 'name')) == 1, f'{pid}: a figure is one resident, one wolf, or a name.')
+        require(effect['role'] in figure_roles(), f'{pid}: a figure\'s role is one of: {", ".join(figure_roles())}.')
+        known = effect.get('known', 'realm')
+        require(('region' in effect) == (known == 'region') and ('house' in effect) == (known == 'house'),
+                f'{pid}: a figure known in a town or land names it, and one known among a House names the House; only then.')
+        require('name' not in effect or (effect['name'].strip() == effect['name'] and '\n' not in effect['name']), f'{pid}: a figure\'s name is one line.')
     if kind in ('visitor.add', 'visitor.leave'):
         require(re.fullmatch(r'[a-z0-9][a-z0-9_-]{2,39}', effect['visitor']) is not None,
                 f'{pid}: a stranger\'s id is 3 to 40 small letters, digits, - and _.')
@@ -512,6 +558,8 @@ def _check_phase_head(p, phase, ids):
 
 def _check_entry_effect(effect, phase, speakers):
     pid = phase['id']
+    require(not (isinstance(effect, dict) and effect.get('kind') in ('talk.remember', 'talk.forget') and effect.get('scope') == 'pair'),
+            f'{pid}: {PAIR_WORDS}')
     validate_effect(effect, pid, phase.get('_regions'), phase.get('_scenes'))
     require(effect['kind'] not in quests.STORY_EFFECTS, f'{pid}: {effect["kind"]} goes in a trigger, not in what a phase sends as it opens.')
     quests.check_story_effect(effect, None, None)
@@ -1055,7 +1103,7 @@ def _initial_ok(kind, v, regions):
 
 def _check_variable(d, names, regions):
     """One declared variable (doc 85, 3.2): a unique name, a type, a scope, and its first value, a note and a label."""
-    shape(d, ('id', 'type', 'scope'), ('initial', 'note', 'show', 'clock'))
+    shape(d, ('id', 'type', 'scope'), ('initial', 'note', 'show', 'clock', 'talk'))
     require(identifier(d['id']) and d['id'] not in names, 'Give every variable a unique name.')
     require(d['type'] in triggers.VAR_TYPES and d['scope'] in triggers.SCOPES,
             'A variable has a type (' + ', '.join(triggers.VAR_TYPES) + ') and a scope (story, player, party, world).')
@@ -1065,7 +1113,18 @@ def _check_variable(d, names, regions):
             'A number, switch or timer may be shown, under a label of up to 60 characters.')
     require('initial' not in d or (d['type'] != 'timer' and _initial_ok(d['type'], d['initial'], regions)),
             f'The first value of "{d["id"]}" is not a {d["type"]}' + (' (a timer starts unset).' if d['type'] == 'timer' else '.'))
+    # (Doc 86, N2: a wolf's own value told to the residents they talk to, as player.story.<name> in the dialogue window.)
+    if 'talk' in d:
+        require(type(d['talk']) is bool, 'Told to residents: yes or no.')
+        require(not d['talk'] or (d['scope'] in TALK_VAR_SCOPES and d['type'] in ('number', 'switch', 'text')),
+                'Only a wolf\'s own number, switch or text may be told to residents (player.story.<name>).')
+        require(not d['talk'] or d['type'] != 'text' or 'initial' not in d or TALK_VALUE.fullmatch(d['initial']) is not None,
+                f'A text told to residents holds small letters, digits and _ (up to 40), so a line can test it: "{d["id"]}"\'s first value does not.')
     names.add(d['id'])
+
+
+TALK_VAR_SCOPES = ('player', 'realm')   # (Realm: doc 86's J2, Phase 8.)
+TALK_VARS_MAX = 8
 
 
 def _check_variables(p):
@@ -1074,6 +1133,17 @@ def _check_variables(p):
     names, regions = set(), set(region_index(p))
     for d in decls:
         _check_variable(d, names, regions)
+    require(sum(1 for d in decls if d.get('talk')) <= TALK_VARS_MAX, f'Tell residents of up to {TALK_VARS_MAX} variables.')
+
+
+def talk_value(d, v):
+    """A wolf's value as the dialogue window's player.story.<name> holds it (doc 86, N2): a number's digits, a switch's yes
+    or no, a text as it is when a line can test it (else None: stored, not told)."""
+    if d['type'] == 'switch':
+        return 'yes' if v else 'no'
+    if d['type'] == 'number':
+        return str(int(v)) if isinstance(v, (int, float)) and not isinstance(v, bool) else None
+    return v if isinstance(v, str) and TALK_VALUE.fullmatch(v) else None
 
 
 def validate(p):

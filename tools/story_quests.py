@@ -83,7 +83,12 @@ def check_purse(v):
     parts = v.split(':')
     if parts[0] == 'town':
         return 2 <= len(parts) <= 3 and bool(parts[1]) and (len(parts) == 2 or parts[2] in TOWN_PURSES)
+    if parts[0] == 'till' and len(parts) == 3:
+        return parts[1] == 'job' and bool(parts[2])   # (Doc 86, SQ2: the game's tills are till:job:<founder>.)
     return len(parts) == 2 and bool(parts[1])
+
+
+PURSE_WORDS = 'Name a purse that pays: town:<town>, till:job:<resident> or chapter:<id>.'
 
 
 def _check_objective(o, ids, regions):
@@ -238,7 +243,7 @@ def check_story_effect(effect, phase, t):
     kind = effect['kind']
     if kind not in STORY_EFFECTS:
         if kind == 'character.grant':
-            rules.require(check_purse(effect['purse']), 'Name a purse that pays: town:<town>, town:<town>:works, till:<id> or chapter:<id>.')
+            rules.require(check_purse(effect['purse']), PURSE_WORDS)
         return
     if phase is not None:
         rules.require(triggers.version(phase) == 2, 'This effect needs a version 2 story.')
@@ -704,10 +709,19 @@ class Run:
                 state.pop('hiddenTrackers', None)
             return
         if kind == 'npc.offer':
-            state.setdefault('offers', {})[effect['id']] = {
-                'npc': effect['npc'], 'words': effect['words'], 'reply': effect['reply'],
-                **({'player': effect['player'] if effect['player'] != '$actor' else actor} if effect.get('player') else {}),
-                'once': bool(effect.get('once')), 'picked': []}
+            # (Doc 86, J1: offered again with the same name to another wolf, the choice is theirs too: a set of wolves, the
+            # words and reply the latest; offered to every wolf, it is everyone's, as before.)
+            offers = state.setdefault('offers', {})
+            was = _offer_players(offers.get(effect['id']))
+            wolf_for = (effect['player'] if effect['player'] != '$actor' else actor) if effect.get('player') else None
+            entry = {'npc': effect['npc'], 'words': effect['words'], 'reply': effect['reply'], 'once': bool(effect.get('once')),
+                     'picked': list((offers.get(effect['id']) or {}).get('picked', [])) if wolf_for and was is not None else []}
+            if wolf_for:
+                players = list(was or [])
+                if wolf_for not in players and len(players) < AUDIENCE_CAP:
+                    players.append(wolf_for)
+                entry['players'] = players
+            offers[effect['id']] = entry
             return
         q = self.quests.get(effect.get('quest'))
         if q is None or not wolf:
@@ -777,7 +791,8 @@ def take_story_effects(p, phase, state, day, elapsed, push):
 def relevant(p):
     """Whether the quest machinery has anything to do for a program (a story without quests, with a fixed audience, is
     played exactly as before)."""
-    return bool(p.get('quests')) or joinable(p) or _uses_story_effects(p)
+    return bool(p.get('quests')) or joinable(p) or _uses_story_effects(p) or \
+        any(isinstance(d, dict) and d.get('talk') for d in p.get('variables', []) or [])   # (Doc 86, N2: told to residents.)
 
 
 def _uses_story_effects(p):
@@ -873,8 +888,33 @@ def trackers(p, state, wolf):
     return out
 
 
+def talk_map(p, state, wolf):
+    """What the residents a wolf talks to know of the wolf's own values (doc 86, N2: the variables marked `talk`): {name:
+    value} for the values stored, as the window's player.story.<name> holds them; a text no line could test is left out."""
+    out = {}
+    if p.get('version') != 2:
+        return out
+    own = state.get('counters', {}).get('player', {}).get(wolf, {})
+    for d in p.get('variables', []):
+        if d.get('talk') and d['scope'] == 'player' and d['id'] in own:
+            v = rules.talk_value(d, own[d['id']])
+            if v is not None:
+                out[d['id']] = v
+    return out
+
+
+def talk_unsaid(p, state, wolf):
+    """The `talk` values a wolf holds that no line could test (a text with spaces or capitals): stored, never told."""
+    own = state.get('counters', {}).get('player', {}).get(wolf, {}) if p.get('version') == 2 else {}
+    return [d['id'] for d in p.get('variables', []) if d.get('talk') and d['scope'] == 'player' and d['id'] in own
+            and rules.talk_value(d, own[d['id']]) is None]
+
+
 def journal(p, state, wolf):
     j = {'quests': views(p, state, wolf), 'trackers': trackers(p, state, wolf)}
+    talk = talk_map(p, state, wolf)
+    if talk:
+        j['talk'] = talk
     if wolf in state.get('toasts', {}):
         j['toast'] = state['toasts'][wolf]
     return j
@@ -899,9 +939,19 @@ def offers(p, state):
     return out
 
 
+def _offer_players(c):
+    """The wolves a story choice is for (None: every wolf of the story; doc 86, J1); an older state's one `player` is a list
+    of one."""
+    if not c:
+        return None
+    if 'players' in c:
+        return c['players']
+    return [c['player']] if c.get('player') else None
+
+
 def choices(state):
     return [{'id': cid, 'npc': c['npc'], 'words': c['words'], 'reply': c['reply'],
-             'players': [c['player']] if c.get('player') else None, 'once': c.get('once', False), 'picked': c.get('picked', [])}
+             'players': _offer_players(c), 'once': c.get('once', False), 'picked': c.get('picked', [])}
             for cid, c in sorted(state.get('offers', {}).items())]
 
 
@@ -934,7 +984,7 @@ def board(p, state):
 
 def fingerprint(p, state):
     """What the game's copy of the journals and offers depends on, to send them only when it changed."""
-    shown = [d['id'] for d in p.get('variables', []) if d.get('show')] if p.get('version') == 2 else []
+    shown = [d['id'] for d in p.get('variables', []) if d.get('show') or d.get('talk')] if p.get('version') == 2 else []
     return json.dumps([state.get('quests'), state.get('questOffers'), state.get('offers'), state['phase'],
                        state.get('toasts'), state.get('parties') if any(q.get('scope') == 'party' for q in p.get('quests', [])) else None,
                        state.get('counters') if shown else None], sort_keys=True, separators=(',', ':'), default=str)

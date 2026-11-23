@@ -351,6 +351,7 @@ export const WB_REFS: Refs = {
     places: [{id: 'reed_ford', kind: 'cell', name: 'Reed Ford', width: 64, height: 64, town: 'greyfen'}],
     items: [{id: 'rope', name: 'Rope (coil)', category: 'tool'}], factions: [{id: 'ridgemere_watch', name: 'The Ridgemere Watch'}],
     towns: [{id: 'greyfen', name: 'greyfen'}], markets: [], areas: [], ships: [], templates: [], projects: [],
+    tills: [{id: 'till:job:rm111', name: "Ivo Tarmarsh's till"}],   // (Doc 86, SQ2.)
 };
 export function renderWorkbenches(catalog: FullCatalogue, programs: Record<string, Program>): {html: Record<string, string>; edits: number; views: number} {
     const html: Record<string, string> = {};

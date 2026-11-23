@@ -367,10 +367,12 @@ class RuntimeTests(unittest.TestCase):
             'INSERT INTO game.checkpoints(world_id,schema_version,revision,payload) VALUES (%s,1,1,%s)',
             (self.world, '{"calendarDays":10}'),
         )
+        # (Placed, with a home: doc 86's V1 refuses a resident with no place in the world.)
+        self.conn.execute("INSERT INTO world.areas(world_id,id,kind) VALUES (%s,'fixture-homes','cell')", (self.world,))
         for npc in ('rm111', 'rm112', 'rm113', 'rm119'):
             self.conn.execute(
                 """INSERT INTO live.npcs(world_id,id,name,role,age,voice,appearance,hours_start,hours_end,
-                home_x,home_y,work_x,work_y,evening_x,evening_y) VALUES (%s,%s,%s,'civilian',4,1,'{}',8,12,0,0,0,0,0,0)""",
+                home_area,home_x,home_y,work_x,work_y,evening_x,evening_y) VALUES (%s,%s,%s,'civilian',4,1,'{}',8,12,'fixture-homes',0,0,0,0,0,0)""",
                 (self.world, npc, npc),
             )
         for faction in ('city_watch', 'road_company'):

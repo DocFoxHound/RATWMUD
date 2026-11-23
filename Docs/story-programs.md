@@ -263,6 +263,39 @@ version keeps the moment it was met when the phase and its Readiness are unchang
 counts) and `activeWolves`, and among their events the steps `{"check": "ready", "met": bool}` and `{"advance": "now" |
 "anyway" | "then"}`; the review lists `uncoveredReady`.
 
+## Talk, rumours, figures, holds and purses (doc 86, Phase 1b)
+
+**Talk memory.** `talk.remember {scope, town?, npc?, player?, key, value, days, keep?}` and `talk.forget {scope, town?, npc?,
+player?, key}` (game orders, target the run): `scope` `realm` (no other part), `town` (with `town`), `npc` (with `npc`) or
+`pair` (with `npc` and `player`, which must be `$actor` in a participant trigger or `$each` in For each over wolves, or a
+quest's reward; never at a phase's opening). `key` is `[a-z][a-z0-9_]{0,39}`, `value` `[a-z0-9_]{1,40}`, `days` 1 to 365. The
+game keeps them apart from talk's own memory (64 an owner, 16 a pair; 8,192 and 20,000 in all; the soonest to go first),
+recalls them as `world.mem.<key>` (the realm's, then the town's over it, then talk's own), `self.mem.<key>` and `pair.mem.<key>`
+(talk's own of the pair over it), saves them with the checkpoint (`people.storyMemory`), and forgets a run's when it ends
+unless `keep`. **Rumours.** `belief.plant {subject, claim, town, count 1-50, confidence 10-90, claimKind?}` (target the
+subject): `count` residents of the town (alive, with a home, not the subject; ordered by the run's seed) believe the claim
+with the kind `story.rumour` (Data/Talk/claims.json: "#x.name# #claim.text#") or, with `claimKind: "story.cleared"`, its
+clearing (believed as "never <claim>"). The claim is a phrase that follows a name: a small letter first, 120 characters, no
+`#`, brackets or ids. **Figures.** `figure.set {figure, role, npc | player | name, title?, known: realm | region | house,
+region?, house?, about?}` and `figure.clear {figure}` (needs a builder): the runner writes `live.figures` (as the Dungeon
+Master's Figures panel does: `story_runner.write_figure`), keeps the row it replaced in the run's history (`entry.figure`),
+and sends `voice.sync`; the op `figure-undo {history}` puts it back. **Holds.** `npc.spare {npc, lasts: run | campaign}`,
+`npc.unspare {npc}`, and `npc.protect`'s `lasts` (`ever`, the default and the mark it always was; `run`; `campaign`): the
+runner sends the run (and its campaign); the game keeps each resident's owners (`people.storyHolds`), skips a spared one in
+old age, counts a protected one as protected, drops a run's owners when it ends and a campaign's on `story.campaign.end`
+(sent once when the campaign ends; the op `campaign-release {campaign}` sends it for an act stopped early). `lasts:
+campaign` is refused unless the story is approved as a chapter. **Choices for a list of wolves.** `npc.offer` with a `player`
+offered again under the same id adds that wolf (`players`, up to 5,000; the words and reply the latest; who picked it kept).
+**Told to residents.** A `player` (later `realm`) variable of type number, switch or text may have `"talk": true` (at most 8):
+each wolf's stored value goes with their journal as `talk` (`{name: value}`: digits, `yes`/`no`, or text of `[a-z0-9_]{1,40}`;
+other text is kept, not told, noted once), and the window knows it as `player.story.<name>`; each quest view as
+`player.quest.<program id>/<quest id>` (the game keeps the program's id from `story.phase` and `story.quests`). **Purses.**
+`till:job:<founder>` (and `till:<founder>`, mapped to it) pays from a business's till. At approval every purse a program
+names (rewards, grants, `purse crossed`) must be an account of the world's latest checkpoint (a warning while it has none);
+`town:<id>:works|watch|church` is refused. **Approval also checks** a quest's objective targets and items, its `board`
+(one of the world's notice boards), and that every resident named (speaker, giver, subject, face, cast, objective target) has
+a place and is alive (a face, `like`, only warns; `npc.kill` of the dead only warns; a `death` filter may name the dead).
+
 ## Writing a program
 
 The portable format is `ratw-story-program`, version 1. A program has an ID, title, audience, opening phase, phases and rehearsal cases. The examples under `Data/Storylines/programs/` are complete programs. The catalogue returned by the author API lists every supported event and the fields of each effect.

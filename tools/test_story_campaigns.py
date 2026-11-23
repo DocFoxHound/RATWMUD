@@ -237,6 +237,18 @@ class Campaigns(unittest.TestCase):
         self.assertEqual(runner.campaigns(self.conn, self.world)[0]['status'], 'ended')
         best = self.conn.execute("SELECT value FROM dm.story_world_vars WHERE world_id=%s AND name='best'", (self.world,)).fetchone()[0]
         self.assertEqual(best, 2, 'the carried ropes, kept for the world')
+        # (Doc 86, C11: the campaign's holds on residents let go, once.)
+        self.settle()
+        ends = self.conn.execute("SELECT count(*) FROM dm.actions WHERE kind='story.campaign.end' AND target_id='ford'").fetchone()[0]
+        self.assertEqual(ends, 1, 'story.campaign.end is sent once')
+
+    def test_an_act_stopped_early_lets_go_of_its_holds(self):
+        # (Doc 86, C11: the console's "Let go of the campaign's holds".)
+        self.approve(muster(), CROSSING)
+        out = runner.release_campaign(self.conn, self.world, 'martin', 'ford')
+        kind, target = self.conn.execute('SELECT kind,target_id FROM dm.actions WHERE id=%s', (out['receipt'],)).fetchone()
+        self.assertEqual((kind, target), ('story.campaign.end', 'ford'))
+        self.assertRaisesRegex(ValueError, 'No such campaign', runner.release_campaign, self.conn, self.world, 'martin', 'nowhere')
 
     def test_a_chapter_started_now_runs_beside_the_one_that_started_it_and_never_twice(self):
         out = self.approve(muster(when='now', audience='list'), CROSSING)

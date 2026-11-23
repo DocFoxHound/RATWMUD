@@ -1911,6 +1911,112 @@ void storyQuestsInTheWindow()
     fs::remove_all(root);
 }
 
+// Doc 86, Phase 1b: a story's choice for a list of wolves (J1); what the window knows of the wolf's own part in a story,
+// player.quest.<program>/<quest> and player.story.<name> (N2); a world.mem and a pair.mem line a story's memory plays (C8).
+// The library is Data/Talk with five lines of the test's own in the resident's hub.
+void storyTalkInTheWindow()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-dialogue-story-talk-" + std::to_string(::getpid()));
+    fs::remove_all(root);
+    const auto worldPath = writeStrip(root / "world");
+    const auto talk = root / "talk";
+    fs::copy(RATW_SOURCE_DIR "/Data/Talk", talk, fs::copy_options::recursive);
+    {
+        std::ifstream in(talk / "dialogue" / "resident.tree");
+        std::stringstream text;
+        text << in.rdbuf();
+        auto tree = text.str();
+        const auto at = tree.find("say[player.asked=person");
+        expect(at != std::string::npos, "the resident's hub has its ledger lines");
+        const auto end = tree.find('\n', at) + 1;
+        tree.insert(end, "say[world.mem.nh_stage=reckoning priority=11] The reckoning's close, they say.\n"
+                         "say[pair.mem.nh_stone=brought priority=12] You're the one who brought my mother's stone.\n"
+                         "say[player.quest.ninth-howl.1/where_king=active priority=13] Still looking for the King, then?\n"
+                         "say[player.story.p_howl=coldwater priority=14] You pledged to Coldwater, didn't you?\n"
+                         "say[self.mem.nh_willa=met priority=15] I met Willa at the well.\n");
+        std::ofstream(talk / "dialogue" / "resident.tree") << tree;
+    }
+    {
+        talk::Library lib;
+        std::string problem;
+        expect(lib.load(talk.string(), problem), "the library with the story's lines loads: " + problem);
+    }
+    Town town(worldPath, (root / "save").string(), 120, true, 3 * 86400, "", "", talk.string());
+    auto& w = town.g.world();
+    town.enter(town.ash, 1, "player-ash", "Ash", 1, 9.5);
+    town.enter(town.bo, 2, "player-bo", "Bo", 1, 9.5);
+    town.enter(town.cy, 3, "player-cy", "Cy", 1, 12.5);
+    w.setTimeOfDay(12);
+    town.run(2);
+    const auto run = std::string("world-ninth-howl");
+    auto phase = parsed(R"({"title":"The Ninth Howl","phase":"one","journal":"A howl in the hills.","visit":1,"program":"ninth-howl.1"})");
+    phase.set("players", parsed("[\"" + town.ash.entityId + "\",\"" + town.bo.entityId + "\"]"));
+    expect(town.g.applyDmAct({"1", "story.phase", run, "dm", json::dump(phase)}).ok, "the story opens with Ash and Bo");
+    int n = 2;
+    const auto order = [&](const std::string& kind, const std::string& payload) {
+        auto p = parsed(payload);
+        p.set("run", run);
+        p.set("visit", 1);
+        return town.g.applyDmAct({std::to_string(++n), kind, run, "dm", json::dump(p)});
+    };
+    const auto quests = [&](const std::string& body) { return town.g.applyDmAct({std::to_string(++n), "story.quests", run, "dm", body}); };
+    // ---- J1: one choice for two wolves, one of whom has picked it; one for Ash alone.
+    expect(quests(R"({"visit":1,"program":"ninth-howl.1","choices":[
+        {"id":"pledge","npc":"u1","words":"I'll stand with Coldwater.","reply":"Then stand.","players":[")" + town.ash.entityId + R"(",")" + town.bo.entityId +
+                  R"("],"once":true,"picked":[")" + town.ash.entityId + R"("]},
+        {"id":"ask_king","npc":"u1","words":"Where is the King?","reply":"Nobody knows.","players":[")" + town.ash.entityId + R"("],"once":false,"picked":[]}]})").ok,
+           "the choices are told");
+    const auto ids = [&](const std::string& wolf) {
+        std::string out;
+        for (const auto& c : town.g.storyChoicesFor(wolf, "u1"))
+            out += c.kind + ":" + c.id + " ";
+        return out;
+    };
+    expect(ids(town.ash.entityId) == "choice:ask_king ", "Ash picked the pledge; the King's question is his: " + ids(town.ash.entityId));
+    expect(ids(town.bo.entityId) == "choice:pledge ", "Bo sees the pledge, not Ash's question: " + ids(town.bo.entityId));
+    expect(ids(town.cy.entityId).empty(), "Cy, outside the story, neither");
+    // ---- the window's lines.
+    const auto line = [&](Client& c) {
+        if (const auto* d = town.g.dialogueOf(c.entityId))
+            town.g.command(&c, cmd({{"type", "dialogue_close"}, {"session", d->id}, {"why", "closed"}}));
+        auto* u = w.entity("u1");
+        u->cellId = cellId(1);
+        u->position = {10.5, 9.5};
+        w.stop("u1");
+        town.place(c, 1, 9.5);
+        c.events.clear();
+        town.g.command(&c, cmd({{"type", "dialogue_open"}, {"npc", "u1"}, {"entry", "talk"}}));
+        const auto* d = lastOf(c, "dialogue");
+        const auto said = d ? d->string("line") : std::string();
+        if (const auto* open = town.g.dialogueOf(c.entityId))
+            town.g.command(&c, cmd({{"type", "dialogue_close"}, {"session", open->id}, {"why", "closed"}}));
+        return said;
+    };
+    expect(line(town.ash).find("reckoning") == std::string::npos, "nothing remembered yet: " + line(town.ash));
+    expect(order("talk.remember", R"({"scope":"realm","key":"nh_stage","value":"reckoning","days":30})").ok, "the realm remembers the stage");
+    expect(line(town.ash) == "The reckoning's close, they say.", "a world.mem line plays: " + line(town.ash));
+    expect(order("talk.remember", R"({"scope":"pair","npc":"u1","player":")" + town.ash.entityId + R"(","key":"nh_stone","value":"brought","days":60})").ok,
+           "u1 remembers Ash brought the stone");
+    expect(line(town.ash) == "You're the one who brought my mother's stone.", "a pair.mem line plays for Ash: " + line(town.ash));
+    expect(line(town.bo) == "The reckoning's close, they say.", "and not for Bo at the same resident: " + line(town.bo));
+    // ---- N2: the wolf's quest, and a value told to residents.
+    expect(quests(R"({"visit":1,"program":"ninth-howl.1","wolves":{")" + town.ash.entityId +
+                  R"(":{"quests":[{"id":"where_king","title":"Where is the King?","status":"active","objectives":[]}],"trackers":[]}}})").ok,
+           "Ash's journal is told");
+    expect(line(town.ash) == "Still looking for the King, then?", "player.quest plays for Ash: " + line(town.ash));
+    expect(line(town.bo) == "The reckoning's close, they say.", "not for Bo");
+    expect(quests(R"({"visit":1,"wolves":{")" + town.ash.entityId +
+                  R"(":{"quests":[{"id":"where_king","title":"Where is the King?","status":"done","objectives":[]}],"trackers":[],"talk":{"p_howl":"coldwater"}}}})").ok,
+           "Ash pledged to Coldwater, and found the King");
+    expect(line(town.ash) == "You pledged to Coldwater, didn't you?", "player.story plays: " + line(town.ash));
+    expect(quests(R"({"visit":1,"wolves":{")" + town.ash.entityId + R"(":{"quests":[],"trackers":[],"talk":{}}}})").ok, "Ash's view cleared");
+    expect(line(town.ash) == "You're the one who brought my mother's stone.", "and the line goes with it: " + line(town.ash));
+    // ---- C8: a resident's own memory, as self.mem.
+    expect(order("talk.remember", R"({"scope":"npc","npc":"u1","key":"nh_willa","value":"met","days":10})").ok, "u1 remembers Willa");
+    expect(line(town.bo) == "I met Willa at the well.", "a self.mem line plays: " + line(town.bo));
+    fs::remove_all(root);
+}
+
 } // namespace
 
 int main()
@@ -1928,6 +2034,7 @@ int main()
         windowTalk();
         windowMantle();
         storyQuestsInTheWindow();
+        storyTalkInTheWindow();
     }
     catch (const std::exception& e)
     {

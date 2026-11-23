@@ -694,6 +694,10 @@ def _check_action_v2(a, cx, address, depth, each, last):
         rules.validate_effect(effect, phase['id'], phase.get('_regions'), phase.get('_scenes'))
         require(effect['kind'] != 'npc.line', 'Set resident dialogue on phase entry.')
         rules.quests.check_story_effect(effect, phase, t)
+        # (Doc 86, C8: what one resident remembers of one wolf is for a wolf of the story: the acting one of a participant
+        # trigger, or the looped one.)
+        require(not (effect['kind'] in ('talk.remember', 'talk.forget') and effect.get('scope') == 'pair' and a['effect'].get('player') == '$actor'
+                     and t.get('audience') != 'participant'), rules.PAIR_WORDS)
         # (Doc 85, Phase 6: taking a wolf in, or offering or giving them a quest, may name the acting wolf from a trigger of
         # anyone in the world: that is how an open audience is joined.)
         require(a['effect'].get('player') != '$actor' or t.get('audience') == 'participant'

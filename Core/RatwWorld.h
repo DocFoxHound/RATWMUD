@@ -1620,6 +1620,9 @@ class World
     Result setPosture(const std::string& id, const std::string& posture);
     Result stop(const std::string& id);
     void holdForScene(const std::string& id);
+    // Doc 86, C11: the residents a story spares from old age (the Game keeps who spares whom; the world only skips them).
+    void setStorySpared(std::set<std::string> ids) { storySpared_ = std::move(ids); }
+    bool storySpared(const std::string& id) const { return storySpared_.count(id) > 0; }
     // Kills (true) or brings back (false) a character or NPC: stops them and lays them down, or stands them up.
     Result setDead(const std::string& id, bool dead);
     // Live changes (Dungeon Master): makes NPC `id` exactly as `candidate` (a fully validated world loaded from the
@@ -2748,6 +2751,7 @@ class World
     // Old age (the user, 2026-10-13): from seventy a resident may die, likelier each year, so the world's people turn
     // over: children are born to take their place (Society::tendCareers). Not those the DM has protected.
     void tendOldAge();
+    std::set<std::string> storySpared_;             // Residents old age passes by while a story spares them (doc 86, C11).
     // An open, walkable tile near (x, y) in a cell that no resident calls home, for someone new to sleep.
     // `given`: tiles handed out already and not yet anyone's home (a pass's arrivals: takeResidentRequests), left out too.
     bool freeSpotNear(const std::string& cellId, double& x, double& y,

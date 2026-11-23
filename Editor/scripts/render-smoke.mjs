@@ -130,7 +130,7 @@ print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), '
             'When it has run for', 'The purse must be a town, a till or a Chapter.', 'given by a trigger'],
         'Quest effects': ['Offer Who cut the rope? to the acting wolf', 'Show Name the one who cut it. of Who cut the rope? to the acting wolf',
             'Ivo Tarmarsh offers the choice accuse', 'Take the acting wolf into the story'],
-        'Quest pickers': ['Name the one who cut it.', 'greyfen&#x27;s treasury', 'greyfen&#x27;s Town Works', 'Add a reward', 'Pay a wolf from a purse', 'Give a wolf an item'],
+        'Quest pickers': ['Name the one who cut it.', 'greyfen&#x27;s treasury', 'Ivo Tarmarsh&#x27;s till', 'Add a reward', 'Pay a wolf from a purse', 'Give a wolf an item'],
         'New small quest': ['A small quest', 'Start from a personal-quest template', 'A tie: the same cart', 'Who gives it', 'What to do', 'The reward', 'coins, from a purse',
             'Make the small quest', 'Choose who gives it.'],
         'Campaigns (quests)': ['Quests', 'Rope for the carter', 'each wolf', 'from Ivo Tarmarsh', 'READY', '1 / 2', '✖', 'Give the quest…', 'Elm Sandpaw',

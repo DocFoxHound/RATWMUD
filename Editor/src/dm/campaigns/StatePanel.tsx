@@ -3,7 +3,7 @@
 // wolves, and which once-only triggers have fired; with Phase 2's edits (set a counter; fire, move or cancel a timer;
 // start one the program starts), each a command that asks first.
 import {useState} from 'react';
-import {changeText, dueText, nameOf, valueText, type ControlVariable, type Now, type RunDetail, type TimelineItem, type Value} from '../../lib/campaigns';
+import {changeText, dueText, memoryOwnerText, nameOf, valueText, type ControlVariable, type Now, type RunDetail, type TimelineItem, type Value} from '../../lib/campaigns';
 import type {SteerFn} from './Steer';
 
 export function StatePanel({detail, names, now, items, steer, busy = false}: {detail: RunDetail; names: Record<string, string>; now: Now; items: TimelineItem[];
@@ -119,6 +119,10 @@ export function StatePanel({detail, names, now, items, steer, busy = false}: {de
             return <li key={e.index}>to {e.to} when {e.on}: {votes.length} of {needed} ({votes.map(v => nameOf(names, v)).join(', ') || 'nobody yet'})</li>;
         })}</ul></>}
         {fired.length > 0 && <><h3>Fired once already</h3><ul>{fired.map(f => <li key={f.scope + f.k}>{f.k} ({f.scope}): {f.v.map(w => (w === '*' ? 'for everyone' : nameOf(names, w))).join(', ')}</li>)}</ul></>}
+        {(detail.memory?.length ?? 0) > 0 && <><h3>What residents remember</h3><table className="dm-table"><thead><tr><th>Who</th><th>What</th><th>Days left</th><th>After the story</th></tr></thead>
+            <tbody>{detail.memory!.map(m => <tr key={m.owner + '#' + m.key}><td>{memoryOwnerText(m.owner, names)}</td><td>{m.key} = {m.value}</td>
+                <td>{m.daysLeft == null ? 'for good' : m.daysLeft}</td><td>{m.keep ? 'kept' : 'taken back'}</td></tr>)}</tbody></table>
+            <p className="hint">As the game last saved it: residents' lines gated on world.mem, self.mem and pair.mem play while it lasts.</p></>}
         <p className="hint">The audience: {state.cohort.length} wolves, fixed when it was published.</p>
     </div>;
 }

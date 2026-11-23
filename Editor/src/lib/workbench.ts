@@ -106,7 +106,9 @@ export interface Trigger {
     enabled?: boolean;
 }
 /** A declared variable of a version 2 story (doc 85, 3.2). */
-export interface Variable {id: string; type: string; scope: string; initial?: unknown; note?: string; show?: string; clock?: string}
+export interface Variable {id: string; type: string; scope: string; initial?: unknown; note?: string; show?: string; clock?: string;
+    /** Doc 86, N2: a wolf's own value told to the residents they talk to (player.story.<name> in the dialogue window). */
+    talk?: boolean}
 export interface Exit {
     on: string; to: string; match?: Record<string, string>; afterDays?: number; percent?: number; players?: number; participant?: boolean;
     missions?: string[]; minCoins?: number; minQuantity?: number; prerequisites?: unknown[];
@@ -184,12 +186,25 @@ export interface Refs {
     doors?: {id: string; name: string; cell?: string}[]; mantles?: {id: string; name: string}[];
     /** Phase 10: the stories a chapter may start (drafts, releases, campaigns' chapters), and the world's declared variables. */
     stories?: {id: string; name: string; hint?: string}[]; worldVars?: {id: string; name: string; type: string; note?: string}[];
+    /** Doc 86, SQ2: the businesses' tills a reward may pay from (till:job:<founder>, as the last checkpoint has them). */
+    tills?: {id: string; name: string}[];
 }
 /** The kinds a picker of a type lists (a `character` is a wolf or a resident). */
 export const REF_KIND: Record<string, keyof Refs> = {
     resident: 'residents', wolf: 'wolves', place: 'places', faction: 'factions', town: 'towns', market: 'markets', area: 'areas',
     ship: 'ships', item: 'items', template: 'templates', project: 'projects', door: 'doors', mantle: 'mantles', story: 'stories',
 };
+/** Doc 86, Phase 1b: the values a program's effects give one parameter (talk memory's keys and values, figures' ids). */
+export function effectValuesOf(p: Program, kinds: string[], key: string): string[] {
+    const out = new Set<string>();
+    const effects = [...p.phases.flatMap(ph => ph.effects ?? []), ...(p.quests ?? []).flatMap(q => [...(q.rewards ?? []), ...(q.bonus ?? [])]),
+        ...[...(p.triggers ?? []), ...p.phases.flatMap(ph => ph.triggers ?? [])].flatMap(t => allActions(t.actions).flatMap(({a}) => a.do === 'effect' ? [a.effect] : []))];
+    for (const e of effects) if (kinds.includes(e.kind) && typeof e[key] === 'string' && e[key]) out.add(e[key] as string);
+    return [...out].sort();
+}
+export const talkKeysOf = (p: Program) => effectValuesOf(p, ['talk.remember', 'talk.forget'], 'key');
+export const talkValuesOf = (p: Program) => effectValuesOf(p, ['talk.remember'], 'value');
+export const figuresOf = (p: Program) => effectValuesOf(p, ['figure.set', 'figure.clear'], 'figure');
 /** Phase 9: the strangers (visitor.add) a program brings, by the ids it gives them. */
 export function visitorsOf(p: Program): string[] {
     const out = new Set<string>();
@@ -1309,13 +1324,12 @@ export function objectiveEvents(cat: Catalogue): CatEvent[] {
 /** Who pays a coin reward (doc 85, question 4: never minted): each town's treasury, works, watch and church, from the refs. */
 export function purseNames(refs: Refs | null): Record<string, string> {
     const out: Record<string, string> = {};
-    for (const t of refs?.towns ?? []) {
-        out['town:' + t.id] = `${t.name}'s treasury`;
-        for (const [k, w] of [['works', 'Town Works'], ['watch', 'watch'], ['church', 'church']]) out[`town:${t.id}:${k}`] = `${t.name}'s ${w}`;
-    }
+    for (const t of refs?.towns ?? []) out['town:' + t.id] = `${t.name}'s treasury`;
+    // (Doc 86, SQ2: a business's till pays as till:job:<founder>; no world has a town's works, watch or church purse.)
+    for (const t of refs?.tills ?? []) out[t.id] = t.name;
     return out;
 }
-export const PURSE = /^(town:[A-Za-z0-9_.-]{1,60}(:(works|watch|church))?|till:[A-Za-z0-9_.:-]{1,70}|chapter:[A-Za-z0-9_.:-]{1,70})$/;
+export const PURSE = /^(town:[A-Za-z0-9_.-]{1,60}(:(works|watch|church))?|till:(job:)?[A-Za-z0-9_.-]{1,70}|chapter:[A-Za-z0-9_.:-]{1,70})$/;
 const ID = /^[A-Za-z0-9_][A-Za-z0-9_.:-]{0,79}$/;
 export const isId = (v: string) => ID.test(v);
 

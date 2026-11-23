@@ -5,7 +5,7 @@
 import {useMemo, useState} from 'react';
 import {MapView} from '../MapView';
 import {surfaceFor} from '../../lib/surface';
-import {allActions, countersOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, REF_KIND, signalsOf, visitorsOf, type CatEvent, type CatItem, type Condition, type Operand, type Param,
+import {allActions, countersOf, figuresOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, REF_KIND, signalsOf, talkKeysOf, talkValuesOf, visitorsOf, type CatEvent, type CatItem, type Condition, type Operand, type Param,
     type Program, type Slot} from '../../lib/workbench';
 import {useBench} from './context';
 import {ConditionNode} from './TriggerView';
@@ -47,7 +47,7 @@ export function useOptions(type: string): Option[] {
         if (type === 'mission') return program.phases.flatMap(p => (p.missions ?? []).map(m => ({id: m.id, name: m.title || m.id, group: p.id})));
         // (Phase 6: the story's quests; who pays a coin reward, by town.)
         if (type === 'quest') return (program.quests ?? []).map(q => ({id: q.id, name: q.title || q.id, hint: q.summary}));
-        if (type === 'purse') return Object.entries(purseNames(refs)).map(([id, name]) => ({id, name, group: id.split(':').length > 2 ? 'Town services' : 'Town treasuries'}));
+        if (type === 'purse') return Object.entries(purseNames(refs)).map(([id, name]) => ({id, name, group: id.startsWith('till:') ? 'Tills' : 'Town treasuries'}));
         const kind = REF_KIND[type];
         const list = kind ? (refs?.[kind] as Option[] | undefined) ?? [] : [];
         if (type === 'item') return (refs?.items ?? []).map(i => ({id: i.id, name: i.name, group: i.category}));
@@ -222,6 +222,10 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
     else if (type === 'counter') body = <NamePicker names={[...new Set(countersOf(program).map(c => c.key))]} value={slot.value} pick={one} noun="counter"/>;
     else if (type === 'cue') body = <NamePicker names={cues ?? []} value={slot.value} pick={one} noun="cue"/>;
     else if (type === 'offer') body = <NamePicker names={offersOf(program)} value={slot.value} pick={one} noun="story choice"/>;
+    // (Doc 86, Phase 1b: a talk memory's key and value, small letters, digits and _; a figure of the realm's id.)
+    else if (type === 'talkkey') body = <NamePicker names={talkKeysOf(program)} value={slot.value} pick={v => one(v.toLowerCase())} noun="memory key (nh_stage)"/>;
+    else if (type === 'talkvalue') body = <NamePicker names={talkValuesOf(program)} value={slot.value} pick={v => one(v.toLowerCase())} noun="value (reckoning)"/>;
+    else if (type === 'figure') body = <NamePicker names={figuresOf(program)} value={slot.value} pick={v => one(v.toLowerCase())} noun="figure's id"/>;
     // (Phase 9: a stranger the story brings, by the id it gives them.)
     else if (type === 'visitor') body = <NamePicker names={visitorsOf(program)} value={slot.value} pick={one} noun="stranger's id"/>;
     else if (type === 'objective') {
@@ -245,7 +249,7 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
                 onClick={() => one(v === slot.param?.default ? undefined : v)}>{slot.param?.words?.[v] ?? v}</button>)}</div> : undefined;
         body = <><SearchList options={options} value={slot.value} pick={one} placeholder={'Find ' + (slot.label || type)} extra={extra && here ? <>{extra}{here}</> : extra ?? here}/>
             {!['phase', 'region', 'scene', 'mission', 'quest'].includes(type) && <EnterId value={slot.value} pick={one}
-                label={type === 'purse' ? 'Or a purse: town:<town>, town:<town>:works, till:<id>, chapter:<id>' : undefined}/>}</>;
+                label={type === 'purse' ? 'Or a purse: town:<town>, till:job:<resident>, chapter:<id>' : undefined}/>}</>;
     }
     return <div className="wb-picker" role="dialog" aria-label={'Choose ' + (slot.label || type)} onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } }}>
         <header><strong>Choose {slot.label || type}</strong>{clearable && slot.value !== undefined && <button type="button" onClick={() => pick({[key]: undefined})}>Any (no filter)</button>}

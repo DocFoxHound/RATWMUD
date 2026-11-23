@@ -339,7 +339,7 @@ void Game::storyWatchTick(double real)
 std::string Game::storyPurseAccount(const std::string& purse) const
 {
     // (As character.grant reads a reward's purse: a town's treasury by its town, or the one treasury of a world without
-    // towns on its roads; town:<id>:works, till:<id> and chapter:<id> are accounts by those names.)
+    // towns on its roads; town:<id>:works, till:job:<id> and chapter:<id> are accounts by those names.)
     const auto& society = world_.society();
     if (purse.rfind("town:", 0) == 0 && purse.find(':', 5) == std::string::npos)
     {
@@ -351,6 +351,10 @@ std::string Game::storyPurseAccount(const std::string& purse) const
         if (world_.towns().empty() && society.account("treasury"))
             return "treasury";
     }
+    // (Doc 86, SQ2: a business's till is the account till:job:<founder>; till:<id> names it when no till:<id> account is.)
+    if (purse.rfind("till:", 0) == 0 && purse.rfind("till:job:", 0) != 0 && !society.account(purse) &&
+        society.account("till:job:" + purse.substr(5)))
+        return "till:job:" + purse.substr(5);
     return purse;
 }
 

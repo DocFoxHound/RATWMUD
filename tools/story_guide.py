@@ -43,6 +43,12 @@ EXAMPLE = {
     'faction.relation': {'faction': 'watch', 'other': 'road-company', 'stance': 'tense', 'disposition': -30, 'reason': 'the blockade'},
     'story.tracker': {'shown': False, 'var': 'ropes'},
     'visitor.add': {'visitor': 'pale-rider', 'name': 'The Pale Rider', 'like': 'rm111', 'cell': 'greyfen-square', 'x': 12, 'y': 9, 'minutes': 60},
+    # (Doc 86, Phase 1b.)
+    'talk.remember': {'scope': 'town', 'town': 'greyfen', 'key': 'ford_open', 'value': 'yes', 'days': 30},
+    'talk.forget': {'scope': 'town', 'town': 'greyfen', 'key': 'ford_open'},
+    'belief.plant': {'subject': 'rm111', 'claim': 'was seen at the ford at midnight', 'town': 'greyfen', 'count': 6, 'confidence': 60},
+    'figure.set': {'figure': 'ford_villain', 'role': 'villain', 'npc': 'rm111', 'title': 'the ford breaker', 'known': 'region', 'region': 'greyfen'},
+    'figure.clear': {'figure': 'ford_villain'},
 }
 GROUP_NOTES = {
     'flow': 'Version 2 only. Nested lists of actions: up to 24 actions in a trigger counting nested ones, three deep.',

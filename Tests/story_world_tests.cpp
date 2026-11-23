@@ -5,6 +5,7 @@
 // marker) undone; the journal's notes and the maps' markers in the wolf's journal view; and what is held kept with the
 // story through a save.
 #include "test_purse.h"
+#include "RatwClaims.h"
 #include "RatwGame.h"
 #include "RatwStorylines.h"
 #include "RatwWorld.h"
@@ -282,6 +283,180 @@ void worldEffects()
     fs::remove_all(root);
     fs::remove(save);
 }
+
+// Doc 86, Phase 1b (Core/RatwGameStoryWorld.cpp): a business's till by either spelling; residents spared from old age and
+// protected for a run or a campaign (and let go); what residents remember of a story (the realm, a town, a resident, a
+// resident about one wolf: recalled in that order, capped, taken back at the run's end unless kept, through a save); a
+// rumour and its clearing believed by residents of a town, chosen by the run's seed.
+void phase1b()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyworld-1b-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    const auto world = writeDoors(root);
+    const auto run = std::string("world-ninth-howl"), other = std::string("world-pack");
+    {
+        Town t(world, save);
+        auto& w = t.g.world();
+        t.enter(t.ash, 1, "ash", "Ash", 0, 8.5);
+        t.enter(t.bo, 2, "bo", "Bo", 0, 10.5);
+        int n = 100;
+        const auto open = [&](const std::string& id) {
+            auto phase = parsed(R"({"title":"The Ninth Howl","phase":"one","journal":"The howl is coming.","visit":1,"program":"ninth-howl.1"})");
+            auto players = json::Value::array();
+            players.push(t.ash.entityId);
+            players.push(t.bo.entityId);
+            phase.set("players", players);
+            return t.g.applyDmAct({std::to_string(++n), "story.phase", id, "dm", json::dump(phase)}).ok;
+        };
+        expect(open(run) && open(other), "two stories open");
+        const auto order = [&](const std::string& kind, const std::string& target, const std::string& payload, const std::string& by = {}) {
+            auto p = parsed(payload.empty() ? "{}" : payload);
+            if (!p.has("run")) p.set("run", by.empty() ? run : by);
+            if (!p.has("visit")) p.set("visit", 1);
+            return t.g.applyDmAct({std::to_string(++n), kind, target, "dm", json::dump(p)});
+        };
+
+        // ---- SQ2: a till pays by till:<founder> as by till:job:<founder>.
+        auto& soc = w.society();
+        expect((soc.account("till:job:um") || soc.openAccount("till:job:um")) && soc.shift("treasury", "till:job:um", "", 0, 200, "test till"),
+               "Merchant u's till has 200p more");
+        const auto cash = [&](const std::string& a) { return soc.account(a) ? soc.account(a)->cash : -1; };
+        const auto ash0 = cash(t.ash.entityId), till0 = cash("till:job:um");
+        auto r = t.g.applyEconomyCommand("character.grant", t.ash.entityId, parsed(R"({"coins":5,"purse":"till:um","reason":"for the rope"})"));
+        expect(r.ok && cash(t.ash.entityId) == ash0 + 5 && cash("till:job:um") == till0 - 5, "till:um pays from till:job:um: " + r.message);
+        r = t.g.applyEconomyCommand("character.grant", t.ash.entityId, parsed(R"({"coins":4,"purse":"till:job:um","reason":"for the net"})"));
+        expect(r.ok && cash(t.ash.entityId) == ash0 + 9 && cash("till:job:um") == till0 - 9, "and till:job:um the same: " + r.message);
+        expect(!t.g.applyEconomyCommand("character.grant", t.ash.entityId, parsed(R"({"coins":4,"purse":"till:nobody","reason":"x"})")).ok,
+               "a till nobody has pays nothing");
+
+        // ---- C11: spared from old age. At 120 a resident dies the first day (a year's chance of one); spared, never.
+        w.entity("u1")->age = 120;
+        w.entity("u2")->age = 120;
+        w.entity("s1")->age = 120;
+        expect(order("npc.spare", "u1", "").ok && t.g.storyHoldOwners("spare", "u1") == std::set<std::string>{"run:" + run} && w.storySpared("u1"),
+               "u1 is spared by the story");
+        expect(order("npc.spare", "s1", R"({"lasts":"campaign","campaign":"the-ninth-howl"})").ok, "s1 is spared for the campaign");
+        expect(!order("npc.spare", "s2", R"({"lasts":"campaign"})").ok, "only a chapter of a campaign spares for the campaign");
+        expect(order("npc.spare", "u1", "", other).ok && t.g.storyHoldOwners("spare", "u1").size() == 2, "the pack spares u1 too");
+        for (int day = 0; day < 3; ++day)
+        {
+            w.advanceCalendar(1);
+            t.run(.25);
+        }
+        expect(!w.entity("u1")->dead && !w.entity("s1")->dead, "the spared live on");
+        expect(w.entity("u2")->dead, "u2, not spared, dies of old age");
+        r = order("npc.unspare", "u1", "", other);
+        expect(r.ok && t.g.storyHoldOwners("spare", "u1") == std::set<std::string>{"run:" + run} && w.storySpared("u1") &&
+                   contains(r.message, "another story still does"), "the pack lets go; the story still spares u1: " + r.message);
+
+        // ---- C11: protected for the run (and for good, as ever).
+        expect(!t.g.residentProtected("u3"), "u3 is not protected");
+        expect(order("npc.protect", "u3", R"({"lasts":"run"})").ok && t.g.residentProtected("u3"), "u3 protected while the story runs");
+        expect(!order("npc.kill", "u3", "").ok && !w.entity("u3")->dead, "a story never kills them");
+        expect(order("npc.protect", "s3", R"({"lasts":"run"})", other).ok && t.g.residentProtected("s3"), "the pack protects s3");
+        expect(order("npc.unprotect", "s3", "", other).ok && !t.g.residentProtected("s3"), "and its Unprotect lets go");
+
+        // ---- C8: what residents remember.
+        const auto here = w.townIdOf(w.entity("u1")->cellId);
+        expect(!here.empty(), "u1 stands in a town: " + here);
+        expect(order("talk.remember", run, R"({"scope":"realm","key":"nh_stage","value":"waking","days":30})").ok, "the realm remembers");
+        auto q = t.g.talkQuery("u1", t.ash.entityId, "", {});
+        expect(q.facts["world.mem.nh_stage"] == "waking", "u1 recalls the realm's: " + q.facts["world.mem.nh_stage"]);
+        expect(order("talk.remember", run, R"({"scope":"town","town":")" + here + R"(","key":"nh_stage","value":"reckoning","days":30})").ok,
+               "the town remembers");
+        q = t.g.talkQuery("u1", t.ash.entityId, "", {});
+        expect(q.facts["world.mem.nh_stage"] == "reckoning", "the town's overrides the realm's");
+        expect(order("talk.remember", run, R"({"scope":"npc","npc":"u1","key":"nh_willa","value":"met","days":10})").ok, "u1 remembers");
+        expect(order("talk.remember", run, R"({"scope":"pair","npc":"u1","player":")" + t.ash.entityId + R"(","key":"nh_stone","value":"brought","days":60,"keep":true})").ok,
+               "u1 remembers Ash brought the stone, kept after the story");
+        expect(!order("talk.remember", run, R"({"scope":"pair","npc":"u1","player":"player-nobody","key":"nh_stone","value":"brought","days":60})").ok,
+               "pair memory names a wolf of the story");
+        expect(!order("talk.remember", run, R"({"scope":"realm","key":"Nh Stage","value":"x","days":3})").ok, "a key is small letters");
+        q = t.g.talkQuery("u1", t.ash.entityId, "", {});
+        expect(q.a.facts["mem.nh_willa"] == "met" && q.facts["pair.mem.nh_stone"] == "brought", "u1's own, and the pair's for Ash");
+        q = t.g.talkQuery("u1", t.bo.entityId, "", {});
+        expect(!q.facts.count("pair.mem.nh_stone"), "not for Bo");
+        // (The caps: a town's 64, a pair's 16; the soonest to be forgotten goes first.)
+        for (int k = 0; k < 70; ++k)
+            order("talk.remember", run, R"({"scope":"town","town":"oakhaven","key":"k)" + std::to_string(k) + R"(","value":"v","days":)" + std::to_string(1 + k) + "}");
+        const auto& mem = t.g.storyMemory();
+        expect(mem.at("town:oakhaven").size() == 64 && !mem.at("town:oakhaven").count("k0") && mem.at("town:oakhaven").count("k69"),
+               "a town keeps 64: the soonest gone first");
+        const auto pairOwner = "pair:" + std::min(std::string("u1"), t.ash.entityId) + "|" + std::max(std::string("u1"), t.ash.entityId);
+        for (int k = 0; k < 20; ++k)
+            order("talk.remember", run, R"({"scope":"pair","npc":"u1","player":")" + t.ash.entityId + R"(","key":"p)" + std::to_string(k) +
+                                            R"(","value":"v","days":)" + std::to_string(100 + k) + "}");
+        expect(mem.at(pairOwner).size() == 16 && mem.at(pairOwner).count("nh_stone") == 0 && mem.at(pairOwner).count("p19"),
+               "a pair keeps 16 (the stone, soonest to go, went first)");
+        expect(order("talk.remember", run, R"({"scope":"pair","npc":"u1","player":")" + t.ash.entityId + R"(","key":"nh_stone","value":"brought","days":200,"keep":true})").ok,
+               "the stone remembered again");
+        expect(order("talk.forget", run, R"({"scope":"town","town":"oakhaven","key":"k69"})").ok && !mem.at("town:oakhaven").count("k69"), "forgotten");
+
+        // ---- C8 and T7: a rumour, and its clearing.
+        r = order("belief.plant", "u1", R"({"town":")" + here + R"(","claim":"was seen at the mill at midnight","count":3,"confidence":60})");
+        expect(r.ok, "the rumour is planted: " + r.message);
+        std::vector<std::string> holders;
+        for (const auto& [id, e] : w.entities())
+            if (const auto* list = w.beliefsOf(id))
+                for (const auto& b : *list)
+                    if (b.subject == "u1" && b.kind == "story.rumour" && b.claim == "was seen at the mill at midnight" && b.source == "story:" + run)
+                        holders.push_back(id);
+        expect(holders.size() == 3 && std::find(holders.begin(), holders.end(), "u1") == holders.end(), "three residents of the town hold it, not u1");
+        r = order("belief.plant", "u1", R"({"town":")" + here + R"(","claim":"was seen at the mill at midnight","count":3,"confidence":60})");
+        std::size_t again = 0;
+        for (const auto& id : holders)
+            for (const auto& b : *w.beliefsOf(id))
+                again += b.subject == "u1" && b.kind == "story.rumour";
+        expect(r.ok && again == 3, "planted again, the same three hold it once each");
+        r = order("belief.plant", "u1", R"({"town":")" + here + R"(","claim":"took the mill's silver","count":2,"confidence":70,"claimKind":"story.cleared"})");
+        std::size_t cleared = 0;
+        for (const auto& [id, e] : w.entities())
+            if (const auto* list = w.beliefsOf(id))
+                for (const auto& b : *list)
+                    cleared += b.subject == "u1" && b.kind == "story.cleared" && b.claim == "never took the mill's silver";
+        expect(r.ok && cleared == 2, "two believe the clearing, in its own words");
+#ifdef RATW_SOURCE_DIR
+        {
+            std::ifstream file(std::string(RATW_SOURCE_DIR) + "/Data/Talk/claims.json");
+            std::stringstream text;
+            text << file.rdbuf();
+            std::string problem;
+            expect(claims::load(text.str(), problem), "claims.json loads: " + problem);
+            claims::Words words;
+            words.xName = "Neighbour u1";
+            words.text = "was seen at the mill at midnight";
+            expect(claims::said("story.rumour", "they", words) == "Neighbour u1 was seen at the mill at midnight", "gossip tells the rumour");
+            words.text = "never took the mill's silver";
+            expect(claims::said("story.cleared", "they", words) == "Neighbour u1 never took the mill's silver", "and the clearing");
+            claims::clear();
+        }
+#endif
+        expect(!order("belief.plant", "u1", R"({"town":")" + here + R"(","claim":"is rm111","count":3,"confidence":60})").ok, "never an id");
+        t.g.save();
+    }
+    {
+        // ---- kept through a save; the run ends and lets go.
+        Town t(world, save);
+        auto& w = t.g.world();
+        const auto& mem = t.g.storyMemory();
+        expect(mem.count("realm") && mem.at("realm").count("nh_stage") && mem.count("town:oakhaven") && mem.at("town:oakhaven").size() == 63,
+               "the memories come back with the save");
+        expect(t.g.storyHoldOwners("spare", "u1").size() == 1 && w.storySpared("u1") && t.g.storyHoldOwners("spare", "s1").size() == 1 &&
+                   t.g.residentProtected("u3"), "and the holds");
+        expect(t.g.applyDmAct({"300", "story.stop", run, "dm", "{}"}).ok, "the story stops");
+        expect(!w.storySpared("u1") && !t.g.residentProtected("u3"), "its holds are let go");
+        expect(w.storySpared("s1"), "the campaign's hold outlasts the chapter");
+        expect(!mem.count("realm") && !mem.count("town:oakhaven"), "what it had residents remember is taken back");
+        bool kept = false;
+        for (const auto& [owner, memos] : mem)
+            kept |= owner.rfind("pair:", 0) == 0 && memos.count("nh_stone");
+        expect(kept, "but what was kept stays");
+        expect(t.g.applyDmAct({"301", "story.campaign.end", "the-ninth-howl", "story-runner", "{}"}).ok && !w.storySpared("s1"),
+               "the campaign ends: its hold is let go");
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
 } // namespace
 
 int main()
@@ -289,6 +464,7 @@ int main()
     try
     {
         worldEffects();
+        phase1b();
     }
     catch (const std::exception& error)
     {
