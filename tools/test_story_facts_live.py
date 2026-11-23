@@ -156,6 +156,84 @@ class FactsLive(unittest.TestCase):
             why = story_runner.why_not(db, world, run, {'trigger': 'first-in'})
             self.assertEqual(why['events'][0]['verdict'], 'fired')
 
+    def test_a_residents_list_is_watched_and_sent_again(self):
+        """Doc 86, J6: a story counting the residents of a list in a region: the phase's watch names the list's first
+        members; when a trigger adds one, the runner sends the watch again (story.watch), the game takes it, and the facts it
+        writes then have the new resident too."""
+        ids = list(self.players.values())
+        self.move('ash', 20, 21)
+        self.move('fern', 21, 21)
+
+        def characters():
+            with self.db() as db:
+                return db.execute('SELECT count(*) FROM game.characters WHERE key=ANY(%s)', (ids,)).fetchone()[0] == 2
+        self.until(characters, 50, 'the wolves in the checkpoint')
+        with self.db() as db:
+            world = story_runner.world_id(db)
+            first, second = [r[0] for r in db.execute('SELECT id FROM dm.story_residents WHERE world_id=%s ORDER BY id LIMIT 2', (world,))]
+        at = {'test': 'count in region', 'region': 'square', 'op': '>=', 'value': 1, 'who': 'residents', 'list': 'crew'}
+        p = {'format': 'ratw-story-program', 'version': 2, 'id': 'square-crew', 'title': 'The crew in the square',
+             'audience': {'kind': 'players', 'players': ids}, 'start': 'watch', 'regions': [SQUARE],
+             'variables': [{'id': 'crew', 'type': 'residents', 'scope': 'story', 'initial': [first]},
+                           {'id': 'seen', 'type': 'number', 'scope': 'story'}],
+             'phases': [{'id': 'watch', 'journal': 'Who of the crew is in the square?', 'effects': [], 'exits': [], 'triggers': [
+                 {'id': 'more', 'on': 'region occupied', 'audience': 'participant', 'match': {'target': 'square'},
+                  'actions': [{'do': 'list add', 'var': 'crew', 'value': second}]},
+                 {'id': 'count', 'on': 'region entered', 'audience': 'participant', 'match': {'target': 'square'}, 'if': at,
+                  'actions': [{'do': 'add', 'var': 'seen', 'value': 1}]}]}],
+             'tests': [{'name': 'none', 'cohort': ids, 'events': [], 'expect': ['watch']}]}
+        self.assertTrue(story_program.review(p)['passed'])
+        with self.db() as db:
+            approval = story_runner.approve(db, world, 'test-host', p, story_program.digest(p))
+            run = story_runner.publish(db, world, approval['ticket'])['run']
+            phase = db.execute("SELECT payload FROM dm.actions WHERE kind='story.phase' AND target_id=%s", (run,)).fetchone()[0]
+        self.assertEqual(phase['watch']['residents'], [first], 'the list\'s members, as it starts')
+        self.assertNotIn('residentLists', phase['watch'], 'the game is sent residents, never lists')
+        done, errors = threading.Event(), []
+
+        def runner_loop():
+            while not done.is_set():
+                try:
+                    with self.db() as db:
+                        story_runner.tick_run(db, world, run, lambda: story_runner.game_day(db, world))
+                except Exception as exc:  # noqa: BLE001 - shown in the test thread
+                    errors.append(exc)
+                    break
+                done.wait(0.1)
+        worker = threading.Thread(target=runner_loop, daemon=True)
+        worker.start()
+        self.addCleanup(worker.join, 5)
+        self.addCleanup(done.set)
+
+        def applied(kind):
+            def check():
+                with self.db() as db:
+                    row = db.execute('SELECT status,payload FROM dm.actions WHERE kind=%s AND target_id=%s ORDER BY id DESC LIMIT 1',
+                                     (kind, run)).fetchone()
+                    return row if row and row[0] != 'queued' else None
+            return check
+        self.assertEqual(self.until(applied('story.phase'), 20, 'the phase applied')[0], 'applied')
+        with self.db() as db:
+            self.assertFalse(db.execute("SELECT 1 FROM dm.actions WHERE kind='story.watch' AND target_id=%s", (run,)).fetchone(),
+                             'nothing sent again while the list is as it was')
+        self.clients.request('command', 'ash', command={'type': 'path', 'x': 33.5, 'y': 21.5})
+        status, payload = self.until(applied('story.watch'), 30, 'the watch sent again once the list grew')
+        self.assertEqual(status, 'applied', payload)
+        self.assertEqual(payload['watch']['residents'], sorted([first, second]))
+        self.assertEqual(payload['visit'], 1)
+        time.sleep(1.5)
+        self.clients.request('command', 'fern', command={'type': 'path', 'x': 34.5, 'y': 22.5})
+
+        def facts_with_both():
+            with self.db() as db:
+                row = db.execute('SELECT facts FROM game.story_facts WHERE world_id=%s ORDER BY as_of_event DESC LIMIT 1', (world,)).fetchone()
+                return row and set(row[0].get('residents', {})) >= {first, second}
+        self.until(facts_with_both, 40, 'the facts written with both of the crew')
+        self.assertFalse(errors, errors)
+        with self.db() as db:
+            sent = db.execute("SELECT count(*) FROM dm.actions WHERE kind='story.watch' AND target_id=%s", (run,)).fetchone()[0]
+        self.assertEqual(sent, 1, 'sent again once, not every tick')
+
 
 if __name__ == '__main__':
     unittest.main()

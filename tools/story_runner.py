@@ -350,6 +350,19 @@ def _resident_sites(program):
                 yield path, at, target, 'target'
 
 
+def region_ground(conn, world, region):
+    """Doc 86, L1: the kinds of ground (Data/Wild/animals.json's) inside a story region as the world's terrain has them, or
+    None when its place is not a world cell (an interior: no hunt begins there)."""
+    import world_store
+    cells = world_store.load_ground(conn, world, [region['cell']])
+    cell = cells.get(region['cell'])
+    if not cell:
+        return None
+    glyphs = rules.animal_ground()
+    rows = cell['terrain'] or []
+    return {glyphs[ch] for row in rows[region['y1']:region['y2'] + 1] for ch in row[region['x1']:region['x2'] + 1] if ch in glyphs}
+
+
 def talk_names(program):
     """The variables a program tells residents of (doc 86, N2: `talk: true`, player or realm scope)."""
     return sorted(d['id'] for d in (program.get('variables') or []) if isinstance(d, dict) and d.get('talk'))
@@ -498,6 +511,22 @@ def world_checks(conn, world, program, chapters=False):
                        AND status IN ('approved','running','paused','held')""", (world,))}
             if e['story'] not in stories and e['story'] != program.get('id'):
                 add(path, at, f'No story "{e["story"]}" is approved or running in this world yet: its news reaches nobody until one is.', False)
+    # Doc 86, L1: an animal staged where the ground has none of its habitats is a warning ("a bear on open water").
+    staged = [(path, at, e) for path, at, e in _effect_sites(program, quests_too=True) if e.get('kind') == 'hunt.stage'
+              and isinstance(e.get('species'), str) and e['species'] in rules.animal_habitats() and isinstance(e.get('region'), str)]
+    if staged:
+        regions = rules.region_index(program)
+        for path, at, e in staged:
+            region = regions.get(e['region'])
+            if not region:
+                continue
+            ground = region_ground(conn, world, region)
+            habitats = rules.animal_habitats()[e['species']]
+            if ground is None:
+                add(path, at, f'{region["cell"]} is not a place out in the world: no hunt begins there.', False)
+            elif not set(habitats) & ground:
+                add(path, at, f'The {e["species"]} lives on {", ".join(sorted(habitats))}; the ground of {e["region"]} is '
+                    f'{", ".join(sorted(ground)) or "none a hunt can use"}. It is staged there all the same.', False)
     # Doc 86, J3: a side story counts as a finished Story only in a campaign chapter.
     for qi, q in enumerate(program.get('quests', []) if isinstance(program.get('quests'), list) else []):
         if isinstance(q, dict) and quests.closure_of(q) == 'side' and not chapters:
@@ -576,6 +605,8 @@ def entry_effects(phase, state):
 
 def enter(conn, run, program, who, state, cursor, cause, quiet=False):
     phase = rules.phase_of(program, state)
+    if watch(program).get('residentLists'):
+        state['watchSent'] = _watch_key(watch_now(program, state))   # (Doc 86, J6: the residents this visit's watch names.)
     state.pop('arrivalEffects', None)
     state.pop('skipped', None)
     state.pop('quietEntry', None)
@@ -614,8 +645,9 @@ def enter(conn, run, program, who, state, cursor, cause, quiet=False):
             'previousMissions': previous,
             'regions': program.get('regions', []),
             'lines': [e for e in phase['effects'] if e['kind'] == 'npc.line'],
-            # (Doc 85, Phase 8: what the game is to tell this story, the facts and the watched events: {} costs nothing.)
-            **({'watch': watch(program)} if watch(program) else {}),
+            # (Doc 85, Phase 8: what the game is to tell this story, the facts and the watched events: {} costs nothing. Doc 86,
+            # J6: with the residents its lists hold now.)
+            **({'watch': watch_now(program, state)} if watch(program) else {}),
         },
     )
     conn.execute(
@@ -768,6 +800,7 @@ def action(effect, actor):
         'npc.unprotect': 'npc',
         'npc.spare': 'npc',     # (Doc 86, C11.)
         'npc.unspare': 'npc',
+        'npc.howl': 'npc',      # (Doc 86, J5: a resident howls.)
         'npc.revive': 'npc',
         'character.injury': 'player',
         'ship.storm': 'ship',
@@ -835,6 +868,51 @@ def watch(program):
             _WATCHES.clear()
         _WATCHES[key] = rules.watch_of(program)
     return _WATCHES[key]
+
+
+WATCH_RESIDENTS = 2000   # (Core's WatchMost: residents watched, all stories together.)
+
+
+def watch_now(program, state):
+    """The watch as the game is sent it now (doc 86, J6): the program's, with the members of every residents list a count in
+    a region reads (their values in this run's state, a world list's as loaded) among its watched residents."""
+    w = watch(program)
+    lists = w.get('residentLists')
+    if not lists:
+        return w
+    decls = rules.variables_of(program)
+    members = set(w.get('residents', ()))
+    for name in lists:
+        d = decls.get(name)
+        if not d or d['scope'] not in ('story', 'world'):
+            continue
+        value = (rules.triggers.var_store(state, d['scope'], None) or {}).get(name, rules.triggers.initial(d))
+        if isinstance(value, list):
+            members.update(v for v in value if isinstance(v, str) and v)
+    out = {k: v for k, v in w.items() if k != 'residentLists'}
+    if members:
+        out['residents'] = sorted(members)[:WATCH_RESIDENTS]
+    return out
+
+
+def _watch_key(w):
+    return hashlib.sha256(json.dumps(w.get('residents', []), sort_keys=True).encode()).hexdigest()[:16]
+
+
+def resend_watch(conn, run, program, state, who):
+    """Doc 86, J6: when the residents a count in a region reads have changed since the watch was last sent (a list added to,
+    taken from, or another story's world list), the game is sent the watch again (`story.watch`, for the visit it is in).
+    True when it was."""
+    if not state or not state.get('visits') or not watch(program).get('residentLists'):
+        return False
+    w = watch_now(program, state)
+    key = _watch_key(w)
+    if state.get('watchSent') == key:
+        return False
+    queue(conn, who, 'story.watch', run, {'watch': w, 'visit': state['visits']})
+    state['watchSent'] = key
+    conn.execute("UPDATE dm.story_releases SET state=jsonb_set(state,'{watchSent}',to_jsonb(%s::text)) WHERE id=%s", (key, run))
+    return True
 
 
 def wants_facts(program):
@@ -1042,6 +1120,8 @@ WORLD_ORDERS = {
     'talk.remember': None, 'talk.forget': None, 'belief.plant': 'subject',
     # (Doc 86, Phase 3: a wolf named by a title (C4), a resident's words for one wolf (C5), a rumour put to rest (J8).)
     'title.give': 'player', 'title.take': 'player', 'npc.greet': 'npc', 'belief.forget': 'subject',
+    # (Doc 86, L1: an animal waiting for the next hunt in one of the story's regions; the game holds it for the run.)
+    'hunt.stage': None,
 }
 
 
@@ -1059,7 +1139,7 @@ def world_order(effect, actor, run, visit, phase):
     else:
         target = e.pop(key)
     payload = {**e, 'run': run, 'visit': visit}
-    if kind == 'story.tell' and 'region' in e:
+    if kind in ('story.tell', 'hunt.stage') and 'region' in e:
         payload['region'] = phase['_regions'][e['region']]
     if kind in ('event.add', 'event.cancel'):
         payload['kind'] = payload.pop('event')
@@ -2054,6 +2134,9 @@ def tick_run(conn, world, run, clock):
     finally:
         if holder.get('loaded') is not None:
             world_save(conn, world, run, holder['program'], holder['state'], holder['loaded'])
+        if holder.get('state') and holder.get('who') and watch(holder['program']).get('residentLists') and conn.execute(
+                "SELECT status='running' FROM dm.story_releases WHERE id=%s", (run,)).fetchone()[0]:
+            resend_watch(conn, run, holder['program'], holder['state'], holder['who'])   # (Doc 86, J6.)
         if holder.get('state') and holder['state'].get('notices'):
             # (Doc 86, C12a: the tick's news told after every save, and what is left kept for the next tick.)
             tell_notices(conn, world, run, holder['program'], holder['state'])
@@ -2120,7 +2203,7 @@ def _tick_run(conn, world, run, clock, holder):
         holder['left'] = 'game'
         return   # (Moving onto a new version: nothing is read until the game has the new version's words; settle_move.)
     _players_in(conn, run, state)
-    holder.update(program=p, state=state, loaded=world_load(conn, world, p, state))
+    holder.update(program=p, state=state, loaded=world_load(conn, world, p, state), who=who)
     phase = rules.phase_of(p, state)
 
     def save(**more):
@@ -3299,7 +3382,7 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
 # after, in the command's row and in dm.audit. A command can release only what was approved (5.1, rule 4): it fires a
 # trigger the program has, enters a phase it has, sets a counter it names; nothing adds a trigger or changes a rule.
 
-RUNNER_VERSION = 'doc86-phase4'
+RUNNER_VERSION = 'doc86-phase5'
 COMMAND_KINDS = ('hold', 'resume', 'stop', 'signal', 'fire', 'enable', 'disable', 'enter', 'set', 'timer', 'mission',
                  'order', 'tell', 'scene', 'migrate', 'objective', 'quest', 'participant', 'advance')
 # Flow commands move the story (dispatch a fact, run actions, open a visit, send the journal): they wait while the run is
@@ -3738,6 +3821,8 @@ class Steer:
         world_save(self.conn, self.world, self.run, self.program, self.state, self.world_loaded)
         if self.state:
             tell_notices(self.conn, self.world, self.run, self.program, self.state)   # (Doc 86, C12a.)
+            if (status or self.status) == 'running':
+                resend_watch(self.conn, self.run, self.program, self.state, self.by)   # (Doc 86, J6: a list changed by hand.)
         self.conn.execute(
             'UPDATE dm.story_releases SET state=%s::jsonb,cursor=%s,status=%s,problem=%s WHERE id=%s',
             (_dump(self.conn, self.run, self.state), self.cursor, status or self.status, self.problem, self.run))
@@ -4334,7 +4419,11 @@ class Steer:
             'revise': True, 'phase': state['phase'], 'journal': phase['journal'], 'title': new_program['title'], 'program': new_program['id'],
             'players': state['cohort'], 'visit': state['visits'], 'end': False, 'guestVoices': phase.get('guestVoices', []),
             'missions': rules.mission_snapshot(phase, state), 'previousMissions': [], 'regions': new_program.get('regions', []),
-            'lines': [e for e in phase['effects'] if e['kind'] == 'npc.line'], 'watch': watch(new_program)})
+            'lines': [e for e in phase['effects'] if e['kind'] == 'npc.line'], 'watch': watch_now(new_program, state)})
+        if watch(new_program).get('residentLists'):
+            state['watchSent'] = _watch_key(watch_now(new_program, state))
+        else:
+            state.pop('watchSent', None)
         state['moveReceipt'] = receipt
         self.note_order(receipt)
         self.conn.execute(
@@ -5448,7 +5537,9 @@ def static_refs():
     items = json.loads((DATA / 'Items/items.json').read_text())['items']
     templates = json.loads((DATA / 'Storylines/templates.json').read_text())['templates']
     projects = json.loads((DATA / 'Town/projects.json').read_text())['kinds']
-    return {'items': [{'id': i['id'], 'name': i.get('name') or i['id'], 'category': i.get('category', '')} for i in items],
+    animals = json.loads((DATA / 'Wild/animals.json').read_text())['species']   # (Doc 86, L1: hunt.stage's animal.)
+    return {'species': [{'id': a['id'], 'name': a.get('name') or a['id'], 'habitats': sorted(a.get('habitats') or {})} for a in animals],
+            'items': [{'id': i['id'], 'name': i.get('name') or i['id'], 'category': i.get('category', '')} for i in items],
             'templates': [{'id': t['id'], 'name': t.get('title') or t['id']} for t in templates if t.get('source') == 'dm'],
             'projects': [{'id': k['id'], 'name': k.get('title') or k.get('name') or k['id']} for k in projects],
             'injuries': list(rules.INJURY_TYPES)}

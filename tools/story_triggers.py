@@ -61,6 +61,7 @@ CONDITIONS_V2 = ('compare', 'switch', 'in list', 'phase is', 'visit is', 'timer'
 STANCES = ('war', 'hostile', 'tense', 'neutral', 'friendly', 'allied')
 WOLF_STATES = ('downed', 'hurt', 'wanted', 'held')
 RESIDENT_STATES = ('alive', 'dead', 'indoors', 'out of doors')
+COUNTED = ('wolves', 'residents')   # (Doc 86, J6: who a count in a region counts.)
 RESIDENT_HAS = ('job', 'mood', 'mantle', 'town', 'post')   # (Doc 86, C13b: the post they hold.)
 # Doc 86, J10: a wolf's Gift, its tier or its family (Data/Gifts/families.json, the playable ones).
 GIFT_TIERS = ('normal', 'gifted', 'quickened')
@@ -84,7 +85,8 @@ OBJECTIVE_STATES = ('done', 'failed', 'to do', 'hidden')
 # (Each facts condition: its keys besides `test`, and the optional ones.)
 FACT_SHAPES = {
     'wolf here': ((), ('who',)), 'wolf in region': (('region',), ('who',)), 'wolf in place': (('place',), ('who',)),
-    'wolf in town': (('town',), ('who',)), 'wolf indoors': (('is',), ('who',)), 'count in region': (('region', 'op', 'value'), ()),
+    'wolf in town': (('town',), ('who',)), 'wolf indoors': (('is',), ('who',)),
+    'count in region': (('region', 'op', 'value'), ('who', 'list')),   # (Doc 86, J6: the residents of a list, too.)
     'carries': (('item', 'op', 'value'), ('who',)), 'coins': (('op', 'value'), ('who',)), 'standing': (('faction', 'op', 'value'), ('who',)),
     'reputation': (('town', 'op', 'value'), ('who',)), 'wolf is': (('state', 'is'), ('who',)),
     'wolf has': (('what', 'value'), ('who',)), 'party size': (('op', 'value'), ('who',)),
@@ -707,7 +709,15 @@ def _check_fact_condition(c, phase, each):
     kind = c['test']
     needed, optional = FACT_SHAPES[kind]
     rules.shape(c, ('test', *needed), optional)
-    if 'who' in c:
+    if kind == 'count in region':
+        # (Doc 86, J6: the story's wolves, or the residents of a list of the story or the world.)
+        who = c.get('who', 'wolves')
+        require(who in COUNTED, 'Count the story\'s wolves or the residents of a list.')
+        require(('list' in c) == (who == 'residents'), 'Counting residents names their list, and only then.')
+        if 'list' in c:
+            d = _decl(phase, c['list'], ('residents',), 'list of residents')
+            require(d['scope'] in ('story', 'world'), 'Count the residents of a list the story or the world keeps (not one kept for each wolf).')
+    elif 'who' in c:
         _check_who(c['who'], each)
     if 'op' in c:
         ops = ('=', '!=', '>=', '<=') if kind == 'relation is' else tuple(COMPARE)
@@ -1556,6 +1566,18 @@ def fact_test(c, x):
         r = x.phase.get('_regions', {}).get(c['region'])
         if r is None:
             return None, None
+        if c.get('who') == 'residents':
+            # (Doc 86, J6: the listed residents the facts have, alive and inside; none of them known: unknown.)
+            listed = value_of({'var': c['list']}, x)
+            if listed is MISSING or not isinstance(listed, list):
+                return None, None
+            res = f.get('residents') if isinstance(f.get('residents'), dict) else {}
+            ids = sorted({i for i in listed if isinstance(i, str)})
+            known = [res[i] for i in ids if isinstance(res.get(i), dict)]
+            if ids and not known:
+                return None, None
+            n = sum(1 for one in known if one.get('alive') is True and _inside(r, one))
+            return COMPARE[c['op']](n, c['value']), n
         cohort = set(x.state.get('cohort', ()))
         n = sum(1 for wid, w in wolves.items() if wid in cohort and isinstance(w, dict) and _inside(r, w))
         return COMPARE[c['op']](n, c['value']), n

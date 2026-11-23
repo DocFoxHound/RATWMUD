@@ -49,6 +49,8 @@ EXAMPLE = {
     'belief.plant': {'subject': 'rm111', 'claim': 'was seen at the ford at midnight', 'town': 'greyfen', 'count': 6, 'confidence': 60},
     'figure.set': {'figure': 'ford_villain', 'role': 'villain', 'npc': 'rm111', 'title': 'the ford breaker', 'known': 'region', 'region': 'greyfen'},
     'figure.clear': {'figure': 'ford_villain'},
+    # (Doc 86, Phase 5: the bear at the tarn.)
+    'hunt.stage': {'region': 'square', 'species': 'bear', 'count': 1, 'minutes': 120},
 }
 GROUP_NOTES = {
     'flow': 'Version 2 only. Nested lists of actions: up to 24 actions in a trigger counting nested ones, three deep.',

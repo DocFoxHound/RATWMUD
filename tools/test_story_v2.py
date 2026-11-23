@@ -657,6 +657,50 @@ class Phase2Values(unittest.TestCase):
 
 
 
+class Phase5Howls(unittest.TestCase):
+    """Doc 86, Phase 5: the tarn (story_v2_samples.HOWLS): a resident's howl and a staged bear as the story's effects, the
+    howls of its wolves counted, the crew at the ropes, a chorus of three calling the hunt and the bear's kill ending the
+    quest; both twins alike."""
+
+    def review(self, events=None, native=True):
+        p = copy.deepcopy(samples.HOWLS)
+        if events is not None:
+            case = p['tests'][0]
+            case['events'] = events(case['events'])
+            for key in ('expectQuests', 'expectVariables', 'expectEffects'):
+                case.pop(key, None)
+            case['expect'] = ['gather']
+        if native:
+            return rules.review(p)
+        with patch('story_native.interpreter', return_value=None):
+            return rules.review(p)
+
+    def test_the_tarn_rehearses_clean_in_both_twins(self):
+        native, python = self.review(), self.review(native=False)
+        self.assertTrue(native['passed'] and not native['uncovered'], native)
+        self.assertEqual(native, python)
+
+    def test_a_chorus_of_two_calls_nothing(self):
+        report = self.review(lambda ev: ev[:5])
+        self.assertTrue(report['passed'], report['tests'][0])
+        self.assertEqual(report['tests'][0]['path'], ['gather'])
+
+    def test_a_bear_killed_away_from_the_tarn_is_not_old_brown(self):
+        report = self.review(lambda ev: [*ev[:6], {**ev[6], 'x': 9}])
+        self.assertTrue(report['passed'], report['tests'][0])
+        self.assertEqual(report['tests'][0]['quests'], {'bear': {samples.ASH: 'active'}})
+
+    def test_the_new_events_are_mission_evidence_and_watched(self):
+        for kind in ('howled', 'chorus closed'):
+            self.assertIn(kind, rules.MISSION_EVENTS)
+            self.assertIn(kind, rules.WATCHED_EVENTS)
+        self.assertIn('quantity', rules.MISSION_MEASURES)
+        self.assertIn('chorus closed', rules.MISSION_MEASURES['quantity'])
+        w = rules.watch_of(samples.HOWLS)
+        self.assertEqual(set(w['events']) & {'howled', 'chorus closed', 'night falls', 'hunted'}, {'howled', 'chorus closed', 'night falls'})
+        self.assertEqual(w['residentLists'], ['crew'])
+
+
 def _many(actions, n, counters, variables=(), native=False, seed='seed-1'):
     """Doc 86, Phase 3: a trigger fired for a story of `n` wolves (w0000...), their counters given; the state after it."""
     import time

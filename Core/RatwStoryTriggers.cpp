@@ -734,6 +734,29 @@ struct Dispatch2
         if (kind == "count in region")
         {
             if (!input["regions"].has(c.string("region"))) return std::nullopt;
+            if (c.string("who", "wolves") == "residents")
+            {
+                // (Doc 86, J6: the listed residents the facts have, alive and inside; none of them known: unknown.)
+                Value o = Value::object();
+                o.set("var", c.string("list"));
+                const auto listed = value(o, x);
+                if (!listed || !listed->isArray()) return std::nullopt;
+                const auto& residents = section("residents");
+                std::set<std::string> ids;
+                for (const auto& v : listed->items())
+                    if (v.isString()) ids.insert(v.asString());
+                std::size_t known = 0;
+                double n = 0;
+                for (const auto& id : ids)
+                {
+                    const auto& r = residents[id];
+                    if (!r.isObject()) continue;
+                    ++known;
+                    if (r["alive"].isBool() && r["alive"].asBool() && inside(c.string("region"), r)) ++n;
+                }
+                if (!ids.empty() && !known) return std::nullopt;
+                return compare(Value(n), c.string("op"), c["value"]);
+            }
             double n = 0;
             for (const auto& [id, w] : wolves.fields())
                 if (member(id) && w.isObject() && inside(c.string("region"), w)) ++n;

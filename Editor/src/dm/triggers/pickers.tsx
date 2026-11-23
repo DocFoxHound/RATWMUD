@@ -53,6 +53,8 @@ export function useOptions(type: string): Option[] {
         if (type === 'item') return (refs?.items ?? []).map(i => ({id: i.id, name: i.name, group: i.category}));
         if (type === 'resident') return (refs?.residents ?? []).map(r => ({id: r.id, name: r.name, hint: r.work || r.home}));
         if (type === 'place') return (refs?.places ?? []).map(p => ({id: p.id, name: p.name, hint: p.kind + (p.town ? ' · ' + p.town : '')}));
+        // (Doc 86, L1: an animal for a staged hunt, with the ground it lives on.)
+        if (type === 'species') return (refs?.species ?? []).map(a => ({id: a.id, name: a.name, hint: (a.habitats ?? []).join(', ')}));
         return list;
     }, [type, refs, program]);
 }

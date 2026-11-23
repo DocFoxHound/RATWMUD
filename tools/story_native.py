@@ -152,8 +152,8 @@ def _needs_of(rules):
                         out['all'] = True
                     elif isinstance(v, str) and v != '$actor':
                         out['named'].add(v)
-                if kind == 'count in region':
-                    out['all'] = True
+                if kind == 'count in region' and c.get('who', 'wolves') == 'wolves':
+                    out['all'] = True   # (Doc 86, J6: residents counted read the residents, never trimmed.)
     return out
 
 

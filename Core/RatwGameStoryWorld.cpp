@@ -9,6 +9,7 @@
 #include "RatwFame.h"
 #include "RatwItems.h"
 #include "RatwNames.h"
+#include "RatwWild.h"
 
 #include <algorithm>
 #include <cctype>
@@ -61,7 +62,7 @@ void unlist(Value& list, const std::string& id)
     list = std::move(kept);
 }
 
-constexpr std::size_t NotesKept = 12, PingsAtOnce = 16;
+constexpr std::size_t NotesKept = 12, PingsAtOnce = 16, HuntsAtOnce = 8;   // (Doc 86, L1: staged hunts a run holds at once.)
 const char* StoryNoticeAuthor = "story";            // (Its notices' author: never counted against a board's pins.)
 } // namespace
 
@@ -70,7 +71,7 @@ bool Game::storyWorldOrder(const std::string& kind)
     static const std::set<std::string> kinds{"journal.note", "story.ping",  "item.take",    "item.place",  "warrant.issue",
                                              "warrant.clear", "npc.hold",   "npc.release",  "npc.follow",  "npc.unfollow",
                                              "door.lock",    "door.unlock", "door.open",    "door.close",  "board.post",
-                                             "weather.set",  "scene.stop"};
+                                             "weather.set",  "scene.stop",  "hunt.stage"};
     return kinds.count(kind) > 0;
 }
 
@@ -414,7 +415,111 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
         return {true, "The weather in " + (p.boolean("streets") ? "the streets of " + target : world_.cell(target)->name) + " is " +
                           weatherName(weather) + " for " + std::to_string(hours) + " hours.", target};
     }
+    // ------------------------------------------------------------------------- the wild (doc 86, L1)
+    if (kind == "hunt.stage")
+    {
+        // An animal waiting for the next hunt a wolf begins inside one of the story's regions: kept with the story (its
+        // held.hunts), met once by storyHunt, lapsing on the world's clock or when the story ends. Nothing roams the map.
+        const auto regionId = p["region"].string("id", p.string("region"));
+        const auto found = story->regions.find(regionId);
+        if (found == story->regions.end())
+            return {false, "Stage the hunt in one of the story's regions.", run};
+        const auto& r = found->second;
+        const auto* species = wild::speciesById(p.string("species"));
+        const int count = whole(p, "count", 1, 3), minutes = whole(p, "minutes", 1, 1440);
+        if (!species)
+            return {false, "No such animal: " + p.string("species") + ".", run};
+        if (count < 1 || minutes < 1)
+            return {false, "Stage 1 to 3 animals for 1 to 1440 minutes.", run};
+        if (!world_.ensureLoaded(r.cell).ok || !world_.cell(r.cell))
+            return {false, "That region's place is not in the world.", run};
+        auto& hunts = section(*story, "hunts", true);
+        if (hunts.size() >= HuntsAtOnce)
+            return {false, "A story stages at most " + std::to_string(HuntsAtOnce) + " hunts at once.", run};
+        auto j = Value::object();
+        j.add("region", regionId);
+        j.add("cell", r.cell);
+        j.add("x1", r.x1);
+        j.add("y1", r.y1);
+        j.add("x2", r.x2);
+        j.add("y2", r.y2);
+        j.add("species", species->id);
+        j.add("count", count);
+        j.add("until", world_.time() + minutes * 60.0);
+        hunts.push(std::move(j));
+        changed();
+        saveSoon();
+        return {true, "The next hunt in " + regionId + " meets " + std::to_string(count) + " " + species->name + " (for " +
+                          std::to_string(minutes) + " minutes).", run};
+    }
     return {false, "Unknown story effect.", target};
+}
+
+Result Game::storyHunt(const std::string& wolf)
+{
+    // Doc 86, L1: a wolf begins a hunt. The first live story's staged animal whose region holds the wolf's tile, and has not
+    // lapsed, joins what the ground gives; that stage is then used up (one hunt a stage).
+    std::vector<std::string> staged;
+    storylines::Storyline* from = nullptr;
+    std::size_t at = 0;
+    if (const auto* e = world_.entity(wolf); e && !e->npc && !storiesHolding_.empty())
+    {
+        const auto [x, y] = world_.eventTile(*e);
+        const double t = world_.time();
+        for (const auto& run : storiesHolding_)
+        {
+            auto* s = storylines_.find(run);
+            if (!s || !s->live() || !s->held.isObject())
+                continue;
+            const auto& hunts = s->held.array("hunts");
+            for (std::size_t i = 0; i < hunts.size() && !from; ++i)
+            {
+                const auto& h = hunts[i];
+                if (h.number("until") > t && h.string("cell") == e->cellId && h.number("x1") <= x && x <= h.number("x2") &&
+                    h.number("y1") <= y && y <= h.number("y2"))
+                {
+                    from = s;
+                    at = i;
+                    staged.assign(std::size_t(std::clamp(int(h.number("count", 1)), 1, 3)), h.string("species"));
+                }
+            }
+            if (from)
+                break;
+        }
+    }
+    auto result = world_.startHunt(wolf, {}, staged);
+    if (result.ok && from)
+    {
+        auto& hunts = section(*from, "hunts", true);
+        auto kept = Value::array();
+        for (std::size_t i = 0; i < hunts.size(); ++i)
+            if (i != at)
+                kept.push(hunts.items()[i]);
+        hunts = std::move(kept);
+        storylines_.touch();
+        refreshStoryWatch();
+        record(StoryBook);
+    }
+    return result;
+}
+
+Result Game::applyStoryWatch(const std::string& run, const Value& p)
+{
+    // Doc 86, J6: what a running story asks the game to tell it, sent again by the runner when the residents its count in a
+    // region reads change (the members of a residents list). Only for the visit it is in.
+    auto* story = storylines_.find(run);
+    if (!story || story->kind != "world" || story->source != "storykeeper" || !story->live())
+        return {false, "That story is not running.", run};
+    if (std::to_string(whole(p, "visit", 1, 1000000000)) != story->sourceRef)
+        return {false, "This story visit is no longer active.", run};
+    const auto& watch = p["watch"];
+    if (!watch.isObject() || json::dump(watch).size() > 64 * 1024)
+        return {false, "Invalid world story watch list.", run};
+    story->watch = watch;
+    storylines_.touch();
+    refreshStoryWatch();
+    record(StoryBook);
+    return {true, "What the story is told is updated.", run};
 }
 
 void Game::noteStoryHeld(const Value& payload, const char* key, const std::string& id)
@@ -544,6 +649,19 @@ void Game::tickStoryWorld(double dt)
                 else if (parseWeather(j.string("was"), was))
                     world_.setWeather(cell, was);
                 weather->erase(cell);
+                touched = true;
+            }
+        }
+        if (auto* hunts = s->held.find("hunts"); hunts && hunts->size())
+        {
+            // (Doc 86, L1: an animal no hunt met in time lapses.)
+            auto kept = Value::array();
+            for (const auto& h : hunts->items())
+                if (h.number("until") > world_.time())
+                    kept.push(h);
+            if (kept.size() != hunts->size())
+            {
+                *hunts = std::move(kept);
                 touched = true;
             }
         }

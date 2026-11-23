@@ -1724,6 +1724,17 @@ Result Game::applyDmAct(std::vector<PgValue> row)
                       ? storyClosure(target, payload)
                       : Result{false, "Invalid story order.", target};
     }
+    else if (kind == "npc.howl")
+        outcome = residentHowl(target);   // (Doc 86, J5: a resident a story asks to howl, RatwGameHowl.cpp.)
+    else if (kind == "story.watch")
+    {
+        // Doc 86, J6: what a running story asks the game to tell it, sent again when the residents it counts change.
+        json::Value payload;
+        std::string problem;
+        outcome = row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject()
+                      ? applyStoryWatch(target, payload)
+                      : Result{false, "Invalid story watch list.", target};
+    }
     else if (kind == "title.give" || kind == "title.take" || kind == "npc.greet" || kind == "belief.forget")
     {
         // Doc 86, Phase 3: a wolf named by a title (C4), a resident's words for one wolf (C5), a rumour put to rest (J8).
@@ -6298,7 +6309,7 @@ void Game::command(Connection* c, const std::string& raw)
     else if (type == "hunt" || type == "forage" || type == "leaveHunt")
     {
         // Hunting and foraging (doc 41): out in the wild.
-        result = type == "hunt" ? world_.startHunt(id) : type == "forage" ? world_.forage(id) : world_.leaveHunt(id);
+        result = type == "hunt" ? storyHunt(id) : type == "forage" ? world_.forage(id) : world_.leaveHunt(id);
         report = true;
         if (result.ok && type == "forage")
             record(Economy | Character, id);

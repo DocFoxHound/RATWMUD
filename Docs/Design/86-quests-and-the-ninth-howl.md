@@ -1668,3 +1668,94 @@ the quest ones), `resident has` reads `post`, two quest fields (`requires`, `clo
   the `during` node and the overflow, `story.closure`, the month, the gift and post facts), the story runner from this branch
   with the rebuilt `libratw_story.so` (`wolf has` needs both twins), the Editor released from it. The client needs no change.
   A pack that feeds a chapter by `story.notify` is approved alone; the chapter it names need not be approved yet (a warning).
+
+## Phase 5 as built
+
+**Phase 5 as built** (2026-11-23, branch `r3-nh-p5`, on `r3-nh-p4` at `0eee34c9`). Engine spec items J5, J6 and L1. **No
+migration**: a staged hunt lives in the story's `held` (the story book, as the weather and the markers do), the watch sent
+again is the story's `watch` (saved with it already), and the runner's mark of what it sent is run state. Two new effects (86
+in all: `npc.howl` in Residents, `hunt.stage` in Places, both game orders), two new events (213: `howled` and `chorus closed`,
+group talk, watched, mission events; 36 watched, 72 mission events), one new parameter type (`species`), `count in region`
+gains `who` and `list`, and two game orders the runner sends itself (`story.watch`; `npc.howl` and `hunt.stage` are the
+effects' own).
+- **J5: howls** (`Core/RatwGameHowl.cpp`). `Game::howl` keeps a wolf's checks and words and calls the new
+  `howlFrom(Entity&, bool resident)`, which opens or joins a chorus as before. `Game::residentHowl(npc)` (the order
+  `npc.howl`, target the resident, through `story_runner.action`) refuses one dead, down, in a fight, away or within the
+  howl's rest (`howl.cooldown`, 600 s, kept for residents as for wolves: "That resident howled a moment ago."), and answers
+  "<Name> howls." or "joins the howl.". A resident's howl is not heard as a sneaking wolf's voice. `howled` is written in
+  `howlFrom` while a story listens (`actor`, `cell` and the tile, `item` `townFor(cell)` or `wild`, `detail` the chorus id,
+  `quantity` the howlers so far); `chorus closed` in `tendHowls` at the close (`actor` `howlers.front()`, `quantity`
+  `howlers.size()`, residents too, the tile of the first howl, kept on the `Chorus`). Bonds, the scene moment and the town's
+  memory are unchanged.
+- **J6: residents counted in a region** (both twins: `story_triggers.fact_test`, `Dispatch2::fact`). With `"who":
+  "residents"` and `list` (a `residents` variable of the story or the world; `list` exactly then; `COUNTED`), the distinct
+  members whose facts say alive and inside the region are counted; a list not empty none of whom the facts have is unknown;
+  an empty list counts 0. `story_native` trims no residents (only a wolves count reads every wolf). `watch_of` gives such a
+  story the `residents` section and `residentLists`; `story_runner.watch_now` puts the lists' members (the run's state; a
+  world list as loaded) among the watch's `residents` (2,000 at most) and strips `residentLists`; `enter` and a move onto a
+  new version send it and keep a digest in `state.watchSent`; `resend_watch`, after a tick's save (`tick_run`'s `finally`,
+  only for a running story that counts residents) and a console command's save, queues `story.watch` (`{watch, visit}`,
+  target the run) when the digest changed. The game's `applyStoryWatch` takes it for the visit the story is in only, and
+  refreshes the union of the watch lists.
+- **L1: a staged hunt** (`Core/RatwGameStoryWorld.cpp`, `Core/RatwHunt.cpp`). `hunt.stage` is a Phase 9-style world order
+  (`WORLD_ORDERS`, target the run, the region's bounds in the payload as `story.tell`'s); the game takes the region from the
+  story's own regions by id, checks the animal (`wild::speciesById`), 1 to 3, 1 to 1,440 minutes, and keeps
+  `{region, cell, x1, y1, x2, y2, species, count, until}` in `held.hunts` (8 a run; `until` in world seconds). A wolf's
+  `hunt` command now goes through `Game::storyHunt`: the first live story's unlapsed stage whose rectangle holds the wolf's
+  tile gives `World::startHunt` its new `staged` list, added to what the ground gives (a ground that gives nothing that day
+  still meets them; an unknown animal refused); the stage is used up only if the hunt starts. `tickStoryWorld` drops lapsed
+  stages, `endStoryWorld` the rest (`UNDONE_AT_END`, guide §14), and `refreshStoryWatch` counts a story holding stages among
+  `storiesHolding_`. The kill is the ordinary `hunted`, target the species. Approval (`world_checks`, a warning) names an
+  animal whose `habitats` none of the region's ground has, read from the terrain (`story_runner.region_ground`,
+  `world_store.load_ground`, the glyphs of `Data/Wild/animals.json`), or a region in an interior. `static_refs` gives the
+  workbench `species` (with their ground), and the param type `species` is checked against `animals.json`
+  (`story_program.animal_habitats`).
+- **Workbench** (`Editor/`): the species picker (`useOptions('species')`, `REF_KIND`), `count in region` in words ("at
+  least 3 of the residents in crew stand in tarn"; "of the story's wolves" when `who` is not given), a new count names no
+  list (optional parameters are left out of a new world condition), and renaming a variable follows a count's `list`
+  (`renameVariable`, `conditionVars`).
+- **Guide and format**: `Docs/Story-Maker-guide.md` §7 "A beast for the hunt", §8 the two watched events, "Howls" and "How
+  many residents stand in a region", §14 two rows, §15 three rows, §16 two rows; the reference regenerated
+  (`story_guide.py --write`; `--check` passes; `hunt.stage` has an example). `Docs/story-programs.md` gains "Howls, crowds
+  and the wild" and the `count in region` row. `RUNNER_VERSION` is `doc86-phase5`.
+- **Sample** `story_v2_samples.HOWLS` ("Old Brown at the tarn", `v2-old-brown`, in `all_samples()`, so both twins run it): at
+  nightfall the tarn-keeper howls and a bear is staged at the tarn; a wolf's howl counted; the ropes manned when three of the
+  seven of the crew stand at the tarn, not when one of the three is dead there; a chorus of two calls nothing, one of three
+  moves the story on (an exit with `minQuantity: 3`); the bear killed at the tarn ends the quest. It rehearses clean: nothing
+  uncovered.
+- **Tests**: `Tests/howl_tests.cpp` (`aResidentHowls`: a resident's howl heard as any howl, a wolf joins, one chorus of two, no
+  event with no story listening, the rest refused; listening, a resident and two wolves give three `howled` of one chorus and
+  one `chorus closed` of three begun by the resident; a dead resident refused), `Tests/hunt_tests.cpp` (`aStagedAnimal`: two
+  staged ibex in the line-up, an unknown animal refused; `stagedHuntsThroughTheGame`, a game on the wilds: refusals (an
+  unknown animal, a region not the story's, four), a hunt outside the region meets none and the stage waits, inside both
+  ibex and the stage used up, the next hunt none, a lapse after a minute, the run's stop drops the rest, a stopped story
+  stages nothing), `test_story_facts` (`ResidentsInARegion`: three of seven at the ropes, a dead one, unknown ones, none
+  known, an empty list, the wolves as ever; the checks; the watch and `watch_now`; `Parity`: residents counted alike over
+  made-up worlds while a trigger takes the one talked to off the list), `test_story_native` (`CrowdParity`: a story's and a
+  world's list, dead, unknown, none known, emptied, unset; `npc.howl` and `hunt.stage` carried alike), `test_story_v2`
+  (`Phase5Howls`: the tarn in both twins, a chorus of two, a bear killed away from the tarn, the events watched and mission
+  evidence), `test_story_effects` (the order's payload, `npc.howl`'s, the species and count checks, undone at the end, no
+  permission marks, the picker's animals), `test_story_facts_live` (a real server and runner on a throwaway Greyfen: the
+  phase's watch names the list's first member, nothing sent again while the list stands, a trigger's `list add` sends
+  `story.watch` once with both, applied, and the facts then have both), `test_story_catalogue`, `test_story_drafts` and
+  `workbench.test.ts` (counts; Old Brown in words; a renamed list followed; a fresh count with no list).
+- **Run**: `howl_tests`, `hunt_tests`, `story_world_tests`, `story_facts_tests`, `storyline_tests`, `dialogue_tests`,
+  `save_compat_tests`; every story Python suite but the scene and siege live ones (with the local PostgreSQL: the tests' own
+  throwaway `ratw_test_*` databases and `RATW_STORY_TEST_DSN` on a throwaway migrated one, dropped after), and
+  `test_story_facts_live`; `story_guide.py --check`; the Editor's `workbench.test.ts`, `guide.test.ts` and `tsc --noEmit`.
+  All OK.
+- **Left or changed, and why**: quest objectives have no `minQuantity` (only exits do), so the spec's "a quest objective
+  `chorus closed` with `minQuantity` 3" is tested as the sample's exit; an objective may count a chorus's howlers with
+  `measure: quantity`, or a trigger read the `quantity` field. The `chorus closed` sentence leaves `{quantity}` out (no event
+  sentence may name it; the help says it). `residentsHear` now leaves out the residents who howled (a resident must not turn to,
+  or remark on, their own howl). A resident's howl does not give away sneaking wolves near it (that rule is a wolf's voice).
+  `npc.howl` is refused for a resident offstage (away with nowhere to howl from) as well. The staged hunt's minutes are world
+  seconds (`World::time`, which fast-forward speeds and a checkpoint keeps), as a howl's rest is; the spec's "the game keeps
+  `stagedHunts_`" is the story's `held.hunts`, so a restart keeps them with the story and the run's end drops them with the
+  rest it held. The hunt tests through the game are in `hunt_tests` (a Game on the wilds export) beside the world's. The
+  watch sent again is a game order of its own (`story.watch`) rather than a revised `story.phase`, which would replace the
+  visit's missions and words. A dead listed resident is not counted (a dead resident stands nowhere), which the spec did not
+  say. An empty list counts 0 (known), not unknown.
+- **Going live** on `ratw_ridgemere3` needs no migration; the game server restarted from this branch (`npc.howl`, the howl
+  events, `hunt.stage` and the staged hunt, `story.watch`), the story runner from this branch with the rebuilt
+  `libratw_story.so` (a residents count needs both twins), the Editor released from it. The client needs no change.

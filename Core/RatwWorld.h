@@ -824,7 +824,8 @@ class World
     };
     WildHere wildAround(const std::string& player) const;
     // `only`: the game to find (species ids), for the Dev Console's /hunt and tests; empty, what the ground gives.
-    Result startHunt(const std::string& player, const std::vector<std::string>& only = {});
+    // `staged`: animals a story staged for this hunt (doc 86, L1), added to what the ground gives (even when it gives none).
+    Result startHunt(const std::string& player, const std::vector<std::string>& only = {}, const std::vector<std::string>& staged = {});
     // Hunting together (Docs/Design/53-hunting-and-working-together.md, Phase 2). Anyone may join a hunt while its
     // starter allows hunting partners (the user: only the starter's setting counts); its party, Chapter and companions
     // always; never one blocked by a hunter. A closed hunt may be asked into (30 s for a hunter to let them in), and a

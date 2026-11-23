@@ -172,7 +172,7 @@ A version 2 condition may read the world as it was when the event happened (Docs
 | --- | --- | --- |
 | `wolf here` | `who` | the wolf is in the world (signed in) |
 | `wolf in region`, `wolf in place`, `wolf in town`, `wolf indoors` | `who`, `region` / `place` / `town` / `is` | where the wolf stands now |
-| `count in region` | `region`, `op`, `value` | so many of the story's wolves stand in the region (StarCraft's Bring) |
+| `count in region` | `region`, `op`, `value`; `who`, `list` | so many of the story's wolves stand in the region (StarCraft's Bring); with `who: residents` and `list` (a story or world `residents` list), so many of its residents (doc 86, J6) |
 | `carries`, `coins` | `who`, `item`, `op`, `value` | what the wolf has in their pack (a marked or crafted item counts as its base item), their purse |
 | `standing`, `reputation` | `who`, `faction` or `town`, `op`, `value` | their Chapter's standing with a faction or House (-100..100); what a town's residents who know them think (liking less disliking) |
 | `wolf is` | `who`, `state` (`downed`, `hurt`, `wanted`, `held`), `is` | downed in a fight, carrying wounds or an injury, wanted by the watch, held in a gaol |
@@ -209,7 +209,7 @@ personal quests, stopping a scene) are each in the catalogue with their paramete
 all with an example. **What the game undoes when a run ends** (`story.stop`, `story.finish`, an ending phase): a door's lock
 as it was before the story first touched it (`door.lock`, `door.unlock`), held residents (`npc.hold`), residents sent along
 (`npc.follow`), strangers (`visitor.add`), mantles bound (`mantle.assign`), notices (`board.post`), the weather
-(`weather.set`) and the maps' markers (`story.ping`); journal notes stay, and everything given (items, coins, deeds, standing,
+(`weather.set`) and the maps' markers (`story.ping`), and since doc 86, Phase 5, a staged hunt not yet met (`hunt.stage`); journal notes stay, and everything given (items, coins, deeds, standing,
 warrants, relations, market events, prices, projects) stays. **The permission marks** in the catalogue drive every hosted
 check: `actsOnWolves` (`character.injury`, `story.area.damage`, `item.take`, `warrant.issue`) needs the owner or "may act on
 players' wolves"; `needsBuilder` (`faction.relation`, `standing.adjust`, and since Phase 10 `prices.reset`,
@@ -446,6 +446,32 @@ is untouched, and `quest.offer` to that wolf clears it.
 The dialogue window puts a resident's story choices in this order: hand-ins, offers, the words while under way, choices,
 each in story order. In a resident's own tree, what the hub's nine have no room for goes under `about`, and the hub has a
 way there; only what `about` has no room for either is left out (`RATW_STORY` in the game's log, once a resident a day).
+
+## Howls, crowds and the wild (doc 86, Phase 5)
+
+**Howls.** The watched events `howled` (`actor` the wolf or resident, `cell` and the tile, `item` the town (`townFor`) or
+`wild`, `detail` the chorus id, `quantity` the howlers so far) and `chorus closed` (`actor` the one who began it, `quantity`
+how many howled in it, residents too, `item` and `detail` as for `howled`, the tile of the first howl), both mission events.
+The effect `npc.howl` (`npc`, a value) is the game order `npc.howl` (target the resident; `Game::residentHowl`): refused for a
+resident dead, down, in a fight, away, or within the howl's rest (`Data/Social/social.json` `howl.cooldown`, as a wolf's).
+Not undone.
+
+**Residents counted in a region.** `count in region` takes `who` (`wolves`, the default, or `residents`) and, exactly with
+`residents`, `list`: a `residents` variable of the `story` or `world` scope. It counts the list's distinct residents whose facts
+say alive and inside the region; none of them in the facts (a list not empty): unknown. `story_program.watch_of` gives such a
+story's watch the `residents` section and `residentLists` (the runner's, never sent); `story_runner.watch_now` sends the
+lists' members (as the run's state has them, a world list as loaded) among the watch's `residents`, with the phase, and
+`resend_watch` sends the game order `story.watch` (`{watch, visit}`, target the run) after a tick or a console command's
+save whenever they changed (`state.watchSent`, a digest of what was sent). Both engines.
+
+**A staged hunt.** The effect `hunt.stage` (`region` the story's, `species` an id of `Data/Wild/animals.json`, `count` 1 to
+3, `minutes` 1 to 1,440) is the game order `hunt.stage` (target the run; the region's bounds in the payload). The game keeps
+it in the story's `held.hunts` (8 at most; `{region, cell, x1, y1, x2, y2, species, count, until}`, `until` in world
+seconds). A wolf's `hunt` inside the rectangle (the wolf's tile), before `until`, adds the animals to what the ground gives
+(`World::startHunt`'s `staged`) and uses the entry up; `tickStoryWorld` drops lapsed ones and `endStoryWorld` the rest
+(`UNDONE_AT_END`). The kill is an ordinary `hunted` (target the species). Approval warns of an animal whose `habitats` the
+region's ground has none of, and of a region indoors (`story_runner.region_ground`). The workbench's species picker reads
+`refs.species` (`static_refs`).
 
 ## Writing a program
 

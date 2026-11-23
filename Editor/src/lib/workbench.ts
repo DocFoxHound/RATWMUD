@@ -225,11 +225,14 @@ export interface Refs {
     stories?: {id: string; name: string; hint?: string}[]; worldVars?: {id: string; name: string; type: string; note?: string}[];
     /** Doc 86, SQ2: the businesses' tills a reward may pay from (till:job:<founder>, as the last checkpoint has them). */
     tills?: {id: string; name: string}[];
+    /** Doc 86, L1: the animals of Data/Wild/animals.json a story may stage for a hunt, with the ground they live on. */
+    species?: {id: string; name: string; habitats?: string[]}[];
 }
 /** The kinds a picker of a type lists (a `character` is a wolf or a resident). */
 export const REF_KIND: Record<string, keyof Refs> = {
     resident: 'residents', wolf: 'wolves', place: 'places', faction: 'factions', town: 'towns', market: 'markets', area: 'areas',
     ship: 'ships', item: 'items', template: 'templates', project: 'projects', door: 'doors', mantle: 'mantles', story: 'stories',
+    species: 'species',
 };
 /** Doc 86, Phase 1b: the values a program's effects give one parameter (talk memory's keys and values, figures' ids). */
 export function effectValuesOf(p: Program, kinds: string[], key: string): string[] {
@@ -881,7 +884,7 @@ export function operandVars(o: unknown): string[] {
 }
 export function conditionVars(c: Condition): string[] {
     const x = c as unknown as Json;
-    return [...(['switch', 'in list', 'days since', 'participation'].includes(c.test) ? [x.var, x.list].filter((v): v is string => typeof v === 'string') : []),
+    return [...(['switch', 'in list', 'days since', 'participation', 'count in region'].includes(c.test) ? [x.var, x.list].filter((v): v is string => typeof v === 'string') : []),
         ...(c.test === 'participation' && c.where ? conditionsOf(c.where).flatMap(conditionVars) : []),
         ...operandVars(x.left), ...operandVars(x.right), ...operandVars(x.value)];
 }
@@ -1053,7 +1056,8 @@ export function renameVariable(p: Program, from: string, to: string): Program {
         if (record(next.where)) { const w = cond(next.where as Condition); if (w !== next.where) next = {...next, where: w}; }   // (A participation's test.)
         return next;
     };
-    const one = (c: Condition) => ['compare', 'switch', 'in list', 'days since', 'participation'].includes(c.test) ? named(c as unknown as Json) as unknown as Condition : c;
+    // (Doc 86, J6: a count in a region reads a residents list.)
+    const one = (c: Condition) => ['compare', 'switch', 'in list', 'days since', 'participation', 'count in region'].includes(c.test) ? named(c as unknown as Json) as unknown as Condition : c;
     const cond = (c: Condition): Condition => mapCondition(c, one);
     const share = (s: ShareSource): ShareSource => 'list' in s ? (s.list === from ? {list: to} : s) : (cond(s.where) === s.where ? s : {where: cond(s.where)});
     // (Doc 86, R2: a phase's Readiness reads variables in its participation parts, its values and its tests.)
@@ -1292,6 +1296,7 @@ export function newWorldCondition(item: CatItem, p: Program): Condition {
     const c: Record<string, unknown> = {test: item.id};
     for (const param of item.params ?? []) {
         if (['who', 'of', 'where'].includes(param.key)) continue;   // (The acting wolf unless another is chosen.)
+        if (param.optional) continue;                              // (Doc 86, J6: a count's residents list, only when chosen.)
         if (param.type === 'region') c[param.key] = p.regions?.[0]?.id ?? '';
         else if (param.type === 'quest') c[param.key] = p.quests?.[0]?.id ?? '';
         else if (param.type === 'objective') c[param.key] = p.quests?.find(q => q.id === c.quest)?.objectives[0]?.id ?? '';

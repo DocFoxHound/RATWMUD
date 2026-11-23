@@ -178,7 +178,8 @@
   "talkkey": "A talk memory key: lower-case letters, digits and _, up to 40, starting with a letter.",
   "talkvalue": "A talk memory value: lower-case letters, digits and _, up to 40.",
   "figure": "A figure's id (live.figures): lower-case letters, digits and _, 3 to 40.",
-  "camp": "A story camp's name: lower-case letters, digits and _, 3 to 30, beginning with the story's prefix (nh_, sq_, mq_, lq_, st_); the camp is camp_story_<name>."
+  "camp": "A story camp's name: lower-case letters, digits and _, 3 to 30, beginning with the story's prefix (nh_, sq_, mq_, lq_, st_); the camp is camp_story_<name>.",
+  "species": "An animal of Data/Wild/animals.json (its id)."
  },
  "trigger": {
   "once": {
@@ -6770,6 +6771,77 @@
    "watch": true
   },
   {
+   "id": "howled",
+   "group": "talk",
+   "title": "Someone howls",
+   "sentence": "{actor} howls at {cell} ({item})",
+   "help": "A wolf (or a resident a story asked to) howls: item is the town it was howled in, or wild; detail the chorus it opened or joined. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who howled",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the town, or wild",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the chorus it opened or joined",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "mission": true
+  },
+  {
+   "id": "chorus closed",
+   "group": "talk",
+   "title": "A chorus ends",
+   "sentence": "a chorus ends at {cell} ({item}), begun by {actor}",
+   "help": "A gathering howl closed: actor began it, quantity is how many howled in it (residents too), item the town or wild, detail the chorus. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who began it",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the town, or wild",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the chorus",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many howled"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "mission": true,
+   "measures": [
+    "quantity"
+   ]
+  },
+  {
    "id": "skill practised",
    "group": "fame",
    "title": "A wolf's skill grows a step",
@@ -7582,8 +7654,8 @@
    "v2": true,
    "facts": true,
    "title": "How many stand in a region",
-   "sentence": "{op} {value} of the story's wolves stand in {region}",
-   "help": "Counts the wolves of the story standing in the region now (StarCraft's Bring). Wolves away are not counted.",
+   "sentence": "{op} {value} {who} {list} stand in {region}",
+   "help": "Counts the wolves of the story standing in the region now (StarCraft's Bring), or the residents of a list who stand in it. Wolves away are not counted; a resident the world's facts do not have is unknown, not counted (and when every one listed is, the whole condition is unknown). A dead resident does not stand anywhere.",
    "params": [
     {
      "key": "op",
@@ -7610,10 +7682,38 @@
     {
      "key": "value",
      "type": "int",
-     "label": "wolves",
+     "label": "how many",
      "min": 0,
      "max": 5000,
      "default": 1
+    },
+    {
+     "key": "who",
+     "type": "choice",
+     "label": "who is counted",
+     "values": [
+      "wolves",
+      "residents"
+     ],
+     "default": "wolves",
+     "optional": true,
+     "words": {
+      "": "of the story's wolves",
+      "wolves": "of the story's wolves",
+      "residents": "of the residents in"
+     }
+    },
+    {
+     "key": "list",
+     "type": "variable",
+     "label": "the residents",
+     "of": [
+      "residents"
+     ],
+     "optional": true,
+     "words": {
+      "": ""
+     }
     },
     {
      "key": "region",
@@ -11265,6 +11365,21 @@
    ]
   },
   {
+   "id": "npc.howl",
+   "group": "residents",
+   "title": "A resident howls",
+   "sentence": "{npc} howls",
+   "help": "The resident howls where they stand: it opens or joins a chorus, wolves hear it as any howl, and the town remembers it. Refused for a resident dead, down or in a fight, and for one who howled within the howl's rest (a few minutes).",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "operand": true
+    }
+   ]
+  },
+  {
    "id": "npc.kill",
    "group": "residents",
    "title": "A resident dies",
@@ -11527,6 +11642,41 @@
      "min": 1,
      "max": 72,
      "operand": true
+    }
+   ]
+  },
+  {
+   "id": "hunt.stage",
+   "group": "places",
+   "title": "An animal waits for the next hunt",
+   "sentence": "The next hunt in {region} meets {count} {species} (for {minutes} minutes)",
+   "help": "The next hunt a wolf begins inside the region has this animal in its arena, as well as whatever the ground gives. The kill is an ordinary 'hunted' with the animal as target. One hunt meets it; it lapses after the minutes of the world's clock. Nothing roams the map: the animal lives only in that hunt. Undone when the story ends.",
+   "params": [
+    {
+     "key": "region",
+     "type": "region",
+     "label": "the region"
+    },
+    {
+     "key": "species",
+     "type": "species",
+     "label": "the animal"
+    },
+    {
+     "key": "count",
+     "type": "int",
+     "label": "how many",
+     "min": 1,
+     "max": 3,
+     "default": 1
+    },
+    {
+     "key": "minutes",
+     "type": "int",
+     "label": "minutes",
+     "min": 1,
+     "max": 1440,
+     "default": 60
     }
    ]
   },

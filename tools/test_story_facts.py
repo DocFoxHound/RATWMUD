@@ -91,7 +91,8 @@ class Checks(unittest.TestCase):
         self.assertLessEqual({*triggers.FACTS_V2, *triggers.QUEST_V2}, ids)
         self.assertEqual(set(rules.FACT_CONDITIONS), set(triggers.FACTS_V2))
         self.assertEqual(len(triggers.FACTS_V2) + len(triggers.QUEST_V2), 24)   # (Doc 86, J10: wolf has.)
-        self.assertEqual(len(rules.WATCHED_EVENTS), 34)   # (Phase 8's 24, Phase 10's 8, doc 86's moon and month begins.)
+        self.assertEqual(len(rules.WATCHED_EVENTS), 36)   # (Phase 8's 24, Phase 10's 8, doc 86's moon and month begins, howled,
+        # chorus closed.)
         for e in rules.CATALOGUE['events']:
             if e['id'] in rules.WATCHED_EVENTS:
                 self.assertTrue(e['help'].endswith('(the story\'s watch list).'), e['id'])
@@ -213,8 +214,107 @@ ALL = [
 ]
 
 
+CREW = ['rm111', 'rm112', 'rm113', 'rm114', 'rm115', 'rm116', 'rm117']
+
+
+def crew_story(conditions, events, initial=CREW, scope='story', facts=None):
+    """Doc 86, J6: the facts probe with a residents list, the crew at the ropes."""
+    p = program(conditions, events, facts=facts)
+    p['variables'].append({'id': 'crew', 'type': 'residents', 'scope': scope, 'initial': list(initial)})
+    return p
+
+
+def crew_at(inside, dead=(), away=()):
+    """The world's facts with the crew: `inside` stand in the gate, the rest out of it; `dead` died there; `away` unknown."""
+    res = {}
+    for i, r in enumerate(CREW):
+        if r in away:
+            continue
+        res[r] = {'alive': r not in dead, 'cell': 'grey', 'x': 3 if r in inside or r in dead else 7, 'y': 3, 'indoors': False}
+    return {'residents': res}
+
+
+class ResidentsInARegion(unittest.TestCase):
+    """Doc 86, J6: count in region counts the residents of a list who stand in it now."""
+
+    def held(self, conditions, facts, initial=CREW):
+        p = crew_story(conditions, [{'id': 'e1', 'kind': 'conversation', 'day': 1, 'actor': ASH, 'target': 'rm111', 'facts': facts}],
+                       initial=initial)
+        report = rules.review(p)
+        return sorted(report['tests'][0]['counters'].get('story', {}).get('held', []))
+
+    def test_three_of_seven_at_the_ropes(self):
+        at = {'test': 'count in region', 'region': 'gate', 'op': '>=', 'value': 3, 'who': 'residents', 'list': 'crew'}
+        four = {**at, 'value': 4}
+        exactly = {**at, 'op': '=', 'value': 3}
+        self.assertEqual(self.held([at, four, exactly], crew_at(CREW[:3])), ['c0', 'c2'], 'three of the seven stand in the gate')
+        # (A dead one standing there does not count; one the facts do not have is not counted.)
+        self.assertEqual(self.held([at, exactly], crew_at(CREW[:2], dead=CREW[2:3])), [])
+        self.assertEqual(self.held([at, exactly], crew_at(CREW[:3], away=CREW[3:])), ['c0', 'c1'])
+        # (Every one listed unknown: the whole condition is unknown, which never fires, nor does its "not".)
+        self.assertEqual(self.held([at, {'test': 'not', 'condition': at}], {'residents': {}}), [])
+        self.assertEqual(self.held([{'test': 'not', 'condition': at}], crew_at(CREW[:1])), ['c0'])
+        # (An empty list counts none: known, nought.)
+        self.assertEqual(self.held([{**at, 'op': '=', 'value': 0}], crew_at(CREW[:3]), initial=[]), ['c0'])
+        # (The wolves, as ever, when it says nothing: the story's wolves.)
+        self.assertEqual(self.held([{'test': 'count in region', 'region': 'gate', 'op': '>=', 'value': 1}],
+                                   {'wolves': {ASH: {'cell': 'grey', 'x': 3, 'y': 3}}, **crew_at(CREW)}), ['c0'])
+
+    def test_the_checks(self):
+        def bad(c, words, scope='story', kind='residents'):
+            p = crew_story([c], [], scope=scope, initial=[] if scope != 'story' or kind != 'residents' else CREW)
+            p['variables'][-1]['type'] = kind
+            with self.assertRaisesRegex(ValueError, words):
+                rules.validate(p)
+        base = {'test': 'count in region', 'region': 'gate', 'op': '>=', 'value': 3}
+        bad({**base, 'who': 'residents'}, 'names their list')
+        bad({**base, 'list': 'crew'}, 'names their list')
+        bad({**base, 'who': 'everyone'}, "story's wolves or the residents")
+        bad({**base, 'who': 'residents', 'list': 'crew'}, 'list of residents', kind='wolves')
+        bad({**base, 'who': 'residents', 'list': 'crew'}, 'kept for each wolf', scope='player')
+        bad({**base, 'who': 'residents', 'list': 'nobody'}, 'Declare the variable')
+        rules.validate(crew_story([{**base, 'who': 'residents', 'list': 'crew'}], []))
+        rules.validate(crew_story([{**base, 'who': 'wolves'}], []))
+        rules.validate(crew_story([{**base, 'who': 'residents', 'list': 'crew'}], [], scope='world', initial=[]))
+
+    def test_the_watch_names_the_lists_and_the_runner_their_members(self):
+        p = rules.validate(crew_story([{'test': 'count in region', 'region': 'gate', 'op': '>=', 'value': 3, 'who': 'residents', 'list': 'crew'},
+                                       {'test': 'resident is', 'npc': 'rm900', 'state': 'alive'}], []))
+        w = rules.watch_of(p)
+        self.assertEqual((w['facts'], w['residents'], w['residentLists']), (['residents'], ['rm900'], ['crew']))
+        state = {'cohort': [ASH], 'counters': {'story': {'crew': ['rm112', 'rm111']}}}
+        now = runner.watch_now(p, state)
+        self.assertEqual(now, {'facts': ['residents'], 'residents': ['rm111', 'rm112', 'rm900']}, 'the game is sent members, not lists')
+        self.assertEqual(runner.watch_now(p, {'cohort': [ASH]})['residents'], sorted(['rm900', *CREW]), 'the list\'s first value')
+        self.assertNotEqual(runner._watch_key(now), runner._watch_key(runner.watch_now(p, {'cohort': [ASH], 'counters': {'story': {'crew': []}}})))
+        self.assertNotIn('residentLists', runner.watch_now(rules.validate(program([{'test': 'hour between', 'from': 1, 'to': 2}], [])), {}))
+
+
 @unittest.skipUnless(story_native.interpreter(), 'Build ratw_server or set RATW_STORY_LIBRARY first.')
 class Parity(unittest.TestCase):
+    def test_residents_counted_in_a_region_agree(self):
+        """Doc 86, J6: the twins count the crew alike over made-up worlds (residents missing, dead, partial), and as the list
+        changes."""
+        conditions = [{'test': 'count in region', 'region': 'gate', 'op': op, 'value': v, 'who': 'residents', 'list': 'crew'}
+                      for op in ('>=', '=', '<') for v in (0, 1, 3)]
+        conditions.append({'test': 'not', 'condition': conditions[0]})
+        for seed in range(12):
+            rng = random.Random(100 + seed)
+            events = []
+            for i in range(30):
+                res = {r: {k: v for k, v in (('alive', rng.random() < .8), ('cell', rng.choice(['grey', 'mill'])), ('x', rng.randint(0, 8)),
+                                              ('y', rng.randint(0, 8))) if rng.random() < .9} for r in CREW if rng.random() < .8}
+                events.append({'id': f'e{i}', 'kind': 'conversation', 'day': 1 + i / 100, 'actor': ASH, 'target': rng.choice(CREW),
+                               **({'facts': {'residents': res}} if rng.random() < .9 else {})})
+            p = crew_story(conditions, events, initial=rng.sample(CREW, rng.randint(0, 7)))
+            # (The list changes as it goes: a trigger takes the one talked to off it.)
+            p['phases'][0]['triggers'].append({'id': 'off', 'on': 'conversation', 'actions': [
+                {'do': 'list remove', 'var': 'crew', 'value': {'field': 'target'}}]})
+            native = rules.review(p)
+            with patch('story_native.interpreter', return_value=None):
+                python = rules.review(p)
+            self.assertEqual(native, python, f'seed {seed}')
+
     def test_every_world_condition_agrees_over_made_up_worlds(self):
         """Each of ALL's conditions in its own trigger, over 30 conversations whose facts are made up at random (facts
         missing, partial, wolves away): the twins note the same conditions held, event by event, under 12 seeds."""

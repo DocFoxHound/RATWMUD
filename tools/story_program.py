@@ -384,7 +384,27 @@ def _param_ok(param, v, regions):
         return isinstance(v, str) and FIGURE_ID.fullmatch(v) is not None
     if kind == 'camp':
         return isinstance(v, str) and CAMP_NAME.fullmatch(v) is not None   # (Doc 86, L2; its prefix is checked with the program's.)
+    if kind == 'species':
+        return isinstance(v, str) and v in animal_habitats()   # (Doc 86, L1: an animal of Data/Wild/animals.json.)
     return identifier(v) or (kind == 'wolf' and v == '$actor')
+
+
+_ANIMALS = {}
+
+
+def animal_habitats():
+    """Doc 86, L1: the animals of Data/Wild/animals.json, {id: {ground: weight}}, and the ground each map glyph is
+    (`animal_ground`), read once."""
+    if not _ANIMALS:
+        doc = json.loads((CATALOGUE_FILE.parents[1] / 'Wild/animals.json').read_text(encoding='utf-8'))
+        _ANIMALS['species'] = {a['id']: dict(a.get('habitats') or {}) for a in doc['species']}
+        _ANIMALS['ground'] = {glyph: ground for ground, glyphs in doc['ground'].items() for glyph in glyphs}
+    return _ANIMALS['species']
+
+
+def animal_ground():
+    animal_habitats()
+    return _ANIMALS['ground']
 
 
 TALK_KEY = re.compile(r'[a-z][a-z0-9_]{0,39}')
@@ -529,7 +549,7 @@ BUILDER_EFFECTS = frozenset(e['id'] for e in CATALOGUE['effects'] if e.get('need
 # Effects whose world change the game undoes when the run ends (a door's lock, a hold, a stranger, a mantle, a notice,
 # the weather, a marker): the catalogue's help says so.
 UNDONE_AT_END = ('door.lock', 'door.unlock', 'npc.hold', 'npc.follow', 'visitor.add', 'mantle.assign', 'board.post', 'weather.set',
-                 'story.ping')
+                 'story.ping', 'hunt.stage')   # (Doc 86, L1: an animal not yet met lapses with the story.)
 
 
 def region_index(program):
@@ -2159,6 +2179,7 @@ def watch_of(p):
     # (Doc 85, Phase 10: what the game looks at for "near resident", "purse crossed" and "standing crossed": the residents,
     # the purses and amounts, the factions and numbers the triggers name.)
     near, purses, standings = set(), set(), set()
+    lists = set()   # (Doc 86, J6: the residents lists a count in a region reads; the runner adds their members as it runs.)
     for t in [*rules_, *(e for ph in p.get('phases', []) for e in ph.get('exits', []))]:
         m = t.get('match', {}) if isinstance(t.get('match'), dict) else {}
         # (Only exact words are watched: a "begins with" or "one of" filter is refused at approval, and never reaches here.)
@@ -2179,6 +2200,10 @@ def watch_of(p):
         elif kind.startswith('resident'):
             sections.add('residents')
             residents.add(c['npc'])
+        elif kind == 'count in region' and c.get('who') == 'residents':
+            sections.add('residents')
+            if isinstance(c.get('list'), str):
+                lists.add(c['list'])
         elif kind == 'weather is':
             sections.add('weather')
             if c.get('where', '$actor') == '$actor':
@@ -2221,6 +2246,8 @@ def watch_of(p):
         out['weatherWhereWolves'] = True
     if held:
         out['purseFacts'] = held
+    if lists:
+        out['residentLists'] = sorted(lists)   # (The runner's: story_runner.watch_now sends their members as `residents`.)
     return out
 FACT_SECTIONS = ('wolves', 'residents', 'world', 'weather', 'relations', 'purses')   # (Doc 86, M2: what purses hold.)
 WOLF_FACTS = {'cell': str, 'x': int, 'y': int, 'indoors': bool, 'town': str, 'party': str, 'partySize': int, 'carries': dict,

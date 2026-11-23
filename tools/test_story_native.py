@@ -391,5 +391,58 @@ class GiftParity(ValuesParity):
         self.assertEqual(after['triggerEffects'][0]['amount'], 3)
 
 
+class CrowdParity(ValuesParity):
+    """Doc 86, Phase 5: the residents of a list counted in a region (J6: a story's list and a world's, some dead, some the
+    facts do not have, none known), and the new effects (npc.howl, hunt.stage) carried alike by both twins."""
+
+    GATE = {'id': 'gate', 'cell': 'grey', 'x1': 2, 'y1': 2, 'x2': 6, 'y2': 6}
+
+    def program(self):
+        add = lambda n: [{'do': 'add', 'var': 'n', 'value': n}]
+        at = lambda op, v, lst='crew': {'test': 'count in region', 'region': 'gate', 'op': op, 'value': v, 'who': 'residents', 'list': lst}
+        conds = [(at('>=', 3), 1), (at('=', 2), 10), (at('<', 1), 100), ({'test': 'not', 'condition': at('>=', 3)}, 1000),
+                 (at('>=', 1, 'w_crew'), 10000), ({'test': 'count in region', 'region': 'gate', 'op': '>=', 'value': 1, 'who': 'wolves'}, 100000)]
+        triggers = [{'id': f'c{i}', 'on': 'deed', 'if': c, 'actions': add(n)} for i, (c, n) in enumerate(conds)]
+        triggers.append({'id': 'howl', 'on': 'chorus closed', 'actions': [
+            {'do': 'list remove', 'var': 'crew', 'value': 'rm111'},
+            {'do': 'effect', 'effect': {'kind': 'npc.howl', 'npc': 'rm112'}},
+            {'do': 'effect', 'effect': {'kind': 'hunt.stage', 'region': 'gate', 'species': 'bear', 'count': 1, 'minutes': 60}}]})
+        return {'format': 'ratw-story-program', 'version': 2, 'id': 'parity5', 'title': 'Crowds in both twins', 'start': 'a',
+                'audience': {'kind': 'open'}, 'regions': [self.GATE],
+                'variables': [{'id': 'n', 'type': 'number', 'scope': 'story'},
+                              {'id': 'crew', 'type': 'residents', 'scope': 'story', 'initial': ['rm111', 'rm112', 'rm113', 'rm114']},
+                              {'id': 'w_crew', 'type': 'residents', 'scope': 'world'}],
+                'phases': [{'id': 'a', 'journal': 'Crowds.', 'effects': [], 'exits': [], 'triggers': triggers}],
+                'tests': [{'name': 'x', 'cohort': [], 'events': [], 'expect': ['a']}]}
+
+    def states(self):
+        A = self.ASH
+        base = {'phase': 'a', 'entered': 0, 'visits': 1, 'votes': {}, 'actor': '', 'seed': 's', 'began': 0, 'cohort': [A, self.BIRCH],
+                'counters': {'world': {'w_crew': ['rm113', 'rm119']}}}
+        inside = lambda alive=True: {'alive': alive, 'cell': 'grey', 'x': 3, 'y': 3}
+        out = {'alive': True, 'cell': 'grey', 'x': 8, 'y': 3}
+        yield 'three inside', base, {'residents': {'rm111': inside(), 'rm112': inside(), 'rm113': inside(), 'rm114': out},
+                                     'wolves': {A: {'cell': 'grey', 'x': 4, 'y': 4}}}
+        yield 'one dead', base, {'residents': {'rm111': inside(), 'rm112': inside(False), 'rm113': inside(), 'rm114': out}}
+        yield 'some unknown', base, {'residents': {'rm111': inside(), 'rm112': inside()}}
+        yield 'none known', base, {'residents': {'rm900': inside()}}
+        yield 'no facts', base, None
+        yield 'a list emptied', {**base, 'counters': {'story': {'crew': []}, 'world': {'w_crew': []}}}, {'residents': {'rm111': inside()}}
+        yield 'a world list unset', {**base, 'counters': {}}, {'residents': {'rm113': inside(), 'rm119': inside()}}
+
+    def test_every_form_matches(self):
+        for name, state, facts in self.states():
+            for kind in ('deed', 'chorus closed'):
+                with self.subTest(state=name, kind=kind):
+                    self.both(state, {'kind': kind, 'id': 1, 'actor': self.ASH, 'quantity': 3, 'detail': 'howl-1', 'item': 'wild',
+                                      **({'facts': facts} if facts is not None else {})})
+        state = dict(next(self.states())[1])
+        after, _ = self.both(state, {'kind': 'deed', 'id': 1, 'actor': self.ASH, 'facts': next(self.states())[2]})
+        self.assertEqual(after['counters']['story']['n'], 1 + 10000 + 100000, 'three of the crew, one of the world\'s, a wolf')
+        after, _ = self.both(dict(state), {'kind': 'chorus closed', 'id': 1, 'actor': self.ASH, 'quantity': 3})
+        self.assertEqual([e['kind'] for e in after['triggerEffects']], ['npc.howl', 'hunt.stage'])
+        self.assertEqual(after['counters']['story']['crew'], ['rm112', 'rm113', 'rm114'])
+
+
 if __name__ == '__main__':
     unittest.main()

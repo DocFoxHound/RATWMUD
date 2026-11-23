@@ -260,7 +260,7 @@ READY = {
 
 def all_samples():
     return [copy.deepcopy(LEDGER), copy.deepcopy(FLOW), copy.deepcopy(READY), copy.deepcopy(TALK), copy.deepcopy(VALUES),
-            copy.deepcopy(THANKS), copy.deepcopy(LINE)]
+            copy.deepcopy(THANKS), copy.deepcopy(LINE), copy.deepcopy(HOWLS)]
 
 
 # ----- Doc 85, Phase 6: quests (tools/test_story_quests.py; both twins' parity, tools/test_story_native.py)
@@ -765,5 +765,68 @@ LINE = {
          'expectEffects': [
              {'phase': 'line', 'kind': 'story.closure', 'player': ASH, 'story': 'v2-lamp-line', 'quest': 'oil', 'closure': 'line',
               'title': 'Oil for the lamp', 'reward': 'oil'}]},
+    ],
+}
+
+
+# Doc 86, Phase 5 (J5, J6, L1): howls, crowds and the wild. At nightfall the tarn-keeper howls (npc.howl) and a bear waits for
+# the next hunt begun at the tarn (hunt.stage); every wolf's howl is counted (howled); the ropes are manned when three of the
+# seven of the crew stand at the tarn (count in region, the residents of a list), not when one of them is dead there; a
+# chorus of two does not call the hunt, one of three does (chorus closed, the exit's minQuantity); the bear, killed at the
+# tarn, ends the quest (an ordinary "hunted", target the bear).
+TARN = {'id': 'tarn', 'cell': 'grey', 'x1': 2, 'y1': 2, 'x2': 6, 'y2': 6}
+CREW = ['rm111', 'rm112', 'rm113', 'rm114', 'rm115', 'rm116', 'rm117']
+
+
+def crew_facts(inside, dead=()):
+    return {'residents': {r: {'alive': r not in dead, 'cell': 'grey', 'x': 3 if r in inside or r in dead else 9, 'y': 3, 'indoors': False}
+                          for r in CREW}}
+
+
+HOWLS = {
+    'format': 'ratw-story-program', 'version': 2, 'id': 'v2-old-brown', 'title': 'Old Brown at the tarn',
+    'audience': {'kind': 'players', 'players': [ASH, BIRCH, ELM]}, 'start': 'gather', 'regions': [TARN],
+    'variables': [
+        {'id': 'crew', 'type': 'residents', 'scope': 'story', 'initial': list(CREW), 'note': 'The tarn crew who man the ropes.'},
+        {'id': 'howls', 'type': 'number', 'scope': 'story', 'note': 'Howls heard from the story\'s wolves.'},
+        {'id': 'ropes', 'type': 'switch', 'scope': 'story', 'note': 'The ropes manned at the tarn.'},
+    ],
+    'quests': [
+        {'id': 'bear', 'title': 'Old Brown', 'giver': 'rm111', 'handIn': False,
+         'offer': {'say': '#greet# There is a bear at the tarn, old and brown. Go out after him at dusk, when he comes to drink.'},
+         'objectives': [{'id': 'kill', 'label': 'Bring down Old Brown at the tarn.', 'on': 'hunted', 'match': {'target': 'bear'},
+                         'where': {'region': 'tarn'}}]},
+    ],
+    'phases': [
+        {'id': 'gather', 'journal': 'The tarn crew gather at dusk, and the keeper howls for the hunters.', 'effects': [],
+         'exits': [{'on': 'chorus closed', 'to': 'hunt', 'minQuantity': 3}],
+         'triggers': [
+             {'id': 'dusk', 'on': 'night falls', 'actions': [
+                 {'do': 'effect', 'effect': {'kind': 'npc.howl', 'npc': 'rm112'}},
+                 {'do': 'effect', 'effect': {'kind': 'hunt.stage', 'region': 'tarn', 'species': 'bear', 'count': 1, 'minutes': 120}}]},
+             {'id': 'heard', 'on': 'howled', 'audience': 'participant', 'actions': [{'do': 'add', 'var': 'howls', 'value': 1}]},
+             {'id': 'manned', 'on': 'deed', 'audience': 'participant',
+              'if': {'test': 'count in region', 'region': 'tarn', 'op': '>=', 'value': 3, 'who': 'residents', 'list': 'crew'},
+              'actions': [{'do': 'turn on', 'var': 'ropes'}]},
+         ]},
+        {'id': 'hunt', 'journal': 'The chorus has called the hunt: Old Brown is at the water.', 'effects': [], 'exits': []},
+    ],
+    'tests': [
+        {'name': 'Dusk at the tarn: the keeper howls, the crew man the ropes, three call the hunt, the bear falls', 'cohort': [ASH, BIRCH, ELM],
+         'events': [
+             quest_fact(1, 'night falls', 0.5),
+             quest_fact(2, 'howled', 0.51, ASH, cell='grey', item='greyfen', detail='howl-1'),
+             {**quest_fact(3, 'deed', 0.52, ASH, detail='Held a rope'), 'facts': crew_facts(CREW[:2], dead=CREW[2:3])},
+             {**quest_fact(4, 'deed', 0.53, BIRCH, detail='Held a rope'), 'facts': crew_facts(CREW[:3])},
+             quest_fact(5, 'chorus closed', 0.54, 'rm112', cell='grey', item='greyfen', detail='howl-1', quantity=2),
+             quest_fact(6, 'quest accepted', 0.6, ASH, item='rm111', detail='bear'),
+             quest_fact(7, 'hunted', 0.7, ASH, target='bear', cell='grey', x=3, y=4, detail='a clean kill', quantity=3),
+             quest_fact(8, 'chorus closed', 0.8, 'rm112', cell='grey', item='greyfen', detail='howl-2', quantity=3),
+         ], 'expect': ['gather', 'hunt'],
+         'expectQuests': {'bear': {ASH: 'done'}},
+         'expectVariables': {'story': {'howls': 1, 'ropes': True}},
+         'expectEffects': [
+             {'phase': 'gather', 'kind': 'npc.howl', 'npc': 'rm112'},
+             {'phase': 'gather', 'kind': 'hunt.stage', 'region': 'tarn', 'species': 'bear', 'count': 1, 'minutes': 120}]},
     ],
 }

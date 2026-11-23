@@ -1162,11 +1162,13 @@ class Game
         std::vector<std::string> howlers;
         bool indoors = false;
         std::set<std::string> heard;
+        int x = -1, y = -1;                 // (Doc 86, J5: the tile of the howl that opened it, for "chorus closed".)
     };
     std::vector<Chorus> choruses_;
     std::map<std::string, double> howledAt_, chorusBondDay_;
     std::map<std::string, std::pair<double, std::string>> recentHowls_;
     Result howl(const std::string& id);
+    bool howlFrom(Entity& e, bool resident);   // (Doc 86, J5: a wolf's howl or a resident's; true when it joined a chorus.)
     double howlCooldownLeft(const std::string& id) const;
     void sendHowl(Chorus& chorus);
     void residentsHear(const Chorus& chorus);
@@ -2697,6 +2699,11 @@ class Game
     // Doc 86, J3 (RatwGameSocial.cpp): a story's closure quest done by a wolf counts as a finished Story (the Quickening's
     // closedStories): one receipt a quest, at most standing().storyQuestClosuresMost from one story's program id.
     Result storyClosure(const std::string& wolf, const json::Value& payload);
+    // Doc 86, Phase 5: a resident a story asks to howl (J5, RatwGameHowl.cpp); an animal a story stages for the next hunt
+    // begun in one of its regions (L1, RatwGameStoryWorld.cpp: held.hunts), met by the hunt a wolf begins there.
+    Result residentHowl(const std::string& npc);
+    Result storyHunt(const std::string& wolf);
+    Result applyStoryWatch(const std::string& run, const json::Value& payload);   // (J6: the watch sent again.)
     std::string takeStoryGreet(const std::string& npc, const std::string& wolf);       // The greeting, once ("" none).
     void dropStoryHolds(const std::string& owner);      // Every hold of "run:<run>" or "campaign:<id>" let go.
     void sparedChanged();                               // Tells the world whom old age passes by.

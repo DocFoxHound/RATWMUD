@@ -556,6 +556,23 @@ id the story knows: `"match": {"target": "camp_story_sq_beacon_camp"}` is a plai
 second spawn of the name joins it (its strength grows); once it is cleared the name makes a new camp. Without a name, a
 camp is numbered as before. Approval refuses an objective on a `camp_story_` the story never spawns.
 
+### A beast for the hunt
+
+**An animal waits for the next hunt** (`hunt.stage`): the next hunt a wolf begins inside one of the story's regions has 1
+to 3 of an animal of `Data/Wild/animals.json` in its arena, beside whatever the ground gives (even ground that gives
+nothing that day). One hunt meets it; it lapses after its minutes of the world's clock (1 to 1,440), or when the story ends.
+Nothing roams the map: the animal lives only in that one hunt, so no wild population is made and none is left behind. The
+kill is an ordinary `hunted`, with the animal as its target, so the objective is a plain one:
+
+```json
+{"kind": "hunt.stage", "region": "greytarn", "species": "bear", "count": 1, "minutes": 120}
+{"id": "kill", "label": "Bring down Old Brown at the tarn.", "on": "hunted", "match": {"target": "bear"}, "where": {"region": "greytarn"}}
+```
+
+A story holds at most 8 at once. Approval warns (it does not refuse) when the animal lives on none of the region's ground
+("a bear on open water"), or when the region is indoors (no hunt begins there). Stage it when the wolves are about to go out
+(at dusk, when a quest is taken): an animal no hunt meets is gone after its minutes.
+
 ## 8. The world's facts and watched events
 
 A condition marked **reads the world's facts** asks about the world as of the event: where a wolf is (region, place, town,
@@ -569,7 +586,7 @@ Some events are **watched**: the game writes them only while a live story listen
 locked; buildings entered and left; a region occupied and emptied; the weather changed; the hour, a new day, dawn,
 nightfall, a new season; items picked up and dropped; a trade; dialogue windows; a crime seen; a wolf downed and revived;
 parties formed and ended; a wolf near a resident; a purse or a wolf's standing past a number; a faction's stance changed; a
-mantle taken or laid down; a skill grown a step; an injury healed). Three of them need the trigger to say what to look at,
+mantle taken or laid down; a skill grown a step; an injury healed; someone howls; a chorus ends). Three of them need the trigger to say what to look at,
 in its filters:
 
 | Event | Filters it needs | Example |
@@ -599,6 +616,22 @@ or mantle** reads the post they hold too (`"what": "post"`, its title as the car
 **A wolf's Gift** (`wolf has`) the tier the wolf was made with (`normal`, `gifted`, `quickened`) or its family (`fire`,
 `earth`, `water`, `wind`, `sound`, `blinker`, `gravity`, `seer`; empty for a normal wolf). Test it and offer what fits;
 never tell it in a story's words.
+
+**Howls.** **Someone howls** (`howled`: `actor` the wolf, or a resident a story asked to; `item` the town it was howled
+in, or `wild`; `detail` the chorus it opened or joined) and **A chorus ends** (`chorus closed`: `actor` who began it,
+`quantity` how many howled in it, residents too, `item` and `detail` as before) are watched events, and objectives. **A
+resident howls** (`npc.howl`) has a resident howl where they stand: it opens or joins a chorus, wolves hear it as any howl
+(a direction and a distance, never a name) and the town remembers it. A howl's rest holds for a resident as for a wolf (a
+few minutes), so a second `npc.howl` too soon is refused ("howled a moment ago": give it `"ifRefused": "skip"` in a trigger
+that may fire often); so is one for a resident dead, down or in a fight. "Three howled together" is an exit on `chorus
+closed` with `"minQuantity": 3`, or a trigger with the condition **The event's field** `quantity` at least 3.
+
+**How many residents stand in a region.** **How many stand in a region** (`count in region`) counts the story's wolves, or,
+with `"who": "residents"` and a `list` (a residents list the story or the world keeps), the residents of that list standing in
+the region now: `{"test": "count in region", "region": "the_ropes", "op": ">=", "value": 3, "who": "residents", "list":
+"crew"}`. A dead resident stands nowhere; one the facts do not have is not counted, and when none of the list is known the
+condition is unknown. The story watches the list's residents: when the list changes (a trigger adds one, another story's
+world list grows), the runner tells the game again, so the next facts have them. A list holds 500 at most.
 
 ### Talk and rumour from a story
 
@@ -797,12 +830,14 @@ takes back what the story held, as it was before the story first touched it. Wha
 | `board.post` | the notice comes down |
 | `weather.set` | the weather goes back to the season's (it also runs out by itself after its hours) |
 | `story.ping` | the map markers go (they also run out by themselves) |
+| `hunt.stage` | an animal no hunt has met yet goes (it also lapses after its minutes) |
 | `npc.spare`, `npc.protect` with `lasts: run` | the resident is no longer spared, or protected, by this run (another story's hold stays) |
 | `npc.spare`, `npc.protect` with `lasts: campaign` | **stay** until the campaign ends (or an admin lets go of its holds) |
 | `talk.remember` | the residents forget it, unless `keep` (then it lasts its days) |
 | `belief.plant`, `belief.forget`, `figure.set` | **stay**: a rumour fades by the world's rules, and so does the doubt put on it; a figure until cleared (or undone from the timeline) |
 | `title.give`, `npc.greet` | **stay**: a title lasts its days (or for good) until `title.take`; a greeting waits its days for its wolf |
 | a closure quest's finished Story | **stays**: a record of a finished story |
+| `npc.howl` | **stays**: the town remembers the howl a while, as any howl |
 | `story.notify`, `quest.withdraw` | the story's own: news told is told; an offer taken back goes with the run |
 | `journal.note` | **stays**: the wolf's journal keeps it |
 | items given or placed, coins paid, deeds, standing, warrants, injuries, relations, market events, prices, projects, residents killed | **stay**: not a rollback |
@@ -834,6 +869,9 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | Approval refuses words | the words | a word of `words.json` (it says what to write instead), an id in speech, a `#symbol#` the library lacks, a banner that quotes a resident: see section 10. |
 | A quest is not offered to a wolf | the quest's **Only for wolves who…** | It holds for that wolf? (A chain: is the quest before it done for them?) Taken back from them (`quest.withdraw`)? Too many stories at one giver: see "Many stories at one resident". |
 | A chapter never hears a pack | the pack's Timeline and the chapter's trigger | `story.notify`'s news name and the chapter's `"match": {"detail": ...}` the same words; a named `story` is the chapter's id, and it is running. |
+| A staged animal never shows | the hunt's place | The hunt must begin inside the region (the wolf's tile), within the minutes, and only the first hunt there meets it. Hunts begin only out in the wild, never in a town. |
+| `npc.howl` was refused | the order | "howled a moment ago": a resident's voice rests as a wolf's does; "dead", "down", "in a fight". |
+| A count of residents is always unknown | the world's facts | None of the list's residents is in the facts yet: the list was empty when the phase began and the game has not been told again (is the runner running?). |
 | Problems in the draft | Story Creator → **Problems** | Every problem at once with **Go**, and the world's warnings (a signal nothing hears, a counter nothing sets, an id the world lacks). |
 
 ## 16. Limits
@@ -867,6 +905,8 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | A quest's "Only for wolves who…" | 4 deep, 12 conditions; worked out for 5,000 wolves |
 | Closure quests | 4 a story; 4 finished Stories from one story for one wolf |
 | A resident's hub | 9 choices; what doesn't fit goes under Ask about... (9 more) |
+| A staged hunt | 1 to 3 animals, 1 to 1,440 minutes; 8 a story at once; one hunt each |
+| A resident's howl | one a howl's rest (as a wolf's); residents counted in a region: a list of 500 |
 
 <!-- reference:begin (made by tools/story_guide.py from Data/Storylines/trigger-catalogue.json: do not edit by hand) -->
 
@@ -876,7 +916,7 @@ Made from the trigger catalogue (`Data/Storylines/trigger-catalogue.json`), the 
 
 ### Events
 
-214 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
+216 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
 
 #### Story engine
 
@@ -1751,6 +1791,37 @@ A resident no longer wears the mantle they wore. Written only while a live story
 
 ```json
 {"id": "when-mantle-released", "on": "mantle released", "actions": [{"do": "note", "text": "A resident lays a mantle down"}]}
+```
+
+<a id="event-howled"></a>**`howled`**: Someone howls (watched, mission evidence, has a tile)
+
+A wolf (or a resident a story asked to) howls: item is the town it was howled in, or wild; detail the chorus it opened or joined. Written only while a live story listens for it (the story's watch list).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | who howled (character) | anyone |
+| `cell` | where (place) | anywhere |
+| `item` | the town, or wild (text) | anywhere |
+| `detail` | the chorus it opened or joined (text) | any |
+
+```json
+{"id": "when-howled", "on": "howled", "actions": [{"do": "note", "text": "Someone howls"}]}
+```
+
+<a id="event-chorus-closed"></a>**`chorus closed`**: A chorus ends (watched, mission evidence, has a tile)
+
+A gathering howl closed: actor began it, quantity is how many howled in it (residents too), item the town or wild, detail the chorus. Written only while a live story listens for it (the story's watch list).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | who began it (character) | anyone |
+| `cell` | where (place) | anywhere |
+| `item` | the town, or wild (text) | anywhere |
+| `detail` | the chorus (text) | any |
+| `quantity` | how many howled (number) |  |
+
+```json
+{"id": "when-chorus-closed", "on": "chorus closed", "actions": [{"do": "note", "text": "A chorus ends"}]}
 ```
 
 #### Gifts, items and loans
@@ -4597,14 +4668,16 @@ Reads: **$actor** is **indoors**
 
 <a id="condition-count-in-region"></a>**`count in region`**: How many stand in a region (v2, reads the world's facts)
 
-Counts the wolves of the story standing in the region now (StarCraft's Bring). Wolves away are not counted.
+Counts the wolves of the story standing in the region now (StarCraft's Bring), or the residents of a list who stand in it. Wolves away are not counted; a resident the world's facts do not have is unknown, not counted (and when every one listed is, the whole condition is unknown). A dead resident does not stand anywhere.
 
-Reads: **at least** **1** of the story's wolves stand in **square**
+Reads: **at least** **1** stand in **square**
 
 | Parameter | What | Kind |
 |---|---|---|
 | `op` | the comparison | choice; one of: `=`, `!=`, `>`, `>=`, `<`, `<=`; default ">=" |
-| `value` | wolves | int; 0 to 5000; default 1 |
+| `value` | how many | int; 0 to 5000; default 1 |
+| `who` | who is counted | choice; one of: `wolves`, `residents`; optional; default "wolves" |
+| `list` | the residents | variable; a variable of type residents; optional |
 | `region` | the region | region |
 
 ```json
@@ -5438,7 +5511,7 @@ Reads: Go to the phase **muster**
 
 ### Effects
 
-84 world effects, each one action `{"do": "effect", "effect": {...}}` (or, for a phase, one of what it sends as it opens). Each becomes an order the game applies and may refuse, with a receipt, except the story's own. On any effect the game applies, `ifRefused` says what the story does when it is refused: `pause` (the default), `skip`, or `when here` (an effect to one wolf, held until they are next in the world, `waitDays` 1 to 90).
+86 world effects, each one action `{"do": "effect", "effect": {...}}` (or, for a phase, one of what it sends as it opens). Each becomes an order the game applies and may refuse, with a receipt, except the story's own. On any effect the game applies, `ifRefused` says what the story does when it is refused: `pause` (the default), `skip`, or `when here` (an effect to one wolf, held until they are next in the world, `waitDays` 1 to 90).
 
 #### Telling the wolves
 
@@ -5747,6 +5820,20 @@ Reads: **rm111** lays down their mantle
 
 ```json
 {"do": "effect", "effect": {"kind": "mantle.release", "npc": "rm111"}}
+```
+
+<a id="effect-npc-howl"></a>**`npc.howl`**: A resident howls
+
+The resident howls where they stand: it opens or joins a chorus, wolves hear it as any howl, and the town remembers it. Refused for a resident dead, down or in a fight, and for one who howled within the howl's rest (a few minutes).
+
+Reads: **rm111** howls
+
+| Parameter | What | Kind |
+|---|---|---|
+| `npc` | the resident | resident |
+
+```json
+{"do": "effect", "effect": {"kind": "npc.howl", "npc": "rm111"}}
 ```
 
 <a id="effect-npc-kill"></a>**`npc.kill`**: A resident dies
@@ -6359,6 +6446,23 @@ Reads: The weather in **greyfen** is **snow** for **6** hours
 
 ```json
 {"do": "effect", "effect": {"kind": "weather.set", "town": "greyfen", "weather": "snow", "hours": 6}}
+```
+
+<a id="effect-hunt-stage"></a>**`hunt.stage`**: An animal waits for the next hunt (undone at the end)
+
+The next hunt a wolf begins inside the region has this animal in its arena, as well as whatever the ground gives. The kill is an ordinary 'hunted' with the animal as target. One hunt meets it; it lapses after the minutes of the world's clock. Nothing roams the map: the animal lives only in that hunt. Undone when the story ends.
+
+Reads: The next hunt in **square** meets **1** **bear** (for **120** minutes)
+
+| Parameter | What | Kind |
+|---|---|---|
+| `region` | the region | region |
+| `species` | the animal | species |
+| `count` | how many | int; 1 to 3; default 1 |
+| `minutes` | minutes | int; 1 to 1440; default 60 |
+
+```json
+{"do": "effect", "effect": {"kind": "hunt.stage", "region": "square", "species": "bear", "count": 1, "minutes": 120}}
 ```
 
 #### Towns, markets and factions

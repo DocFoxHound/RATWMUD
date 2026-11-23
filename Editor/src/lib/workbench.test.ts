@@ -183,7 +183,7 @@ const v2: Record<string, Program> = JSON.parse(execFileSync('python3', ['-c',
 const ledger = v2['v2-ledger'];
 
 test('version 2: the samples and the 108 programs made version 2 are shown by the workbench, every nested action a sentence', () => {
-    assert.equal(Object.keys(v2).length, 115);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road; Phase 3: the oil drive; Phase 4: the lamp line.)
+    assert.equal(Object.keys(v2).length, 116);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road; Phase 3: the oil drive; Phase 4: the lamp line; Phase 5: Old Brown at the tarn.)
     let nested = 0;
     for (const [name, p] of Object.entries(v2)) {
         assert.ok(editable(p), name);
@@ -371,7 +371,7 @@ test('Phase 8: the night watch opens in the workbench, every world condition and
         const words = plain(eventParts(cat, t, names));
         assert.ok(!words.includes('{'), t.on + ': ' + words);
     }
-    assert.equal(cat.events.filter(e => (e as {watch?: boolean}).watch).length, 34);   // (Phase 8's 24, Phase 10's 8, doc 86's moon and month begins.)
+    assert.equal(cat.events.filter(e => (e as {watch?: boolean}).watch).length, 36);   // (Phase 8's 24, Phase 10's 8, doc 86's moon and month begins, howled, chorus closed.)
 });
 
 // ------------------------------------------------------------------------------------------ new world effects (doc 85, Phase 9)
@@ -612,3 +612,29 @@ test('doc 86, Phase 4 after review: renaming a quest follows its quest.withdraw 
     assert.equal((triggersOf(moved, 0).find(t => t.id === 'reads')!.if as unknown as {objective: string}).objective, 'asked');
     assert.equal(pretty(renameObjective(moved, 'mill', 'asked', 'ask')), pretty(read));
 });
+
+test('doc 86, Phase 5: Old Brown at the tarn in words; a count of residents in a region follows its list when it is renamed', () => {
+    const p = v2['v2-old-brown'];
+    assert.ok(editable(p));
+    const ns = namesOf(null, p);
+    const ts = triggersOf(p, 0);
+    for (const t of ts) assert.ok(!plain(eventParts(cat, t, ns)).includes('{'), t.on);
+    assert.match(plain(eventParts(cat, ts.find(t => t.id === 'heard')!, ns)), /howls/);
+    const dusk = ts.find(t => t.id === 'dusk')!;
+    assert.match(plain(actionParts(cat, dusk.actions[0], ns)), /rm112 howls/);
+    assert.match(plain(actionParts(cat, dusk.actions[1], ns)), /^The next hunt in tarn meets 1 bear \(for 120 minutes\)/);
+    const manned = ts.find(t => t.id === 'manned')!;
+    const count = allConditions(manned).find(c => c.test === 'count in region')!;
+    assert.match(plain(conditionParts(cat, count, ns)), /at least 3 of the residents in crew stand in tarn/);
+    assert.match(plain(conditionParts(cat, {test: 'count in region', region: 'tarn', op: '>=', value: 2} as unknown as Condition, ns)),
+        /at least 2 of the story's wolves +stand in tarn/);
+    assert.deepEqual(conditionVars(count), ['crew']);
+    const renamed = renameVariable(p, 'crew', 'ropers');
+    assert.equal((allConditions(triggersOf(renamed, 0).find(t => t.id === 'manned')!).find(c => c.test === 'count in region') as unknown as {list: string}).list, 'ropers');
+    assert.equal(pretty(renameVariable(renamed, 'ropers', 'crew')), pretty(p));
+    // (A new count names no list until the author picks residents: the checks accept it as it is.)
+    const fresh = newCondition('count in region', p, 0, cat) as unknown as Record<string, unknown>;
+    assert.ok(!('list' in fresh) && !('who' in fresh), JSON.stringify(fresh));
+    assert.equal(cat.effects.find(e => e.id === 'hunt.stage')!.params!.find(x => x.key === 'species')!.type, 'species');
+});
+

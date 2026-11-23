@@ -75,9 +75,12 @@ GOOD = {
     'title.take': {'player': '$actor', 'title': 'the Lamp of Greyfen'},
     'npc.greet': {'npc': 'rm111', 'player': '$actor', 'text': 'Back again? #greet#', 'days': 7},
     'belief.forget': {'subject': 'rm111', 'claimKind': 'story.rumour', 'town': 'greyfen', 'share': 50},
+    # (Doc 86, Phase 5: an animal for the next hunt in a story region.)
+    'hunt.stage': {'region': 'gate', 'species': 'bear', 'count': 1, 'minutes': 120},
 }
 PHASE1B_ORDERS = ('talk.remember', 'talk.forget', 'belief.plant')
 PHASE3_ORDERS = ('title.give', 'title.take', 'npc.greet', 'belief.forget')
+PHASE5_ORDERS = ('hunt.stage',)   # (Doc 86, L1: an animal for the next hunt in a region.)
 
 
 def program(effects=(), entry=(), audience=None):
@@ -105,7 +108,7 @@ def effect(kind, **more):
 class Catalogue(unittest.TestCase):
     def test_the_new_effects_are_in_the_catalogue_with_typed_parameters_and_sentences(self):
         ids = [e['id'] for e in CAT['effects']]
-        self.assertEqual(len(ids), 84)   # (Phase 10's story.start, the story's own: not a game order; doc 86 Phase 1b's 7, Phase 3's 4,
+        self.assertEqual(len(ids), 86)   # (Phase 10's story.start, the story's own: not a game order; doc 86 Phase 1b's 7, Phase 3's 4,
         self.assertNotIn('story.start', runner.WORLD_ORDERS)   # Phase 4's story.notify and quest.withdraw, the story's own too.)
         for kind in ('story.notify', 'quest.withdraw'):
             self.assertNotIn(kind, runner.WORLD_ORDERS)
@@ -118,7 +121,7 @@ class Catalogue(unittest.TestCase):
                 self.assertIn(item['group'], {g['id'] for g in CAT['actionGroups']})
                 for p in item['params']:
                     self.assertIn(p['type'], CAT['types'])
-        self.assertEqual(set(NEW) - {'story.tracker'} | set(PHASE1B_ORDERS) | set(PHASE3_ORDERS), set(runner.WORLD_ORDERS),
+        self.assertEqual(set(NEW) - {'story.tracker'} | set(PHASE1B_ORDERS) | set(PHASE3_ORDERS) | set(PHASE5_ORDERS), set(runner.WORLD_ORDERS),
                          'every game order has its mapping')
         self.assertIn('story.tracker', quests.STORY_EFFECTS, 'the tracker is the story\'s own')
 
@@ -225,6 +228,22 @@ class Orders(unittest.TestCase):
         self.assertEqual(self.order(effect('project.complete'))[1:], ('greyfen', {'kind': 'granary', 'run': 'world-run', 'visit': 3}))
         self.assertEqual(self.order(effect('visitor.add'))[1], 'pale-rider')
         self.assertEqual(self.order(effect('storyline.tick'))[2]['template'], 'the-debt')
+        # (Doc 86, L1: the staged hunt names the story's region with its bounds, for the run.)
+        self.assertEqual(self.order(effect('hunt.stage'))[1:], ('world-run', {'region': GATE, 'species': 'bear', 'count': 1, 'minutes': 120,
+                                                                        'run': 'world-run', 'visit': 3}))
+
+    def test_a_resident_howls_and_a_hunt_is_staged(self):
+        # (Doc 86, J5: npc.howl is the resident's own order; L1: hunt.stage's animal is one of Data/Wild/animals.json, its
+        # count 1 to 3, its region the story's; undone at the run's end.)
+        self.assertEqual(runner.action({'kind': 'npc.howl', 'npc': 'rm111'}, 'player-ash'), ('npc.howl', 'rm111', {}))
+        rules.validate(program([{'kind': 'npc.howl', 'npc': 'rm111'}, effect('hunt.stage')]))
+        for bad in ({'species': 'dragon'}, {'species': 'Bear'}, {'count': 4}, {'count': 0}, {'minutes': 1441}, {'region': 'nowhere'}):
+            with self.subTest(bad=bad):
+                self.assertRaisesRegex(ValueError, 'invalid hunt.stage', rules.validate, program([effect('hunt.stage', **bad)]))
+        self.assertIn('hunt.stage', rules.UNDONE_AT_END)
+        self.assertNotIn('hunt.stage', rules.WOLF_EFFECTS | rules.BUILDER_EFFECTS)
+        self.assertNotIn('npc.howl', rules.WOLF_EFFECTS | rules.BUILDER_EFFECTS)
+        self.assertEqual({s['id'] for s in runner.static_refs()['species']}, set(rules.animal_habitats()))
 
     def test_the_tracker_is_hidden_and_shown_again_by_the_story(self):
         p = rules.validate(program([effect('story.tracker')]))
