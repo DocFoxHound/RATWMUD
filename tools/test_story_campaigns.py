@@ -8,6 +8,7 @@ chapter; the world's variables declared, set and removed from the console (audit
 one as another type refused; the hosted permissions (a builder for the economy, the owner or "may steer campaigns" for
 the world's variables); and the watch lists and checks of the events Phase 8 left. Skipped without the local PostgreSQL."""
 
+import copy
 import json
 import secrets
 import threading
@@ -239,15 +240,35 @@ class Campaigns(unittest.TestCase):
         self.assertEqual(best, 2, 'the carried ropes, kept for the world')
         # (Doc 86, C11: the campaign's holds on residents let go, once.)
         self.settle()
-        ends = self.conn.execute("SELECT count(*) FROM dm.actions WHERE kind='story.campaign.end' AND target_id='ford'").fetchone()[0]
-        self.assertEqual(ends, 1, 'story.campaign.end is sent once')
+        ends = self.conn.execute("SELECT count(*) FROM dm.actions WHERE kind='story.campaign_end' AND target_id='ford'").fetchone()[0]
+        self.assertEqual(ends, 1, 'story.campaign_end is sent once')
+
+    def test_a_new_version_of_a_running_chapter_keeps_its_holds_for_the_campaign(self):
+        # (Doc 86, B3: a chapter that spares a resident for the campaign may be moved to a new version while it runs.)
+        crossing = copy.deepcopy(CROSSING)
+        crossing['phases'][0]['effects'] = [{'kind': 'npc.spare', 'npc': 'rm111', 'lasts': 'campaign'}]
+        out = self.approve(muster(), crossing)
+        first = runner.publish(self.conn, self.world, out['ticket'])['run']
+        self.settle()
+        self.fact('conversation', ASH, 'rm111')
+        self.tick()
+        self.fact('conversation', BIRCH, 'rm111')
+        self.tick()
+        self.settle()
+        [second] = self.runs_of('the-crossing')
+        newer = copy.deepcopy(crossing)
+        newer['phases'][0]['journal'] = 'Cross quickly with the ropes Ivo was given.'
+        moved = runner.approve(self.conn, self.world, 'martin', newer, rules.digest(newer), for_run=second)
+        self.assertEqual((moved['run'], moved['warnings']), (second, []))
+        self.assertRaisesRegex(ValueError, 'chapter of a campaign', runner.approve, self.conn, self.world, 'martin', newer,
+                               rules.digest(newer))   # (Alone, it is no chapter.)
 
     def test_an_act_stopped_early_lets_go_of_its_holds(self):
         # (Doc 86, C11: the console's "Let go of the campaign's holds".)
         self.approve(muster(), CROSSING)
         out = runner.release_campaign(self.conn, self.world, 'martin', 'ford')
         kind, target = self.conn.execute('SELECT kind,target_id FROM dm.actions WHERE id=%s', (out['receipt'],)).fetchone()
-        self.assertEqual((kind, target), ('story.campaign.end', 'ford'))
+        self.assertEqual((kind, target), ('story.campaign_end', 'ford'))
         self.assertRaisesRegex(ValueError, 'No such campaign', runner.release_campaign, self.conn, self.world, 'martin', 'nowhere')
 
     def test_a_chapter_started_now_runs_beside_the_one_that_started_it_and_never_twice(self):

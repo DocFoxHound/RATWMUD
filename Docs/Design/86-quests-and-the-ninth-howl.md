@@ -1062,8 +1062,10 @@ catalogue), a new action group `talk`, three new parameter types (`talkkey`, `ta
   `till:job:<founder>` when it is no account itself, for `character.grant`, `purse crossed` and later M2. Both refusal messages
   say "town:<town>, till:job:<resident> or chapter:<id>". **Approval** (`story_runner.world_checks`, run by `references()` and
   by `reference_problems()` for the Problems panel) refuses a purse (rewards, grants, `purse crossed` filters) whose account
-  (`purse_account`: a town's `stores:<town>`, the city's `treasury`, a till by either spelling, a Chapter's by its name) is not
-  in the latest checkpoint's `society.accounts`; `town:<town>:works|watch|church` is refused with "this world has no works,
+  (`purse_account`: a town's `stores:<town>`, the capital's `treasury` (the town the world's spawn is in), every town's
+  `treasury` in a world of one settlement (no `stores:` account at all), a till by either spelling, a Chapter's by its name)
+  is not in the latest checkpoint's `society.accounts`, as `Game::storyPurseAccount` maps it (a region that is no town, in a
+  world of towns, pays from no account: "\"<region>\" is no town with a store of its own"); `town:<town>:works|watch|church` is refused with "this world has no works,
   watch or church purse"; a checkpoint with no accounts saved yet only warns. The catalogue's `purse` type, `character.grant`
   and `purse crossed` help drop the works, watch and church. The workbench's purse picker lists the towns' treasuries and the
   world's tills (`refs.tills`, from the checkpoint, named "<founder>'s till"); `PURSE` takes `till:job:`.
@@ -1073,8 +1075,9 @@ catalogue), a new action group `talk`, three new parameter types (`talkkey`, `ta
   of the world's notice boards (the checkpoint's markets; a warning when none is saved). **Residents named** as `npc`,
   `giver`, `from`, `like`, `subject`, any `resident` parameter, a scene's cast or an objective's target must have a home or a
   work place (`dm.story_residents`) and be alive (`live.npc_state.alive`): "<id> has no place in the world yet", "<id> has
-  died". A `like` only warns, so does `npc.kill` of the dead; a `death` filter's `actor` and words may name the dead.
-  `references()` now returns its warnings (approval ignores them); `reference_problems()` lists every check with `blocks`.
+  died". A `like` only warns, so does `npc.kill` of the dead and `npc.revive` of the living (whose `npc` must be the dead); a `death` filter's `actor` and words may name the dead.
+  `references()` now returns its warnings, and `approve`, `publish` and `campaign.approve` return them as `warnings`
+  (shown under the approval in the Story Creator and the New campaign dialog); `reference_problems()` lists every check with `blocks`.
 - **V3: the guide.** §7's fail rule filters `death` on `actor`, with the sentence, and a note that the examples use the test
   town's ids (§2's reward words name the till, not the works).
 - **J1: one choice for several wolves** (`story_quests.Run.story_effect`, `choices`, `_offer_players`). An `npc.offer` with a
@@ -1098,13 +1101,15 @@ catalogue), a new action group `talk`, three new parameter types (`talkkey`, `ta
   `storyHolds_[spare|protect][npc]` = owners (`run:<run>`, `campaign:<id>`), refuses a hold whose run is not a live story or a
   campaign hold without a campaign, and a protect hold on a resident a Dungeon Master unprotected; the world skips a spared
   resident in old age (`World::setStorySpared`; the world already had a `spared_`, the bandits'); a resident with a protect
-  owner is protected (after the Dungeon Master's unprotect mark). A story's `npc.unprotect` also drops its own protect owners.
+  owner is protected (after the Dungeon Master's unprotect mark). A story's `npc.unprotect` drops its own protect owners, and only those when it had one (the resident's own protection,
+  a House head's or Atlas's, and the marks stay; "The story's protection is let go."); with none of its own it unmarks as
+  ever.
   `endStoryWorld` drops the run's owners (before its early return, so a story that held nothing else lets go too); the
-  runner sends `story.campaign.end {campaign}` once, when `run_ended` marks the campaign ended (`status<>'ended' RETURNING`), and
+  runner sends `story.campaign_end {campaign}` once, when `run_ended` marks the campaign ended (`status<>'ended' RETURNING`), and
   the game drops that campaign's owners. Saved with the checkpoint (`troublesSave`, `storyTalkSave`). `lasts: campaign` is
   refused by `references(chapters=False)` (a warning in the Problems panel, which cannot know). The Campaigns list's campaign
   card has **Let go of the campaign's holds…** when no chapter runs (op `campaign-release`, the owner or "may steer
-  campaigns": `release_campaign` queues `story.campaign.end`).
+  campaigns": `release_campaign` queues `story.campaign_end`).
 - **C9: figures of the realm** (`story_runner.write_figure`, `restore_figure`, `order_of`; `dungeon_master.save_figure` now
   calls `write_figure`). `figure.set {figure, role, npc | player | name, title?, known: realm | region | house, region?, house?,
   about?}` and `figure.clear {figure}`, both `needsBuilder`: written to `live.figures` in the runner, as `faction.relation`
@@ -1132,8 +1137,9 @@ catalogue), a new action group `talk`, three new parameter types (`talkkey`, `ta
   not the subject) ordered by `fnv(run|subject|claim|id)` believe it (`World::believe` with the kind set, source
   `story:<run>`); planting again strengthens the same beliefs. The clearing is believed as **"never <claim>"** with the wording
   "#x.name# #claim.text#", so it never merges with the rumour it answers (a holder's beliefs are kept one per subject and
-  words). The claim is a phrase that follows a name: a small letter first, 120 characters, no `#`, brackets or ids (Python's
-  `CLAIM_ID`, the game's `idInWords`).
+  words). The claim is a phrase that follows a name: a small letter first, 120 characters, no `#`, brackets or ids, by one rule in both (`story_program.claim_has_id`, the game's `idInWords`): a word (letters,
+  digits, `_` and `-`) with an `_`, one that mixes letters and digits ("rm111", but "2am" and "3rd-rate" too) or one that
+  starts `wolf-`.
 - **Workbench and console** (`Editor/`): pickers for `talkkey`, `talkvalue` and `figure` (the keys, values and figures the
   program already uses: `effectValuesOf`), the purse picker's tills, the variable's "told to residents", the Timeline's Undo
   this figure, the campaign card's Let go of the campaign's holds, What residents remember, `memoryOwnerText`,
@@ -1152,14 +1158,14 @@ catalogue), a new action group `talk`, three new parameter types (`talkkey`, `ta
   unspared dies; two stories spare one, one lets go; protect for the run and Unprotect; realm, town, resident and pair recall
   and order, Bo not seeing Ash's pair memory; the caps; forget; a rumour's three holders, the same three again, a clearing in
   its own words, both wordings through claims.json, an id refused; all through a save; the run's end lets go and forgets but
-  for `keep`; the campaign's hold outlasts the chapter until `story.campaign.end`), `Tests/dialogue_tests.cpp`
+  for `keep`; the campaign's hold outlasts the chapter until `story.campaign_end`), `Tests/dialogue_tests.cpp`
   `storyTalkInTheWindow` (with the test's own lines in a copy of Data/Talk: a choice for two wolves, one picked; a
   `world.mem`, a `pair.mem` (Ash's, not Bo's), a `player.quest`, a `player.story` and a `self.mem` line played in the window;
   `Town` takes a talk folder), `tools/test_story_talk.py` (the catalogue, purses and their accounts, the checks, the orders,
   the sample; with a database: purses, residents placed and alive, quests' boards and objectives, the new effects' towns and a
   campaign's hold, a figure written and put back), `test_story_quests.Phase1b` (J1, an older state, the `talk` map and its
   checks), `test_story_native` (`test_the_talk_effects_match`, with `$each` pair memory), `test_story_campaigns`
-  (`story.campaign.end` once; an act stopped early let go), `workbench.test.ts` and `campaigns.test.ts` (the sentences, the
+  (`story.campaign_end` once; an act stopped early let go), `workbench.test.ts` and `campaigns.test.ts` (the sentences, the
   pickers' values, the purse names; who remembers; undo). Updated: the catalogue counts (78), the builder effects, the order
   table, the guide's examples, the v2 sample count (112), the fixtures' residents placed (`fixture-homes`: V1 refuses an
   unplaced one).
@@ -1181,7 +1187,29 @@ catalogue), a new action group `talk`, three new parameter types (`talkkey`, `ta
   to be a slot). A figure written by the Dungeon Master keeps ids of 1 to 40 characters; a story's are 3 to 40. A pair's
   `player` as a wolf variable or `{"field": "actor"}` waits for C1 (operands in effect parameters, Phase 2). Names of
   residents in a claim are V2's (Phase 3). `RUNNER_VERSION` is `doc86-phase1b`.
+- **After review** (the review of `d9879d9c`): **B1** `game.checkpoints.payload` is `text`: `checkpoint_accounts`, `refs()`'s
+  tills and `run_memory` read `payload::jsonb` (approval of a grant or a `purse crossed`, the workbench's pickers and a
+  remembering run's status had failed on SQL). **B2** the order is **`story.campaign_end`** (`dm.actions`' kind is
+  `^[a-z]+\.[a-z_]+$`, one dot: `story.campaign.end` was refused, so a campaign's end and "Let go of the campaign's holds…"
+  failed). **B3** a new version of a running chapter (`approve(for_run=…)`) is checked as a chapter, so its holds for the
+  campaign stand. **B4** `npc.revive` names the dead (the living warn). **B5** the database tests of `test_story_talk` run
+  (`fact`, the text payload, `bandit falls` for the camp). **B6** one rule for a rumour's ids in Python and the game (above).
+  **G1** a town purse maps as the game's (above). **G2** a story's Unprotect lets go of its own hold only (above). **G3**
+  approval returns its warnings (above). **G4** `test_story_talk.InTheWorld` gains the pickers and memory on the text
+  checkpoint, a revive of the dead, the capital's and a non-town's purse, the Problems panel's dead giver, missing till and
+  works purse, the TALK sample clean in the world (no warning), approval's warnings, and the figure written and put back as
+  `ratw_dm`; `test_story_campaigns` a new version of a running chapter that spares for the campaign; `story_world_tests` the
+  DM's protection kept through a story's Unprotect and the claims "2am", "3rd-rate", "40s" refused. Nits: `till:job` alone is
+  no purse, `ALIVE_WARNED` is `npc.kill` only, `storyTalkLoad` makes no empty owner and caps a pair's at 16 on load. Left:
+  `figure-undo`'s and `campaign-release`'s audit and reason, and `restore_figure` over a later change (nits). **Run** (with
+  the local PostgreSQL, throwaway `ratw_test_*` databases and `RATW_STORY_TEST_DSN` on one, dropped after): every
+  `tools/test_story_*.py` but the three live ones, `test_dungeon_master`, `test_talk_*`, `test_dialect_check`, all passed with
+  nothing skipped; ctest `-R "talk_|dialect|mantle_|story|storyline|troubles|dialogue|checkpoint|save_compat|game_|world_|project"`
+  (42) passed but `talk_scorecard_quick`'s latency gate (B1L) under a parallel run, which passes alone; the Editor's tests
+  (143 and 78), type check, build and render smoke. A scratch Ridgemere 3 server from this branch loaded the world and its
+  save, served its page and was stopped; read only, the world's checks on Ridgemere 3 map `town:ridgemere`, `coldwater` and
+  `larkfield` and refuse `town:plain`.
 - **Going live** on `ratw_ridgemere3` needs no migration of its own; the game server restarted from this branch (it reads
   the new checkpoint fields, absent at first), the story runner from this branch, the Editor released from it. Act I's
-  chapters can move onto a version that uses these by `migrate`; a version that holds residents for the campaign must be
-  approved as a chapter.
+  chapters can move onto a version that uses these by `migrate`; a version that holds residents for the campaign is approved
+  as a chapter (with its campaign, or as a new version of a running chapter's run).

@@ -127,9 +127,15 @@ class Checks(unittest.TestCase):
         for k, v in [('key', 'Nh_stage'), ('key', '1stage'), ('key', 'x' * 41), ('value', 'two words'), ('value', 'Reckoning')]:
             with self.subTest(key=k, value=v):
                 self.bad(f'invalid talk.remember.{k}', fx('talk.remember', **{**REMEMBER, k: v}))
-        for claim in ('Was seen at the mill', 'was seen with rm112', 'took #x.name#\'s silver', 'stole from wolf-ash', 'met the_innkeeper'):
+        for claim in ('Was seen at the mill', 'was seen with rm112', 'took #x.name#\'s silver', 'stole from wolf-ash', 'met the_innkeeper',
+                      # (As the game's idInWords: any word that mixes letters and digits, doc 86, B6.)
+                      'was seen at the docks at 2am', 'sold 3rd-rate grain', 'paid 40s for it', 'met u1 at the gate'):
             with self.subTest(claim=claim):
                 self.bad('a phrase that follows a name', fx('belief.plant', **{**RUMOUR, 'claim': claim}))
+        for claim in ('was seen at the docks at two in the morning', 'sold third-rate grain', 'paid 40 shillings for it',
+                      'was seen with a well-known thief'):
+            with self.subTest(claim=claim):
+                self.assertFalse(rules.claim_has_id(claim))
         self.bad('invalid belief.plant.count', fx('belief.plant', **{**RUMOUR, 'count': 51}))
         self.bad('invalid belief.plant.claimKind', fx('belief.plant', **{**RUMOUR, 'claimKind': 'theft'}))
 
@@ -195,6 +201,7 @@ class InTheWorld(unittest.TestCase):
     """Approval's checks against a throwaway world (the console's fixture), with a checkpoint that has accounts."""
     setUpClass = classmethod(console.ConsoleReads.setUpClass.__func__)
     tearDownClass = classmethod(console.ConsoleReads.tearDownClass.__func__)
+    fact = console.ConsoleReads.fact
 
     def setUp(self):
         console.ConsoleReads.setUp(self)
@@ -205,7 +212,7 @@ class InTheWorld(unittest.TestCase):
         self.conn.execute("INSERT INTO live.factions(world_id,id,name) VALUES (%s,'house_greatly','House Greatly')", (self.world,))
         society = {'accounts': {'treasury': {'cash': 900}, 'stores:greyfen': {'cash': 200}, 'till:job:rm111': {'cash': 120}},
                    'report': {'markets': [{'id': 'greyfen', 'name': 'Greyfen'}]}}
-        self.conn.execute("UPDATE game.checkpoints SET payload=jsonb_set(payload,'{society}',%s::jsonb) WHERE world_id=%s",
+        self.conn.execute("UPDATE game.checkpoints SET payload=jsonb_set(payload::jsonb,'{society}',%s::jsonb)::text WHERE world_id=%s",
                           (json.dumps(society), self.world))
         self.conn.execute("INSERT INTO live.npc_state(world_id,npc_id,alive,state) VALUES (%s,'rm119',false,'{}')", (self.world,))
         self.conn.execute('SET LOCAL ROLE ratw_dm')
@@ -223,7 +230,7 @@ class InTheWorld(unittest.TestCase):
             with self.subTest(purse=purse):
                 self.assertRaisesRegex(ValueError, words, self.refs, program([{'do': 'effect', 'effect': {**grant, 'purse': purse}}]))
         self.conn.execute('RESET ROLE')
-        self.conn.execute("UPDATE game.checkpoints SET payload=payload-'society' WHERE world_id=%s", (self.world,))
+        self.conn.execute("UPDATE game.checkpoints SET payload=(payload::jsonb-'society')::text WHERE world_id=%s", (self.world,))
         self.conn.execute('SET LOCAL ROLE ratw_dm')
         warnings = self.refs(program([{'do': 'effect', 'effect': {**grant, 'purse': 'till:job:nobody'}}]))
         self.assertTrue(any('no checkpoint yet' in w for w in warnings), 'a world without accounts saved: a warning')
@@ -251,7 +258,7 @@ class InTheWorld(unittest.TestCase):
         p['quests'][0]['board'] = 'greyfen'
         self.refs(p)
         for o, words in [({'on': 'enter place', 'match': {'target': 'moon'}}, 'Unknown place'),
-                         ({'on': 'camp cleared', 'match': {'target': 'camp_nowhere'}}, 'No camp'),
+                         ({'on': 'bandit falls', 'match': {'target': 'camp_nowhere'}}, 'No camp'),
                          ({'on': 'gift', 'match': {'target': 'rm111', 'item': 'dragon_egg'}}, 'No item')]:
             with self.subTest(words=words):
                 q = copy.deepcopy(p)
@@ -268,11 +275,12 @@ class InTheWorld(unittest.TestCase):
 
     def test_a_figure_is_written_and_put_back(self):
         self.conn.execute('RESET ROLE')
+        self.conn.execute('INSERT INTO dm.story_releases(id,world_id,digest,program,approved_by,ticket_hash,status) '
+                          "VALUES ('world-fig',%s,'d','{}'::jsonb,'martin','h','running')", (self.world,))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')   # (The figure is written, and put back, with the runner's own rights.)
         before = runner.write_figure(self.conn, self.world, {'figure': 'nh_villain', 'role': 'villain', 'name': 'Old Brown'})
         self.assertIsNone(before)
         state = {'actor': ASH, 'visits': 1, 'phase': 'one'}
-        self.conn.execute('INSERT INTO dm.story_releases(id,world_id,digest,program,approved_by,ticket_hash,status) '
-                          "VALUES ('world-fig',%s,'d','{}'::jsonb,'martin','h','running')", (self.world,))
         order = runner.order_of(self.conn, self.world, 'world-fig', 'martin', state, {'kind': 'figure.set', **FIGURE, 'player': None} if False
                                 else {'kind': 'figure.set', **{k: v for k, v in FIGURE.items() if k != 'npc'}, 'player': '$actor'},
                                 rules.phases_of(rules.validate(program()))[0])
@@ -284,6 +292,78 @@ class InTheWorld(unittest.TestCase):
         runner.restore_figure(self.conn, self.world, 'martin', hid)
         self.assertEqual(self.conn.execute("SELECT name FROM live.figures WHERE world_id=%s AND id='nh_villain'", (self.world,)).fetchone()[0],
                          'Old Brown')
+
+    # ---- Doc 86, Phase 1b after review.
+
+    def as_owner(self, sql, args=()):
+        self.conn.execute('RESET ROLE')
+        self.conn.execute(sql, args)
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+
+    def test_the_pickers_and_the_memory_read_the_text_checkpoint(self):
+        # (B1: game.checkpoints.payload is text; refs' tills and run_memory read it as jsonb.)
+        tills = runner.refs(self.conn, self.world)['tills']
+        self.assertEqual(tills, [{'id': 'till:job:rm111', 'name': f"{console.RESIDENTS['rm111']}'s till"}])
+        memory = {'town:greyfen': {'nh_stage': {'value': 'reckoning', 'run': 'world-mem', 'until': 40}},
+                  'realm': {'nh_other': {'value': 'x', 'run': 'world-else', 'until': -1}}}
+        self.as_owner("""UPDATE game.checkpoints SET payload=jsonb_set(payload::jsonb,'{people}',%s::jsonb)::text WHERE world_id=%s""",
+                      (json.dumps({'storyMemory': memory}), self.world))
+        self.assertEqual(runner.run_memory(self.conn, self.world, 'world-mem'),
+                         [{'owner': 'town:greyfen', 'key': 'nh_stage', 'value': 'reckoning', 'keep': False, 'daysLeft': 30}])
+
+    def test_a_revive_names_the_dead(self):
+        # (B4: npc.revive brings back the dead; one alive is a warning, not a refusal.)
+        self.assertEqual(self.refs(program([fx('npc.revive', npc='rm119')])), [])
+        warnings = self.refs(program([fx('npc.revive', npc='rm111')]))
+        self.assertTrue(any('rm111 is alive' in w for w in warnings), warnings)
+
+    def test_a_town_purse_pays_as_the_game_maps_it(self):
+        # (G1: the capital, the town the spawn is in, pays from the treasury; a region that is no town pays from nothing.)
+        grant = {'kind': 'character.grant', 'player': '$actor', 'coins': 5, 'reason': 'thanks'}
+        pay = lambda purse: self.refs(program([{'do': 'effect', 'effect': {**grant, 'purse': purse}}]))
+        for cell, region in (('square', 'ridgemere'), ('moor', 'wildmoor')):
+            self.as_owner("INSERT INTO world.areas(world_id,id,kind) VALUES (%s,%s,'cell')", (self.world, cell))
+            self.as_owner("""INSERT INTO world.cells(world_id,id,name,x,y,width,height,region) VALUES (%s,%s,%s,300,100,8,6,%s)""",
+                          (self.world, cell, cell.title(), region))
+        self.as_owner("UPDATE world.worlds SET spawn_area='square',spawn_x=1,spawn_y=1 WHERE id=%s", (self.world,))
+        pay('town:greyfen')
+        pay('town:ridgemere')   # (The city's store is the treasury.)
+        self.assertRaisesRegex(ValueError, '"wildmoor" is no town with a store', pay, 'town:wildmoor')
+        # (A world of one settlement has no town stores: every town pays from the treasury, as the game has it.)
+        self.as_owner("""UPDATE game.checkpoints SET payload=jsonb_set(payload::jsonb,'{society,accounts}',%s::jsonb)::text WHERE world_id=%s""",
+                      (json.dumps({'treasury': {'cash': 900}, 'till:job:rm111': {'cash': 120}}), self.world))
+        pay('town:wildmoor')
+        self.assertEqual(runner.purse_account('town:wildmoor', {'treasury'}, {'wildmoor', 'ridgemere'}, 'ridgemere', True), 'town:wildmoor')
+        self.assertEqual(runner.purse_account('town:ridgemere', {'treasury'}, {'wildmoor', 'ridgemere'}, 'ridgemere', True), 'treasury')
+        self.assertEqual(runner.purse_account('town:wildmoor', {'treasury'}, {'wildmoor', 'ridgemere'}, 'ridgemere', False), 'treasury')
+
+    def test_the_problems_panel_shows_the_worlds_checks(self):
+        # (G4: a dead giver, a purse with no account and a works purse, each in the Problems panel with where it is.)
+        p = program([{'do': 'effect', 'effect': {'kind': 'character.grant', 'player': '$actor', 'coins': 5, 'reason': 'thanks',
+                                                 'purse': 'till:job:nobody'}},
+                     {'do': 'effect', 'effect': {'kind': 'character.grant', 'player': '$actor', 'coins': 5, 'reason': 'thanks',
+                                                 'purse': 'town:greyfen:works'}}])
+        p['quests'] = [{'id': 'q', 'title': 'Q', 'giver': 'rm119', 'objectives': [{'id': 'a', 'label': 'Talk.', 'on': 'conversation',
+                                                                                   'match': {'target': 'rm111'}}]}]
+        p['tests'][0]['cohort'] = p['audience']['players']   # (A rehearsal of the whole audience: no error, so the world's are listed.)
+        found = [x for x in runner.program_problems(self.conn, self.world, p)['problems'] if x.get('world')]
+        texts = {x['path']: x['text'] for x in found}
+        self.assertIn('rm119 has died', texts.get('quests[0].giver', ''), found)
+        self.assertTrue(any('No purse till:job:nobody' in t for t in texts.values()), found)
+        self.assertTrue(any('no works, watch or church purse' in t for t in texts.values()), found)
+        self.assertTrue(all(x['blocks'] for x in found if 'has died' in x['text'] or 'purse' in x['text']), found)
+
+    def test_the_talk_sample_is_clean_in_the_world(self):
+        # (G4: the sample's references on a migrated world: none refused, nothing to warn of.)
+        self.assertEqual(self.refs(story_v2_samples.TALK, chapters=True), [])
+
+    def test_approval_tells_its_warnings(self):
+        # (G3: what does not block is told to the approver.)
+        p = program([fx('npc.revive', npc='rm111')])
+        p['tests'][0]['cohort'] = p['audience']['players']
+        out = runner.approve(self.conn, self.world, 'martin', p, rules.digest(p))
+        self.assertTrue(out['ticket'])
+        self.assertTrue(any('rm111 is alive' in w for w in out['warnings']), out)
 
 
 if __name__ == '__main__':

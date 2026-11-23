@@ -1704,7 +1704,7 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             json::parse(*row[4], payload, problem);
         outcome = applyStoryHold(kind, target, payload.isObject() ? payload : json::Value::object());
     }
-    else if (kind == "story.campaign.end")
+    else if (kind == "story.campaign_end")
     {
         // Doc 86, C11: the runner says a campaign has ended; its holds are let go (target: the campaign's id).
         if (target.empty() || target.size() > 80)
@@ -1731,25 +1731,30 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             outcome = {false, "No such resident.", target};
         else
         {
+            bool ownHold = false;
             if (kind == "npc.unprotect")
             {
-                // (Doc 86, C11: a story's Unprotect also lets go of its own holds.)
+                // (Doc 86, C11: a story's Unprotect lets go of its own holds, and only those: the resident's own
+                // protection, a House head's or Atlas's, stays. One with no hold of its own unmarks, as ever.)
                 json::Value payload;
                 std::string problem;
                 if (row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject() && payload.has("run"))
                     if (auto k = storyHolds_.find("protect"); k != storyHolds_.end())
                         if (auto n = k->second.find(target); n != k->second.end())
                         {
-                            n->second.erase("run:" + payload.string("run"));
+                            ownHold = n->second.erase("run:" + payload.string("run")) > 0;
                             if (payload.has("campaign"))
-                                n->second.erase("campaign:" + payload.string("campaign"));
+                                ownHold = n->second.erase("campaign:" + payload.string("campaign")) > 0 || ownHold;
                             if (n->second.empty())
                                 k->second.erase(n);
                         }
             }
-            (kind == "npc.protect" ? unprotectedMarks_ : protectedMarks_).erase(target);
-            (kind == "npc.protect" ? protectedMarks_ : unprotectedMarks_).insert(target);
-            outcome = {true, kind == "npc.protect" ? "Protected." : "No longer protected.", target};
+            if (!ownHold)
+            {
+                (kind == "npc.protect" ? unprotectedMarks_ : protectedMarks_).erase(target);
+                (kind == "npc.protect" ? protectedMarks_ : unprotectedMarks_).insert(target);
+            }
+            outcome = {true, kind == "npc.protect" ? "Protected." : ownHold ? "The story's protection is let go." : "No longer protected.", target};
             saveSoon();
         }
     }

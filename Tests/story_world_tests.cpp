@@ -355,6 +355,16 @@ void phase1b()
         expect(!order("npc.kill", "u3", "").ok && !w.entity("u3")->dead, "a story never kills them");
         expect(order("npc.protect", "s3", R"({"lasts":"run"})", other).ok && t.g.residentProtected("s3"), "the pack protects s3");
         expect(order("npc.unprotect", "s3", "", other).ok && !t.g.residentProtected("s3"), "and its Unprotect lets go");
+        // (A story's Unprotect lets go of its own hold only: a resident protected for good stays so, and stories may still
+        // protect them; doc 86, G2.)
+        expect(t.g.applyDmAct({std::to_string(++n), "npc.protect", "s2", "dm", "{}"}).ok && t.g.residentProtected("s2"),
+               "a Dungeon Master protects s2 for good");
+        expect(order("npc.protect", "s2", R"({"lasts":"run"})").ok, "the story protects s2 while it runs too");
+        r = order("npc.unprotect", "s2", "");
+        expect(r.ok && t.g.residentProtected("s2") && t.g.storyHoldOwners("protect", "s2").empty(),
+               "the story's Unprotect lets go of its own hold, and s2 is still protected: " + r.message);
+        r = order("npc.protect", "s2", R"({"lasts":"run"})", other);
+        expect(r.ok, "and another story may still protect s2: " + r.message);
 
         // ---- C8: what residents remember.
         const auto here = w.townIdOf(w.entity("u1")->cellId);
@@ -432,6 +442,12 @@ void phase1b()
         }
 #endif
         expect(!order("belief.plant", "u1", R"({"town":")" + here + R"(","claim":"is rm111","count":3,"confidence":60})").ok, "never an id");
+        // (Any word that mixes letters and digits is taken for an id, as story_program.claim_has_id: doc 86, B6.)
+        for (const std::string claim : {"was seen at the docks at 2am", "sold 3rd-rate grain", "paid 40s for it"})
+            expect(!order("belief.plant", "u1", R"({"town":")" + here + R"(","claim":")" + claim + R"(","count":3,"confidence":60})").ok,
+                   "refused as Python refuses it: " + claim);
+        expect(order("belief.plant", "u1", R"({"town":")" + here + R"(","claim":"paid 40 shillings for a well-known blade","count":3,"confidence":60})").ok,
+               "a number and a hyphen alone are words");
         t.g.save();
     }
     {
@@ -451,7 +467,7 @@ void phase1b()
         for (const auto& [owner, memos] : mem)
             kept |= owner.rfind("pair:", 0) == 0 && memos.count("nh_stone");
         expect(kept, "but what was kept stays");
-        expect(t.g.applyDmAct({"301", "story.campaign.end", "the-ninth-howl", "story-runner", "{}"}).ok && !w.storySpared("s1"),
+        expect(t.g.applyDmAct({"301", "story.campaign_end", "the-ninth-howl", "story-runner", "{}"}).ok && !w.storySpared("s1"),
                "the campaign ends: its hold is let go");
     }
     fs::remove_all(root);

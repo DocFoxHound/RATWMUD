@@ -288,8 +288,18 @@ TALK_VALUE = re.compile(r'[a-z0-9_]{1,40}')
 FIGURE_ID = re.compile(r'[a-z0-9_]{3,40}')
 TALK_SCOPES = {'realm': (), 'town': ('town',), 'npc': ('npc',), 'pair': ('npc', 'player')}
 PAIR_WORDS = 'Pair memory needs a wolf of the story: use it in a participant trigger (the acting wolf) or For each over wolves.'
-# (A rumour's phrase follows a name: "#x.name# was seen at the Customs House". Never an id, a symbol or a fill.)
-CLAIM_ID = re.compile(r'\b([a-z]{1,4}\d+[a-z0-9]*|[a-z0-9]+_[a-z0-9_]+|wolf-[a-z0-9-]+)\b')
+# (A rumour's phrase follows a name: "#x.name# was seen at the Customs House". Never an id, a symbol or a fill. A word is
+# a run of letters, digits, _ and - (as the game's idInWords reads it, RatwGameStoryWorld.cpp): one with an _, one that
+# mixes letters and digits (rm111, but "2am" and "3rd-rate" too) or one that starts wolf- is taken for an id; doc 86, B6.)
+CLAIM_WORD = re.compile(r'[A-Za-z0-9_][A-Za-z0-9_-]*')
+
+
+def claim_has_id(claim):
+    """Whether a rumour's phrase holds what the game takes for an id (Game's idInWords, word for word)."""
+    for w in CLAIM_WORD.findall(claim):
+        if '_' in w or w.startswith('wolf-') or (re.search('[0-9]', w) and re.search('[A-Za-z]', w)):
+            return True
+    return False
 
 
 def figure_roles():
@@ -299,9 +309,9 @@ def figure_roles():
 
 
 def check_claim(claim, pid):
-    require(claim == claim.strip() and claim[:1].islower() and not any(ch in claim for ch in '#[]{}\n') and not CLAIM_ID.search(claim),
+    require(claim == claim.strip() and claim[:1].islower() and not any(ch in claim for ch in '#[]{}\n') and not claim_has_id(claim),
             f'{pid}: a rumour\'s claim is a phrase that follows a name, in small letters at first ("was seen at the Customs House"), '
-            'with no ids, # or brackets.')
+            'with no ids, # or brackets (no word with _ or that runs letters into digits: "at two in the morning", not "at 2am").')
 
 
 # Doc 85, 3.5 and Phase 7: what the runner does when the game refuses an effect it sent. Any effect the game applies may

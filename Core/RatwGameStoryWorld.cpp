@@ -621,7 +621,7 @@ Value Game::storyJournalExtras(const storylines::Storyline& s, const std::string
 
 // ---- Doc 86, Phase 1b: a story's holds on a resident (C11: spared from old age, protected for a while) and what the
 // residents remember and come to believe from it (C8, T7). Each hold has owners, "run:<run>" (let go when the run ends)
-// or "campaign:<id>" (let go when the runner says the campaign has ended: story.campaign.end); a resident is spared or
+// or "campaign:<id>" (let go when the runner says the campaign has ended: story.campaign_end); a resident is spared or
 // protected while any owner holds them. A memory belongs to an owner as talk's own does (realm, town:<region>,
 // person:<npc>, pair:<a>|<b>), kept apart from talk's so a story's is never evicted by talk's, and recalled under it.
 namespace
@@ -946,9 +946,17 @@ void Game::storyTalkLoad(const Value& saved)
                         storyHolds_[kind][npc].insert(o.asString());
     storyMemory_.clear();
     for (const auto& [owner, kept] : saved.object("storyMemory").fields())
+    {
+        // (As remembering caps them: a pair's owner keeps PairPerOwner, any other MemoryPerOwner; no empty owner made.)
+        const auto cap = owner.rfind("pair:", 0) == 0 ? PairPerOwner : MemoryPerOwner;
         for (const auto& [key, j] : kept.fields())
-            if (talkWord(key, true) && talkWord(j.string("value"), false) && storyMemory_[owner].size() < MemoryPerOwner)
-                storyMemory_[owner][key] = {j.string("value"), j.number("until", -1), j.string("run"), j.boolean("keep")};
+            if (talkWord(key, true) && talkWord(j.string("value"), false))
+            {
+                auto& mine = storyMemory_[owner];
+                if (mine.size() < cap || mine.count(key))
+                    mine[key] = {j.string("value"), j.number("until", -1), j.string("run"), j.boolean("keep")};
+            }
+    }
     sparedChanged();
 }
 } // namespace ratw::game

@@ -69,7 +69,7 @@ export function NewCampaign({target, done}: {target: Target; done: (run?: string
     const [chosen, setChosen] = useState<number[]>([]);
     const [id, setId] = useState(''), [title, setTitle] = useState('');
     const [problem, setProblem] = useState(''), [busy, setBusy] = useState(false);
-    const [approved, setApproved] = useState<{campaign: string; ticket?: string; chapters: {story: string; title: string}[]} | null>(null);
+    const [approved, setApproved] = useState<{campaign: string; ticket?: string; chapters: {story: string; title: string}[]; warnings?: string[]} | null>(null);
     useEffect(() => {
         storyProgram<{drafts: DraftRow[]}>(target, 'draft.list').then(r => setDrafts(r.drafts), e => setProblem((e as Error).message));
     }, [target]);
@@ -101,6 +101,7 @@ export function NewCampaign({target, done}: {target: Target; done: (run?: string
             "Start the next chapter" (story.start), when it has ended (the default) or at once. The first is published here; the others wait for the chapter before them.</p>
         {approved ? <>
             <p>Approved <b>{approved.campaign}</b>: {approved.chapters.map((c, i) => `${i + 1}. ${c.title}`).join(' · ')}.</p>
+            {approved.warnings?.length ? <ul className="hint">{approved.warnings.map((w, i) => <li key={i}>{w}</li>)}</ul> : null}
             {approved.ticket ? <div className="camp-controls"><button className="primary" disabled={busy} onClick={() => void publish()}>Publish chapter 1 now</button>
                 <button onClick={() => done()}>Later</button><small className="hint">The ticket is good for a day.</small></div>
                 : <p className="hint">Its first chapter has started already: the new approval replaces the chapters still to come.</p>}

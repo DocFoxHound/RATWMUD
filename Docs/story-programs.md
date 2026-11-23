@@ -276,13 +276,14 @@ unless `keep`. **Rumours.** `belief.plant {subject, claim, town, count 1-50, con
 subject): `count` residents of the town (alive, with a home, not the subject; ordered by the run's seed) believe the claim
 with the kind `story.rumour` (Data/Talk/claims.json: "#x.name# #claim.text#") or, with `claimKind: "story.cleared"`, its
 clearing (believed as "never <claim>"). The claim is a phrase that follows a name: a small letter first, 120 characters, no
-`#`, brackets or ids. **Figures.** `figure.set {figure, role, npc | player | name, title?, known: realm | region | house,
+`#`, brackets or ids (a word with `_`, one that mixes letters and digits, or one that starts `wolf-`: the same rule in
+`story_program.claim_has_id` and the game). **Figures.** `figure.set {figure, role, npc | player | name, title?, known: realm | region | house,
 region?, house?, about?}` and `figure.clear {figure}` (needs a builder): the runner writes `live.figures` (as the Dungeon
 Master's Figures panel does: `story_runner.write_figure`), keeps the row it replaced in the run's history (`entry.figure`),
 and sends `voice.sync`; the op `figure-undo {history}` puts it back. **Holds.** `npc.spare {npc, lasts: run | campaign}`,
 `npc.unspare {npc}`, and `npc.protect`'s `lasts` (`ever`, the default and the mark it always was; `run`; `campaign`): the
 runner sends the run (and its campaign); the game keeps each resident's owners (`people.storyHolds`), skips a spared one in
-old age, counts a protected one as protected, drops a run's owners when it ends and a campaign's on `story.campaign.end`
+old age, counts a protected one as protected, drops a run's owners when it ends and a campaign's on `story.campaign_end`
 (sent once when the campaign ends; the op `campaign-release {campaign}` sends it for an act stopped early). `lasts:
 campaign` is refused unless the story is approved as a chapter. **Choices for a list of wolves.** `npc.offer` with a `player`
 offered again under the same id adds that wolf (`players`, up to 5,000; the words and reply the latest; who picked it kept).

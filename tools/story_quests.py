@@ -84,7 +84,9 @@ def check_purse(v):
     if parts[0] == 'town':
         return 2 <= len(parts) <= 3 and bool(parts[1]) and (len(parts) == 2 or parts[2] in TOWN_PURSES)
     if parts[0] == 'till' and len(parts) == 3:
-        return parts[1] == 'job' and bool(parts[2])   # (Doc 86, SQ2: the game's tills are till:job:<founder>.)
+        return parts[1] == 'job' and bool(parts[2])
+    if parts[0] == 'till' and parts[1:] == ['job']:
+        return False   # (till:job is the start of a till's name, not one.)   # (Doc 86, SQ2: the game's tills are till:job:<founder>.)
     return len(parts) == 2 and bool(parts[1])
 
 

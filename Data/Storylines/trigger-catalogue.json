@@ -9630,7 +9630,7 @@
    "group": "residents",
    "title": "Remove a resident's protection",
    "sentence": "{npc} can be killed again",
-   "help": "Takes the mark off.",
+   "help": "Takes the mark off. When this story protected them for its run or its campaign, lets go of that protection only: one protected in their own right, or by the Dungeon Master, stays protected.",
    "params": [
     {
      "key": "npc",

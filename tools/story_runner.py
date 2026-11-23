@@ -250,29 +250,37 @@ def phase9_references(conn, world, e):
 OBJECTIVE_TARGETS = {'conversation': 'character', 'gift': 'character', 'gift again': 'character', 'near resident': 'resident',
                      'enter place': 'place', 'camp cleared': 'camp', 'bandit falls': 'camp'}
 NAMED_RESIDENT_KEYS = ('npc', 'giver', 'from', 'like', 'subject')
-ALIVE_WARNED = ('npc.kill', 'foe.outlaw')   # (They may die before the effect runs: the game refuses it then.)
+ALIVE_WARNED = ('npc.kill',)   # (They may die before the effect runs: the game refuses it then.)
+DEAD_WANTED = ('npc.revive',)   # (Brings back the dead: one alive is a warning, the game refuses it then.)
 
 
 def checkpoint_accounts(conn, world, names):
     """Of these account names, the ones the world's latest checkpoint has (society.accounts); None with no checkpoint, or
     one that has saved no accounts yet (a new world)."""
-    saved = conn.execute("""SELECT jsonb_typeof(payload->'society'->'accounts')='object' AND payload->'society'->'accounts'<>'{}'::jsonb
+    saved = conn.execute("""SELECT jsonb_typeof(payload::jsonb->'society'->'accounts')='object' AND payload::jsonb->'society'->'accounts'<>'{}'::jsonb
                             FROM game.checkpoints WHERE world_id=%s""", (world,)).fetchone()
     if not saved or not saved[0]:
         return None
     return {r[0] for r in conn.execute(
-        """SELECT k FROM game.checkpoints c CROSS JOIN LATERAL (SELECT c.payload->'society'->'accounts' AS a) x
+        """SELECT k FROM game.checkpoints c CROSS JOIN LATERAL (SELECT c.payload::jsonb->'society'->'accounts' AS a) x
            CROSS JOIN LATERAL jsonb_object_keys(CASE WHEN jsonb_typeof(x.a)='object' THEN x.a ELSE '{}'::jsonb END) k
            WHERE c.world_id=%s AND k=ANY(%s)""", (world, sorted(names)))}
 
 
-def purse_account(purse, accounts, towns):
-    """The account a purse pays from, as Game::storyPurseAccount maps it: a town's store (the city's is the treasury, as
-    Society::treasuryOf has it), a business's till by either spelling, or the name itself."""
+def purse_account(purse, accounts, towns, capital=None, town_stores=None):
+    """The account a purse pays from, as Game::storyPurseAccount maps it: a town's store, a business's till by either
+    spelling, or the name itself. A town's store is stores:<town>, but the capital's is the treasury, and so is every
+    town's in a world of one settlement (no stores:<town> at all, `town_stores` False). In a world of towns, a region that
+    is no town and has no store pays from no account (doc 86, G1). `capital`: the region the world's spawn is in (the
+    game's capital; None: not known, so any region of `towns` may be it)."""
     parts = purse.split(':')
     if parts[0] == 'town' and len(parts) == 2:
         own = 'stores:' + parts[1]
-        return own if own in accounts or parts[1] not in towns else 'treasury'
+        if own in accounts or parts[1] not in towns:
+            return own
+        if town_stores is False or capital is None or parts[1] == capital:
+            return 'treasury'
+        return purse
     if parts[0] == 'till' and len(parts) == 2 and purse not in accounts:
         return 'till:job:' + parts[1]
     return purse
@@ -304,7 +312,8 @@ def _resident_sites(program):
             if not isinstance(value, str) or value in ('$actor', '$each', '') or key == 'kind':
                 continue
             if key in NAMED_RESIDENT_KEYS or params.get(key, {}).get('type') == 'resident':
-                yield path, at, value, ('kill' if e['kind'] in ALIVE_WARNED and key == 'npc' else key)
+                yield path, at, value, ('kill' if e['kind'] in ALIVE_WARNED and key == 'npc' else
+                                        'revive' if e['kind'] in DEAD_WANTED and key == 'npc' else key)
     for qi, q in enumerate(program.get('quests', []) or []):
         if isinstance(q.get('giver'), str):
             yield f'quests[{qi}].giver', {'kind': 'quest', 'index': qi, 'id': q.get('id'), 'part': 'giver'}, q['giver'], 'giver'
@@ -341,6 +350,14 @@ def world_checks(conn, world, program, chapters=False):
         for _, _, purse in purses:
             wanted.update({purse, 'till:job:' + purse.split(':', 1)[-1], 'stores:' + purse.split(':', 1)[-1], 'treasury'})
         accounts = checkpoint_accounts(conn, world, wanted)
+        # (The game's capital is the town its spawn is in; in a world with no stores:<town> there is one settlement.)
+        spawn = conn.execute("""SELECT c.region FROM world.worlds w JOIN world.cells c ON c.world_id=w.id AND c.id=w.spawn_area
+                                WHERE w.id=%s""", (world,)).fetchone()
+        town_stores = bool(conn.execute(
+            """SELECT 1 FROM game.checkpoints c CROSS JOIN LATERAL (SELECT c.payload::jsonb->'society'->'accounts' AS a) x
+               CROSS JOIN LATERAL jsonb_object_keys(CASE WHEN jsonb_typeof(x.a)='object' THEN x.a ELSE '{}'::jsonb END) k
+               WHERE c.world_id=%s AND k LIKE 'stores:%%' LIMIT 1""", (world,)).fetchone())
+        capital = spawn[0] if spawn and spawn[0] and spawn[0] != 'unassigned' else None
         for path, at, purse in purses:
             parts = purse.split(':')
             if parts[0] == 'town' and len(parts) == 3:
@@ -349,7 +366,10 @@ def world_checks(conn, world, program, chapters=False):
                 add(path, at, f'This world has no checkpoint yet: the purse {purse} is checked once it has one.', False)
             elif parts[0] == 'town' and parts[1] not in towns and 'stores:' + parts[1] not in accounts:
                 add(path, at, f'No town "{parts[1]}" in this world pays: name a town (town:<town>).')
-            elif purse_account(purse, accounts, towns) not in accounts:
+            elif parts[0] == 'town' and purse_account(purse, accounts, towns, capital, town_stores) not in accounts:
+                add(path, at, f'"{parts[1]}" is no town with a store of its own in this world (as last saved): name a town '
+                    f'(town:<town>){" or the city (town:" + capital + ")" if capital else ""}.')
+            elif purse_account(purse, accounts, towns, capital, town_stores) not in accounts:
                 add(path, at, f'No purse {purse} in this world (as last saved): name a town, a business\'s till (till:job:<resident>) '
                     'or a Chapter that has one.')
     # V1.1: what a quest's objectives name.
@@ -410,6 +430,9 @@ def world_checks(conn, world, program, chapters=False):
             placed, alive = rows[rid]
             if not placed:
                 add(path, at, f'{rid} has no place in the world yet: place them first, or name someone who is.', role != 'like')
+            elif role == 'revive':
+                if alive:
+                    add(path, at, f'{rid} is alive: the game will refuse to bring them back unless they have died by then.', False)
             elif not alive:
                 add(path, at, f'{rid} has died: name someone living.' if role not in ('like', 'kill') else
                     (f'{rid} has died: their looks are old.' if role == 'like' else f'{rid} has died already: the game will refuse this.'),
@@ -454,16 +477,19 @@ def approve(conn, world, who, program, digest, for_run=None):
         rules.require(row, 'This story starts another: only a chapter of a campaign may.')
         campaign = {ch['story'] for ch in row[0]}
         _check_chapter(rules.validate(program), campaign, program['id'])
-    references(conn, world, program, chapters=campaign is not None)
+    # (A new version of a running chapter is a chapter too, so its holds for the campaign stand: doc 86, C11.)
+    in_campaign = campaign is not None or (for_run is not None and bool(_campaign_of(conn, for_run)))
+    warnings = references(conn, world, program, chapters=in_campaign)
+    # (Doc 86, G3: what the world's checks warn of, that does not block, is told to the approver.)
     if for_run is not None:
-        return approve_version(conn, world, who, program, digest, for_run)
+        return {**approve_version(conn, world, who, program, digest, for_run), 'warnings': warnings}
     run, ticket = 'world-' + uuid.uuid4().hex, secrets.token_urlsafe(32)
     conn.execute(
         """INSERT INTO dm.story_releases(id,world_id,digest,program,approved_by,ticket_hash,status)
                     VALUES (%s,%s,%s,%s::jsonb,%s,%s,'approved')""",
         (run, world, digest, json.dumps(program), who, ticket_hash(ticket)),
     )
-    return {'run': run, 'ticket': ticket, 'digest': digest}
+    return {'run': run, 'ticket': ticket, 'digest': digest, 'warnings': warnings}
 
 
 # A dry run of a console command (doc 85, 5.5: "this will do") records the orders it would send; the transaction it runs in
@@ -578,7 +604,7 @@ def launch(conn, world, run, program, who, cohort=None, carried=None, chapter_of
         (world, program['id']),
     ).fetchone()
     rules.require(not other, 'This story already has a live run.')
-    references(conn, world, program, chapters=bool(chapter_of) or bool(_campaign_of(conn, run)))
+    warnings = references(conn, world, program, chapters=bool(chapter_of) or bool(_campaign_of(conn, run)))
     a = program['audience']
     # Read the calendar and event watermark from a single MVCC snapshot.
     snapshot = conn.execute(
@@ -659,7 +685,7 @@ def launch(conn, world, run, program, who, cohort=None, carried=None, chapter_of
         state.update(playerRows=True, cohortSent=list(state['cohort']))
     enter(conn, run, program, who, state, cursor, 'published' if not chapter_of else f'started by {chapter_of["from"]}')
     tell_stories(conn, world, run, 'story started', program['id'], (chapter_of or {}).get('campaign') or _campaign_of(conn, run))
-    return {'run': run, 'status': 'running', 'eligible': len(cohort)}
+    return {'run': run, 'status': 'running', 'eligible': len(cohort), 'warnings': warnings}
 
 
 def seen_lately(conn, world, cohort, day, active_days, cursor):
@@ -933,10 +959,10 @@ def restore_figure(conn, world, who, history_id):
 
 def release_campaign(conn, world, who, campaign):
     """The console's "Let go of the campaign's holds" (doc 86, C11): for an act stopped early, the residents its chapters
-    spared or protected for the campaign are let go now (the game's story.campaign.end)."""
+    spared or protected for the campaign are let go now (the game's story.campaign_end)."""
     rules.require(isinstance(campaign, str) and campaign and _campaigns_table(conn) and conn.execute(
         'SELECT 1 FROM dm.story_campaigns WHERE world_id=%s AND id=%s', (world, campaign)).fetchone(), 'No such campaign.')
-    return {'campaign': campaign, 'receipt': queue(conn, who, 'story.campaign.end', campaign, {'by': who})}
+    return {'campaign': campaign, 'receipt': queue(conn, who, 'story.campaign_end', campaign, {'by': who})}
 
 
 # Doc 85, Phase 9: the new world effects, each the game order of its own name. The target is what it acts on (a wolf, a
@@ -1369,9 +1395,10 @@ def approve_campaign(conn, world, who, data):
         programs.append(rules.validate(ch['program']))
     ids = [p['id'] for p in programs]
     rules.require(len(set(ids)) == len(ids), 'Every chapter is a different story.')
-    for p in programs:
+    warnings = []
+    for n, p in enumerate(programs):
         _check_chapter(p, set(ids), p['id'])
-        references(conn, world, p, chapters=True)
+        warnings += [f'Chapter {n + 1} ({p["title"]}): {w}' for w in references(conn, world, p, chapters=True)]
     conn.execute('SELECT pg_advisory_xact_lock(hashtext(%s),hashtext(%s))', (world, 'campaign:' + cid))
     started = {r[0]: r[1] for r in conn.execute(
         """SELECT program->>'id',id FROM dm.story_releases WHERE world_id=%s AND campaign=%s AND status<>'approved'""",
@@ -1388,7 +1415,7 @@ def approve_campaign(conn, world, who, data):
         (world, cid, title, json.dumps(entries), who, 'running' if started else 'approved'))
     out = {'campaign': cid, 'title': title, 'chapters': [{'story': e['story'], 'title': e['title'], 'digest': e['digest'],
                                                           **({'run': started[e['story']]} if e['story'] in started else {})}
-                                                         for e in entries]}
+                                                         for e in entries], 'warnings': warnings}
     if ids[0] not in started:
         # (An earlier approval's first chapter, never published, gives way to this one: its ticket no longer starts anything.)
         conn.execute("DELETE FROM dm.story_releases WHERE world_id=%s AND campaign=%s AND status='approved' AND state IS NULL", (world, cid))
@@ -1506,7 +1533,7 @@ def run_ended(conn, world, run, program, state, how):
                                  (world, cid)).fetchone()
             if ended:
                 # (Doc 86, C11: the residents its chapters held for the campaign are let go, once.)
-                queue(conn, 'story-runner', 'story.campaign.end', cid, {'run': run})
+                queue(conn, 'story-runner', 'story.campaign_end', cid, {'run': run})
 
 
 def campaigns(conn, world):
@@ -2895,7 +2922,7 @@ def run_memory(conn, world, run):
     """The console's "What residents remember" (doc 86, C8): the memories a run gave, from the last checkpoint (the game
     keeps them beside talk's own): who remembers (the realm, a town, a resident, a resident about a wolf), the key and
     value, the days left and whether they outlast the story."""
-    row = conn.execute("""SELECT payload->'people'->'storyMemory', payload->'calendarDays' FROM game.checkpoints WHERE world_id=%s""",
+    row = conn.execute("""SELECT payload::jsonb->'people'->'storyMemory', payload::jsonb->'calendarDays' FROM game.checkpoints WHERE world_id=%s""",
                        (world,)).fetchone()
     if not row or not isinstance(row[0], dict):
         return []
@@ -5284,7 +5311,7 @@ def refs(conn, world):
                         for v in world_vars(conn, world)['variables'] if v.get('declared')]
     # (Doc 86, SQ2: the businesses' tills a reward may pay from, as the last checkpoint has them, by their founder's name.)
     tills = sorted(r[0] for r in conn.execute(
-        """SELECT k FROM game.checkpoints c CROSS JOIN LATERAL (SELECT c.payload->'society'->'accounts' AS a) x
+        """SELECT k FROM game.checkpoints c CROSS JOIN LATERAL (SELECT c.payload::jsonb->'society'->'accounts' AS a) x
            CROSS JOIN LATERAL jsonb_object_keys(CASE WHEN jsonb_typeof(x.a)='object' THEN x.a ELSE '{}'::jsonb END) k
            WHERE c.world_id=%s AND k LIKE 'till:job:%%' LIMIT %s""", (world, REFS_LIMIT)))
     founders = {r['id']: r['name'] for r in out['residents']}

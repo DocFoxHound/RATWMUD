@@ -148,7 +148,9 @@ from old age** (`npc.spare`) and **Protect a resident** (`npc.protect`) take `"l
 chapter that set it and is let go when the campaign ends (the last chapter done, none running). Only a story approved as a
 chapter may hold for the campaign; approving it alone is refused. An act stopped early keeps its holds until an admin
 presses **Let go of the campaign's holds…** on the campaign's card in the Campaigns list. With `"lasts": "run"` (Spare's
-default) the hold goes when the run ends; Protect's default, `ever`, is the mark it always was (until Unprotect).
+default) the hold goes when the run ends; Protect's default, `ever`, is the mark it always was (until Unprotect). A
+story's **Unprotect** of a resident it protected for its run or campaign lets go of that protection only: a House head,
+one Atlas protects or one a Dungeon Master protected stays protected.
 
 ```json
 {"kind": "npc.spare",   "npc": "rm_ingrid_kendrick", "lasts": "campaign"}
@@ -387,7 +389,9 @@ and a key table of the campaign's (`nh_stage`, `nh_debts`…) so chapters agree 
 **Rumours** (`belief.plant`): a number of residents of a town (living, placed, never the one it is about; the same ones each
 time, by the run's seed) come to believe a phrase of a resident, as if they had heard it: gossip tells it ("Ingrid Kendrick
 was seen at the Customs House at midnight") and it spreads on friendships and caravans like any belief, fading by the
-world's rules. Write the phrase as what follows a name, in small letters at first, with no ids or names. `"claimKind":
+world's rules. Write the phrase as what follows a name, in small letters at first, with no ids or names: no word with `_`, none
+that starts `wolf-`, and none that runs letters into digits (the game takes "rm111", but also "2am" or "3rd-rate", for an
+id: write "at two in the morning", "third-rate"). `"claimKind":
 "story.cleared"` plants the **clearing**, written as the thing **not** done ("took the Customs House silver"): it is told
 "Ingrid Kendrick never took the Customs House silver". A clearing does not lower the old belief; putting a rumour to rest
 comes later (`belief.forget`).
@@ -5193,7 +5197,7 @@ Reads: **rm111** cannot be killed
 
 <a id="effect-npc-unprotect"></a>**`npc.unprotect`**: Remove a resident's protection
 
-Takes the mark off.
+Takes the mark off. When this story protected them for its run or its campaign, lets go of that protection only: one protected in their own right, or by the Dungeon Master, stays protected.
 
 Reads: **rm111** can be killed again
 
