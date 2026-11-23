@@ -977,6 +977,7 @@ def _check_trigger(t, phase, ids, links, runs=None, collect=None):
             'the game must know what to look at.')
     if t['on'] in ('purse crossed', 'standing crossed') and 'detail' in match:
         require(re.fullmatch(r'-?[0-9]{1,9}', match['detail']) is not None, f'"{t["on"]}" names a whole number to cross.')
+    rules.check_moon(t['on'], match)
     rules.check_region_source(t, phase.get('_regions'))
     if 'if' in t:
         condition(t['if'], 1)

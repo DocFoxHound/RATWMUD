@@ -305,7 +305,9 @@ wolves). `{{` and `}}` are braces.
   fills as its name**: the story leaves a token the game turns into the name when it shows the words ("Ash stood watch at
   the ford…"). A fill with no value is nothing, with a note.
 - A wolf's own variable is always written `{name.of}`; the story's and the world's without. An offer's words are the same
-  for every wolf, so they take no `{name.of}`; a quest's summary and objectives are filled for each wolf who reads them.
+  for every wolf, so they take no `{name.of}`, nor does the summary of a quest a resident gives or a board shows (it is the
+  offer's words too); a quest's summary and objectives are otherwise filled for each wolf who reads them. A reward given
+  once (it names no wolf as `$actor` and reads none of theirs) takes no `{name.of}` either.
 - **The length is checked with each fill at its widest**: a number 11 characters, a text 200, a wolf's name 24, any other
   name 40. A text fill fits a 300-character notice, not a 200-character note. The game cuts what is longer at a word.
 - The workbench shows fills as chips, offers the declared variables to fill in, and the widest length beside the count;
@@ -325,7 +327,8 @@ A wolf's shown number may **mirror** a world number: the one their own text name
 ```
 
 A wolf whose `p_howl` is `coldwater` sees `nh_voice_coldwater`; one with none sees 0. It is never stored and never set
-(a Set on it is refused); triggers read it as any variable. Up to 16 names, each a declared world number. So "Your town's
+(a Set on it is refused, in a trigger and on the console); triggers read it as any variable. It is not told to residents
+(`talk`): it holds nothing of its own. Up to 16 names, each a declared world number. So "Your town's
 howl" needs no hourly For each over thousands of wolves.
 
 ### Counting who took part
@@ -394,7 +397,9 @@ rule above ends the quest when the carter dies.
 - **A goal from a value:** an objective's `goal` may be a value, `{"max": [12, {"times": [{"audience": "active"}, 4]}]}`,
   read when a copy starts and kept in it (1 to 1,000,000). With `"goalLive": true` (a quest of the whole story only) it is
   read again as the copy is credited and after each firing, never below what is made, and the objective is done the
-  moment what is made reaches it. A goal not known yet is out of reach until it is.
+  moment what is made reaches it. A goal not known when the copy starts (a purse or the wolves online not known yet) is
+  read again as the copy is credited and after each event, and is out of reach until it is; the journal and the console's
+  Quests grid show it as it reads now.
 - **Again after a wait:** `"join": {"again": 7}`: after any end (done, failed or abandoned) the same wolf waits 7 game days
   before taking it again ("Not yet." in the window). With a `repeat`, done waits the longer of the two. Without it, a wolf
   who failed or abandoned may take it again at once, as before.
@@ -474,7 +479,8 @@ by how it begins. The condition **The event's field** takes **begins with** (`"o
 **The moon.** `calendar is` reads the moon (`"what": "moon"`: `new`, `waxing`, `full` or `waning`, by the quarter its name
 falls in), and the watched event **The moon turns** (`moon`: `detail` the quarter, `quantity` the day of its round, 0 to 29)
 comes when it passes into another quarter. A Readiness may wait for the next new moon: `"then": {"on": "moon", "match":
-{"detail": "new"}}`. The moon is optional timing: a chapter is paced by participation and time.
+{"detail": "new"}}`. The detail is checked: `new`, `waxing`, `full` or `waning` (or one of them). The moon is optional
+timing: a chapter is paced by participation and time.
 
 ### Talk and rumour from a story
 
@@ -683,7 +689,7 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | The share reads 0% | Readiness → the bar | No active wolves yet (none seen in the last `activeDays` game days), or the list is empty. Who is "online" is unknown until the world says (the story watches its wolves). |
 | A resident's memory line never plays | Variables & timers → **What residents remember** | Is the key there, with days left? A town's is that town's residents only; a pair's only for that wolf. The line's gate must match the key and value exactly. |
 | Approval refuses a purse | the purse | `till:job:<founder>` (or `till:<founder>`) of a till the world has; no town has works, watch or church purses. |
-| An effect was not sent | the firing's history | "skipped: coins has no value": a value it reads had none (a wolf not in the story, a purse not known). A reward with no value is kept in the run's `rewardNotes`. |
+| An effect was not sent | the firing's history | "skipped: coins has no value": a value it reads had none (a wolf not in the story, a purse not known). A reward with no value is in the timeline as "Reward not given". |
 | A name shows as «wolf: …» or a fill is empty | Rehearse → Step through | A rehearsal shows the token the game turns into a name. An empty fill had no value (noted in the firing). |
 | An objective never ticks | Quests → the objective | `where` (the cells or the region), `credit` (the actor, the target, those present: is the story watching its wolves?), and a `camp_story_` name the story spawns. |
 | Problems in the draft | Story Creator → **Problems** | Every problem at once with **Go**, and the world's warnings (a signal nothing hears, a counter nothing sets, an id the world lacks). |

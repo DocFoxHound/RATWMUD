@@ -1352,4 +1352,35 @@ text parameters marked `"fills": true`.
   the purse facts, named camps and the name tokens are the game's), the story runner from this branch with the rebuilt
   `libratw_story.so` (a run's effects with values or fills need both twins), the Editor and the client released from it. Act
   I's chapters can move onto a version that uses these by `migrate`; camp, wagon and festival objectives become plain
-  objectives in a new version, and the `join.cap: 1` quests may take `join.again: 7`.
+  objectives in a new version, and the `join.cap: 1` quests may take `join.again: 7`. Fills apply to every version 2 story
+  this runner plays, also one approved under Phase 1b: before the runner goes live, look through the running releases'
+  `story.tell`, `board.post`, `journal.note`, `npc.speak` and `deed.award` words (and quest summaries and labels) for a
+  literal `{`, `}` or `{{` (a fill would blank it, with a note).
+- **After review** (the review of `326fc330`): **B1** an exit on `near resident`, `purse crossed` or `standing crossed`
+  names what the game looks at as exact words, as a trigger does (`_check_exit` with `NEEDS_MATCH`; the number to cross a
+  whole number), and `watch_of` passes over a value that is not a text: an exit's "one of" had passed approval and then
+  failed the watch (`TypeError: unhashable type: 'dict'`) at publish and on every tick. **G1** a goal not known when its copy
+  starts (`goal: null`) is read again whenever the copy is credited (`track`, `objective.progress`) and after every event
+  (`keep_up`, now for every quest with a goal from a value, and `Run.unread_goals`, which completes an objective already
+  reached), with or without `goalLive`; the console's quest commands work with the world's facts now (`Steer._quest_run`).
+  **G2** the journal and the offers are built with the world's facts now (`sync_journal(facts=…)`, `_journal_facts`), the
+  view reads a goal not known yet as it reads now, and the fingerprint follows the story's wolves counted (all, active,
+  online) and the purses its quests read; the console's Quests grid gives a goal from a value as it reads now (`None` when not
+  known) with the value as `goalFrom`. **G3** the summary of a quest a giver or a board offers takes no `{name.of}` (it is
+  the offer's words for every wolf), nor does a reward given once (`reward_wolves`, shared by the check and `Run.reward`).
+  **G4** the console's Set refuses a mirror ("mirrors a world number: set that number instead"), and a mirror takes no
+  `talk`. **G5** a reward not given for a missing value goes to the run's timeline as "Reward not given" (`_reward_notes`,
+  drained from `rewardNotes` at each journal sync). **N7** the world checks read each name of an objective's "one of" (the
+  camp, the resident or character, the item). **N8** the moon's detail is new, waxing, full or waning (or one of them), for a
+  trigger, an exit and Readiness's `then` (`check_moon`), and in a rehearsal's facts. **N9** the workbench's "…or a value"
+  for an id parameter offers the variables and event fields of its kind (`OPERAND_VARS`, `OPERAND_FIELDS`, as the check).
+  The program's watch also counts the wolves online when a quest's goal reads them (`uses_online` over the quests). Left:
+  **N10** (fills for a story approved under Phase 1b: a check before going live, above, as no release records the runner it
+  was approved under), **N11** (`deed.award`'s detail 200 in the catalogue, 160 in the game: older than this phase; lowering
+  the catalogue would refuse approved stories' longer details, raising the game's needs a rebuild and the deeds' own
+  limit checked), **N12** (a text variable holding `{@w:…}` turns into a name: tokens only come from the game's own
+  details and a story's own words, and escaping them needs both engines and a native rebuild; left for Phase 3's talk work).
+  Tests: `test_story_v2` (`Phase2Values`: an exit's exact words, a mirror's Set and talk, the moon's detail),
+  `test_story_quests` (`Phase2`: a goal not known at the start read on credit and after an event, the journal, the board
+  and the fingerprint; the summary and a once-given reward with `.of`), `test_story_problems` (`ValuesInTheWorld`: each name
+  of a "one of" checked).

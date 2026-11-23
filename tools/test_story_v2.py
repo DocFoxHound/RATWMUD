@@ -547,6 +547,14 @@ class Phase2Values(unittest.TestCase):
         bad[-1]['mirror']['names']['greyfen'] = 'n'
         with self.assertRaisesRegex(ValueError, 'mirrors declared world numbers'):
             rules.validate(_values_program([{'do': 'stop'}], bad))
+        told = copy.deepcopy(variables)
+        told[-1]['talk'] = True
+        with self.assertRaisesRegex(ValueError, 'a mirror is not told to residents'):
+            rules.validate(_values_program([{'do': 'stop'}], told))
+        # (Nor does the console's Set change one: it holds nothing of its own.)
+        with self.assertRaisesRegex(ValueError, 'mirrors a world number: set that number instead'):
+            runner._check_payload(p, 'set', {'key': 'p_howl', 'scope': 'player', 'player': ASH, 'value': 5})
+        runner._check_payload(p, 'set', {'key': 'v_grey', 'scope': 'world', 'value': 5})
 
     def test_a_tracker_of_another(self):
         variables = [{'id': 'bar', 'type': 'number', 'scope': 'story', 'show': 'This chapter', 'showOf': 'goal'},
@@ -591,6 +599,24 @@ class Phase2Values(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'text fields'):
             rules.validate(cond)
 
+    def test_an_exit_on_a_watched_event_names_exact_words(self):
+        # (Review of Phase 2: an exit's "one of" passed approval, and the watch then failed on every tick.)
+        for on, match in [('near resident', {'target': {'in': ['rm111', 'rm112']}}),
+                          ('purse crossed', {'target': {'starts': 'town:'}, 'detail': '100'}),
+                          ('standing crossed', {'target': 'wardens', 'detail': {'in': ['5', '10']}})]:
+            p = _values_program([{'do': 'stop'}])
+            p['phases'].append({'id': 'b', 'journal': 'B.', 'effects': [], 'exits': []})
+            p['phases'][0]['exits'] = [{'on': on, 'to': 'b', 'match': match}]
+            with self.subTest(on), self.assertRaisesRegex(ValueError, 'as exact words'):
+                rules.validate(p)
+            self.assertNotIn('near', rules.watch_of(p), 'the watch passes over a filter it cannot look for')
+        p['phases'][0]['exits'] = [{'on': 'purse crossed', 'to': 'b', 'match': {'target': 'town:greyfen', 'detail': 'lots'}}]
+        with self.assertRaisesRegex(ValueError, 'names a whole number to cross'):
+            rules.validate(p)
+        p['phases'][0]['exits'] = [{'on': 'near resident', 'to': 'b', 'match': {'target': 'rm111'}}]
+        rules.validate(p)
+        self.assertEqual(rules.watch_of(p)['near'], ['rm111'])
+
     def test_the_moon(self):
         p = _values_program([{'do': 'add', 'var': 'n', 'value': 1}])
         p['phases'][0]['triggers'][0]['if'] = {'test': 'calendar is', 'what': 'moon', 'value': 'full'}
@@ -604,6 +630,14 @@ class Phase2Values(unittest.TestCase):
         moon['phases'][0]['triggers'][0].update(on='moon', match={'detail': 'new'})
         rules.validate(moon)
         self.assertIn('moon', rules.watch_of(moon)['events'])
+        for detail in ('ful', {'in': ['full', 'gibbous']}, {'starts': 'wa'}):
+            moon['phases'][0]['triggers'][0]['match'] = {'detail': detail}
+            with self.subTest(detail), self.assertRaisesRegex(ValueError, 'the moon is new, waxing, full or waning'):
+                rules.validate(moon)
+        moon['phases'][0]['triggers'][0]['match'] = {'detail': {'in': ['full', 'new']}}
+        rules.validate(moon)
+        with self.assertRaisesRegex(ValueError, 'the moon is new, waxing, full or waning'):
+            rules.check_world_facts({'world': {'moon': 'blue'}})
 
     def test_a_camp_named_with_the_story_prefix(self):
         spawn = lambda camp: [{'do': 'effect', 'effect': {'kind': 'bandits.call', 'player': '$actor', 'count': 2, 'camp': camp}}]

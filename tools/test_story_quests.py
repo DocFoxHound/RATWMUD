@@ -606,6 +606,58 @@ class Phase2(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'the same for every wolf'):
             rules.validate(p)
 
+    def test_a_goal_not_known_when_the_copy_starts_is_read_later(self):
+        # (Review of Phase 2: a goal from a purse, the copy started with no facts, was stuck at 1,000,000 for good.)
+        p = one_quest({'on': 'gift', 'goal': {'max': [1, {'div': [{'purse': 'town:greyfen'}, 100]}]}}, players=(ASH,))
+        q, state = p['quests'][0], rules.begin(p, [ASH], 0)
+        phase, pushed = rules.phase_of(p, state), []
+        quests.Run(p, phase, state, 1, 0, pushed.append).start(q, ASH)
+        self.assertEqual(state['quests']['q'][ASH]['objectives']['o'], {'goal': None}, 'no purse known: not read')
+        facts = {'purses': {'town:greyfen': 200}}
+        self.assertEqual(quests.views(p, state, ASH, facts)[0]['objectives'][0]['goal'], 2, 'the journal reads it now')
+        self.assertEqual(quests.board(p, state, facts)[0]['objectives'][0]['goal'], 2, 'so does the console\'s board')
+        unknown = quests.board(p, state)[0]['objectives'][0]
+        self.assertEqual((unknown['goal'], unknown['goalFrom']), (None, q['objectives'][0]['goal']), 'not known: no number, the value')
+        self.assertNotEqual(quests.fingerprint(p, state, facts), quests.fingerprint(p, state, {'purses': {'town:greyfen': 400}}),
+                            'the journal is sent again when the purse it reads changes')
+        gift = lambda i: {**fact(i, 'gift', 1 + i / 10, ASH, target='rm111', item='rope'), 'facts': facts}
+        quests.Run(p, phase, state, 1, 0, pushed.append).track(gift(2))
+        rec = state['quests']['q'][ASH]['objectives']['o']
+        self.assertEqual((rec['goal'], rec['n'], state['quests']['q'][ASH]['status']), (2, 1, 'active'), 'read as it is credited')
+        quests.Run(p, phase, state, 1, 0, pushed.append).track(gift(3))
+        self.assertEqual(state['quests']['q'][ASH]['status'], 'done')
+        # Credited while still not known, then read after a later fact (keep_up): done at once when already reached.
+        state = rules.begin(p, [ASH], 0)
+        quests.Run(p, phase, state, 1, 0, pushed.append).start(q, ASH)
+        quests.Run(p, phase, state, 1, 0, pushed.append).track(fact(2, 'gift', 1, ASH, target='rm111', item='rope'))
+        self.assertEqual(state['quests']['q'][ASH]['objectives']['o'], {'goal': None, 'n': 1})
+        quests.keep_up(p, phase, state, 1, 0, pushed.append, {'kind': 'dawn', 'actor': '', 'facts': {'purses': {'town:greyfen': 50}}})
+        self.assertEqual(state['quests']['q'][ASH]['status'], 'done', 'a goal of 1 already reached')
+        self.assertEqual(state['quests']['q'][ASH]['objectives']['o']['goal'], 1)
+        # The rehearsal: the same quest with the purse known throughout completes as before.
+        got, _ = statuses(p, [arrive(1, ASH), fact(2, 'gift', 1, ASH, target='rm111', item='rope'),
+                              fact(3, 'gift', 1.1, ASH, target='rm111', item='rope')], facts)
+        self.assertEqual(got[ASH], 'done')
+
+    def test_words_the_same_for_every_wolf_take_no_wolfs_own_value(self):
+        variables = [{'id': 'p_n', 'type': 'number', 'scope': 'player', 'initial': 4}]
+        p = one_quest({'on': 'gift'}, variables=variables, players=(ASH,))
+        p['quests'][0]['summary'] = 'You have given {p_n.of} gifts so far.'
+        rules.validate(p)   # (Shown only in each wolf's own journal: filled for them.)
+        for key, value in (('giver', 'rm111'), ('board', 'greyfen')):
+            offered = copy.deepcopy(p)
+            offered['quests'][0][key] = value
+            with self.subTest(key), self.assertRaisesRegex(ValueError, 'its summary: the same for every wolf'):
+                rules.validate(offered)
+        # A reward given once (no wolf named) fills no wolf's own value; one for each credited wolf does.
+        with self.assertRaisesRegex(ValueError, 'the same for every wolf'):
+            one_quest({'on': 'gift'}, variables=variables, players=(ASH,),
+                      rewards=[{'kind': 'board.post', 'town': 'greyfen', 'days': 3, 'text': 'Gifts: {p_n.of}.'}])
+        each = one_quest({'on': 'gift'}, variables=variables, players=(ASH,),
+                         rewards=[{'kind': 'story.tell', 'to': 'wolf', 'player': '$actor', 'text': 'Gifts: {p_n.of}.'}])
+        report, _ = play(each, [arrive(1, ASH), fact(2, 'gift', 1, ASH, target='rm111')], cohort=(ASH,))
+        self.assertEqual([e['text'] for e in report['effects'] if e['kind'] == 'story.tell'], ['Gifts: 4.'])
+
 
 if __name__ == '__main__':
     unittest.main()

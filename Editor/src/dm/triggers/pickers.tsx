@@ -142,18 +142,27 @@ function VariablePicker({slot, pick}: {slot: Slot; pick: (v: string) => void}) {
         {!list.length && <p className="hint">No variable of this kind yet ({(types ?? []).join(', ')}): declare one in Variables, on the right.</p>}</div></div>;
 }
 
+/** Doc 86, C1a: what may stand for an id parameter (story_triggers.OPERAND_VARS / OPERAND_FIELDS): a variable of its kind
+ *  (or a text), the event's field that holds one. */
+const OPERAND_VARS: Record<string, string[]> = {wolf: ['wolf'], resident: ['resident'], place: ['place', 'text'], item: ['item', 'text'],
+    faction: ['faction', 'text'], town: ['text', 'region']};
+const OPERAND_FIELDS: Record<string, string[]> = {wolf: ['actor', 'target'], resident: ['target', 'item'], place: ['cell', 'target'], item: ['item'],
+    faction: ['target', 'detail'], town: ['actor', 'target', 'detail']};
+
 /** Version 2: a value (doc 85, 3.4): a number, on or off, a text, a variable, the event's field, a list's count, a timer's
  *  days, the loop's value, or a variable plus or minus a number. `kind` narrows it: number, switch or text. */
 function OperandPicker({slot, pick}: {slot: Slot; pick: (v: Operand) => void}) {
     const {program} = useBench();
     const kind = slot.param?.kind ?? '';
-    const vars = (program.variables ?? []).filter(v => !LIST_TYPES[v.type] && v.type !== 'timer' && (!kind || kindOfType(v.type) === kind));
+    const idKind = slot.param?.idKind && OPERAND_VARS[slot.param.idKind] ? slot.param.idKind : '';
+    const vars = (program.variables ?? []).filter(v => !LIST_TYPES[v.type] && v.type !== 'timer'
+        && (idKind ? OPERAND_VARS[idKind].includes(v.type) && !v.mirror : !kind || kindOfType(v.type) === kind));
     const lists = (program.variables ?? []).filter(v => LIST_TYPES[v.type]);
     const timers = (program.variables ?? []).filter(v => v.type === 'timer');
     const wolfLists = (program.variables ?? []).filter(v => v.type === 'wolves' && ['story', 'world'].includes(v.scope));
     const [text, setText] = useState(typeof slot.value === 'string' ? slot.value : '');
     const [num, setNum] = useState(typeof slot.value === 'number' ? String(slot.value) : '');
-    const fields = kind === 'number' ? ['quantity', 'coins'] : kind === 'text' ? ['actor', 'target', 'cell', 'item', 'detail'] : kind === 'switch' ? []
+    const fields = idKind ? OPERAND_FIELDS[idKind] : kind === 'number' ? ['quantity', 'coins'] : kind === 'text' ? ['actor', 'target', 'cell', 'item', 'detail'] : kind === 'switch' ? []
         : ['actor', 'target', 'cell', 'item', 'detail', 'quantity', 'coins'];
     const n = Number(num);
     return <div className="wb-operand">
@@ -274,7 +283,8 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
         {valued && slot.value !== null && typeof slot.value === 'object' && <p className="hint">Now a value: {operandWords(slot.value as Operand, {})}</p>}
         {body}
         {valued && <details className="wb-or-value"><summary>…or a value</summary>
-            <OperandPicker slot={{...slot, param: {...slot.param!, kind: slot.param!.type === 'int' ? 'number' : 'text'}}} pick={one}/></details>}</div>;
+            <OperandPicker slot={{...slot, param: {...slot.param!, kind: slot.param!.type === 'int' ? 'number' : 'text',
+                idKind: slot.param!.type === 'int' ? undefined : slot.param!.type}}} pick={one}/></details>}</div>;
 }
 
 /** "Choose an event": the catalogue's events by group, each with its help and what its fields hold (4.3). */

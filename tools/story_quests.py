@@ -179,13 +179,24 @@ def _check_fail(rule):
     rules.require(rules.match_ok(fields, (*rules.FIELDS, 'signal')), 'Invalid fail rule filter.')
 
 
+def reward_wolves(effect):
+    """A reward's parameters naming the credited wolf ($actor), and whether it is given for each wolf with credit (it names
+    $actor, or one of its values reads a value of theirs) rather than once."""
+    per_wolf = [param['key'] for param in rules.EFFECT_PARAMS[effect['kind']]
+                if param['type'] in ('wolf', 'character') and effect.get(param['key']) == '$actor']
+    reads_wolf = any(isinstance(v, dict) and any(o.get('of') == '$actor' for o in triggers.operands_in(v)) for v in effect.values())
+    return per_wolf, bool(per_wolf or reads_wolf)
+
+
 def _check_reward(effect, qid, regions, scenes, phase=None):
     # (Doc 86, C1a: a reward's value is worked out when it is given, the credited wolf as $actor.)
     rules.validate_effect(effect, 'quest ' + qid, regions, scenes,
                           operand=None if phase is None else lambda param, v: triggers.check_operand_param(param, v, phase, None, True))
+    each = phase is not None and effect.get('kind') in rules.EFFECT_PARAMS and reward_wolves(effect)[1]
     for param in rules.EFFECT_PARAMS.get(effect['kind'], ()):
         if phase is not None and param.get('fills') and isinstance(effect.get(param['key']), str):
-            triggers.check_fills(effect[param['key']], param, phase, None)
+            # (A reward given once, for no wolf, fills no wolf's own value.)
+            triggers.check_fills(effect[param['key']], param, phase, None, of_allowed=each)
     rules.require(effect['kind'] not in ('npc.line', 'npc.offer', 'participant.remove'),
                   f'quest {qid}: {effect["kind"]} cannot be a reward.')
     check_story_effect(effect, None, None)
@@ -245,7 +256,9 @@ def check_quest(q, p, ids):
         _check_objective(o, oids, regions, phase)
     if phase is not None:
         # (Doc 86, C1b: a quest's words may hold fills, filled for each wolf who reads them; an offer's are the same for all.)
-        triggers.check_fills(q.get('summary', ''), 300, phase, None, where=f'quest {qid}: its summary')
+        # (A summary a giver or a notice board offers is the same for every wolf who reads the offer: no wolf's own value.)
+        offered = 'giver' in q or 'board' in q
+        triggers.check_fills(q.get('summary', ''), 300, phase, None, of_allowed=not offered, where=f'quest {qid}: its summary')
         for o in objectives:
             triggers.check_fills(o['label'], 180, phase, None, where=f'quest {qid}: objective {o["id"]}')
         for key, size in (('say', 300), ('thanks', 300)):
@@ -433,6 +446,13 @@ def again(q, copy):
     return ended + wait
 
 
+def unread(o, c):
+    """Whether a copy's goal from a value could not be read yet (doc 86, C1c: a purse or the wolves online not known when the copy
+    started); it is read again until it can be."""
+    return isinstance(o.get('goal'), dict) and c is not None and o['id'] in c.get('objectives', {}) and \
+        'goal' in c['objectives'][o['id']] and c['objectives'][o['id']]['goal'] is None
+
+
 def goal_of(o, c=None):
     """An objective's goal: its number, or (doc 86, C1c) the one its copy read from a value (not read yet: unreachable)."""
     rec = (c or {}).get('objectives', {}).get(o['id'], {})
@@ -488,9 +508,10 @@ class Run:
         return words_ctx(self.p, self.state, wolf, self.day, self.elapsed, self.event, self.phase)
 
     def read_goals(self, q, c, wolf, live_only=False):
-        """C1c: the goals a copy reads from values, when it starts (and, with goalLive, as it goes: never below what is made)."""
+        """C1c: the goals a copy reads from values, when it starts (and, with goalLive, as it goes: never below what is made).
+        A goal that could not be read when the copy started is read again as it goes (`live_only`), with or without goalLive."""
         for o in q['objectives']:
-            if not isinstance(o.get('goal'), dict) or (live_only and not o.get('goalLive')):
+            if not isinstance(o.get('goal'), dict) or (live_only and not o.get('goalLive') and not unread(o, c)):
                 continue
             g = read_goal(o, self.ctx(wolf))
             rec = c['objectives'].setdefault(o['id'], {})
@@ -498,7 +519,22 @@ class Run:
                 if not live_only:
                     rec.setdefault('goal', None)
                 continue
-            rec['goal'] = max(g, rec.get('n', 0)) if live_only else g
+            rec['goal'] = max(g, rec.get('n', 0)) if live_only and o.get('goalLive') else g
+
+    def unread_goals(self, q, holder, c, actor):
+        """C1c: a copy's goals not read yet, read now if they can be (the world's facts of this fact); one already reached is
+        done at once."""
+        if c['status'] not in UNDER_WAY or not any(unread(o, c) for o in q['objectives']):
+            return
+        wolf = actor if actor in c.get('members', ()) or q.get('scope') == 'story' else (c.get('members') or [''])[0]
+        self.read_goals(q, c, wolf, live_only=True)
+        for o in q['objectives']:
+            rec = c['objectives'].get(o['id'], {})
+            if (isinstance(o.get('goal'), dict) and isinstance(rec.get('goal'), int) and c['status'] == 'active' and not rec.get('done')
+                    and not rec.get('failed') and rec.get('n', 0) >= rec['goal'] and rec.get('n', 0) > 0):
+                rec.update(n=rec['goal'], done=True, shown=True)
+                self.fact('objective completed', wolf, q['id'], o['id'])
+        self.settle(q, holder, c, wolf)
 
     def live_goals(self, q, holder, c, actor):
         """A story-scope copy's goals kept up with (goalLive): an objective whose goal falls to what is made is done at once."""
@@ -652,10 +688,8 @@ class Run:
         else once. Doc 86, C1a: a value is worked out as it is given, the credited wolf as $actor; with none, that reward is not
         given (noted in the state's rewardNotes)."""
         for effect in effects:
-            per_wolf = [param['key'] for param in rules.EFFECT_PARAMS[effect['kind']]
-                        if param['type'] in ('wolf', 'character') and effect.get(param['key']) == '$actor']
-            reads_wolf = any(isinstance(v, dict) and any(o.get('of') == '$actor' for o in triggers.operands_in(v)) for v in effect.values())
-            for wolf in (wolves if per_wolf or reads_wolf else [None]):
+            per_wolf, each = reward_wolves(effect)
+            for wolf in (wolves if each else [None]):
                 e = dict(effect)
                 for key in per_wolf:
                     e[key] = wolf
@@ -745,7 +779,7 @@ class Run:
                     if gain <= 0:
                         continue
                     rec = c['objectives'].setdefault(o['id'], {})
-                    if o.get('goalLive') and c['status'] == 'active':
+                    if (o.get('goalLive') or unread(o, c)) and c['status'] == 'active':
                         self.read_goals(q, c, wolves[0], live_only=True)
                     goal = goal_of(o, c)
                     rec['n'] = min(rec.get('n', 0) + gain, goal)
@@ -961,7 +995,7 @@ class Run:
                 self.credit(c, wolf)
                 self.objective_done(q, holder, c, o, wolf)
             elif kind == 'objective.progress' and c['status'] == 'active' and not rec.get('done') and not rec.get('failed'):
-                if o.get('goalLive'):
+                if o.get('goalLive') or unread(o, c):
                     self.read_goals(q, c, wolf, live_only=True)
                 rec['n'] = min(rec.get('n', 0) + effect['amount'], goal_of(o, c))
                 self.credit(c, wolf)
@@ -996,16 +1030,21 @@ def take_story_effects(p, phase, state, day, elapsed, push, event=None):
 
 def keep_up(p, phase, state, day, elapsed, push, event=None):
     """Doc 86, C1c: after a firing (which may have changed a goal's value), the story's copies whose goals keep up with their
-    values read them again; one whose goal fell to what is made is done at once."""
-    live = [q for q in p.get('quests', []) if q.get('scope') == 'story' and any(o.get('goalLive') for o in q['objectives'])]
-    if not live:
+    values read them again; one whose goal fell to what is made is done at once. And every copy whose goal could not be read
+    when it started (a purse or the wolves online not known then) tries again with this fact's world facts."""
+    valued = [q for q in p.get('quests', []) if any(isinstance(o.get('goal'), dict) for o in q['objectives'])]
+    if not valued:
         return
     run = Run(p, phase, state, day, elapsed, push, event)
-    for q in live:
-        c = state.get('quests', {}).get(q['id'], {}).get('story')
-        if c is not None:
-            actor = (event or {}).get('actor', '')
-            run.live_goals(q, 'story', c, actor if actor in state['cohort'] else '')
+    actor = (event or {}).get('actor', '')
+    actor = actor if actor in state['cohort'] else ''
+    for q in valued:
+        copies = state.get('quests', {}).get(q['id'], {})
+        for holder, c in list(copies.items()):
+            run.unread_goals(q, holder, c, actor)
+        c = copies.get('story')
+        if c is not None and q.get('scope') == 'story' and any(o.get('goalLive') for o in q['objectives']):
+            run.live_goals(q, 'story', c, actor)
 
 
 def relevant(p):
@@ -1057,7 +1096,7 @@ def view(q, c, holder, state, wolf, status=None, x=None):
             hidden += 1
             continue
         goal = goal_of(o, c)
-        if x is not None and isinstance(o.get('goal'), dict) and (c is None or (o.get('goalLive') and not r.get('done'))):
+        if x is not None and isinstance(o.get('goal'), dict) and (c is None or (o.get('goalLive') and not r.get('done')) or unread(o, c)):
             now = read_goal(o, x)
             goal = max(now, r.get('n', 0)) if now is not None else goal
         seen.append({'id': o['id'], 'label': words(o['label']), 'optional': bool(o.get('optional')), 'done': bool(r.get('done')),
@@ -1216,9 +1255,17 @@ def choices(state):
             for cid, c in sorted(state.get('offers', {}).items())]
 
 
-def board(p, state):
-    """The console's Quests grid (doc 85, 5.3): each quest with every copy, its counts, and whether it is open now."""
+def board(p, state, facts=None):
+    """The console's Quests grid (doc 85, 5.3): each quest with every copy, its counts, and whether it is open now. A goal from
+    a value (doc 86, C1c) is shown as it reads now with the world's `facts` (None: not known now), its value as `goalFrom`."""
     out = []
+    x = words_ctx(p, state, '', event={'facts': facts} if facts else None) if _needs_ctx(p) else None
+
+    def goal_now(o):
+        if not isinstance(o.get('goal'), dict):
+            return goal_of(o)
+        return read_goal(o, x) if x is not None else None
+
     for q in p.get('quests', []):
         copies = state.get('quests', {}).get(q['id'], {})
         rows = []
@@ -1236,20 +1283,31 @@ def board(p, state):
                     'lifetime': q.get('lifetime', 'campaign'), 'repeat': q.get('repeat', 'once'), 'giver': q.get('giver'),
                     'open': open_in(q, state['phase']),
                     'objectives': [{'id': o['id'], 'label': o['label'], 'optional': bool(o.get('optional')),
-                                    'hidden': bool(o.get('hidden')), 'goal': goal_of(o), 'measure': o.get('measure', 'count'),
-                                    'after': o.get('after', [])} for o in q['objectives']],
+                                    'hidden': bool(o.get('hidden')), 'goal': goal_now(o), 'measure': o.get('measure', 'count'),
+                                    'after': o.get('after', []), **({'goalFrom': o['goal']} if isinstance(o.get('goal'), dict) else {})}
+                                   for o in q['objectives']],
                     'copies': rows, 'counts': counts, 'offered': state.get('questOffers', {}).get(q['id'], []),
                     'starts': state.get('questStarts', {}).get(q['id'], 0), 'cap': join.get('cap'), 'limit': join.get('limit')})
     return out
 
 
-def fingerprint(p, state):
-    """What the game's copy of the journals and offers depends on, to send them only when it changed."""
+def fingerprint(p, state, facts=None):
+    """What the game's copy of the journals and offers depends on, to send them only when it changed. Doc 86, C1: with words
+    or goals that read values, also the story's wolves counted (all, active, online) and the purses its quests read, as the
+    world's `facts` say now."""
     shown = [d['id'] for d in p.get('variables', []) if d.get('show') or d.get('talk')] if p.get('version') == 2 else []
-    shown = shown or (['words'] if _needs_ctx(p) else [])   # (Doc 86, C1: words and goals that read values.)
+    needs = _needs_ctx(p)
+    shown = shown or (['words'] if needs else [])   # (Doc 86, C1: words and goals that read values.)
+    world = None
+    if needs:
+        x = words_ctx(p, state, '', event={'facts': facts} if facts else None)
+        a = x.audience()
+        held = (facts or {}).get('purses') if isinstance((facts or {}).get('purses'), dict) else {}
+        world = [[a['all'], a['active'], None if a['online'] is triggers.MISSING else a['online']],
+                 {k: held.get(k) for k in sorted(set(triggers.purses_in(p.get('quests', []))))}]
     return json.dumps([state.get('quests'), state.get('questOffers'), state.get('offers'), state['phase'],
                        state.get('toasts'), state.get('parties') if any(q.get('scope') == 'party' for q in p.get('quests', [])) else None,
-                       state.get('counters') if shown else None], sort_keys=True, separators=(',', ':'), default=str)
+                       state.get('counters') if shown else None, world], sort_keys=True, separators=(',', ':'), default=str)
 
 
 # ------------------------------------------------------------------------------------------------- moving a run (5b)

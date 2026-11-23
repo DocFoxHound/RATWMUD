@@ -19,6 +19,8 @@ export interface Param {
     quest?: string;
     /** Doc 86, Phase 2: an effect's parameter that may be a value worked out as it fires (C1a), words that may hold fills (C1b). */
     operand?: boolean; fills?: boolean;
+    /** (The Editor's own: "…or a value" for an id parameter: its type (wolf, resident, place, item, faction, town).) */
+    idKind?: string;
 }
 export interface Field {type: string; label: string; any?: string}
 export interface CatEvent {

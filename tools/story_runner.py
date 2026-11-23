@@ -344,9 +344,10 @@ def _resident_sites(program):
             if isinstance(role, dict) and isinstance(role.get('npc'), str):
                 yield f'scenes[{si}].cast', {'kind': 'scene', 'index': si, 'id': scene.get('id')}, role['npc'], 'cast'
     for path, at, o in [*_objective_sites(program), *((p, a, r) for p, a, w, r in _filter_sites(program) if w in ('objective', 'trigger'))]:
-        target = (o.get('match') or {}).get('target')
-        if isinstance(target, str) and OBJECTIVE_TARGETS.get(o.get('on')) in ('character', 'resident'):
-            yield path, at, target, 'target'
+        # (Doc 86, C12b: each of a "one of" filter's names is checked as an exact one is.)
+        for target in rules.match_values((o.get('match') or {}).get('target')):
+            if OBJECTIVE_TARGETS.get(o.get('on')) in ('character', 'resident'):
+                yield path, at, target, 'target'
 
 
 def talk_names(program):
@@ -399,8 +400,7 @@ def world_checks(conn, world, program, chapters=False):
     cells = None
     for path, at, o in _objective_sites(program):
         m, kind = o.get('match') or {}, OBJECTIVE_TARGETS.get(o.get('on'))
-        target = m.get('target')
-        if isinstance(target, str) and target and kind:
+        for target in [t for t in rules.match_values(m.get('target')) if t and kind]:   # (C12b: each name of a "one of".)
             if kind in ('character', 'resident'):
                 found = conn.execute('SELECT 1 FROM dm.story_residents WHERE world_id=%s AND id=%s' + (
                     ' UNION ALL SELECT 1 FROM game.characters WHERE world_id=%s AND key=%s' if kind == 'character' else ''),
@@ -430,9 +430,9 @@ def world_checks(conn, world, program, chapters=False):
                 if isinstance(cell, str) and cell not in cells and not conn.execute(
                         'SELECT 1 FROM world.areas WHERE world_id=%s AND id=%s', (world, cell)).fetchone():
                     add(path, at, f'Unknown cell in this world for "where": {cell}')
-        item = m.get('item')
-        if isinstance(item, str) and item and re.split('[~@]', item, maxsplit=1)[0] not in items:
-            add(path, at, f'No item "{item}" in the item catalogue: this objective could never be done.')
+        for item in rules.match_values(m.get('item')):
+            if item and re.split('[~@]', item, maxsplit=1)[0] not in items:
+                add(path, at, f'No item "{item}" in the item catalogue: this objective could never be done.')
     # V1.3: a quest's notice board is one of the world's boards (its market towns).
     boards = [(qi, q) for qi, q in enumerate(program.get('quests', []) or []) if isinstance(q.get('board'), str)]
     if boards:
@@ -1831,15 +1831,29 @@ def _mark(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()[:16]
 
 
-def sync_journal(conn, run, program, state, who, collect=None):
+def _journal_facts(conn, world, program):
+    """The world's facts now, for quest words and goals that read values (doc 86, C1): None when none do."""
+    return latest_facts(conn, world) if world is not None and quests._needs_ctx(program) else None
+
+
+def _reward_notes(conn, run, state):
+    """Doc 86, C1a: a reward not given because its value could not be worked out, written to the run's history."""
+    for n in state.pop('rewardNotes', []):
+        _note(conn, run, state, 'Reward not given',
+              f'{n["kind"]} of quest {n["quest"]}{" for " + n["wolf"] if n.get("wolf") else ""} was not given: {n.get("why") or "no value"}.')
+
+
+def sync_journal(conn, run, program, state, who, collect=None, facts=None):
     """Tells the game what changed of who takes part (`story.cohort`) and of the quests: the givers' offers, the story's
     choices in residents' windows, and each wolf's journal whose quests or trackers changed (`story.quests`). With
     `collect` (a list), the orders are put there, as (kind, target, payload), to go in the tick's batch (doc 85, Phase 7:
     waited for as every order is); without, they are sent at once and waited for in `questReceipts`. False when nothing
     needed sending."""
+    if state.get('rewardNotes'):
+        _reward_notes(conn, run, state)
     if not quests.relevant(program) and 'cohortSent' not in state:
         return False
-    mark = _mark([quests.fingerprint(program, state), state['cohort']])
+    mark = _mark([quests.fingerprint(program, state, facts), state['cohort']])
     if state.get('journalMark') == mark:
         return False
     receipts = []
@@ -1861,7 +1875,7 @@ def sync_journal(conn, run, program, state, who, collect=None):
     marks = state.setdefault('journalSent', {})
     wolves = {}
     for wolf in sorted(now | set(marks)):
-        j = quests.journal(program, state, wolf) if wolf in now else {'quests': [], 'trackers': []}
+        j = quests.journal(program, state, wolf, facts) if wolf in now else {'quests': [], 'trackers': []}
         unsaid = quests.talk_unsaid(program, state, wolf) if wolf in now else []
         noted = state.setdefault('talkUnsaid', [])
         for name in unsaid:
@@ -1886,7 +1900,7 @@ def sync_journal(conn, run, program, state, who, collect=None):
     if len(payload) > 1:
         payload['program'] = program['id']   # (Doc 86, N2: the window's player.quest.<program>/<quest>.)
         receipts.append(send(conn, who, 'story.quests', run, payload))
-    state['journalMark'] = _mark([quests.fingerprint(program, state), state['cohort']])
+    state['journalMark'] = _mark([quests.fingerprint(program, state, facts), state['cohort']])
     if collect is not None:
         return 'sent' if receipts else 'changed'
     if receipts:
@@ -1951,7 +1965,7 @@ def _send_waiting(conn, world, run, who, program, phase, state, missions_before)
     chunk, rest = effects[:EFFECTS_A_BATCH], effects[EFFECTS_A_BATCH:]
     orders = []
     if not rest:
-        sync_journal(conn, run, program, state, who, collect=orders)
+        sync_journal(conn, run, program, state, who, collect=orders, facts=_journal_facts(conn, world, program))
     if not rest and missions_before is not None and missions_before != json.dumps(state.get('missions', {})):
         snapshot = rules.mission_snapshot(phase, state)
         orders.append(('story.missions', run, {'visit': state['visits'], 'missions': snapshot}))
@@ -2932,7 +2946,7 @@ def status(conn, world, run=None, before_visit=None, before_trigger=None, since=
         'versions': versions_of(conn, run, program, state, st),
         'speed': ctx['speed'],
         # (Doc 85, Phase 6: the Quests grid, who may come in, and each wolf's party.)
-        'quests': quests.board(program, state) if state and program.get('quests') else [],
+        'quests': quests.board(program, state, _journal_facts(conn, world, program)) if state and program.get('quests') else [],
         'audience': {'kind': program['audience']['kind'], 'cap': quests.cap_of(program), 'size': len(state.get('cohort', [])) if state else 0,
                      'joinable': quests.joinable(program)},
         'parties': {w: pt for w, pt in (state or {}).get('parties', {}).items() if w in set(state.get('cohort', []))} if state else {},
@@ -3420,6 +3434,8 @@ def _check_payload(program, kind, payload):
                       if program.get('version') != 2 else 'This story declares no such variable.')
         decl = rules.variables_of(program).get(payload['key']) if program.get('version') == 2 else {'type': 'number'}
         rules.require(decl['type'] != 'timer', 'A timer variable is started and cleared by the story, not set.')
+        # (Doc 86, N3: a mirror shows a world number; it holds nothing of its own to set.)
+        rules.require('mirror' not in decl, f'{payload["key"]} mirrors a world number: set that number instead.')
         if decl['type'] == 'number' and program.get('version') != 2:
             rules.require(rules.integer(payload.get('value'), -rules.triggers.LIMIT, rules.triggers.LIMIT), 'Choose a whole number.')
         else:
@@ -3950,7 +3966,9 @@ class Steer:
 
     # --- quests and who takes part (doc 85, 5.4 and Phase 6)
     def _quest_run(self, facts):
-        return quests.Run(self.program, self.phase(), self.state, self.day(), self.elapsed(), facts.append)
+        # (Doc 86, C1: the world's facts now, for a goal or a reward's value that reads them.)
+        now = _now_facts(self.conn, self.world, self.program.get('version') == 2)
+        return quests.Run(self.program, self.phase(), self.state, self.day(), self.elapsed(), facts.append, now or None)
 
     def _follow(self, facts):
         """The story's own facts a command made ("quest completed"...), through the rules as play would send them."""

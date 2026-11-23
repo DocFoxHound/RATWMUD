@@ -147,6 +147,16 @@ def match_values(v):
     return []
 
 
+def check_moon(on, m, pid=''):
+    """Doc 86, J4: the moon's detail is new, waxing, full or waning (a typo would never fire)."""
+    if on != 'moon' or not isinstance(m, dict) or 'detail' not in m:
+        return
+    phases = triggers.CALENDAR['moon']
+    d = m['detail']
+    require(all(v in phases for v in match_values(d)) and (not isinstance(d, dict) or 'in' in d),
+            f'{pid + ": " if pid else ""}the moon is ' + ', '.join(phases[:-1]) + ' or ' + phases[-1] + '.')
+
+
 def stand_in_match(m):
     """A filter as an event's fields (an admin's "fire now", the console's stand-in event): a starts gives its text, an in
     its first value."""
@@ -726,6 +736,19 @@ def _check_exit(e, phase, mission_ids):
         match_ok(m),
         f'{pid}: invalid event filter.',
     )
+    # (Doc 86, C12b, as for triggers: what the game is told to look at for a watched event stays exact words.)
+    needs = NEEDS_MATCH.get(e['on'], ())
+    require(
+        all(isinstance(m.get(k, ''), str) for k in needs),
+        f'{pid}: "{e["on"]}" needs its ' + ' and '.join(MATCH_WORDS[k] for k in needs)
+        + ' as exact words (not "begins with" or "one of"): the game must know what to look at.',
+    )
+    require(
+        e['on'] not in ('purse crossed', 'standing crossed') or 'detail' not in m
+        or re.fullmatch(r'-?[0-9]{1,9}', m['detail']) is not None,
+        f'{pid}: "{e["on"]}" names a whole number to cross.',
+    )
+    check_moon(e['on'], m, pid)
     check_region_source(e, phase.get('_regions'))
     require(
         'participant' not in e or type(e['participant']) is bool,
@@ -920,6 +943,7 @@ def _check_ready(p, phase, missions):
         m = t.get('match', {})
         require(match_ok(m), f'{pid}: invalid filter of the moment.')
         require(t['on'] != 'dm signal' or (set(m) == {'detail'} and word(m['detail'], 80)), f'{pid}: name the DM signal it waits for.')
+        check_moon(t['on'], m, pid)
     exits = [e for e in phase['exits'] if isinstance(e, dict) and e.get('on') == READY_EXIT]
     require(len(exits) == 1, f'{pid}: a phase with Readiness has exactly one ready exit ({{"on": "ready", "to": ...}}).')
 
@@ -1281,6 +1305,8 @@ def _check_mirror(d, by):
     m = d['mirror']
     require(d['type'] == 'number' and d['scope'] == 'player' and d.get('show') and 'initial' not in d,
             f'"{d["id"]}": a mirror is a shown number of each wolf (and has no first value of its own).')
+    # (Residents know only what a wolf's values hold: a mirror holds nothing, so it is not told to them.)
+    require(not d.get('talk'), f'"{d["id"]}": a mirror is not told to residents (talk): it holds no value of its own.')
     shape(m, ('key', 'names'))
     key = by.get(m['key'])
     require(key is not None and key['type'] == 'text' and key['scope'] == 'player' and 'mirror' not in key,
@@ -2095,9 +2121,11 @@ def watch_of(p):
     near, purses, standings = set(), set(), set()
     for t in [*rules_, *(e for ph in p.get('phases', []) for e in ph.get('exits', []))]:
         m = t.get('match', {}) if isinstance(t.get('match'), dict) else {}
-        if t.get('on') == 'near resident' and m.get('target'):
+        # (Only exact words are watched: a "begins with" or "one of" filter is refused at approval, and never reaches here.)
+        if t.get('on') == 'near resident' and isinstance(m.get('target'), str) and m['target']:
             near.add(m['target'])
-        elif t.get('on') in ('purse crossed', 'standing crossed') and m.get('target') and re.fullmatch(r'-?[0-9]{1,9}', m.get('detail', '')):
+        elif (t.get('on') in ('purse crossed', 'standing crossed') and isinstance(m.get('target'), str) and m['target']
+              and isinstance(m.get('detail'), str) and re.fullmatch(r'-?[0-9]{1,9}', m['detail'])):
             (purses if t['on'] == 'purse crossed' else standings).add((m['target'], int(m['detail'])))
     for c in conditions:
         kind = c.get('test')
@@ -2124,7 +2152,8 @@ def watch_of(p):
             factions.update([c['faction']] if kind == 'standing' else ())
             towns.update([c['town']] if kind == 'reputation' else ())
     events = sorted(e for e in listened if e in WATCHED_EVENTS)
-    if p.get('version') == 2 and triggers.uses_online([rules_, [ph.get('ready') for ph in p.get('phases', []) if isinstance(ph, dict)]]):
+    if p.get('version') == 2 and triggers.uses_online([rules_, [ph.get('ready') for ph in p.get('phases', []) if isinstance(ph, dict)],
+                                                       p.get('quests', [])]):
         sections.add('wolves')   # (Doc 86, C2: who is online now is read from the world's signed-in wolves.)
     if weather_cells or anywhere or 'weather changed' in events:
         sections.add('weather')
@@ -2188,6 +2217,7 @@ def check_world_facts(f):
     world = f.get('world', {})
     require(isinstance(world, dict) and set(world) <= set(WORLD_FACTS) and all(_typed(v, WORLD_FACTS[k]) for k, v in world.items()),
             'Facts: the world has day, hour, minute, weekday, season, period, dayOfSeason, year, moon.')
+    require('moon' not in world or world['moon'] in triggers.CALENDAR['moon'], 'Facts: the moon is new, waxing, full or waning.')
     for section in ('weather', 'relations'):
         entries = f.get(section, {})
         require(isinstance(entries, dict) and all(isinstance(k, str) and (v is None or isinstance(v, str)) for k, v in entries.items()),

@@ -235,6 +235,16 @@ class ValuesInTheWorld(unittest.TestCase):
         p['phases'][0]['triggers'][0]['actions'] = [talk.fx('bandits.call', player='$actor', count=2, camp='sq_gate')]
         self.refs(p)
 
+    def test_each_name_of_a_one_of_filter_is_checked(self):
+        # (Review of Phase 2: an objective's "one of" was passed over by the camp, resident and item checks.)
+        self.assertRaisesRegex(ValueError, 'No camp "camp_nowhere"', self.refs,
+                               self.quest({'on': 'camp cleared', 'match': {'target': {'in': ['camp_gate', 'camp_nowhere']}}}))
+        self.assertRaisesRegex(ValueError, 'No item "moonstone"', self.refs,
+                               self.quest({'on': 'gift', 'match': {'item': {'in': ['bread', 'moonstone']}}}))
+        self.assertRaisesRegex(ValueError, 'rm_nobody', self.refs,
+                               self.quest({'on': 'gift', 'match': {'target': {'in': ['rm111', 'rm_nobody']}}}))
+        self.refs(self.quest({'on': 'camp cleared', 'match': {'target': {'starts': 'camp_'}}}))   # (A "begins with" names none.)
+
     def test_a_purse_a_value_reads(self):
         grant = lambda purse: talk.fx('character.grant', player='$actor', purse='town:greyfen', reason='r',
                                       coins={'min': [12, {'div': [{'purse': purse}, 20]}]})
