@@ -183,7 +183,7 @@ const v2: Record<string, Program> = JSON.parse(execFileSync('python3', ['-c',
 const ledger = v2['v2-ledger'];
 
 test('version 2: the samples and the 108 programs made version 2 are shown by the workbench, every nested action a sentence', () => {
-    assert.equal(Object.keys(v2).length, 110);
+    assert.equal(Object.keys(v2).length, 111);   // (Doc 86, Phase 1a: the muster at the ford, a third sample.)
     let nested = 0;
     for (const [name, p] of Object.entries(v2)) {
         assert.ok(editable(p), name);
@@ -444,4 +444,31 @@ test('Phase 10: each of the 100 library events starts a small quest whose rehear
         + "ps = json.loads(sys.stdin.read())\nout = []\nfor p in ps:\n    r = P.review(p)\n    if not r['passed']: out.append([p['title'], [t.get('error') for t in r['tests']]])\n"
         + "print(json.dumps(out))"], {cwd: repo, input: JSON.stringify(programs), maxBuffer: 1 << 26}).toString());
     assert.deepEqual(failed, []);
+});
+
+// ------------------------------------------------------------------------------- readiness and participation (doc 86, Phase 1a)
+import {conditionVars, isStep, operandWords as words2} from './workbench.ts';
+
+test('doc 86: the audience, times and div, the shares, participation and the ready exit read as sentences', () => {
+    const muster = v2['v2-muster'];
+    assert.ok(editable(muster), 'a case with readiness steps is shown');
+    assert.ok(muster.tests[0].events.some(isStep));
+    const ns = namesOf(null, muster);
+    assert.equal(words2({audience: 'active'}, ns), 'how many wolves are active');
+    assert.equal(words2({times: [{audience: 'active'}, 2]}, ns), '(how many wolves are active × 2)');
+    assert.equal(words2({div: [{audience: 'all'}, 2]}, ns), "(how many wolves the story has ÷ 2, whole)");
+    assert.equal(words2({percent: {list: 'did'}, of: 'active'}, ns), 'the share (%) of the active wolves in did');
+    assert.equal(words2({among: {where: {test: 'switch', var: 'cheered', is: true}}, of: 'all'}, ns), "how many of the story's wolves are meeting a test");
+    const cheer = muster.phases[0].triggers![1];
+    assert.equal(plain(conditionParts(cat, cheer.if!, ns)),
+        "at least 15% of the story's wolves (at least 1; no cap) meet the test (the wolf's hauls >= 2)");
+    const listed = plain(conditionParts(cat, {test: 'participation', list: 'did', percent: 35, floor: 3, cap: 150}, ns));
+    assert.equal(listed, 'at least 35% of the active wolves (at least 3; 150 always enough) are in the list did');
+    assert.equal(plain(exitParts(cat, muster.phases[0].exits[0], ns, [])),
+        'the phase is ready (its Readiness is met, or an admin presses Advance) → go to ford');
+    const made = newCondition('participation', muster, 0, cat);
+    assert.deepEqual(made, {test: 'participation', source: 'list', list: 'did', of: 'active', percent: 35, floor: 3});
+    assert.ok(conditionVars(made).includes('did'));
+    const renamed = renameVariable(muster, 'did', 'brought');
+    assert.ok(!pretty(renamed.phases[0].triggers).includes('"did"'), 'a share\'s list follows a renamed variable');
 });

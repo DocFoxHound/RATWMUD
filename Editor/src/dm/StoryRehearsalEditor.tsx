@@ -20,7 +20,12 @@ export function StoryRehearsalEditor({regions,cases,events,phases,change}:{regio
         <label>Case name<input value={scene.name} onChange={e=>update({name:e.target.value})}/></label>
         <label>Eligible characters, one per line<textarea value={scene.cohort.join('\n')} onChange={e=>update({cohort:e.target.value.split('\n')})}/></label>
         <label>Expected phase path, one per line<textarea value={scene.expect.join('\n')} onChange={e=>update({expect:e.target.value.split('\n')})}/></label>
-        {scene.events.map((f,i)=><details key={i}><summary>{i+1}. {f.kind} · day {f.day}</summary>
+        {scene.events.map((f,i)=>{
+            // (Doc 86, R2: a readiness step, a check or an Advance, is shown as itself and kept as it is: edited in Source.)
+            const step=f as unknown as {check?:string;met?:boolean;advance?:string};
+            if(!f.kind && (step.check || step.advance)) return <p key={i} className="hint">{i+1}. {step.check ? `check: the phase is ${step.met ? '' : 'not '}ready` : `Advance (${step.advance})`}
+                <button onClick={()=>update({events:scene.events.filter((_,n)=>n!==i)})}>Remove step</button></p>;
+            return <details key={i}><summary>{i+1}. {f.kind} · day {f.day}</summary>
             <label>World event<select aria-label="World event" value={f.kind} onChange={e=>fact(i,{kind:e.target.value})}>{events.map(k=><option key={k}>{k}</option>)}</select></label>
             <label>Game day<input type="number" min={0} step="any" value={f.day} onChange={e=>fact(i,{day:Number(e.target.value)})}/></label>
             <label>Elapsed real days<input type="number" step="any" min={0} value={f.elapsedDays ?? ''} onChange={e=>fact(i,{elapsedDays:e.target.value===''?undefined:Number(e.target.value)})}/></label>
@@ -33,7 +38,7 @@ export function StoryRehearsalEditor({regions,cases,events,phases,change}:{regio
             {(['quantity','coins'] as const).map(k=><label key={k}>{k}<input type="number" value={f[k] ?? 0} onChange={e=>fact(i,{[k]:Number(e.target.value)})}/></label>)}
             <button disabled={i===0} onClick={()=>move(i,i-1)}>Move fact earlier</button>
             <button disabled={i===scene.events.length-1} onClick={()=>move(i,i+1)}>Move fact later</button>
-            <button onClick={()=>update({events:scene.events.filter((_,n)=>n!==i)})}>Remove fact</button></details>)}
+            <button onClick={()=>update({events:scene.events.filter((_,n)=>n!==i)})}>Remove fact</button></details>;})}
         <button disabled={scene.events.length>=256} onClick={()=>{
             let n=scene.events.length+1; while(scene.events.some(f=>f.id==='fact-'+n)) n++;
             update({events:[...scene.events,{id:'fact-'+n,kind:'conversation',day:scene.events.at(-1)?.day ?? 0,actor:scene.cohort[0] ?? ''}]});

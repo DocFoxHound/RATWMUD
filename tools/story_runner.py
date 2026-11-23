@@ -442,6 +442,9 @@ def launch(conn, world, run, program, who, cohort=None, carried=None, chapter_of
             f'Phase {phase["id"]} needs more distinct players than the opening audience contains.',
         )
     state = {**rules.begin(program, cohort, day, run), 'publishedAt': published_at}
+    if rules.counts_audience(program):
+        # (Doc 86, C2: who of the audience was seen lately, read once, so a new chapter does not open with no active wolves.)
+        state['seen'] = seen_lately(conn, world, state['cohort'], day, program.get('activeDays', rules.triggers.ACTIVE_DAYS), cursor)
     if carried:
         _carry_into(program, state, carried)
     if chapter_of:
@@ -454,6 +457,17 @@ def launch(conn, world, run, program, who, cohort=None, carried=None, chapter_of
     enter(conn, run, program, who, state, cursor, 'published' if not chapter_of else f'started by {chapter_of["from"]}')
     tell_stories(conn, world, run, 'story started', program['id'], (chapter_of or {}).get('campaign') or _campaign_of(conn, run))
     return {'run': run, 'status': 'running', 'eligible': len(cohort)}
+
+
+def seen_lately(conn, world, cohort, day, active_days, cursor):
+    """Doc 86, C2: {wolf: the game day of their newest event} for the wolves of the audience seen in the last `active_days`
+    game days (one query; the events' actor index, newest first)."""
+    if not cohort:
+        return {}
+    return {w: d for w, d in conn.execute(
+        """SELECT a.id,e.day FROM unnest(%s::text[]) a(id) CROSS JOIN LATERAL
+           (SELECT game_day AS day FROM game.events WHERE world_id=%s AND actor=a.id AND id<=%s ORDER BY id DESC LIMIT 1) e
+           WHERE e.day >= %s""", (list(cohort), world, cursor, day - active_days))}
 
 
 def action(effect, actor):
@@ -1653,9 +1667,10 @@ def _tick_run(conn, world, run, clock, holder):
     if _wants_parties(p) and _parties_from_save(conn, world, state):
         save()
     # The clock read precedes the log read: an older query can never advance past a newly committed backlog.
-    has_clock = bool(state.get('timers')) or bool(state.get('waiting')) or any(
+    has_clock = bool(state.get('timers')) or bool(state.get('waiting')) or 'ready' in phase or any(
         e['on'] == 'clock' for e in [*phase['exits'], *phase.get('triggers', [])]
     )
+    counting = rules.counts_audience(p)
     day = clock() if has_clock else None
     prior_clock = json.dumps([state.get('fired'), state.get('timers'), state.get('waiting')]) if has_clock else None
     published_at = state.get('publishedAt', 0)
@@ -1708,6 +1723,8 @@ def _tick_run(conn, world, run, clock, holder):
                 break
             cursor = fact['id']
             latest = max(latest, fact['day'] or 0)
+            if counting:
+                rules.note_seen(state, fact, fact['day'])   # (Doc 86, C2: before it is dispatched.)
             if fact['kind'] == 'arrival' and state.get('whenHere'):
                 held_back(conn, run, state, fact['actor'])   # (Effects held for this wolf: sent again now they are here.)
             if fact['kind'] in ('dm signal', 'clock', rules.triggers.SIGNAL) or (
@@ -1750,7 +1767,26 @@ def _tick_run(conn, world, run, clock, holder):
         return
     if not caught_up:
         holder['left'] = 'more'
-    changed = read or state.get('outcome') or (has_clock and prior_clock != json.dumps([state.get('fired'), state.get('timers'), state.get('waiting')]))
+    measured = False
+    if 'ready' in phase and day is not None and not state.get('outcome') and not state.get('triggerEffects'):
+        # (Doc 86, R2: readiness, at most once a tick: when it read events, at least once a game hour, and afresh in a new
+        # visit or after a command.)
+        r = state.get('ready') or {}
+        if read or r.get('visit') != state['visits'] or r.get('checkedAt') is None or day - r['checkedAt'] >= 1 / 24:
+            if counting and len(state.get('seen', {})) > len(state['cohort']):
+                members = set(state['cohort'])
+                state['seen'] = {w: d for w, d in state['seen'].items() if w in members}
+            before_ready = json.dumps(rules.ready_snapshot(state), sort_keys=True)
+            moved = rules.readiness(p, state, day, wall_elapsed, _now_facts(conn, world, facts_wanted).get('facts'))
+            _stamp_ready_log(state)
+            measured = before_ready != json.dumps(rules.ready_snapshot(state), sort_keys=True)
+            if moved:
+                to, cause = moved
+                rules.leave_visit(phase, state, to, day, '', p)
+                enter(conn, run, p, who, state, cursor, cause)
+                holder['left'] = 'game'
+                return
+    changed = read or measured or state.get('outcome') or (has_clock and prior_clock != json.dumps([state.get('fired'), state.get('timers'), state.get('waiting')]))
     # (Doc 85, Phase 10: a chapter started "now" by this tick's triggers.)
     started = start_chapters(conn, world, run, p, state)
     # (What it has to tell the game, together: this tick's effects and those left over, the journal after a command.)
@@ -2063,7 +2099,8 @@ def _listening(phase):
     out = []
     for index, edge in enumerate(phase['exits']):
         out.append({'source': 'exit', 'index': index, 'on': edge['on'], 'to': edge['to'],
-                    **{k: edge[k] for k in ('match', 'afterDays', 'missions', 'players', 'percent', 'signal') if k in edge}})
+                    **{k: edge[k] for k in ('match', 'afterDays', 'missions', 'players', 'percent', 'signal') if k in edge},
+                    **({'auto': bool(phase['ready'].get('auto')), 'then': phase['ready'].get('then')} if edge['on'] == rules.READY_EXIT else {})})
     for t in phase.get('triggers', []):
         out.append({'source': 'trigger', 'id': t['id'], 'on': t['on'],
                     'scope': 'campaign' if t['id'] in phase.get('_sharedIds', ()) else 'phase',
@@ -2112,7 +2149,14 @@ def _waiting(program, state, status, problem, receipts, orders):
     for edge in listening:
         if edge['on'] == 'dm signal':
             out.append({'on': 'direction', 'signal': edge.get('match', {}).get('detail', ''), 'what': edge})
-    wolves = [e for e in listening if e['on'] not in ('clock', 'dm signal', rules.triggers.SIGNAL)]
+    for edge in listening:
+        if edge['on'] == rules.READY_EXIT:
+            # (Doc 86, R2: it moves on when ready: by itself, at its moment, or when an admin presses Advance.)
+            r = state.get('ready') or {}
+            out.append({'on': 'ready', 'to': edge['to'], 'auto': edge.get('auto', False), 'then': edge.get('then'),
+                        'met': bool(r.get('met')) and r.get('visit') == state['visits'], 'waitingFor': r.get('waitingFor'),
+                        'autoAfterDays': phase['ready'].get('autoAfterDays')})
+    wolves = [e for e in listening if e['on'] not in ('clock', 'dm signal', rules.triggers.SIGNAL, rules.READY_EXIT)]
     if wolves:
         out.append({'on': 'wolves', 'events': sorted({e['on'] for e in wolves}), 'what': wolves[:16]})
     if not rules.ongoing(phase) and not unsent:
@@ -2200,6 +2244,10 @@ def _alerts(conn, world, status, problem, waiting, behind, last, cohort, now, ru
             if seen and seen > latest:
                 out.append({'kind': 'quiet', 'needsYou': False, 'hours': round((now - latest).total_seconds() / 3600, 1),
                             'since': _iso(latest), 'wolfSeen': _iso(seen)})
+    if program and state and status in ('running', 'held'):
+        ready = _ready_alert(program, state)
+        if ready:
+            out.append(ready)
     if program and state and status == 'running':
         settled = not any(w['on'] in ('game', 'send', 'admin') for w in waiting)
         if settled:
@@ -2216,6 +2264,47 @@ def _alerts(conn, world, status, problem, waiting, behind, last, cohort, now, ru
     if cohort and len(cohort) >= cap * limits['fullPercent'] / 100:
         out.append({'kind': 'full', 'needsYou': False, 'wolves': len(cohort), 'cap': cap})
     return out
+
+
+def _ready_alert(program, state):
+    """Doc 86, R2 rules 6 and 7: "ready to advance" (it waits for an admin: needs you), or "slow" (not ready after
+    slowAfterDays: needs you with slowNeedsYou)."""
+    phase = rules.phase_of(program, state)
+    r = state.get('ready')
+    if 'ready' not in phase or not r or r.get('phase') != phase['id'] or r.get('visit') != state['visits']:
+        return None
+    if r.get('met'):
+        if r.get('auto') or r.get('waitingFor') or r.get('pushed'):
+            return None   # (It goes on by itself, now or at its moment.)
+        parts = r.get('parts') or []
+        return {'kind': 'ready', 'needsYou': True, 'phase': phase['id'], 'to': r.get('to'), 'metAt': r.get('metAt'),
+                'parts': len(parts), 'met': sum(1 for x in parts if x['met']),
+                'autoAfterDays': phase['ready'].get('autoAfterDays')}
+    if r.get('slow'):
+        part = rules.furthest(r.get('parts') or [])
+        return {'kind': 'slow', 'needsYou': bool(r.get('slowNeedsYou')), 'phase': phase['id'], 'to': r.get('to'), 'days': r.get('days'),
+                'slowAfterDays': phase['ready'].get('slowAfterDays'), 'part': part, 'words': rules.part_words(part) if part else ''}
+    return None
+
+
+def _ready_view(program, phase, state):
+    """Doc 86, R2 rule 11: the phase's readiness for the list, the chapters bar and the run's Overview."""
+    if 'ready' not in phase or not state:
+        return None
+    block = phase['ready']
+    r = rules.ready_snapshot(state)
+    if not r or r.get('phase') != phase['id'] or r.get('visit') != state['visits']:
+        r = {'phase': phase['id'], 'visit': state['visits'], 'met': False, 'metAt': None, 'pushed': None, 'parts': [],
+             'auto': bool(block.get('auto')), 'to': rules.ready_exit(phase)['to'], 'then': block.get('then'), 'checkedAt': None}
+    return {**r, 'activeDays': program.get('activeDays', rules.triggers.ACTIVE_DAYS), 'slowAfterDays': block.get('slowAfterDays'),
+            'autoAfterDays': block.get('autoAfterDays'), 'slowNeedsYou': bool(block.get('slowNeedsYou')),
+            'thenWords': rules.ready_words(block.get('then')) if block.get('then') else None, 'held': bool(state.get('held'))}
+
+
+def _stamp_ready_log(state):
+    """The real moment of each new readiness entry (the timeline orders by it; a rehearsal's entries have none)."""
+    for entry in state.get('readyLog', ()):
+        entry.setdefault('at', _iso(datetime.datetime.now(datetime.timezone.utc)))
 
 
 def _run_receipts(conn, run, receipts, state):
@@ -2260,6 +2349,9 @@ def _row_view(conn, world, row, now, last, runner=None, ctx=None):
                        {**(ctx or {}), 'program': program, 'state': state, 'day': now['day']}),
         ending=not rules.ongoing(phase),
     )
+    ready = _ready_view(program, phase, state)
+    if ready:
+        view['ready'] = ready
     if program.get('quests'):
         view['quests'] = {'taken': sum(state.get('questStarts', {}).values()), 'of': len(program['quests'])}
     if quests.joinable(program):
@@ -2461,6 +2553,8 @@ def status(conn, world, run=None, before_visit=None, before_trigger=None, since=
                      'joinable': quests.joinable(program)},
         'parties': {w: pt for w, pt in (state or {}).get('parties', {}).items() if w in set(state.get('cohort', []))} if state else {},
         'rewardsRefused': (state or {}).get('rewardsRefused', []),
+        # (Doc 86, R2: readiness changes, pushes and moves, newest last.)
+        'readyLog': (state or {}).get('readyLog', []),
         # (Doc 85, Phase 10: the campaign it is a chapter of, with its chapters; the chapters it waits to start and has started.)
         'campaign': _campaign_view(conn, world, run),
         'chapterStarts': (state or {}).get('chapterStarts', []),
@@ -2494,8 +2588,8 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
     for value in (*before.values(), *(v for k, v in since.items() if k != 'at')):
         rules.require(value is None or rules.integer(value, 0, 2**63 - 1), 'Invalid timeline cursor.')
     rules.require(rules.integer(limit, 1, 200), 'Ask for 1 to 200 timeline rows.')
-    kinds = set(kinds or ('phase', 'trigger', 'order', 'command', 'version'))
-    rules.require(kinds <= {'phase', 'trigger', 'order', 'command', 'version'}, 'Unknown timeline filter.')
+    kinds = set(kinds or ('phase', 'trigger', 'order', 'command', 'version', 'ready'))
+    rules.require(kinds <= {'phase', 'trigger', 'order', 'command', 'version', 'ready'}, 'Unknown timeline filter.')
     for value in (wolf, trigger):
         rules.require(value is None or (isinstance(value, str) and 0 < len(value) <= 120), 'Invalid timeline filter.')
     paging = not since
@@ -2601,10 +2695,18 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
                           'counts': {k: len(report.get(k, [])) for k in ('kept', 'reset', 'defaulted', 'dropped', 'added')},
                           'phase': (report.get('phase') or {}).get('to'), 'phaseFrom': (report.get('phase') or {}).get('from'),
                           'warnings': report.get('warnings', [])})
+    if 'ready' in kinds and not wolf and not trigger and state:
+        # (Doc 86, R2: readiness met, slow, pushed, advanced and taken, from the run's own log of the last 20.)
+        for n, entry in enumerate(state.get('readyLog', ())):
+            at = datetime.datetime.fromisoformat(entry['at']) if entry.get('at') else None
+            if since and (at is None or (since.get('at') and at <= datetime.datetime.fromisoformat(since['at']) - datetime.timedelta(seconds=5))):
+                continue
+            items.append({**entry, 'key': f'r:{entry.get("visit")}:{n}:{entry.get("kind")}', 'type': 'ready',
+                          'readyKind': entry.get('kind'), 'at': at, 'seq': n})
     # Newest first. One tick's work shares a moment: a firing (still in the visit it fired in) comes before the visit it
     # opened, and in one visit the visit opened, then its firings, then its orders, then the admin's commands (and a move
     # onto a new version after the command that made it).
-    rank = {'phase': 0, 'trigger': 1, 'order': 2, 'command': 3, 'version': 4}
+    rank = {'phase': 0, 'trigger': 1, 'order': 2, 'command': 3, 'version': 4, 'ready': 5}
     epoch = datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
     items.sort(key=lambda i: (i['at'] or epoch, i.get('visit') or 0, rank[i['type']], i['seq']), reverse=True)
     more = False
@@ -2647,12 +2749,12 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
 # after, in the command's row and in dm.audit. A command can release only what was approved (5.1, rule 4): it fires a
 # trigger the program has, enters a phase it has, sets a counter it names; nothing adds a trigger or changes a rule.
 
-RUNNER_VERSION = 'doc85-phase10'
+RUNNER_VERSION = 'doc86-phase1a'
 COMMAND_KINDS = ('hold', 'resume', 'stop', 'signal', 'fire', 'enable', 'disable', 'enter', 'set', 'timer', 'mission',
-                 'order', 'tell', 'scene', 'migrate', 'objective', 'quest', 'participant')
+                 'order', 'tell', 'scene', 'migrate', 'objective', 'quest', 'participant', 'advance')
 # Flow commands move the story (dispatch a fact, run actions, open a visit, send the journal): they wait while the run is
 # still sending a visit's orders, and are refused on a paused or held run that is part-way through sending.
-FLOW = ('signal', 'fire', 'enter', 'mission', 'objective', 'quest', 'participant')
+FLOW = ('signal', 'fire', 'enter', 'mission', 'objective', 'quest', 'participant', 'advance')
 # Taken even while a flow command ahead of them waits for the game: they are how an admin gets out of that wait.
 URGENT = ('hold', 'resume', 'stop', 'order')
 # The visit a command was made for still has to be the run's (5.8, rule 3), unless forced. Hold, resume and stop are
@@ -2662,7 +2764,7 @@ FLOW_WAIT_SECONDS = 60
 COMMAND_KEY = __import__('re').compile(r'[A-Za-z0-9_-]{8,64}\Z')
 WOLF_EFFECTS = rules.WOLF_EFFECTS        # (studio.py's STORY_WOLF_KINDS: "may act on wolves"; the catalogue's actsOnWolves.)
 BUILDER_EFFECTS = rules.BUILDER_EFFECTS  # (Factions: relations and standing, a builder or the owner; the catalogue's needsBuilder.)
-RELEASING = ('fire', 'enter', 'signal', 'timer', 'mission', 'objective', 'quest')   # (Controls that can deliver the program's effects.)
+RELEASING = ('fire', 'enter', 'signal', 'timer', 'mission', 'objective', 'quest', 'advance')   # (Controls that can deliver the program's effects.)
 
 
 def heartbeat(conn, world):
@@ -2776,6 +2878,9 @@ def _signals_heard(phase):
     heard = {t['signal'] for t in phase.get('triggers', []) if t['on'] == rules.triggers.SIGNAL}
     heard |= {o['signal'] for m in phase.get('missions', []) for o in m['objectives'] if 'signal' in o}
     heard |= {e['match']['detail'] for e in phase['exits'] if e['on'] == 'dm signal'}
+    then = (phase.get('ready') or {}).get('then') or {}
+    if then.get('on') == 'dm signal':
+        heard.add(then['match']['detail'])   # (Doc 86, R2: a ready phase may wait for a direction.)
     return heard
 
 
@@ -2805,6 +2910,10 @@ def controls(program, state):
         'quests': [{'id': q['id'], 'title': q['title'], 'scope': q.get('scope', 'player'), 'objectives': [o['id'] for o in q['objectives']]}
                    for q in program.get('quests', [])],
         'joinable': quests.joinable(program),
+        # (Doc 86, R2: whether the phase has an Advance, where it goes, and its moment.)
+        'ready': {'to': rules.ready_exit(phase)['to'], 'auto': bool(phase['ready'].get('auto')), 'then': phase['ready'].get('then'),
+                  'thenWords': rules.ready_words(phase['ready'].get('then')) if phase['ready'].get('then') else None,
+                  'met': bool((state.get('ready') or {}).get('met'))} if 'ready' in phase else None,
     }
 
 
@@ -2881,7 +2990,7 @@ def _check_payload(program, kind, payload):
     rules.require(isinstance(payload, dict) and len(json.dumps(payload)) <= 4000, 'A small command, please.')
     known = {'force', 'catchUp', 'name', 'actor', 'trigger', 'check', 'phase', 'effects', 'key', 'scope', 'player',
              'value', 'do', 'days', 'signal', 'mission', 'receipt', 'to', 'region', 'text', 'scene', 'cue', 'version',
-             'quest', 'objective', 'amount', 'direction', 'event'}
+             'quest', 'objective', 'amount', 'direction', 'event', 'when', 'anyway'}
     rules.require(set(payload) <= known, 'Unknown field in the command: ' + ', '.join(sorted(set(payload) - known)))
     phases = rules.phases_of(program)
     if kind == 'signal':
@@ -2926,6 +3035,11 @@ def _check_payload(program, kind, payload):
                       'Tell the participants, a wolf, a party, a region or the world.')
         if payload['to'] == 'region':
             rules.require(payload.get('region') in rules.region_index(program), 'This story has no such region.')
+    elif kind == 'advance':
+        # (Doc 86, R2: Advance the phase by its ready exit, now or at its moment, anyway when it is not ready.)
+        rules.require(payload.get('when', 'now') in ('now', 'then') and type(payload.get('anyway', False)) is bool,
+                      'Advance now or at the next moment, and say whether anyway.')
+        rules.require(any(rules.ready_exit(ph) for ph in phases), 'This story has no phase with Readiness to advance.')
     elif kind == 'migrate':
         rules.require(rules.integer(payload.get('version'), 1, 2**63 - 1), 'Name the approved version to move onto.')
         rules.require('phase' not in payload or rules.identifier(payload['phase']), 'Name the phase to land in.')
@@ -3131,7 +3245,9 @@ class Steer:
         if self.status == 'held':
             return 'It was already held.', {}, {}
         _require(self.status == 'running', 'It is paused on a refused order: retry or skip it (holding adds nothing).')
-        self.state['held'] = {'by': self.by, 'reason': self.reason, 'cursor': self.cursor, 'at': time.time(), 'command': self.id}
+        # (Doc 86, R2: the game day it was held on, for the clock of a phase's Readiness: held days never count.)
+        self.state['held'] = {'by': self.by, 'reason': self.reason, 'cursor': self.cursor, 'at': time.time(), 'command': self.id,
+                              'atDay': self.day(), 'visit': self.state['visits']}
         self.save('held')
         return 'Held: it reads no events, sends no orders and fires no timers until resumed.', {'status': 'running'}, {'status': 'held'}
 
@@ -3139,7 +3255,15 @@ class Steer:
         _require(self.status == 'held', 'Only a held story is resumed (a paused one is retried or skipped).')
         newest = self.conn.execute('SELECT coalesce(max(id),0) FROM game.events WHERE world_id=%s', (self.world,)).fetchone()[0]
         waiting = max(0, newest - self.cursor)
-        self.state.pop('held', None)
+        held = self.state.pop('held', None) or {}
+        if 'atDay' in held:
+            span = max(0, self.day() - held['atDay'])
+            days = self.state.setdefault('heldDays', {'run': 0, 'visit': 0})
+            days['run'] = round(days.get('run', 0) + span, 4)
+            days['visit'] = round(days.get('visit', 0) + (span if held.get('visit') == self.state['visits'] else
+                                                         max(0, self.day() - self.state['entered'])), 4)
+            if 'ready' in self.state:
+                self.state['ready']['checkedAt'] = None   # (Measured again on its next tick.)
         catch_up = self.payload.get('catchUp', True) is not False
         if not catch_up:
             self.cursor = max(self.cursor, newest)
@@ -3182,7 +3306,9 @@ class Steer:
         # (A direction redeemed from a ticket, doc 85 Phase 7: the `dm signal` exit only, as direct() dispatched it.)
         moved = False if self.payload.get('direction') else self.dispatch(
             {'kind': rules.triggers.SIGNAL, 'signal': name, 'actor': actor, 'id': None})
-        if not moved and any(e['on'] == 'dm signal' and e['match']['detail'] == name for e in phase['exits']):
+        then = (phase.get('ready') or {}).get('then') or {}
+        if not moved and (any(e['on'] == 'dm signal' and e['match']['detail'] == name for e in phase['exits']) or (
+                then.get('on') == 'dm signal' and then['match']['detail'] == name)):
             moved = self.dispatch({'kind': 'dm signal', 'detail': name, 'actor': actor, 'id': None})
         self.moved = moved
         fired = [t['trigger'] for t in self.trace]
@@ -3251,6 +3377,43 @@ class Steer:
         _require(any(p['id'] == target for p in self.program['phases']), 'No such phase.')
         rules.leave_visit(self.phase(), self.state, target, self.day(), actor, self.program)
         return True
+
+    def do_advance(self):
+        """Doc 86, R2 rule 9: the phase's ready exit taken now, or at its `then` moment; when not ready, only "anyway". The
+        result's before and after hold the readiness snapshot (the audit keeps what the admin saw)."""
+        self.flow_ready()
+        phase = self.phase()
+        way = rules.ready_exit(phase)
+        _require(way, 'This phase has no Advance: use Go to phase…')
+        if self.status == 'running' or 'ready' not in self.state:
+            rules.readiness(self.program, self.state, self.day(), self.elapsed(), _now_facts(self.conn, self.world, wants_facts(self.program)).get('facts'))
+        snapshot = rules.ready_snapshot(self.state)
+        when, anyway = self.payload.get('when', 'now'), self.payload.get('anyway', False) is True
+        r = self.state.get('ready') or {}
+        parts = r.get('parts') or []
+        if not r.get('met') and not anyway:
+            left = '; '.join(rules.part_words(x) for x in parts)
+            raise Refused(f'Not ready yet: {left}. Advance anyway?')
+        if when == 'then':
+            _require(phase['ready'].get('then'), 'This phase has no moment to wait for: Advance now.')
+            r['pushed'] = {'by': self.by, 'reason': self.reason, 'day': round(self.day(), 4), 'when': 'then', 'anyway': anyway}
+            r['met'] = True
+            r['checkedAt'] = None
+            self.state['ready'] = r
+            rules._ready_log(self.state, self.day(), 'pushed', f'Pushed by {self.by}: {self.reason}', by=self.by)
+            words = rules.ready_words(phase['ready']['then'])
+            return (f'Advance to {way["to"]} at {words}' + (' (anyway)' if anyway else '') + '.', {'ready': snapshot},
+                    {'ready': rules.ready_snapshot(self.state), 'waitingFor': phase['ready']['then']})
+        rules._ready_log(self.state, self.day(), 'advanced', f'Advanced by {self.by}: {self.reason}', by=self.by,
+                         **({'anyway': True} if anyway else {}))
+        here = self.state['phase']
+        self._transition(way['to'], '')
+        self.moved = True
+        met = sum(1 for x in parts if x['met'])
+        summary = '; '.join(rules.part_words(x) for x in parts)
+        return (f'Advanced to {way["to"]} now ' + (f'anyway (not ready: {met} of {len(parts)} parts met)' if not r.get('met') else '(ready)')
+                + (f': {summary}' if summary else '') + '.'), {'phase': here, 'ready': snapshot}, {
+            'phase': way['to'], 'visit': self.state['visits'], 'anyway': anyway and not r.get('met')}
 
     def do_enter(self):
         self.flow_ready()
@@ -3640,6 +3803,7 @@ class Steer:
         _check_payload(self.program, self.kind, self.payload)
         self.visit_before, cursor = self.state['visits'], self.cursor
         text, before, after = getattr(self, 'do_' + self.kind.replace('-', '_'))()
+        _stamp_ready_log(self.state)
         start_chapters(self.conn, self.world, self.run, self.program, self.state)   # (Doc 85, Phase 10: a chapter "now".)
         self.history()
         if self.moved:
@@ -4056,6 +4220,14 @@ def listeners(program, state, per_wolf=True, recent=None, day=None, facts=None):
             item['missing'] = [m for m in edge['missions'] if m not in done]
         if edge['on'] == 'clock' or 'afterDays' in edge:
             item['due'] = state['entered'] + edge.get('afterDays', 0)
+        if edge['on'] == rules.READY_EXIT:
+            # (Doc 86, R2 rule 10: its parts and whether they are met; it goes by itself only with auto, then or autoAfterDays.)
+            block = phase['ready']
+            r = state.get('ready') or {}
+            mine = r.get('phase') == phase['id'] and r.get('visit') == state['visits']
+            item.update(readiness={'met': bool(r.get('met')) and mine, 'parts': r.get('parts', []) if mine else [],
+                               'auto': bool(block.get('auto')), 'then': block.get('then'), 'autoAfterDays': block.get('autoAfterDays')},
+                        byItself=bool(block.get('auto') or block.get('then') or block.get('autoAfterDays')))
         out.append(item)
     # Can each still fire by itself? Off or used up: no. On a wolf's doing: only while a wolf of the story is about. A
     # signal: only while something that can still fire sends it, or a timer runs for it (worked out to a fixed point).
@@ -4063,7 +4235,11 @@ def listeners(program, state, per_wolf=True, recent=None, day=None, facts=None):
     timed = {t.get('signal', k) for k, t in state.get('timers', {}).items()}
     fed = {m['id'] for m in phase.get('missions', []) if any(o.get('signal') in timed for o in m['objectives'])}
     for item in out:
-        if item.get('off') or item.get('used'):
+        if item['on'] == rules.READY_EXIT and item['source'] == 'exit':
+            item['can'] = item['byItself']
+            if not item['can']:
+                item['cannot'] = 'admin'   # (It waits for an admin to press Advance.)
+        elif item.get('off') or item.get('used'):
             item['can'], item['cannot'] = False, 'off' if item.get('off') else 'used'
         elif item['on'] == rules.triggers.SIGNAL and item['timers']:
             item['can'] = True
@@ -4105,6 +4281,8 @@ def _stall(conn, world, program, state, limits):
     phase = rules.phase_of(program, state)
     if not rules.ongoing(phase) or state.get('waiting'):
         return None   # (Version 2: a trigger waiting part-way through its actions goes on by itself.)
+    if rules.ready_exit(phase):
+        return None   # (Doc 86, R2 rule 10: its way on is Readiness, which says "ready" or "slow" instead.)
     if phase.get('_quests') and not phase['exits'] and not any(a['do'] == 'enter' for t in phase.get('triggers', [])
                                                               for _, a in rules.triggers.walk(t['actions'])):
         return None   # (Doc 85, Phase 6: a phase of quests with nowhere to go, a standing errand, is not meant to move on.)
@@ -4440,6 +4618,10 @@ def _alert_words(title, alert):
         return f'Story "{title}" is paused: {(alert.get("problem") or "the game refused an order").rstrip(". ")}. Retry or skip it in Campaigns.'
     if alert['kind'] == 'stuck':
         return f'Story "{title}" cannot move on from {alert.get("phase")}: nothing in it can still fire by itself. See Campaigns.'
+    if alert['kind'] == 'ready':
+        return f'Story "{title}" is ready to advance from {alert.get("phase")} to {alert.get("to")}: press Advance in Campaigns.'
+    if alert['kind'] == 'slow':
+        return f'Story "{title}" is slow in {alert.get("phase")}: {alert.get("words") or "not ready"}. Advance anyway, or wait (Campaigns).'
     return f'Story "{title}" needs you ({alert["kind"]}). See Campaigns.'
 
 

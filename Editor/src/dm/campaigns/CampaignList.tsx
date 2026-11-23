@@ -4,7 +4,10 @@ import {useState} from 'react';
 import {storyProgram, type Live, type Target} from '../api';
 import {CampaignCards, NewCampaign} from './Chapters';
 import {WorldVarsPanel} from './WorldVars';
-import {ago, alertText, audienceText, filterRuns, hereCount, lastText, listCounts, questsText, waitingOn, type FramePerson, type ListFilter, type Overview} from '../../lib/campaigns';
+import {ago, alertText, audienceText, filterRuns, hereCount, lastText, listCounts, questsText, readySummary, waitingOn, type Alert, type FramePerson, type ListFilter, type Overview} from '../../lib/campaigns';
+
+// (Doc 86, R3: "ready to advance" first among the alerts, then the others needing you, then the rest.)
+const alertRank = (a: Alert) => (a.kind === 'ready' ? 0 : a.needsYou ? 1 : 2);
 
 const FILTERS: {id: ListFilter; label: string}[] = [
     {id: 'all', label: 'All'}, {id: 'running', label: 'Running'}, {id: 'held', label: 'Held'}, {id: 'paused', label: 'Paused'}, {id: 'approved', label: 'Approved'},
@@ -59,25 +62,30 @@ export function CampaignList({overview, live, names, open, holdAll, target, mayR
         {ruling && target && overview.thresholds && <AlertRules target={target} thresholds={overview.thresholds} done={() => setRuling(false)} />}
         {panel === 'vars' && target && <WorldVarsPanel target={target} names={names} mayChange={!!maySteerWorld} />}
         {panel === 'new' && target && <NewCampaign target={target} done={run => { setPanel(''); if (run) open(run); }} />}
-        <CampaignCards campaigns={overview.campaigns ?? []} open={open} />
+        <CampaignCards campaigns={overview.campaigns ?? []} open={open} runs={overview.runs} />
         {overview.runs.length === 0 ? <p className="hint camp-pad">No world stories in this world yet. Write one in Story Creator, rehearse it, approve and publish it: it shows here.</p>
             : <table className="dm-table camp-table"><thead><tr>
-                <th>Story</th><th>Status</th><th>Phase</th><th>Wolves</th><th>Missions</th><th>Last happened</th><th>Waiting on</th>
+                <th>Story</th><th>Status</th><th>Phase</th><th>Ready</th><th>Wolves</th><th>Missions</th><th>Last happened</th><th>Waiting on</th>
             </tr></thead><tbody>{runs.map(r => {
                 const wait = waitingOn(r.waiting, names, overview.now.day, undefined, overview.now.at);
                 const alerts = r.alerts ?? [];
+                const ready = readySummary(r.ready);
                 return <tr key={r.run} onClick={() => open(r.run)} className={alerts.some(a => a.needsYou) ? 'needs' : ''}>
                     <td><b>{r.title}</b><small>{r.approver ? `approved by ${r.approver}` : ''}{r.approvedAt ? ` · ${ago(r.approvedAt, overview.now.at)}` : ''}</small></td>
                     <td><span className={`camp-status ${r.status}`}>{r.status}</span>{r.commandsQueued ? <small className="camp-warn">{r.commandsQueued} command{r.commandsQueued === 1 ? '' : 's'} sent</small> : null}
                         {alerts.map(a => <small key={a.kind} className={a.needsYou ? 'error-text' : 'camp-warn'} title={alertText(a, names)}>⚠ {a.kind}</small>)}</td>
                     <td>{r.phase ?? '-'}{r.visit ? <small>visit {r.visit}{r.entered !== undefined && overview.now.day !== null ? ` · ${(overview.now.day - r.entered).toFixed(1)} days in` : ''}</small> : null}</td>
+                    <td>{ready ? <span className={`camp-ready-mini ${ready.met ? 'met' : ''}`} title={ready.text}>
+                        <span className="camp-ready-bar"><span className="fill" style={{width: `${Math.round(ready.fill * 100)}%`}} /></span>
+                        {ready.met ? <b className="camp-ready-tag">ready</b> : <small>{ready.text}</small>}</span> : '-'}</td>
                     <td>{r.audience ? audienceText(r.audience, r.wolves) : r.wolves ?? '-'}{r.cohort && <small>{hereCount(r.cohort, people)} here now</small>}</td>
                     <td>{questsText(r.missions)}</td>
                     <td>{lastText(r.last, names)}{r.last?.at && <small>{ago(r.last.at, overview.now.at)}{r.last.day != null ? ` · day ${r.last.day.toFixed(1)}` : ''}</small>}</td>
                     <td className={wait ? `camp-wait ${wait.tone}` : ''}>{wait ? <><b>{wait.who}</b><small>{wait.text}</small></> : '-'}</td>
                 </tr>;
             })}</tbody></table>}
-        {overview.runs.some(r => (r.alerts ?? []).length) && <ul className="camp-alerts">{overview.runs.flatMap(r => (r.alerts ?? []).map(a =>
-            <li key={r.run + a.kind} className={a.needsYou ? 'needs' : ''}><button className="link-button" onClick={() => open(r.run)}>{r.title}</button> · {alertText(a, names)}</li>))}</ul>}
+        {overview.runs.some(r => (r.alerts ?? []).length) && <ul className="camp-alerts">{overview.runs.flatMap(r => (r.alerts ?? []).map(a => ({r, a})))
+            .sort((x, y) => alertRank(x.a) - alertRank(y.a)).map(({r, a}) =>
+            <li key={r.run + a.kind} className={a.needsYou ? 'needs' : ''}><button className="link-button" onClick={() => open(r.run)}>{r.title}</button> · {alertText(a, names)}</li>)}</ul>}
     </div>;
 }

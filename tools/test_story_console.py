@@ -31,6 +31,78 @@ def admin(dbname):
                            user=s.get('POSTGRES_USER', 'postgres'), password=s.get('POSTGRES_PASSWORD', ''), connect_timeout=3)
 
 
+# ----- Doc 86, Phase 1a: a chapter paced by readiness (R2), for the runner's, steering's, explain's, the campaigns' and the
+# console's tests (tools/test_story_v2_runner.py and the others), on the throwaway database.
+MUSTER = [f'player-m{i:02d}' for i in range(16)]
+
+
+def ready_program(auto=False, then=None, slow=None, after=None, minimum=2, story_id='v2-ready', ending=None):
+    """A chapter of 16 wolves: it is ready when 35% of the active ones (at least 3) brought rope, and `minimum` days have
+    passed in the phase."""
+    block = {'all': [{'participation': {'list': 'did'}, 'of': 'active', 'percent': 35, 'floor': 3, 'cap': 150,
+                      'label': 'Wolves who brought rope'},
+                     {'minDays': minimum, 'label': 'Days of the muster'}], 'auto': auto}
+    for key, value in (('then', then), ('slowAfterDays', slow), ('autoAfterDays', after)):
+        if value is not None:
+            block[key] = value
+    return {
+        'format': 'ratw-story-program', 'version': 2, 'id': story_id, 'title': 'The muster ' + story_id,
+        'audience': {'kind': 'players', 'players': MUSTER}, 'start': 'work',
+        'variables': [{'id': 'did', 'type': 'wolves', 'scope': 'story'}],
+        'phases': [{'id': 'work', 'journal': 'Bring rope to the muster.', 'effects': [], 'ready': block,
+                    'exits': [{'on': 'ready', 'to': 'done'}], 'triggers': [
+                        {'id': 'rope', 'on': 'gift', 'audience': 'participant', 'actions': [
+                            {'do': 'list add', 'var': 'did', 'value': {'field': 'actor'}}]}]},
+                   {'id': 'done', 'journal': 'The muster is done.', 'effects': [*(ending or [])], 'exits': []}],
+        'tests': [{'name': 'Ready, then Advance', 'cohort': MUSTER, 'events': [
+            *({'id': f'a{i}', 'kind': 'arrival', 'day': 0.1, 'actor': w} for i, w in enumerate(MUSTER[:4])),
+            *({'id': f'g{i}', 'kind': 'gift', 'day': 0.5, 'actor': w, 'item': 'rope'} for i, w in enumerate(MUSTER[:4])),
+            {'id': 'c', 'kind': 'clock', 'day': max(minimum, 0) + 0.5},
+            *([{'id': 'c2', 'kind': 'clock', 'day': minimum + after + 0.7}] if after else []),
+            *([{'advance': 'now'}] if not auto and not after else []),
+            *([{'id': 'd', 'kind': then['on'], 'day': minimum + (after or 0) + 1, 'detail': 'Restday'}] if then else []),
+        ], 'expect': ['work', 'done']}],
+    }
+
+
+class ReadyFixture:
+    """The muster's wolves in the throwaway world, and its runs."""
+
+    def add_wolves(self):
+        self.rewrite('SELECT 1')
+        self.conn.execute('RESET ROLE')
+        for w in MUSTER:
+            self.conn.execute('INSERT INTO game.characters(world_id,key,position,data) VALUES (%s,%s,1,%s::jsonb) ON CONFLICT DO NOTHING',
+                              (self.world, w, json.dumps({'name': 'Wolf ' + w[-2:]})))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+
+    def ready_launch(self, program, active=10, day=1):
+        self.add_wolves()
+        self.day(day)
+        for w in MUSTER[:active]:
+            self.fact('arrival', w, day=day)
+        self.examples = {**self.examples, program['id']: program}
+        self.launch(program['id'])
+        self.answer()
+        return self.run_id
+
+    def gifts(self, wolves, day):
+        for w in wolves:
+            self.fact('gift', w, 'rm111', day=day, item='rope', quantity=1)
+
+    def ready(self):
+        return self.state().get('ready') or {}
+
+    def alert_kinds(self):
+        return [a['kind'] for a in self.row()['alerts']]
+
+    def day(self, n):
+        self.rewrite(f"UPDATE game.checkpoints SET payload='{{\"calendarDays\":{n}}}' WHERE world_id='{self.world}'")
+
+    def state(self):
+        return runner.status(self.conn, self.world, self.run_id)['state']
+
+
 @unittest.skipUnless(database_available(), 'local PostgreSQL required')
 class ConsoleReads(unittest.TestCase):
     @classmethod
@@ -304,6 +376,39 @@ class ConsoleRoute(unittest.TestCase):
         for op in ('status', 'timeline'):
             status, data = self.call('/api/story-program', {'op': op, 'target': 'dev', 'run': self.run_id}, viewer)
             self.assertEqual(status, 403, data)
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL required')
+class ReadinessInTheConsole(ReadyFixture, unittest.TestCase):
+    """Doc 86, R3's server side: the overview and the run's detail carry its readiness; Advance through the route's
+    command lands in the audit."""
+    setUpClass = classmethod(ConsoleReads.setUpClass.__func__)
+    tearDownClass = classmethod(ConsoleReads.tearDownClass.__func__)
+    setUp = ConsoleReads.setUp
+    fact, launch, answer, tick, rewrite, row = (ConsoleReads.fact, ConsoleReads.launch, ConsoleReads.answer, ConsoleReads.tick,
+                                                ConsoleReads.rewrite, ConsoleReads.row)
+
+    def test_overview_and_detail_carry_ready_and_advance_is_audited(self):
+        self.ready_launch(ready_program(slow=6))
+        self.gifts(MUSTER[:4], 1)
+        self.day(3.1)
+        self.tick()
+        row = self.row()
+        self.assertEqual((row['ready']['met'], row['ready']['to'], row['ready']['activeDays']), (True, 'done', 18))
+        self.assertEqual([p['kind'] for p in row['ready']['parts']], ['participation', 'minDays'])
+        self.assertEqual(row['ready']['parts'][0]['audience'], {'all': 16, 'active': 10, 'online': None})
+        one = runner.status(self.conn, self.world, self.run_id)
+        self.assertEqual(one['ready']['metAt'], 3.1)
+        self.assertEqual([e['kind'] for e in one['readyLog']], ['ready'])
+        self.assertEqual(one['controls']['ready'], {'to': 'done', 'auto': False, 'then': None, 'thenWords': None, 'met': True})
+        sent = runner.command(self.conn, self.world, 'martin', {
+            'run': self.run_id, 'kind': 'advance', 'payload': {'when': 'now'}, 'reason': 'ready, and the admin agrees',
+            'key': secrets.token_hex(8), 'visit': one['visit'], 'digest': one['digest']})
+        self.tick()
+        self.assertEqual(self.conn.execute('SELECT status FROM dm.story_commands WHERE id=%s', (sent['id'],)).fetchone()[0], 'done')
+        audit = self.conn.execute("SELECT detail FROM dm.audit WHERE action='story.advance'").fetchone()[0]
+        self.assertIn('Advanced to done now (ready)', audit)
+        self.assertIn('ready, and the admin agrees', audit)
 
 
 if __name__ == '__main__':

@@ -416,3 +416,65 @@ test("the world's variables: values typed in and shown", () => {
     assert.equal(worldVarText({name: 'best', type: 'wolves', value: ['player-ash'], stories: []}, names), 'Ash Greymantle');
     assert.equal(worldVarText({name: 'best', type: 'number', value: null, unset: true, stories: []}), '(not set yet)');
 });
+
+// ------------------------------------------------------------------------------- readiness (doc 86, Phase 1a: R3)
+import {chapterReadyText, readyBars, readyHeader, readySummary, type Readiness} from './campaigns.ts';
+
+const ready = (over: Partial<Readiness> = {}): Readiness => ({
+    phase: 'ch1_main', visit: 1, met: false, auto: false, to: 'ch1_end', metAt: null, activeDays: 18,
+    parts: [
+        {kind: 'participation', label: 'Wolves who did the chapter\'s work', met: true, value: 42, need: 42, of: 'active', count: 118, share: 35, percent: 35,
+            floor: 5, cap: 150, audience: {all: 260, active: 118, online: 31}},
+        {kind: 'minDays', label: 'Days in the chapter', met: false, value: 8.5, need: 10, since: 'chapter', held: 1.5},
+        {kind: 'any', label: 'The camp, or time', met: false, value: 0, need: 1, any: [
+            {kind: 'quest', label: 'The camp broken', met: false, value: 0, need: 1, quest: 'alder_mere'},
+            {kind: 'minDays', label: 'or twenty days', met: false, value: 8.5, need: 20, since: 'phase'}]},
+    ], ...over});
+
+test('readyBars: participation with its floor and cap, time with held days, an any group', () => {
+    const bars = readyBars(ready());
+    assert.equal(bars[0].text, '42 of 118 active wolves (35%); 35% and at least 5 needed, 150 always enough');
+    assert.equal(bars[0].fill, 42 / 118);
+    assert.equal(bars[0].mark, 42 / 118, 'the mark is the need out of those counted');
+    assert.ok(bars[0].met);
+    assert.equal(bars[1].text, '8.5 of 10 days in the chapter (1.5 held days not counted)');
+    assert.equal(bars[1].fill, 0.85);
+    assert.equal(bars[2].any?.length, 2);
+    assert.equal(bars[2].fill, 8.5 / 20, 'the furthest of the group');
+    assert.equal(bars[2].any![0].text, '0 of 1');
+    const unknown = readyBars(ready({parts: [{kind: 'participation', label: 'Online', met: false, value: null, need: null, of: 'online', count: null, percent: 50}]}));
+    assert.equal(unknown[0].text, 'who is online is not known yet');
+    const short = readyBars(ready({parts: [{kind: 'participation', label: 'W', met: false, value: 2, need: 3, of: 'active', count: 10, share: 20, percent: 25, floor: 3}]}));
+    assert.equal(short[0].text, '2 of 10 active wolves (20%); 25% and at least 3 needed (3 wolves)');
+});
+
+test('the readiness header, the list\'s summary and the chapters bar', () => {
+    assert.equal(readyHeader(ready()).text, 'Not ready: 1 of 3 met');
+    assert.equal(readyHeader(ready({met: true, metAt: 93})).text, 'Ready to advance to ch1_end (since day 93)');
+    assert.equal(readyHeader(ready({met: true, metAt: 93, waitingFor: {on: 'day begins'}, thenWords: 'the next day'})).text, 'Waiting for the next day (ready since day 93)');
+    assert.equal(readyHeader(ready({auto: true})).text, 'Goes on by itself when ready: 1 of 3 met');
+    assert.deepEqual(readySummary(ready()), {text: 'Days in the chapter: 8.5 of 10 days', fill: 0.85, met: false});
+    assert.deepEqual(readySummary(ready({met: true})), {text: 'ready', fill: 1, met: true});
+    assert.equal(chapterReadyText(ready(), 1), 'Ch 1 · 35% of 35% · day 8 of 10 · not ready');
+});
+
+test('alertText for ready and slow; commandLine for the three advances; typedTitle with anyway; listCounts counts ready', () => {
+    assert.equal(alertText({kind: 'ready', needsYou: true, phase: 'ch1_main', to: 'ch1_end', metAt: 93, parts: 4, met: 4}, names),
+        'Ready to advance: ch1_main → ch1_end since day 93 (all 4 parts met)');
+    const part = ready().parts[0];
+    assert.equal(alertText({kind: 'slow', needsYou: false, days: 31.4, part: {...part, met: false, share: 21}}, names), 'Slow: 21% of the 35% needed after 31 days; Advance anyway, or wait');
+    assert.equal(alertText({kind: 'slow', needsYou: true, days: 31, part, words: '21 of 100 active wolves (21%; 35% and 35 needed)'}, names),
+        'Ready to push: 21 of 100 active wolves (21%; 35% and 35 needed). Advance anyway, or wait.');
+    assert.equal(commandLine('advance', {when: 'now', to: 'ch1_end'}, names), 'Advance to ch1_end now (ready)');
+    assert.equal(commandLine('advance', {when: 'now', anyway: true, to: 'ch1_end', notReady: '2 of 4 parts met'}, names), 'Advance to ch1_end now anyway (not ready: 2 of 4 parts met)');
+    assert.equal(commandLine('advance', {when: 'then', to: 'ch1_end', thenWords: 'the next new moon'}, names), 'Advance to ch1_end at the next new moon');
+    assert.equal(commandLine('advance', {when: 'now'}, names), 'Advance now (ready)', 'as a command row keeps it');
+    assert.ok(typedTitle('advance', {when: 'now', anyway: true}));
+    assert.ok(!typedTitle('advance', {when: 'now'}));
+    const run = (alerts: RunRow['alerts']): RunRow => ({run: 'r', title: 't', status: 'running', digest: 'd', approver: 'a', approvedAt: null, phase: 'p', problem: '', alerts});
+    assert.equal(listCounts([run([{kind: 'ready', needsYou: true}]), run([{kind: 'slow', needsYou: false}]), run([])]).needsYou, 1);
+    const lines = waitingLines([{on: 'ready', to: 'ch1_end', auto: false, met: true}], names, 10);
+    assert.deepEqual(lines[0], {who: 'you', tone: 'alert', text: 'ready: waits for an admin to advance it to ch1_end'});
+    assert.equal(waitingLines([{on: 'ready', to: 'ch1_end', auto: true, met: false, then: {on: 'day begins'}}], names, 10)[0].text,
+        'goes on by itself to ch1_end when ready, at the next day begins');
+});

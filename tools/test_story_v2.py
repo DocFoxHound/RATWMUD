@@ -281,5 +281,125 @@ class Judging(unittest.TestCase):
         self.assertNotIn('draws', state, 'judging never rolls')
 
 
+# ----- Doc 86, Phase 1a: C2 (the audience counted, times, div) and R1 (who took part), in the Python twin; both twins agreeing
+# is tools/test_story_native.py's.
+def counting(cohort, seen=None, did=(), counters=None, online=None, active_days=None, **state):
+    """A version 2 story of these wolves, a firing context on game day 20, and the state it reads."""
+    p = {'format': 'ratw-story-program', 'version': 2, 'id': 'count', 'title': 'Counting', 'start': 'a',
+         'audience': {'kind': 'open'}, 'variables': [{'id': 'did', 'type': 'wolves', 'scope': 'story'},
+                                                       {'id': 'n', 'type': 'number', 'scope': 'player'}],
+         'phases': [{'id': 'a', 'journal': 'Count.', 'effects': [], 'exits': []}], 'tests': []}
+    if active_days:
+        p['activeDays'] = active_days
+    s = rules.begin(p, cohort, 0)
+    s['seen'] = dict(seen if seen is not None else {w: 20 for w in cohort})
+    s['counters'] = {'story': {'did': list(did)}, **(counters or {})}
+    if online is not None:
+        s['online'] = online
+    s.update(state)
+    phase = rules.phase_of(p, s)
+    return triggers.Ctx(phase, s, {'kind': 'x'}, '', 20, 0, lambda: set(), None)
+
+
+WOLVES12 = [f'w{i:02d}' for i in range(12)]
+
+
+def part(percent, floor=None, cap=None, of='active', src=None):
+    c = {'test': 'participation', **(src or {'list': 'did'}), 'of': of, 'percent': percent}
+    if floor is not None:
+        c['floor'] = floor
+    if cap is not None:
+        c['cap'] = cap
+    return c
+
+
+class Audience(unittest.TestCase):
+    def test_each_form_and_arithmetic(self):
+        x = counting(WOLVES12, seen={w: 20 if i < 8 else 1 for i, w in enumerate(WOLVES12)}, online=WOLVES12[:3])
+        self.assertEqual([triggers.value_of({'audience': k}, x) for k in ('all', 'active', 'online')], [12, 8, 3])
+        self.assertEqual(triggers.value_of({'times': [{'audience': 'active'}, 2]}, x), 16)
+        self.assertEqual(triggers.value_of({'div': [{'audience': 'all'}, 5]}, x), 2)
+        self.assertEqual(triggers.value_of({'div': [-7, 2]}, x), -3, 'floored toward zero')
+        self.assertIs(triggers.value_of({'div': [{'audience': 'all'}, 0]}, x), triggers.MISSING, 'by 0: no value')
+        self.assertIs(counting(WOLVES12).audience()['online'], triggers.MISSING, 'online not known')
+
+    def test_active_days_3_against_18(self):
+        seen = {w: 20 - i * 2 for i, w in enumerate(WOLVES12)}   # (Seen 0, 2, 4 ... 22 game days ago.)
+        self.assertEqual(counting(WOLVES12, seen=seen).audience()['active'], 10, '18 days: seen 0-18 days ago')
+        self.assertEqual(counting(WOLVES12, seen=seen, active_days=3).audience()['active'], 2, '3 days: seen 0 or 2 days ago')
+
+    def test_a_case_overrides_the_counts(self):
+        x = counting(WOLVES12, rehearsalAudience={'all': 400, 'active': 120, 'online': 31})
+        self.assertEqual([triggers.value_of({'audience': k}, x) for k in ('all', 'active', 'online')], [400, 120, 31])
+        p = samples.all_samples()[2]
+        self.assertTrue(rules.review(p)['passed'])
+        case = next(c for c in p['tests'] if 'activeWolves' in c)
+        self.assertEqual(case['audience'], {'active': 3})
+
+    def test_the_checks(self):
+        p = samples.all_samples()[2]
+        rope = p['phases'][0]['triggers'][0]['actions']
+        for bad, words in [({'audience': 'quiet'}, 'all, active or online'),
+                           ({'times': [{'audience': 'all'}, 'x']}, 'Arithmetic is on numbers'),
+                           ({'percent': {'list': 'hauls'}, 'of': 'active'}, 'list of wolves'),
+                           ({'percent': {'list': 'did', 'where': {'test': 'switch', 'var': 'cheered', 'is': True}}}, 'one of the two'),
+                           ({'max': [1, {'plus': [1, {'among': {'list': 'did'}}]}]}, 'one level deep')]:
+            q = copy.deepcopy(p)
+            q['phases'][0]['triggers'][0]['actions'][3]['value'] = bad
+            with self.subTest(bad=bad), self.assertRaisesRegex(ValueError, words):
+                rules.validate(q)
+        self.assertTrue(rope)
+        q = copy.deepcopy(p)
+        q['activeDays'] = 121
+        self.assertRaisesRegex(ValueError, '1–120 game days', rules.validate, q)
+
+
+class Participation(unittest.TestCase):
+    def test_twelve_active_five_in_the_list(self):
+        x = counting(WOLVES12, did=WOLVES12[:5])
+        self.assertEqual(triggers.value_of({'percent': {'list': 'did'}, 'of': 'active'}, x), 41)
+        self.assertEqual(triggers.value_of({'among': {'list': 'did'}, 'of': 'active'}, x), 5)
+
+    def test_the_floor_and_the_cap(self):
+        self.assertFalse(triggers.test_v2(part(40, floor=6), counting(WOLVES12, did=WOLVES12[:5])), '40% with floor 6: need 6')
+        self.assertTrue(triggers.test_v2(part(40, floor=4), counting(WOLVES12, did=WOLVES12[:5])), 'floor 4: need 5')
+        two = counting(WOLVES12, seen={WOLVES12[0]: 20, WOLVES12[1]: 20}, did=WOLVES12[:2])
+        self.assertTrue(triggers.test_v2(part(35, floor=3), two), '2 active, floor 3: need 2 (never more than are active)')
+        many = [f'm{i:04d}' for i in range(2000)]
+        self.assertTrue(triggers.test_v2(part(35, floor=3, cap=3), counting(many, did=many[:3])), 'a cap of 3 is always enough')
+        self.assertEqual([triggers.share_need(d, 35, 5, 150) for d in (1, 4, 10, 118, 1000)], [1, 4, 5, 42, 150])
+
+    def test_no_active_wolves_and_online_unknown(self):
+        x = counting(WOLVES12, seen={}, did=WOLVES12[:5])
+        self.assertEqual(triggers.value_of({'percent': {'list': 'did'}, 'of': 'active'}, x), 0)
+        self.assertFalse(triggers.test_v2(part(10), x))
+        self.assertIsNone(triggers.test_v2(part(10, of='online'), counting(WOLVES12, did=WOLVES12)), 'online not known: unknown')
+        self.assertIs(triggers.value_of({'among': {'list': 'did'}, 'of': 'online'}, counting(WOLVES12)), triggers.MISSING)
+        self.assertTrue(triggers.test_v2(part(50, of='online'), counting(WOLVES12, did=WOLVES12[:2], online=WOLVES12[:3])))
+
+    def test_a_test_for_each_wolf(self):
+        counters = {'player': {w: {'n': i} for i, w in enumerate(WOLVES12)}}
+        where = {'where': {'test': 'compare', 'left': {'var': 'n', 'of': '$each'}, 'op': '>=', 'right': 9}}
+        x = counting(WOLVES12, counters=counters)
+        self.assertEqual(triggers.value_of({'among': where, 'of': 'all'}, x), 3)
+        self.assertEqual(triggers.value_of({'percent': where, 'of': 'all'}, x), 25)
+        self.assertTrue(triggers.test_v2(part(25, src=where), x))
+        self.assertIsNone(x.each, 'the loop value is put back')
+
+    def test_a_wolf_who_went_quiet_leaves_both_counts(self):
+        seen = {w: 20 for w in WOLVES12}
+        x = counting(WOLVES12, seen=seen, did=WOLVES12[:6])
+        self.assertEqual(triggers.value_of({'percent': {'list': 'did'}, 'of': 'active'}, x), 50)
+        seen.update({w: 1 for w in WOLVES12[:4]})   # (Four who did it went quiet.)
+        x = counting(WOLVES12, seen=seen, did=WOLVES12[:6])
+        self.assertEqual((triggers.value_of({'among': {'list': 'did'}, 'of': 'active'}, x), x.audience()['active']), (2, 8))
+        self.assertEqual(triggers.value_of({'percent': {'list': 'did'}, 'of': 'active'}, x), 25)
+
+    def test_judge_shows_the_counts(self):
+        x = counting(WOLVES12, did=WOLVES12[:5])
+        judged = triggers.judge(part(40, floor=4), x.state, {'kind': 'x'}, lambda: set(), None, None, x.phase, 20)
+        self.assertEqual((judged['verdict'], judged['fact']), (True, {'among': 5, 'of': 12, 'need': 5}))
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -474,5 +474,40 @@ def _route_teardown(cls):
     console.ConsoleReads.tearDownClass.__func__(cls)
 
 
+@unittest.skipUnless(database_available(), 'local PostgreSQL required')
+class ExplainReadiness(console.ReadyFixture, unittest.TestCase):
+    """Doc 86, R2 rule 10: the ready exit among what the run listens for, never "stuck", and the dry run of Advance."""
+    setUpClass = classmethod(console.ConsoleReads.setUpClass.__func__)
+    tearDownClass = classmethod(console.ConsoleReads.tearDownClass.__func__)
+    setUp = console.ConsoleReads.setUp
+    fact, launch, answer, tick, rewrite, row = (console.ConsoleReads.fact, console.ConsoleReads.launch, console.ConsoleReads.answer,
+                                                console.ConsoleReads.tick, console.ConsoleReads.rewrite, console.ConsoleReads.row)
+
+    def test_the_ready_listener_no_stuck_and_the_dry_run(self):
+        self.ready_launch(console.ready_program())
+        self.gifts(console.MUSTER[:4], 1)
+        self.tick()
+        out = runner.explain(self.conn, self.world, self.run_id)
+        item = next(i for i in out['listeners'] if i['source'] == 'exit' and i['on'] == 'ready')
+        self.assertEqual((item['to'], item['readiness']['met'], item['can'], item['cannot']), ('done', False, False, 'admin'))
+        self.assertEqual([p['label'] for p in item['readiness']['parts']], ['Wolves who brought rope', 'Days of the muster'])
+        self.assertIsNone(runner._stall(self.conn, self.world, self.examples['v2-ready'], self.one()['state'], runner.ALERTS))
+        self.assertNotIn('stuck', self.alert_kinds())
+        self.day(3.1)
+        self.tick()
+        dry = runner.explain(self.conn, self.world, self.run_id, {'command': {'kind': 'advance', 'payload': {'when': 'now'}}}, 'martin')
+        self.assertEqual(dry['outcome'], 'done', dry)
+        self.assertTrue(dry['moved'])
+        self.assertEqual(dry['phase'], 'done')
+        self.assertEqual(self.one()['phase'], 'work', 'a dry run moves nothing')
+        auto = console.ready_program(auto=True, story_id='v2-ready-auto')
+        state = rules.begin(auto, console.MUSTER, 0)
+        item = next(i for i in runner.listeners(auto, state, per_wolf=False) if i['on'] == 'ready')
+        self.assertTrue(item['can'], 'with auto it goes on by itself')
+
+    def one(self):
+        return runner.status(self.conn, self.world, self.run_id)
+
+
 if __name__ == '__main__':
     unittest.main()

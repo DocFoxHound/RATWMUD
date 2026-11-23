@@ -392,5 +392,65 @@ class HostedCampaigns(unittest.TestCase):
         self.assertEqual([a['who'] for a in data['audit']][:2], ['owner#a1', 'ash#d1'])
 
 
+def ready_chapters():
+    """Doc 86, Phase 1a: chapter one paced by readiness (Advance by an admin), whose closing phase starts chapter two with the
+    same wolves; chapter two moves on by itself at the next day once ready."""
+    one = console.ready_program(story_id='nh-ch1')
+    one['phases'][1] = {'id': 'done', 'journal': 'The muster is done: on to the ford.', 'effects': [], 'exits': [], 'triggers': [
+        {'id': 'next', 'on': 'clock', 'afterDays': 0.01, 'once': 'visit', 'actions': [
+            fx('story.start', story='nh-ch2', audience='same', carry=True, when='ended'),
+            {'do': 'finish', 'outcome': 'success', 'text': 'The muster is over.'}]}]}
+    one['tests'][0]['events'].append({'id': 'late', 'kind': 'clock', 'day': 3})
+    one['tests'][0].update(expectOutcome='success', expectChapters=['nh-ch2'])
+    two = console.ready_program(auto=True, then={'on': 'day begins'}, story_id='nh-ch2')
+    return one, two
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL required')
+class ReadyChapters(console.ReadyFixture, unittest.TestCase):
+    setUpClass = classmethod(console.ConsoleReads.setUpClass.__func__)
+    tearDownClass = classmethod(console.ConsoleReads.tearDownClass.__func__)
+    setUp = console.ConsoleReads.setUp
+    fact, launch, answer, tick, rewrite, row = (console.ConsoleReads.fact, console.ConsoleReads.launch, console.ConsoleReads.answer,
+                                                console.ConsoleReads.tick, console.ConsoleReads.rewrite, console.ConsoleReads.row)
+    one, send, taken, steer, answer_all, settle = (steering.Steering.one, steering.Steering.send, steering.Steering.taken,
+                                                   steering.Steering.steer, steering.Steering.answer_all, steering.Steering.settle)
+
+    def test_chapter_one_advanced_then_chapter_two_opens_with_its_wolves_active(self):
+        one, two = ready_chapters()
+        self.add_wolves()
+        self.day(1)
+        for w in console.MUSTER[:10]:
+            self.fact('arrival', w, day=1)
+        out = runner.approve_campaign(self.conn, self.world, 'martin', {'campaign': {'id': 'nh', 'title': 'The Ninth Howl test',
+                                                                                     'chapters': chapters(one, two)}})
+        self.run_id = runner.publish(self.conn, self.world, out['ticket'])['run']
+        self.answer()
+        self.gifts(console.MUSTER[:4], 1)
+        self.day(3.1)
+        self.tick()
+        self.assertTrue(self.ready()['met'])
+        status, result = self.steer('advance', {'when': 'now'}, reason='chapter one has done enough')
+        self.assertEqual(status, 'done', result)
+        self.settle()
+        self.day(3.2)
+        self.settle()
+        first = self.run_id
+        self.assertEqual(self.conn.execute('SELECT status FROM dm.story_releases WHERE id=%s', (first,)).fetchone()[0], 'complete')
+        second = self.conn.execute("SELECT id,state FROM dm.story_releases WHERE program->>'id'='nh-ch2'").fetchone()
+        self.assertIsNotNone(second, 'chapter two started')
+        self.run_id = second[0]
+        self.assertEqual(sorted(second[1]['seen']), console.MUSTER[:10], 'its wolves are active from the start (seen, seeded)')
+        self.settle()
+        self.gifts(console.MUSTER[:4], 3.3)
+        self.day(5.4)
+        self.fact('arrival', console.MUSTER[0], day=5.4)
+        self.settle()
+        self.assertEqual(self.ready()['waitingFor'], {'on': 'day begins'})
+        self.fact('day begins', '', day=5.5, detail='Marketday')
+        self.settle()
+        self.assertEqual(self.one()['phase'], 'done', 'chapter two moved on by itself at the next day')
+
+
 if __name__ == '__main__':
     unittest.main()

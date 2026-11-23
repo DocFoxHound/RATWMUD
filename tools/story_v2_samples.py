@@ -159,8 +159,107 @@ FLOW = {
 }
 
 
+# ----- Doc 86, Phase 1a: readiness and participation (C2 `audience`, `times`, `div`; R1 `percent`, `among`, `participation`;
+# R2 a phase's `ready` block, its exit, `auto`, `then`, `slowAfterDays`, `autoAfterDays`, Advance). Both twins run its
+# triggers (tools/test_story_native.py); the readiness is the story's own (story_program.readiness).
+MUSTER = ['ash', 'birch', 'cedar', 'dell', 'elder', 'fern']
+HAULED_TWICE = {'test': 'compare', 'left': {'var': 'hauls', 'of': '$each'}, 'op': '>=', 'right': 2}
+
+READY = {
+    'format': 'ratw-story-program', 'version': 2, 'id': 'v2-muster', 'title': 'The muster at the ford',
+    'audience': {'kind': 'players', 'players': MUSTER}, 'start': 'muster', 'activeDays': 3,
+    'variables': [
+        {'id': 'did', 'type': 'wolves', 'scope': 'story', 'note': 'Who brought rope to the muster (once each).'},
+        {'id': 'hauls', 'type': 'number', 'scope': 'player'},
+        {'id': 'rope', 'type': 'number', 'scope': 'story', 'show': 'Rope at the ford'},
+        {'id': 'goal', 'type': 'number', 'scope': 'story'},
+        {'id': 'half', 'type': 'number', 'scope': 'story'},
+        {'id': 'share', 'type': 'number', 'scope': 'story', 'show': 'Share who hauled (%)'},
+        {'id': 'twice', 'type': 'number', 'scope': 'story'},
+        {'id': 'online', 'type': 'number', 'scope': 'story'},
+        {'id': 'cheered', 'type': 'switch', 'scope': 'story'},
+    ],
+    'phases': [
+        {'id': 'muster', 'journal': 'Bring rope to the ford: the crossing goes when enough of you have.', 'effects': [],
+         'missions': [{'id': 'scout', 'title': 'Scout the ford', 'mode': 'individual', 'percent': 1,
+                       'objectives': [{'label': 'Walk the ford.', 'on': 'enter place', 'match': {'target': 'ford'}}]}],
+         'ready': {'all': [
+             {'participation': {'list': 'did'}, 'of': 'active', 'percent': 35, 'floor': 3, 'cap': 150,
+              'label': 'Wolves who brought rope'},
+             {'minDays': 2, 'since': 'chapter', 'label': 'Days of the muster'},
+             {'any': [{'missions': ['scout'], 'label': 'The ford scouted'},
+                      {'test': {'test': 'switch', 'var': 'cheered', 'is': True}, 'label': 'or the muster cheered'}],
+              'label': 'Scouted, or cheered'}],
+             'auto': False, 'slowAfterDays': 4, 'autoAfterDays': 6},
+         'exits': [{'on': 'ready', 'to': 'ford'}],
+         'triggers': [
+             {'id': 'rope', 'on': 'gift', 'audience': 'participant', 'match': {'item': 'rope'}, 'actions': [
+                 {'do': 'add', 'var': 'hauls', 'value': 1},
+                 {'do': 'add', 'var': 'rope', 'value': {'field': 'quantity'}},
+                 {'do': 'list add', 'var': 'did', 'value': {'field': 'actor'}},
+                 {'do': 'set', 'var': 'goal', 'value': {'max': [3, {'times': [{'audience': 'active'}, 2]}]}},
+                 {'do': 'set', 'var': 'half', 'value': {'div': [{'audience': 'all'}, 2]}},
+                 {'do': 'set', 'var': 'share', 'value': {'percent': {'list': 'did'}, 'of': 'active'}},
+                 {'do': 'set', 'var': 'twice', 'value': {'among': {'where': HAULED_TWICE}, 'of': 'all'}},
+             ]},
+             {'id': 'cheer', 'on': 'conversation', 'audience': 'participant', 'once': 'visit',
+              'if': {'test': 'participation', 'source': 'where', 'where': HAULED_TWICE, 'of': 'all', 'percent': 15, 'floor': 1},
+              'actions': [{'do': 'turn on', 'var': 'cheered'}, {'do': 'note', 'text': 'The muster cheers its haulers.'}]},
+             {'id': 'count', 'on': 'arrival', 'audience': 'participant', 'actions': [
+                 {'do': 'set', 'var': 'online', 'value': {'audience': 'online'}}]},
+         ]},
+        {'id': 'ford', 'journal': 'The rope is strung: cross at first light.', 'effects': [],
+         'ready': {'all': [{'value': {'var': 'rope'}, 'atLeast': {'var': 'goal'}, 'label': 'Rope for every active wolf'}],
+                   'auto': True, 'then': {'on': 'day begins'}},
+         'exits': [{'on': 'ready', 'to': 'crossed'}]},
+        {'id': 'crossed', 'journal': 'The muster crossed the ford.', 'effects': [], 'exits': []},
+    ],
+    'tests': [
+        {'name': 'Ready by who took part and by time; Advance; first light', 'cohort': MUSTER, 'events': [
+            *(ev(i, 'arrival', 0.5, actor=w) for i, w in enumerate(MUSTER)),
+            ev(10, 'gift', 1, actor='ash', item='rope', quantity=4),
+            ev(11, 'gift', 1.1, actor='birch', item='rope', quantity=4),
+            ev(12, 'gift', 1.2, actor='ash', item='rope', quantity=2),
+            {'check': 'ready', 'met': False},
+            ev(13, 'gift', 1.5, actor='cedar', item='rope', quantity=3),
+            ev(14, 'conversation', 1.6, actor='ash', target='rm111'),
+            {'check': 'ready', 'met': False},
+            ev(15, 'clock', 2.1),
+            {'check': 'ready', 'met': True},
+            {'advance': 'now'},
+            ev(16, 'clock', 2.5),
+            ev(17, 'day begins', 3, detail='Restday'),
+        ], 'expect': ['muster', 'ford', 'crossed'],
+         'expectVariables': {'story': {'rope': 13, 'goal': 12, 'half': 3, 'share': 50, 'twice': 1, 'online': 6, 'cheered': True},
+                             'player': {'ash': {'hauls': 2}}}},
+        {'name': 'A wolf who went quiet leaves both counts; Advance anyway', 'cohort': MUSTER, 'events': [
+            ev(1, 'arrival', 0, actor='ash'),
+            ev(2, 'gift', 0.5, actor='ash', item='rope', quantity=20),
+            ev(3, 'departure', 0.6, actor='ash'),
+            ev(4, 'arrival', 3.8, actor='dell'),
+            ev(5, 'enter place', 3.9, actor='dell', target='ford'),
+            {'check': 'ready', 'met': False},
+            ev(6, 'clock', 4.5),
+            {'advance': 'anyway'},
+            ev(7, 'day begins', 5, detail='Dawnday'),
+        ], 'expect': ['muster', 'ford', 'crossed'], 'expectVariables': {'story': {'share': 100, 'online': 1}}},
+        {'name': 'Ready with no admin about: it goes by itself', 'cohort': MUSTER, 'activeWolves': ['ash', 'birch', 'cedar'],
+         'audience': {'active': 3}, 'events': [
+            ev(1, 'gift', 0.2, actor='ash', item='rope', quantity=3),
+            ev(2, 'gift', 0.3, actor='birch', item='rope', quantity=3),
+            ev(3, 'gift', 0.4, actor='cedar', item='rope', quantity=3),
+            ev(4, 'enter place', 0.5, actor='cedar', target='ford'),
+            ev(5, 'clock', 2.5),
+            {'check': 'ready', 'met': True},
+            ev(6, 'clock', 8.6),
+            ev(7, 'day begins', 9, detail='Hearthday'),
+        ], 'expect': ['muster', 'ford', 'crossed'], 'expectVariables': {'story': {'goal': 6, 'share': 100}}},
+    ],
+}
+
+
 def all_samples():
-    return [copy.deepcopy(LEDGER), copy.deepcopy(FLOW)]
+    return [copy.deepcopy(LEDGER), copy.deepcopy(FLOW), copy.deepcopy(READY)]
 
 
 # ----- Doc 85, Phase 6: quests (tools/test_story_quests.py; both twins' parity, tools/test_story_native.py)

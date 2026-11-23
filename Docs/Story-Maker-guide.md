@@ -142,6 +142,45 @@ chapter can wait for another), its run as the item, and for an ending how it end
 off), **world variables** (section 6: kept after a story ends, read by every story that declares them), and the audience
 (`same` or a list).
 
+### Chapters that move on when the wolves have done enough
+
+A chapter need not move on by a date. Give its working phase **Readiness** (`ready`): what must be true before it may move
+on, and its one **ready exit**. The runner measures it (at least once a game hour) and shows it in the console as bars.
+
+```json
+{"id": "ch1_main", "journal": "…", "effects": [],
+ "ready": {
+   "all": [
+     {"participation": {"list": "ch1_did"}, "of": "active", "percent": 30, "floor": 3, "cap": 150, "label": "Wolves who did the chapter's work"},
+     {"minDays": 10, "since": "chapter", "label": "Days in the chapter"}
+   ],
+   "auto": true, "slowAfterDays": 30, "slowNeedsYou": true
+ },
+ "exits": [{"on": "ready", "to": "ch1_end"}]}
+```
+
+- **The parts** (1 to 8, all needed; `{"any": [2 to 4 parts]}` is one of them): `participation` (a share of the active wolves
+  who are in a list, or who meet a test: section 6), `minDays` (game days since the phase or the chapter began; held time
+  does not count), `value` with `atLeast` (two numbers of the story or the world), `test` (a condition over the story's own
+  state), `missions` (the phase's missions done), `quest` (a story quest done). Each may have a `label` for its bar.
+- **Ready stays ready.** Once every part is met, the phase is ready for the visit: a crowd arriving later and lowering the
+  share does not take it back.
+- **`auto`**: true moves on by itself at once (or at the `then` moment: `{"on": "day begins"}`, `hour`, `season begins`,
+  `festival`, or a `dm signal`). False (the default) waits for an admin's **Advance** (section 11), and with
+  `autoAfterDays` goes by itself that many days after it became ready, for a world with no admin about.
+- **`slowAfterDays`**: not ready after that long, the console says **slow** (with `slowNeedsYou`, as a "needs you" alert:
+  "Ready to push").
+- The ready exit has no acting wolf: a phase that rewards `$actor` cannot be entered by it. The phase's other exits keep
+  working beside it.
+- A rehearsal case may check it (`{"check": "ready", "met": true}` among its events) and press Advance (`{"advance": "now"}`,
+  `"anyway"` or `"then"`); a case may also give the audience (`"audience": {"active": 120}`) or the active wolves
+  (`"activeWolves": [...]`). Rehearsing names a Readiness no case made ready (`uncoveredReady`).
+
+**Recommended for a campaign's chapters:** `activeDays` 18 (three real days), 25 to 35% of the active wolves who did one of
+the chapter's tasks (a story list `ch<n>_did`, one `list add` per task), a floor of 2 or 3, `cap` 150, `minDays` the
+chapter's shortest sensible length, `slowAfterDays` its soft maximum, and `auto` true with an admin's Advance for the slow
+ones (or `auto` false where an admin is always about).
+
 ## 5. Flow: if, wait, for each, random
 
 Version 2 actions may hold actions of their own, three deep, 24 in a trigger counting nested ones.
@@ -184,7 +223,8 @@ A version 2 story declares every variable it uses: a misspelt name is an error, 
   `item`, `faction`), lists (`numbers`, `texts`, `wolves`, `residents`: 500 values), and `timer` (a moment: "days since").
 - **Scopes:** `story` (one value), `player` (one per wolf), `party` (one per party taking part), and `world`.
 - **Values** in a Set or a Compare: a constant, `{"var": "ropes"}`, an event field `{"field": "quantity"}`, `{"count":
-  "mustered"}`, `{"since": "began"}`, `{"each": true}`, and a little arithmetic: `{"plus": [a, b]}`, `minus`, `min`, `max`.
+  "mustered"}`, `{"since": "began"}`, `{"each": true}`, and a little arithmetic: `{"plus": [a, b]}`, `minus`, `min`, `max`,
+  `times`, and `div` (floored toward zero; dividing by 0 gives no value, so nothing fires on it).
 - **Shown:** a number or switch with `show` appears in each wolf's journal under the story as a tracker; the effect **Show or
   hide a tracker** hides and shows it.
 - **World variables** are kept after a story ends and shared by every story that declares one of that name and type (a map
@@ -192,6 +232,40 @@ A version 2 story declares every variable it uses: a misspelt name is an error, 
   **declares** one for the world (a type, a first value, a note), **sets** its value and **removes** it, each with a reason,
   audited (`story.world-var`). A story that declares a world variable the world has declared as another type is refused
   at approval. A live story reads a new value at its next turn.
+
+### Goals that scale
+
+`{"audience": "all"}` is how many wolves the story has, `{"audience": "active"}` how many of them are **active**, and
+`{"audience": "online"}` how many are signed in now (unknown until the world says who is online: the story then watches the
+world's wolves). Active means seen, signed in or the actor of any event, in the last `activeDays` game days: a program
+field, 1 to 120, **18** when not given (three real days at the normal speed, so a wolf who plays every other evening still
+counts). The runner keeps who it has seen, and a chapter started by another fills it at once from the world's log, so it
+does not open with no active wolves.
+
+A goal that grows with the crowd: `{"max": [12, {"times": [{"audience": "active"}, 2]}]}` is twelve, or two for every
+active wolf when there are more than six.
+
+### Counting who took part
+
+`{"percent": {"list": "ch1_did"}, "of": "active"}` is the share (0 to 100) of the active wolves who are in the list
+`ch1_did`; `{"among": …}` is how many. Instead of a list, a **test for each wolf**: `{"percent": {"where": {"test":
+"compare", "left": {"var": "p_hauls", "of": "$each"}, "op": ">=", "right": 3}}, "of": "active"}`. `of` may also be `all`
+(the story's wolves) or `online`.
+
+The condition **Enough wolves took part** (`participation`) asks for a share, a floor and a cap:
+
+```json
+{"test": "participation", "list": "ch1_did", "of": "active", "percent": 30, "floor": 3, "cap": 150}
+```
+
+- It needs the larger of the share (rounded up) and the floor; **the floor never asks for more wolves than are active**, so a
+  world of 1 to 5 wolves can always get there; a `cap` is always enough (a crowd of 3,000 does not need 900); never fewer
+  than 1. With no active wolves it is false; with `online` not known it is unknown.
+- **Why active is the fair count:** a wolf who did it and then went quiet leaves both counts, so the share stays honest when
+  the crowd changes.
+- **A list or a test:** a list (`list add` the acting wolf when they do a task) is cheap and remembers; a test reads each
+  wolf's own variables (`of: "$each"`), switches, lists, days and quests, but never the world's facts or the event (it is
+  counted outside one), 3 deep and 8 conditions at most.
 
 ## 7. Quests and rewards
 
@@ -299,6 +373,33 @@ when, why, and the values before and after:
 | Tell the wolves… | A line to the story's wolves, one wolf, a wolf's party, the wolves in a region, or everyone. |
 | Move onto a new version… | Section 12. |
 
+### Moving a chapter on
+
+A phase with Readiness (section 4) shows it on the run's **Overview**, under the phase strip:
+
+- **The header**: "Ready to advance to ch1_end (since day 93)", "Not ready: 2 of 4 met", "Waiting for the next day (ready
+  since day 93)", or "Goes on by itself when ready".
+- **The bars**, one per part. Who took part: "42 of 118 active wolves (36%); 35% and at least 5 needed", the tick where the
+  need is; above them "active 118 · in the story 260 · online now 31" and the window (seen in the last 18 game days, 3 real
+  days). Time: "11.2 of 10 days in the chapter (1.5 held days not counted)".
+- **Advance…** (when ready) takes the ready exit now, with the next phase's entry effects. **Advance anyway…** (when not
+  ready) does the same and asks for the story's title as well as a reason. **Advance at the next …** (a phase with `then`)
+  counts as ready and waits for that moment. **⏸ Hold / ▶ Resume** sit beside them: **holding stops the chapter's clock**
+  (held days never count toward its days, its slow alert or its `autoAfterDays`).
+- **The alerts**: **ready to advance** (it waits for you: it needs you, is listed first, and counts on the Campaigns tab),
+  and **slow** (not ready after its `slowAfterDays`: "Slow: 21% of the 35% needed after 31 days"; with `slowNeedsYou`, "Ready
+  to push: …", and it needs you). A phase whose way on is Readiness is never "cannot move on".
+- **The list** has a **Ready** column (the furthest part, or a green "ready"); each campaign's running chapter shows its line
+  ("Ch 1 · 36% of 35% · day 11 of 10 · ready") with **Advance…**, which opens it.
+- **Who may press it**: whoever may steer the campaign (the owner, or "may steer campaigns"); a chapter whose next phase
+  could release an effect needing more (acting on wolves, a builder's) needs that too.
+- **What is kept**: the command's row holds the readiness as you saw it (every part's progress) and your reason; the audit
+  says it in words; the Timeline shows "ready", "slow", "advanced by …" and "moved on by itself".
+
+*Worked example.* Chapter 1 is at 36% of the 35% needed, 11 of 10 days: the header is green, "Ready to advance to ch1_end
+(since day 93)", and the alert says it waits for you. Press **Advance…**, write "Chapter one has done enough, on to the
+Herald's Word", read **This will do** (the ending phase's entry effects and the snapshot), and **Send it**.
+
 **Safety rules:** every command needs a reason; every control shows **This will do** (a dry run of the command, nothing
 saved or sent) and waits for a second click; stopping, going back, skipping an order and removing a wolf also ask for the
 story's title; a command made for an earlier visit or another version is refused unless you say "even if it has moved on";
@@ -369,6 +470,8 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | A chapter did not start | the earlier chapter's Timeline | Its note says why: not a chapter of the campaign, already running, the audience empty. |
 | A watched event never comes | the trigger's filters | `near resident`, `purse crossed` and `standing crossed` need their names in the filters; the others need a live story listening (the watch list goes with each phase). |
 | A world variable reads its first value | Campaigns → World variables | A story declaring it as another type reads nothing of it; check the type. |
+| It says ready but did not move | Overview → **Readiness** | `auto` is off: it waits for an admin. Press **Advance…** (or give it `autoAfterDays`). With `then` it waits for that moment ("Waiting for the next day"). A held run's clock is stopped. |
+| The share reads 0% | Readiness → the bar | No active wolves yet (none seen in the last `activeDays` game days), or the list is empty. Who is "online" is unknown until the world says (the story watches its wolves). |
 | Problems in the draft | Story Creator → **Problems** | Every problem at once with **Go**, and the world's warnings (a signal nothing hears, a counter nothing sets, an id the world lacks). |
 
 ## 16. Limits
@@ -386,6 +489,8 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | Audience | 500 (players, active); 5,000 (open, everyone) |
 | Chapters in a campaign | 12 |
 | Rehearsal cases; facts per case | 32; 256 |
+| Readiness | 8 parts; an `any` of 2 to 4, one deep; labels 80 characters; `minDays` and the slow and auto days up to 3,650 |
+| Counting who took part | 5,000 wolves; a test for each wolf 3 deep and 8 conditions; not inside For each; `activeDays` 1 to 120 |
 
 <!-- reference:begin (made by tools/story_guide.py from Data/Storylines/trigger-catalogue.json: do not edit by hand) -->
 
@@ -395,7 +500,7 @@ Made from the trigger catalogue (`Data/Storylines/trigger-catalogue.json`), the 
 
 ### Events
 
-207 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
+208 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
 
 #### Story engine
 
@@ -463,6 +568,16 @@ Exits only (not a trigger). Its parameter is the list 'missions' (ids of this ph
 
 ```json
 {"id": "when-missions-completed", "on": "missions completed", "actions": [{"do": "note", "text": "The missions are done"}]}
+```
+
+<a id="event-ready"></a>**`ready`**: The phase is ready
+
+The way on when the phase is ready: every part of its Readiness met (enough of the active wolves took part, enough days in the phase or the chapter, values, missions, a quest). With auto it is taken by itself (at once, or at the moment `then` names); otherwise the Campaigns console says it is ready and an admin presses Advance.
+
+Exits only, and only in a phase with "ready" (exactly one). Taken by the story runner, never by a world event. Its only fields are on and to.
+
+```json
+{"id": "when-ready", "on": "ready", "actions": [{"do": "note", "text": "The phase is ready"}]}
 ```
 
 <a id="event-story-started"></a>**`story started`**: Another story starts (the story's own)
@@ -4293,6 +4408,26 @@ Reads: **ask** of **axle** **for the acting wolf** is **done**
 
 ```json
 {"test": "objective is", "quest": "axle", "objective": "ask", "of": "$actor", "status": "done"}
+```
+
+<a id="condition-participation"></a>**`participation`**: Enough wolves took part (v2)
+
+Counts the story's wolves who are active (seen in the last activeDays game days; or all of them, or those online now) and, of those, the ones in a list of wolves or the ones for whom a test is true. True when they are at least the share asked and at least the floor (the floor never asks for more wolves than are active; a cap, if given, is always enough, so a crowd of 3,000 does not need 1,000). With no active wolves it is false; with the online wolves not known it is unknown. A wolf who did it and then went quiet leaves both counts, so the share stays honest.
+
+Reads: at least **1**% of the **active** wolves (at least; ) **are in the list**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `source` | who counts | choice; one of: `list`, `where`; default "list" |
+| `list` | the list | variable; a variable of type wolves; optional |
+| `where` | the test for each wolf | condition; optional |
+| `of` | out of | choice; one of: `active`, `all`, `online`; default "active" |
+| `percent` | the share (%) | int; 1 to 100 |
+| `floor` | at least this many | int; 1 to 5000; optional; default 1 |
+| `cap` | this many is always enough | int; 1 to 5000; optional |
+
+```json
+{"test": "participation", "source": "list", "of": "active", "percent": 1}
 ```
 
 ### Actions

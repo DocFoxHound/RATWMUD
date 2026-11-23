@@ -16,6 +16,7 @@ import {QuestGrid} from './QuestGrid';
 import {WolvesMap} from './WolvesMap';
 import {Orders} from './Orders';
 import {ChapterBar} from './Chapters';
+import {Readiness} from './Readiness';
 
 export type ViewTab = 'overview' | 'timeline' | 'triggers' | 'state' | 'missions' | 'quests' | 'wolves' | 'orders' | 'audit';
 const TABS: {id: ViewTab; label: string}[] = [
@@ -79,6 +80,7 @@ export function CampaignView({me, target, row, detail, items, events, names, now
         <section className="camp-body">
             {!detail ? <p className="hint">Reading this story…</p>
                 : tab === 'overview' ? <div className="camp-overview">
+                    {row.ready && <Readiness row={row} detail={detail} names={names} steer={canSteer ? setAsk : undefined} busy={busy} />}
                     <h3>Needs you</h3>
                     {alerts.length ? <ul className="camp-alerts">{alerts.map(a => <li key={a.kind} className={a.needsYou ? 'needs' : ''}>{alertText(a, names)}</li>)}</ul>
                         : <p className="hint">(nothing)</p>}

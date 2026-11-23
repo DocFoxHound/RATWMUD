@@ -1112,5 +1112,77 @@ class RuntimeTests(unittest.TestCase):
         )
 
 
+class ReadinessShapes(unittest.TestCase):
+    """Doc 86, R2: a phase's Readiness and its ready exit, as story_program checks them."""
+
+    def setUp(self):
+        import story_v2_samples
+        self.p = copy.deepcopy(story_v2_samples.READY)
+
+    def refused(self, words):
+        self.assertRaisesRegex(ValueError, words, rules.validate, self.p)
+
+    def test_the_sample_is_sound(self):
+        rules.validate(self.p)
+        report = rules.review(self.p)
+        self.assertTrue(report['passed'])
+        self.assertEqual((report['uncovered'], report['uncoveredTriggers'], report['uncoveredReady']), ([], [], []))
+
+    def test_two_ready_exits_are_refused(self):
+        self.p['phases'][0]['exits'].append({'on': 'ready', 'to': 'crossed'})
+        self.refused('exactly one ready exit')
+
+    def test_ready_without_its_exit_and_the_exit_without_ready(self):
+        self.p['phases'][0]['exits'] = [{'on': 'dm signal', 'to': 'ford', 'match': {'detail': 'Cross now'}}]
+        self.refused('exactly one ready exit')
+        self.setUp()
+        del self.p['phases'][1]['ready']
+        self.refused('a ready exit needs the phase')
+        self.setUp()
+        self.p['phases'][0]['exits'][0]['match'] = {'detail': 'x'}
+        self.refused('Unexpected fields|unexpected fields')
+
+    def test_a_fact_or_a_wolf_value_in_a_value_part_is_refused(self):
+        self.p['phases'][1]['ready']['all'][0]['value'] = {'field': 'quantity'}
+        self.refused('not a wolf\'s or the event\'s')
+        self.setUp()
+        self.p['phases'][1]['ready']['all'][0]['value'] = {'var': 'hauls', 'of': '$actor'}
+        self.refused('not a wolf\'s or the event\'s')
+        self.setUp()
+        self.p['phases'][0]['ready']['all'][2]['any'][1]['test'] = {'test': 'wolf indoors', 'is': True}
+        self.refused('not the world\'s facts')
+
+    def test_an_actor_reward_behind_a_ready_exit_is_refused(self):
+        self.p['phases'][1]['effects'] = [{'kind': 'deed.award', 'player': '$actor', 'detail': 'Crossed first.'}]
+        self.refused('requires a participating player')
+
+    def test_the_moments_and_bounds(self):
+        self.p['phases'][1]['ready']['then'] = {'on': 'moon', 'match': {'detail': 'new'}}
+        self.refused('Readiness waits for one of')
+        self.setUp()
+        self.p['phases'][0]['ready']['auto'] = True
+        self.refused('autoAfterDays is for a phase that waits')
+        self.setUp()
+        self.p['phases'][0]['ready']['all'] = []
+        self.refused('1 to 8 parts')
+        self.setUp()
+        self.p['phases'][0]['ready']['all'][2]['any'] = self.p['phases'][0]['ready']['all'][2]['any'][:1]
+        self.refused('2 to 4 parts')
+        self.setUp()
+        self.p['phases'][0]['ready']['all'][2]['any'][0] = {'any': [{'minDays': 1}, {'minDays': 2}]}
+        self.refused('one deep')
+        self.setUp()
+        self.p['phases'][0]['ready']['all'][2]['any'][0]['missions'] = ['elsewhere']
+        self.refused('missions of this phase')
+        self.setUp()
+        self.p['version'] = 1
+        del self.p['variables']
+        self.assertRaises(ValueError, rules.validate, self.p)
+
+    def test_the_watch_list_asks_for_its_moment(self):
+        self.assertIn('day begins', rules.watch_of(self.p)['events'])
+        self.assertIn('wolves', rules.watch_of(self.p).get('facts', []), 'counting who is online reads the signed-in wolves')
+
+
 if __name__ == '__main__':
     unittest.main()

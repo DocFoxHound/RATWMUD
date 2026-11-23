@@ -4,15 +4,28 @@
 // world's drafts together, in order (each rehearsed and checked as its own approval would be), and publishes the first.
 import {useEffect, useState} from 'react';
 import {storyProgram, type Target} from '../api';
-import {campaignText, chapterMark, chapterStartText, chapterStrip, type Campaign, type RunDetail} from '../../lib/campaigns';
+import {campaignText, chapterMark, chapterReadyText, chapterStartText, chapterStrip, type Campaign, type Readiness, type RunDetail, type RunRow} from '../../lib/campaigns';
 
-export function CampaignCards({campaigns, open}: {campaigns: Campaign[]; open: (run: string) => void}) {
+/** Doc 86, R3: the running chapter's readiness in one line, and "Advance…" to open its run on the Overview. */
+function ChapterReady({ready, chapter, run, open}: {ready?: Readiness; chapter: number; run?: string; open: (run: string) => void}) {
+    if (!ready) return null;
+    return <small className={`camp-chapter-ready ${ready.met ? 'met' : ''}`}>{chapterReadyText(ready, chapter)}
+        {run && <> · <button type="button" className="link-button" onClick={() => open(run)}>Advance…</button></>}</small>;
+}
+
+export function CampaignCards({campaigns, open, runs}: {campaigns: Campaign[]; open: (run: string) => void; runs?: RunRow[]}) {
     if (!campaigns.length) return null;
+    const byRun = new Map((runs ?? []).map(r => [r.run, r]));
     return <div className="camp-campaigns" aria-label="Campaigns of chapters">
-        {campaigns.map(c => <div key={c.id} className={`camp-campaign ${c.status}`}>
-            <b>{c.title}</b> <small className="hint">{campaignText(c)} · approved by {c.approvedBy}</small>
-            <ChapterChips campaign={c} open={open} />
-        </div>)}
+        {campaigns.map(c => {
+            const n = c.chapters.findIndex(ch => ch.runs.some(x => ['running', 'held', 'paused'].includes(x.status)));
+            const live = n >= 0 ? c.chapters[n].runs.find(x => ['running', 'held', 'paused'].includes(x.status)) : undefined;
+            return <div key={c.id} className={`camp-campaign ${c.status}`}>
+                <b>{c.title}</b> <small className="hint">{campaignText(c)} · approved by {c.approvedBy}</small>
+                <ChapterChips campaign={c} open={open} />
+                {live && <ChapterReady ready={byRun.get(live.run)?.ready} chapter={n + 1} run={live.run} open={open} />}
+            </div>;
+        })}
     </div>;
 }
 
@@ -31,6 +44,7 @@ export function ChapterBar({detail, names, open}: {detail: RunDetail; names: Rec
     return <div className="camp-chapter-bar">
         <span>Chapter {(c.chapter ?? 0) + 1} of {c.chapters.length} of <b>{c.title}</b>:</span>
         <ChapterChips campaign={c} open={open} current={c.chapter} />
+        <ChapterReady ready={detail.ready} chapter={(c.chapter ?? 0) + 1} open={open} />
         {(detail.chapterStarts ?? []).map(s => <small key={s.story} className="hint">Starts {chapterStartText(s, c, names)}.</small>)}
         {(detail.chaptersStarted ?? []).filter(s => s.refused).map(s => <small key={s.story} className="error-text">Did not start {s.story}: {s.refused}</small>)}
     </div>;

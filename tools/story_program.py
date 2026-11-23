@@ -363,7 +363,8 @@ def variables_of(program):
 
 def effective_phase(program, phase):
     if program.get('version') == 2:
-        phase = {**phase, '_v': 2, '_vars': variables_of(program)}
+        phase = {**phase, '_v': 2, '_vars': variables_of(program),
+                 '_activeDays': program.get('activeDays', triggers.ACTIVE_DAYS)}
         if program.get('quests'):
             # (Doc 85, Phase 6: the story's quests, for the effects that name them; those open in this phase keep it going.)
             phase.update(_questIndex=quests.index(program),
@@ -443,6 +444,9 @@ def _check_header(p):
     # (Doc 85, 5.6: a program may set its own "quiet" alert, or 0 for "this one is slow on purpose".)
     require('quietAfterHours' not in p or integer(p['quietAfterHours'], 0, 8760),
             'Quiet after: 0 (never) to 8760 hours.')
+    # (Doc 86, C2: how long a wolf counts as active after they were last seen, in game days.)
+    require('activeDays' not in p or (p['version'] == 2 and integer(p['activeDays'], 1, 120)),
+            'Active wolves: seen in the last 1–120 game days (a version 2 story).')
 
 
 def _check_audience(a):
@@ -477,7 +481,7 @@ def _check_phase_head(p, phase, ids):
     shape(
         phase,
         ('id', 'journal', 'effects', 'exits'),
-        ('guestVoices', 'missions', 'triggers', 'campaignRules'),
+        ('guestVoices', 'missions', 'triggers', 'campaignRules', 'ready'),
     )
     require(
         isinstance(phase.get('triggers', []), list) and type(phase.get('campaignRules', True)) is bool,
@@ -521,6 +525,12 @@ def _check_entry_effect(effect, phase, speakers):
 
 def _check_exit(e, phase, mission_ids):
     pid = phase['id']
+    if isinstance(e, dict) and e.get('on') == READY_EXIT:
+        # (Doc 86, R2: the way on when the phase's Readiness is met; it has no event, no filter and no acting wolf.)
+        shape(e, ('on', 'to'))
+        require(identifier(e['to']), f'{pid}: name where the ready exit goes.')
+        require('ready' in phase, f'{pid}: a ready exit needs the phase\'s Readiness ("ready").')
+        return
     if isinstance(e, dict) and e.get('on') == MISSION_GATE:
         shape(e, ('on', 'to', 'missions'))
         names = e['missions']
@@ -627,6 +637,355 @@ def _check_phase(p, raw, ids):
             check_region_source(objective, phase.get('_regions'))
     for e in phase['exits']:
         _check_exit(e, phase, mission_ids)
+    if 'ready' in phase:
+        _check_ready(p, _indexed(p, phase), mission_ids)
+
+
+# ------------------------------------------------------------------------------------ readiness (doc 86, Phase 1a: R2)
+# A phase may say what "ready" means: enough of the active wolves took part (R1), enough days in the phase or the chapter,
+# values, missions or a quest. The runner (and a rehearsal) measures it; once every part is met it is ready, and stays
+# ready for the visit (latched). Ready, it moves on by itself (`auto`, at once or at the `then` moment) or alerts the admin,
+# who presses Advance (the command `advance`). Held time never counts.
+
+READY_EXIT = 'ready'
+READY_PARTS = ('participation', 'minDays', 'value', 'test', 'missions', 'quest')
+READY_ANCHORS = ('day begins', 'hour', 'season begins', 'festival', 'dm signal')
+READY_PARTS_MAX, READY_ANY = 8, (2, 4)
+READY_LOG = 20
+READY_DAYS = 3650
+_READY_WORDS = {'participation': 'Wolves who took part', 'value': 'A value', 'test': 'A test', 'missions': 'The missions'}
+
+
+def ready_exit(phase):
+    return next((e for e in phase.get('exits', ()) if isinstance(e, dict) and e.get('on') == READY_EXIT), None)
+
+
+def _part_kind(part):
+    kinds = [k for k in READY_PARTS if k in part]
+    require(len(kinds) == 1, 'Each part of Readiness is one of: participation, minDays, value (with atLeast), test, missions, '
+            'quest; or "any" of 2 to 4 of them.')
+    return kinds[0]
+
+
+def _storyish(o, phase):
+    """R2: a readiness value reads the story's and the world's values only: never a wolf's own, the event's or a loop's."""
+    for x in triggers.operands_in(o):
+        shared = any(k in x for k in triggers.SHARES)   # (A share's "of" is its audience, not a wolf.)
+        require('field' not in x and 'each' not in x and (shared or 'of' not in x),
+                'Readiness reads the story\'s and the world\'s values, not a wolf\'s or the event\'s.')
+        name = x.get('var') or x.get('count') or x.get('since')
+        if name in phase.get('_vars', {}):
+            require(phase['_vars'][name]['scope'] not in triggers.PERSONAL, f'Readiness reads no wolf\'s own value ("{name}").')
+
+
+def _story_operand(o, phase):
+    _storyish(o, phase)
+    require(triggers.operand_type(o, phase) == 'number', 'Readiness compares numbers.')
+
+
+def _story_test(c, phase, missions):
+    """A readiness test: a condition over the story's state (no facts, no rolls, nothing of one wolf or the event)."""
+    triggers._check_condition(c, 1, phase, missions)
+    for x in triggers.conditions_in(c):
+        kind = x.get('test')
+        require(kind not in triggers.FACTS_V2 and kind not in ('chance', 'region', 'field', 'counter'),
+                'Readiness tests the story\'s state: not the world\'s facts, the event, or a roll.')
+        if kind in triggers.QUEST_V2:
+            require(x.get('of') == 'story', 'Readiness reads the story\'s copy of a quest.')
+        else:
+            require(not triggers._personal(x, phase) and ('of' not in x or kind == 'participation'),
+                    'Readiness tests nothing of one wolf.')
+        for side in ('left', 'right', 'value'):
+            if side in x:
+                _storyish(x[side], phase)
+
+
+def _check_ready_part(p, phase, part, missions, nested=False):
+    require(isinstance(part, dict), 'A part of Readiness is an object.')
+    require('label' not in part or word(part['label'], 80), 'A part\'s label is up to 80 characters.')
+    if 'any' in part:
+        require(not nested, 'An "any" group of Readiness is one deep.')
+        shape(part, ('any',), ('label',))
+        low, high = READY_ANY
+        require(isinstance(part['any'], list) and low <= len(part['any']) <= high, f'An "any" group holds {low} to {high} parts.')
+        for child in part['any']:
+            _check_ready_part(p, phase, child, missions, True)
+        return
+    kind = _part_kind(part)
+    if kind == 'participation':
+        shape(part, ('participation', 'percent'), ('of', 'floor', 'cap', 'label'))
+        triggers._check_condition_v2(ready_condition(part), phase, None)
+    elif kind == 'minDays':
+        shape(part, ('minDays',), ('since', 'label'))
+        require(number(part['minDays'], 0, READY_DAYS), f'Least days: 0 to {READY_DAYS} game days.')
+        require(part.get('since', 'phase') in ('phase', 'chapter'), 'Days since the phase (this visit) or the chapter (the run) began.')
+    elif kind == 'value':
+        shape(part, ('value', 'atLeast'), ('label',))
+        _story_operand(part['value'], phase)
+        _story_operand(part['atLeast'], phase)
+    elif kind == 'test':
+        shape(part, ('test',), ('label',))
+        _story_test(part['test'], phase, missions)
+    elif kind == 'missions':
+        shape(part, ('missions',), ('label',))
+        names = part['missions']
+        require(isinstance(names, list) and names and all(identifier(k) and k in missions for k in names)
+                and len(set(names)) == len(names), 'Readiness names distinct missions of this phase.')
+    else:
+        shape(part, ('quest',), ('label',))
+        q = phase.get('_questIndex', {}).get(part['quest'])
+        require(q is not None and q.get('scope') == 'story', 'Readiness names a quest of the story (scope "story").')
+
+
+def _check_ready(p, phase, missions):
+    """R2's format: the parts (1 to 8; an "any" of 2 to 4, one deep), auto, then, slowAfterDays, slowNeedsYou and
+    autoAfterDays; and the phase's one ready exit."""
+    pid = phase['id']
+    block = phase['ready']
+    require(p.get('version') == 2, f'{pid}: Readiness needs a version 2 story.')
+    shape(block, ('all',), ('auto', 'then', 'slowAfterDays', 'slowNeedsYou', 'autoAfterDays'))
+    parts = block['all']
+    require(isinstance(parts, list) and 1 <= len(parts) <= READY_PARTS_MAX, f'{pid}: Readiness has 1 to {READY_PARTS_MAX} parts.')
+    for part in parts:
+        _check_ready_part(p, phase, part, missions)
+    require(type(block.get('auto', False)) is bool and type(block.get('slowNeedsYou', False)) is bool,
+            f'{pid}: auto and slowNeedsYou are true or false.')
+    for key in ('slowAfterDays', 'autoAfterDays'):
+        require(key not in block or integer(block[key], 1, READY_DAYS), f'{pid}: {key} is 1 to {READY_DAYS} game days.')
+    require('autoAfterDays' not in block or not block.get('auto'), f'{pid}: autoAfterDays is for a phase that waits for an admin (auto off).')
+    if 'then' in block:
+        t = block['then']
+        shape(t, ('on',), ('match',))
+        require(t['on'] in READY_ANCHORS, f'{pid}: Readiness waits for one of: ' + ', '.join(READY_ANCHORS) + '.')
+        m = t.get('match', {})
+        require(isinstance(m, dict) and all(k in FIELDS and word(v, 400) for k, v in m.items()), f'{pid}: invalid filter of the moment.')
+        require(t['on'] != 'dm signal' or (set(m) == {'detail'} and word(m['detail'], 80)), f'{pid}: name the DM signal it waits for.')
+    exits = [e for e in phase['exits'] if isinstance(e, dict) and e.get('on') == READY_EXIT]
+    require(len(exits) == 1, f'{pid}: a phase with Readiness has exactly one ready exit ({{"on": "ready", "to": ...}}).')
+
+
+def ready_condition(part):
+    """A participation part as R1's condition."""
+    src = part['participation'] if isinstance(part.get('participation'), dict) else {}
+    return {'test': 'participation', **{k: src[k] for k in ('list', 'where') if k in src},
+            **{k: part[k] for k in ('of', 'percent', 'floor', 'cap') if k in part}}
+
+
+def held_days(state, scope, day):
+    """Game days the run (scope "run") or this visit ("visit") was held, the hold under way included."""
+    total = (state.get('heldDays') or {}).get(scope, 0)
+    held = state.get('held')
+    if held and day is not None and 'atDay' in held:
+        start = held['atDay'] if scope == 'run' or held.get('visit') == state.get('visits') else max(held['atDay'], state['entered'])
+        total += max(0, day - start)
+    return total
+
+
+def running_days(state, since, day):
+    """Game days since the visit ("phase") or the run ("chapter") began, held time not counted."""
+    if day is None:
+        return 0
+    if since == 'chapter':
+        return max(0, day - state.get('began', state['entered']) - held_days(state, 'run', day))
+    return max(0, day - state['entered'] - held_days(state, 'visit', day))
+
+
+def _fill(part):
+    if part.get('met'):
+        return 1.0
+    v, n = part.get('value'), part.get('need')
+    return max(0.0, min(1.0, v / n)) if triggers._num(v) and triggers._num(n) and n > 0 else 0.0
+
+
+def _ready_part(p, phase, state, part, x, missions):
+    label = part.get('label')
+    if 'any' in part:
+        kids = [_ready_part(p, phase, state, child, x, missions) for child in part['any']]
+        best = max(kids, key=_fill)
+        return {'kind': 'any', 'label': label or 'Any of these', 'met': any(k['met'] for k in kids), 'value': best.get('value'),
+                'need': best.get('need'), 'any': kids}
+    kind = _part_kind(part)
+    if kind == 'participation':
+        c = ready_condition(part)
+        r = triggers.counted(c, c.get('of', 'active'), x)
+        out = {'kind': kind, 'label': label or _READY_WORDS[kind], 'of': c.get('of', 'active'), 'percent': c['percent'],
+               'floor': c.get('floor', 1), **({'cap': c['cap']} if 'cap' in c else {})}
+        if r is None:
+            return {**out, 'met': False, 'value': None, 'need': None, 'count': None, 'share': None}
+        s_, d = r
+        need = triggers.share_need(len(d), c['percent'], c.get('floor', 1), c.get('cap')) if d else None
+        aud = x.audience()
+        return {**out, 'met': bool(d) and len(s_) >= need, 'value': len(s_), 'need': need, 'count': len(d),
+                'share': 100 * len(s_) // len(d) if d else 0,
+                'audience': {k: (None if aud[k] is triggers.MISSING else aud[k]) for k in triggers.AUDIENCES}}
+    if kind == 'minDays':
+        since = part.get('since', 'phase')
+        days = running_days(state, since, x.day)
+        return {'kind': kind, 'label': label or ('Days in the chapter' if since == 'chapter' else 'Days in the phase'),
+                'met': days >= part['minDays'], 'value': round(days, 2), 'need': part['minDays'], 'since': since,
+                'held': round(held_days(state, 'run' if since == 'chapter' else 'visit', x.day), 2)}
+    if kind == 'value':
+        v, n = triggers.value_of(part['value'], x), triggers.value_of(part['atLeast'], x)
+        known = triggers._num(v) and triggers._num(n)
+        return {'kind': kind, 'label': label or _READY_WORDS[kind], 'met': known and v >= n,
+                'value': v if known else None, 'need': n if triggers._num(n) else None}
+    if kind == 'test':
+        return {'kind': kind, 'label': label or _READY_WORDS[kind], 'met': triggers.test(part['test'], x) is True,
+                'value': None, 'need': None}
+    if kind == 'missions':
+        ready_ = missions()
+        k = sum(1 for m in part['missions'] if m in ready_)
+        return {'kind': kind, 'label': label or _READY_WORDS[kind], 'met': k == len(part['missions']), 'value': k,
+                'need': len(part['missions'])}
+    q = phase.get('_questIndex', {}).get(part['quest'], {})
+    c = state.get('quests', {}).get(part['quest'], {}).get('story') or {}
+    n = sum(min(r.get('n', 0), o.get('goal', 1)) if not r.get('done') else o.get('goal', 1)
+            for o in q.get('objectives', ()) for r in [c.get('objectives', {}).get(o['id'], {})] if not o.get('optional'))
+    goal = sum(o.get('goal', 1) for o in q.get('objectives', ()) if not o.get('optional'))
+    return {'kind': kind, 'label': label or f'The quest {part["quest"]}', 'met': c.get('status') == 'done',
+            'value': n, 'need': goal, 'quest': part['quest']}
+
+
+def ready_digest(phase):
+    """The phase's Readiness and its way on, as moving a run onto a new version compares them (R2 rule 12)."""
+    return hashlib.sha256(json.dumps([phase.get('ready'), ready_exit(phase)], sort_keys=True).encode()).hexdigest()[:16]
+
+
+def _ready_log(state, day, kind, text, **more):
+    log = state.setdefault('readyLog', [])
+    log.append({'day': round(day, 4) if day is not None else None, 'kind': kind, 'text': text, 'phase': state['phase'],
+                'visit': state['visits'], **more})
+    del log[:-READY_LOG]
+
+
+def part_words(part):
+    """One part's progress in words (the timeline's and the alerts')."""
+    if part['kind'] == 'any':
+        return ' or '.join(part_words(k) for k in part['any'])
+    if part['kind'] == 'participation':
+        if part.get('count') is None:
+            return f'{part["label"]}: not known (no one is known to be online)'
+        return (f'{part["value"]} of {part["count"]} {part["of"]} wolves ({part["share"]}%; {part["percent"]}% and '
+                f'{part["need"] if part["need"] is not None else part["floor"]} needed)')
+    if part['kind'] == 'minDays':
+        return f'{part["value"]:g} of {part["need"]:g} days'
+    if part['kind'] == 'test':
+        return f'{part["label"]}: {"yes" if part["met"] else "not yet"}'
+    return f'{part["label"]}: {part["value"]} of {part["need"]}'
+
+
+def furthest(parts):
+    """The part nearest done of those not met (the slow alert names it)."""
+    left = [x for x in parts if not x['met']]
+    return max(left, key=_fill) if left else None
+
+
+def readiness(p, state, day, elapsed=0, facts=None):
+    """R2: the phase's Readiness measured now (state['ready']); (target, cause) when the run is to move on now, else None.
+    The runner calls it at most once a tick (and a rehearsal after each fact); the `then` moment is taken by
+    `ready_anchor` when its event comes."""
+    phase = phase_of(p, state)
+    block = phase.get('ready')
+    if not block or state.get('outcome'):
+        state.pop('ready', None)
+        return None
+    way = ready_exit(phase)
+    r = state.get('ready')
+    if not r or r.get('phase') != phase['id'] or r.get('visit') != state['visits']:
+        r = {'phase': phase['id'], 'visit': state['visits'], 'met': False, 'metAt': None, 'pushed': None}
+    missions = lambda: {m['id'] for m in mission_snapshot(phase, state) if m['ready']}
+    x = triggers.Ctx(phase, state, {'kind': 'ready', **({'facts': facts} if facts is not None else {})}, '', day, elapsed, missions, None)
+    parts = [_ready_part(p, phase, state, part, x, missions) for part in block['all']]
+    every = all(x_['met'] for x_ in parts)
+    if every and r.get('metAt') is None:
+        r['metAt'] = round(day, 4) if day is not None else 0
+        r['heldAtMet'] = held_days(state, 'visit', day)
+        _ready_log(state, day, 'ready', 'Ready: ' + ', '.join(part_words(x_) for x_ in parts))
+    days_in = running_days(state, 'phase', day)
+    r.update(parts=parts, checkedAt=round(day, 4) if day is not None else None, auto=bool(block.get('auto')), to=way['to'],
+             then=block.get('then'), met=r.get('metAt') is not None or bool(r.get('pushed')), days=round(days_in, 2),
+             heldDays=round(held_days(state, 'visit', day), 2))
+    slow_after = block.get('slowAfterDays')
+    slow = not r['met'] and slow_after is not None and days_in >= slow_after
+    if slow and not r.get('slow'):
+        _ready_log(state, day, 'slow', f'Slow after {days_in:.4g} days: ' + part_words(furthest(parts)))
+    r['slow'] = slow
+    r['slowNeedsYou'] = bool(block.get('slowNeedsYou'))
+    r.pop('waitingFor', None)
+    state['ready'] = r
+    if not r['met']:
+        return None
+    pushed = r.get('pushed') or {}
+    go = block.get('auto') or pushed.get('when') == 'then'
+    cause = 'ready' if block.get('auto') else 'advance'
+    after = block.get('autoAfterDays')
+    if not go and after is not None and r.get('metAt') is not None and day is not None:
+        since_met = day - r['metAt'] - (held_days(state, 'visit', day) - r.get('heldAtMet', 0))
+        if since_met >= after:
+            go, cause = True, 'ready (no admin)'
+    if not go:
+        return None
+    if block.get('then'):
+        r['waitingFor'] = block['then']
+        return None
+    return way['to'], cause
+
+
+def ready_words(then):
+    """A `then` moment in words: "the next day begins", "the next festival", "the DM signal …"."""
+    if not then:
+        return 'once ready'
+    detail = (then.get('match') or {}).get('detail')
+    words = {'day begins': 'the next day', 'hour': 'the next hour', 'season begins': 'the next season', 'festival': 'the next festival',
+             'dm signal': 'the direction'}.get(then['on'], 'the next ' + then['on'])
+    return words + (f' ({detail})' if detail else '')
+
+
+def ready_anchor(phase, state, event):
+    """R2 rule 5: a ready phase waiting for its `then` moment moves on when that event comes."""
+    r = state.get('ready')
+    if not r or not r.get('waitingFor') or r.get('phase') != phase.get('id') or r.get('visit') != state.get('visits'):
+        return None
+    if not matches(r['waitingFor'], event):
+        return None
+    way = ready_exit(phase)
+    if way is None:
+        return None
+    _ready_log(state, event.get('day'), 'taken', f'Moved on to {way["to"]} at {event["kind"]}' + (
+        f' ({event["detail"]})' if event.get('detail') else ''))
+    return way['to']
+
+
+def ready_snapshot(state):
+    """What the console and the audit show of readiness: every part's progress (bounded)."""
+    r = state.get('ready')
+    if not r:
+        return None
+    return {k: r.get(k) for k in ('phase', 'visit', 'met', 'metAt', 'pushed', 'auto', 'to', 'then', 'waitingFor', 'slow',
+                                  'slowNeedsYou', 'parts', 'days', 'heldDays', 'checkedAt')}
+
+
+def counts_audience(p):
+    """Whether a run keeps who it has seen (state['seen']): a version 2 story that counts its audience or has Readiness."""
+    if p.get('version') != 2:
+        return False
+    return any('ready' in ph for ph in p.get('phases', ()) if isinstance(ph, dict)) or triggers.uses_audience(
+        [p.get('triggers', []), [ph.get('triggers', []) for ph in p.get('phases', ()) if isinstance(ph, dict)], p.get('quests', [])])
+
+
+def note_seen(state, event, day):
+    """C2: a wolf of the story seen (the actor of any event) on this game day; arrivals and departures keep who is online
+    when the run tracks it (a rehearsal does)."""
+    actor = event.get('actor')
+    if not actor or actor not in state.get('cohort', ()):
+        return
+    seen = state.setdefault('seen', {})
+    if day is not None and seen.get(actor, -1e18) < day:
+        seen[actor] = day
+    if 'online' in state and event.get('kind') in ('arrival', 'departure'):
+        online = set(state['online'])
+        (online.add if event['kind'] == 'arrival' else online.discard)(actor)
+        state['online'] = sorted(online)
 
 
 def _check_start(p, ids):
@@ -674,7 +1033,7 @@ def _check_tests(p):
 
 
 TOP_REQUIRED = ('format', 'version', 'id', 'title', 'audience', 'start', 'phases', 'tests')
-TOP_OPTIONAL = ('triggers', 'regions', 'scenes', 'quietAfterHours', 'variables', 'quests')
+TOP_OPTIONAL = ('triggers', 'regions', 'scenes', 'quietAfterHours', 'variables', 'quests', 'activeDays')
 VARIABLES_MAX = 64
 
 
@@ -1100,6 +1459,9 @@ def leave_visit(phase, state, target, day, actor, p=None):
     if p is not None and quests.relevant(p):
         quests.leave_visit(p, state, target, day)
     state.pop('previousMissions', None)
+    if 'heldDays' in state:
+        state['heldDays']['visit'] = 0   # (Doc 86, R2: the held days of the visit; the run's are kept.)
+    state.pop('ready', None)
     if phase.get('missions'):
         state['previousMissions'] = mission_snapshot(phase, state)
     state.pop('missions', None)
@@ -1242,7 +1604,7 @@ def dispatch(p, phase, state, event, day, trace, elapsed, wait=None):
                 firing.update(cell=fact['cell'], x=fact['x'], y=fact['y'])
         if state.get('outcome'):
             return False   # (Version 2's finish: the run has ended; nothing more is tried.)
-        target = target or (None if resuming else exit_for(phase, state, fact, day))
+        target = target or (None if resuming else exit_for(phase, state, fact, day) or ready_anchor(phase, state, fact))
         if target:
             leave_visit(phase, state, target, day, fact.get('actor', ''), p)
             return True
@@ -1252,6 +1614,8 @@ def dispatch(p, phase, state, event, day, trace, elapsed, wait=None):
 def exit_for(phase, state, event, day):
     ready = None
     for index, edge in enumerate(phase['exits']):
+        if edge['on'] == READY_EXIT:
+            continue   # (Doc 86, R2: taken by readiness, never by an event.)
         actor = event.get('actor', '')
         if (edge.get('participant') or 'players' in edge or 'percent' in edge) and actor not in state['cohort']:
             continue
@@ -1338,8 +1702,18 @@ def _check_case(p, case):
             'facts',
             # (Doc 85, Phase 10: the chapters this one starts, by story id, in order.)
             'expectChapters',
+            # (Doc 86, C2 and R1: the audience's counts as given, and the active wolves, instead of those the case's events
+            # make.)
+            'audience',
+            'activeWolves',
         ),
     )
+    require('audience' not in case or (isinstance(case['audience'], dict) and set(case['audience']) <= set(triggers.AUDIENCES)
+                                       and all(integer(v, 0, 1_000_000) for v in case['audience'].values())),
+            'A case\'s audience gives the counts: {"all": n, "active": n, "online": n}.')
+    require('activeWolves' not in case or (isinstance(case['activeWolves'], list) and len(case['activeWolves']) <= quests.AUDIENCE_CAP
+                                           and all(identifier(w) for w in case['activeWolves'])),
+            'The active wolves are a list of wolves.')
     if 'facts' in case:
         check_world_facts(case['facts'])
     require('expectQuests' not in case or (isinstance(case['expectQuests'], dict) and all(
@@ -1378,8 +1752,25 @@ def _check_case(p, case):
     )
 
 
+def _check_step(ev):
+    """Doc 86, R2: a rehearsal's readiness step, {"check": "ready", "met": bool} or {"advance": "now" | "anyway" | "then"}."""
+    if 'check' in ev:
+        shape(ev, ('check', 'met'))
+        require(ev['check'] == 'ready' and type(ev['met']) is bool, 'A check step is {"check": "ready", "met": true or false}.')
+    else:
+        shape(ev, ('advance',))
+        require(ev['advance'] in ('now', 'anyway', 'then'), 'An advance step is "now", "anyway" or "then".')
+
+
+def is_step(ev):
+    return isinstance(ev, dict) and ('check' in ev or 'advance' in ev) and 'kind' not in ev
+
+
 def _check_fact(ev):
-    """One rehearsal fact's shape and values."""
+    """One rehearsal fact's shape and values (or, doc 86, a readiness step)."""
+    if is_step(ev):
+        _check_step(ev)
+        return
     shape(ev, ('id', 'kind', 'day'), (*FIELDS, 'quantity', 'coins', 'elapsedDays', 'x', 'y', 'facts'))
     if 'facts' in ev:
         check_world_facts(ev['facts'])
@@ -1416,6 +1807,9 @@ def watch_of(p):
                 anywhere = anywhere or not cell
         for m in ph.get('missions', []):
             listened.update(o.get('on') for o in m.get('objectives', []))
+        then = (ph.get('ready') or {}).get('then') if isinstance(ph.get('ready'), dict) else None
+        if isinstance(then, dict):
+            listened.add(then.get('on'))   # (Doc 86, R2: the moment a ready phase waits for.)
     for t in rules_:
         listened.add(t.get('on'))
         conditions += list(triggers.rule_conditions(t))
@@ -1463,6 +1857,8 @@ def watch_of(p):
             factions.update([c['faction']] if kind == 'standing' else ())
             towns.update([c['town']] if kind == 'reputation' else ())
     events = sorted(e for e in listened if e in WATCHED_EVENTS)
+    if p.get('version') == 2 and triggers.uses_online([rules_, [ph.get('ready') for ph in p.get('phases', []) if isinstance(ph, dict)]]):
+        sections.add('wolves')   # (Doc 86, C2: who is online now is read from the world's signed-in wolves.)
     if weather_cells or anywhere or 'weather changed' in events:
         sections.add('weather')
     out = {}
@@ -1559,11 +1955,41 @@ def _play_case(p, case, step=None):
     visit_credits, trace = [], []
     elapsed = 0
     world = case.get('facts')   # (Doc 85, Phase 8: the world's facts, as a case states them; None: no facts at all.)
+    counting = counts_audience(p)
+    checks, ready_seen = [], set()
+    if counting:
+        # (Doc 86, C2: a rehearsal keeps who it has seen and who is online, from its own events; a case may say instead.)
+        state['online'] = []
+        if 'audience' in case:
+            state['rehearsalAudience'] = dict(case['audience'])
+        if 'activeWolves' in case:
+            state['rehearsalActive'] = list(case['activeWolves'])
+
+    def measure():
+        # (As the runner measures it after a tick: a move it makes, or one a fact made, is measured again in the new phase.)
+        for _ in range(8):
+            if not counting or state.get('outcome'):
+                return
+            moved = readiness(p, state, last_day, elapsed, world)
+            if state.get('ready', {}).get('met'):
+                ready_seen.add(state['phase'])
+            if not moved:
+                return
+            leave_visit(phase_of(p, state), state, moved[0], last_day, '', p)
+            record_entry(p, state, path, intended, visit_credits)
 
     record_entry(p, state, path, intended, visit_credits)
+    measure()
     if step:
         step(None, state, path, trace, intended)
     for ev in case['events']:
+        if is_step(ev):
+            # (Doc 86, R2: a step that asserts the phase's readiness, or presses Advance as the command would.)
+            _ready_step(p, state, ev, last_day, checks, ready_seen, lambda: record_entry(p, state, path, intended, visit_credits))
+            measure()
+            if step:
+                step(ev, state, path, trace, intended)
+            continue
         _check_fact(ev)
         if ev['id'] in seen:
             require(ev == seen[ev['id']], 'A repeated event ID has different contents.')
@@ -1583,6 +2009,8 @@ def _play_case(p, case, step=None):
             ev = {k: v for k, v in ev.items() if k != 'facts'}
         if world is not None:
             ev = {**ev, 'facts': world}
+        if counting:
+            note_seen(state, ev, ev['day'])
         dispatch = [ev] if ev['kind'] in ('clock', 'dm signal') else [{'kind': 'clock', **({'facts': world} if world is not None else {})}, ev]
         for fact in dispatch:
             while True:
@@ -1593,6 +2021,7 @@ def _play_case(p, case, step=None):
                     record_entry(p, state, path, intended, visit_credits)
                 if not moved or fact['kind'] != 'clock':
                     break
+        measure()
         if step:
             step(ev, state, path, trace, intended)
     missions = mission_snapshot(phase_of(p, state), state)
@@ -1613,8 +2042,11 @@ def _play_case(p, case, step=None):
         and state.get('counters', {}) == case.get('expectCounters', state.get('counters', {}))
         and ('expectVariables' not in case or _variables_match(p, state, case['expectVariables']))
         and ('expectOutcome' not in case or (state.get('outcome') or {}).get('outcome') == case['expectOutcome'])
-        and ('expectChapters' not in case or [c['story'] for c in state.get('chapterStarts', [])] == case['expectChapters']),
+        and ('expectChapters' not in case or [c['story'] for c in state.get('chapterStarts', [])] == case['expectChapters'])
+        and all(c['ok'] for c in checks),
         **({'outcome': state.get('outcome'), 'outcomes': state.get('outcomes', {})} if v2 else {}),
+        **({'checks': checks} if checks else {}),
+        **({'ready': ready_snapshot(state), 'readyMet': sorted(ready_seen)} if counting else {}),
         **({'chapters': [{k: c[k] for k in ('story', 'audience', 'when') if k in c} for c in state['chapterStarts']]}
            if state.get('chapterStarts') else {}),
         **({'quests': {qid: {h: c['status'] for h, c in copies.items()} for qid, copies in state.get('quests', {}).items()},
@@ -1627,6 +2059,32 @@ def _play_case(p, case, step=None):
         'expected': case['expect'],
         'effects': intended,
     }
+
+
+def _ready_step(p, state, ev, day, checks, ready_seen, entered):
+    """A rehearsal's readiness step: {"check": "ready", "met": bool}, or {"advance": "now" | "anyway" | "then"}."""
+    _check_step(ev)
+    if 'check' in ev:
+        have = bool((state.get('ready') or {}).get('met'))
+        checks.append({'check': 'ready', 'phase': state['phase'], 'expected': ev['met'], 'met': have, 'ok': have == ev['met']})
+        return
+    phase = phase_of(p, state)
+    way = ready_exit(phase)
+    r = state.get('ready') or {}
+    why = ('This phase has no Advance.' if way is None else
+           'Not ready yet.' if ev['advance'] in ('now', 'then') and not r.get('met') else
+           'It has no moment to wait for.' if ev['advance'] == 'then' and 'then' not in phase.get('ready', {}) else '')
+    checks.append({'advance': ev['advance'], 'phase': state['phase'], 'ok': not why, **({'refused': why} if why else {})})
+    if why:
+        return
+    ready_seen.add(state['phase'])
+    if ev['advance'] == 'then':
+        r['pushed'] = {'by': 'rehearsal', 'when': 'then', 'day': day}
+        r['met'] = True
+        r['waitingFor'] = phase['ready']['then']
+        return
+    leave_visit(phase, state, way['to'], day, '', p)
+    entered()
 
 
 def _quests_match(state, expected):
@@ -1761,6 +2219,9 @@ def _review(p):
             if ('phase', s['id'], t['id']) not in fired
         ],
         'uncovered': [s['id'] for s in p['phases'] if s['id'] not in covered],
+        # (Doc 86, R2: a phase whose Readiness no case made ready or advanced.)
+        **({'uncoveredReady': [s['id'] for s in p['phases'] if 'ready' in s and not any(
+            s['id'] in r.get('readyMet', ()) for r in reports)]} if counts_audience(p) else {}),
         'passed': all(r['passed'] for r in reports),
         'tests': reports,
         'voices': [{'phase': s['id'], 'npc': npc} for s in p['phases'] for npc in s.get('guestVoices', [])],
@@ -2221,5 +2682,21 @@ def migration(old, new, state, land=None, run='', began=None):
     if _json(old['audience']) != _json(new['audience']):
         warn.append(f'The audience stays this run\'s {len(cohort)} wolves: the new version\'s audience is for new runs.')
     report['diff']['triggers']['newlyOff'] = sorted(x['key'] for x in added if x['what'] == 'off')
+    # ---- doc 86, R2 rule 12: readiness is measured afresh on the new version; the moment it was met is kept when the phase
+    # and its Readiness are unchanged.
+    r = state.pop('ready', None)
+    if 'ready' in landing:
+        same = land == here and r and r.get('phase') == here and 'ready' in old_phase and \
+            ready_digest(old_phase) == ready_digest(landing)
+        if same and (r.get('metAt') is not None or r.get('pushed')):
+            state['ready'] = {k: r[k] for k in ('phase', 'visit', 'metAt', 'heldAtMet', 'pushed') if k in r}
+            kept.append({'what': 'ready', 'key': land, 'why': f'Ready since day {r.get("metAt")}: its Readiness is unchanged.'})
+        elif r and (r.get('metAt') is not None or r.get('pushed')):
+            reset.append({'what': 'ready', 'key': land, 'why': 'Its Readiness changed: measured afresh (it was ready).'})
+    if not counts_audience(new):
+        for key in ('seen', 'online'):
+            state.pop(key, None)
+    elif not counts_audience(old):
+        state.setdefault('seen', {})
     state['phase'] = land
     return state, report

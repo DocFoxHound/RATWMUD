@@ -905,3 +905,127 @@ this work: "Load into Ridgemere 3, verify live").
    bars. **Recommendation: wait for Phase 1a.**
 5. **The world data edit for old age** (the `protected` flag on seven residents) is needed only if Act I ships before
    C11 (Phase 1b).
+
+## Phase 1a as built
+
+**Phase 1a as built** (2026-11-22, branch `r3-nh-p1a`, on `ridgemere2` at `5b8aae40`). No migration (readiness lives in the
+run's `state`; `dm.story_commands.kind` already takes `advance`); no new game order; no game (C++ server) change: the trigger
+language's native twin (`libratw_story.so`) only. Engine spec items C2, R1, R2 and R3.
+- **C2: the audience counted; `times`, `div`** (`tools/story_triggers.py`; `Core/RatwStoryTriggers.cpp`, `Dispatch2::value`).
+  Values `{"audience": "all" | "active" | "online"}`, `{"times": [a, b]}`, `{"div": [a, b]}` (floored toward zero, the native twin's
+  `trunc` of a double; by 0 no value, so nothing fires on it); both in `ARITH`, two deep. A program field `activeDays` (1 to 120 game
+  days, 18 when not given; `story_program._check_header`, version 2 only; `effective_phase` carries it as `_activeDays`). **Seen**:
+  `story_program.note_seen` keeps `state.seen` ({wolf: game day of their newest event}) for a run that counts its audience or has
+  Readiness (`counts_audience`): the runner calls it for every event it reads, before dispatching it (`_tick_run`), and a rehearsal
+  for every fact. **Seeded at launch** (`story_runner.seen_lately`, one query on the events' actor index, newest first, within
+  `activeDays` of the launch day): a chapter started by `story.start` opens with its wolves already active. Wolves who left the cohort
+  are pruned from it. **Online**: the story's wolves among the signed-in wolves of the world's facts when the event carries them (a
+  program that counts `online` now watches the `wolves` facts: `watch_of`, `uses_online`), else the run's own `state.online` (a
+  rehearsal keeps it from arrivals and departures), else unknown. `story_triggers.audience_of` makes `{all, active, online, activeIds,
+  onlineIds}` once per firing (`Ctx.audience`); `story_native.fire_v2` sends the same as the request's `audience` when the rules count
+  it (`_needs_of`: `uses_audience`), so both twins read identical counts and ids.
+- **R1: who took part** (both twins: `counted`, `share_need`; C++ `counted`, `shareNeed`, `test("participation")`). Values
+  `{"percent": src, "of"}` (floor of 100 × |S| / |D|; 0 when |D| = 0) and `{"among": src, "of"}` (|S|), `src` being `{"list": <a story
+  or world list of wolves>}` or `{"where": <a condition tested for each wolf, the wolf as $each>}`; `of` `active` (the default), `all`
+  or `online` (unknown when not known). The condition **`participation`** (catalogue entry with the new param type `condition`; an
+  optional `source` the workbench keeps): need = max(min(floor, |D|), ⌈percent × |D| / 100⌉), then at most `cap`, never below 1
+  (decisions §6.2: the floor never asks for more wolves than are active); false with |D| = 0; unknown with D unknown. **Checks**
+  (`_check_source`, `_check_where`, `_check_condition_v2`): exactly one of list and where; a list must be a declared story or world
+  `wolves` list; a `where` holds only `compare`, `switch`, `in list`, `days since`, `quest is`, `objective is` and groups, 3 deep and 8
+  leaves, no event fields or loop values, a wolf's own variable read `of: "$each"`, a quest read for `$each` or the story; floor ≤
+  cap; never inside For each (nor inside its own test), at most one level deep in arithmetic. `judge` shows the counts (among, of,
+  need) for Explain. The native `member` check now looks the cohort up in a set (5,000 wolves × a test of 4 leaves: about 11 ms
+  native, the request's 5,000 wolves' values included), and the Python twin reads personal variables against a cohort set while it
+  counts (`var_store(members=)`): 130 ms became 13 ms.
+- **R2: Readiness** (`tools/story_program.py`, "readiness"). A version 2 phase's `ready` block (`_check_ready`, `_check_ready_part`):
+  `all` (1 to 8 parts; `{"any": [2 to 4]}` one deep; each with an optional 80-character `label`): `participation` (R1's fields as a
+  part: `ready_condition`), `minDays` (0 to 3,650, `since` `phase` or `chapter`), `value` with `atLeast` and `test` (the story's and the
+  world's values and state only: no facts, rolls, event fields or a wolf's own values), `missions` (this phase's), `quest` (a story-scope
+  quest); `auto`, `then` (`day begins`, `hour`, `season begins`, `festival`, `dm signal`; the game is asked for its moment by the watch
+  list), `slowAfterDays`, `slowNeedsYou`, `autoAfterDays` (only with `auto` off). Its exit `{"on": "ready", "to"}` (the catalogue's new
+  special event `ready`, exits only; exactly one, and only with `ready`; `exit_for` skips it; `triggers.routes` includes it, so the
+  graph check and "a `$actor` reward needs a participating wolf on every path" cover it). **`readiness(p, state, day, elapsed,
+  facts)`** measures every part into `state.ready` (`{phase, visit, met, metAt, heldAtMet, pushed, parts, checkedAt, auto, to, then,
+  waitingFor, slow, slowNeedsYou, days, heldDays}`), latches `metAt` for the visit, logs `ready`, `slow`, `pushed`, `advanced` and
+  `taken` in `state.readyLog` (the last 20), and returns the move: `auto` at once, or (`then`) sets `waitingFor`, which
+  `ready_anchor` takes in `dispatch` when that event comes; `autoAfterDays` after `metAt` (held days not counted) with the cause `ready
+  (no admin)`. **Held time**: `Steer.do_hold` records `atDay` and the visit; `do_resume` adds the span to `state.heldDays` (`run` and
+  `visit`; a new visit starts its own at 0); `minDays`, `slowAfterDays` and `autoAfterDays` count running days only (`running_days`,
+  `held_days`). **The runner** (`_tick_run`) measures a phase with Readiness at most once a tick, when it read events, at least once a
+  game hour, and afresh in a new visit or after a command; a move goes through `leave_visit` and `enter` with the cause `ready` (or
+  `ready (no admin)`). **The command `advance`** (`COMMAND_KINDS`, `FLOW`, `RELEASING`, `VISITED`; payload `{when: now | then, anyway}`;
+  `Steer.do_advance`): refused without a ready exit ("This phase has no Advance: use Go to phase…"), refused when not ready without
+  `anyway` ("Not ready yet: 1 of 10 active wolves (10%; 35% and 4 needed); 0.4 of 2 days. Advance anyway?"), `now` takes the exit,
+  `then` pushes it to wait for its moment; the result's before and after hold the readiness snapshot, and the audit's words say it
+  ("Advanced to done now (ready): 3 of 6 active wolves (50%; 35% and 3 needed); 2.2 of 2 days. Reason: …"); `_may_release` applies.
+  **Explain**: `listeners()` lists the ready exit with its parts (`readiness`), `can` only with `auto`, `then` or `autoAfterDays`
+  (else `cannot: admin`); `_waiting` gains `{on: "ready", to, auto, then, met, waitingFor}`; `_stall` never calls a phase with a ready
+  exit "stuck". **Alerts** (`_ready_alert`): `ready` (needs you, unless it goes by itself or was pushed) and `slow` (needs you with
+  `slowNeedsYou`); the game's Dev Console words both (`_alert_words`). **Views**: `_row_view` and the run's detail carry `ready` (with
+  `activeDays`, the slow and auto days, `thenWords`), the detail `readyLog`, `controls()` the phase's Advance, the timeline `ready`
+  items (stamped with their real moment by the runner). **Moving onto a new version** (`migration`) keeps `metAt` (and a push) when the
+  phase and its Readiness are unchanged (`ready_digest`), and measures afresh otherwise. **Rehearsal**: a case may give `audience` (the
+  counts) and `activeWolves`; its events may hold the steps `{"check": "ready", "met": bool}` and `{"advance": "now" | "anyway" |
+  "then"}` (`_check_step`, `_ready_step`); the rehearsal measures after every fact and every move (`measure`), the report has `checks`,
+  `ready` and `readyMet`, and the review lists `uncoveredReady`.
+- **R3: the console** (`Editor/src/lib/campaigns.ts`, `Editor/src/dm/campaigns/Readiness.tsx`). Types `Readiness`, `ReadyPart`,
+  `ReadyLogEntry`; `RunRow.ready`, `RunDetail.readyLog`, `Controls.ready`, the `ready` waiting and timeline item, the `ready` and
+  `slow` alerts (`alertText`: "Ready to advance: ch1_main → ch1_end since day 93 (all 4 parts met)", "Slow: 21% of the 35% needed
+  after 31 days; Advance anyway, or wait", and with `slowNeedsYou` "Ready to push: …. Advance anyway, or wait."), `commandLine('advance',
+  …)` ("Advance to ch1_end now (ready)", "… now anyway (not ready: 2 of 4 parts met)", "… at the next new moon"), `typedTitle` for
+  `anyway`, `readyBars` (one bar per part: fill, the need's mark, "42 of 118 active wolves (36%); 35% and at least 5 needed", "11.2 of
+  10 days in the chapter (1.5 held days not counted)", an `any` group's bars), `readyHeader`, `readySummary`, `chapterReadyText`,
+  `waitingLines`. **Readiness.tsx** on the run's Overview under the phase strip: the header, "active 118 · in the story 260 · online
+  now 31" and the active window, the bars, **Advance…** (primary when ready), **Advance anyway…** (with the typed title), **Advance at
+  the next …** (with `then`), **⏸ Hold / ▶ Resume** beside them, "Holding stops the chapter's clock", each through the SteerBar's
+  `AskDialog` with its dry run and the snapshot under "This will do". **The list**: a Ready column (a compact bar, or a green "ready"),
+  "ready to advance" first among the alerts, the tab bar's count as before (it counts the `ready` alert); **the chapters bar** and each
+  campaign card's running chapter: "Ch 1 · 36% of 35% · day 11 of 10 · ready" with **Advance…**. The timeline words `ready` items.
+  **The workbench** (`workbench.ts`, `pickers.tsx`, `TriggerView.tsx`): the new values in words, the `participation` sentence ("at
+  least 35% of the active wolves (at least 3; 150 always enough) are in the list did"), the ready exit's sentence, a new
+  participation condition, renames and variable uses through shares, readiness steps kept in cases (`isStep`; the rehearsal editor
+  shows them); the picker for a `condition` param (a test for each wolf, the world's conditions greyed out), the share and audience
+  values in the operand picker, switching "who counts" between the list and a test.
+- **Guide and format**: `Docs/Story-Maker-guide.md` §4 "Chapters that move on when the wolves have done enough" (the template and the
+  recommended defaults), §6 "Goals that scale" and "Counting who took part", §11 "Moving a chapter on" (with the worked example), §15
+  "It says ready but did not move" and "The share reads 0%", §16 the limits; the reference regenerated (`story_guide.py --write`,
+  `--check` passes). `Docs/story-programs.md` gains "Readiness and participation". The catalogue: the condition, the `ready` event,
+  `types.condition`, `trigger.exit.ready`, the operand text and `about`.
+- **Sample** `story_v2_samples.READY` ("The muster at the ford", `v2-muster`, in `all_samples()`, so both twins run it under five
+  seeds): every C2 and R1 form in triggers, Readiness with participation, `minDays` since the chapter, an `any` of missions and a
+  test, `autoAfterDays`, a second phase `auto` with `then: day begins` and a `value` part; three cases (Advance; a quiet wolf and
+  Advance anyway; no admin about, with `audience` and `activeWolves`). It rehearses clean: nothing uncovered.
+- **Tests**: `test_story_v2` (Audience: each form, `div` by 0, the counts given, `activeDays` 3 against 18, the checks; Participation:
+  12 active and 5 in the list 41% and 5; 40% with floor 6 false, floor 4 true; 2 active floor 3 true; a cap of 3 at 2,000; no active
+  wolves 0% and false; online unknown; a test for each wolf; a quiet wolf leaves both counts; judge's counts), `test_story_native`
+  (`ParticipationParity`: 42 forms and four conditions over eight states, both twins identical), `test_story_speed` (`CountingSpeed`:
+  5,000 wolves under 20 ms native and 150 ms Python; readiness of two parts inside the tick's budget), `test_story_program`
+  (`ReadinessShapes`), `test_story_problems` (`ParticipationProblems`), `test_story_v2_runner` (`Readiness`, DSN: seen at launch,
+  4 of 10 not met on day 1, latched when 6 more come, the ready alert and no move, auto in the same tick, `then` waits for the day, 3
+  held days not counted, slow, `autoAfterDays`, `migrate` keeps `metAt`), `test_story_steering` (`Advancing`), `test_story_explain`
+  (`ExplainReadiness`), `test_story_campaigns` (`ReadyChapters`: chapter 1 advanced, chapter 2 opened with its wolves active, moving on
+  by itself at the next day), `test_story_console` (`ReadinessInTheConsole`; the shared fixture `ready_program`/`ReadyFixture`
+  lives there); Editor `campaigns.test.ts` (bars, header, summary, chapters line, alerts, advances, typed title, needs you, waiting),
+  `workbench.test.ts` (the new sentences and values; 111 programs) and the render smoke (Campaigns (ready), Campaigns (ready list)).
+  Updated counts: `test_story_catalogue`, `test_story_drafts`. Run: every `tools/test_story_*.py` but the three live ones (with
+  `RATW_STORY_TEST_DSN` on a throwaway migrated database, so `test_story_program`'s 17 runtime tests ran), all OK; the Editor's tests
+  (139 and 78), type check, build and render smoke (61 panels; the workbench over 108, 12 and 2 programs, none edited).
+- **End to end** (a throwaway migrated database, dropped after; the real story runner process; the DM tool's route; the game stood in
+  for by answering `dm.actions`, since a scratch server never applies orders): a two-chapter campaign of six wolves approved together
+  and published through the route; seen at launch 6 active; two gifts: 2 of 6 (33%), 3 needed; three: participation met, 0.4 of 2
+  days; day 3.2: ready, the `ready` alert (needs you; the tab count 1, "is ready to advance from work to done: press Advance"), the phase
+  unmoved; the dry run of Advance; Advance with a reason, done; the command row's snapshot and the audit row ("Advanced to done now
+  (ready): 3 of 6 active wolves (50%; 35% and 3 needed); 2.2 of 2 days. Reason: …"); chapter 1 complete, chapter 2 running with its 6
+  wolves seen at launch; ready at day 5.5 and waiting for `day begins`; moved on by itself when it came; the timeline's `ready` and
+  `advanced` items. A scratch Ridgemere 3 server built from this branch started (port printed, page served) and was stopped; it is
+  read only, so the run itself was not on it.
+- **Left or changed, and why**: `state.opened` is the run's existing `began` (the same moment). R1's memoisation within one dispatch
+  is not built: no form is slow enough to need it after the cohort set (and memoising across actions that change a list would differ
+  from evaluating afresh). A paused run is not measured (the runner reads only running runs); the console shows its last measure.
+  "No longer ready" is never logged: under the latch a phase is ready from its first met moment. `online` is not read from the latest
+  `story.cohort` answer (the game does not say who is signed in there); it is the world's facts' signed-in wolves, or unknown. A
+  carried story list (`carry: true`) can make the next chapter's participation part met at its opening, as the end to end showed (its
+  `did` list came with it): a chapter that wants its own count names its list differently. `RUNNER_VERSION` is `doc86-phase1a`.
+- **Going live** on `ratw_ridgemere3` needs no migration of its own (doc 85's 0071-0079 still apply first, as there); the story runner
+  restarted from this branch with the rebuilt `libratw_story.so`; the Editor released from it. Act I's chapters can move onto a
+  version with `ready` blocks by `migrate` mid-chapter.

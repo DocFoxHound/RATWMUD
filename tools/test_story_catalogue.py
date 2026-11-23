@@ -124,7 +124,7 @@ class CatalogueShape(unittest.TestCase):
         ids = [e['id'] for e in CAT['events']]
         self.assertEqual(len(ids), len(set(ids)))
         self.assertEqual(len(rules.EVENTS), 205)   # (160, Phase 6's 11 quest and party events, Phase 8's 24 and Phase 10's 10.)
-        self.assertEqual(set(ids) - set(rules.EVENTS), {triggers.SIGNAL, rules.MISSION_GATE})
+        self.assertEqual(set(ids) - set(rules.EVENTS), {triggers.SIGNAL, rules.MISSION_GATE, rules.READY_EXIT})   # (Doc 86: the ready exit.)
         for e in CAT['events']:
             with self.subTest(event=e['id']):
                 self.assertIn(e['group'], groups)

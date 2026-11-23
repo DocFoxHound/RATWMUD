@@ -7,6 +7,7 @@
 #include <optional>
 #include <set>
 #include <stdexcept>
+#include <unordered_set>
 #include <vector>
 
 namespace ratw::story
@@ -271,7 +272,18 @@ struct Dispatch2
         int depth = 0;
     };
 
-    bool member(const std::string& wolf) const { return includes(cohort, wolf); }
+    // (Doc 86, R1: a test for each of 5,000 wolves asks this for each one; the cohort is looked up in a set, made once.)
+    mutable std::optional<std::unordered_set<std::string>> cohortSet;
+    bool member(const std::string& wolf) const
+    {
+        if (!cohortSet)
+        {
+            cohortSet.emplace();
+            for (const auto& w : cohort.items())
+                if (w.isString()) cohortSet->insert(w.asString());
+        }
+        return cohortSet->count(wolf) > 0;
+    }
     bool shared(const std::string& id) const { return includes(input["shared"], id); }
     std::string keyOf(const std::string& id) const { return shared(id) ? id : phaseId + "/" + id; }
     std::string partyOf(const std::string& wolf) const { return state["parties"].has(wolf) ? state["parties"].string(wolf) : wolf; }
@@ -337,17 +349,75 @@ struct Dispatch2
         }
         if (o.has("field")) return field(*x.fact, o.string("field"));
         if (o.has("each")) return x.each;
-        for (const char* key : {"plus", "minus", "min", "max"})
+        if (o.has("audience"))
+        {
+            // (Doc 86, C2: the counts the host sends, as story_triggers.audience_of makes them; online may be unknown.)
+            const auto& n = input["audience"][o.string("audience")];
+            if (!n.isNumber()) return std::nullopt;
+            return Value(n.asNumber());
+        }
+        for (const char* share : {"percent", "among"})
+        {
+            if (!o.has(share)) continue;
+            std::vector<std::string> s, d;
+            if (!counted(o[share], o.string("of", "active"), x, s, d)) return std::nullopt;
+            if (std::string(share) == "among") return Value(double(s.size()));
+            return Value(d.empty() ? 0.0 : std::floor(100.0 * double(s.size()) / double(d.size())));
+        }
+        for (const char* key : {"plus", "minus", "min", "max", "times", "div"})
         {
             if (!o.has(key)) continue;
             const auto a = value(o.array(key)[0], x), b = value(o.array(key)[1], x);
             if (!a || !b) return std::nullopt;
             const double l = a->asNumber(), r = b->asNumber();
             const std::string k = key;
+            if (k == "div") return r == 0 ? std::nullopt : std::optional<Value>(Value(std::trunc(l / r)));
+            if (k == "times") return Value(l * r);
             // (Python's min and max keep the first of two equal values; a number either way.)
             return Value(k == "plus" ? l + r : k == "minus" ? l - r : k == "min" ? (r < l ? r : l) : (r > l ? r : l));
         }
         throw std::invalid_argument("Unknown story value");
+    }
+
+    // Doc 86, R1: the wolves counted against (`d`: the active ones, all, or those online) and of those the ones who count
+    // (`s`: in a story or world list, or meeting a test with the wolf as $each). False when `d` is unknown (online, not
+    // sent). The twin of story_triggers.counted; the test reads no facts and rolls nothing (story_program refuses it).
+    bool counted(const Value& src, const std::string& of, const Ctx& x, std::vector<std::string>& s, std::vector<std::string>& d) const
+    {
+        const auto& aud = input["audience"];
+        const Value& ids = of == "all" ? cohort : of == "online" ? aud["onlineIds"] : aud["activeIds"];
+        if (!ids.isArray()) return false;
+        for (const auto& w : ids.items())
+            if (w.isString()) d.push_back(w.asString());
+        if (src.has("list"))
+        {
+            const auto name = src.string("list");
+            const auto& decl = decls[name];
+            const auto* st = store(decl.string("scope"), "");
+            const Value members = st && st->has(name) ? (*st)[name] : initialOf(decl);
+            std::unordered_set<std::string> in;
+            for (const auto& m : members.items())
+                if (m.isString()) in.insert(m.asString());
+            for (const auto& w : d)
+                if (in.count(w)) s.push_back(w);
+            return true;
+        }
+        auto* self = const_cast<Dispatch2*>(this);
+        for (const auto& w : d)
+        {
+            Ctx y = x;
+            y.each = Value(w);
+            const auto v = self->test(src["where"], y);
+            if (v && *v) s.push_back(w);
+        }
+        return true;
+    }
+
+    static long long shareNeed(long long d, long long percent, long long floor, std::optional<long long> cap)
+    {
+        long long need = std::max(std::min(floor, d), (percent * d + 99) / 100);
+        if (cap) need = std::min(need, *cap);
+        return std::max(need, 1LL);
     }
 
     static bool cmp(const Value& l, const std::string& op, const Value& r)
@@ -439,6 +509,16 @@ struct Dispatch2
             return compare(Value(bucket.number(keyOf(c.string("trigger")))), c.string("op"), c["value"]);
         }
         if (kind == "chance") return draw(100) < c.number("percent");
+        if (kind == "participation")
+        {
+            std::vector<std::string> s, d;
+            if (!counted(c, c.string("of", "active"), x, s, d)) return std::nullopt;
+            if (d.empty()) return false;
+            const auto cap = c.has("cap") ? std::optional<long long>(static_cast<long long>(c.number("cap"))) : std::nullopt;
+            const auto need = shareNeed(static_cast<long long>(d.size()), static_cast<long long>(c.number("percent")),
+                                        static_cast<long long>(c.number("floor", 1)), cap);
+            return static_cast<long long>(s.size()) >= need;
+        }
         if (kind == "days since")
         {
             std::optional<Value> since;

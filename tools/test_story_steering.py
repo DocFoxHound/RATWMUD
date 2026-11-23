@@ -554,5 +554,92 @@ class SteeringRoute(unittest.TestCase):
         self.assertEqual(status, 200, data)
 
 
+@unittest.skipUnless(database_available(), 'local PostgreSQL required')
+class Advancing(console.ReadyFixture, unittest.TestCase):
+    """Doc 86, R2 rule 9: the command advance (now, anyway, at its moment), its refusals, and what the audit keeps."""
+    setUpClass = classmethod(console.ConsoleReads.setUpClass.__func__)
+    tearDownClass = classmethod(console.ConsoleReads.tearDownClass.__func__)
+    setUp = console.ConsoleReads.setUp
+    fact, launch, answer, tick, rewrite, row = (console.ConsoleReads.fact, console.ConsoleReads.launch, console.ConsoleReads.answer,
+                                                console.ConsoleReads.tick, console.ConsoleReads.rewrite, console.ConsoleReads.row)
+    one, send, taken, steer, answer_all, settle = (Steering.one, Steering.send, Steering.taken, Steering.steer,
+                                                   Steering.answer_all, Steering.settle)
+
+    def ready_now(self, program=None):
+        self.ready_launch(program or console.ready_program())
+        self.gifts(console.MUSTER[:4], 1)
+        self.day(3.1)
+        self.tick()
+        self.assertTrue(self.ready()['met'])
+
+    def test_advance_now_moves_and_the_command_keeps_what_the_admin_saw(self):
+        self.ready_now()
+        status, result = self.steer('advance', {'when': 'now'}, reason='the muster is ready, move it on')
+        self.assertEqual(status, 'done', result)
+        self.assertEqual(self.one()['phase'], 'done')
+        self.assertIn('Advanced to done now (ready)', result['text'])
+        snap = result['before']['ready']
+        self.assertEqual((snap['met'], snap['to'], [p['met'] for p in snap['parts']]), (True, 'done', [True, True]))
+        self.assertEqual(snap['parts'][0]['value'], 4)
+        row = self.conn.execute("SELECT reason,result FROM dm.story_commands WHERE kind='advance'").fetchone()
+        self.assertEqual(row[0], 'the muster is ready, move it on')
+        self.assertEqual(row[1]['before']['ready']['parts'][0]['count'], 10, 'the command row holds the snapshot')
+        audit = self.conn.execute("SELECT detail,who FROM dm.audit WHERE action='story.advance'").fetchone()
+        self.assertIn('4 of 10 active wolves', audit[0])
+        self.assertIn('the muster is ready', audit[0])
+        self.assertEqual(audit[1], 'martin')
+        cause = self.one()['history'][0]['cause']
+        self.assertTrue(cause.startswith('admin martin'), cause)
+
+    def test_not_ready_is_refused_unless_anyway(self):
+        self.ready_launch(console.ready_program())
+        self.gifts(console.MUSTER[:1], 1)
+        self.tick()
+        status, result = self.steer('advance', {'when': 'now'})
+        self.assertEqual(status, 'refused')
+        self.assertIn('Not ready yet: 1 of 10 active wolves', result['text'])
+        self.assertIn('Advance anyway?', result['text'])
+        status, result = self.steer('advance', {'when': 'now', 'anyway': True})
+        self.assertEqual(status, 'done', result)
+        self.assertIn('anyway (not ready: 0 of 2 parts met)', result['text'])
+        self.assertEqual(self.one()['phase'], 'done')
+
+    def test_advance_at_its_moment_waits_for_it(self):
+        self.ready_now(console.ready_program(then={'on': 'day begins'}))
+        self.assertEqual(self.one()['phase'], 'work', 'auto is off: it waits for an admin')
+        status, result = self.steer('advance', {'when': 'then'})
+        self.assertEqual(status, 'done', result)
+        self.assertIn('at the next day', result['text'])
+        self.assertEqual(self.one()['phase'], 'work')
+        self.tick()
+        self.assertEqual(self.ready()['waitingFor'], {'on': 'day begins'})
+        self.fact('day begins', '', day=3.5, detail='Restday')
+        self.tick()
+        self.assertEqual(self.one()['phase'], 'done')
+
+    def test_a_phase_without_readiness_has_no_advance(self):
+        self.launch('winter-ferries')
+        self.answer()
+        with self.assertRaisesRegex(ValueError, 'no phase with Readiness'):
+            self.send('advance', {'when': 'now'})
+        p = console.ready_program()
+        p['phases'].insert(0, {'id': 'prelude', 'journal': 'Wait for the word.', 'effects': [],
+                               'exits': [{'on': 'dm signal', 'to': 'work', 'match': {'detail': 'Muster now'}}]})
+        p['start'] = 'prelude'
+        p['tests'][0]['events'].insert(0, {'id': 'w', 'kind': 'dm signal', 'day': 0.05, 'detail': 'Muster now'})
+        p['tests'][0]['expect'].insert(0, 'prelude')
+        self.ready_launch(p)
+        status, result = self.steer('advance', {'when': 'now', 'anyway': True})
+        self.assertEqual(status, 'refused')
+        self.assertIn('This phase has no Advance: use Go to phase', result['text'])
+
+    def test_a_releasing_advance_needs_the_right(self):
+        p = console.ready_program(ending=[{'kind': 'character.injury', 'player': console.MUSTER[0], 'add': 'torn_flank', 'severity': 1}])
+        self.assertIn('character.injury', runner.WOLF_EFFECTS)
+        with self.assertRaisesRegex(ValueError, 'may act on players'):
+            runner._may_release(p, 'advance', {'when': 'now'}, {'wolves': False, 'relations': True})
+        runner._may_release(p, 'advance', {'when': 'now'}, {'wolves': True, 'relations': True})
+
+
 if __name__ == '__main__':
     unittest.main()

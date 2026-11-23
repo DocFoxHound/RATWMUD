@@ -128,9 +128,11 @@ def _needs_of(rules):
     acting one, those named, or every one when a count or the looped wolf is read), and the story's quests."""
     import story_triggers
 
-    out = {'facts': False, 'quests': False, 'all': False, 'named': set()}
+    out = {'facts': False, 'quests': False, 'all': False, 'named': set(), 'audience': story_triggers.uses_audience(rules)}
     for t in rules:
-        for c in story_triggers.rule_conditions(t):
+        # (Doc 86, R1: a test for each wolf may read the quests.)
+        wheres = [c for w in story_triggers.wheres_in(t) for c in story_triggers.conditions_in(w)]
+        for c in [*story_triggers.rule_conditions(t), *wheres]:
             kind = c.get('test')
             if kind in story_triggers.QUEST_V2:
                 out['quests'] = True
@@ -187,6 +189,12 @@ def fire_v2(dispatch, phase, state, event, day, elapsed, ready, emit, trace, wai
     if wait is not None:
         request['resume'] = wait
     needs = _needs(rules)
+    if needs['audience']:
+        # (Doc 86, C2 and R1: the audience as the Python twin counts it, the active and online wolves by id.)
+        source_event = wait['event'] if wait is not None else event
+        aud = story_triggers.audience_of(state, day, phase.get('_activeDays', story_triggers.ACTIVE_DAYS),
+                                         story_triggers.facts_of(source_event))
+        request['audience'] = {**aud, 'online': None if aud['online'] is story_triggers.MISSING else aud['online']}
     if needs['quests'] and phase.get('_questIndex'):
         # (Doc 85, Phase 8: "quest is" and "objective is" read the copies, the offers, and of each quest its scope and hidden
         # objectives.)

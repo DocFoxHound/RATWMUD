@@ -141,6 +141,11 @@ print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), '
         'Campaigns (chapters)': ['The long winter', '3 chapters · 1 done · now: Ninety days on the winter ferries (ferry-watch)', '✔ 1. The muster',
             '○ 3. The spring council', 'World variables…', 'New campaign…'],
         'Campaigns (a chapter)': ['Chapter 2 of 3 of', 'The long winter', '“The spring council” for this story&#x27;s wolves, carrying its variables, when this story has ended'.replace('“', '"').replace('”', '"').replace(/"/g, '&quot;')],
+        // (Doc 86, Phase 1a: readiness.)
+        'Campaigns (ready)': ['Readiness', 'Ready to advance to deep-freeze (since day 93)', '42 of 118 active wolves (35%); 35% and at least 5 needed, 150 always enough',
+            '11.2 of 10 days in the chapter (1.5 held days not counted)', 'Advance…', '⏸ Hold', 'Holding stops the chapter&#x27;s clock', 'active 118 · in the story 260 · online now 31',
+            'Ready to advance: ferry-watch → deep-freeze since day 93 (all 2 parts met)'],
+        'Campaigns (ready list)': ['Ready', 'Wolves who kept the ferries: 18% of the 35% needed', 'Ready to push: 21 of 118 active wolves (18%; 35% and 42 needed). Advance anyway, or wait.'],
         'World variables': ['ferries-run', 'ferries that crossed this winter', 'Ninety days on the winter ferries (running)', 'not declared', '✎ Set…',
             '+ Declare a world variable…', 'one more crossed at dawn'],
         'Guide': ['A small quest in five minutes', 'Building a campaign', 'What the game undoes when a run ends', 'Why not?', 'story.start',

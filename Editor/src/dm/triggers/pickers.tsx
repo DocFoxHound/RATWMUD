@@ -5,9 +5,10 @@
 import {useMemo, useState} from 'react';
 import {MapView} from '../MapView';
 import {surfaceFor} from '../../lib/surface';
-import {allActions, countersOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, REF_KIND, signalsOf, visitorsOf, type CatEvent, type CatItem, type Operand, type Param,
+import {allActions, countersOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, REF_KIND, signalsOf, visitorsOf, type CatEvent, type CatItem, type Condition, type Operand, type Param,
     type Program, type Slot} from '../../lib/workbench';
 import {useBench} from './context';
+import {ConditionNode} from './TriggerView';
 
 export type Values = Record<string, unknown>;
 interface Option {id: string; name: string; hint?: string; group?: string}
@@ -135,6 +136,7 @@ function OperandPicker({slot, pick}: {slot: Slot; pick: (v: Operand) => void}) {
     const vars = (program.variables ?? []).filter(v => !LIST_TYPES[v.type] && v.type !== 'timer' && (!kind || kindOfType(v.type) === kind));
     const lists = (program.variables ?? []).filter(v => LIST_TYPES[v.type]);
     const timers = (program.variables ?? []).filter(v => v.type === 'timer');
+    const wolfLists = (program.variables ?? []).filter(v => v.type === 'wolves' && ['story', 'world'].includes(v.scope));
     const [text, setText] = useState(typeof slot.value === 'string' ? slot.value : '');
     const [num, setNum] = useState(typeof slot.value === 'number' ? String(slot.value) : '');
     const fields = kind === 'number' ? ['quantity', 'coins'] : kind === 'text' ? ['actor', 'target', 'cell', 'item', 'detail'] : kind === 'switch' ? []
@@ -153,6 +155,13 @@ function OperandPicker({slot, pick}: {slot: Slot; pick: (v: Operand) => void}) {
         {(!kind || kind === 'number') && lists.length > 0 && <div className="wb-chips"><span>How many in:</span>{lists.map(v => <button key={v.id} type="button" onClick={() => pick({count: v.id})}>{v.id}</button>)}</div>}
         {(!kind || kind === 'number') && timers.length > 0 && <div className="wb-chips"><span>Days since:</span>{timers.map(v => <button key={v.id} type="button" onClick={() => pick({since: v.id})}>{v.id}</button>)}</div>}
         {(!kind || kind === 'text') && <div className="wb-chips"><span>Inside For each:</span><button type="button" onClick={() => pick({each: true})}>the looped value</button></div>}
+        {(!kind || kind === 'number') && isV2(program) && <div className="wb-chips"><span>The story's wolves (doc 86):</span>
+            {(['all', 'active', 'online'] as const).map(a => <button key={a} type="button" onClick={() => pick({audience: a})}>how many {a === 'all' ? 'it has' : `are ${a}`}</button>)}
+            {num !== '' && Number.isFinite(n) && <button type="button" onClick={() => pick({max: [n, {times: [{audience: 'active'}, 2]}]})}>{n}, or 2 for each active wolf</button>}</div>}
+        {(!kind || kind === 'number') && wolfLists.length > 0 && <div className="wb-chips"><span>Of the active wolves:</span>
+            {wolfLists.map(v => <span key={v.id}><button type="button" onClick={() => pick({percent: {list: v.id}, of: 'active'})}>the share in {v.id}</button>
+                <button type="button" onClick={() => pick({among: {list: v.id}, of: 'active'})}>how many in {v.id}</button></span>)}
+            <small className="hint">(the share of the wolves who…, how many of the wolves…: a test for each wolf is edited in Source)</small></div>}
         {(!kind || kind === 'number') && vars.some(v => v.type === 'number') && num !== '' && Number.isFinite(n) && <div className="wb-chips"><span>Or a number variable and {n}:</span>
             {vars.filter(v => v.type === 'number').map(v => <span key={v.id}><button type="button" onClick={() => pick({plus: [{var: v.id}, n]})}>{v.id} + {n}</button>
                 <button type="button" onClick={() => pick({minus: [{var: v.id}, n]})}>{v.id} − {n}</button>
@@ -191,6 +200,10 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
     else if (type === 'variable') body = <VariablePicker slot={slot} pick={one}/>;
     else if (type === 'operand') body = <OperandPicker slot={slot} pick={one}/>;
     else if (type === 'trigger') body = <TriggerPicker slot={slot} pick={one}/>;
+    // (Doc 86, R1: a test for each wolf, the wolf as $each; the world's facts are greyed out, it is counted outside an event.)
+    else if (type === 'condition') body = <div className="wb-each-test"><p className="hint">Tested once for each wolf: read a wolf's own values "of the looped wolf".</p>
+        <ConditionNode node={(slot.value as Condition | undefined) ?? {test: 'compare', left: {var: (program.variables ?? []).find(v => v.scope === 'player' && v.type === 'number')?.id ?? 'progress', of: '$each'}, op: '>=', right: 1}}
+            change={c => one(c)} depth={1} phase={null} each/></div>;
     else if (type === 'whose') body = <div className="wb-chips">{(slot.param?.values ?? []).map(v => <button key={v} type="button" aria-pressed={(slot.value ?? '$actor') === v}
         onClick={() => one(v === '$actor' ? undefined : v)}>{slot.param?.words?.[v] ?? v}</button>)}</div>;
     else if (type === 'choice' && slot.param?.values && slot.param.optional) body = <div className="wb-chips"><button type="button" aria-pressed={slot.value === undefined}

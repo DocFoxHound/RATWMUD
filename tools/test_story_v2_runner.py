@@ -166,5 +166,139 @@ class VersionTwoRuns(unittest.TestCase):
         self.assertEqual(self.state()['counts'], {'visit': {'open/count': 1}, 'run': {'open/count': 1}})
 
 
+# ----- Doc 86, Phase 1a: a chapter paced by readiness (R2), run by the story runner on a throwaway database (the fixture,
+# ready_program and ReadyFixture, is test_story_console's, shared with the steering, explain and campaign tests).
+from test_story_console import MUSTER, ReadyFixture, ready_program  # noqa: E402
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL required')
+class Readiness(ReadyFixture, unittest.TestCase):
+    """R2 in the runner (doc 86, Phase 1a), on a chapter with participation 35% floor 3 and minDays 2."""
+    setUpClass = classmethod(console.ConsoleReads.setUpClass.__func__)
+    tearDownClass = classmethod(console.ConsoleReads.tearDownClass.__func__)
+    setUp = VersionTwoRuns.setUp
+    fact, launch, answer, tick, rewrite, row = (console.ConsoleReads.fact, console.ConsoleReads.launch, console.ConsoleReads.answer,
+                                                console.ConsoleReads.tick, console.ConsoleReads.rewrite, console.ConsoleReads.row)
+    one, send, taken, steer, answer_all, settle = (steering.Steering.one, steering.Steering.send, steering.Steering.taken,
+                                                   steering.Steering.steer, steering.Steering.answer_all, steering.Steering.settle)
+    def test_the_fixture_rehearses(self):
+        for p in (ready_program(), ready_program(auto=True), ready_program(auto=True, then={'on': 'day begins'}), ready_program(after=2)):
+            self.assertTrue(rules.review(p)['passed'], p['phases'][0]['ready'])
+
+    def test_seen_at_launch_then_ready_latched_and_waiting_for_an_admin(self):
+        self.ready_launch(ready_program(slow=4))
+        self.assertEqual(sorted(self.state()['seen']), MUSTER[:10], 'the wolves seen before it began are active from the start')
+        self.gifts(MUSTER[:4], 1)
+        self.tick()
+        r = self.ready()
+        self.assertFalse(r['met'])
+        part = r['parts'][0]
+        self.assertEqual((part['value'], part['count'], part['need'], part['share'], part['met']), (4, 10, 4, 40, True))
+        self.assertEqual((r['parts'][1]['value'], r['parts'][1]['met']), (0, False), '4 of 10 on day 1: not met (no days yet)')
+        self.day(3.1)
+        self.tick()
+        r = self.ready()
+        self.assertTrue(r['met'])
+        self.assertEqual((r['metAt'], self.one()['phase']), (3.1, 'work'), 'auto is off: it is not moved')
+        self.assertIn('ready', self.alert_kinds())
+        alert = next(a for a in self.row()['alerts'] if a['kind'] == 'ready')
+        self.assertEqual((alert['needsYou'], alert['to'], alert['met'], alert['parts']), (True, 'done', 2, 2))
+        self.assertNotIn('stuck', self.alert_kinds(), 'a phase whose way on is Readiness is never "stuck"')
+        # Six more wolves come: the share falls below the bar, and it stays ready (latched).
+        for w in MUSTER[10:]:
+            self.fact('arrival', w, day=3.2)
+        self.tick()
+        r = self.ready()
+        self.assertEqual((r['parts'][0]['count'], r['parts'][0]['need'], r['parts'][0]['met'], r['met']), (16, 6, False, True))
+        self.assertEqual(self.row()['ready']['to'], 'done')
+        self.assertEqual([e['kind'] for e in self.state()['readyLog']], ['ready'])
+        timeline = runner.timeline(self.conn, self.world, self.run_id)
+        self.assertEqual([i['readyKind'] for i in timeline['items'] if i['type'] == 'ready'], ['ready'])
+        waiting = next(w for w in self.row()['waiting'] if w['on'] == 'ready')
+        self.assertEqual((waiting['to'], waiting['auto'], waiting['met']), ('done', False, True))
+
+    def test_auto_moves_in_the_same_tick(self):
+        self.ready_launch(ready_program(auto=True))
+        self.gifts(MUSTER[:4], 1)
+        self.day(3.1)
+        self.tick()
+        self.assertEqual(self.one()['phase'], 'done')
+        self.assertEqual(self.one()['history'][0]['cause'], 'ready')
+
+    def test_then_waits_for_the_next_day(self):
+        self.ready_launch(ready_program(auto=True, then={'on': 'day begins'}))
+        self.assertIn('day begins', rules.watch_of(self.examples['v2-ready'])['events'], 'the game is asked for its moment')
+        self.gifts(MUSTER[:4], 1)
+        self.day(3.1)
+        self.tick()
+        self.assertEqual((self.one()['phase'], self.ready()['waitingFor']), ('work', {'on': 'day begins'}))
+        self.assertNotIn('ready', self.alert_kinds(), 'it goes by itself at its moment')
+        self.fact('day begins', '', day=3.5, detail='Restday')
+        self.tick()
+        self.assertEqual(self.one()['phase'], 'done')
+
+    def test_held_days_are_not_counted(self):
+        self.ready_launch(ready_program())
+        self.gifts(MUSTER[:4], 1)
+        self.tick()
+        self.day(1.5)
+        self.assertEqual(self.steer('hold')[0], 'done')
+        self.day(4.5)
+        status, result = self.steer('resume')
+        self.assertEqual(status, 'done', result)
+        self.assertEqual(self.state()['heldDays'], {'run': 3.0, 'visit': 3.0})
+        self.day(4.6)
+        self.fact('arrival', MUSTER[0], day=4.6)
+        self.tick()
+        days = self.ready()['parts'][1]
+        self.assertEqual((round(days['value'], 2), days['held'], days['met']), (0.6, 3.0, False), 'three held days do not count')
+        self.day(6.1)
+        self.fact('arrival', MUSTER[0], day=6.1)
+        self.tick()
+        self.assertTrue(self.ready()['met'])
+
+    def test_slow_after_its_days_and_auto_after_with_no_admin(self):
+        self.ready_launch(ready_program(slow=4, after=2))
+        self.gifts(MUSTER[:2], 1)
+        self.day(5.5)
+        self.fact('arrival', MUSTER[0], day=5.5)
+        self.tick()
+        self.assertIn('slow', self.alert_kinds())
+        slow = next(a for a in self.row()['alerts'] if a['kind'] == 'slow')
+        self.assertEqual((slow['needsYou'], slow['part']['label']), (False, 'Wolves who brought rope'))
+        self.assertIn('2 of 10 active wolves', slow['words'])
+        self.gifts(MUSTER[2:4], 5.6)
+        self.tick()
+        self.assertTrue(self.ready()['met'])
+        self.assertEqual(self.one()['phase'], 'work')
+        self.day(7.7)
+        self.fact('arrival', MUSTER[0], day=7.7)
+        self.tick()
+        self.assertEqual(self.one()['phase'], 'done', 'ready and not advanced for two days: it went by itself')
+        self.assertEqual(self.one()['history'][0]['cause'], 'ready (no admin)')
+
+    def test_moved_onto_a_new_version_it_keeps_when_it_was_ready(self):
+        p = ready_program()
+        self.ready_launch(p)
+        self.gifts(MUSTER[:4], 1)
+        self.day(3.1)
+        self.tick()
+        self.assertEqual(self.ready()['metAt'], 3.1)
+        same = json.loads(json.dumps(p))
+        same['phases'][0]['journal'] = 'Bring rope to the muster, all of you.'
+        approved = runner.approve(self.conn, self.world, 'ann', same, rules.digest(same), self.run_id)
+        status, result = self.steer('migrate', {'version': approved['version']})
+        self.assertEqual(status, 'done', result)
+        self.settle()
+        self.assertEqual(self.ready()['metAt'], 3.1, 'the same Readiness: still ready since day 3.1')
+        changed = ready_program(minimum=5)
+        changed['phases'][0]['journal'] = same['phases'][0]['journal']
+        approved = runner.approve(self.conn, self.world, 'ann', changed, rules.digest(changed), self.run_id)
+        status, result = self.steer('migrate', {'version': approved['version']})
+        self.assertEqual(status, 'done', result)
+        self.settle()
+        self.assertFalse(self.ready()['met'], 'a changed Readiness is measured afresh')
+
+
 if __name__ == '__main__':
     unittest.main()

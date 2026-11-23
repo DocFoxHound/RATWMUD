@@ -5,6 +5,7 @@ import {useState} from 'react';
 import {ago, beforeAfter, causeText, changeText, commandLine, filterTimeline, nameOf, versionLine, type TimelineFilter, type TimelineItem, type WorldEvent} from '../../lib/campaigns';
 
 type Place = {cell: string; x: number; y: number};
+const READY_WORDS: Record<string, string> = {ready: 'ready', slow: 'slow', pushed: 'pushed', advanced: 'advanced', taken: 'moved on by itself'};
 const FILTERS: {id: TimelineFilter; label: string}[] = [{id: 'all', label: 'All'}, {id: 'phase', label: 'Phases'}, {id: 'trigger', label: 'Triggers'},
     {id: 'order', label: 'Orders'}, {id: 'command', label: 'Admin'}];
 const when = (i: TimelineItem, now: string) => <span className="camp-when">{'day' in i && typeof i.day === 'number' ? `day ${i.day.toFixed(1)} · ` : ''}{i.at ? `${new Date(i.at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} · ${ago(i.at, now)}` : ''}</span>;
@@ -30,7 +31,10 @@ export function TimelineRow({item: i, names, events, now, onMap}: {item: Timelin
         <span>→ order #{i.id} <b>{i.kind}</b>{i.target && !i.target.startsWith('world-') ? ' → ' + nameOf(names, i.target) : ''} · <span className={`camp-order ${i.status}`}>{i.status}</span>
             {i.doneAt && i.status !== 'queued' ? ` ${new Date(i.doneAt).toLocaleTimeString()}` : ''}</span>
         {i.result && <small>{i.result}</small>}</li>;
-    const event = i.event != null ? events[String(i.event)] : undefined;
+    // (Doc 86, R3: readiness met, slow, pushed, advanced and taken.)
+    if (i.type === 'ready') return <li className={`ready ${i.readyKind}`}>{when(i, now)}
+        <span>✓ {READY_WORDS[i.readyKind] ?? i.readyKind} in <b>{i.phase}</b> (visit {i.visit})</span><small>{i.text}</small></li>;
+    const event =i.event != null ? events[String(i.event)] : undefined;
     const place = i.cell ? {cell: i.cell, x: i.x ?? 0, y: i.y ?? 0} : event?.cell ? {cell: event.cell, x: event.x ?? 0, y: event.y ?? 0} : null;
     return <li className="trigger">{when(i, now)}
         <span>⚑ <b>{i.trigger}</b> {i.scope === 'campaign' ? '(campaign) ' : ''}in {i.phase}{i.actor ? ` · ${nameOf(names, i.actor)}` : ''}

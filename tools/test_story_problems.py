@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 import story_library
 import story_program as rules
+import story_v2_samples
 import story_runner as runner
 
 EXAMPLES = runner.catalogue()['examples']
@@ -150,6 +151,34 @@ def mutate(p, rng, junk):
             node.insert(i, copy.deepcopy(node[i]))
         else:
             del node[i]
+
+
+class ParticipationProblems(unittest.TestCase):
+    """Doc 86, R1's checks: what a test for each wolf may not hold, and the floor above the cap."""
+
+    def refused(self, condition, words):
+        p = copy.deepcopy(story_v2_samples.READY)
+        p['phases'][0]['triggers'][1]['if'] = condition
+        found = [x for x in rules.problems(p) if x['level'] == 'error']
+        self.assertTrue(any(words in x['text'] for x in found), found)
+        self.assertRaisesRegex(ValueError, words, rules.validate, p)
+
+    def test_a_fact_condition_inside_where_is_refused(self):
+        self.refused({'test': 'participation', 'where': {'test': 'wolf indoors', 'who': '$each', 'is': True}, 'percent': 10},
+                     "not the world's facts")
+
+    def test_a_numbers_list_is_refused(self):
+        p = copy.deepcopy(story_v2_samples.READY)
+        p['variables'].append({'id': 'tally', 'type': 'numbers', 'scope': 'story'})
+        p['phases'][0]['triggers'][1]['if'] = {'test': 'participation', 'list': 'tally', 'percent': 10}
+        self.assertRaisesRegex(ValueError, 'list of wolves', rules.validate, p)
+
+    def test_floor_above_cap_is_refused(self):
+        self.refused({'test': 'participation', 'list': 'did', 'percent': 10, 'floor': 9, 'cap': 3}, 'The floor is above the cap')
+
+    def test_a_wolf_value_read_without_each_is_refused(self):
+        self.refused({'test': 'participation', 'where': {'test': 'compare', 'left': {'var': 'hauls'}, 'op': '>', 'right': 1},
+                      'percent': 10}, '"hauls" of each wolf')
 
 
 if __name__ == '__main__':

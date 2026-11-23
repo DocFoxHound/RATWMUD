@@ -231,6 +231,38 @@ World variables (a type, a first value, a note; set and removed there with a rea
 resident` (names the resident), `purse crossed` (names the purse and the amount in `detail`), `standing crossed` (the faction
 and the number), `relation changed`, `mantle bound`, `mantle released`, `skill practised` (a whole step), `injury healed`.
 
+## Readiness and participation (doc 86, Phase 1a)
+
+**The audience counted.** A version 2 program may give `activeDays` (1 to 120 game days, 18 when not given): a wolf of the
+story is **active** when seen (the actor of any event) within that many game days. Values add `{"audience": "all" | "active"
+| "online"}` (the story's wolves, the active ones, those signed in now: unknown until the world's facts say who is online,
+and the program then watches the `wolves` facts), `{"times": [a, b]}` and `{"div": [a, b]}` (floored toward zero; by 0, no
+value), and the share of the wolves who took part: `{"percent": {"list": <a story or world list of wolves>}, "of": "active"
+| "all" | "online"}` (0 to 100) or `{"among": …}` (how many), with `{"where": <a condition tested for each wolf, the wolf as
+$each>}` in place of the list. The condition `participation` (`list` or `where`, `of`, `percent` 1 to 100, `floor` and
+`cap` 1 to 5,000; `source` "list" or "where" for the workbench) is true when the wolves counted are at least
+max(min(floor, D), ⌈percent × D / 100⌉), then at most `cap`, never fewer than 1, where D is how many are active (or all, or
+online); false with D = 0, unknown with online not known. A `where` holds `compare`, `switch`, `in list`, `days since`,
+`quest is` and `objective is` (a wolf's own variables and quests read `of: "$each"`), groups, 3 deep and 8 conditions; no
+facts, event fields, loop values or counting inside. Counting is not allowed inside For each, nor more than one level deep in
+arithmetic. The runner keeps `state.seen` (each wolf's last game day, filled at launch from the world's log) and sends both
+twins the same counts and ids.
+
+**Readiness.** A version 2 phase may have `ready`: `{"all": [parts], "auto", "then", "slowAfterDays", "slowNeedsYou",
+"autoAfterDays"}` and then exactly one exit `{"on": "ready", "to": <phase>}` (no other fields; it has no acting wolf). Parts
+(1 to 8; `{"any": [2 to 4 parts], "label"}` one deep; each with an optional `label` of 80 characters): `{"participation":
+{"list" | "where"}, "of", "percent", "floor", "cap"}`, `{"minDays": 0-3650, "since": "phase" | "chapter"}` (held days not
+counted), `{"value": <number>, "atLeast": <number>}` (story and world values only), `{"test": <condition over the story's own
+state>}`, `{"missions": [this phase's missions]}`, `{"quest": <a story-scope quest>}`. Once every part is met it is ready for
+the visit (latched). `auto` (default false) takes the exit by itself, at once or at the `then` moment (`{"on": "day begins" |
+"hour" | "season begins" | "festival" | "dm signal", "match"}`); otherwise it waits for the command `advance` (`{"when": "now"
+| "then", "anyway": bool}`), or `autoAfterDays` after it became ready. `slowAfterDays` raises the `slow` alert (needs you with
+`slowNeedsYou`). The runner measures it at most once a tick and at least once a game hour into `state.ready` (and the last 20
+changes into `state.readyLog`); a held run is not measured, and its held days (`state.heldDays`) never count. Moving onto a new
+version keeps the moment it was met when the phase and its Readiness are unchanged. Rehearsal cases may add `audience` (the
+counts) and `activeWolves`, and among their events the steps `{"check": "ready", "met": bool}` and `{"advance": "now" |
+"anyway" | "then"}`; the review lists `uncoveredReady`.
+
 ## Writing a program
 
 The portable format is `ratw-story-program`, version 1. A program has an ID, title, audience, opening phase, phases and rehearsal cases. The examples under `Data/Storylines/programs/` are complete programs. The catalogue returned by the author API lists every supported event and the fields of each effect.

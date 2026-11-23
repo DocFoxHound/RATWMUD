@@ -1,7 +1,7 @@
 {
  "format": "ratw-trigger-catalogue",
  "version": 1,
- "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions. Phase 6: quests (a version 2 story's \"quests\"), audiences \"open\" and \"everyone\", and the effects marked \"story\", which the story keeps itself (quest progress, who takes part, a choice laid over a resident's window) rather than sending to the game; events marked \"story\" are the story's own facts, sent as it runs and never in the world's log. A parameter marked \"optional\" may be left out. Phase 8: conditions marked \"facts\" read the world's facts as of the event (game.story_facts: where a wolf is, what they carry, the time, the weather, standing, a resident's state), and the events marked \"watch\" are written by the game only while a live story listens for them (its watch list, sent with each phase). Phase 9: more world effects (doc 85, 3.5): telling the wolves, the journal, map markers, trackers, taking items, warrants, strangers, mantles, holds, followers, doors, the ground, boards, the weather (never the calendar), market events, prices, projects, deeds, personal quests and stopping a scene. \"actsOnWolves\" needs \"may act on players' wolves\" on a hosted world, \"needsBuilder\" (factions: relations and standing) a builder or the owner, as approving it does. Phase 10: chapters (story.start, a campaign of stories approved together), \"story started\" and \"story ended\" from the story runner, and the events Phase 8 left (a wolf near a resident, a purse or a standing crossing a number the trigger names, a stance changed, mantles, a skill grown, an injury healed): \"needsMatch\" names the fields a trigger on it must give. \"needsBuilder\" also marks the effects that change the economy (prices, projects).",
+ "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions. Phase 6: quests (a version 2 story's \"quests\"), audiences \"open\" and \"everyone\", and the effects marked \"story\", which the story keeps itself (quest progress, who takes part, a choice laid over a resident's window) rather than sending to the game; events marked \"story\" are the story's own facts, sent as it runs and never in the world's log. A parameter marked \"optional\" may be left out. Phase 8: conditions marked \"facts\" read the world's facts as of the event (game.story_facts: where a wolf is, what they carry, the time, the weather, standing, a resident's state), and the events marked \"watch\" are written by the game only while a live story listens for them (its watch list, sent with each phase). Phase 9: more world effects (doc 85, 3.5): telling the wolves, the journal, map markers, trackers, taking items, warrants, strangers, mantles, holds, followers, doors, the ground, boards, the weather (never the calendar), market events, prices, projects, deeds, personal quests and stopping a scene. \"actsOnWolves\" needs \"may act on players' wolves\" on a hosted world, \"needsBuilder\" (factions: relations and standing) a builder or the owner, as approving it does. Phase 10: chapters (story.start, a campaign of stories approved together), \"story started\" and \"story ended\" from the story runner, and the events Phase 8 left (a wolf near a resident, a purse or a standing crossing a number the trigger names, a stance changed, mantles, a skill grown, an injury healed): \"needsMatch\" names the fields a trigger on it must give. \"needsBuilder\" also marks the effects that change the economy (prices, projects). Doc 86, Phase 1a: the values {\"audience\": \"all|active|online\"} (how many wolves the story has; how many were seen in the last activeDays game days, a program field, 18 when not given; how many are signed in now), {\"times\": [a, b]} and {\"div\": [a, b]} (floored toward zero; by 0, no value), and the share of the wolves who took part: {\"percent\": {\"list\": <a story or world list of wolves>} | {\"where\": <a test for each wolf>}, \"of\": \"active|all|online\"} and {\"among\": ...} (how many); the condition \"participation\" (enough of them, with a floor and a cap); a phase's Readiness (\"ready\": the parts that say it may move on, its exit {\"on\": \"ready\"}, auto, then, slowAfterDays, slowNeedsYou, autoAfterDays) and the admin's Advance. A parameter of type \"condition\" is a condition tree tested once for each wolf, the wolf as $each.",
  "groups": [
   {
    "id": "story",
@@ -159,7 +159,7 @@
   "run": "A story release.",
   "number": "A number the event records.",
   "variable": "A declared variable of this story (version 2), of the types the parameter names.",
-  "operand": "A value: a number, on or off, a text, a variable, the event's field, a list's count, a timer's days, the loop's value, or a little arithmetic.",
+  "operand": "A value: a number, on or off, a text, a variable, the event's field, a list's count, a timer's days, the loop's value, a little arithmetic (plus, minus, min, max, times, div), the story's audience counted (all, active, online), or the share (percent) or number (among) of the wolves who took part.",
   "trigger": "A trigger of this story.",
   "whose": "Whose value of a variable kept for each wolf or party: the acting wolf's, or the looped wolf's.",
   "quest": "A quest of this story (version 2).",
@@ -169,7 +169,8 @@
   "door": "A door of the world (its id: link_<link>_a or _b; a story locks both sides).",
   "mantle": "A mantle (doc 84): a part a resident takes up, with its own lines.",
   "visitor": "A temporary resident's id, given by the story (letters, digits, - and _).",
-  "story": "Another story of this world, by its id: a chapter of the same campaign (Phase 10)."
+  "story": "Another story of this world, by its id: a chapter of the same campaign (Phase 10).",
+  "condition": "A condition tree tested once for each wolf, the wolf as $each (doc 86, R1)."
  },
  "trigger": {
   "once": {
@@ -186,7 +187,8 @@
   "exit": {
    "participant": "a wolf of the story",
    "players": "when {n} different wolves of the story have",
-   "percent": "when {n}% of the audience have"
+   "percent": "when {n}% of the audience have",
+   "ready": "when the phase is ready (its Readiness: enough wolves took part, enough days, ...), by itself or when an admin presses Advance"
   },
   "limits": {
    "triggers": 64,
@@ -5524,6 +5526,18 @@
    "exitOnly": true
   },
   {
+   "id": "ready",
+   "group": "story",
+   "title": "The phase is ready",
+   "sentence": "The phase's Readiness is met (or an admin presses Advance)",
+   "help": "The way on when the phase is ready: every part of its Readiness met (enough of the active wolves took part, enough days in the phase or the chapter, values, missions, a quest). With auto it is taken by itself (at once, or at the moment `then` names); otherwise the Campaigns console says it is ready and an admin presses Advance.",
+   "fields": {},
+   "tile": false,
+   "notes": "Exits only, and only in a phase with \"ready\" (exactly one). Taken by the story runner, never by a world event. Its only fields are on and to.",
+   "special": "gate",
+   "exitOnly": true
+  },
+  {
    "id": "quest accepted",
    "group": "quests",
    "title": "A wolf takes on a quest",
@@ -8088,6 +8102,92 @@
       "hidden"
      ],
      "default": "done"
+    }
+   ]
+  },
+  {
+   "id": "participation",
+   "v2": true,
+   "title": "Enough wolves took part",
+   "sentence": "at least {percent}% of the {of} wolves (at least {floor}; {cap}) {source} {list}{where}",
+   "help": "Counts the story's wolves who are active (seen in the last activeDays game days; or all of them, or those online now) and, of those, the ones in a list of wolves or the ones for whom a test is true. True when they are at least the share asked and at least the floor (the floor never asks for more wolves than are active; a cap, if given, is always enough, so a crowd of 3,000 does not need 1,000). With no active wolves it is false; with the online wolves not known it is unknown. A wolf who did it and then went quiet leaves both counts, so the share stays honest.",
+   "params": [
+    {
+     "key": "source",
+     "type": "choice",
+     "label": "who counts",
+     "values": [
+      "list",
+      "where"
+     ],
+     "words": {
+      "list": "are in the list",
+      "where": "meet the test"
+     },
+     "default": "list"
+    },
+    {
+     "key": "list",
+     "type": "variable",
+     "label": "the list",
+     "of": [
+      "wolves"
+     ],
+     "scope": [
+      "story",
+      "world"
+     ],
+     "optional": true
+    },
+    {
+     "key": "where",
+     "type": "condition",
+     "label": "the test for each wolf",
+     "optional": true,
+     "each": "wolves"
+    },
+    {
+     "key": "of",
+     "type": "choice",
+     "label": "out of",
+     "values": [
+      "active",
+      "all",
+      "online"
+     ],
+     "words": {
+      "active": "active",
+      "all": "story's",
+      "online": "online"
+     },
+     "default": "active"
+    },
+    {
+     "key": "percent",
+     "type": "int",
+     "label": "the share (%)",
+     "min": 1,
+     "max": 100
+    },
+    {
+     "key": "floor",
+     "type": "int",
+     "label": "at least this many",
+     "min": 1,
+     "max": 5000,
+     "optional": true,
+     "default": 1
+    },
+    {
+     "key": "cap",
+     "type": "int",
+     "label": "this many is always enough",
+     "min": 1,
+     "max": 5000,
+     "optional": true,
+     "words": {
+      "": "no cap"
+     }
     }
    ]
   }
