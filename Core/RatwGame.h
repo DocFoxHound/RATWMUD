@@ -1520,6 +1520,16 @@ class Game
         bool keep = false;                          // (Kept after its run ends, until `until`.)
     };
     const std::map<std::string, std::map<std::string, StoryMemo>>& storyMemory() const { return storyMemory_; }
+    // Doc 86, Phase 3 (for tests and the window): a story's greeting waiting for one wolf at one resident (C5), and the title a
+    // resident uses for a wolf: the newest one known where the resident lives ("" none; C4).
+    struct StoryGreet
+    {
+        std::string text, run;
+        double until = 0;                           // (The world's day it lapses.)
+    };
+    const std::map<std::string, std::map<std::string, StoryGreet>>& storyGreets() const { return storyGreets_; }
+    std::string storyTitleFor(const std::string& wolf, const std::string& npc) const;
+    json::Value titlesView(const Entity& wolf) const;   // (The card's: newest first, each with where it is known.)
     bool approvedStoryteller(const std::string& account) const;
     // Open dice (doc 58, 6): "2d6+1" rolled from a seed, in words ("2d6 + 1: 3 + 5 + 1 = 9"); "" with why, past the limits.
     static std::string rollDice(const std::string& spec, const std::string& seed, std::string& error);
@@ -2678,11 +2688,18 @@ class Game
     double storyMemoryWarnedDay_ = -1;
     Result applyStoryHold(const std::string& kind, const std::string& npc, const json::Value& payload);
     Result applyStoryTalk(const std::string& kind, const std::string& target, const json::Value& payload);
+    // Doc 86, Phase 3 (RatwGameStoryWorld.cpp): a wolf named by a title (C4), a resident's words for one wolf the next time it
+    // opens their window (C5), and a rumour put to rest (J8).
+    std::map<std::string, std::map<std::string, StoryGreet>> storyGreets_;             // npc -> wolf -> greeting
+    Result applyStoryThanks(const std::string& kind, const std::string& target, const json::Value& payload);
+    std::string takeStoryGreet(const std::string& npc, const std::string& wolf);       // The greeting, once ("" none).
     void dropStoryHolds(const std::string& owner);      // Every hold of "run:<run>" or "campaign:<id>" let go.
     void sparedChanged();                               // Tells the world whom old age passes by.
     void storyRecall(const std::string& owner, const std::string& prefix, talk::Facts& into);
     void storyTalkSave(json::Value& root) const;
     void storyTalkLoad(const json::Value& saved);
+    void storyGreetsSave(json::Value& root) const;
+    void storyGreetsLoad(const json::Value& saved);
     // An order a story sends that the DM's own tools send too, with the story's way of naming what it acts on: a town's
     // project of a kind, a wolf's deed in its words, a wolf's personal quest from a template ("" when none is found).
     std::string storyProject(const std::string& town, const std::string& kind) const;

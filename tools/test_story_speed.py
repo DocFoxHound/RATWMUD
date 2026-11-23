@@ -452,6 +452,52 @@ class CountingSpeed(unittest.TestCase):
         self.assertLess(took, rules_tick_budget() * LOAD, f'{took * 1000:.1f} ms')
 
 
+class TallySpeed(CountingSpeed):
+    """Doc 86, J11 and C3a: nine tallies over 5,000 wolves (sums, counts, a where, a list) and a Rank of the top 500, in the
+    native twin under 50 ms, both twins agreeing."""
+
+    def program(self):
+        tallies = [{'sum': 'n'}, {}, {'sum': 'n', 'where': 'on', 'is': True}, {'where': 'on', 'is': False}, {'sum': 'n', 'over': {'list': 'did'}},
+                   {'where': 'side', 'is': 'lamp'}, {'sum': 'n', 'where': 'side', 'is': 'stone'}, {'over': {'list': 'did'}, 'where': 'on', 'is': True},
+                   {'sum': 'n', 'where': 'side', 'is': 'none'}]
+        return {'format': 'ratw-story-program', 'version': 2, 'id': 'tally', 'title': 'Counting', 'start': 'a',
+                'audience': {'kind': 'everyone', 'days': 30, 'cap': 5000},
+                'variables': [{'id': 'did', 'type': 'wolves', 'scope': 'story'}, {'id': 'n', 'type': 'number', 'scope': 'player'},
+                              {'id': 'on', 'type': 'switch', 'scope': 'player'}, {'id': 'side', 'type': 'text', 'scope': 'player'},
+                              {'id': 'sums', 'type': 'numbers', 'scope': 'story'}, {'id': 'top', 'type': 'wolves', 'scope': 'story'}],
+                'phases': [{'id': 'a', 'journal': 'Gather.', 'effects': [], 'exits': [], 'triggers': [{'id': 'count', 'on': 'conversation', 'actions': [
+                    *({'do': 'list add', 'var': 'sums', 'value': {'plus': [{'tally': t}, k * 100000]}} for k, t in enumerate(tallies)),
+                    {'do': 'rank', 'var': 'n', 'top': 500, 'into': 'top'}]}]}],
+                'tests': [{'name': 'x', 'cohort': [], 'events': [], 'expect': ['a']}]}
+
+    def state(self, p):
+        s = super().state(p)
+        for i, w in enumerate(self.WOLVES):
+            s['counters']['player'][w]['side'] = 'lamp' if i % 3 == 0 else 'stone'
+        return s
+
+    def test_five_thousand_wolves_counted_in_both_twins(self):
+        import story_native
+        if not story_native.interpreter():
+            self.skipTest('Build ratw_story first.')
+        p = self.program()
+        rules.validate(p)
+        best, after = {}, {}
+        for native in (True, False):
+            times = []
+            for _ in range(3):
+                s = self.state(p)
+                times.append(self.fire(p, s, native))
+            best[native], after[native] = min(times), s['counters']['story']
+        self.assertEqual(after[True], after[False], 'both twins agree')
+        self.assertEqual(after[True]['sums'][1], 100000 + 5000)
+        self.assertEqual(len(after[True]['top']), 500)
+        self.assertLess(best[True], 0.050 * LOAD, f'native: {best[True] * 1000:.1f} ms')
+
+    def test_readiness_of_two_parts_over_five_thousand_inside_the_tick(self):
+        pass   # (The parent's; nothing of readiness here.)
+
+
 LOAD = float(os.environ.get('RATW_SPEED_SLACK', '1'))   # (A loaded machine may give the timing gates room.)
 
 

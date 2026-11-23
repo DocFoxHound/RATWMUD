@@ -134,8 +134,8 @@ function NamePicker({names, value, pick, noun}: {names: string[]; value: unknown
 /** Version 2: a declared variable of the types the slot takes (doc 85, 4.3). */
 function VariablePicker({slot, pick}: {slot: Slot; pick: (v: string) => void}) {
     const {program, cat} = useBench();
-    const types = slot.param?.of;
-    const list = (program.variables ?? []).filter(v => !types || types.includes(v.type));
+    const types = slot.param?.of, scopes = slot.param?.scope;
+    const list = (program.variables ?? []).filter(v => (!types || types.includes(v.type)) && (!scopes || scopes.includes(v.scope)) && !(scopes && v.mirror));
     return <div className="wb-search-list"><div className="wb-options">
         {list.map(v => <button key={v.id} type="button" aria-pressed={v.id === slot.value} onClick={() => pick(v.id)}><span>{v.id}</span>
             <small>{cat.variables?.types[v.type] ?? v.type} · {cat.variables?.scopes[v.scope] ?? v.scope}</small></button>)}
@@ -181,6 +181,13 @@ function OperandPicker({slot, pick}: {slot: Slot; pick: (v: Operand) => void}) {
         {(!kind || kind === 'number') && isV2(program) && <div className="wb-chips"><span>The story's wolves (doc 86):</span>
             {(['all', 'active', 'online'] as const).map(a => <button key={a} type="button" onClick={() => pick({audience: a})}>how many {a === 'all' ? 'it has' : `are ${a}`}</button>)}
             {num !== '' && Number.isFinite(n) && <button type="button" onClick={() => pick({max: [n, {times: [{audience: 'active'}, 2]}]})}>{n}, or 2 for each active wolf</button>}</div>}
+        {(!kind || kind === 'number') && isV2(program) && <div className="wb-chips"><span>Over every wolf (doc 86, tally):</span>
+            <button type="button" onClick={() => pick({tally: {}})}>how many wolves the story has</button>
+            {(program.variables ?? []).filter(v => v.type === 'number' && v.scope === 'player' && !v.mirror).map(v =>
+                <button key={v.id} type="button" onClick={() => pick({tally: {sum: v.id}})}>every wolf's {v.id}, added up</button>)}
+            <small className="hint">(only some wolves, or over a list: edited in Source)</small></div>}
+        {(!kind || kind === 'number') && (program.quests ?? []).some(q => q.credit === 'share') && <div className="wb-chips"><span>In a reward by share:</span>
+            <button type="button" onClick={() => pick({share: true})}>the wolf's share</button></div>}
         {(!kind || kind === 'number') && wolfLists.length > 0 && <div className="wb-chips"><span>Of the active wolves:</span>
             {wolfLists.map(v => <span key={v.id}><button type="button" onClick={() => pick({percent: {list: v.id}, of: 'active'})}>the share in {v.id}</button>
                 <button type="button" onClick={() => pick({among: {list: v.id}, of: 'active'})}>how many in {v.id}</button></span>)}

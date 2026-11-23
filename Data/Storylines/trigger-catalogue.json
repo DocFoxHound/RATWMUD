@@ -1,7 +1,7 @@
 {
  "format": "ratw-trigger-catalogue",
  "version": 1,
- "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions. Phase 6: quests (a version 2 story's \"quests\"), audiences \"open\" and \"everyone\", and the effects marked \"story\", which the story keeps itself (quest progress, who takes part, a choice laid over a resident's window) rather than sending to the game; events marked \"story\" are the story's own facts, sent as it runs and never in the world's log. A parameter marked \"optional\" may be left out. Phase 8: conditions marked \"facts\" read the world's facts as of the event (game.story_facts: where a wolf is, what they carry, the time, the weather, standing, a resident's state), and the events marked \"watch\" are written by the game only while a live story listens for them (its watch list, sent with each phase). Phase 9: more world effects (doc 85, 3.5): telling the wolves, the journal, map markers, trackers, taking items, warrants, strangers, mantles, holds, followers, doors, the ground, boards, the weather (never the calendar), market events, prices, projects, deeds, personal quests and stopping a scene. \"actsOnWolves\" needs \"may act on players' wolves\" on a hosted world, \"needsBuilder\" (factions: relations and standing) a builder or the owner, as approving it does. Phase 10: chapters (story.start, a campaign of stories approved together), \"story started\" and \"story ended\" from the story runner, and the events Phase 8 left (a wolf near a resident, a purse or a standing crossing a number the trigger names, a stance changed, mantles, a skill grown, an injury healed): \"needsMatch\" names the fields a trigger on it must give. \"needsBuilder\" also marks the effects that change the economy (prices, projects). Doc 86, Phase 1a: the values {\"audience\": \"all|active|online\"} (how many wolves the story has; how many were seen in the last activeDays game days, a program field, 18 when not given; how many are signed in now), {\"times\": [a, b]} and {\"div\": [a, b]} (floored toward zero; by 0, no value), and the share of the wolves who took part: {\"percent\": {\"list\": <a story or world list of wolves>} | {\"where\": <a test for each wolf>}, \"of\": \"active|all|online\"} and {\"among\": ...} (how many); the condition \"participation\" (enough of them, with a floor and a cap); a phase's Readiness (\"ready\": the parts that say it may move on, its exit {\"on\": \"ready\"}, auto, then, slowAfterDays, slowNeedsYou, autoAfterDays) and the admin's Advance. A parameter of type \"condition\" is a condition tree tested once for each wolf, the wolf as $each. Doc 86, Phase 2: a parameter marked \"operand\" may be a value: {\"var\"}, {\"field\"}, {\"each\"}, {\"audience\"}, {\"purse\"} or arithmetic, of the parameter's kind (a number for a whole number; a variable of its kind or a text, or the event's field, for a wolf, a resident, a place, an item, a faction or a town); worked out when the trigger fires (or a reward is given), clamped to the parameter's bounds, and with no value the effect is not sent. A text marked \"fills\" in a version 2 story may hold {name} or {name.of} (a declared variable, or the acting or looped wolf's own), filled when it is sent ({{ and }} are braces); a wolf, a resident, a place, an item or a faction fills as its name. {\"purse\": \"<purse>\"} is what a purse holds now. A filter's value may be a text, {\"starts\": \"<text>\"} or {\"in\": [...]} (begins with; one of), and the field condition takes \"starts\" and \"in\". The moon (\"calendar is\" moon; the event \"moon\"). A quest objective may say where it counts (\"where\": cells or a region) and who it credits (\"credit\": actor, target or present); camp cleared, caravan arrives, ship lost, ship docks, project built and festival are mission evidence. A story camp may be named (\"camp\", with the program's \"prefix\"). A quest's join.again waits that many game days before the same wolf takes it again. An objective's goal may be a value (\"goalLive\" keeps up with it); a shown number may show \"of\" another (showOf), or mirror a world variable named by a wolf's text (mirror).",
+ "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions. Phase 6: quests (a version 2 story's \"quests\"), audiences \"open\" and \"everyone\", and the effects marked \"story\", which the story keeps itself (quest progress, who takes part, a choice laid over a resident's window) rather than sending to the game; events marked \"story\" are the story's own facts, sent as it runs and never in the world's log. A parameter marked \"optional\" may be left out. Phase 8: conditions marked \"facts\" read the world's facts as of the event (game.story_facts: where a wolf is, what they carry, the time, the weather, standing, a resident's state), and the events marked \"watch\" are written by the game only while a live story listens for them (its watch list, sent with each phase). Phase 9: more world effects (doc 85, 3.5): telling the wolves, the journal, map markers, trackers, taking items, warrants, strangers, mantles, holds, followers, doors, the ground, boards, the weather (never the calendar), market events, prices, projects, deeds, personal quests and stopping a scene. \"actsOnWolves\" needs \"may act on players' wolves\" on a hosted world, \"needsBuilder\" (factions: relations and standing) a builder or the owner, as approving it does. Phase 10: chapters (story.start, a campaign of stories approved together), \"story started\" and \"story ended\" from the story runner, and the events Phase 8 left (a wolf near a resident, a purse or a standing crossing a number the trigger names, a stance changed, mantles, a skill grown, an injury healed): \"needsMatch\" names the fields a trigger on it must give. \"needsBuilder\" also marks the effects that change the economy (prices, projects). Doc 86, Phase 1a: the values {\"audience\": \"all|active|online\"} (how many wolves the story has; how many were seen in the last activeDays game days, a program field, 18 when not given; how many are signed in now), {\"times\": [a, b]} and {\"div\": [a, b]} (floored toward zero; by 0, no value), and the share of the wolves who took part: {\"percent\": {\"list\": <a story or world list of wolves>} | {\"where\": <a test for each wolf>}, \"of\": \"active|all|online\"} and {\"among\": ...} (how many); the condition \"participation\" (enough of them, with a floor and a cap); a phase's Readiness (\"ready\": the parts that say it may move on, its exit {\"on\": \"ready\"}, auto, then, slowAfterDays, slowNeedsYou, autoAfterDays) and the admin's Advance. A parameter of type \"condition\" is a condition tree tested once for each wolf, the wolf as $each. Doc 86, Phase 2: a parameter marked \"operand\" may be a value: {\"var\"}, {\"field\"}, {\"each\"}, {\"audience\"}, {\"purse\"} or arithmetic, of the parameter's kind (a number for a whole number; a variable of its kind or a text, or the event's field, for a wolf, a resident, a place, an item, a faction or a town); worked out when the trigger fires (or a reward is given), clamped to the parameter's bounds, and with no value the effect is not sent. A text marked \"fills\" in a version 2 story may hold {name} or {name.of} (a declared variable, or the acting or looped wolf's own), filled when it is sent ({{ and }} are braces); a wolf, a resident, a place, an item or a faction fills as its name. {\"purse\": \"<purse>\"} is what a purse holds now. A filter's value may be a text, {\"starts\": \"<text>\"} or {\"in\": [...]} (begins with; one of), and the field condition takes \"starts\" and \"in\". The moon (\"calendar is\" moon; the event \"moon\"). A quest objective may say where it counts (\"where\": cells or a region) and who it credits (\"credit\": actor, target or present); camp cleared, caravan arrives, ship lost, ship docks, project built and festival are mission evidence. A story camp may be named (\"camp\", with the program's \"prefix\"). A quest's join.again waits that many game days before the same wolf takes it again. An objective's goal may be a value (\"goalLive\" keeps up with it); a shown number may show \"of\" another (showOf), or mirror a world variable named by a wolf's text (mirror). Doc 86, Phase 3: the action rank (the top wolves by a number each keeps, into a list of wolves), {\"tally\": {\"sum\", \"where\", \"is\", \"over\"}} (a number added up, or wolves counted, over every wolf of the story or a list), a quest's credit \"share\" (each wolf rewarded by their share: {\"share\": true} in its rewards, creditMin the least), the effects title.give and title.take (and the event \"title given\"), npc.greet (a resident's words for one wolf, once, in their voice) and belief.forget (a rumour put to rest); a phase's npc.line is said in the resident's voice.",
  "groups": [
   {
    "id": "story",
@@ -163,7 +163,7 @@
   "run": "A story release.",
   "number": "A number the event records.",
   "variable": "A declared variable of this story (version 2), of the types the parameter names.",
-  "operand": "A value: a number, on or off, a text, a variable, the event's field, a list's count, a timer's days, the loop's value, a little arithmetic (plus, minus, min, max, times, div), the story's audience counted (all, active, online), the share (percent) or number (among) of the wolves who took part, or what a purse holds now ({\"purse\": \"town:coldwater\"}).",
+  "operand": "A value: a number, on or off, a text, a variable, the event's field, a list's count, a timer's days, the loop's value, a little arithmetic (plus, minus, min, max, times, div), the story's audience counted (all, active, online), the share (percent) or number (among) of the wolves who took part, or what a purse holds now ({\"purse\": \"town:coldwater\"}), a tally over every wolf ({\"tally\": {\"sum\": <a wolf's number>, \"where\": <a wolf's text or switch>, \"is\": <its value>, \"over\": \"participants\" | {\"list\": ...}}}), or, in the rewards of a quest credited by share, the wolf's share ({\"share\": true}).",
   "trigger": "A trigger of this story.",
   "whose": "Whose value of a variable kept for each wolf or party: the acting wolf's, or the looped wolf's.",
   "quest": "A quest of this story (version 2).",
@@ -6751,6 +6751,37 @@
    "watch": true
   },
   {
+   "id": "title given",
+   "group": "fame",
+   "title": "A wolf is given a title",
+   "sentence": "{actor} is named {detail}",
+   "help": "A story named the wolf by a title (detail: the title; target: the story's run; item: realm or town:<id>).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run",
+     "any": "any story"
+    },
+    "item": {
+     "type": "text",
+     "label": "where it is known (realm, or town:<town>)",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the title",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "mission": true
+  },
+  {
    "id": "injury healed",
    "group": "fights",
    "title": "A wolf's injury heals",
@@ -8987,6 +9018,85 @@
       "text",
       "wolf",
       "resident"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "rank",
+   "v2": true,
+   "group": "variables",
+   "title": "Rank the wolves",
+   "sentence": "Put the top {top} wolves of {over} {list} by {var} (at least {min}) into {into}",
+   "help": "Orders wolves by a number each wolf has (a player variable), highest first, ties broken by the story's seed, and puts the first ones into a list of wolves (cleared first). Wolves without a value, or below the least, are left out. Use For each over that list to name, thank or reward them. Not inside For each.",
+   "params": [
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "by",
+     "of": [
+      "number"
+     ],
+     "scope": [
+      "player"
+     ]
+    },
+    {
+     "key": "top",
+     "type": "operand",
+     "label": "how many (1 to 500)",
+     "kind": "number"
+    },
+    {
+     "key": "over",
+     "type": "choice",
+     "label": "among",
+     "values": [
+      "participants",
+      "list"
+     ],
+     "words": {
+      "participants": "the wolves of the story",
+      "list": "the wolves in"
+     },
+     "default": "participants"
+    },
+    {
+     "key": "list",
+     "type": "variable",
+     "label": "the list",
+     "of": [
+      "wolves"
+     ],
+     "scope": [
+      "story",
+      "world"
+     ],
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "min",
+     "type": "operand",
+     "label": "at least",
+     "kind": "number",
+     "optional": true,
+     "words": {
+      "": "any"
+     }
+    },
+    {
+     "key": "into",
+     "type": "variable",
+     "label": "into the list",
+     "of": [
+      "wolves"
+     ],
+     "scope": [
+      "story",
+      "world"
      ]
     }
    ]
@@ -11443,6 +11553,91 @@
    ]
   },
   {
+   "id": "title.give",
+   "group": "wolves",
+   "title": "Name a wolf by a title",
+   "sentence": "{player} is named {title}, known {known} {town}, for {days} days",
+   "help": "A title the wolf carries: shown on their character card (unless they hide it) and to residents, who may use it (the talk fact player.title). Known in the realm or one town. 0 days (or none given): for good. A wolf carries up to 8 story titles; the newest is the one used; given again, it is renewed. A deed of its naming goes into the town's talk. Not taken back when the story ends: it lapses by its days, or Take a title back.",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf",
+     "operand": true
+    },
+    {
+     "key": "title",
+     "type": "text",
+     "label": "the title",
+     "max": 60,
+     "fills": true
+    },
+    {
+     "key": "known",
+     "type": "choice",
+     "label": "known",
+     "values": [
+      "realm",
+      "town"
+     ],
+     "words": {
+      "realm": "in the realm",
+      "town": "in the town of",
+      "": "in the realm"
+     },
+     "default": "realm",
+     "optional": true
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "days",
+     "type": "int",
+     "label": "days (0: for good)",
+     "min": 0,
+     "max": 365,
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": "ever"
+     }
+    }
+   ]
+  },
+  {
+   "id": "title.take",
+   "group": "wolves",
+   "title": "Take a title back",
+   "sentence": "{player} is no longer called {title}",
+   "help": "Takes back a title this story gave (or, with no title named, every title it gave this wolf).",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf",
+     "operand": true
+    },
+    {
+     "key": "title",
+     "type": "text",
+     "label": "the title",
+     "max": 60,
+     "optional": true,
+     "words": {
+      "": "every title from this story"
+     }
+    }
+   ]
+  },
+  {
    "id": "storyline.tick",
    "group": "quests",
    "title": "Tick a personal quest",
@@ -11762,6 +11957,96 @@
      },
      "optional": true,
      "default": "story.rumour"
+    }
+   ]
+  },
+  {
+   "id": "npc.greet",
+   "group": "talk",
+   "title": "A resident greets one wolf",
+   "sentence": "{npc} greets {player}: {text} (for {days} days)",
+   "help": "The next time this wolf opens the resident's window (within the days; 7 when not given), the resident greets them with these words, in their own voice (#symbols# fill in their dialect), instead of their usual greeting: once. A later greeting for the same wolf from the same resident replaces it. A word of thanks: not taken back when the story ends. In a quest's rewards it is for each wolf with credit.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "operand": true
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf",
+     "operand": true
+    },
+    {
+     "key": "text",
+     "type": "text",
+     "label": "the greeting",
+     "max": 200,
+     "fills": true
+    },
+    {
+     "key": "days",
+     "type": "int",
+     "label": "for days",
+     "min": 1,
+     "max": 28,
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": "7"
+     }
+    }
+   ]
+  },
+  {
+   "id": "belief.forget",
+   "group": "talk",
+   "title": "Put a rumour to rest",
+   "sentence": "Residents {town} believe {share}% less that {subject} did {claimKind}",
+   "help": "Residents (of one town, or everywhere) grow less sure of one kind of claim about a resident (a theft, an attempted theft, a story's rumour...): each holder's belief loses that share of its strength, and one too faint is forgotten. Lasting: not taken back when the story ends.",
+   "params": [
+    {
+     "key": "subject",
+     "type": "resident",
+     "label": "about",
+     "operand": true
+    },
+    {
+     "key": "claimKind",
+     "type": "choice",
+     "label": "the kind of claim",
+     "values": [
+      "theft",
+      "theft.attempt",
+      "theft.unseen",
+      "assault",
+      "assault.unseen",
+      "violent",
+      "warrant",
+      "promise.broken",
+      "prowling",
+      "story.rumour"
+     ]
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "in the town",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": "everywhere"
+     }
+    },
+    {
+     "key": "share",
+     "type": "int",
+     "label": "by (%)",
+     "min": 10,
+     "max": 100,
+     "operand": true
     }
    ]
   },

@@ -1715,6 +1715,15 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             outcome = {true, "The campaign's holds are let go.", target};
         }
     }
+    else if (kind == "title.give" || kind == "title.take" || kind == "npc.greet" || kind == "belief.forget")
+    {
+        // Doc 86, Phase 3: a wolf named by a title (C4), a resident's words for one wolf (C5), a rumour put to rest (J8).
+        json::Value payload;
+        std::string problem;
+        outcome = row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject()
+                      ? applyStoryThanks(kind, target, payload)
+                      : Result{false, "Invalid story order.", target};
+    }
     else if (kind == "talk.remember" || kind == "talk.forget" || kind == "belief.plant")
     {
         // Doc 86, C8 and T7: what residents remember of a story, and a rumour it starts (RatwGameStoryWorld.cpp).
@@ -4338,6 +4347,10 @@ void Game::sendSnapshot(Connection* c, const Value* preparedScene)
         }
         if (const auto nicknames = nicknamesView(id); !nicknames.items().empty())
             self.set("nicknames", nicknames);       // (What residents call them, and who first did: doc 56, 4.)
+        if (const auto titles = titlesView(*me); !titles.items().empty())
+            self.set("titles", titles);             // (The titles stories named them by: doc 86, C4.)
+        if (me->titlesHidden)
+            self.set("titlesHidden", true);
         if (const auto festival = festivalSelf(id); !festival.isNull())
             self.set("festival", festival);         // (A festival today or soon: its programme, and what one does now: doc 54, 6.)
         if (const auto table = tableSelf(id); !table.isNull())
@@ -7045,6 +7058,9 @@ void Game::command(Connection* c, const std::string& raw)
             e.add("description", written ? profile.string("description") : described);
             if (!other->npc)
             {
+                if (!other->titlesHidden || target == id)
+                    if (auto titles = titlesView(*other); !titles.items().empty())
+                        e.add("titles", std::move(titles));   // (Doc 86, C4: what the stories named them, unless they hide it.)
                 e.add("profile", std::move(profile));
                 e.add("stars", starsFor(id, other->id));   // (Their account's stars, as this viewer may see them: doc 51.)
             }

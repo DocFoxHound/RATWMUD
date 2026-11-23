@@ -350,6 +350,44 @@ optional `camp` (`[a-z0-9_]{3,30}`, beginning with the prefix and `_`; a program
 the camp is `camp_story_<camp>`; a second spawn of the name while it stands joins it; once cleared the name makes a new
 one. Approval accepts an objective's `camp_story_<name>` only for a name the program spawns.
 
+## Ranks, titles, thanks and words (doc 86, Phase 3)
+
+**Rank.** The action `{"do": "rank", "var": <a player number>, "top": <1 to 500, or a number value>, "into": <a story or
+world list of wolves>, "over": "participants" | "list", "list": <a story or world list of wolves>, "min": <a number value>}`
+clears `into` and puts there the wolves of `over` with a stored number (at least `min`), highest first, ties by `fnv(seed + "|"
++ wolf)`, the first `top`. Not inside For each; a value of `top` or `min` not known changes nothing ("skipped: rank has no
+value"). Both engines (`story_triggers.rank`, `Dispatch2::rank`).
+
+**Tally.** The value `{"tally": {"sum": <a player number>, "where": <a player text or switch>, "is": <its value>, "over":
+"participants" | {"list": <a story or world list of wolves>}}}` (every part optional; `where` and `is` together): over every
+wolf of `over` (no 500 cap), those whose `where` is `is` (by its first value when unset), their `sum` added (0 when unset), or
+counted without `sum`. Not inside For each or a test for each wolf; one level deep in arithmetic (`story_triggers.tally`,
+`Dispatch2::tally`).
+
+**Rewards by share.** A quest of scope `story` or `party` may say `"credit": "share"` (and `"creditMin": 1 to 1,000,000`): the
+copy keeps `shares` (`{wolf: n}`, what each wolf's progress added to its objectives: a counted event's gain, an
+`objective.progress`, the rest of an `objective.complete`), and each reward is given for each credited wolf with
+`{"share": true}` that wolf's amount (only in that quest's `rewards` and `bonus`); a wolf below `creditMin` gets no reward.
+
+**Titles, greetings and doubt** (game orders, never undone when the run ends): `title.give` (`player`, `title` 60 one line,
+no `#` or ids, fills; `known` `realm` or `town` with `town`; `days` 0 for good to 365) keeps up to 8 titles on the
+character record (`{title, known: "realm" | "town:<id>", by: <program>, run, since, until}`; renewed when given again; a
+ninth drops the oldest that lapses, else the oldest), writes a deed ("was named <title>", source `story`) and the event
+`title given` (`actor` the wolf, `target` the run, `item` where it is known, `detail` the title); the talk facts
+`player.titled` and `player.title` (the newest known where the resident lives). `title.take` (`player`, `title` optional)
+takes back this program's. `npc.greet` (`npc`, `player` a wolf of the story, `text` 200 with fills and `#symbols#`, `days`
+1 to 28, 7 when not given) is the resident's opening line in that wolf's next window with them, once, through their voice
+(`Game::inVoice`), kept in the checkpoint (`storyGreets`; one a pair, 20,000 in all). `belief.forget` (`subject`,
+`claimKind` one of the claims a story may put to rest, `town` optional, `share` 10 to 100) multiplies each holder's belief
+of that kind about the subject by `1 - share/100` and forgets it at 5% (`World::doubt`). A phase's `npc.line` is said
+through the speaker's voice too (its `#symbols#` fill in their dialect).
+
+**Words.** `tools/story_words.py` (approval's world checks, the Problems list, `story_author` op `words`, and its CLI) reads
+every word field and refuses what `Data/Storylines/words.json` forbids, ids in speech, unknown `#symbols#` (or any in words
+no resident says), stray brackets and unclosed `#`, lengths past their limit with fills at their widest, and a face banner
+that quotes a resident; it warns of another dialect's phrases in a resident's words (their `live.npc_voice` origin and
+accent), a face banner, `npc.speak` to a wolf, and a clearing that begins "never".
+
 ## Writing a program
 
 The portable format is `ratw-story-program`, version 1. A program has an ID, title, audience, opening phase, phases and rehearsal cases. The examples under `Data/Storylines/programs/` are complete programs. The catalogue returned by the author API lists every supported event and the fields of each effect.

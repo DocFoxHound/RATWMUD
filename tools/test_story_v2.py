@@ -656,5 +656,110 @@ class Phase2Values(unittest.TestCase):
         self.assertTrue(any('prefix' in f['text'] for f in found))
 
 
+
+def _many(actions, n, counters, variables=(), native=False, seed='seed-1'):
+    """Doc 86, Phase 3: a trigger fired for a story of `n` wolves (w0000...), their counters given; the state after it."""
+    import time
+    wolves = [f'w{i:04d}' for i in range(n)]
+    p = _values_program(actions, variables=[{'id': 'top', 'type': 'wolves', 'scope': 'story'},
+                                            {'id': 'board', 'type': 'wolves', 'scope': 'world'},
+                                            {'id': 'pledged', 'type': 'wolves', 'scope': 'story'},
+                                            {'id': 'p_backs', 'type': 'text', 'scope': 'player'},
+                                            {'id': 'p_sworn', 'type': 'switch', 'scope': 'player'}, {'id': 'total', 'type': 'number', 'scope': 'story'},
+                                            *variables])
+    p['audience'] = {'kind': 'players', 'players': wolves[:2]}
+    rules.validate(p)
+    state = rules.begin(p, wolves, 0, seed=seed)
+    state['counters'] = copy.deepcopy(counters)
+    phase = rules.phase_of(p, state)
+    trace = []
+    ev = {'kind': 'conversation', 'id': 1, 'actor': wolves[0], 'target': 'rm111'}
+    started = time.perf_counter()
+    if native:
+        triggers.fire(phase, state, ev, 1, 0, lambda: set(), rules.matches, lambda n, e: None, trace)
+    else:
+        with patch('story_native.interpreter', return_value=None):
+            triggers.fire(phase, state, ev, 1, 0, lambda: set(), rules.matches, lambda n, e: None, trace)
+    return state, trace, time.perf_counter() - started
+
+
+class Phase3Ranks(unittest.TestCase):
+    """Doc 86, C3a and J11: Rank the wolves, and a tally over every wolf."""
+
+    def test_rank_highest_first_ties_by_the_seed(self):
+        counters = {'player': {'w0000': {'p_voice': 5}, 'w0001': {'p_voice': 9}, 'w0002': {'p_voice': 5}, 'w0003': {'p_voice': 2},
+                               'w0004': {}}}
+        rank = {'do': 'rank', 'var': 'p_voice', 'top': 3, 'into': 'top'}
+        state, _, _ = _many([rank], 5, counters)
+        top = state['counters']['story']['top']
+        self.assertEqual(top[0], 'w0001')
+        self.assertEqual(set(top[1:]), {'w0000', 'w0002'}, 'the two fives, then nobody else (top 3)')
+        tie = sorted(['w0000', 'w0002'], key=lambda w: triggers.fnv('seed-1|' + w))
+        self.assertEqual(top[1:], tie, 'ties broken by the seed')
+        again, _, _ = _many([rank], 5, counters, seed='seed-2')
+        self.assertEqual(again['counters']['story']['top'][1:], sorted(['w0000', 'w0002'], key=lambda w: triggers.fnv('seed-2|' + w)))
+        # (At least 5: the two below and the one with no value are left out; the list is cleared first.)
+        counters['story'] = {'top': ['w0004']}
+        state, _, _ = _many([{**rank, 'top': 10, 'min': 5}], 5, counters)
+        self.assertEqual(len(state['counters']['story']['top']), 3)
+        self.assertNotIn('w0004', state['counters']['story']['top'])
+
+    def test_rank_over_a_list_into_a_world_list(self):
+        counters = {'player': {f'w{i:04d}': {'p_voice': i} for i in range(6)}, 'story': {'pledged': ['w0001', 'w0003', 'outsider']}}
+        state, _, _ = _many([{'do': 'rank', 'var': 'p_voice', 'top': {'var': 'total'}, 'over': 'list', 'list': 'pledged', 'into': 'board'}],
+                            6, {**counters, 'story': {**counters['story'], 'total': 1}})
+        self.assertEqual(state['counters']['world']['board'], ['w0003'], 'only the list\'s wolves; top from a value')
+        state, trace, _ = _many([{'do': 'rank', 'var': 'p_voice', 'top': {'var': 'missing_var'}, 'into': 'top'}], 3, counters,
+                                variables=[{'id': 'missing_var', 'type': 'number', 'scope': 'player'}])
+        self.assertIn('top', state['counters'].get('story', {}))   # (A wolf's own value read for the acting wolf: 0, so 1.)
+
+    def test_rank_checks(self):
+        bad = [({'do': 'rank', 'var': 'n', 'top': 3, 'into': 'top'}, 'rank by a player number'),
+               ({'do': 'rank', 'var': 'p_voice', 'top': 0, 'into': 'top'}, 'How many: 1 to 500'),
+               ({'do': 'rank', 'var': 'p_voice', 'top': 3, 'into': 'p_backs'}, 'list of wolves'),
+               ({'do': 'rank', 'var': 'p_voice', 'top': 3, 'over': 'list', 'into': 'top'}, 'name the list'),
+               ({'do': 'rank', 'var': 'p_voice', 'top': 3, 'list': 'pledged', 'into': 'top'}, 'name the list'),
+               ({'do': 'each', 'over': 'participants', 'actions': [{'do': 'rank', 'var': 'p_voice', 'top': 3, 'into': 'top'}]}, 'not allowed inside For each')]
+        for action, words in bad:
+            with self.subTest(words=words):
+                with self.assertRaisesRegex(ValueError, words):
+                    _many([action], 2, {})
+
+    def test_tally_sums_and_counts(self):
+        counters = {'player': {'w0000': {'p_voice': 4, 'p_backs': 'lamp'}, 'w0001': {'p_voice': 3, 'p_backs': 'lamp'},
+                               'w0002': {'p_voice': 10, 'p_backs': 'stone'}, 'w0003': {'p_backs': 'lamp'}, 'w0004': {'p_sworn': True}}}
+        cases = [({'sum': 'p_voice'}, 17), ({'sum': 'p_voice', 'where': 'p_backs', 'is': 'lamp'}, 7), ({'where': 'p_backs', 'is': 'lamp'}, 3),
+                 ({}, 5), ({'where': 'p_sworn', 'is': False}, 4), ({'sum': 'p_voice', 'over': {'list': 'pledged'}}, 14)]
+        for tally, want in cases:
+            with self.subTest(tally=tally):
+                state, _, _ = _many([{'do': 'set', 'var': 'total', 'value': {'plus': [{'tally': tally}, 0]}}], 5,
+                                    {**counters, 'story': {'pledged': ['w0000', 'w0002', 'nobody']}})
+                self.assertEqual(state['counters']['story']['total'], want)
+
+    def test_tally_checks(self):
+        bad = [({'tally': {'sum': 'n'}}, 'a player number'), ({'tally': {'where': 'p_backs'}}, 'name both, or neither'),
+               ({'tally': {'where': 'p_backs', 'is': True}}, 'is a text'), ({'tally': {'where': 'p_voice', 'is': 3}}, 'text or switch'),
+               ({'tally': {'over': {'list': 'p_backs'}}}, 'list of wolves'), ({'plus': [{'plus': [{'tally': {}}, 1]}, 1]}, 'one level deep'),
+               ({'tally': {'sum': 'p_voice', 'among': 1}}, '')]
+        for value, words in bad:
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(ValueError, words):
+                    _many([{'do': 'set', 'var': 'total', 'value': value}], 2, {})
+        with self.assertRaisesRegex(ValueError, 'not allowed inside For each'):
+            _many([{'do': 'each', 'over': 'participants', 'actions': [{'do': 'set', 'var': 'total', 'value': {'tally': {}}}]}], 2, {})
+
+    def test_a_tally_over_1200_wolves_in_a_rehearsal_cohort(self):
+        counters = {'player': {f'w{i:04d}': {'p_voice': i % 7, 'p_backs': 'lamp' if i % 3 == 0 else 'stone'} for i in range(1200)}}
+        actions = [{'do': 'set', 'var': 'total', 'value': {'tally': {'sum': 'p_voice', 'where': 'p_backs', 'is': 'lamp'}}},
+                   {'do': 'set', 'var': 'n', 'value': {'tally': {}}}, {'do': 'rank', 'var': 'p_voice', 'top': 500, 'into': 'top'}]
+        state, _, took = _many(actions, 1200, counters)
+        self.assertEqual(state['counters']['story']['total'], sum(i % 7 for i in range(0, 1200, 3)))
+        self.assertEqual(state['counters']['story']['n'], 1200)
+        self.assertEqual(len(state['counters']['story']['top']), 500)
+        self.assertLess(took, 0.5, 'under the rehearsal budget')
+        native, _, _ = _many(actions, 1200, counters, native=True)
+        self.assertEqual(native['counters'], state['counters'], 'both twins agree')
+
+
 if __name__ == '__main__':
     unittest.main()

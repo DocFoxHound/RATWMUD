@@ -477,7 +477,8 @@ def world_checks(conn, world, program, chapters=False):
     # Doc 86, C8, C9, C11: the towns, factions and subjects the new effects name; a campaign's holds only in a chapter.
     for path, at, e in _effect_sites(program, quests_too=True):
         kind = e.get('kind')
-        if kind in ('talk.remember', 'talk.forget', 'belief.plant') and isinstance(e.get('town'), str) and e['town'] not in towns:
+        if kind in ('talk.remember', 'talk.forget', 'belief.plant', 'title.give', 'belief.forget') and isinstance(e.get('town'), str) \
+                and e['town'] not in towns:
             add(path, at, f'Unknown town in this world: {e["town"]}')
         if kind == 'figure.set':
             if e.get('known') == 'region' and isinstance(e.get('region'), str) and e.get('region') not in towns:
@@ -488,6 +489,11 @@ def world_checks(conn, world, program, chapters=False):
         if kind in ('npc.spare', 'npc.protect') and e.get('lasts') == 'campaign' and not chapters:
             add(path, at, 'A hold for the campaign is let go when its campaign ends: approve this story as a chapter of a campaign.',
                 chapters is not None)
+    # Doc 86, V2: the story's words (symbols, forbidden words, ids in speech, lengths, face banners refused; another dialect
+    # in a resident's words, a clearing's "never" warned of), with the speakers' voices and the world's ids.
+    import story_words
+    for c in story_words.check_world(conn, world, program):
+        add(c['path'], c['at'], c['text'], c['blocks'])
     # N2: a variable told to residents by another live story too (the newest run's value wins).
     names = talk_names(program)
     if names and conn.execute("SELECT to_regclass('dm.story_releases')").fetchone()[0]:
@@ -1016,6 +1022,8 @@ WORLD_ORDERS = {
     'project.complete': 'town', 'project.cancel': 'town',
     # (Doc 86, C8 and T7: what residents remember of the story, and a rumour it starts about a resident.)
     'talk.remember': None, 'talk.forget': None, 'belief.plant': 'subject',
+    # (Doc 86, Phase 3: a wolf named by a title (C4), a resident's words for one wolf (C5), a rumour put to rest (J8).)
+    'title.give': 'player', 'title.take': 'player', 'npc.greet': 'npc', 'belief.forget': 'subject',
 }
 
 
@@ -3175,7 +3183,7 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
 # after, in the command's row and in dm.audit. A command can release only what was approved (5.1, rule 4): it fires a
 # trigger the program has, enters a phase it has, sets a counter it names; nothing adds a trigger or changes a rule.
 
-RUNNER_VERSION = 'doc86-phase2'
+RUNNER_VERSION = 'doc86-phase3'
 COMMAND_KINDS = ('hold', 'resume', 'stop', 'signal', 'fire', 'enable', 'disable', 'enter', 'set', 'timer', 'mission',
                  'order', 'tell', 'scene', 'migrate', 'objective', 'quest', 'participant', 'advance')
 # Flow commands move the story (dispatch a fact, run actions, open a visit, send the journal): they wait while the run is

@@ -663,6 +663,69 @@ if __name__ == '__main__':
     unittest.main()
 
 
+class Phase3Shares(unittest.TestCase):
+    """Doc 86, C3b: a quest of the story (or a party) rewards each wolf by their share of what was made."""
+
+    def shared(self, credit_min=None, scope='story'):
+        coins = {'min': [20, {'times': [{'share': True}, 2]}]}
+        p = one_quest({'on': 'gift', 'goal': 9, 'measure': 'quantity'}, scope=scope)
+        p['quests'][0]['rewards'] = [{'kind': 'character.grant', 'player': '$actor', 'purse': 'town:greyfen', 'reason': 'r', 'coins': coins},
+                                     {'kind': 'deed.award', 'player': '$actor', 'detail': 'Carried the lamp oil.'}]
+        p['quests'][0]['credit'] = 'share'
+        if credit_min:
+            p['quests'][0]['creditMin'] = credit_min
+        rules.validate(p)
+        return p
+
+    def gifts(self):
+        return [arrive(1, ASH), arrive(2, BIRCH), arrive(3, ELM), fact(4, 'gift', 1, ASH, target='rm111', quantity=5),
+                fact(5, 'gift', 1.1, BIRCH, target='rm111', quantity=3), fact(6, 'gift', 1.2, ELM, target='rm111', quantity=1)]
+
+    def test_three_wolves_paid_by_their_shares(self):
+        p = self.shared()
+        report, _ = play(p, self.gifts(), cohort=(ASH, BIRCH, ELM))
+        paid = {e['player']: e['coins'] for e in report['effects'] if e['kind'] == 'character.grant'}
+        self.assertEqual(paid, {ASH: 10, BIRCH: 6, ELM: 2})
+        state, _ = final_state(p, self.gifts(), cohort=(ASH, BIRCH, ELM))
+        self.assertEqual(state['quests']['q']['story']['shares'], {ASH: 5, BIRCH: 3, ELM: 1})
+
+    def test_the_least_share_leaves_a_wolf_out(self):
+        report, _ = play(self.shared(credit_min=2), self.gifts(), cohort=(ASH, BIRCH, ELM))
+        paid = {e['player']: e['coins'] for e in report['effects'] if e['kind'] == 'character.grant'}
+        self.assertEqual(paid, {ASH: 10, BIRCH: 6})
+        self.assertEqual(sorted(e['player'] for e in report['effects'] if e['kind'] == 'deed.award'), sorted([ASH, BIRCH]),
+                         'every reward leaves them out')
+
+    def test_the_checks(self):
+        p = self.shared()
+        p['quests'][0]['scope'] = 'player'
+        self.assertRaisesRegex(ValueError, 'whole story or a party', rules.validate, p)
+        p = self.shared()
+        p['quests'][0]['credit'] = 'most'
+        self.assertRaisesRegex(ValueError, 'credit is "share"', rules.validate, p)
+        p = self.shared()
+        del p['quests'][0]['credit']
+        self.assertRaisesRegex(ValueError, 'only in the rewards of a quest that rewards each wolf by their share', rules.validate, p)
+        p = self.shared()
+        p['quests'][0]['creditMin'] = 0
+        self.assertRaisesRegex(ValueError, 'least share', rules.validate, p)
+        # (A share is a reward's: never a trigger's value.)
+        p = self.shared()
+        p['phases'][0]['triggers'][0]['actions'].append(
+            {'do': 'effect', 'effect': {'kind': 'item.give', 'player': '$actor', 'item': 'bread', 'quantity': {'share': True}}})
+        self.assertRaisesRegex(ValueError, 'only in the rewards', rules.validate, p)
+        self.shared(scope='party')
+
+    def test_a_trigger_s_progress_counts_toward_the_share(self):
+        p = self.shared()
+        p['phases'][0]['triggers'].append({'id': 'help', 'on': 'deed', 'audience': 'participant', 'actions': [
+            {'do': 'effect', 'effect': {'kind': 'objective.progress', 'quest': 'q', 'objective': 'o', 'player': '$actor', 'amount': 4}}]})
+        rules.validate(p)
+        events = [arrive(1, ASH), arrive(2, BIRCH), fact(3, 'gift', 1, ASH, target='rm111', quantity=5), fact(4, 'deed', 1.1, BIRCH)]
+        state, _ = final_state(p, events, cohort=(ASH, BIRCH, ELM))
+        self.assertEqual(state['quests']['q']['story']['shares'], {ASH: 5, BIRCH: 4})
+
+
 class Phase1b(unittest.TestCase):
     """Doc 86, Phase 1b: a story choice kept for a list of wolves (J1), and the values a story tells residents of each wolf
     (N2: the `talk` map beside the journal's views)."""

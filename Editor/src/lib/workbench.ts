@@ -15,6 +15,8 @@ export interface Param {
     all?: boolean;
     /** Version 2: a variable's types (`variable`), an optional slot, an operand's kind or the slot it must match. */
     of?: string[]; optional?: boolean; kind?: string; like?: string;
+    /** Doc 86, C3a: a `variable` slot's scopes (Rank: a wolf's own number, into a list of the story or the world). */
+    scope?: string[];
     /** (The Editor's own: an `objective` slot's quest, filled from the record beside it, so its picker lists that quest's.) */
     quest?: string;
     /** Doc 86, Phase 2: an effect's parameter that may be a value worked out as it fires (C1a), words that may hold fills (C1b). */
@@ -56,7 +58,12 @@ export type Operand = number | boolean | string | {var: string; of?: string} | {
     | {audience: 'all' | 'active' | 'online'} | {times: [Operand, Operand]} | {div: [Operand, Operand]}
     | {percent: ShareSource; of?: string} | {among: ShareSource; of?: string}
     // (Doc 86, Phase 2, M2: what a purse holds now.)
-    | {purse: string};
+    | {purse: string}
+    // (Doc 86, Phase 3: a tally over every wolf (J11); a credited wolf's share, in a quest's rewards (C3b).)
+    | {tally: Tally} | {share: true};
+/** Doc 86, J11: a number each wolf keeps added up (sum), or wolves counted, over the story's wolves or a list, those whose
+ *  text or switch (where) is a value (is). */
+export interface Tally {sum?: string; where?: string; is?: string | boolean; over?: 'participants' | {list: string}}
 /** A filter's value (doc 86, C12b): a text, "begins with", or "one of". */
 export type MatchValue = string | {starts: string} | {in: string[]};
 /** Who counts (doc 86, R1): the wolves of a story or world list, or those for whom a test is true (the wolf as $each). */
@@ -96,6 +103,8 @@ export type Action =
     | {do: 'remember'; var: string; from: string; of?: string}
     | {do: 'list add' | 'list remove'; var: string; value: Operand; of?: string}
     | {do: 'pick'; list: string; var: string; of?: string}
+    // (Doc 86, C3a: the top wolves by a number each keeps, into a list of wolves.)
+    | {do: 'rank'; var: string; top: Operand; into: string; over?: string; list?: string; min?: Operand}
     | {do: 'shift'; signal: string; days: number; owner?: string}
     // (Version 2: flow.)
     | {do: 'if'; if: Condition; then: Action[]; elif?: Branch2[]; else?: Action[]}
@@ -173,6 +182,8 @@ export interface Quest {
     id: string; title: string; summary?: string; scope?: 'player' | 'party' | 'story'; contributors?: number; lifetime?: 'campaign' | 'phase';
     phases?: string[]; repeat?: 'once' | 'daily' | 'weekly' | 'always'; giver?: string; board?: string; offer?: QuestOffer; handIn?: boolean; join?: QuestJoin;
     abandon?: boolean; objectives: QuestObjective[]; fail?: FailRule[]; rewards?: Effect[]; bonus?: Effect[];
+    /** Doc 86, C3b: each credited wolf rewarded by their share ({"share": true} in the rewards), at least creditMin. */
+    credit?: 'share'; creditMin?: number;
 }
 export interface Audience {kind: string; days?: number; players?: string[]; cap?: number}
 export interface Program {
@@ -360,6 +371,8 @@ export function operandWords(o: Operand | undefined, names: Names): string {
     if ('each' in o) return 'the looped value';
     if ('audience' in o) return AUDIENCE_WORDS[o.audience] ?? o.audience;
     if ('purse' in o) return `what ${names.purse?.[o.purse] ?? o.purse} holds`;
+    if ('share' in o) return "the wolf's share";
+    if ('tally' in o) return tallyWords(o.tally);
     if ('percent' in o || 'among' in o) {
         const src = ('percent' in o ? o.percent : o.among) as ShareSource;
         const who = OF_WORDS[o.of ?? 'active'] ?? o.of;
@@ -370,6 +383,12 @@ export function operandWords(o: Operand | undefined, names: Names): string {
     const [a, b] = pair.map(x => operandWords(x, names));
     return key === 'plus' ? `(${a} + ${b})` : key === 'minus' ? `(${a} − ${b})` : key === 'times' ? `(${a} × ${b})` : key === 'div' ? `(${a} ÷ ${b}, whole)`
         : key === 'min' ? `the smaller of ${a} and ${b}` : `the larger of ${a} and ${b}`;
+}
+/** Doc 86, J11: "the p_voice of every wolf of the story whose p_backs is “lamp”, added up", "how many wolves in pledged". */
+export function tallyWords(t: Tally): string {
+    const over = t.over && typeof t.over === 'object' ? `in ${t.over.list}` : 'of the story';
+    const which = t.where ? ` whose ${t.where} is ${typeof t.is === 'boolean' ? (t.is ? 'on' : 'off') : '“' + (t.is ?? '') + '”'}` : '';
+    return t.sum ? `the ${t.sum} of every wolf ${over}${which}, added up` : `how many wolves ${over}${which}`;
 }
 const AUDIENCE_WORDS: Record<string, string> = {all: "how many wolves the story has", active: 'how many wolves are active', online: 'how many wolves are online'};
 const OF_WORDS: Record<string, string> = {active: 'active', all: "story's", online: 'online'};
@@ -841,13 +860,16 @@ export function variablesOf(p: Program): Variable[] {
     return countersOf(p).map(c => ({id: c.key, type: 'number', scope: c.scope}));
 }
 /** The variable names an operand, a condition or an action reads or writes. */
-function operandVars(o: unknown): string[] {
+export function operandVars(o: unknown): string[] {
     if (!o || typeof o !== 'object') return [];
     const x = o as Json;
     const own = ['var', 'count', 'since'].flatMap(k => typeof x[k] === 'string' ? [x[k] as string] : []);
     const shares = ['percent', 'among'].flatMap(k => record(x[k]) ? [...(typeof (x[k] as Json).list === 'string' ? [(x[k] as Json).list as string] : []),
         ...(record((x[k] as Json).where) ? conditionsOf((x[k] as Json).where as Condition).flatMap(conditionVars) : [])] : []);
-    return [...own, ...shares, ...['plus', 'minus', 'min', 'max', 'times', 'div'].flatMap(k => Array.isArray(x[k]) ? (x[k] as unknown[]).flatMap(operandVars) : [])];
+    // (Doc 86, J11: a tally reads what it adds up, the variable it picks wolves by, and the list it is over.)
+    const t = record(x.tally) ? x.tally as Json : null;
+    const tally = t ? [t.sum, t.where, record(t.over) ? (t.over as Json).list : undefined].filter((v): v is string => typeof v === 'string') : [];
+    return [...own, ...shares, ...tally, ...['plus', 'minus', 'min', 'max', 'times', 'div'].flatMap(k => Array.isArray(x[k]) ? (x[k] as unknown[]).flatMap(operandVars) : [])];
 }
 export function conditionVars(c: Condition): string[] {
     const x = c as unknown as Json;
@@ -859,6 +881,7 @@ export function actionVars(a: Action): {reads: string[]; writes: string[]} {
     const x = a as unknown as Json;
     if (a.do === 'each') return {reads: a.list ? [a.list] : [], writes: []};
     if (a.do === 'pick') return {reads: [a.list], writes: [a.var]};
+    if (a.do === 'rank') return {reads: [a.var, ...(a.list ? [a.list] : []), ...operandVars(a.top), ...operandVars(a.min)], writes: [a.into]};
     return {reads: operandVars(x.value), writes: typeof x.var === 'string' && a.do !== 'if' ? [x.var] : []};
 }
 /** Doc 86, R2: the variables a phase's Readiness reads (its participation parts' lists and tests, its values and tests,
@@ -1221,6 +1244,12 @@ export function newAction(cat: Catalogue, kind: string, p: Program, trigger?: st
             return {do: 'pick', list: list?.id ?? 'names', var: into?.id ?? 'chosen'};
         }
         case 'start timer': case 'stop timer': return {do: kind, var: firstVar(p, TIMERS, 'since')};
+        case 'rank': {
+            // (Doc 86, C3a: by a number each wolf keeps, into a list of wolves of the story or the world.)
+            const by = (p.variables ?? []).find(v => v.type === 'number' && v.scope === 'player' && !v.mirror)?.id ?? 'progress';
+            const into = (p.variables ?? []).find(v => v.type === 'wolves' && (v.scope === 'story' || v.scope === 'world'))?.id ?? 'best';
+            return {do: 'rank', var: by, top: 3, into};
+        }
         case 'shift': return {do: 'shift', signal: signalsOf(p)[0] ?? 'deadline', days: 1};
         case 'if': return {do: 'if', if: newCondition('compare', p, null), then: [{do: 'note', text: 'Then…'}]};
         case 'wait': return {do: 'wait', days: 1};
@@ -1326,7 +1355,8 @@ function editableCondition(v: unknown, depth = 0): boolean {
         || (v.test === 'field' && v.op === 'in' && Array.isArray(v.value) && v.value.every(x => typeof x === 'string')));
 }
 const ACTIONS = ['enter', 'emit', 'set', 'add', 'schedule', 'cancel', 'subtract', 'multiply', 'clamp', 'turn on', 'turn off', 'toggle', 'remember',
-    'list add', 'list remove', 'list clear', 'pick', 'start timer', 'stop timer', 'shift', 'wait', 'run', 'enable', 'disable', 'stop', 'note', 'finish'];
+    'list add', 'list remove', 'list clear', 'pick', 'start timer', 'stop timer', 'shift', 'wait', 'run', 'enable', 'disable', 'stop', 'note', 'finish',
+    'rank'];
 function editableActions(v: unknown, depth = 0): boolean {
     return Array.isArray(v) && depth <= 4 && v.every(a => record(a) && (a.do === 'effect' ? record(a.effect) && typeof a.effect.kind === 'string'
         : a.do === 'if' ? editableCondition(a.if) && editableActions(a.then, depth + 1) && (a.else === undefined || editableActions(a.else, depth + 1))

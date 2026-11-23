@@ -183,7 +183,7 @@ const v2: Record<string, Program> = JSON.parse(execFileSync('python3', ['-c',
 const ledger = v2['v2-ledger'];
 
 test('version 2: the samples and the 108 programs made version 2 are shown by the workbench, every nested action a sentence', () => {
-    assert.equal(Object.keys(v2).length, 113);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road.)
+    assert.equal(Object.keys(v2).length, 114);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road; Phase 3: the oil drive.)
     let nested = 0;
     for (const [name, p] of Object.entries(v2)) {
         assert.ok(editable(p), name);
@@ -554,4 +554,22 @@ test('doc 86, Phase 2: values in effects, fills, filters that begin with or are 
     const operands = cat.effects.flatMap(e => (e.params ?? []).filter(x => x.operand).map(x => x.type));
     assert.ok(operands.length > 100 && operands.every(t => ['int', 'resident', 'wolf', 'place', 'item', 'faction', 'town'].includes(t)), String(operands.length));
     assert.ok(!cat.effects.find(e => e.id === 'npc.line')!.params!.some(x => x.operand) && !cat.effects.find(e => e.id === 'story.start')!.params!.some(x => x.operand));
+});
+
+import {actionVars, operandVars} from './workbench.ts';
+
+test('doc 86, Phase 3: rank, a tally and a share in words; a rank reads and writes its lists', () => {
+    const p = v2['v2-thanks'];
+    const ns = namesOf(null, p);
+    const ts = triggersOf(p, 0);
+    const done = ts.find(t => t.id === 'done')!;
+    assert.equal(plain(actionParts(cat, done.actions[0], ns)), 'Put the top 2 wolves of the wolves of the story by p_oil (at least 2) into best');
+    const oil = ts.find(t => t.id === 'oil')!;
+    assert.match(plain(actionParts(cat, oil.actions[2], ns)), /the p_oil of every wolf of the story whose p_backs is “lamp”, added up/);
+    assert.equal(words2({tally: {}}, {}), 'how many wolves of the story');
+    assert.equal(words2({tally: {sum: 'p_oil', over: {list: 'best'}}}, {}), 'the p_oil of every wolf in best, added up');
+    assert.equal(words2({min: [20, {times: [{share: true}, 2]}]}, {}), "the smaller of 20 and (the wolf's share × 2)");
+    assert.deepEqual(actionVars(done.actions[0]), {reads: ['p_oil'], writes: ['best']});
+    assert.ok(operandVars({tally: {sum: 'p_oil', where: 'p_backs', is: 'lamp', over: {list: 'best'}}}).sort().join() === 'best,p_backs,p_oil');
+    assert.equal(p.quests![0].credit, 'share');
 });

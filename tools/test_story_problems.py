@@ -259,5 +259,41 @@ class ValuesInTheWorld(unittest.TestCase):
         self.refs(p)
 
 
+
+class WordsInTheWorld(unittest.TestCase):
+    """Doc 86, Phase 3 (V2, C4): approval reads the story's words with the world's voices and ids, and a title's town."""
+    setUpClass = classmethod(talk.console.ConsoleReads.setUpClass.__func__) if talk else None
+    tearDownClass = classmethod(talk.console.ConsoleReads.tearDownClass.__func__) if talk else None
+    fact = talk.console.ConsoleReads.fact if talk else None
+    setUp, refs = ValuesInTheWorld.setUp, ValuesInTheWorld.refs
+
+    def test_forbidden_words_and_ids_are_refused_at_approval(self):
+        self.refs(talk.program([talk.fx('npc.greet', npc='rm111', player='$actor', text='#greet# You kept the lamp lit.')]))
+        self.assertRaisesRegex(ValueError, 'never said in this world', self.refs,
+                               talk.program([talk.fx('journal.note', text='A dog barks at the gate.')]))
+        self.assertRaisesRegex(ValueError, 'looks like an id', self.refs,
+                               talk.program([talk.fx('npc.greet', npc='rm111', player='$actor', text='Ask rm112 about it.')]))
+        self.assertRaisesRegex(ValueError, 'not quoted in a banner', self.refs,
+                               talk.program([talk.fx('story.tell', to='wolf', player='$actor', **{'from': 'rm111'}, text='He says: "Run."')]))
+        found = runner.reference_problems(self.conn, self.world, talk.program([talk.fx('journal.note', text='The gods are kind.')]))
+        self.assertTrue(any(x['blocks'] and 'never said' in x['text'] for x in found), found)
+
+    def test_the_givers_dialect_is_a_warning(self):
+        import story_words
+        lex = story_words.lexicon()
+        dialect, phrase = next((d, p) for d, ps in lex.items() for p, saying in ps if not saying and ' ' in p)
+        other = next(d for d in lex if d != dialect)
+        self.conn.execute("INSERT INTO live.npc_voice(world_id,npc_id,home_region,accent) VALUES (%s,'rm111',%s,'broad') "
+                          "ON CONFLICT (world_id,npc_id) DO UPDATE SET home_region=excluded.home_region, accent=excluded.accent", (self.world, other))
+        warnings = self.refs(talk.program([talk.fx('npc.greet', npc='rm111', player='$actor', text=f'Well, {phrase} indeed.')]))
+        self.assertTrue(any(f'says {dialect}' in w for w in warnings), warnings)
+
+    def test_a_titles_town(self):
+        self.refs(talk.program([talk.fx('title.give', player='$actor', title='Warden of the Weir', known='town', town='greyfen')]))
+        self.assertRaisesRegex(ValueError, 'Unknown town in this world: atlantis', self.refs,
+                               talk.program([talk.fx('title.give', player='$actor', title='Warden', known='town', town='atlantis')]))
+        self.assertRaisesRegex(ValueError, 'Unknown town in this world: atlantis', self.refs,
+                               talk.program([talk.fx('belief.forget', subject='rm111', claimKind='theft', town='atlantis', share=50)]))
+
 if __name__ == '__main__':
     unittest.main()

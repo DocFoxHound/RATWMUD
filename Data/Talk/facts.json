@@ -376,13 +376,15 @@
     "disposition": ["hostile", "wary", "cool", "neutral", "warm", "fond"]
   },
   "player": {
-    "about": "Doc 84 §13.4 (Phase 13): what the window knows of the player spoken to, in the window's queries only, read as player.X. named: the resident knows the player's name (they gave it); met: the resident has given the player theirs; knows: what the player has heard (the claim store, Game::playerClaims_), a list of claim kinds, each also as <kind>:self when it is about the one spoken to and <kind>:kin when about their kin (player.knows=theft:self); newcomer: new to these parts (doc 52); asked: what the player last asked this resident in the window lately (the way, after someone: here.way_asked, here.person_asked), for the ledger's callback. Doc 86, N2 (patterns, written in full): quest.<program>/<quest> is the state of the player's copy of a live story's quest (player.quest.ninth-howl.1/where_king=active); story.<name> a value a story tells residents of (a variable marked talk: a number's digits, yes or no, or words of small letters, digits and _).",
+    "about": "Doc 84 §13.4 (Phase 13): what the window knows of the player spoken to, in the window's queries only, read as player.X. named: the resident knows the player's name (they gave it); met: the resident has given the player theirs; knows: what the player has heard (the claim store, Game::playerClaims_), a list of claim kinds, each also as <kind>:self when it is about the one spoken to and <kind>:kin when about their kin (player.knows=theft:self); newcomer: new to these parts (doc 52); asked: what the player last asked this resident in the window lately (the way, after someone: here.way_asked, here.person_asked), for the ledger's callback. Doc 86, N2 (patterns, written in full): quest.<program>/<quest> is the state of the player's copy of a live story's quest (player.quest.ninth-howl.1/where_king=active); story.<name> a value a story tells residents of (a variable marked talk: a number's digits, yes or no, or words of small letters, digits and _). Doc 86, C4: title is the newest title a story named the wolf by that is known where the resident lives (the realm, or their town), as #player.title# in a line gated on titled=yes.",
     "named": ["yes", "no"],
     "met": ["yes", "no"],
     "knows": "list",
     "newcomer": ["yes", "no"],
     "asked": ["way", "person", "none"],
     "quest.*": ["offered", "active", "ready", "done", "failed", "abandoned", "expired"],
-    "story.*": "text"
+    "story.*": "text",
+    "titled": ["yes", "no"],
+    "title": "text"
   }
 }

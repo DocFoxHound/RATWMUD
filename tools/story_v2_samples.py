@@ -259,7 +259,8 @@ READY = {
 
 
 def all_samples():
-    return [copy.deepcopy(LEDGER), copy.deepcopy(FLOW), copy.deepcopy(READY), copy.deepcopy(TALK), copy.deepcopy(VALUES)]
+    return [copy.deepcopy(LEDGER), copy.deepcopy(FLOW), copy.deepcopy(READY), copy.deepcopy(TALK), copy.deepcopy(VALUES),
+            copy.deepcopy(THANKS)]
 
 
 # ----- Doc 85, Phase 6: quests (tools/test_story_quests.py; both twins' parity, tools/test_story_native.py)
@@ -601,5 +602,91 @@ VALUES = {
               'reward': 'wagon'},
              {'phase': 'road', 'kind': 'character.grant', 'player': BIRCH, 'coins': 10, 'purse': 'town:greyfen', 'reason': 'the carters\' thanks',
               'reward': 'wagon'}]},
+    ],
+}
+
+
+# ----- Doc 86, Phase 3: thanks, titles, ranks and words (tools/test_story_v2.py, test_story_quests.py; both twins,
+# test_story_native.py). A story-scope drive for lamp oil that rewards each wolf by their share (and leaves out one who
+# brought too little), thanks them in the giver's own voice (npc.greet) and names them (title.give); a tally of what every
+# wolf brought; the two who brought most ranked and named for the realm; a title taken back; a rumour put to rest; and the
+# phase's line for its wolves with a #symbol# said in the speaker's voice.
+THANKS = {
+    'format': 'ratw-story-program', 'version': 2, 'id': 'v2-thanks', 'title': 'The oil drive',
+    'audience': {'kind': 'players', 'players': [ASH, BIRCH, ELM]}, 'start': 'drive',
+    'variables': [
+        {'id': 'p_oil', 'type': 'number', 'scope': 'player', 'show': 'Oil you brought'},
+        {'id': 'p_backs', 'type': 'text', 'scope': 'player', 'note': 'Whose lamp a wolf brings oil for.'},
+        {'id': 'brought', 'type': 'number', 'scope': 'story', 'show': 'Oil brought in all'},
+        {'id': 'for_lamp', 'type': 'number', 'scope': 'story', 'note': 'Oil brought by the wolves who back the lamp.'},
+        {'id': 'best', 'type': 'wolves', 'scope': 'story', 'note': 'The two who brought most.'},
+    ],
+    'quests': [
+        {'id': 'oil', 'title': 'Oil for the lamps', 'summary': 'The lamps of Greyfen want nine measures of oil.', 'scope': 'story',
+         'credit': 'share', 'creditMin': 2,
+         'objectives': [{'id': 'bring', 'label': 'Bring lamp oil to the lamplighter.', 'on': 'gift', 'match': {'target': 'rm111', 'item': 'lamp_oil'},
+                         'measure': 'quantity', 'goal': 9}],
+         'rewards': [
+             {'kind': 'character.grant', 'player': '$actor', 'purse': 'town:greyfen', 'reason': 'the lamplighter\'s thanks',
+              'coins': {'min': [20, {'times': [{'share': True}, 2]}]}},
+             {'kind': 'npc.greet', 'npc': 'rm111', 'player': '$actor', 'text': '#greet# The lamps burn on your oil. I\'ll not forget it.', 'days': 14},
+             {'kind': 'title.give', 'player': '$actor', 'title': 'Lamp-bearer of Greyfen', 'known': 'town', 'town': 'greyfen', 'days': 30}]},
+    ],
+    'phases': [
+        {'id': 'drive', 'journal': 'The lamplighter asks for oil before the long nights.',
+         'effects': [{'kind': 'npc.line', 'npc': 'rm111', 'text': '#greet# The lamps want oil, and plenty of it.'}],
+         'exits': [],
+         'triggers': [
+             {'id': 'come', 'on': 'arrival', 'audience': 'participant', 'once': 'member', 'actions': [
+                 {'do': 'set', 'var': 'p_backs', 'value': 'lamp'},
+                 {'do': 'effect', 'effect': {'kind': 'quest.start', 'quest': 'oil', 'player': '$actor'}}]},
+             {'id': 'oil', 'on': 'gift', 'audience': 'participant', 'match': {'target': 'rm111', 'item': 'lamp_oil'}, 'actions': [
+                 {'do': 'add', 'var': 'p_oil', 'value': {'field': 'quantity'}},
+                 {'do': 'set', 'var': 'brought', 'value': {'tally': {'sum': 'p_oil'}}},
+                 {'do': 'set', 'var': 'for_lamp', 'value': {'tally': {'sum': 'p_oil', 'where': 'p_backs', 'is': 'lamp'}}}]},
+             {'id': 'done', 'on': 'quest completed', 'match': {'detail': 'oil'}, 'actions': [
+                 {'do': 'rank', 'var': 'p_oil', 'top': 2, 'min': 2, 'into': 'best'},
+                 {'do': 'each', 'over': 'list', 'list': 'best', 'actions': [
+                     {'do': 'effect', 'effect': {'kind': 'title.give', 'player': '$each', 'title': 'the Oil-Bringer'}}]},
+                 {'do': 'effect', 'effect': {'kind': 'belief.forget', 'subject': 'rm113', 'claimKind': 'story.rumour', 'town': 'greyfen', 'share': 50}},
+                 {'do': 'enter', 'phase': 'lit'}]},
+         ]},
+        {'id': 'lit', 'journal': 'The lamps of Greyfen burn through the long nights.', 'effects': [], 'exits': [],
+         'triggers': [
+             {'id': 'spilled', 'on': 'deed', 'audience': 'participant', 'match': {'detail': {'starts': 'Spilled the oil'}}, 'actions': [
+                 {'do': 'effect', 'effect': {'kind': 'title.take', 'player': '$actor', 'title': 'the Oil-Bringer'}}]}]},
+    ],
+    'tests': [
+        {'name': 'Three bring oil; the two who brought most are named', 'cohort': [ASH, BIRCH, ELM],
+         'events': [
+             quest_fact(1, 'arrival', 0.5, ASH),
+             quest_fact(2, 'arrival', 0.6, BIRCH),
+             quest_fact(3, 'arrival', 0.7, ELM),
+             quest_fact(4, 'gift', 1, ASH, target='rm111', item='lamp_oil', quantity=5),
+             quest_fact(5, 'gift', 1.1, BIRCH, target='rm111', item='lamp_oil', quantity=3),
+             quest_fact(6, 'gift', 1.2, ELM, target='rm111', item='lamp_oil', quantity=1),
+             quest_fact(7, 'deed', 2, BIRCH, detail='Spilled the oil on the stair (d9)'),
+         ], 'expect': ['drive', 'lit'],
+         'expectQuests': {'oil': {'story': 'done'}},
+         'expectVariables': {'story': {'brought': 9, 'for_lamp': 9, 'best': [ASH, BIRCH]},
+                             'player': {ASH: {'p_oil': 5}, BIRCH: {'p_oil': 3}, ELM: {'p_oil': 1}}},
+         'expectEffects': [
+             {'phase': 'drive', 'kind': 'npc.line', 'npc': 'rm111', 'text': '#greet# The lamps want oil, and plenty of it.'},
+             {'phase': 'drive', 'kind': 'character.grant', 'player': ASH, 'purse': 'town:greyfen', 'reason': 'the lamplighter\'s thanks', 'coins': 10,
+              'reward': 'oil'},
+             {'phase': 'drive', 'kind': 'character.grant', 'player': BIRCH, 'purse': 'town:greyfen', 'reason': 'the lamplighter\'s thanks', 'coins': 6,
+              'reward': 'oil'},
+             {'phase': 'drive', 'kind': 'npc.greet', 'npc': 'rm111', 'player': ASH, 'text': '#greet# The lamps burn on your oil. I\'ll not forget it.',
+              'days': 14, 'reward': 'oil'},
+             {'phase': 'drive', 'kind': 'npc.greet', 'npc': 'rm111', 'player': BIRCH, 'text': '#greet# The lamps burn on your oil. I\'ll not forget it.',
+              'days': 14, 'reward': 'oil'},
+             {'phase': 'drive', 'kind': 'title.give', 'player': ASH, 'title': 'Lamp-bearer of Greyfen', 'known': 'town', 'town': 'greyfen', 'days': 30,
+              'reward': 'oil'},
+             {'phase': 'drive', 'kind': 'title.give', 'player': BIRCH, 'title': 'Lamp-bearer of Greyfen', 'known': 'town', 'town': 'greyfen', 'days': 30,
+              'reward': 'oil'},
+             {'phase': 'drive', 'kind': 'title.give', 'player': ASH, 'title': 'the Oil-Bringer'},
+             {'phase': 'drive', 'kind': 'title.give', 'player': BIRCH, 'title': 'the Oil-Bringer'},
+             {'phase': 'drive', 'kind': 'belief.forget', 'subject': 'rm113', 'claimKind': 'story.rumour', 'town': 'greyfen', 'share': 50},
+             {'phase': 'lit', 'kind': 'title.take', 'player': BIRCH, 'title': 'the Oil-Bringer'}]},
     ],
 }

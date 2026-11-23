@@ -16,7 +16,7 @@ import {renderShop} from './shopWindow.ts';
 import {renderKeeperStrip} from './dialogue.ts';
 import {renderArchive, renderChronicle, renderJournal, renderWelcome} from './archive.ts';
 import {renderCredits, renderStoryteller, storytellerNote} from './storyteller.ts';
-import {nicknameLine, unfinishedLine} from '../../game/fame.ts';
+import {nicknameLine, titleLine, unfinishedLine} from '../../game/fame.ts';
 import {ask, askText} from '../dialog.ts';
 
 /** Social standing is the account's (doc 49): scenes, stars and Stories across all one's wolves. The bar runs from the
@@ -227,6 +227,7 @@ export class Dialogs {
     private character(self: Json | null) {
         this.heading('CHARACTER / APPEARANCE', str(self, 'name', 'Your character'));
         el('div', 'label muted', this.panel, `AGE ${wholeCount(self, 'age', 18, 10000)}  ·  A STORY STILL UNFOLDING`);
+        this.titles(self);
         // Storytellers (doc 58, 4): one's standing, or applying.
         const teller = obj(self, 'storyteller');
         if (storytellerNote(teller)) el('div', 'sage small', this.panel, storytellerNote(teller));
@@ -329,6 +330,18 @@ export class Dialogs {
         const lines = arr(w, 'lines').map(String);
         if (!lines.length) el('div', 'muted small', parent, 'All much as you left it.');
         for (const l of lines) el('div', 'small', parent, l);
+    }
+
+    /** The titles stories named you by (doc 86, C4), under your name; residents use the newest known where they live. You may
+     *  hide them from your card (others' closer look); residents still use them. */
+    private titles(self: Json | null) {
+        const list = arr(self, 'titles').filter(isObject);
+        if (!list.length) return;
+        for (const t of list) el('div', 'gold small', this.panel, titleLine(t));
+        const hidden = bool(self, 'titlesHidden');
+        button(hidden ? 'SHOW YOUR TITLES ON YOUR CARD' : 'HIDE YOUR TITLES FROM YOUR CARD', 'small', el('div', 'sheet-actions', this.panel),
+            () => this.s.send({type: 'social', verb: 'hidetitles', hidden: !hidden})).title =
+            'Whether others see them when they take a closer look; residents still call you by them';
     }
 
     /** What residents call you for your deeds (doc 56): who first said it, and asking folk not to use one. */
@@ -1454,6 +1467,8 @@ export class Dialogs {
     private inspect() {
         const s = this.s;
         el('div', 'label gold', this.panel, 'A CLOSER LOOK');
+        // (Doc 86, C4: the titles the stories named them by, unless they hide them.)
+        for (const t of arr(s.inspectedCharacter, 'titles').filter(isObject)) el('div', 'gold small', this.panel, titleLine(t));
         if (s.portraitAppearance()) {
             const cols = el('div', 'sheet-cols', this.panel);
             const left = el('div', 'sheet-col', cols);

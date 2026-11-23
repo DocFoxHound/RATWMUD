@@ -10,6 +10,7 @@
 #include <set>
 #include <stdexcept>
 #include <unordered_set>
+#include <tuple>
 #include <vector>
 
 namespace ratw::story
@@ -225,7 +226,7 @@ struct Dispatch
 // them, key for key (tools/test_story_native.py runs every rehearsal through both).
 
 static const double Limit = 1e9;
-static const std::size_t ListMost = 500, EachMost = 500, TextMost = 200;
+static const std::size_t ListMost = 500, EachMost = 500, TextMost = 200, RankMost = 500;
 static const int RunDepth = 8;
 
 static Value& obj(Value& parent, const std::string& key)
@@ -390,6 +391,8 @@ struct Dispatch2
             if (!n || !n->isNumber()) return std::nullopt;
             return *n;
         }
+        if (o.has("share")) return std::nullopt;   // (Doc 86, C3b: a quest reward's own, given by the runner: never a trigger's.)
+        if (o.has("tally")) return tally(o["tally"]);
         if (o.has("var") && decls[o.string("var")].has("mirror")) return mirror(decls[o.string("var")], wolfOf(x, o.string("of")));
         const std::string name = o.has("var") ? o.string("var") : o.has("count") ? o.string("count") : o.string("since");
         if (o.has("var") || o.has("count") || o.has("since"))
@@ -432,6 +435,81 @@ struct Dispatch2
             return Value(k == "plus" ? l + r : k == "minus" ? l - r : k == "min" ? (r < l ? r : l) : (r > l ? r : l));
         }
         throw std::invalid_argument("Unknown story value");
+    }
+
+    // Doc 86, J11 and C3a: the wolves of the story, or of a story or world list of wolves that are in it.
+    std::vector<std::string> wolvesOf(const Value& listName) const
+    {
+        std::vector<std::string> out;
+        if (!listName.isString())
+        {
+            for (const auto& w : cohort.items())
+                if (w.isString()) out.push_back(w.asString());
+            return out;
+        }
+        const auto name = listName.asString();
+        const auto& d = decls[name];
+        const auto* st = store(d.string("scope"), "");
+        const Value values = st && st->has(name) ? (*st)[name] : initialOf(d);
+        for (const auto& w : values.items())
+            if (w.isString() && member(w.asString())) out.push_back(w.asString());
+        return out;
+    }
+
+    // Doc 86, J11: over every wolf of `over`, those whose `where` is `is` (all without), their `sum` added (counted without);
+    // a wolf with no value adds 0. The twin of story_triggers.tally.
+    Value tally(const Value& t) const
+    {
+        const auto& over = t["over"];
+        const auto wolves = wolvesOf(over.isObject() ? over["list"] : Value());
+        const auto& players = state["counters"]["player"];
+        const bool where = t.has("where"), sum = t.has("sum");
+        const auto whereName = t.string("where"), sumName = t.string("sum");
+        const Value blank = where ? initialOf(decls[whereName]) : Value();
+        double total = 0;
+        for (const auto& w : wolves)
+        {
+            const auto* own = players.isObject() ? players.find(w) : nullptr;
+            if (where)
+            {
+                const Value v = own && own->has(whereName) ? (*own)[whereName] : blank;
+                if (!(v == t["is"])) continue;
+            }
+            if (!sum) { total += 1; continue; }
+            if (own && own->has(sumName) && (*own)[sumName].isNumber()) total += (*own)[sumName].asNumber();
+        }
+        return Value(total);
+    }
+
+    // Doc 86, C3a: the top wolves by a number each keeps (at least `min`), ties by the seed, into a list (cleared first).
+    void rank(const Value& a, const Ctx& x)
+    {
+        const auto top = value(a["top"], x);
+        std::optional<Value> least;
+        if (a.has("min")) least = value(a["min"], x);
+        if (!top || !top->isNumber() || (a.has("min") && (!least || !least->isNumber())))
+        {
+            note(x, "skipped: rank has no value");
+            return;
+        }
+        const auto n = std::size_t(std::clamp(std::floor(top->asNumber()), 1.0, double(RankMost)));
+        const auto wolves = wolvesOf(a.string("over", "participants") == "list" ? a["list"] : Value());
+        const auto& players = state["counters"]["player"];
+        const auto name = a.string("var"), seed = state.string("seed");
+        std::vector<std::tuple<double, std::uint64_t, std::string>> found;
+        for (const auto& w : wolves)
+        {
+            const auto* own = players.isObject() ? players.find(w) : nullptr;
+            if (!own || !own->has(name) || !(*own)[name].isNumber()) continue;
+            const double v = (*own)[name].asNumber();
+            if (least && v < least->asNumber()) continue;
+            found.emplace_back(-v, fnv(seed + "|" + w), w);
+        }
+        std::sort(found.begin(), found.end());
+        Value chosen = Value::array();
+        for (std::size_t i = 0; i < found.size() && i < n; ++i) chosen.push(Value(std::get<2>(found[i])));
+        const auto into = a.string("into");
+        if (auto* s = writable(decls[into].string("scope"), "")) s->set(into, chosen);
     }
 
     // Doc 86, R1: the wolves counted against (`d`: the active ones, all, or those online) and of those the ones who count
@@ -1164,6 +1242,7 @@ struct Dispatch2
             const double at = now(d.string("clock", "game"));
             change(a, x, [&](const Value&) -> std::optional<Value> { return Value(at); });
         }
+        else if (op == "rank") rank(a, x);
         else if (op == "shift")
         {
             const auto key = a.string("owner") == "player" ? a.string("signal") + "/" + x.actor : a.string("signal");

@@ -1384,3 +1384,115 @@ text parameters marked `"fills": true`.
   `test_story_quests` (`Phase2`: a goal not known at the start read on credit and after an event, the journal, the board
   and the fingerprint; the summary and a once-given reward with `.of`), `test_story_problems` (`ValuesInTheWorld`: each name
   of a "one of" checked).
+
+## Phase 3 as built
+
+**Phase 3 as built** (2026-11-23, branch `r3-nh-p3`, on `r3-nh-p2` at `cbfafb63`). Engine spec items C3 (a, b), J11, C4,
+C5, J8, V2 (with T4) and T5. **No migration**: titles live on the character record, greetings in the checkpoint beside the
+stories' talk memory, shares in the quest copies, doubt in the beliefs. Four new effects (82 in all: `title.give`,
+`title.take`, `npc.greet`, `belief.forget`, each a game order of its own name, `WORLD_ORDERS`), one new action (`rank`), one
+new event (`title given`, group fame, a mission event: 207 events, 70 mission events), two new value forms (`tally`,
+`share`) and two quest fields (`credit: "share"`, `creditMin`).
+- **C3a: Rank** (`{"do": "rank", "var", "top", "into", "over", "list", "min"}`; `story_triggers.rank` and `_check_action_v2`;
+  `Dispatch2::rank` in the native twin). The wolves of the story (or of a story or world list of wolves, only those in the
+  story) with a stored player number, at least `min`, highest first, ties by `fnv(seed + "|" + wolf)`, the first `top`
+  (1 to 500, a value floored and kept to it) into a story or world list of wolves, cleared first. A `top` or `min` with no
+  value changes nothing ("skipped: rank has no value", in both twins). Refused inside For each, by a number that is not each
+  wolf's own (or a mirror), into a personal list. `rank` is in `STATE_V2`; `variable_uses` counts its `var` and `list` as read
+  and `into` as written.
+- **C3b: rewards by share** (`story_quests`: `check_quest`, `Run.share`, `complete`, `reward`; `reward_wolves`). A quest of
+  scope `story` or `party` with `"credit": "share"` keeps `shares` (`{wolf: n}`) in its copy: what each credited wolf's
+  progress added (a counted event's gain, capped at the goal, to every wolf it credits; an `objective.progress`'s amount; the
+  rest of the goal on an `objective.complete`). Its rewards are given for each credited wolf, `{"share": true}` that wolf's
+  amount (`Ctx.share`, read by `value_of`); `creditMin` (1 to 1,000,000) leaves every reward out for a wolf below it. A
+  `{"share": true}` anywhere else is refused (`operand_type(..., share_ok)`); the native twin answers it with no value (a
+  trigger never has one).
+- **J11: tally** (`{"tally": {"sum", "where", "is", "over"}}`; `story_triggers.tally`, `_check_tally`; `Dispatch2::tally`,
+  `wolvesOf`). Over every wolf of the story (5,000, no 500 cap) or of a story or world list, those whose player text or switch
+  `where` is `is` (by its first value when unset), their player number `sum` added (0 when unset), or counted without
+  `sum`. Not inside For each nor a test for each wolf (R1), one level deep in arithmetic. The native request already carries
+  every wolf's counters for a version 2 story (`STATE_V2`), so no widening was needed.
+- **C4: titles** (`Game::applyStoryThanks`, `storyTitleFor`, `titlesView`; `StoryTitle` and `Entity::titles`,
+  `titlesHidden` in `RatwWorld.h`, saved with the character in `RatwWire.cpp`). Up to 8 a wolf, `{title, known: "realm" |
+  "town:<id>", by: <program id>, run, since, until}`; given again (any case) a title is renewed where it is now known; a
+  ninth drops the oldest that lapses, else the oldest; a lapsed one is dropped when another is given and never shown or
+  used. The title is filled (C1b) to 60, one line, no `#` and no ids. A deed of kind `award` ("was named <title>", notable,
+  source `story`) carries it into gossip and the crier, and the event `title given` is recorded (`item` where it is known,
+  `detail` the title). `title.take` takes back this program's (one by its title, or all). The window's facts
+  `player.titled` and `player.title` (the newest known where the resident lives), in `Data/Talk/facts.json`. The client's
+  character sheet shows them under the name (`Client/src/game/fame.ts` `titleLine`), with **Hide your titles from your card**
+  (D3: the command `social` `hidetitles`; residents still use them), and the closer look shows another wolf's unless hidden.
+  Not undone at a run's end.
+- **C5: a resident's greeting** (`storyGreets_`, `takeStoryGreet`, saved as `storyGreets` beside `storyMemory`). One for each
+  resident and wolf (a later replaces it), 20,000 in all (the soonest to lapse goes first), for 1 to 28 days (7 when not
+  given), the text filled to 200; for a wolf of the story. When the wolf opens that resident's window (and the resident is
+  not asleep), the greeting is the opening line, through `Game::inVoice` (`#symbols#` in the resident's dialect), once.
+  Not undone at a run's end.
+- **T5**: the phase's `npc.line` for its wolves is said through `inVoice` too (`RatwGameDialogue.cpp`, after the greeting);
+  words the expander cannot fill are said as written.
+- **J8: doubt** (`World::doubt` in `RatwRoads.cpp`). Each holder (of the town: a resident by their home, anyone else by where
+  they are; or everywhere) of a belief of that kind about the subject keeps `1 - share/100` of its strength; at 5% or below it
+  is forgotten. The kinds are claims.json's that a story may put to rest; `test_story_catalogue` holds the catalogue's list,
+  claims.json and the game's (`doubtable`) together. Lasting.
+- **V2: the story words check** (`tools/story_words.py`, `Data/Storylines/words.json`): every word field (effects in phases,
+  triggers and rewards, quest titles, summaries, labels and offers, a phase's journal, a finish's line, scene lines),
+  rules 1 to 7 of the spec: refused are the words and phrases of `words.json`, a `#symbol#` the talk library does not have
+  (any grammar's symbol, a fact of a known section; `player.*` checked against facts.json) or one in words no resident says, a
+  stray bracket or unclosed `#`, an id-shaped word in anything a wolf reads (with the world: any resident's or place's id that
+  is id-shaped), a length past its limit with fills at their widest, a face banner that quotes its resident; warned of are
+  another dialect's phrases in a resident's words (their `live.npc_voice` origin and accent, `settings.json` `dialect_of`, the
+  dialect check's lexicon), a face banner at all, `npc.speak` said to a wolf, a clearing that begins "never" or "did not". It
+  runs in `story_runner.world_checks` (approval: refusals block, warnings are returned; the console's Problems list through
+  `reference_problems`), as `story_author` op `words` (offline), and from the command line (`--stories DIR`, `--world KEY` read
+  only, `--json`). The 108 bundled programs, the examples and the samples pass it clean.
+- **Workbench** (`Editor/`): Rank's action card and sentence from the catalogue (`newAction`, `actionVars`, the `Action` type);
+  a variable slot's `scope` narrows its picker; "…a value" offers a tally ("how many wolves the story has", "every wolf's
+  <number>, added up") and, in a program with a quest by share, "the wolf's share"; `operandWords` says a tally and a share
+  in words (`tallyWords`); the quest editor's **Reward each by their share** and **The least share**; `operandVars` exported.
+- **Guide and format**: `Docs/Story-Maker-guide.md` §5 Rank in the flow table; §6 "Counting over every wolf" (tally against
+  For each); §7 rewards in proportion, thanks by name, titles; §8 putting a rumour to rest; §10 the words check; §14 titles,
+  greetings and doubt stay; §15 three rows; §16 the limits; the reference regenerated (`story_guide.py --write`; `--check`
+  passes). `Docs/story-programs.md` gains "Ranks, titles, thanks and words". The catalogue's `about` and `types.operand`.
+- **Sample** `story_v2_samples.THANKS` ("The oil drive", `v2-thanks`, in `all_samples()`, so both twins run it): a story-scope
+  quest for nine measures of oil by share (5, 3 and 1 brought; `creditMin` 2 leaves the third out: 10 and 6 pennies), thanked
+  in the giver's voice (`npc.greet` with `#greet#`) and named Lamp-bearer of Greyfen for 30 days in the town; a tally of all
+  the oil and of the lamp's backers'; the two who brought most ranked and named the Oil-Bringer for the realm; a rumour put to
+  rest; a title taken back for a spilled cask; the phase's line with a `#symbol#`. Its case pins every effect; it rehearses
+  clean: nothing uncovered.
+- **Tests**: `test_story_v2` (`Phase3Ranks`: ties by the seed and another seed, the least and the list cleared, over a list
+  into a world list, a top from a value, the checks; tally sums and counts with `where`, a switch's unset value, over a list;
+  its checks; 1,200 wolves under the rehearsal budget, both twins agreeing), `test_story_native` (`RankParity`: six tallies,
+  two ranks, a tally in arithmetic and titles for the ranked, over four states, both twins identical), `test_story_speed`
+  (`TallySpeed`: nine tallies and a rank of 500 over 5,000 wolves, native under 50 ms, both twins agreeing),
+  `test_story_quests` (`Phase3Shares`: 5/3/1 paid 10/6/2; `creditMin` 2 leaves one out of every reward; the checks; a
+  trigger's progress counted toward the share), `test_story_words` (each rule, the giver's dialect, ids with the world, the
+  bundled 108 clean, the CLI over a directory; `talk_check --validate` takes a line gated on `player.titled` with
+  `#player.title#` and refuses a value facts.json lacks), `test_story_problems` (`WordsInTheWorld`, a throwaway database:
+  forbidden words, an id and a quoting banner refused at approval, the Problems list's; a giver's dialect warned of from
+  `live.npc_voice`; a title's and a doubt's town), `test_story_effects` and `test_story_catalogue` (the four orders, 82
+  effects, 207 events, 70 mission events; the doubt's kinds against claims.json and the game), `test_story_drafts` (210),
+  `Tests/story_world_tests.cpp` (`phase3Thanks`: named for good, the event and the deed, a town's title over the realm's for
+  its residents, renewed not doubled, lapsed, the card's view, the ninth (the one that lapses, then the oldest), taken by
+  title and all of this story's (not another's), hidden from the card; a greeting kept with names filled, replaced, a wolf
+  of the story only; doubt by half twice in the town and not elsewhere, 100 forgets; titles and the greeting through a save),
+  `Tests/dialogue_tests.cpp` (`storyGreetingsInTheWindow`: once, in a Larkfield resident's words, not for Bo, replaced, lapsed;
+  a line gated on the title said with it; `npc.line` with a `#symbol#` in the speaker's voice), `Client/src/game/fame.test.ts`
+  (the card's title lines), `workbench.test.ts` (114 programs; rank, a tally and a share in words; rank's reads and writes).
+- **Left or changed, and why**: `belief.forget`'s kind is the parameter `claimKind` (as `belief.plant`'s), not `kind`: an
+  effect's own `kind` is its name, so the spec's `kind` could not be a parameter. Rank and tally read **player** numbers
+  only: `realm` (the spec's other scope) waits for J2 (Phase 8), and the catalogue's `scope` says `["player"]` until then.
+  `title.give`'s `known` is optional (the realm), and its title may hold fills (C1b); `npc.greet`'s days are 7 when not
+  given. A title belongs to the program that gave it (`by`: the program's id), so `title.take` takes back only its own, as
+  the spec's "this story" reads; a campaign's later chapter cannot take back an earlier chapter's title. D3's setting is a
+  flag on the character (the card's button), not a local client preference, so it holds on every device. V2's symbols are
+  read from the grammar files and facts.json in Python (the dialect check's reader), not the C++ loader: every grammar's
+  symbol, any modifier, and the facts of the known sections (`player.*` by name); its world id rule takes only id-shaped words
+  (a place whose id is a plain word, "gate", is not a refusal). V2 runs at approval and in the world's Problems, not in the
+  offline Problems list (the offline drafts would otherwise warn of voices they cannot know). The greeting replaces the
+  window's opening line but the phase's `npc.line` still follows it. No undo at a run's end (nothing new in
+  `UNDONE_AT_END`). `RUNNER_VERSION` is `doc86-phase3`.
+- **Going live** on `ratw_ridgemere3` needs no migration; the game server restarted from this branch (titles on the
+  character record, greetings in the checkpoint, the window's voice, doubt), the story runner from this branch with the
+  rebuilt `libratw_story.so` (rank and tally need both twins), the Editor and the client released from it. Act I's chapters
+  can move onto a version that uses titles, thanks and ranks by `migrate`. A saved character from before this branch loads
+  with no titles; one saved by it loads on an older server with its titles dropped (an unknown field).

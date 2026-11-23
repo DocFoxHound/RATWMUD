@@ -164,6 +164,11 @@ void Game::windowFacts(const std::string& playerId, const DialogueSession& d, ta
     f["player.named"] = yes(knowsName(npcId, playerId));
     f["player.met"] = yes(known_.knows(playerId, npcId));
     f["player.newcomer"] = yes(isNewcomer(accountKey(playerId)));
+    // Doc 86, C4: the newest title a story named the wolf by that is known where this resident lives.
+    const auto title = storyTitleFor(playerId, npcId);
+    f["player.titled"] = yes(!title.empty());
+    if (!title.empty())
+        f["player.title"] = title;
     // What the player has heard: each claim's kind, and :self or :kin where it is about the one spoken to or theirs.
     std::string knows;
     if (const auto heard = playerClaims_.find(playerId); heard != playerClaims_.end())

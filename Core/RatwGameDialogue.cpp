@@ -1230,10 +1230,22 @@ void Game::dialogueOpen(Connection* c, const std::string& npcId, const std::stri
         return;
     if (!kept.asleepAtOpen)
     {
-        const auto line = worldStoryLine(npcId, playerId);
+        // Doc 86, C5: a story's greeting for this wolf, once, in the resident's own voice, instead of the usual one; and T5:
+        // the story's line for its wolves through the resident's voice too (#symbols# fill in their dialect).
+        const auto voiced = [&](const std::string& words) {
+            const auto said = inVoice(npcId, playerId, words, q.facts);
+            return said.empty() ? words : said;
+        };
+        const auto greet = takeStoryGreet(npcId, playerId);
+        auto line = worldStoryLine(npcId, playerId);
         if (!line.empty())
+            line = voiced(line);
+        if (!greet.empty())
+            kept.line = voiced(greet);
+        if (!line.empty())
+            kept.line += (kept.line.empty() ? "" : " ") + line;
+        if (!greet.empty() || !line.empty())
         {
-            kept.line += " " + line;
             if (!kept.history.empty()) kept.history.back().second = kept.line;
             dialogueSend(c, kept);
         }

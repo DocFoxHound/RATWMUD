@@ -33,6 +33,7 @@ AMOUNTS = ('quantity', 'coins')
 EVENT_FIELDS = ('actor', 'target', 'cell', 'item', 'detail')
 LIST_MAX = 500           # Values in a list variable.
 EACH_MAX = 500           # Turns of one For each.
+RANK_MAX = 500           # Wolves Rank puts in a list (doc 86, C3a).
 TEXT_MAX = 200           # Characters of a text value.
 ACTIONS_V2 = 24          # Actions of one trigger, counting those inside If, For each and Random.
 NEST_V2 = 3              # If, For each and Random inside one another.
@@ -77,7 +78,7 @@ FACT_SHAPES = {
 }
 FLOW_V2 = ('if', 'wait', 'each', 'random', 'run', 'enable', 'disable', 'stop', 'note', 'finish')
 STATE_V2 = ('subtract', 'multiply', 'clamp', 'turn on', 'turn off', 'toggle', 'remember', 'list add', 'list remove',
-            'list clear', 'pick', 'start timer', 'stop timer', 'shift')
+            'list clear', 'pick', 'start timer', 'stop timer', 'shift', 'rank')
 DEFAULTS = {'number': 0, 'switch': False, 'timer': None}
 
 
@@ -366,8 +367,9 @@ def _check_of(o, d, each):
     rules.require(o['of'] != '$each' or each == 'wolf', '$each is a wolf only inside For each over wolves.')
 
 
-def operand_type(o, phase, each=None, depth=0):
-    """What a value in a comparison or a Set is: number, switch or text; a malformed one raises."""
+def operand_type(o, phase, each=None, depth=0, share_ok=False):
+    """What a value in a comparison or a Set is: number, switch or text; a malformed one raises. `share_ok`: a quest's reward
+    with credit by share, where {"share": true} is the credited wolf's own amount (doc 86, C3b)."""
     import story_program as rules
 
     require, shape = rules.require, rules.shape
@@ -411,6 +413,19 @@ def operand_type(o, phase, each=None, depth=0):
         shape(o, ('purse',))
         require(story_quests.check_purse(o['purse']), story_quests.PURSE_WORDS)
         return 'number'
+    if 'share' in o:
+        # (Doc 86, C3b: in a reward of a quest credited by share, the credited wolf's own amount.)
+        shape(o, ('share',))
+        require(o['share'] is True and share_ok,
+                'A share ({"share": true}) is only in the rewards of a quest that rewards each wolf by their share (credit: share).')
+        return 'number'
+    if 'tally' in o:
+        # (Doc 86, J11: a number added up, or wolves counted, over every wolf of the story or a list; no 500 cap.)
+        shape(o, ('tally',))
+        require(each is None, 'Counting over every wolf (tally) is not allowed inside For each, nor inside a test for each wolf.')
+        require(depth <= 1, 'Counting over every wolf (tally) may be one level deep in arithmetic at most.')
+        _check_tally(o['tally'], phase)
+        return 'number'
     if 'audience' in o:
         # (Doc 86, C2: how many wolves the story has, how many are active, how many are online now.)
         shape(o, ('audience',))
@@ -429,8 +444,34 @@ def operand_type(o, phase, each=None, depth=0):
     require(key is not None, 'Unknown value.')
     shape(o, (key,))
     require(depth < 2 and isinstance(o[key], list) and len(o[key]) == 2, 'Arithmetic takes two values, two deep at most.')
-    require(all(operand_type(x, phase, each, depth + 1) == 'number' for x in o[key]), 'Arithmetic is on numbers.')
+    require(all(operand_type(x, phase, each, depth + 1, share_ok) == 'number' for x in o[key]), 'Arithmetic is on numbers.')
     return 'number'
+
+
+def _check_tally(t, phase):
+    """J11: {"sum": <a wolf's number>, "where": <a wolf's text or switch>, "is": <its value>, "over": "participants" |
+    {"list": <a list of wolves>}}; every part optional, where and is together."""
+    import story_program as rules
+
+    require = rules.require
+    require(isinstance(t, dict), 'A tally: what to add up (sum), which wolves (where and is), over whom.')
+    rules.shape(t, (), ('sum', 'where', 'is', 'over'))
+    require(('where' in t) == ('is' in t), 'A tally counts the wolves whose variable (where) is a value (is): name both, or neither.')
+    if 'sum' in t:
+        d = _decl(phase, t['sum'], ('number',), 'number')
+        require(d['scope'] == 'player' and 'mirror' not in d, f'"{t["sum"]}" is not a number each wolf keeps: a tally adds up '
+                                                              'a player number.')
+    if 'where' in t:
+        d = _decl(phase, t['where'], ('text', 'switch'), 'text or switch')
+        require(d['scope'] == 'player', f'"{t["where"]}" is not each wolf\'s own: a tally reads a player text or switch.')
+        ok = type(t['is']) is bool if d['type'] == 'switch' else isinstance(t['is'], str) and len(t['is']) <= TEXT_MAX
+        require(ok, f'"{t["where"]}" is a {d["type"]}: the tally\'s value is ' + ('on or off.' if d['type'] == 'switch' else 'a text.'))
+    over = t.get('over', 'participants')
+    require(over == 'participants' or (isinstance(over, dict) and set(over) == {'list'}),
+            'A tally is over the wolves of the story, or a list of wolves ({"list": ...}).')
+    if isinstance(over, dict):
+        d = _decl(phase, over['list'], ('wolves',), 'list of wolves')
+        require(d['scope'] not in PERSONAL, 'A tally is over a list of the story or the world.')
 
 
 # Doc 86, C1a: what may stand for an id parameter: a variable of its kind (or a text), the event's field that holds one, the
@@ -443,8 +484,9 @@ _KIND_WORDS = {'int': 'a number', 'wolf': 'a wolf', 'resident': 'a resident', 'p
                'faction': 'a faction', 'town': 'a town'}
 
 
-def check_operand_param(param, v, phase, each, reward=False):
-    """C1a: a value given for an effect's parameter marked operand, of the parameter's kind."""
+def check_operand_param(param, v, phase, each, reward=False, share_ok=False):
+    """C1a: a value given for an effect's parameter marked operand, of the parameter's kind. `share_ok` (C3b): a reward of a
+    quest credited by share, whose numbers may read the credited wolf's share."""
     import story_program as rules
 
     require = rules.require
@@ -454,7 +496,7 @@ def check_operand_param(param, v, phase, each, reward=False):
         require(not any('field' in o or 'each' in o or o.get('of') == '$each' for o in operands_in(v)),
                 f'A reward is given when the quest is done: {label} reads no event field and no loop value.')
     if kind == 'int':
-        require(operand_type(v, phase, each) == 'number', f'{label} is a number: give a number value.')
+        require(operand_type(v, phase, each, 0, share_ok) == 'number', f'{label} is a number: give a number value.')
         return
     if 'var' in v:
         rules.shape(v, ('var',), ('of',))
@@ -765,6 +807,23 @@ def _check_action_v2(a, cx, address, depth, each, last):
     elif kind in ('start timer', 'stop timer'):
         shape(a, ('do', 'var'), ('of',))
         var(kinds=('timer',), words='timer')
+    elif kind == 'rank':
+        # (Doc 86, C3a: the top wolves by a number each wolf keeps, into a list of wolves of the story or the world.)
+        shape(a, ('do', 'var', 'top', 'into'), ('over', 'list', 'min'))
+        require(each is None, 'Rank is not allowed inside For each: rank first, then loop over the list.')
+        d = _decl(phase, a['var'], ('number',), 'number')
+        require(d['scope'] == 'player' and 'mirror' not in d, f'"{a["var"]}" is not a number each wolf keeps: rank by a player number.')
+        require(operand_type(a['top'], phase) == 'number' and (not _num(a['top']) or 1 <= a['top'] <= RANK_MAX),
+                f'How many: 1 to {RANK_MAX}, or a number value.')
+        require('min' not in a or operand_type(a['min'], phase) == 'number', 'At least: a number, or a number value.')
+        over = a.get('over', 'participants')
+        require(over in ('participants', 'list') and ('list' in a) == (over == 'list'),
+                'Rank the wolves of the story, or those of a list (name the list).')
+        if over == 'list':
+            src = _decl(phase, a['list'], ('wolves',), 'list of wolves')
+            require(src['scope'] not in PERSONAL, 'Rank the wolves of a list of the story or the world.')
+        into = _decl(phase, a['into'], ('wolves',), 'list of wolves')
+        require(into['scope'] not in PERSONAL, 'Rank into a list of wolves of the story or the world.')
     elif kind == 'shift':
         shape(a, ('do', 'signal', 'days'), ('owner',))
         require(rules.identifier(a['signal']) and a.get('owner', 'story') in ('story', 'player'), 'Name the timer and whose it is.')
@@ -1144,6 +1203,7 @@ class Ctx:
         self.vars = phase.get('_vars', {}) if phase else {}
         self._audience = None
         self.members = None   # (Doc 86, R1: the cohort as a set while a test is counted for each wolf.)
+        self.share = None     # (Doc 86, C3b: the credited wolf's share, while a reward of a quest credited by share is given.)
 
     def audience(self):
         """Doc 86, C2: the story's wolves counted (all, active, online) and the active and online ones, worked out once per
@@ -1239,6 +1299,10 @@ def value_of(o, x):
         return o
     if 'audience' in o:
         return x.audience()[o['audience']]
+    if 'share' in o:
+        return MISSING if x.share is None else x.share
+    if 'tally' in o:
+        return tally(o['tally'], x)
     share = next((k for k in SHARES if k in o), None)
     if share is not None:
         r = counted(o[share], o.get('of', 'active'), x)
@@ -1281,6 +1345,65 @@ def value_of(o, x):
         product = a * b
         return product if abs(product) <= 2 ** 53 else float(a) * float(b)
     return a + b if key == 'plus' else a - b if key == 'minus' else min(a, b) if key == 'min' else max(a, b)
+
+
+def tally(t, x):
+    """J11: over every wolf of the story (or of a list of wolves), those whose `where` is `is` (every one without), their
+    `sum` added up (counted without); a wolf with no value adds 0. The native twin's Dispatch2::tally."""
+    state = x.state
+    cohort = state.get('cohort', [])
+    over = t.get('over', 'participants')
+    if isinstance(over, dict):
+        d = x.vars[over['list']]
+        members = set(cohort)
+        wolves = [w for w in (var_store(state, d['scope'], '') or {}).get(over['list'], initial(d)) if w in members]
+    else:
+        wolves = cohort
+    players = state.get('counters', {}).get('player', {})
+    where, total = t.get('where'), 0
+    blank = initial(x.vars[where]) if where else None
+    for w in wolves:
+        own = players.get(w, {})
+        if where is not None and own.get(where, blank) != t['is']:
+            continue
+        if 'sum' in t:
+            v = own.get(t['sum'], 0)
+            total += v if _num(v) else 0
+        else:
+            total += 1
+    return total
+
+
+def rank(a, x):
+    """C3a: the wolves of `over` with a stored number `var` (at least `min`), highest first, ties by the seed (fnv of seed|wolf),
+    the first `top` (1 to 500) into the list `into` (cleared first). A value not known for top or min: nothing changes."""
+    state = x.state
+    top = value_of(a['top'], x)
+    least = value_of(a['min'], x) if 'min' in a else None
+    if top is MISSING or least is MISSING or not _num(top) or (least is not None and not _num(least)):
+        x.note('skipped: rank has no value')
+        return
+    top = max(1, min(RANK_MAX, math.floor(top)))
+    cohort = state.get('cohort', [])
+    if a.get('over', 'participants') == 'list':
+        d = x.vars[a['list']]
+        members = set(cohort)
+        wolves = [w for w in (var_store(state, d['scope'], '') or {}).get(a['list'], initial(d)) if w in members]
+    else:
+        wolves = cohort
+    players, name, seed = state.get('counters', {}).get('player', {}), a['var'], str(state.get('seed', ''))
+    found = []
+    for w in wolves:
+        own = players.get(w)
+        if not own or name not in own or not _num(own[name]):
+            continue
+        v = own[name]
+        if least is not None and v < least:
+            continue
+        found.append((-v, fnv(seed + '|' + w), w))
+    found.sort()
+    d = x.vars[a['into']]
+    var_store(state, d['scope'], '', True)[a['into']] = [w for _, _, w in found[:top]]
 
 
 def mirror_value(d, x, of=None, wolf=None):
@@ -1862,6 +1985,8 @@ def _act(a, x, address):
             return None
         clock = x.vars[a['var']].get('clock', 'game')
         _set_var(a, x, lambda _: x.now(clock))
+    elif op == 'rank':
+        rank(a, x)
     elif op == 'shift':
         key = a['signal'] + '/' + x.actor if a.get('owner') == 'player' else a['signal']
         timer = state.get('timers', {}).get(key)

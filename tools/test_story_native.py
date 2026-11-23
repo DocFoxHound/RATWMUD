@@ -289,5 +289,48 @@ class ValuesParity(unittest.TestCase):
         self.assertGreater(skipped, 3, 'missing values skip with a note in both')
 
 
+
+class RankParity(ValuesParity):
+    """Doc 86, Phase 3: Rank the wolves (C3a) and a tally over every wolf (J11), fired by both twins on the same states."""
+
+    def program(self):
+        variables = [{'id': 'p_voice', 'type': 'number', 'scope': 'player'}, {'id': 'p_backs', 'type': 'text', 'scope': 'player'},
+                     {'id': 'p_sworn', 'type': 'switch', 'scope': 'player'}, {'id': 'n', 'type': 'number', 'scope': 'story'},
+                     {'id': 'least', 'type': 'number', 'scope': 'story'}, {'id': 'top', 'type': 'wolves', 'scope': 'story'},
+                     {'id': 'board', 'type': 'wolves', 'scope': 'world'}, {'id': 'pledged', 'type': 'wolves', 'scope': 'story'},
+                     {'id': 'sums', 'type': 'numbers', 'scope': 'story'}]
+        tallies = [{'sum': 'p_voice'}, {'sum': 'p_voice', 'where': 'p_backs', 'is': 'lamp'}, {'where': 'p_sworn', 'is': False}, {},
+                   {'sum': 'p_voice', 'over': {'list': 'pledged'}}, {'where': 'p_backs', 'is': 'stone', 'over': {'list': 'pledged'}}]
+        actions = [{'do': 'list add', 'var': 'sums', 'value': {'plus': [{'tally': t}, k * 1000]}} for k, t in enumerate(tallies)]
+        actions += [{'do': 'rank', 'var': 'p_voice', 'top': 2, 'into': 'top'},
+                    {'do': 'rank', 'var': 'p_voice', 'top': {'var': 'n'}, 'min': {'var': 'least'}, 'over': 'list', 'list': 'pledged', 'into': 'board'},
+                    {'do': 'set', 'var': 'n', 'value': {'times': [{'tally': {'sum': 'p_voice'}}, 2]}},
+                    {'do': 'each', 'over': 'list', 'list': 'top', 'actions': [
+                        {'do': 'effect', 'effect': {'kind': 'title.give', 'player': '$each', 'title': 'the Lamp of Greyfen'}}]}]
+        return {'format': 'ratw-story-program', 'version': 2, 'id': 'parity3', 'title': 'Ranks in both twins', 'start': 'a',
+                'audience': {'kind': 'open'}, 'variables': variables,
+                'phases': [{'id': 'a', 'journal': 'Ranks.', 'effects': [], 'exits': [], 'triggers': [
+                    {'id': 'all', 'on': 'conversation', 'audience': 'participant', 'actions': actions}]}],
+                'tests': [{'name': 'x', 'cohort': [], 'events': [], 'expect': ['a']}]}
+
+    def states(self):
+        A, B, E = self.ASH, self.BIRCH, self.ELM
+        base = {'phase': 'a', 'entered': 0, 'visits': 1, 'votes': {}, 'actor': '', 'seed': 's', 'began': 0, 'cohort': [A, B, E]}
+        yield 'ties', {**base, 'counters': {'player': {A: {'p_voice': 5, 'p_backs': 'lamp'}, B: {'p_voice': 5, 'p_backs': 'stone', 'p_sworn': True},
+                                                       E: {'p_voice': 1.5}},
+                                            'story': {'n': 3, 'least': 2, 'pledged': [A, E, 'player-gone']}}}, None
+        yield 'nothing set', {**base, 'counters': {}}, None
+        yield 'another seed', {**base, 'seed': 'other', 'counters': {'player': {A: {'p_voice': 5}, B: {'p_voice': 5}, E: {'p_voice': 5}},
+                                                                     'story': {'pledged': [B]}}}, None
+        yield 'the least unknown', {**base, 'counters': {'player': {A: {'p_voice': 2}}, 'story': {'n': 9}}}, None
+
+    def test_every_form_matches(self):
+        for name, state, _ in self.states():
+            with self.subTest(state=name):
+                after, trace = self.both(state, {'kind': 'conversation', 'id': 1, 'actor': self.ASH, 'target': 'rm111'})
+                self.assertIn('sums', after['counters']['story'])
+                self.assertIn('top', after['counters']['story'])
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -211,6 +211,7 @@ Version 2 actions may hold actions of their own, three deep, 24 in a trigger cou
 | `stop` | Skip the rest of the list. |
 | `note` | A line for the DM in the timeline, nowhere in the world. |
 | `finish` | End the run: `success`, `failure` or `abandoned`, with a line. For `$actor` or `$each`: that wolf's own ending. |
+| `rank` | **Rank the wolves:** the top 1 to 500 wolves by a number each keeps (a player variable), highest first, ties by the run's seed, into a list of wolves of the story or the world (cleared first). Those with no value, or below `min`, are left out; `over` a list ranks only its wolves. Then For each over the list names, thanks or rewards them. Not inside For each. |
 
 ```json
 {"do": "if", "if": {"test": "count in region", "region": "ford", "op": ">=", "value": 3},
@@ -353,6 +354,17 @@ The condition **Enough wolves took part** (`participation`) asks for a share, a 
   wolf's own variables (`of: "$each"`), switches, lists, days and quests, but never the world's facts or the event (it is
   counted outside one), 3 deep and 8 conditions at most.
 
+### Counting over every wolf
+
+`{"tally": {"sum": "p_voice"}}` adds up a number each wolf keeps, over every wolf of the story (5,000 at most, no 500 cap);
+`{"tally": {}}` counts them. `where` and `is` keep only the wolves whose own text or switch is that value: `{"tally": {"sum":
+"p_voice", "where": "p_backs", "is": "lamp"}}` is the voices of the wolves who back the lamp. `"over": {"list":
+"nh_pledge_coldwater"}` counts a story or world list's wolves instead. A wolf with no value adds 0.
+
+**Tally or For each?** For each runs up to 500 times and may do things for each wolf; a tally is one value, read in one go over
+all of them, for a number to compare, show or set (`{"do": "set", "var": "ch9_voices", "value": {"tally": {"sum":
+"p_voice"}}}`). A tally is not allowed inside For each (nor in a test for each wolf), and is one level deep in arithmetic at most.
+
 ## 7. Quests and rewards
 
 A quest is a version 2 story's quest object, shown in each wolf's journal:
@@ -403,6 +415,23 @@ rule above ends the quest when the carter dies.
 - **Again after a wait:** `"join": {"again": 7}`: after any end (done, failed or abandoned) the same wolf waits 7 game days
   before taking it again ("Not yet." in the window). With a `repeat`, done waits the longer of the two. Without it, a wolf
   who failed or abandoned may take it again at once, as before.
+- **Rewards in proportion:** a quest of the whole story (or a party) with `"credit": "share"` keeps what each wolf made (the
+  sum of their progress on its objectives), and in its rewards `{"share": true}` is that wolf's amount: `"coins": {"min": [20,
+  {"times": [{"share": true}, 2]}]}` pays two pennies a load, at most 20. `"creditMin": 2` leaves out every reward for a wolf
+  who made less than 2. Without `credit` the rewards are the same for everyone, as before. The quest editor's **Reward each by
+  their share** and **The least share**.
+- **Thanks by name:** `npc.greet` (a reward or a trigger's effect for the acting wolf) has a resident greet that wolf the next
+  time they open the resident's window, in the resident's own voice (`#symbols#` fill in their dialect), instead of the usual
+  greeting, once, within its days (7 when not given, 28 at most). A later greeting for the same wolf from the same resident
+  replaces it. It is a word of thanks: it stays when the run ends. In a quest's rewards it is for each wolf with credit:
+  `{"kind": "npc.greet", "npc": "rm111", "player": "$actor", "text": "#greet# You brought the axle. I'll not forget it."}`.
+- **Titles:** `title.give` names a wolf by a title (60 characters, no `#` or ids), known in the realm or one town, for good
+  (0 days) or up to 365 days. It is on their character card (they may hide it from others' closer look; residents still use
+  it), a deed of its naming goes into the town's talk, and the event **A wolf is given a title** (`title given`) follows. A
+  wolf carries 8 story titles at most (a ninth drops the oldest that lapses, else the oldest); given again, a title is renewed.
+  Residents use the newest known where they live: `say[player.titled=yes priority=4] They call you #player.title# now.`
+  `title.take` takes back one title this story gave, or every one. Titles stay when the run ends. Ranks and thanks together:
+  `rank` the wolves by what they carried, then For each over the list `title.give` and `npc.greet`.
 - **Who may take part:** audience `players` (a list), `active` (active in the last N days, frozen at publication), `open`
   (nobody at first: a wolf comes in by taking a quest, or by `participant.add`), `everyone` (the active wolves, and each who
   signs in after). Open and everyone take a `cap`, up to 5,000.
@@ -522,7 +551,10 @@ that starts `wolf-`, and none that runs letters into digits (the game takes "rm1
 id: write "at two in the morning", "third-rate"). `"claimKind":
 "story.cleared"` plants the **clearing**, written as the thing **not** done ("took the Customs House silver"): it is told
 "Ingrid Kendrick never took the Customs House silver". A clearing does not lower the old belief; putting a rumour to rest
-comes later (`belief.forget`).
+is `belief.forget`: residents (of one town, or everywhere) grow less sure of one kind of claim about a resident (a theft, an
+attempted theft, a story's rumour...): each holder's belief loses that share of its strength (10% to 100%), and one too faint
+(5% or less) is forgotten. `{"kind": "belief.forget", "subject": "rm_ingrid_kendrick", "claimKind": "story.rumour", "share":
+60}`. Twice at 50% leaves a quarter; 100% forgets it. It lasts.
 
 **Figures** (`figure.set`, `figure.clear`; a builder's on a hosted world): who residents mean by the ruler, the lord, the
 captain, the high priest, the hero or the villain (`#world.figure_villain#` in their lines), known in the realm, in a town,
@@ -545,6 +577,17 @@ names against the world (residents, wolves, places and tiles, factions, items, d
 templates), and refuses what the world does not have. A publication ticket comes back, good for a day; **Publish** starts
 the run: the audience is frozen (unless it is open or everyone), the first phase opens, and the game is told. A campaign of
 chapters is approved from **Campaigns → New campaign…** (section 4).
+
+Approval also reads **every word the story says** (`tools/story_words.py`, also the Problems list and the CLI
+`python3 tools/story_words.py --stories DIR`): it refuses the words `Data/Storylines/words.json` lists, with what to say
+instead (the young of wolves are pups; the world's two powers are the Bright One and the Dark One, never another word for
+them; a private message is never called anything else), a word that looks like
+an id in anything a wolf reads (`rm111`, `rm_eleanor_saltcot`, `wolf-…`, or any of the world's resident or place ids), a
+`#symbol#` the talk library does not have (or one in words no resident says), a stray `[` or an unclosed `#`, words too long
+with every fill at its widest, and a banner with a resident's face that quotes them. It warns of a resident's words in
+another dialect's set phrases than their own (Fenshore-raised residents speak Mirebridge's; an accent of `none` is plain),
+of a banner with a resident's face at all, of `npc.speak` said to a wolf ("you": the window is the place), and of a
+clearing that begins "never" (the game says "never" itself).
 
 Try a new story on a throwaway copy of the world before the live one: the live world's players are not test subjects.
 
@@ -666,7 +709,8 @@ takes back what the story held, as it was before the story first touched it. Wha
 | `npc.spare`, `npc.protect` with `lasts: run` | the resident is no longer spared, or protected, by this run (another story's hold stays) |
 | `npc.spare`, `npc.protect` with `lasts: campaign` | **stay** until the campaign ends (or an admin lets go of its holds) |
 | `talk.remember` | the residents forget it, unless `keep` (then it lasts its days) |
-| `belief.plant`, `figure.set` | **stay**: a rumour fades by the world's rules; a figure until cleared (or undone from the timeline) |
+| `belief.plant`, `belief.forget`, `figure.set` | **stay**: a rumour fades by the world's rules, and so does the doubt put on it; a figure until cleared (or undone from the timeline) |
+| `title.give`, `npc.greet` | **stay**: a title lasts its days (or for good) until `title.take`; a greeting waits its days for its wolf |
 | `journal.note` | **stays**: the wolf's journal keeps it |
 | items given or placed, coins paid, deeds, standing, warrants, injuries, relations, market events, prices, projects, residents killed | **stay**: not a rollback |
 
@@ -692,6 +736,9 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | An effect was not sent | the firing's history | "skipped: coins has no value": a value it reads had none (a wolf not in the story, a purse not known). A reward with no value is in the timeline as "Reward not given". |
 | A name shows as «wolf: …» or a fill is empty | Rehearse → Step through | A rehearsal shows the token the game turns into a name. An empty fill had no value (noted in the firing). |
 | An objective never ticks | Quests → the objective | `where` (the cells or the region), `credit` (the actor, the target, those present: is the story watching its wolves?), and a `camp_story_` name the story spawns. |
+| A greeting was never said | the resident's window | It is said once, the next time that wolf opens that resident's window (not while they sleep), within its days; a later greeting replaced it? |
+| A resident never uses a title | the line's gate | `player.titled=yes` and `#player.title#`; a title known in a town is only that town's residents'. |
+| Approval refuses words | the words | a word of `words.json` (it says what to write instead), an id in speech, a `#symbol#` the library lacks, a banner that quotes a resident: see section 10. |
 | Problems in the draft | Story Creator → **Problems** | Every problem at once with **Go**, and the world's warnings (a signal nothing hears, a counter nothing sets, an id the world lacks). |
 
 ## 16. Limits
@@ -718,6 +765,9 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | An objective | `where` 1 to 16 cells or a region; a goal from a value 1 to 1,000,000; `join.again` 1 to 365 game days; 500 wolves credited by one event |
 | Fills | each at its widest: a number 11, a text 200, a wolf's name 24, another name 40 |
 | A mirror; a camp's name; a prefix | 16 names; 3 to 30 of `a-z0-9_`; 2 to 8 small letters |
+| Rank; a tally | the top 1 to 500, over 5,000 wolves; a tally over 5,000, one level deep in arithmetic; neither inside For each |
+| A title; a greeting | 60 characters, 8 a wolf, 1 to 365 days or for good; 200 characters, 1 to 28 days, one a wolf a resident, 20,000 in all |
+| Putting a rumour to rest | 10% to 100% a time; forgotten at 5% |
 
 <!-- reference:begin (made by tools/story_guide.py from Data/Storylines/trigger-catalogue.json: do not edit by hand) -->
 
@@ -727,7 +777,7 @@ Made from the trigger catalogue (`Data/Storylines/trigger-catalogue.json`), the 
 
 ### Events
 
-209 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
+210 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
 
 #### Story engine
 
@@ -3659,6 +3709,21 @@ A wolf's skill passes a whole step by practice (quantity: the new whole value), 
 {"id": "when-skill-practised", "on": "skill practised", "actions": [{"do": "note", "text": "A wolf's skill grows a step"}]}
 ```
 
+<a id="event-title-given"></a>**`title given`**: A wolf is given a title (mission evidence)
+
+A story named the wolf by a title (detail: the title; target: the story's run; item: realm or town:<id>).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | the wolf (wolf) | any wolf |
+| `target` | the story run (run) | any story |
+| `item` | where it is known (realm, or town:<town>) (text) | anywhere |
+| `detail` | the title (text) | any |
+
+```json
+{"id": "when-title-given", "on": "title given", "actions": [{"do": "note", "text": "A wolf is given a title"}]}
+```
+
 #### Quests and parties
 
 <a id="event-quest-accepted"></a>**`quest accepted`**: A wolf takes on a quest
@@ -4914,6 +4979,25 @@ Reads: Pick one of **ropes** at random as **ropes**
 {"do": "pick", "list": "ropes", "var": "ropes"}
 ```
 
+<a id="action-rank"></a>**`rank`**: Rank the wolves (v2)
+
+Orders wolves by a number each wolf has (a player variable), highest first, ties broken by the story's seed, and puts the first ones into a list of wolves (cleared first). Wolves without a value, or below the least, are left out. Use For each over that list to name, thank or reward them. Not inside For each.
+
+Reads: Put the top **1** wolves of **the wolves of the story** by **ropes** (at least ) into **ropes**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `var` | by | variable; a variable of type number |
+| `top` | how many (1 to 500) | operand |
+| `over` | among | choice; one of: `participants`, `list`; default "participants" |
+| `list` | the list | variable; a variable of type wolves; optional |
+| `min` | at least | operand; optional |
+| `into` | into the list | variable; a variable of type wolves |
+
+```json
+{"do": "rank", "var": "ropes", "top": 1, "over": "participants", "into": "ropes"}
+```
+
 <a id="action-start-timer"></a>**`start timer`**: Start a timer variable (v2)
 
 Sets a timer variable to now (its clock); Days since and "since" count from it.
@@ -5173,7 +5257,7 @@ Reads: Go to the phase **muster**
 
 ### Effects
 
-78 world effects, each one action `{"do": "effect", "effect": {...}}` (or, for a phase, one of what it sends as it opens). Each becomes an order the game applies and may refuse, with a receipt, except the story's own. On any effect the game applies, `ifRefused` says what the story does when it is refused: `pause` (the default), `skip`, or `when here` (an effect to one wolf, held until they are next in the world, `waitDays` 1 to 90).
+82 world effects, each one action `{"do": "effect", "effect": {...}}` (or, for a phase, one of what it sends as it opens). Each becomes an order the game applies and may refuse, with a receipt, except the story's own. On any effect the game applies, `ifRefused` says what the story does when it is refused: `pause` (the default), `skip`, or `when here` (an effect to one wolf, held until they are next in the world, `waitDays` 1 to 90).
 
 #### Telling the wolves
 
@@ -5615,6 +5699,40 @@ Reads: **6** residents of **greyfen** come to believe **rm111** **was seen at th
 {"do": "effect", "effect": {"kind": "belief.plant", "subject": "rm111", "claim": "was seen at the ford at midnight", "town": "greyfen", "count": 6, "confidence": 60}}
 ```
 
+<a id="effect-npc-greet"></a>**`npc.greet`**: A resident greets one wolf
+
+The next time this wolf opens the resident's window (within the days; 7 when not given), the resident greets them with these words, in their own voice (#symbols# fill in their dialect), instead of their usual greeting: once. A later greeting for the same wolf from the same resident replaces it. A word of thanks: not taken back when the story ends. In a quest's rewards it is for each wolf with credit.
+
+Reads: **rm111** greets **$actor**: **The bells ring for the ford.** (for days)
+
+| Parameter | What | Kind |
+|---|---|---|
+| `npc` | the resident | resident |
+| `player` | the wolf | wolf |
+| `text` | the greeting | text; up to 200 characters |
+| `days` | for days | int; 1 to 28; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "npc.greet", "npc": "rm111", "player": "$actor", "text": "The bells ring for the ford."}}
+```
+
+<a id="effect-belief-forget"></a>**`belief.forget`**: Put a rumour to rest
+
+Residents (of one town, or everywhere) grow less sure of one kind of claim about a resident (a theft, an attempted theft, a story's rumour...): each holder's belief loses that share of its strength, and one too faint is forgotten. Lasting: not taken back when the story ends.
+
+Reads: Residents believe **10**% less that **rm111** did **theft**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `subject` | about | resident |
+| `claimKind` | the kind of claim | choice; one of: `theft`, `theft.attempt`, `theft.unseen`, `assault`, `assault.unseen`, `violent`, `warrant`, `promise.broken`, `prowling`, `story.rumour` |
+| `town` | in the town | town; optional |
+| `share` | by (%) | int; 10 to 100 |
+
+```json
+{"do": "effect", "effect": {"kind": "belief.forget", "subject": "rm111", "claimKind": "theft", "share": 10}}
+```
+
 <a id="effect-figure-set"></a>**`figure.set`**: Name a figure of the realm (needs a builder)
 
 Who residents mean by the ruler, the lord, the captain, the high priest, the hero or the villain (#world.figure_<role># in their lines), where they are known. A resident, a wolf, or a name only. It stays after the story; Clear the figure takes it away.
@@ -5855,6 +5973,39 @@ Reads: Revoke **$actor**'s deed **Kept the ford.**
 
 ```json
 {"do": "effect", "effect": {"kind": "deed.revoke", "player": "$actor", "detail": "Kept the ford."}}
+```
+
+<a id="effect-title-give"></a>**`title.give`**: Name a wolf by a title
+
+A title the wolf carries: shown on their character card (unless they hide it) and to residents, who may use it (the talk fact player.title). Known in the realm or one town. 0 days (or none given): for good. A wolf carries up to 8 story titles; the newest is the one used; given again, it is renewed. A deed of its naming goes into the town's talk. Not taken back when the story ends: it lapses by its days, or Take a title back.
+
+Reads: **$actor** is named **The ford is open**, known, for days
+
+| Parameter | What | Kind |
+|---|---|---|
+| `player` | the wolf | wolf |
+| `title` | the title | text; up to 60 characters |
+| `known` | known | choice; one of: `realm`, `town`; optional; default "realm" |
+| `town` | the town | town; optional |
+| `days` | days (0: for good) | int; 0 to 365; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "title.give", "player": "$actor", "title": "The ford is open"}}
+```
+
+<a id="effect-title-take"></a>**`title.take`**: Take a title back
+
+Takes back a title this story gave (or, with no title named, every title it gave this wolf).
+
+Reads: **$actor** is no longer called
+
+| Parameter | What | Kind |
+|---|---|---|
+| `player` | the wolf | wolf |
+| `title` | the title | text; up to 60 characters; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "title.take", "player": "$actor"}}
 ```
 
 #### Places and regions

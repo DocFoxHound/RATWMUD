@@ -184,14 +184,17 @@ def reward_wolves(effect):
     $actor, or one of its values reads a value of theirs) rather than once."""
     per_wolf = [param['key'] for param in rules.EFFECT_PARAMS[effect['kind']]
                 if param['type'] in ('wolf', 'character') and effect.get(param['key']) == '$actor']
-    reads_wolf = any(isinstance(v, dict) and any(o.get('of') == '$actor' for o in triggers.operands_in(v)) for v in effect.values())
+    reads_wolf = any(isinstance(v, dict) and any(o.get('of') == '$actor' or o.get('share') is True for o in triggers.operands_in(v))
+                     for v in effect.values())
     return per_wolf, bool(per_wolf or reads_wolf)
 
 
-def _check_reward(effect, qid, regions, scenes, phase=None):
-    # (Doc 86, C1a: a reward's value is worked out when it is given, the credited wolf as $actor.)
+def _check_reward(effect, qid, regions, scenes, phase=None, by_share=False):
+    # (Doc 86, C1a: a reward's value is worked out when it is given, the credited wolf as $actor; C3b: in a quest credited by
+    # share, {"share": true} is that wolf's own amount.)
     rules.validate_effect(effect, 'quest ' + qid, regions, scenes,
-                          operand=None if phase is None else lambda param, v: triggers.check_operand_param(param, v, phase, None, True))
+                          operand=None if phase is None else
+                          lambda param, v: triggers.check_operand_param(param, v, phase, None, True, by_share))
     each = phase is not None and effect.get('kind') in rules.EFFECT_PARAMS and reward_wolves(effect)[1]
     for param in rules.EFFECT_PARAMS.get(effect['kind'], ()):
         if phase is not None and param.get('fills') and isinstance(effect.get(param['key']), str):
@@ -206,7 +209,7 @@ def check_quest(q, p, ids):
     """One quest of a program (3.6)."""
     rules.shape(q, ('id', 'title', 'objectives'),
                 ('summary', 'scope', 'contributors', 'lifetime', 'phases', 'repeat', 'giver', 'board', 'offer', 'handIn', 'join',
-                 'abandon', 'fail', 'rewards', 'bonus'))
+                 'abandon', 'fail', 'rewards', 'bonus', 'credit', 'creditMin'))
     rules.require(rules.identifier(q['id']) and q['id'] not in ids, 'Give every quest a unique ID.')
     ids.add(q['id'])
     qid = q['id']
@@ -274,12 +277,19 @@ def check_quest(q, p, ids):
     rules.require(isinstance(fails, list) and len(fails) <= FAIL_MAX, f'quest {qid}: up to {FAIL_MAX} fail rules.')
     for rule in fails:
         _check_fail(rule)
+    # (Doc 86, C3b: a quest of the story or a party may reward each wolf by their share of what was made.)
+    rules.require(q.get('credit', 'share') == 'share', f'quest {qid}: credit is "share" (each wolf rewarded by their share), or left out.')
+    rules.require('credit' not in q or scope in ('story', 'party'),
+                  f'quest {qid}: rewarding each wolf by their share is for a quest of the whole story or a party.')
+    rules.require('creditMin' not in q or ('credit' in q and rules.integer(q['creditMin'], 1, 1_000_000)),
+                  f'quest {qid}: the least share (creditMin, 1 to 1,000,000) is for a quest that rewards by share.')
+    by_share = q.get('credit') == 'share'
     scenes = {s['id']: s for s in p.get('scenes', []) if isinstance(s, dict) and 'id' in s}
     for key, most in (('rewards', REWARDS_MAX), ('bonus', BONUS_MAX)):
         effects = q.get(key, [])
         rules.require(isinstance(effects, list) and len(effects) <= most, f'quest {qid}: up to {most} {key}.')
         for e in effects:
-            _check_reward(e, qid, regions, scenes, phase)
+            _check_reward(e, qid, regions, scenes, phase, by_share)
     rules.require(not q.get('bonus') or any(o.get('optional') for o in objectives),
                   f'quest {qid}: a bonus is for doing the optional objectives too: add one.')
 
@@ -638,6 +648,14 @@ class Run:
         if wolf not in c.setdefault('credit', []):
             c['credit'].append(wolf)
 
+    def share(self, q, c, wolves, gain):
+        """C3b: in a quest credited by share, each wolf's own amount of what was made (`shares`, {wolf: n})."""
+        if q.get('credit') != 'share' or gain <= 0:
+            return
+        shares = c.setdefault('shares', {})
+        for wolf in wolves:
+            shares[wolf] = shares.get(wolf, 0) + gain
+
     def objective_done(self, q, holder, c, o, actor):
         rec = c['objectives'].setdefault(o['id'], {})
         if rec.get('done') or rec.get('failed'):
@@ -668,11 +686,16 @@ class Run:
         for o in q['objectives']:
             c['objectives'].setdefault(o['id'], {})['shown'] = True
         wolves = self.credited(q, c)
-        self.reward(q, q.get('rewards', []), wolves)
+        shares = None
+        if q.get('credit') == 'share':
+            # (C3b: each wolf's own amount; a wolf below the least share is left out.)
+            shares = c.get('shares', {})
+            wolves = [w for w in wolves if shares.get(w, 0) >= q.get('creditMin', 0)]
+        self.reward(q, q.get('rewards', []), wolves, shares)
         optional = [o for o in q['objectives'] if o.get('optional')]
         if q.get('bonus') and optional and all(c['objectives'].get(o['id'], {}).get('done') for o in optional):
             c['bonus'] = True
-            self.reward(q, q['bonus'], wolves)
+            self.reward(q, q['bonus'], wolves, shares)
         self.fact('quest completed', actor, q['id'])
 
     def credited(self, q, c):
@@ -683,7 +706,7 @@ class Run:
         helped = set(c.get('credit', ()))
         return [m for m in members if m not in left or m in helped]
 
-    def reward(self, q, effects, wolves):
+    def reward(self, q, effects, wolves, shares=None):
         """Rewards as story effects: one for each wolf with credit where the effect names $actor (or reads a value of theirs),
         else once. Doc 86, C1a: a value is worked out as it is given, the credited wolf as $actor; with none, that reward is not
         given (noted in the state's rewardNotes)."""
@@ -695,6 +718,8 @@ class Run:
                     e[key] = wolf
                 if any(isinstance(v, dict) for v in e.values()) or any(isinstance(v, str) and '{' in v for v in e.values()):
                     x = self.ctx(wolf or '')
+                    if shares is not None and wolf:
+                        x.share = shares.get(wolf, 0)
                     e = triggers.resolve_effect(e, x)
                     if e is None:
                         notes = self.state.setdefault('rewardNotes', [])
@@ -782,7 +807,9 @@ class Run:
                     if (o.get('goalLive') or unread(o, c)) and c['status'] == 'active':
                         self.read_goals(q, c, wolves[0], live_only=True)
                     goal = goal_of(o, c)
-                    rec['n'] = min(rec.get('n', 0) + gain, goal)
+                    before = rec.get('n', 0)
+                    rec['n'] = min(before + gain, goal)
+                    self.share(q, c, wolves, rec['n'] - before)
                     progressed = True
                     who += wolves
                     if rec['n'] >= goal:
@@ -993,11 +1020,15 @@ class Run:
                         self.fail(q, holder, c, wolf)
             elif kind == 'objective.complete':
                 self.credit(c, wolf)
+                if not rec.get('done') and not rec.get('failed'):
+                    self.share(q, c, [wolf], max(0, goal_of(o, c) - rec.get('n', 0)))
                 self.objective_done(q, holder, c, o, wolf)
             elif kind == 'objective.progress' and c['status'] == 'active' and not rec.get('done') and not rec.get('failed'):
                 if o.get('goalLive') or unread(o, c):
                     self.read_goals(q, c, wolf, live_only=True)
-                rec['n'] = min(rec.get('n', 0) + effect['amount'], goal_of(o, c))
+                before = rec.get('n', 0)
+                rec['n'] = min(before + effect['amount'], goal_of(o, c))
+                self.share(q, c, [wolf], rec['n'] - before)
                 self.credit(c, wolf)
                 if rec['n'] >= goal_of(o, c):
                     rec.update(done=True, shown=True)

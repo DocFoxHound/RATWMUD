@@ -492,6 +492,16 @@ def validate_effect(effect, pid, regions=None, scenes=None, operand=None):
         require(('region' in effect) == (known == 'region') and ('house' in effect) == (known == 'house'),
                 f'{pid}: a figure known in a town or land names it, and one known among a House names the House; only then.')
         require('name' not in effect or (effect['name'].strip() == effect['name'] and '\n' not in effect['name']), f'{pid}: a figure\'s name is one line.')
+    # (Doc 86, Phase 3: a title is one line with no symbols, known in the realm or a named town; a greeting is one line.)
+    if kind in ('title.give', 'title.take') and 'title' in effect:
+        t = effect['title']
+        plain = triggers.FILL.sub(' ', t)   # (Its fills are names, filled as it is sent: C1b.)
+        require(t.strip() == t and t and not any(ch in t for ch in '#[]\n') and not claim_has_id(plain),
+                f'{pid}: a title is one line of words, with no #symbols#, brackets or ids.')
+    if kind == 'title.give':
+        require(('town' in effect) == (effect.get('known', 'realm') == 'town'), f'{pid}: a title known in a town names the town, and only then.')
+    if kind == 'npc.greet':
+        require(effect['text'].strip() == effect['text'] and '\n' not in effect['text'], f'{pid}: a greeting is one line.')
     if kind in ('visitor.add', 'visitor.leave'):
         require(re.fullmatch(r'[a-z0-9][a-z0-9_-]{2,39}', effect['visitor']) is not None,
                 f'{pid}: a stranger\'s id is 3 to 40 small letters, digits, - and _.')
@@ -1696,9 +1706,18 @@ def variable_uses(p):
                     out.setdefault(x[key], []).append((path, at, 'read'))
             for side in ('left', 'right', 'value'):
                 for o in triggers.operands_in(x.get(side)):
-                    for key in reads:
-                        if key in o:
-                            out.setdefault(o[key], []).append((path, at, 'read'))
+                    operand(o, path, at)
+
+    def operand(o, path, at):
+        for key in reads:
+            if key in o:
+                out.setdefault(o[key], []).append((path, at, 'read'))
+        t = o.get('tally')
+        if isinstance(t, dict):
+            # (Doc 86, J11: a tally reads what it adds up, the variable it picks wolves by, and the list it is over.)
+            for name in (t.get('sum'), t.get('where'), t.get('over', {}).get('list') if isinstance(t.get('over'), dict) else None):
+                if isinstance(name, str):
+                    out.setdefault(name, []).append((path, at, 'read'))
 
     for pi, path, rules_ in scopes:
         for ti, t in enumerate(rules_):
@@ -1712,13 +1731,19 @@ def variable_uses(p):
                     for c in [a['if'], *(b['if'] for b in a.get('elif', ()))]:
                         condition(c, *where)
                 if 'var' in a and a['do'] != 'each':
-                    out.setdefault(a['var'], []).append((*where, 'write'))
+                    # (Doc 86, C3a: Rank reads its number and writes the list it ranks into.)
+                    out.setdefault(a['var'], []).append((*where, 'read' if a['do'] == 'rank' else 'write'))
+                if a['do'] == 'rank' and 'into' in a:
+                    out.setdefault(a['into'], []).append((*where, 'write'))
                 if 'list' in a:
                     out.setdefault(a['list'], []).append((*where, 'read'))
-                for o in triggers.operands_in(a.get('value')):
-                    for key in reads:
-                        if key in o:
-                            out.setdefault(o[key], []).append((*where, 'read'))
+                for side in ('value', 'top', 'min'):
+                    for o in triggers.operands_in(a.get(side)):
+                        operand(o, *where)
+                if a['do'] == 'effect' and isinstance(a.get('effect'), dict):
+                    for v in a['effect'].values():
+                        for o in triggers.operands_in(v):
+                            operand(o, *where)
     return out
 
 

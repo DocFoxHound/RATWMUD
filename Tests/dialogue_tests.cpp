@@ -2017,6 +2017,94 @@ void storyTalkInTheWindow()
     fs::remove_all(root);
 }
 
+// Doc 86, Phase 3: a story's greeting for one wolf (C5), said once in the resident's own dialect instead of the usual
+// one, gone once lapsed, replaced by a later one; and a phase's npc.line said in the speaker's voice too (T5).
+void storyGreetingsInTheWindow()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-dialogue-story-greet-" + std::to_string(::getpid()));
+    fs::remove_all(root);
+    const auto worldPath = writeStrip(root / "world");
+    const auto talk = root / "talk";
+    fs::copy(RATW_SOURCE_DIR "/Data/Talk", talk, fs::copy_options::recursive);
+    std::ofstream(talk / "grammar" / "plain.grammar", std::ios::app) << "\nnh_hello = Good day to you.\n";
+    std::ofstream(talk / "grammar" / "larkfield.grammar", std::ios::app) << "\nnh_hello = Fair day and fair trade to you.\n";
+    {
+        std::ifstream in(talk / "dialogue" / "resident.tree");
+        std::stringstream text;
+        text << in.rdbuf();
+        auto tree = text.str();
+        const auto at = tree.find("say[player.asked=person");
+        expect(at != std::string::npos, "the resident's hub has its ledger lines");
+        tree.insert(tree.find('\n', at) + 1, "say[player.titled=yes priority=16] They call you #player.title# now, don't they?\n");
+        std::ofstream(talk / "dialogue" / "resident.tree") << tree;
+    }
+    Town town(worldPath, (root / "save").string(), 120, true, 3 * 86400, "", "", talk.string());
+    auto& w = town.g.world();
+    town.enter(town.ash, 1, "player-ash", "Ash", 1, 9.5);
+    town.enter(town.bo, 2, "player-bo", "Bo", 1, 9.5);
+    w.setTimeOfDay(12);
+    w.setTalkOrigins({{"u1", {"larkfield", "broad"}}, {"u2", {"", "none"}}});
+    town.run(2);
+    const auto run = std::string("world-greetings");
+    auto phase = parsed(R"({"title":"Greetings","phase":"one","journal":"Thanks.","visit":1,"program":"lamp-pack",
+                            "lines":[{"npc":"u2","text":"#nh_hello# The lamps are lit again."}]})");
+    phase.set("players", parsed("[\"" + town.ash.entityId + "\",\"" + town.bo.entityId + "\"]"));
+    expect(town.g.applyDmAct({"1", "story.phase", run, "dm", json::dump(phase)}).ok, "the story opens with Ash and Bo");
+    int n = 2;
+    const auto order = [&](const std::string& kind, const std::string& target, const std::string& payload) {
+        auto p = parsed(payload);
+        p.set("run", run);
+        p.set("visit", 1);
+        return town.g.applyDmAct({std::to_string(++n), kind, target, "dm", json::dump(p)});
+    };
+    const auto line = [&](Client& c, const std::string& npc) {
+        if (const auto* d = town.g.dialogueOf(c.entityId))
+            town.g.command(&c, cmd({{"type", "dialogue_close"}, {"session", d->id}, {"why", "closed"}}));
+        town.run(3.5);                              // (Past the window's quiet reopening: each opening a fresh greeting.)
+        auto* u = w.entity(npc);
+        u->cellId = cellId(1);
+        u->position = {10.5, 9.5};
+        w.stop(npc);
+        town.place(c, 1, 9.5);
+        c.events.clear();
+        town.g.command(&c, cmd({{"type", "dialogue_open"}, {"npc", npc}, {"entry", "talk"}}));
+        const auto* d = lastOf(c, "dialogue");
+        const auto said = d ? d->string("line") : std::string();
+        if (const auto* open = town.g.dialogueOf(c.entityId))
+            town.g.command(&c, cmd({{"type", "dialogue_close"}, {"session", open->id}, {"why", "closed"}}));
+        return said;
+    };
+    const auto usual = line(town.ash, "u1");
+    expect(!usual.empty() && !contains(usual, "oil"), "u1's usual greeting: " + usual);
+    expect(order("npc.greet", "u1", R"({"player":")" + town.ash.entityId + R"(","text":"#nh_hello# Thank you for the oil.","days":2})").ok,
+           "u1 will thank Ash");
+    expect(line(town.bo, "u1").find("oil") == std::string::npos, "not Bo");
+    auto said = line(town.ash, "u1");
+    expect(said == "Fair day and fair trade to you. Thank you for the oil.", "once, in u1's Larkfield words, instead of the usual: " + said);
+    said = line(town.ash, "u1");
+    expect(!contains(said, "oil"), "and only once: " + said);
+    // A later greeting replaces one waiting; one that has lapsed is never said.
+    expect(order("npc.greet", "u1", R"({"player":")" + town.ash.entityId + R"(","text":"The first words.","days":5})").ok &&
+               order("npc.greet", "u1", R"({"player":")" + town.ash.entityId + R"(","text":"The second words.","days":5})").ok, "two greetings");
+    said = line(town.ash, "u1");
+    expect(said == "The second words.", "the later one: " + said);
+    expect(order("npc.greet", "u1", R"({"player":")" + town.ash.entityId + R"(","text":"Too late now.","days":1})").ok, "a greeting for a day");
+    w.advanceCalendar(1.5);
+    said = line(town.ash, "u1");
+    expect(!contains(said, "Too late"), "lapsed after its days: " + said);
+    // C4: the title residents use, in a line gated on it, where it is known.
+    expect(order("title.give", town.ash.entityId, R"({"title":"the Lamp of the Ford"})").ok, "Ash is named");
+    said = line(town.ash, "u1");
+    expect(said == "They call you the Lamp of the Ford now, don't they?", "u1 uses the title: " + said);
+    expect(!contains(line(town.bo, "u1"), "Lamp"), "not for Bo");
+    // T5: the phase's line for its wolves, said in u2's voice (plain: no accent), its #symbols# filled.
+    w.setTimeOfDay(12);
+    town.run(2);
+    said = line(town.ash, "u2");
+    expect(contains(said, "Good day to you. The lamps are lit again.") && !contains(said, "#"), "npc.line in the speaker's voice: " + said);
+    fs::remove_all(root);
+}
+
 } // namespace
 
 int main()
@@ -2035,6 +2123,7 @@ int main()
         windowMantle();
         storyQuestsInTheWindow();
         storyTalkInTheWindow();
+        storyGreetingsInTheWindow();
     }
     catch (const std::exception& e)
     {

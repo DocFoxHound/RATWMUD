@@ -663,6 +663,21 @@ bool Game::socialCommand(Connection* c, const Value& j, Result& result)
         result = {dropped, dropped ? "You let it be known you'd rather not be called that." : "That isn't a name folk call you.", {}};
         return true;
     }
+    if (verb == "hidetitles")
+    {
+        // Doc 86, D3: a player hides the titles stories named them by from their card (residents still use them).
+        auto* me = world_.entity(id);
+        if (!me || me->npc)
+        {
+            result = {false, "Only a wolf has titles.", {}};
+            return true;
+        }
+        me->titlesHidden = j.boolean("hidden");
+        characters_[id] = *me;
+        record(Character, id);
+        result = {true, me->titlesHidden ? "Others no longer see your titles on your card." : "Others see your titles on your card again.", {}};
+        return true;
+    }
     if (verb == "star")
     {
         const auto target = j.string("target");

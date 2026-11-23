@@ -178,10 +178,17 @@ export function QuestEditor({index, select}: {index: number; select: (r: Ref) =>
         <label>Summary (the journal's first line)<textarea rows={2} maxLength={300} value={q.summary ?? ''} onChange={e => set('summary', e.target.value, key + ':summary')}/></label>
         <div className="wb-head">
             <label>Whose<select value={q.scope ?? 'player'} onChange={e => { const s = e.target.value as Quest['scope'];
-                const {contributors: _c, repeat: _r, ...rest} = q; void _c; void _r; save({...rest, scope: s, ...(s !== 'story' && q.repeat ? {repeat: q.repeat} : {})}); }}>
+                const {contributors: _c, repeat: _r, credit: _s, creditMin: _m, ...rest} = q; void _c; void _r; void _s; void _m;
+                save({...rest, scope: s, ...(s !== 'story' && q.repeat ? {repeat: q.repeat} : {}),
+                      ...(s !== 'player' && q.credit ? {credit: q.credit, ...(q.creditMin ? {creditMin: q.creditMin} : {})} : {})}); }}>
                 <option value="player">each wolf's own copy</option><option value="party">one copy for the wolf's party</option><option value="story">one copy for everyone</option></select></label>
             {q.scope === 'story' && <label>At least … different wolves<input type="number" min={1} max={500} value={q.contributors ?? 1}
                 onChange={e => set('contributors', Math.max(1, Math.min(500, Math.round(e.target.valueAsNumber || 1))) === 1 ? undefined : Math.round(e.target.valueAsNumber), key + ':contributors')}/></label>}
+            {/* (Doc 86, C3b: each wolf rewarded by what they made: {"share": true} in a reward is that wolf's amount.) */}
+            {(q.scope === 'story' || q.scope === 'party') && <label className="wb-check"><input type="checkbox" checked={q.credit === 'share'} onChange={e => {
+                const {credit: _s, creditMin: _m, ...rest} = q; void _s; void _m; save(e.target.checked ? {...rest, credit: 'share'} : rest); }}/>Reward each by their share</label>}
+            {q.credit === 'share' && <label>The least share<input type="number" min={1} value={q.creditMin ?? ''} placeholder="any"
+                onChange={e => set('creditMin', Number.isFinite(e.target.valueAsNumber) && e.target.valueAsNumber >= 1 ? Math.round(e.target.valueAsNumber) : undefined, key + ':creditMin')}/></label>}
             <label>Lasts<select value={q.lifetime ?? 'campaign'} onChange={e => set('lifetime', e.target.value === 'phase' ? 'phase' : undefined)}>
                 <option value="campaign">the whole campaign</option><option value="phase">until the phase visit ends</option></select></label>
             <label>Taken again<select value={q.repeat ?? 'once'} disabled={q.scope === 'story'} onChange={e => set('repeat', e.target.value === 'once' ? undefined : e.target.value as Quest['repeat'])}>

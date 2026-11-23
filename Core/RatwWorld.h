@@ -228,6 +228,14 @@ struct Occasion
     bool invitesSent = false;
 };
 
+// A title a story named a wolf by (doc 86, C4): known in the realm or one town ("realm", "town:<id>"), by which program and
+// run, since and until (calendar days; until < 0: for good).
+struct StoryTitle
+{
+    std::string title, known, by, run;
+    double since = 0, until = -1;
+};
+
 struct ScentRecord
 {
     std::string item, maker, giver;
@@ -340,6 +348,10 @@ struct Entity
     // The journal (doc 54, 7): lore fragments read at archives, in order; species brought down (first day, count);
     // forage goods found (first day, "season, ground"); the cells it has been in. Saved.
     std::vector<std::string> lore;
+    // Titles stories named it by (doc 86, C4): at most 8, oldest first; players only. Saved. Hidden from its card by its
+    // player's choice (D3), never from residents.
+    std::vector<StoryTitle> titles;
+    bool titlesHidden = false;
     std::map<std::string, std::pair<double, int>> bestiary;
     std::map<std::string, std::pair<double, std::string>> herbarium;
     std::set<std::string> places;
@@ -1224,6 +1236,9 @@ class World
     std::string placeNear(const std::string& cellId) const;
     // Every belief of this claim dropped (a deed revoked: doc 56).
     void forgetClaim(const std::string& claim);
+    // Doc 86, J8: residents (of one town, or everywhere) grow less sure of one kind of claim about a subject: each holder's
+    // belief loses `share` percent of its strength, and one at .05 or below is forgotten. Returns how many were touched.
+    int doubt(const std::string& subject, const std::string& kind, const std::string& town, int share);
     const std::vector<Belief>* beliefsOf(const std::string& holder) const;
     // What an NPC has heard about someone, in words for a conversation (empty if nothing).
     std::string rumoursAbout(const std::string& npc, const std::string& subject, const std::string& subjectName) const;

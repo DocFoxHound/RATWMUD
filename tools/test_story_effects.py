@@ -70,8 +70,14 @@ GOOD = {
     'talk.remember': {'scope': 'town', 'town': 'greyfen', 'key': 'nh_stage', 'value': 'reckoning', 'days': 30},
     'talk.forget': {'scope': 'town', 'town': 'greyfen', 'key': 'nh_stage'},
     'belief.plant': {'subject': 'rm111', 'claim': 'was seen at the mill at midnight', 'town': 'greyfen', 'count': 3, 'confidence': 60},
+    # (Doc 86, Phase 3: a title, a resident's greeting for one wolf, a rumour put to rest.)
+    'title.give': {'player': '$actor', 'title': 'the Lamp of Greyfen', 'known': 'town', 'town': 'greyfen', 'days': 30},
+    'title.take': {'player': '$actor', 'title': 'the Lamp of Greyfen'},
+    'npc.greet': {'npc': 'rm111', 'player': '$actor', 'text': 'Back again? #greet#', 'days': 7},
+    'belief.forget': {'subject': 'rm111', 'claimKind': 'story.rumour', 'town': 'greyfen', 'share': 50},
 }
 PHASE1B_ORDERS = ('talk.remember', 'talk.forget', 'belief.plant')
+PHASE3_ORDERS = ('title.give', 'title.take', 'npc.greet', 'belief.forget')
 
 
 def program(effects=(), entry=(), audience=None):
@@ -99,7 +105,7 @@ def effect(kind, **more):
 class Catalogue(unittest.TestCase):
     def test_the_new_effects_are_in_the_catalogue_with_typed_parameters_and_sentences(self):
         ids = [e['id'] for e in CAT['effects']]
-        self.assertEqual(len(ids), 78)   # (Phase 10's story.start, the story's own: not a game order; doc 86 Phase 1b's 7.)
+        self.assertEqual(len(ids), 82)   # (Phase 10's story.start, the story's own: not a game order; doc 86 Phase 1b's 7, Phase 3's 4.)
         self.assertNotIn('story.start', runner.WORLD_ORDERS)
         for kind in NEW:
             with self.subTest(kind=kind):
@@ -109,7 +115,8 @@ class Catalogue(unittest.TestCase):
                 self.assertIn(item['group'], {g['id'] for g in CAT['actionGroups']})
                 for p in item['params']:
                     self.assertIn(p['type'], CAT['types'])
-        self.assertEqual(set(NEW) - {'story.tracker'} | set(PHASE1B_ORDERS), set(runner.WORLD_ORDERS), 'every game order has its mapping')
+        self.assertEqual(set(NEW) - {'story.tracker'} | set(PHASE1B_ORDERS) | set(PHASE3_ORDERS), set(runner.WORLD_ORDERS),
+                         'every game order has its mapping')
         self.assertIn('story.tracker', quests.STORY_EFFECTS, 'the tracker is the story\'s own')
 
     def test_the_lists_the_catalogue_names_are_the_games(self):

@@ -614,6 +614,35 @@ void World::forgetClaim(const std::string& claim)
         mine.erase(std::remove_if(mine.begin(), mine.end(), [&](const Belief& b) { return b.claim == claim; }), mine.end());
 }
 
+int World::doubt(const std::string& subject, const std::string& kind, const std::string& town, int share)
+{
+    const double keep = 1.0 - std::clamp(share, 0, 100) / 100.0;
+    int touched = 0;
+    for (auto it = beliefs_.begin(); it != beliefs_.end();)
+    {
+        auto& [holder, mine] = *it;
+        if (!town.empty())
+        {
+            // (A holder of the town: a resident by their home, anyone else by where they are.)
+            const auto* life = society().resident(holder);
+            const auto* e = entity(holder);
+            const auto cell = life && !life->homeCell.empty() ? life->homeCell : e ? e->cellId : std::string();
+            if (cell.empty() || townIdOf(cell) != town)
+            {
+                ++it;
+                continue;
+            }
+        }
+        for (auto& b : mine)
+            if (b.subject == subject && b.kind == kind)
+                b.confidence *= keep, ++touched;
+        mine.erase(std::remove_if(mine.begin(), mine.end(), [&](const Belief& b) { return b.subject == subject && b.kind == kind && b.confidence <= .05; }),
+                   mine.end());
+        ++it;
+    }
+    return touched;
+}
+
 const std::vector<Belief>* World::beliefsOf(const std::string& holder) const
 {
     const auto found = beliefs_.find(holder);

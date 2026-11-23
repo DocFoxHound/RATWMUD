@@ -526,6 +526,139 @@ void phase2Names()
     fs::remove(save);
 }
 
+// Doc 86, Phase 3: a wolf named by a title (C4), a resident's greeting waiting for one wolf (C5), a rumour put to rest (J8).
+void phase3Thanks()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyworld-3-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    const auto world = writeDoors(root);
+    const auto run = std::string("world-thanks"), other = std::string("world-other");
+    std::string here;
+    {
+        Town t(world, save);
+        auto& w = t.g.world();
+        t.enter(t.ash, 1, "ash", "Ash", 0, 8.5);
+        t.enter(t.bo, 2, "bo", "Bo", 0, 10.5);
+        const auto ash = t.ash.entityId;
+        int n = 400;
+        const auto open = [&](const std::string& id, const std::string& program) {
+            auto phase = parsed(R"({"title":"Thanks","phase":"one","journal":"Thanks.","visit":1,"program":")" + program + R"("})");
+            auto players = json::Value::array();
+            players.push(ash);
+            phase.set("players", players);
+            return t.g.applyDmAct({std::to_string(++n), "story.phase", id, "dm", json::dump(phase)}).ok;
+        };
+        expect(open(run, "ninth-howl.1") && open(other, "lamp-pack"), "two stories open");
+        const auto order = [&](const std::string& kind, const std::string& target, const std::string& payload, const std::string& by = {}) {
+            auto p = parsed(payload.empty() ? "{}" : payload);
+            if (!p.has("run")) p.set("run", by.empty() ? run : by);
+            if (!p.has("visit")) p.set("visit", 1);
+            return t.g.applyDmAct({std::to_string(++n), kind, target, "dm", json::dump(p)});
+        };
+        here = w.townIdOf(w.society().resident("u1")->homeCell);
+        expect(!here.empty(), "u1 lives in a town: " + here);
+        const auto titles = [&]() -> const std::vector<StoryTitle>& { return w.entity(ash)->titles; };
+
+        // ---- C4: titles.
+        auto r = order("title.give", ash, R"({"title":"the Lamp of the Ford"})");
+        expect(r.ok && titles().size() == 1 && titles()[0].known == "realm" && titles()[0].until < 0 && titles()[0].by == "ninth-howl.1",
+               "named for good in the realm: " + r.message);
+        expect(t.g.storyTitleFor(ash, "u1") == "the Lamp of the Ford", "u1 knows it");
+        bool heard = false;
+        for (const auto& e : w.recentEvents())
+            heard |= e.kind == "title given" && e.actor == ash && e.target == run && e.item == "realm" && e.detail == "the Lamp of the Ford";
+        expect(heard, "the event title given is recorded");
+        bool deed = false;
+        for (const auto* d : t.g.deeds().byDoer(ash))
+            deed |= d->detail == "was named the Lamp of the Ford" && d->source == "story";
+        expect(deed, "a deed of its naming goes into the town's talk");
+        r = order("title.give", ash, R"({"title":"Warden of the Weir","known":"town","town":"nowhere"})");
+        expect(!r.ok, "a town that is not");
+        r = order("title.give", ash, R"({"title":"Warden of the Weir","known":"town","town":")" + here + R"(","days":5})");
+        expect(r.ok && t.g.storyTitleFor(ash, "u1") == "Warden of the Weir", "the newest known in u1's town is the one used");
+        expect(!order("title.give", ash, R"({"title":"the #greet# one"})").ok && !order("title.give", ash, R"({"title":"rm111's friend"})").ok,
+               "no symbols, no ids");
+        expect(!order("title.give", "u1", R"({"title":"the Miller"})").ok, "a resident has no story titles");
+        r = order("title.give", ash, R"({"title":"warden of the weir","known":"town","town":")" + here + R"(","days":20})");
+        expect(r.ok && titles().size() == 2 && titles()[1].until > w.calendarDays() + 19, "given again: renewed, not doubled");
+        w.advanceCalendar(21);
+        expect(t.g.storyTitleFor(ash, "u1") == "the Lamp of the Ford", "the town's lapsed: the realm's is used again");
+        auto card = t.g.titlesView(*w.entity(ash));
+        expect(card.size() == 1 && card.items()[0].string("title") == "the Lamp of the Ford" && card.items()[0].number("days") == -1,
+               "the card shows only what has not lapsed");
+        // The ninth: the oldest that lapses goes, else the oldest.
+        for (int k = 0; k < 7; ++k)
+            expect(order("title.give", ash, R"({"title":"Title )" + std::string(1, char('A' + k)) + R"(")" + (k == 3 ? R"(,"days":200)" : "") + "}").ok,
+                   "title " + std::to_string(k));
+        expect(titles().size() == 8, "eight titles: " + std::to_string(titles().size()));
+        expect(order("title.give", ash, R"({"title":"Title H"})").ok && titles().size() == 8 &&
+                   std::none_of(titles().begin(), titles().end(), [](const StoryTitle& x) { return x.title == "Title D"; }),
+               "the ninth drops the one that lapses");
+        expect(order("title.give", ash, R"({"title":"Title I"})").ok &&
+                   std::none_of(titles().begin(), titles().end(), [](const StoryTitle& x) { return x.title == "the Lamp of the Ford"; }),
+               "then the oldest");
+        expect(order("title.give", ash, R"({"title":"the Other's Own"})", other).ok, "another story names Ash");
+        r = order("title.take", ash, R"({"title":"title h"})");
+        expect(r.ok && std::none_of(titles().begin(), titles().end(), [](const StoryTitle& x) { return x.title == "Title H"; }), "taken by its title");
+        r = order("title.take", ash, "{}");
+        expect(r.ok && titles().size() == 1 && titles()[0].title == "the Other's Own", "every title this story gave taken: " + r.message);
+        expect(order("title.take", ash, R"({"title":"the Other's Own"})").ok && titles().size() == 1, "not another story's");
+        t.g.command(&t.ash, cmd({{"type", "social"}, {"verb", "hidetitles"}, {"hidden", true}}));
+        expect(w.entity(ash)->titlesHidden,
+               "Ash hides the titles from the card");
+
+        // ---- C5: a greeting waits, replaced by a later one, once.
+        expect(!order("npc.greet", "u1", R"({"player":"player-nobody","text":"Hello."})").ok, "only for a wolf of the story");
+        expect(!order("npc.greet", "nobody", R"({"player":")" + ash + R"(","text":"Hello."})").ok, "a resident");
+        expect(order("npc.greet", "u1", R"({"player":")" + ash + R"(","text":"Hello, {@w:)" + ash + R"(}.","days":3})").ok, "u1 will greet Ash");
+        expect(t.g.storyGreets().at("u1").at(ash).text == "Hello, Ash.", "names filled as it is kept");
+        expect(order("npc.greet", "u1", R"({"player":")" + ash + R"(","text":"Thank you for the oil."})").ok &&
+                   t.g.storyGreets().at("u1").at(ash).text == "Thank you for the oil.", "a later one replaces it");
+        expect(order("npc.greet", "u2", R"({"player":")" + ash + R"(","text":"Old words.","days":1})").ok, "u2's lapses soon");
+
+        // ---- J8: doubt.
+        r = order("belief.plant", "u1", R"({"town":")" + here + R"(","claim":"was seen at the mill at midnight","count":4,"confidence":80})");
+        expect(r.ok, "a rumour: " + r.message);
+        const auto strengths = [&]() {
+            std::vector<double> out;
+            for (const auto& [id, e] : w.entities())
+                if (const auto* list = w.beliefsOf(id))
+                    for (const auto& b : *list)
+                        if (b.subject == "u1" && b.kind == "story.rumour")
+                            out.push_back(b.confidence);
+            return out;
+        };
+        expect(strengths().size() == 4, "four hold it");
+        expect(!order("belief.forget", "u1", R"({"claimKind":"rumour","share":50})").ok && !order("belief.forget", "u1", R"({"claimKind":"story.rumour","share":5})").ok,
+               "a kind and a share it knows");
+        expect(order("belief.forget", "u1", R"({"claimKind":"story.rumour","town":"elsewhere","share":50})").ok && strengths()[0] == .8,
+               "another town's residents are not touched");
+        r = order("belief.forget", "u1", R"({"claimKind":"story.rumour","share":50})");
+        auto now = strengths();
+        expect(r.ok && now.size() == 4 && std::all_of(now.begin(), now.end(), [](double c) { return std::abs(c - .4) < 1e-9; }), "half as sure: " + r.message);
+        r = order("belief.forget", "u1", R"({"claimKind":"story.rumour","town":")" + here + R"(","share":50})");
+        now = strengths();
+        expect(r.ok && std::all_of(now.begin(), now.end(), [](double c) { return std::abs(c - .2) < 1e-9; }), "and half again in the town");
+        expect(order("belief.forget", "u1", R"({"claimKind":"story.rumour","share":100})").ok && strengths().empty(), "100 forgets it");
+        t.g.save();
+    }
+    {
+        Town t(world, save);
+        auto& w = t.g.world();
+        const auto ash = t.ash.entityId.empty() ? std::string() : t.ash.entityId;
+        bool found = false;
+        for (const auto& [id, e] : t.g.characters())
+            if (!e.titles.empty())
+                found = e.titles.size() == 1 && e.titles[0].title == "the Other's Own" && e.titlesHidden;
+        expect(found, "the titles come back with the character");
+        expect(t.g.storyGreets().count("u1") && t.g.storyGreets().at("u1").size() == 1, "and the greeting waiting");
+        w.advanceCalendar(2);
+        (void)ash;
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
+
 } // namespace
 
 int main()
@@ -535,6 +668,7 @@ int main()
         worldEffects();
         phase1b();
         phase2Names();
+        phase3Thanks();
     }
     catch (const std::exception& error)
     {

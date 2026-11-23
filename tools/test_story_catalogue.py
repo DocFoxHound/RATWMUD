@@ -126,7 +126,7 @@ class CatalogueShape(unittest.TestCase):
         groups = {g['id'] for g in CAT['groups']}
         ids = [e['id'] for e in CAT['events']]
         self.assertEqual(len(ids), len(set(ids)))
-        self.assertEqual(len(rules.EVENTS), 206)   # (160, Phase 6's 11 quest and party events, Phase 8's 24, Phase 10's 10; doc 86's moon.)
+        self.assertEqual(len(rules.EVENTS), 207)   # (160, Phase 6's 11 quest and party events, Phase 8's 24, Phase 10's 10; doc 86's moon, title given.)
         self.assertEqual(set(ids) - set(rules.EVENTS), {triggers.SIGNAL, rules.MISSION_GATE, rules.READY_EXIT})   # (Doc 86: the ready exit.)
         for e in CAT['events']:
             with self.subTest(event=e['id']):
@@ -153,7 +153,7 @@ class CatalogueShape(unittest.TestCase):
         self.assertEqual(set(dos), {'set', 'add', 'emit', 'schedule', 'cancel', 'effect', 'enter', *triggers.FLOW_V2, *triggers.STATE_V2})
         self.assertEqual(len({a['id'] for a in CAT['actions']}), len(CAT['actions']))
         self.assertTrue(all(a.get('nest') for a in CAT['actions'] if a.get('do', a['id']) in ('if', 'each', 'random')))
-        self.assertEqual(len(CAT['effects']), 78)   # (25, Phase 6's 14, Phase 9's 31, Phase 10's story.start and doc 86 Phase 1b's 7.)
+        self.assertEqual(len(CAT['effects']), 82)   # (25, Phase 6's 14, Phase 9's 31, Phase 10's story.start, doc 86 Phase 1b's 7 and Phase 3's 4.)
         for item in [*CAT['conditions'], *CAT['actions'], *CAT['effects']]:
             with self.subTest(item=item['id']):
                 self.assertTrue(item['title'] and item['help'])
@@ -172,7 +172,7 @@ class CatalogueShape(unittest.TestCase):
 
     def test_tables_read_from_it(self):
         self.assertEqual(rules.EFFECTS['npc.walk'], ('npc', 'cell', 'x', 'y', 'pace', 'cue'))
-        self.assertEqual(len(rules.MISSION_EVENTS), 69)   # (52, 11 of Phase 8's new events a wolf does, doc 86's six (L3).)
+        self.assertEqual(len(rules.MISSION_EVENTS), 70)   # (52, 11 of Phase 8's new events a wolf does, doc 86's six (L3), title given.)
         # (Doc 86, L3: the six events with no wolf, or a wolf only sometimes, are mission evidence; M5: trade done has a cell.)
         self.assertLessEqual({'camp cleared', 'caravan arrives', 'ship lost', 'ship docks', 'project built', 'festival'}, set(rules.MISSION_EVENTS))
         trade = next(e for e in CAT['events'] if e['id'] == 'trade done')
@@ -185,6 +185,15 @@ class CatalogueShape(unittest.TestCase):
         served = runner.catalogue()
         self.assertEqual(served['catalogue'], CAT)
         self.assertEqual(served['effects'], rules.EFFECTS)
+
+    def test_the_doubts_kinds_are_claims_kinds(self):
+        # (Doc 86, J8: the kinds of claim a story may put to rest are claims.json's, and the game's list is the same.)
+        claims = json.loads((runner.DATA / 'Talk/claims.json').read_text())['kinds']
+        kinds = next(p for p in rules.EFFECT_PARAMS['belief.forget'] if p['key'] == 'claimKind')['values']
+        self.assertLessEqual(set(kinds), set(claims))
+        game = (runner.DATA.parent / 'Core/RatwGameStoryWorld.cpp').read_text()
+        listed = re.search(r'doubtable\(const std::string& kind\)\n\{\n    static const std::set<std::string> kinds\{([^}]*)\}', game)
+        self.assertEqual(set(re.findall(r'"([a-z.]+)"', listed.group(1))), set(kinds))
 
     def test_effect_checks_agree_with_the_hand_written_ones(self):
         rng = random.Random(85)

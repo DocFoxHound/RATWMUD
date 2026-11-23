@@ -6,6 +6,7 @@
 // a marker. A story may set the weather for a while, never the calendar or the hour.
 #include "RatwGame.h"
 #include "RatwClaims.h"
+#include "RatwFame.h"
 #include "RatwItems.h"
 #include "RatwNames.h"
 
@@ -933,6 +934,7 @@ void Game::storyTalkSave(Value& root) const
             memory.add(owner, std::move(kept));
     }
     root.add("storyMemory", std::move(memory));
+    storyGreetsSave(root);                          // (Doc 86, C5: the greetings waiting.)
 }
 
 void Game::storyTalkLoad(const Value& saved)
@@ -957,6 +959,249 @@ void Game::storyTalkLoad(const Value& saved)
                     mine[key] = {j.string("value"), j.number("until", -1), j.string("run"), j.boolean("keep")};
             }
     }
+    storyGreetsLoad(saved);
     sparedChanged();
+}
+
+// ------------------------------------------------------------------ doc 86, Phase 3: thanks, titles and doubt
+namespace
+{
+constexpr std::size_t TitlesKept = 8, GreetsMost = 20000;
+
+std::string lowered(std::string s)
+{
+    for (auto& c : s)
+        c = char(std::tolower(static_cast<unsigned char>(c)));
+    return s;
+}
+
+// (The kinds of claim a story may put to rest: about a resident, from claims.json; story_program checks the same list.)
+bool doubtable(const std::string& kind)
+{
+    static const std::set<std::string> kinds{"theft", "theft.attempt", "theft.unseen", "assault", "assault.unseen", "violent",
+                                             "warrant", "promise.broken", "prowling", "story.rumour"};
+    return kinds.count(kind) > 0;
+}
+} // namespace
+
+std::string Game::storyTitleFor(const std::string& wolf, const std::string& npc) const
+{
+    // C4: the newest title known where the resident lives (the realm, or their town); a lapsed one is never used.
+    const auto* e = world_.entity(wolf);
+    if (!e || e->npc)
+    {
+        const auto saved = characters_.find(wolf);
+        e = saved == characters_.end() ? nullptr : &saved->second;
+    }
+    if (!e)
+        return {};
+    std::string town;
+    if (const auto* life = world_.society().resident(npc); life && !life->homeCell.empty())
+        town = world_.townIdOf(life->homeCell);
+    const double today = world_.calendarDays();
+    const StoryTitle* best = nullptr;
+    for (const auto& t : e->titles)
+        if ((t.until < 0 || t.until >= today) && (t.known == "realm" || (!town.empty() && t.known == "town:" + town)) &&
+            (!best || t.since >= best->since))
+            best = &t;
+    return best ? best->title : std::string();
+}
+
+Value Game::titlesView(const Entity& wolf) const
+{
+    // The card's titles (newest first), each with where it is known and when it lapses (-1: for good).
+    auto list = Value::array();
+    const double today = world_.calendarDays();
+    std::vector<const StoryTitle*> live;
+    for (const auto& t : wolf.titles)
+        if (t.until < 0 || t.until >= today)
+            live.push_back(&t);
+    std::stable_sort(live.begin(), live.end(), [](const auto* a, const auto* b) { return a->since > b->since; });
+    for (const auto* t : live)
+    {
+        auto j = Value::object();
+        j.add("title", t->title);
+        const auto town = t->known.rfind("town:", 0) == 0 ? t->known.substr(5) : std::string();
+        j.add("known", town.empty() ? std::string("realm") : std::string("town"));
+        if (!town.empty())
+            j.add("town", townWords(town));
+        j.add("days", t->until < 0 ? -1.0 : std::max(0.0, std::ceil(t->until - today)));
+        list.push(std::move(j));
+    }
+    return list;
+}
+
+std::string Game::takeStoryGreet(const std::string& npc, const std::string& wolf)
+{
+    const auto byNpc = storyGreets_.find(npc);
+    if (byNpc == storyGreets_.end())
+        return {};
+    const auto found = byNpc->second.find(wolf);
+    if (found == byNpc->second.end())
+        return {};
+    const auto text = found->second.until >= world_.calendarDays() ? found->second.text : std::string();
+    byNpc->second.erase(found);
+    if (byNpc->second.empty())
+        storyGreets_.erase(byNpc);
+    saveSoon();
+    return text;
+}
+
+Result Game::applyStoryThanks(const std::string& kind, const std::string& target, const Value& p)
+{
+    const auto run = p.string("run");
+    auto* story = storylines_.find(run);
+    if (!story || story->kind != "world" || story->source != "storykeeper" || !story->live())
+        return {false, "That story is not running.", target};
+    const double today = world_.calendarDays();
+    if (kind == "belief.forget")
+    {
+        // J8: residents (of one town, or everywhere) less sure that a resident did one kind of thing.
+        const auto claimKind = p.string("claimKind"), town = p.string("town");
+        const int share = whole(p, "share", 10, 100);
+        if (!world_.society().resident(target))
+            return {false, "No such resident to be talked of.", target};
+        if (!doubtable(claimKind) || share < 10)
+            return {false, "Name the kind of claim (a theft, a story's rumour...) and by how much (10 to 100%).", target};
+        const int touched = world_.doubt(target, claimKind, town, share);
+        saveSoon();
+        return {true, std::to_string(touched) + (touched == 1 ? " belief" : " beliefs") + " grew less sure" + (town.empty() ? "." : " in " + town + "."),
+                target};
+    }
+    if (kind == "npc.greet")
+    {
+        // C5: the next time this wolf opens the resident's window (within the days), these words are its greeting, once.
+        const auto wolf = p.string("player");
+        const auto text = fillStoryNames(p.string("text"), 200);
+        const int days = p.has("days") ? whole(p, "days", 1, 28) : 7;
+        if (!world_.society().resident(target))
+            return {false, "No such resident.", target};
+        if (wolf.empty() || !story->takesPart(wolf))
+            return {false, "A greeting is for a wolf of the story.", target};
+        if (!oneLine(text, 200) || days < 1)
+            return {false, "A greeting is one line of up to 200 characters, for 1 to 28 days.", target};
+        storyGreets_[target][wolf] = {text, run, today + days};
+        std::size_t total = 0;
+        for (const auto& [npc, wolves] : storyGreets_)
+            total += wolves.size();
+        while (total > GreetsMost)
+        {
+            // (The soonest to lapse goes first.)
+            auto npcAt = storyGreets_.end();
+            std::map<std::string, StoryGreet>::iterator wolfAt;
+            double soonest = 1e300;
+            for (auto n = storyGreets_.begin(); n != storyGreets_.end(); ++n)
+                for (auto w = n->second.begin(); w != n->second.end(); ++w)
+                    if (w->second.until < soonest)
+                        soonest = w->second.until, npcAt = n, wolfAt = w;
+            if (npcAt == storyGreets_.end())
+                break;
+            npcAt->second.erase(wolfAt);
+            if (npcAt->second.empty())
+                storyGreets_.erase(npcAt);
+            --total;
+        }
+        saveSoon();
+        return {true, "A greeting waits for " + wolf + " (" + std::to_string(days) + " days).", target};
+    }
+    // title.give / title.take: the wolf named (online, or as saved).
+    auto* online = world_.entity(target);
+    Entity* e = online && !online->npc ? online : nullptr;
+    if (!e)
+        if (auto saved = characters_.find(target); saved != characters_.end())
+            e = &saved->second;
+    if (!e || e->npc)
+        return {false, "Titles are for players' wolves.", target};
+    const auto by = story->templateId.empty() ? run : story->templateId;
+    std::string said;
+    if (kind == "title.give")
+    {
+        const auto title = fillStoryNames(p.string("title"), 60);
+        const auto known = p.string("known", "realm"), town = p.string("town");
+        if (!oneLine(title, 60) || title.find('#') != std::string::npos || idInWords(title))
+            return {false, "A title is one line of up to 60 characters, with no symbols and no ids.", target};
+        if (known != "realm" && known != "town")
+            return {false, "A title is known in the realm or in one town.", target};
+        const auto& cells = world_.cells();
+        if (known == "town" && (town.empty() || std::none_of(cells.begin(), cells.end(), [&](const auto& c) { return c.second.region == town; })))
+            return {false, "Name the town the title is known in.", target};
+        const int days = p.has("days") ? whole(p, "days", 0, 365) : 0;
+        if (days < 0)
+            return {false, "A title lasts 0 (for good) to 365 days.", target};
+        StoryTitle t{title, known == "town" ? "town:" + town : std::string("realm"), by, run, today, days > 0 ? today + days : -1.0};
+        auto& list = e->titles;
+        list.erase(std::remove_if(list.begin(), list.end(), [&](const StoryTitle& o) { return o.until >= 0 && o.until < today; }), list.end());
+        auto same = std::find_if(list.begin(), list.end(), [&](const StoryTitle& o) { return lowered(o.title) == lowered(title); });
+        if (same != list.end())
+            *same = t;                              // (Given again: renewed, known where it now says.)
+        else
+        {
+            if (list.size() >= TitlesKept)
+            {
+                // (A ninth: the oldest that lapses goes, else the oldest.)
+                auto drop = list.end();
+                for (auto it = list.begin(); it != list.end(); ++it)
+                    if (it->until >= 0 && (drop == list.end() || it->since < drop->since))
+                        drop = it;
+                if (drop == list.end())
+                    drop = std::min_element(list.begin(), list.end(), [](const auto& a, const auto& b) { return a.since < b.since; });
+                list.erase(drop);
+            }
+            list.push_back(t);
+        }
+        // The fame machinery carries it into gossip and the crier as any deed.
+        recordDeed("award", {target}, {}, e->cellId, "story", "was named " + title, fame::weightOf("notable"));
+        world_.recordEvent({"title given", target, run, {}, 0, 0, t.known, 0, 0, title});
+        said = "Named " + title + ".";
+    }
+    else
+    {
+        const auto title = p.string("title");
+        const auto before = e->titles.size();
+        e->titles.erase(std::remove_if(e->titles.begin(), e->titles.end(),
+                                       [&](const StoryTitle& o) { return o.by == by && (title.empty() || lowered(o.title) == lowered(title)); }),
+                        e->titles.end());
+        const auto gone = before - e->titles.size();
+        said = gone ? "Took back " + std::to_string(gone) + (gone == 1 ? " title." : " titles.") : std::string("This story gave no such title.");
+    }
+    if (e == online)
+        characters_[target] = *online;
+    record(Character, target);
+    saveSoon();
+    return {true, said, target};
+}
+
+void Game::storyGreetsSave(Value& root) const
+{
+    auto greets = Value::object();
+    for (const auto& [npc, wolves] : storyGreets_)
+    {
+        auto byWolf = Value::object();
+        for (const auto& [wolf, g] : wolves)
+            if (g.until >= world_.calendarDays())
+            {
+                auto j = Value::object();
+                j.add("text", g.text);
+                j.add("run", g.run);
+                j.add("until", g.until);
+                byWolf.add(wolf, std::move(j));
+            }
+        if (byWolf.size())
+            greets.add(npc, std::move(byWolf));
+    }
+    root.add("storyGreets", std::move(greets));
+}
+
+void Game::storyGreetsLoad(const Value& saved)
+{
+    storyGreets_.clear();
+    std::size_t total = 0;
+    for (const auto& [npc, wolves] : saved.object("storyGreets").fields())
+        for (const auto& [wolf, j] : wolves.fields())
+            if (total < GreetsMost && npc.size() <= 80 && wolf.size() <= 80 && j.isObject() && oneLine(j.string("text"), 200))
+            {
+                storyGreets_[npc][wolf] = {j.string("text"), json::utf8Prefix(j.string("run"), 80), j.number("until")};
+                ++total;
+            }
 }
 } // namespace ratw::game
