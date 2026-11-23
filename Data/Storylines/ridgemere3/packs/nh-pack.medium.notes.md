@@ -190,6 +190,7 @@ refuses a door into one, or into a room whose stairs reach one.
   (`link_fs_salt_saltpan_store_door_a`, Q17 Fern Merewick and Q19 Kite Bogditch). No home is behind any of them.
 - Q14's watch is still kept at the press house door after dark, and the old wolf of Withy Creek (Q15) still answers at
   her own door in a scene: that is her home, which no story opens.
-- No `door.lock` closes the window: the map locks no door, and `Door::locked` stops residents too, so locking a shed
-  when its phase ends would shut its own workers out until the run ends. The doors stay unlocked from the phase that
-  offers the quest until the run ends, when the game puts back what each had.
+- There is no window to close before the run ends. A quest without `phases` is open in every phase of its story
+  (`story_quests.open_in`), and each door here serves one, so each stays unlocked until the run ends, when the game puts
+  back what each had. (`door.lock` would lock the workers out too. `door.close` closes a door to wolves and leaves its
+  lock alone: that is how the stage pack ends its windows.)

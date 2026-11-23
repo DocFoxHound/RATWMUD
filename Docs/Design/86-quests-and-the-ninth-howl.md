@@ -957,7 +957,8 @@ phases. Nothing has been approved, published or loaded into Ridgemere 3, and no 
 - **Locked doors** (doc 82, `World::playerDoorLocked`): a wolf can't enter a private interior. Since the third pass
   (DECISION of 2026-11-22, built on branch `r3-nh-doors`) a door a live story has unlocked (`door.unlock`) is open to
   wolves while the story holds it, and a story never unlocks a home. The programs use it only for the workplaces of
-  the residents a wolf could not otherwise reach (see "Doors a story unlocks" below). Every other `enter place` into a
+  the residents a wolf could not otherwise reach, and close one with `door.close` (never `door.lock`) where its window
+  ends before the run does (see "Doors a story unlocks" below). Every other `enter place` into a
   locked building is an outdoor region at its door. Residents who never come out speak in a one-line scene at their
   own door. Every quest giver, `npc.offer` holder and gift or talk target is a resident a wolf can reach where they are
   in their working hours (see "Givers behind locked doors" below).
@@ -1129,17 +1130,19 @@ talk library regenerates byte for byte (`build_packs.py`, then `gen.py Data/Talk
 ### Doors a story unlocks (third pass, 2026-11-22)
 **The rule** (the DECISION, for the user to overturn; the engine side is built on branch `r3-nh-doors`):
 - A door a live story has unlocked (`door.unlock`, `World::setDoorState`, undone at the run's end) is open to wolves
-  while the story holds it, even where `World::playerDoorLocked` would lock it.
-- A story may never unlock a private home for wolves. Approval refuses a door whose interior is anyone's home and not a
-  workplace.
+  while the story holds it, even where `World::playerDoorLocked` would lock it, until the story closes it
+  (`door.close`, which leaves the door's own lock alone) or locks it, or the run ends.
+- A story may never unlock a private home for wolves. Approval refuses a door whose interior (with the rooms up its
+  stairs) is anyone's home and not a workplace.
 - `tools/nh_check.py` (check 9) is stricter. It refuses a `door.unlock` or `door.open` on a door into anyone's home:
   a resident's or a post's `home_area`, whether the room itself or a room its stairs and passages reach. A shop with
   the keeper's flat up its stairs is refused too.
-- It warns of a door into a room nobody works in, and of any `door.lock`. It needs the world, so `--no-db` skips it.
+- It warns of a door into a room nobody works in, and of any `door.lock` (close the door instead). It needs the
+  world, so `--no-db` skips it.
 
 **What the programs unlock.** Each door is named by its street side (`link_<world.links.id>_a`, read only from
-`world.links`) and unlocked as a phase entry effect (`ifRefused: skip`). That is the phase the quest is offered in:
-the start phase for a quest without `phases`. No door here has a home behind it, nor a home its stairs reach (a
+`world.links`) and unlocked as a phase entry effect (`ifRefused: skip`). That is the phase the quest is first offered
+in: the start phase for a quest without `phases`, which is open in every phase of its story (`story_quests.open_in`). No door here has a home behind it, nor a home its stairs reach (a
 read-only pass over `world.links`, `world.cells`, `world.interiors`, `live.npcs` and `live.profession_slots`).
 
 | Program · phase | Door | Whom it lets a wolf reach |
@@ -1160,15 +1163,18 @@ read-only pass over `world.links`, `world.cells`, `world.interiors`, `live.npcs`
 | `lq-salt-road` · open | Saltpan Salt Store | Fern Merewick, Kite Bogditch (`brackish`) |
 | `lq-salt-road` · reckoning | The Records Office (`link_r2_the_records_office_door_a`) | the copyist Hollis Shaw (the "ledger" steps) |
 | `lq-clipped-silver` · open | The Records Office | the clerk Harriet Pennock (the "chalk" step) |
-| `nh-pack.stage` · s4 / s56 / s78 | Larkholm Granary / Fen Shore Boat Shed / Larkholm Granary | Alder Blossomcroft (`st-chorus-wrong`) / Stone Marshmore (`st-fog-lanterns`) / Myrtle Larkcombe (`st-relief-convoy`) |
+| `nh-pack.stage` · s4 / s56 / s78 | Larkholm Granary / Fen Shore Boat Shed / Larkholm Granary | Alder Blossomcroft (`st-chorus-wrong`) / Stone Marshmore (`st-fog-lanterns`) / Myrtle Larkcombe (`st-relief-convoy`); closed again (`door.close`) at s56 / s78 / s9 |
 
-**No `door.lock` when a window ends.** The doors stay unlocked until the run ends, when the game puts back the lock
-each door had before the story touched it (`Game::endStoryWorld`). A `door.lock` would do worse than nothing. The map
-locks no door (`world.links` has no lock, so `Door::locked` is false everywhere), and `Door::locked` stops residents
-too. Locking a shed when its quest's phase ends would shut its own workers out of it for the rest of the run, and
-nothing short of the run's end lets them back in. So the workplaces stay open from the phase that offers the quest
-until the run ends. They are workshops, never homes. A lock that only puts back what was there (a `door.release`, or
-`door.lock` that restores the story's "was") would let a window close; it is a catalogue addition, not made here.
+**When a window ends: `door.close`, never `door.lock`.** The map locks no door (`world.links` has no lock, so
+`Door::locked` is false everywhere), and `Door::locked` stops residents too: locking a shed would shut its own workers
+out of it for the rest of the run. `door.close` of a door the story opened to wolves closes it to them and leaves its
+own lock alone (doc 86 §7.3, engine on `r3-nh-doors`), so its workers still go in. Where a window is shorter than the
+run, the program closes it so:
+- `nh-pack.stage`: `s56` closes the Granary, `s78` the Boat Shed, `s9` both (in case a phase was skipped). The stage
+  quests last their phase (`lifetime: phase`), so no wolf is still on one when its door closes.
+- Every other door serves a quest open in every phase of its story, to the last (a quest without `phases` is, and so
+  are `lq-salt-road`'s road quests, for the Records Office). Their window is the whole run: they stay unlocked until it ends, when the game puts back the lock each had
+  before the story touched it (`Game::endStoryWorld`). They are workshops, never homes.
 
 **The archive steps, rewritten.** Ridgemere 3 gives archive work nowhere, so both steps became a conversation with a
 named Records Office clerk. Each clerk is reachable at work while the story holds the Records Office open (7-18, up

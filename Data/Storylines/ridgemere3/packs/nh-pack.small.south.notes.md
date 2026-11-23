@@ -156,6 +156,7 @@ refuses a door into one, or into a room whose stairs reach one.
   Rainley), the Redsand Rabbitry (`link_fs_warren_waste_rabbitry_door_a`, Winifred Fogridge) and the Ochre Press House
   (`link_fs_vineyard_ochre_press_door_a`, Senna Applegarth). Each is a workplace with no home behind it. The quests'
   words are unchanged: the giver is at work where the wolf can now walk in.
-- No `door.lock` closes the window: the map locks no door, and `Door::locked` stops residents too, so locking a shed
-  when its phase ends would shut its own workers out until the run ends. The doors stay unlocked from the phase that
-  offers the quest until the run ends, when the game puts back what each had.
+- There is no window to close before the run ends. A quest without `phases` is open in every phase of its story
+  (`story_quests.open_in`), and each door here serves one, so each stays unlocked until the run ends, when the game puts
+  back what each had. (`door.lock` would lock the workers out too. `door.close` closes a door to wolves and leaves its
+  lock alone: that is how the stage pack ends its windows.)

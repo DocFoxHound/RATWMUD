@@ -166,6 +166,7 @@ refuses a door into one, or into a room whose stairs reach one.
   chalked, owing more than the shop takes in a year, due at the new moon (the design's "shows she owes").
 - The rehearsals that did archive work now talk to the clerk after taking the quest. Harriet is a target in two quests
   (this and `mq-coopers-note`), Hollis in this line only; neither gives or holds a choice.
-- No `door.lock` closes the window: the map locks no door, and `Door::locked` stops residents too, so locking a shed
-  when its phase ends would shut its own workers out until the run ends. The doors stay unlocked from the phase that
-  offers the quest until the run ends, when the game puts back what each had.
+- There is no window to close before the run ends. A quest without `phases` is open in every phase of its story
+  (`story_quests.open_in`), and each door here serves one, so each stays unlocked until the run ends, when the game puts
+  back what each had. (`door.lock` would lock the workers out too. `door.close` closes a door to wolves and leaves its
+  lock alone: that is how the stage pack ends its windows.)

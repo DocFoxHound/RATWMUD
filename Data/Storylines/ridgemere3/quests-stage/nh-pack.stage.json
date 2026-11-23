@@ -5304,6 +5304,11 @@
      "kind": "door.unlock",
      "door": "link_fs_fishing_fencoast_shed_door_a",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "door.close",
+     "door": "link_fs_grain_lark_granary_door_a",
+     "ifRefused": "skip"
     }
    ],
    "exits": [],
@@ -7161,6 +7166,11 @@
     {
      "kind": "door.unlock",
      "door": "link_fs_grain_lark_granary_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.close",
+     "door": "link_fs_fishing_fencoast_shed_door_a",
      "ifRefused": "skip"
     }
    ],
@@ -9159,7 +9169,18 @@
   {
    "id": "s9",
    "journal": "The Moot night.",
-   "effects": [],
+   "effects": [
+    {
+     "kind": "door.close",
+     "door": "link_fs_grain_lark_granary_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.close",
+     "door": "link_fs_fishing_fencoast_shed_door_a",
+     "ifRefused": "skip"
+    }
+   ],
    "exits": [],
    "triggers": [
     {

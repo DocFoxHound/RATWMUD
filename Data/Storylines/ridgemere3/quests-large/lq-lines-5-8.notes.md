@@ -254,6 +254,7 @@ refuses a door into one, or into a room whose stairs reach one.
   Harvestby and Harl Oakbough), the Sunfields Hive Shed (`link_fs_bees_south_hives_door_a`, Aster Cornley) and the
   Southwood Pig Yard (`link_fs_pigs_south_sties_door_a`, Brisk Lakemere). Sloe's home, the Southmeadow Vineyard House,
   stays shut.
-- No `door.lock` closes the window: the map locks no door, and `Door::locked` stops residents too, so locking a shed
-  when its phase ends would shut its own workers out until the run ends. The doors stay unlocked from the phase that
-  offers the quest until the run ends, when the game puts back what each had.
+- There is no window to close before the run ends. A quest without `phases` is open in every phase of its story
+  (`story_quests.open_in`), and each door here serves one, so each stays unlocked until the run ends, when the game puts
+  back what each had. (`door.lock` would lock the workers out too. `door.close` closes a door to wolves and leaves its
+  lock alone: that is how the stage pack ends its windows.)

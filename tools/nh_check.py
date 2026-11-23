@@ -22,7 +22,7 @@ For each story program:
   9. the doors (doc 86, "Doors a story unlocks"): a door.unlock or door.open never on a door into anyone's home (a
      resident's or a post's home_area, the room itself or one its stairs and passages reach); a door into a room
      nobody works in is warned of, and so is door.lock (the map locks no door, so it locks the residents out too, until
-     the run ends).
+     the run ends; door.close ends a window instead).
 For talk files (or --talk): dialect_check --world <world>; talk_check --validate (the files given, else the story talk
 files) and --render-trees; talk_lint.
 
@@ -249,7 +249,8 @@ def check_doors(p, r, doors):
     for at, e in found:
         kind, door = e.get('kind'), e.get('door', '')
         if kind == 'door.lock':
-            r.warn(f'{at}: door.lock {door}: the map locks no door, so this locks the residents out too, until the run ends')
+            r.warn(f'{at}: door.lock {door}: the map locks no door, so this locks the residents out too, until the run ends '
+                   '(door.close ends a window and leaves the residents their door)')
         if kind not in DOOR_EFFECTS:
             continue
         if door not in doors.doors:

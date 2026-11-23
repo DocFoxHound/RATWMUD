@@ -96,6 +96,7 @@ refuses a door into one, or into a room whose stairs reach one.
 - Phase `open`, entry: the Fen Shore Boat Shed (`link_fs_fishing_fencoast_shed_door_a`, Ivo Sootridge), the Rivermouth
   Boat Shed (`link_fs_fishing_delta_shed_door_a`, Jasper Greymore) and the Withy Creek Eel House
   (`link_fs_marsh_eels_eelhouse_door_a`, Nab Bogditch).
-- No `door.lock` closes the window: the map locks no door, and `Door::locked` stops residents too, so locking a shed
-  when its phase ends would shut its own workers out until the run ends. The doors stay unlocked from the phase that
-  offers the quest until the run ends, when the game puts back what each had.
+- There is no window to close before the run ends. A quest without `phases` is open in every phase of its story
+  (`story_quests.open_in`), and each door here serves one, so each stays unlocked until the run ends, when the game puts
+  back what each had. (`door.lock` would lock the workers out too. `door.close` closes a door to wolves and leaves its
+  lock alone: that is how the stage pack ends its windows.)

@@ -160,7 +160,8 @@ refuses a door into one, or into a room whose stairs reach one.
 - Each door is unlocked at the entry of the phase that offers the quest: `s4` the Larkholm Granary
   (`link_fs_grain_lark_granary_door_a`, Alder Blossomcroft, `st-chorus-wrong`), `s56` the Fen Shore Boat Shed
   (`link_fs_fishing_fencoast_shed_door_a`, Stone Marshmore, `st-fog-lanterns`), and `s78` the Larkholm Granary again
-  (Myrtle Larkcombe, `st-relief-convoy`; unlocking it twice is harmless).
-- No `door.lock` closes the window: the map locks no door, and `Door::locked` stops residents too, so locking a shed
-  when its phase ends would shut its own workers out until the run ends. The doors stay unlocked from the phase that
-  offers the quest until the run ends, when the game puts back what each had.
+  (Myrtle Larkcombe, `st-relief-convoy`; it was closed at `s56`, so `s78` opens it again).
+- Each window closes at the next phase with `door.close`, which (engine on `r3-nh-doors`) closes the door to wolves
+  and leaves its own lock alone, so its workers still go in: `s56` closes the Granary, `s78` the Boat Shed, and `s9`
+  both (in case a phase was skipped). The stage quests last their phase (`lifetime: phase`), so no wolf is still on one
+  when its door closes. (`door.lock` would lock the workers out too, until the run ends.)
