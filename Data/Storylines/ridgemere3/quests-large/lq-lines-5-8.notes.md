@@ -195,6 +195,9 @@ say[self.id=rm_bettany_nailley world.mem.lq_wreck=watch priority=4] A wrecker of
 Harl's first line and Corwin's are trimmed here to the library's 160 characters; the phase `npc.line`s keep the longer
 words (200 allowed). The Theodora line needs `nh_b_cough` off, which a tree gate cannot read today: wave G
 pairs it with a key the campaign writes, or leaves it to the phase line.
+Built 2026-11-22 (`artifacts/quests/build/talk2/build_packs.py`, `NOTES`): these lines are in the trees now, spoken
+by the re-cast residents below. The Theodora line is Halvard Ashley's, gated `world.mem.nh_cough!=tended`, and the
+Corwin line is Dorcas Rainford's.
 
 ## The givers (givers.tsv)
 - Every giver and every `npc.offer` holder has its `large:<line>` row: Sloe, Aster and Brisk; Theodora, Ivo Fogstack,
@@ -203,6 +206,39 @@ pairs it with a key the campaign writes, or leaves it to the phase line.
   conversation target only), Bettany and Solveig (campaign cast, as decisions §1.2.2 allows).
 - `nh_check.py` printed every speaker's `live.npc_voice`, and they match the design. Accent `none` means plain speech: Aster,
   Brisk, Theodora, Corwin, Solveig, Florence, Orm and Philippa speak plain.
+
+## Givers behind locked doors (2026-11-22, second pass; doc 86 "Givers behind locked doors")
+A door into a private interior is locked to wolves (doc 82, `World::playerDoorLocked`), and no story effect lifts it.
+This pass re-cast the residents a wolf could meet only on their walks, and moved every step into a locked interior to
+its door. `givers.tsv` rows moved; the window lines in the talk library follow (`build_packs.py`). The list above, of
+givers and targets as first written, is superseded by this one.
+- **The Runnel Fever.** The nurse (Sump Infirmary, locked) no longer gives it: Halvard Ashley, the honest apothecary at
+  the Mortar and Pestle (7-19, plain), who held the line's "what's in it" choice already, gives `cough`, takes the
+  willow bark for the infirmary and says the nurse's phase lines. The board notices are still the infirmary's. The
+  Washhouse keeper's choice (`lq_run_wash`, locked) is now Dirk Langstead's, a rag-crier in the Rag Market (out of doors
+  7-18, plain), who washes her own rags in the Runnel.
+- **The Wreckers' Light.** Giver: Greta Gullton, who works the Wharf's cranes (6-18, plain), for the North Cove skipper
+  (in his boat shed). The bearing is taken at the Bay Light's foot (`bay_foot`), and the oil is found at the Lamp
+  Store's door (`ls_door`). "Who draws extra" is asked of Dorcas Rainford at the Lamp and Wick, who sells the Lamp Store
+  its oil (she gives `mq-sump-lamps`; here she is a conversation target only), and her window line is hers now. The
+  ledger choice and the Wharf road's lamp are Florence Millhand's, who unloads ships at the piers (6-18), for the
+  Wharf Office clerk. The dusk round is watched at the Lamp Store door, 17-22, on two evenings (the lamplighters are
+  inside it all evening). In the reckoning Ilse waits on her Salt Row stair (`npc.move` + `npc.hold` at the phase's
+  entry, `npc.release` when it ends in `after_named` or `after_wharf`; `after_watch` takes her to the cells as before;
+  the run's end lets her go). The Tide road ends at the Chapel of the Tide's door (`tide_door`): the priest answers in
+  a scene (`wr_priest`), and the naming scenes play at the door, with Ilse beside the wolf. The Watch road ends at the
+  Keep door (`keep_door`) carrying the lamp: the sergeant answers in a scene (`wr_sergeant`), and the wolf keeps the
+  lamp, as Q2a keeps its tally (a story can't take goods today). The two door triggers live in the reckoning phase,
+  where their quests are.
+- **The Long Run.** The tube is collected and brought back at the Couriers' Office door (`co_door`); `trial-start`
+  (for a wolf inside the Office) is gone. The Council's clerk (Administrative Wing, locked) is now the Council Press's
+  printer, Wynn Fogworth (8-18, plain), who sets the Council's notices. The couriers stay. The timekeeper (Florence) and
+  Hanne spend their evenings at the Grey Gull, an inn whose door never locks. Grete spends hers at the Grey Goose, which
+  is open only in its cook's hours (7-19): she can be found there from the end of work until 19, and all day on her days
+  off. The trial is taken from the board too, but it is handed in to her. The time-sheet labels no longer send the wolf
+  into the Couriers' Office by day.
+- **Blight and Boar: still open.** Sloe, Aster, Harl and Brisk all work in the Southmeadow press house, hive shed and
+  Southwood pig yard, and Southmeadow has no free resident a wolf can reach. Doc 86 lists what would close it.
 
 ## Purses
 At the 2026-11-23 checkpoint, the treasury held 1,358 pennies and Southmeadow's store 236. The design's day caps (135 and

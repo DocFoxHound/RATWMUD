@@ -101,3 +101,17 @@ The small pack for Coldwater, Oakhaven and Frosthollow: `quests-small.md` quests
    `coin_*_day` / `coin_*_ok`. They are all already in world-vars.json.
 2. Approve and publish `nh-purses` before this pack, and leave it running.
 3. Approve and publish this pack. It needs no chapter and runs on its own.
+
+## Givers behind locked doors (2026-11-22, second pass; doc 86 "Givers behind locked doors")
+The Oakhurst pig yard, the Meresend apple store, the Larkdowns shearing barn and the Glasswater boat shed are locked to
+wolves (doc 82), so their workers can be met only on their walks. Each errand now comes from the Coldwater wolf who
+trades with that farm and works where a wolf can walk in, in coldwater speech:
+- `sq-fox-at-the-hen-run`: Flint Downcombe, the Soapworks (Oakhurst sends its pig fat for the soap).
+- `sq-apple-nose`: Laurel Pinefell, pot hand at the Glasswater Inn (the orchard's cart calls there); the pup is brought
+  to the inn (`pup-home` is near her), and her window has the hint (`pup-where`).
+- `sq-straw-for-the-pens` and `sq-strayed-ewe`: Varg Acorndell and Marl Cragpeak at the Coldwater Looms, which buys the
+  Larkdowns wool; the straw goes to the Looms and up with the empty sacks.
+- `sq-bread-to-the-landing`: the loaves go to Fennel Cornley at the Coldwater Stores, who buys the boatman's catch
+  (`mq-glasswater-nets`) and sends the crews' bread down with the catch cart.
+- `givers.tsv` rows moved; talk lines follow (`build_packs.py`). Oakhaven and Frosthollow had nothing to change: their
+  givers work out of doors (the cut, the clamps, the quarry) or are board-only.

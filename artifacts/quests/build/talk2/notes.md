@@ -46,3 +46,23 @@ What is here: `campaign.dsl` (the campaign's lines, cast-and-talk.md §4), `extr
 - Scene closers answer what was said (no "It is" after a question or a doubt).
 - At the commit: the badger lines (Coldwater, Larkfield) say a badger runs and bites only when cornered, and Saltwell's
   caravan line names the farm cart that comes most mornings, as the reviewed `nh-pack.small.south` has it.
+
+## The large lines' lines "for wave G" (2026-11-22)
+- The 22 lines the large lines' notes wrote "for wave G" (black-hearths 10, eel-famine 4, lines 5-8 7, vanishing-thief
+  1) are `NOTES` and `ALSO` in `build_packs.py`. Eighteen are new lines; four reword a design line already in the trees
+  and join it as its second alternative.
+- The targets' and givers' own greetings are packs.json nodes `hub` (resident.tree) and `watch.hub` (watch.tree, for
+  Bettany). gen.py writes them between "hub lines" markers at the end of the hub's greetings, before its `mood` and
+  `free`. They have priority 4, like part 1's cast greetings.
+- Speakers follow the locked-doors re-casts (doc 86, "Givers behind locked doors"): the notes' Theodora line is
+  Halvard Ashley's, Corwin's is Dorcas Rainford's and Petra's thin purse is Eleanor Vance's.
+- Gates: Rupert's line uses the npc key the design gives (`self.mem.lq_rupert=paid`). Halvard's (the notes' Theodora
+  line) needs the cough untended, so it reads `world.mem.nh_cough!=tended` under `nh_stage` howls to moot (`!=` holds while the key is
+  unset). Speakers whose accent isn't `none` and who use their town's words carry `self.from` (Ebba, Stone and Leif
+  frosthollow, Ivo fenshore, Harl southmeadow). The others speak plain.
+- Trimmed to 160 characters: Iris, Arne, Stone and the weir's directions.
+- **talk_scorecard_quick**: say lines added to resident.tree's hub move R2 even though none can play in the talk town.
+  Checked against the last commit's trees and baseline: 18 dummy say lines in the same place, each gated on a resident
+  id nobody has, give exactly the same R2 (1.96 against 4.65). 20 comment lines there leave R2 as it was, and so do the
+  new lines commented out. So the count of say lines in the hub reseeds the run; the lines' words play no part. R2 was
+  refrozen (`talk_score.py --refreeze R2`, with the reason in the baseline).

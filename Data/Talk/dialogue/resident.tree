@@ -286,6 +286,26 @@ say[self.mem.nh_debt=freed world.mem.nh_stage=reckoning|signals|howls|letters|li
 say[self.mem.nh_debt=angry world.mem.nh_stage=reckoning|signals|howls|letters|lights|harvest|bell|moot priority=4] Chalk on my door. I'll scrub it off, and I'll remember who drew it.
 say[self.mem.nh_debt=pledged world.mem.nh_stage=reckoning|signals|howls|letters|lights|harvest|bell|moot priority=4] I sold my howl. Don't look at me.
 say[self.mem.nh_debt=sings world.mem.nh_stage=reckoning|signals|howls|letters|lights|harvest|bell|moot priority=4] Bought back! I'll be in the chorus at dusk. Loudest in the street.
+# >>> Ninth Howl talk, part 2 (gossip and helpful knowledge; generated, doc 86 §6.4): hub lines
+# The quest packs: their targets' and givers' own greetings, gated on the line's talk key (quests-large
+# notes, "Talk lines for wave G"; C8, or the DM by hand), priority 4 like the cast's above.
+say[self.id=cty_ebba_coalgate self.from=frosthollow world.mem.lq_hearths=undersold priority=4] Half, cousin. Half, and a face at the store like I'd brought them mud. Those sacks were dry when I loaded them. Cold iron, I'd swear it on the top bend.
+say[self.id=cty_iris_fernhaven world.mem.lq_hearths=undersold priority=4] I came up late, the way I always do, and the east clamps were open on the side and steaming. Wet ash, all of it. We raked it out as waste. By noon it was gone.
+say[self.id=rm_arne_ashton world.mem.lq_hearths=undersold priority=4] Strangers bring sacks to the yard door at half price, dry as a good song. I didn't ask where from. I should have. The hill carter gets what's left of our coin.
+say[self.id=cty_stone_acorndell self.from=frosthollow world.mem.lq_hearths=undersold priority=4] 'Arth, cousin. Twelve sacks of waste raked out, twelve gone by noon. I counted. Drag marks north, deep, to the tarn. Black seam, somebody's drying our char.
+say[self.id=cty_leif_driphand self.from=frosthollow world.mem.lq_hearths=undersold priority=4] A cart on the quarry road at night, no lamp, black sacks to the tail. Going west, to the city. Nothing good goes that way in the dark, cousin.
+say[self.id=rm_arne_ashton world.mem.lq_hearths=contract priority=4] A price by the sack, and dry sacks from the hill. No more strangers at the yard door. I'd sing about it if you stood still long enough.
+say[self.id=cty_ebba_coalgate self.from=frosthollow world.mem.lq_hearths=contract priority=4] Marketday, down the pass road with a full cart and a paper that says what they'll pay. Warm hearth, cousin. That's all a carter wants.
+say[self.id=cty_marl_craghearth world.mem.lq_hearths_thin=yes priority=4] The stores are scraped bare this week. Bread, and my thanks, and a riddle owed. Sit long enough and you'll get the riddle.
+say[self.id=cty_ivo_sootridge self.from=fenshore world.mem.lq_eels_thin=yes priority=4] #thanks#, fen-friend. The stores are sunk this week, so it's bread and my word. The eels'll pay you back, mark me.
+say[self.id=tn_oh_harl_oakbough self.from=southmeadow world.mem.lq_vines=blight priority=4] Down from the Southwood, along the stream, under the old fence. I was lost three days in that wood once. I know its paths. Good harvest if you find the gap.
+say[self.id=tn_oh_harl_oakbough self.from=southmeadow world.mem.lq_vines=reckoning priority=4] Where I was raised they paint a sick root with oak bark and lime, and pray to the Bright One it takes. Three of bark and two of lime, and I'll do the painting.
+say[self.id=rm_liv_slagstack world.mem.lq_runnel=fever priority=4] Thyme syrup? Bring me herbs and I'll brew it the old way, with honey, not sugar. A spoon at night and one at dawn. I cough in the damp myself.
+say[self.id=rm_halvard_ashley world.mem.nh_stage=howls|letters|lights|harvest|bell|moot world.mem.nh_cough!=tended priority=4] Boil the Runnel water. And they say the cough's up at the Residence too. Damp doesn't care whose lungs it gets.
+say[self.id=rm_rupert_fogton self.mem.lq_rupert=paid priority=4] Come to count my bottles again? Count away. Every penny went back to the courts, and I'll thank you not to mention it.
+say[self.id=rm_dorcas_rainford world.mem.lq_wreck=lamp priority=4] Full measure to the Lamp Store, and one of their lamplighters buys a jar more of her own on blowy days. Says the wind snuffs her wicks. I've said nothing.
+say[self.id=rm_eleanor_vance world.mem.lq_thief_thin=yes priority=4] The treasury's short this week, so it's bread and my thanks. Bright One knows I've had my fill of counting coin.
+# <<< Ninth Howl talk, part 2: hub lines
 free
 choice Let me see your wares. [role=merchant here.shop=open|bare] -> do shop
 choice Any work going? [role=merchant here.giver=yes] -> do open work
@@ -571,8 +591,8 @@ say[self.from=frosthollow world.mem.nh_crown=ottilie|lamp|regency] The realm how
 # The quest packs: helpful knowledge (priority 2) and the thin purse (priority 3) (quests-*.md, talk).
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] The Morning Oven sends bread to the Sump Infirmary every day. The baker's always a carrier short, and she pays in cake. | Want an honest errand? The baker on the north side needs her loaves carried down to the Sump.
 say[here.region=ridgemere self.from=ridgemere self.quarter=sump world.mem.sq_on=yes priority=2] Going down to the infirmary? Take the Stairs. The lanes behind the Fish Hall are the first to flood.
-say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] The abbey's healer pays for herbs. Long grass and willows give them, any season but winter. | Herbs for the House of Mending? Any green bunch from the grass outside the walls, he says.
-say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] Yarrow's the one the healer wants most. It grows on open grass, spring to autumn.
+say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] The apothecary on the square pays for herbs, for the House of Mending's draughts. Long grass and willows give them, any season but winter. | Herbs for the House of Mending? Any green bunch from the grass outside the walls, he says.
+say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] Yarrow's the one the apothecary wants most. It grows on open grass, spring to autumn.
 say[here.region=ridgemere self.from=ridgemere self.quarter=sump world.mem.sq_on=yes priority=2] The old wolf above the pawnshop loses his littlest twice a week. She's always on the piers, counting masts.
 say[here.region=ridgemere self.from=ridgemere self.quarter=wharf world.mem.sq_on=yes priority=2] Hunting for a pup on the quay? Try the piers under the Grayrock office. That's where the small ones go to look at the ships.
 say[here.region=ridgemere self.from=coldwater world.mem.sq_on=yes priority=2] That old lake wolf over the pawnshop has a pup who'd sail to the Bright One's door if a ship went there, eh?
@@ -581,14 +601,14 @@ say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] Th
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] Oak bark peels off the broad-leaved trees in the woods past the walls. Pines give you resin, not bark.
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] The Ropewalk buys pine resin for the tar. The hills east of the city are thick with pines.
 say[here.region=ridgemere self.from=ridgemere self.quarter=works world.mem.sq_on=yes priority=2] Every Grayrock hull leaves port in Ropewalk rope. The ropemaker pays for resin, and counts every lump.
-say[here.region=ridgemere self.from=ridgemere self.quarter=office world.mem.sq_on=yes priority=2] Upstairs at the Records Office they pay for copying. You read the old count while you do it.
-say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] If you want to know how the city was counted, sort a drawer at the Records Office. They'll even pay you for it.
+say[here.region=ridgemere self.from=ridgemere self.quarter=office world.mem.sq_on=yes priority=2] The Council Press is printing the old rolls. They pay for paper and ink brought in, and you hear the old count read off the proofs.
+say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] If you want to know how the city was counted, take the Council Press some paper. The printer reads the old rolls aloud as she sets them.
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] The City Office never has enough paws for the Heights round. Those houses tip in thanks, not pennies.
-say[here.region=ridgemere self.from=ridgemere self.quarter=heights world.mem.sq_on=yes priority=2] A letter for this street? Bring it to the door, not the gate. The doorkeepers here don't come down for anyone.
-say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] The cathedral's sexton takes candles any day, but she wants you at the service on Restday too.
+say[here.region=ridgemere self.from=ridgemere self.quarter=heights world.mem.sq_on=yes priority=2] A letter for the Vances? Don't climb for it. Their doorkeeper doesn't come down for anyone, but the one who runs the Rag Mill takes the House's letters.
+say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] Wickham's chandler takes candles for the cathedral any day, but wants you at the cathedral door on Restday too.
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] Wax or tallow, the cathedral burns it all. The chandlers on the north side sell both.
-say[here.region=ridgemere self.from=ridgemere self.quarter=sump world.mem.sq_on=yes priority=2] The young almoner from the lake country sends bread down here. Some wolf carries it, and doesn't ask questions.
-say[here.region=ridgemere self.from=coldwater world.mem.sq_on=yes priority=2] The abbey's almoner is lake-born, eh? She'll find you work if you've a strong back and a closed mouth.
+say[here.region=ridgemere self.from=ridgemere self.quarter=sump world.mem.sq_on=yes priority=2] The young almoner from the lake country leaves bread at the abbey brewhouse for us. Some wolf carries it down, and doesn't ask questions.
+say[here.region=ridgemere self.from=coldwater world.mem.sq_on=yes priority=2] The abbey's brewer hands out the almoner's bread. He'll find you work if you've a strong back and a closed mouth.
 say[here.region=ridgemere self.from=ridgemere self.quarter=commons world.mem.sq_on=yes priority=2] The provisioner in the Market Hall buys whatever you've gathered, and pays honest. On Marketday she's desperate.
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] Stalls on the Square go for a few pennies on Marketday. Sell from one and you'll learn every trick on the Commons.
 say[here.region=ridgemere self.from=ridgemere self.quarter=sump world.mem.sq_on=yes priority=2] The greens wolf from the Rainwood pays for mushrooms. She says the Sump's too damp for anything but mould.
@@ -596,13 +616,13 @@ say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] Mu
 say[here.region=ridgemere self.from=oakhaven world.mem.sq_on=yes priority=2] Mushrooms want deadwood, mm? Rotten logs and wet ferns. You'll fill a basket slow and sure.
 say[here.region=ridgemere self.from=ridgemere self.quarter=works world.mem.sq_on=yes priority=2] The Nailers' Forge never has charcoal enough. The charcoal store on the Sump side of the Commons sells it by the sack.
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] Want honest sweat in the Cinders? Carry charcoal for the nailers. They pay in nails, and nails sell.
-say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] The Greatly stables pay for oats and straw. Don't expect the steward to thank you; the stable wolf will.
-say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] The lamplighter wants somebody to ring the morning bell. You climb the Clock Tower at first light; he can't, at his age.
+say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] The Greatly Yard pays for oats and straw for the stables. Don't expect the steward to thank you; the yard hand will.
+say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] A porter at the Sump Stairs wants somebody to ring the morning bell. The rope comes down by the Clock Tower door; pull it at first light.
 say[here.region=ridgemere self.from=ridgemere self.quarter=wharf world.mem.sq_on=yes priority=2] Want work on the piers? Be there when a ship comes in. They always want paws on the lines.
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] The ships come in on a timetable, and the notice board tells you which is due. Bring rope and you're welcome.
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] The Carters' Yard pays for a crate carried when a wagon goes short. The Oakhaven road's the usual one.
 say[here.region=oakhaven self.from=oakhaven world.mem.sq_on=yes priority=2] The Ridgemere carters send short loads, mm? Some kind wolf usually walks the rest along the Sound Road.
-say[here.region=ridgemere self.from=ridgemere self.quarter=heights world.mem.sq_on=yes priority=2] The wolf who visits our sick swears by willow bark for stiff joints. Says it beats any physician on the Commons.
+say[here.region=ridgemere self.from=ridgemere self.quarter=heights world.mem.sq_on=yes priority=2] The Mortar and Pestle's hand who brings our physic up swears by willow bark for stiff joints. Says it beats any physician on the Commons.
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] Every physic in the city sells willow bark. Steep it long and it eases an old joint, they say.
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] The Cinder butcher pays for pheasants out of the Rainward Woods. They run more than they fly; head them off.
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] Pheasants feed in the grass and scrub at the wood's edge. Two wolves, one to drive and one to wait, take them easy.
@@ -617,9 +637,9 @@ say[here.region=coldwater self.from=coldwater world.mem.sq_on=yes priority=2] Fa
 say[here.region=coldwater self.from=coldwater world.mem.sq_on=yes priority=2] The Meresend pup wanders after apples. Wherever the wind smells sweet, that's where he'll be, eh?
 say[here.region=coldwater self.from=coldwater world.mem.sq_on=yes priority=2] Mind the mere shore past the orchards. There's a camp up there that won't stay broken.
 say[here.region=coldwater self.from=coldwater world.mem.sq_on=yes priority=2] If the Meresend pup's already being looked for, the bakehouse wants loaves carried to the landing, eh?
-say[here.region=coldwater self.from=coldwater world.mem.sq_on=yes priority=2] The Larkdowns shepherd pays for straw for his pens. Calm sort, eh? He hums to the ewes.
-say[here.region=coldwater self.from=coldwater world.mem.sq_on=yes priority=2] The fen-born shepherd at Larkdowns loses ewes up the downs, eh? They leave wool on the thorns; a good nose follows it.
-say[here.region=coldwater self.from=coldwater world.mem.sq_on=yes priority=2] If both his strays are being tracked, the other Larkdowns shepherd wants straw for the pens, eh?
+say[here.region=coldwater self.from=coldwater world.mem.sq_on=yes priority=2] The Looms carts straw up to the Larkdowns pens, and pays for it, eh? The shepherd hums to his ewes, they say.
+say[here.region=coldwater self.from=coldwater world.mem.sq_on=yes priority=2] A Larkdowns shepherd loses ewes up the downs, eh? The Looms finds him a nose to follow the wool on the thorns.
+say[here.region=coldwater self.from=coldwater world.mem.sq_on=yes priority=2] If both his strays are being tracked, the Looms wants straw for the Larkdowns pens, eh?
 say[here.region=oakhaven self.from=oakhaven world.mem.sq_on=yes priority=2] The carter's drag rope's given out, mm? Rope comes from the city ropewalk. The notice is on the board by the square.
 say[here.region=oakhaven self.from=oakhaven world.mem.sq_on=yes priority=2] The road wolves sit at Alder Mere, on the way to the city. Go in a pair if you're carrying.
 say[here.region=oakhaven self.from=oakhaven world.mem.sq_on=yes priority=2] The fellers at the cut want venison. Roe deer keep to the deep trees, mm? Downwind, and slow.
@@ -634,45 +654,45 @@ say[here.region=larkfield self.from=larkfield world.mem.sq_on=yes priority=2] A 
 say[here.region=larkfield self.from=larkfield world.mem.sq_on=yes priority=2] The Southwood swineherd keeps a tally of who's helped him. Better to be on it than off it, eh?
 say[here.region=larkfield self.from=larkfield world.mem.sq_on=yes priority=2] The press buys old linen. You'd not think a rag of it was worth anything till you see them weigh it, eh?
 say[here.region=larkfield self.from=larkfield world.mem.sq_on=yes priority=2] Linen for the vats? The stores keep a bolt or two. Buy fair, sell to the press, and everybody's full weight.
-say[here.region=larkfield self.from=larkfield world.mem.sq_on=yes priority=2] The Longmead miller wants the reeds pulled from his race. Wet work, but he pays in flour, eh?
+say[here.region=larkfield self.from=larkfield world.mem.sq_on=yes priority=2] The Longmead mill race wants its reeds pulled, and the baker's asking: his flour comes short. Wet work, but it pays in flour, eh?
 say[here.region=southmeadow self.from=southmeadow world.mem.sq_on=yes priority=2] The Larkholm farmhand keeps skeps by the granary. He wants herbs for his smoker; wormwood if there's any, summer and autumn.
 say[here.region=southmeadow self.from=southmeadow world.mem.sq_on=yes priority=2] Mind the Sunfields road past Larkholm. There's a camp up there, blight take it, and it keeps coming back.
 say[here.region=southmeadow self.from=southmeadow world.mem.sq_on=yes priority=2] The Larkholm miller'll wager on anything, bless him. He's got one going on the hares in his seed rows.
 say[here.region=southmeadow self.from=southmeadow world.mem.sq_on=yes priority=2] Hares sit tight and then go like a shot. Two of you: one to drive, one to wait in the furrow.
-say[here.region=southmeadow self.from=southmeadow world.mem.sq_on=yes priority=2] The Larkholm farmhand's stringing garlands round the square for the festival. Every bunch helps the rope reach, bless it.
+say[here.region=southmeadow self.from=southmeadow world.mem.sq_on=yes priority=2] The clay digger from the Sallow pits is stringing garlands round the square for the festival. Every bunch helps the rope reach, bless it.
 say[here.region=larkfield self.from=larkfield world.mem.sq_on=yes priority=2] Southmeadow's dressing its square for the festival. They'll pay in thanks, not silver, but it's a fair trade, eh?
 say[here.region=fenshore self.from=mirebridge|fenshore world.mem.sq_on=yes priority=2] The Dune warrener's purse-nets are worn through, no? Bring him cord. He pays in smoked rabbit and old sayings.
 say[here.region=fenshore self.from=mirebridge|fenshore world.mem.sq_on=yes priority=2] Firewood's scarce in the fen, no? The dry ground north of the boardwalks has scrub and willow, and that burns.
-say[here.region=fenshore self.from=mirebridge|fenshore world.mem.sq_on=yes priority=2] The Fenside salt worker has a grandmother story for everything, no? Ask her about Mirebridge, if you've the stomach for it.
+say[here.region=fenshore self.from=mirebridge|fenshore world.mem.sq_on=yes priority=2] The Fenside salt workers say the old names over the pans, no? Ask the peat cutter about Mirebridge, if you've the stomach for it.
 say[here.region=fenshore self.from=mirebridge|fenshore world.mem.sq_on=yes priority=2] The clay digger at the Mirebridge pits wants a second spade, no? She counts every lump, so bring four.
 say[here.region=fenshore self.from=mirebridge|fenshore world.mem.sq_on=yes priority=2] Nobody digs at the crossroads itself, no? That's where the village stood, before the river came over.
-say[here.region=fenshore self.from=mirebridge|fenshore world.mem.sq_on=yes priority=2] There's a plank gone by the Heron. The deckhand who mends the boardwalks takes planks and nails, no?
+say[here.region=fenshore self.from=mirebridge|fenshore world.mem.sq_on=yes priority=2] There's a plank gone by the Heron. The Heron's pot hand mends the boardwalk, and takes planks and nails, no?
 say[here.region=saltwell self.from=saltwell world.mem.sq_on=yes priority=2] The salt rakers at the pan need carriers. Go when the sun is low, my friend; the white burns when it is high.
 say[here.region=saltwell self.from=saltwell world.mem.sq_on=yes priority=2] The Redsand warrener cannot cure her pelts without salt. Carry some to the stores and she will remember it.
 say[here.region=saltwell self.from=saltwell world.mem.sq_on=yes priority=2] The Ochre vines are stripped by rabbits. The vine-tender pays well, and feeds better.
 say[here.region=saltwell self.from=saltwell world.mem.sq_on=yes priority=2] Rabbits hear you before they see you. Come at them slowly, downwind, and the vines will thank you.
 say[here.region=saltwell self.from=saltwell world.mem.sq_on=yes priority=2] The farm cart comes in early, most mornings, and the caravans more seldom. Wait in the shade by the pool, and you will hear them before you see them.
 say[here.region=ridgemere self.from=saltwell world.mem.sq_on=yes priority=2] In Saltwell, #address#, a caravan is met at the well. Even here, so far from it, I look for someone to meet.
-say[here.region=ridgemere self.from=ridgemere self.quarter=estate world.mem.sq_on=yes priority=2] The Fellhall kitchen is always a basket short. The hall servant pays for eggs and cheese brought round the back.
-say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] Fellhall's kitchen buys eggs off the Commons most days. Go in by the kitchens; the front door's for the family.
-say[here.region=ridgemere self.from=ridgemere self.quarter=estate world.mem.sq_on=yes priority=2] Grayrock Hall buys linen when the sea damp gets into the sheets. The young hall servant pays, and talks loud enough for two.
+say[here.region=ridgemere self.from=ridgemere self.quarter=estate world.mem.sq_on=yes priority=2] The Fellhall kitchen is always a basket short. The Lamp and Wick hand from the Fell cottages pays for eggs and cheese, and carries them up.
+say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] Fellhall's kitchen buys eggs off the Commons most days. Nobody goes in; the Lamp and Wick hand who lives in the cottages takes them up.
+say[here.region=ridgemere self.from=ridgemere self.quarter=estate world.mem.sq_on=yes priority=2] Grayrock Hall buys linen when the sea damp gets into the sheets. The Bridge Stores hand from the Grayrock cottages pays, and carries it up.
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_on=yes priority=2] Greywool sends its finished bolts up to the big houses. The young loom hand pays a carrier, and makes a joke of it.
-say[here.region=ridgemere self.from=ridgemere self.quarter=estate world.mem.sq_on=yes priority=2] Looking for the Court's chamber keeper? He takes his supper below stairs, and you'll hear him humming before you see him.
+say[here.region=ridgemere self.from=ridgemere self.quarter=estate world.mem.sq_on=yes priority=2] Looking for the Court's chamber keeper? He never comes out. Wenna Timberland takes things in for the Court; she's in the yard with the iron carts all day.
 say[here.region=ridgemere self.from=ridgemere world.mem.nh_stage=king|moot_called|reckoning priority=2] The Square's baker is baking double for the wake. She wants carriers to the Soup Kitchen, and no payment taken at the tables.
 say[here.region=ridgemere self.from=ridgemere self.quarter=sump world.mem.nh_stage=king|moot_called|reckoning priority=2] The Soup Kitchen's feeding the wake and the Sump both. Bread carried down from the Square goes a long way.
-say[here.region=ridgemere self.from=ridgemere world.mem.nh_stage=moot_called|reckoning priority=2] The City Office is sending the Moot's summons to every farmstead on the roll. The clerk pays carriers who don't mind hills.
+say[here.region=ridgemere self.from=ridgemere world.mem.nh_stage=moot_called|reckoning priority=2] The carters are taking the Moot's summons to every farmstead on the roll. One of them pays wolves to leave a summons where a farm's cart calls.
 say[here.region=ridgemere self.from=ridgemere world.mem.nh_stage=signals priority=2] The masons' yard by Northgate gives a carrier two blocks a day for the Line posts. The posts want four apiece.
 say[here.region=oakhaven self.from=oakhaven world.mem.nh_stage=signals priority=2] The post at Alder Mere wants stone, mm? The city masons send it out, two blocks at a time.
 say[here.region=ridgemere self.from=ridgemere world.mem.nh_stage=signals priority=2] The coppice woodward cuts two poles a day for the Line posts. He wants carriers, and says so bluntly.
 say[here.region=frosthollow self.from=frosthollow world.mem.nh_stage=signals priority=2] The Upper Mere post wants timber, stone. Poles come out from the city coppice, two at a time.
 say[here.region=southmeadow self.from=southmeadow world.mem.nh_stage=howls priority=2] The Larkholm lad's sending sorry-gifts round for the howl that went wrong at the wedding. Carry one and you'll hear the story, bless you.
 say[here.region=southmeadow self.from=southmeadow world.mem.nh_stage=howls priority=2] Practising the howl? Mind which one. We've one for the dead and one for a wedding, and the square mixed them, ripe and proper.
-say[here.region=ridgemere self.from=ridgemere world.mem.nh_stage=letters|lights priority=2] The Rainward orchard keeper sends bread up to the wolves walking the bounds. Carry some and she'll fill your waterskin.
-say[here.region=oakhaven self.from=oakhaven world.mem.nh_stage=letters|lights priority=2] Bread comes up from the Rainward orchard for the bounds-walkers, mm? Good bark, that keeper.
+say[here.region=ridgemere self.from=ridgemere world.mem.nh_stage=letters|lights priority=2] A woodcutter at the Rainwood coppice sends bread up to the wolves walking the bounds. Carry some and she'll fill your waterskin.
+say[here.region=oakhaven self.from=oakhaven world.mem.nh_stage=letters|lights priority=2] Bread comes up from the Rainwood coppice for the bounds-walkers, mm? Good bark, that woodcutter.
 say[here.region=oakhaven self.from=oakhaven world.mem.nh_stage=letters|lights priority=2] Green stakes in the cut, mm? Pull one and take it to the logger. The notice is up on the square.
 say[here.region=fenshore self.from=mirebridge|fenshore world.mem.nh_stage=letters|lights priority=2] The Fen Shore deckhand wants the boardwalk lamps lit at dusk, no? So a wolf can tell our lights from the ones out on the fen.
 say[here.region=larkfield self.from=larkfield world.mem.nh_stage=harvest|bell priority=2] The Looms send blankets down to the wolves at the ford, eh? The loom hand wants carriers, and she'll give you a hard look first.
-say[here.region=larkfield self.from=larkfield world.mem.nh_stage=harvest|bell world.mem.nh_ford=burned priority=2] The Longmead farmhand's giving out bread for the burned houses, eh? Find him at the granary and he'll load you up.
+say[here.region=larkfield self.from=larkfield world.mem.nh_stage=harvest|bell world.mem.nh_ford=burned priority=2] The Print House vat hand's giving out Longmead's bread for the burned houses, eh? Find her at the press and she'll load you up.
 say[here.region=coldwater self.from=coldwater world.mem.nh_stage=bell priority=2] The bakehouse sends bread up to the haulers on the mere, eh? The shop hand wants carriers who don't mind the cold.
 say[here.region=ridgemere self.from=ridgemere world.mem.nh_stage=moot priority=2] The carpenter in the Market Hall is building benches for the Moot. She wants planks and nails, and dry ones.
 say[here.region=ridgemere self.from=mirebridge|fenshore world.mem.nh_stage=moot priority=2] The fen carpenter in the Market Hall wants planks for the Moot benches, no? Dry ones, or she'll cough at you.
@@ -728,6 +748,7 @@ say[self.from=ridgemere world.mem.st_bounty=open priority=2] The broken camps co
 say[here.region=coldwater self.from=coldwater world.mem.st_bounty=open priority=2] Camp's back by Glasswater, eh? The Watch in the city pays for it broken. Net and line, go in a pack.
 say[here.region=ridgemere self.from=ridgemere world.mem.st_fair=open priority=2] Fair-goers on the north road this week. The gate guard wants it walked. Bandits know the fair days too.
 say[self.from=ridgemere world.mem.st_posts=probed priority=2] Bands are testing the Line's posts of a night. Stand one from dark till first light, and take a friend.
+say[here.region=fenshore self.from=mirebridge|fenshore world.mem.lq_eels=weir priority=2] Take friends and a strong back to the weir below Rivermouth. The guards come out after dark and don't like being outnumbered. The stakes pull easy in the mud.
 # <<< Ninth Howl talk, part 2: news lines
 say[world.event_words] It's all talk of #world.event_words#. | Have you heard? #world.event_words.capitalize#.
 say[world.news] Word from #world.news_from#: #world.news#.
@@ -1091,13 +1112,13 @@ say[self.from=frosthollow world.mem.nh_captain=fled] The Captain went over the P
 say[self.from=frosthollow world.mem.nh_captain=beaten] They took the Captain down to the city's cells. Lamp and pick, I hope they judged him fair.
 say[self.from=frosthollow world.mem.nh_crown=ottilie|lamp|regency] The realm howled from the Pass to the Bay Light. Deep quiet after. Then the bell.
 # The quest packs: "someone did it" lines (quests-*.md, talk).
-say[here.region=ridgemere self.from=ridgemere world.mem.sq_last=bread] The infirmary had its bread warm today. Even the nurse smiled, and she never smiles.
-say[here.region=ridgemere self.from=ridgemere world.mem.sq_last=herbs] The House of Mending had a full shelf today. Someone brought the healer an armful.
+say[here.region=ridgemere self.from=ridgemere world.mem.sq_last=bread] The infirmary had its bread warm today. The porter at the Stairs says even the nurse smiled, and she never smiles.
+say[here.region=ridgemere self.from=ridgemere world.mem.sq_last=herbs] The House of Mending had a full shelf today. Someone brought the apothecary on the square an armful.
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_last=ships] Somebody walked the old pawnshop wolf's littlest home from the piers. She talked about ships the whole way, I'd wager.
 say[here.region=ridgemere self.from=ridgemere self.quarter=wharf world.mem.sq_last=smoke] The north wharf smokehouse was going full today. You could smell it from the Fish Hall.
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_last=resin] The tar pot at the Ropewalk was full today. The whole Cinders smelled like a pine wood.
-say[here.region=ridgemere self.from=ridgemere self.quarter=office world.mem.sq_last=records] There was a new paw at the copying desk today. Neat letters, they say.
-say[here.region=ridgemere self.from=ridgemere self.quarter=heights world.mem.sq_last=letter] A City Office letter came to one of our doors today. The servant took it like it might bite.
+say[here.region=ridgemere self.from=ridgemere self.quarter=office world.mem.sq_last=records] Somebody brought the Council Press a stack of good paper today. The old rolls are nearly set.
+say[here.region=ridgemere self.from=ridgemere self.quarter=heights world.mem.sq_last=letter] A City Office letter came up to one of our houses today. The servant took it like it might bite.
 say[here.region=ridgemere self.from=ridgemere world.mem.sq_last=candles] There were new candles beside the old King's on Restday. Somebody's kind.
 say[here.region=ridgemere self.from=ridgemere self.quarter=sump world.mem.sq_last=alms] Somebody gave me bread today and didn't ask a thing. Bright One keep them.
 say[here.region=ridgemere self.from=ridgemere self.quarter=commons world.mem.sq_last=stock] The provisioner's shelves were full by Marketday. Somebody's been gathering for her.
@@ -1109,7 +1130,7 @@ say[here.region=ridgemere self.from=ridgemere world.mem.sq_last=bell] Somebody r
 say[here.region=ridgemere self.from=ridgemere self.quarter=sump world.mem.sq_last=bell] Heard the bell? I was at the Stairs before the fish carts for once.
 say[here.region=ridgemere self.from=ridgemere self.quarter=wharf world.mem.sq_last=lines] A wolf off the street took a ship's lines today, neat as a sailor.
 say[here.region=oakhaven self.from=oakhaven world.mem.sq_last=crate] A city wolf walked a crate to the stores, mm? The storekeeper counted it three times and found it whole.
-say[here.region=ridgemere self.from=ridgemere self.quarter=heights world.mem.sq_last=willow] Half the Heights smells of willow tea. Somebody brought the healer bark enough for every stiff knee on the street.
+say[here.region=ridgemere self.from=ridgemere self.quarter=heights world.mem.sq_last=willow] Half the Heights smells of willow tea. Somebody brought the Mortar and Pestle bark enough for every stiff knee on the street.
 say[here.region=ridgemere self.from=ridgemere self.quarter=sump world.mem.sq_last=pheasant] There's pheasant pie at the Cinder butchers. Somebody hunted the Rainward Woods.
 say[here.region=ridgemere self.from=ridgemere self.quarter=commons world.mem.sq_last=tarns] Soundings has fresh word of the tarns. The new chart's half done.
 say[here.region=coldwater self.from=coldwater world.mem.sq_last=fox] Somebody saw off the Oakhurst fox. Fair catch, that. The hens are laying again.
@@ -1129,13 +1150,13 @@ say[here.region=frosthollow self.from=frosthollow world.mem.sq_last=goats] The q
 say[here.region=larkfield self.from=larkfield world.mem.sq_last=badger] Somebody shifted the Plumtree badger. Full weight to them, eh?
 say[here.region=larkfield self.from=larkfield world.mem.sq_last=swill] Southwood's pigs ate well today. The swineherd marked somebody down for it.
 say[here.region=larkfield self.from=larkfield world.mem.sq_last=linen] The vats were full today. The printer's running sheets again, eh?
-say[here.region=larkfield self.from=larkfield world.mem.sq_last=race] The Longmead wheel's turning sweet again. Somebody waded in for the miller.
+say[here.region=larkfield self.from=larkfield world.mem.sq_last=race] The Longmead wheel's turning sweet again. Somebody waded in for the baker.
 say[here.region=southmeadow self.from=southmeadow world.mem.sq_last=hives] The Larkholm bees were gentle as anything today. Somebody filled the smoker, bless them.
 say[here.region=southmeadow self.from=southmeadow world.mem.sq_last=hare] The miller lost his hare wager. He's telling everyone he let them win.
 say[here.region=southmeadow self.from=southmeadow world.mem.sq_last=garland] The square's garlanded right round. Good harvest to whoever brought the green.
-say[self.id=cty_willa_wheatcombe world.mem.sq_last=garland self.from=southmeadow] The rope's round the square. Ripe, every bunch of it, and not one of them city-bought.
+say[self.id=cty_briar_sedgebridge world.mem.sq_last=garland] The rope's round the square, every bunch of it, and not one of them city-bought.
 say[here.region=fenshore self.from=mirebridge|fenshore world.mem.sq_last=nets] The Dune warren has new nets. Somebody brought the warrener cord, fen-sure.
-say[here.region=fenshore self.from=mirebridge|fenshore world.mem.sq_last=pans] The Fenside pans came up white today. Somebody hauled her wood, fen-sure.
+say[here.region=fenshore self.from=mirebridge|fenshore world.mem.sq_last=pans] The Fenside pans came up white today. Somebody hauled them wood, fen-sure.
 say[here.region=fenshore self.from=mirebridge|fenshore world.mem.sq_last=clay] Fresh clay at the kilns today, the grey Mirebridge kind. You can tell it by the smell.
 say[here.region=fenshore self.from=mirebridge|fenshore world.mem.sq_last=plank] The boardwalk by the Heron's whole again. Dry feet, for a change.
 say[here.region=saltwell self.from=saltwell world.mem.sq_last=salt] Salt came in to the stores today, carried on foot. Blessings on the wolf who walked it.
@@ -1149,7 +1170,7 @@ say[here.region=ridgemere self.from=ridgemere world.mem.st_last=summons] Hillsid
 say[here.region=ridgemere self.from=ridgemere world.mem.st_last=stone] There's new stone at one of the Line posts. The masons' yard sent it, and the steward hasn't noticed.
 say[here.region=ridgemere self.from=ridgemere world.mem.st_last=timber] Fresh poles at one of the Line posts. The coppice woodward's, by the cut of them.
 say[here.region=southmeadow self.from=southmeadow world.mem.st_last=chorus] The two households are speaking again since the howl. Somebody carried mead and honey and said the right thing.
-say[here.region=ridgemere self.from=ridgemere world.mem.st_last=bounds] The wolves on the bounds were fed today. The orchard keeper's bread, carried up into the hills.
+say[here.region=ridgemere self.from=ridgemere world.mem.st_last=bounds] The wolves on the bounds were fed today. The coppice's bread, carried up into the hills.
 say[here.region=oakhaven self.from=oakhaven world.mem.st_last=stake] Another green stake on the logger's fire. Good bark, whoever pulled it.
 say[self.id=cty_ingram_ashleaf world.mem.st_last=stake self.from=oakhaven] That stake burned sweet, mm? Somebody pulled it for the cut. Root well, whoever they were.
 say[here.region=fenshore self.from=mirebridge|fenshore world.mem.st_last=lamps] The boardwalk lamps were lit in good time. Dry feet and true lights, fen-sure.
@@ -1228,7 +1249,7 @@ say[here.region=frosthollow self.from=frosthollow world.mem.st_cloak=cleared] So
 say[here.region=southmeadow self.from=southmeadow world.mem.st_relief=open] Larkholm's got flour and Larkfield's got none. Somebody's got to carry it, siege or no siege, eh.
 say[here.region=larkfield self.from=larkfield world.mem.st_relief=road|downs] Larkholm flour at the Bakehouse, carried in by paw. Full weight, every measure. By the market cross, it's welcome.
 say[here.region=coldwater self.from=coldwater world.mem.st_ice=open] The Larkdowns ewes stare at the mere all night, eh? Something rings under that ice.
-say[here.region=coldwater self.from=coldwater world.mem.st_ice=bell] A shepherd took his rope to the Upper Mere shed. Says a wolf sat the ice and heard the bell. Net and line.
+say[here.region=coldwater self.from=coldwater world.mem.st_ice=bell] A still hand took his rope to the Upper Mere shed. Says a wolf sat the ice and heard the bell. Net and line.
 say[here.region=coldwater self.from=coldwater world.mem.st_bell=open] The bell's going down to the city in our felt, eh? Every ell woven here.
 say[here.region=coldwater self.from=coldwater world.mem.st_bell=go] The old weaver's walking down to the city with the bell. Thirty years he's said it. Fair catch.
 say[here.region=coldwater self.from=coldwater world.mem.st_bell=stay] The old weaver's staying for the Moot night. Says somebody has to remember the names.
@@ -1258,16 +1279,16 @@ say[here.region=coldwater self.from=coldwater world.mem.lq_wreck=wharf] Grayrock
 say[here.region=ridgemere self.from=ridgemere world.mem.lq_post=couriers] The Couriers beat the wagons. Sound to Waste in a day, paw to paw. The Carters' Yard keeper bought the round, fair play to him.
 say[here.region=saltwell self.from=saltwell world.mem.lq_post=couriers] The runners came over the Waste like water down a wadi. Peace on their pads, every one.
 say[here.region=frosthollow self.from=frosthollow world.mem.lq_post=wagons] Wagons won the post, cousin. Dead rock luck for the runners. Next season, they say.
-say[here.region=fenshore self.from=mirebridge|fenshore world.mem.lq_eels=run] The eels are up Withy Creek again, thick as reeds. Mud and eels, it's a fair-dry season after all.
+say[here.region=fenshore self.from=mirebridge|fenshore world.mem.lq_eels=run] The eels are up Withy Creek again, thick as reeds. Mud and eels, it's a fair-dry season after all. | The eels are up Withy Creek again, thick as reeds. Mud and eels, there's supper in every pot.
 say[here.region=ridgemere self.quarter=wharf self.from=ridgemere world.mem.lq_eels=run] Eels are dear at the Fish Hall. Somebody pulled their weir out of the fens.
 say[here.region=larkfield self.from=larkfield world.mem.lq_eels=shared] Fenshore has a share of the Fish Hall's eels now. Fair price, if you ask me.
 say[here.region=ridgemere self.quarter=heights self.from=ridgemere world.mem.lq_thief=walking] They say a Quickened wolf walks through the Heights' walls and takes pledges. Lock your strongroom, for all the good it does.
 say[here.region=ridgemere self.from=ridgemere world.mem.lq_thief=forgiven] Vance House let the Sump pledges go. A wolf put it to the lender plain, they say, and the lender listened.
-say[here.region=larkfield self.from=larkfield world.mem.lq_thief=named] Ridgemere caught its wall-walking thief. A pup, they say, no Gift at all. Short-weighed magic, that.
+say[here.region=larkfield self.from=larkfield world.mem.lq_thief=named] Ridgemere caught its wall-walking thief. A young Sump wolf, they say, no Gift at all. Short-weighed magic, that.
 say[here.region=ridgemere self.from=ridgemere world.mem.lq_thief=blinker] The Heights swear it was a Quickened thief. Somebody's writing to the Wardens. Bright One keep us all.
-say[here.region=frosthollow self.from=frosthollow world.mem.lq_hearths=undersold] Upper hearths charcoal at half price in the city. Dead rock luck, or somebody's hand in it. Deep, I'd say the hand.
+say[here.region=frosthollow self.from=frosthollow world.mem.lq_hearths=undersold] Upper hearths charcoal at half price in the city. Dead rock luck, or somebody's hand in it. Deep, I'd say the hand. | Upper hearths charcoal at half price in the city. That's no cracked seam, cousin. That's somebody's hand in it.
 say[here.region=ridgemere self.quarter=commons self.from=ridgemere world.mem.lq_hearths=contract] The charcoal store pays the hill colliers by the sack now. Dearer coal, and no strangers at the yard door.
-say[here.region=frosthollow self.from=frosthollow world.mem.lq_hearths=home] Frosthollow charcoal on the Frosthollow square, Marketday. Deep and plain, the way it should be, stone.
+say[here.region=frosthollow self.from=frosthollow world.mem.lq_hearths=home] Frosthollow charcoal on the Frosthollow square, Marketday. Deep and plain, the way it should be, stone. | Frosthollow charcoal on the Frosthollow square, Marketday. Sound sacks at our own price, the way it should be, stone.
 say[here.region=larkfield self.from=larkfield world.mem.lq_hearths=greenholt] Greenholt wagons carry the Upper hearths' charcoal too now. Fair price, if not full weight for the hill folk.
 say[here.region=ridgemere self.from=ridgemere self.quarter=sump world.mem.st_round=open] Somebody's walking the night round since the patrolman went up the Hundred Steps. Not the Watch. Just somebody.
 say[here.region=oakhaven self.from=oakhaven world.mem.st_bounds=walked] Somebody walked all twelve bounds of the hills in a day, mm? Old Oak, the old folk did that.

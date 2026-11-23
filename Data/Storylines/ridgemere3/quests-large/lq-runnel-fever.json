@@ -234,10 +234,10 @@
      "do": "effect",
      "effect": {
       "kind": "npc.offer",
-      "npc": "rm_ivo_fogstack",
+      "npc": "rmx_dirk_langstead",
       "id": "lq_run_wash",
-      "words": "Does your water smell wrong?",
-      "reply": "Sharp, like a lime-kiln, since the spring flood. The wash comes out stiff. I told the tannery. They said their pits don't leak. Pits always leak.",
+      "words": "Does the wash water smell wrong?",
+      "reply": "Sharp, like a lime-kiln, since the spring flood. The rags I wash for the market come out stiff. The washhouse told the tannery. They said their pits don't leak. Pits always leak.",
       "once": true
      }
     },
@@ -259,7 +259,7 @@
       "npc": "rm_halvard_ashley",
       "id": "lq_run_test",
       "words": "What's in the Runnel draught?",
-      "reply": "Chalk, mint and river water. Runnel water, likely, which is the joke of it. Willow bark and thyme syrup do more good. Tell the nurse I'll make them at cost.",
+      "reply": "Chalk, mint and river water. Runnel water, likely, which is the joke of it. Willow bark and thyme syrup do more good. I'll make them at cost for the infirmary.",
       "once": false
      }
     },
@@ -356,10 +356,10 @@
      "do": "effect",
      "effect": {
       "kind": "npc.offer",
-      "npc": "rm_ivo_fogstack",
+      "npc": "rmx_dirk_langstead",
       "id": "lq_run_wash",
-      "words": "Does your water smell wrong?",
-      "reply": "Sharp, like a lime-kiln, since the spring flood. The wash comes out stiff. I told the tannery. They said their pits don't leak. Pits always leak.",
+      "words": "Does the wash water smell wrong?",
+      "reply": "Sharp, like a lime-kiln, since the spring flood. The rags I wash for the market come out stiff. The washhouse told the tannery. They said their pits don't leak. Pits always leak.",
       "once": true
      }
     },
@@ -381,7 +381,7 @@
       "npc": "rm_halvard_ashley",
       "id": "lq_run_test",
       "words": "What's in the Runnel draught?",
-      "reply": "Chalk, mint and river water. Runnel water, likely, which is the joke of it. Willow bark and thyme syrup do more good. Tell the nurse I'll make them at cost.",
+      "reply": "Chalk, mint and river water. Runnel water, likely, which is the joke of it. Willow bark and thyme syrup do more good. I'll make them at cost for the infirmary.",
       "once": false
      }
     }
@@ -1763,8 +1763,8 @@
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "rm_theodora_wickley",
-     "text": "Mind the Runnel water. Boil it, or don't drink it. We've pups coughing in every cot."
+     "npc": "rm_halvard_ashley",
+     "text": "Mind the Runnel water. Boil it, or don't drink it. The infirmary has pups coughing in every cot."
     },
     {
      "kind": "npc.line",
@@ -1788,7 +1788,7 @@
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "rm_theodora_wickley",
+     "npc": "rm_halvard_ashley",
      "text": "Boil the Runnel water. And they say the cough's up at the Residence too. Damp doesn't care whose lungs it gets."
     },
     {
@@ -1805,7 +1805,7 @@
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "rm_theodora_wickley",
+     "npc": "rm_halvard_ashley",
      "text": "A cover over the cisterns, or a soakaway for the tanner's pits. Choose one and carry for it. The pups can't wait on a council."
     },
     {
@@ -1822,7 +1822,7 @@
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "rm_theodora_wickley",
+     "npc": "rm_halvard_ashley",
      "text": "They're raising a cover over Cistern Court. Carry for it if you've a back for it. Every load is a cot emptied sooner."
     }
    ],
@@ -1834,8 +1834,8 @@
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "rm_theodora_wickley",
-     "text": "Half the cots are empty this week. Bright One bless whoever carried stone for that cover."
+     "npc": "rm_halvard_ashley",
+     "text": "Half the infirmary's cots are empty this week. Bright One bless whoever carried stone for that cover."
     },
     {
      "kind": "board.post",
@@ -1853,7 +1853,7 @@
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "rm_theodora_wickley",
+     "npc": "rm_halvard_ashley",
      "text": "The Runnel runs clean. Boil it a week more all the same. I've learned not to trust water twice."
     },
     {
@@ -1871,8 +1871,8 @@
   {
    "id": "cough",
    "title": "The Runnel Cough",
-   "summary": "A wet cough in the courts round Cistern Court, worst in the pups. The nurse at the Sump Infirmary needs willow bark, and legs to carry remedies.",
-   "giver": "rm_theodora_wickley",
+   "summary": "A wet cough in the courts round Cistern Court, worst in the pups. The Sump Infirmary's cots are full, and the honest apothecary at the Mortar and Pestle needs willow bark for it, and legs to carry remedies.",
+   "giver": "rm_halvard_ashley",
    "board": "ridgemere",
    "scope": "player",
    "repeat": "once",
@@ -1881,7 +1881,7 @@
    },
    "offer": {
     "ask": "You look worn through.",
-    "say": "#greet#, #address#. Every cot is full and half of them are pups. A wet cough from the courts round the cisterns, worst in those who drink from the Runnel, and no thyme syrup left. Bring me willow bark, carry remedies to the coughing houses, and ask the washhouse keeper about his water.",
+    "say": "#greet#, #address#. The infirmary's cots are full and half of them are pups. A wet cough from the courts round the cisterns, worst in those who drink from the Runnel. Bring me willow bark for the nurse, carry remedies to the coughing houses, and ask the rag-criers about the wash water.",
     "accept": "I'll carry remedies.",
     "decline": "I can't today.",
     "handIn": "The washhouse water smells of lime.",
@@ -1890,10 +1890,10 @@
    "objectives": [
     {
      "id": "bark",
-     "label": "Bring the infirmary two of willow bark.",
+     "label": "Bring the apothecary two of willow bark, for the infirmary.",
      "on": "gift",
      "match": {
-      "target": "rm_theodora_wickley",
+      "target": "rm_halvard_ashley",
       "item": "willow_bark"
      },
      "goal": 2,
@@ -1920,10 +1920,10 @@
     },
     {
      "id": "wash",
-     "label": "Ask the washhouse keeper if his water smells wrong.",
+     "label": "Ask the rag-crier in the Rag Market if the wash water smells wrong.",
      "on": "dialogue choice",
      "match": {
-      "item": "rm_ivo_fogstack",
+      "item": "rmx_dirk_langstead",
       "detail": "lq_run_wash"
      }
     }
@@ -2171,7 +2171,7 @@
      "day": 0.11,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_theodora_wickley",
+     "item": "rm_halvard_ashley",
      "detail": "cough"
     },
     {
@@ -2179,10 +2179,10 @@
      "kind": "gift",
      "day": 0.111,
      "actor": "wolf-ash",
-     "target": "rm_theodora_wickley",
+     "target": "rm_halvard_ashley",
      "item": "willow_bark",
      "quantity": 2,
-     "cell": "w_ridgemere_0_0"
+     "cell": "rm_the_harness_shop"
     },
     {
      "id": "e4",
@@ -2230,7 +2230,7 @@
      "day": 0.114,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_ivo_fogstack",
+     "item": "rmx_dirk_langstead",
      "detail": "lq_run_wash"
     },
     {
@@ -2239,7 +2239,7 @@
      "day": 0.115,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_theodora_wickley",
+     "item": "rm_halvard_ashley",
      "detail": "cough"
     },
     {
@@ -2480,7 +2480,7 @@
      "day": 0.11,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_theodora_wickley",
+     "item": "rm_halvard_ashley",
      "detail": "cough"
     },
     {
@@ -2488,10 +2488,10 @@
      "kind": "gift",
      "day": 0.111,
      "actor": "wolf-ash",
-     "target": "rm_theodora_wickley",
+     "target": "rm_halvard_ashley",
      "item": "willow_bark",
      "quantity": 2,
-     "cell": "w_ridgemere_0_0"
+     "cell": "rm_the_harness_shop"
     },
     {
      "id": "e4",
@@ -2539,7 +2539,7 @@
      "day": 0.114,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_ivo_fogstack",
+     "item": "rmx_dirk_langstead",
      "detail": "lq_run_wash"
     },
     {
@@ -2548,7 +2548,7 @@
      "day": 0.115,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_theodora_wickley",
+     "item": "rm_halvard_ashley",
      "detail": "cough"
     },
     {
@@ -2805,7 +2805,7 @@
      "day": 0.11,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_theodora_wickley",
+     "item": "rm_halvard_ashley",
      "detail": "cough"
     },
     {
@@ -2813,10 +2813,10 @@
      "kind": "gift",
      "day": 0.111,
      "actor": "wolf-ash",
-     "target": "rm_theodora_wickley",
+     "target": "rm_halvard_ashley",
      "item": "willow_bark",
      "quantity": 2,
-     "cell": "w_ridgemere_0_0"
+     "cell": "rm_the_harness_shop"
     },
     {
      "id": "e4",
@@ -2864,7 +2864,7 @@
      "day": 0.114,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_ivo_fogstack",
+     "item": "rmx_dirk_langstead",
      "detail": "lq_run_wash"
     },
     {
@@ -2873,7 +2873,7 @@
      "day": 0.115,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_theodora_wickley",
+     "item": "rm_halvard_ashley",
      "detail": "cough"
     },
     {
@@ -2937,7 +2937,7 @@
      "day": 0.12,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_theodora_wickley",
+     "item": "rm_halvard_ashley",
      "detail": "cough"
     },
     {
@@ -2945,10 +2945,10 @@
      "kind": "gift",
      "day": 0.121,
      "actor": "wolf-birch",
-     "target": "rm_theodora_wickley",
+     "target": "rm_halvard_ashley",
      "item": "willow_bark",
      "quantity": 2,
-     "cell": "w_ridgemere_0_0"
+     "cell": "rm_the_harness_shop"
     },
     {
      "id": "e18",
@@ -2996,7 +2996,7 @@
      "day": 0.124,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_ivo_fogstack",
+     "item": "rmx_dirk_langstead",
      "detail": "lq_run_wash"
     },
     {
@@ -3005,7 +3005,7 @@
      "day": 0.125,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_theodora_wickley",
+     "item": "rm_halvard_ashley",
      "detail": "cough"
     },
     {
@@ -3189,7 +3189,7 @@
      "day": 0.6,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_theodora_wickley",
+     "item": "rm_halvard_ashley",
      "detail": "cough"
     },
     {

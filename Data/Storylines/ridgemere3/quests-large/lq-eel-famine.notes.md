@@ -81,3 +81,8 @@ say[world.mem.lq_eels=weir here.region=fenshore] The eels never came up Withy Cr
 ```
 - Place names for `tools/dialect_allow.json` if `dialect_check` objects: Withy Creek, Rivermouth, Fen Shore landing,
   the Fish Hall (most are in Wave A's list already).
+
+## Givers behind locked doors (2026-11-22, second pass; doc 86 "Givers behind locked doors")
+- **Still open.** Ivo Sootridge (giver), Jasper Greymore and Nab Bogditch (choices) work in the Fen Shore and Rivermouth
+  boat sheds and the Withy Creek eel house, locked to wolves (doc 82). Fenshore's two free residents a wolf can reach
+  now give the small pack's pans and plank. Doc 86 lists what would close it.

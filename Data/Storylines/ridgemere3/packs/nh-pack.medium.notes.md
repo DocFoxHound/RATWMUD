@@ -148,14 +148,30 @@
   the round back to Piet, a shared wheel (Q16). **M3**: Grayrock (Q3) and Fell (Q10) pay from House purses. **J2**: Q22's
   list as a realm-player flag. **C12a**: Q18's paid toll notifies the running chapter.
 - Reads that need a resident's line (N2/C8): Q21's shopkeeper on `nh_b_seam=crooked` (Q10's steward is now a scene).
-- **The world's door rule** (not this pack's to change): most givers here work and live behind doors locked to
-  wolves and can be met only on their walks to and from work (Edda at 17 and 23; Grist, Pell, Disa, Harl, Iris, Fern
-  and Kite at 6 and 17; the targets Briar, Nab, Ragnar, Kell, Grete, Agnes, Jasper, Rune likewise). Opening a quest
-  giver's workplace to wolves, or a story lifting a door for its wolves, would make them findable; then Vidar's hold
-  can go.
+- **The world's door rule** (not this pack's to change): see "Givers behind locked doors" below for what this pass
+  changed and what is still open. Opening a producer's workplace to wolves in its hours, or a story lifting a door for
+  its wolves, would close the rest; then Vidar's hold can go.
 
 ## DM steps
 1. Wave A first: the world variables declared (`tools/nh_world_vars.py --apply`, which now includes `mq_oil_list` and
    `lq_salt`), `nh-purses` approved and published.
 2. Approve each of the four programs on Ridgemere 3 and publish it; each runs with or without the campaign.
 3. Until C8, seed the `mq_*=open` talk keys by hand when the talk wave's lines are in.
+
+## Givers behind locked doors (2026-11-22, second pass; doc 86 "Givers behind locked doors")
+A door into a private interior is locked to wolves (doc 82, `World::playerDoorLocked`; only inns, alehouses, taverns and
+a shop while its merchant is in are open), and no story effect lifts it. Re-cast where the town has a free resident a
+wolf can reach at work, with the lines in their speech; `givers.tsv` rows moved; talk lines follow:
+- **Q1 `mq-sump-lamps`**: Edda Gullford (the Lamp Store, 17-23) -> Dorcas Rainford at the Lamp and Wick (8-18, plain),
+  who sells the Lamp Store its oil and hears the oil was never thin; she takes the truth to the Lamp Store, which
+  takes it to the Watch. Her three choices keep their ids.
+- **Q8 `mq-glasswater-nets`**: Grist Reedmere (the Glasswater boat shed) -> Fennel Cornley at the Coldwater Stores (7-19,
+  coldwater), who buys the catch; the net and the families' fish go to him.
+- **Q9 `mq-meresend-blight`**: Pell Harvestley (the Meresend apple store) -> Kindle Applemeadow at the Coldwater Still
+  (7-19, coldwater), which buys every Meresend apple; the charcoal, pitch and wash go to her, to go up to the orchard.
+- Kept: Vidar (held at the Court's back gate by this pack), the clerks of Q3 and Q6 (Grete Dunn, Harriet Pennock,
+  Lothar Abbot: every evening at an inn), Kell Reedwade in Q23 and Ragnar Wetby in Q11 (met on the walk the quest
+  tells), the pups of Q4 (walked and held by the story).
+- Still open (no free resident left in the town): Q13 Disa Fogford, Q14 Harl Oakbough and the cellar hand Briar Cornby
+  (Southmeadow), Q15 Iris Pikeford and the fowler Nab Bogditch (Fenshore), Q17 Fern Merewick and Q19 Kite Bogditch
+  (Saltwell). Ridge Eelbank in Q17 is found where the story has moved him.

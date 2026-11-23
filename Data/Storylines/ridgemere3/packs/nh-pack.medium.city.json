@@ -636,7 +636,7 @@
      "match": {
       "detail": "mq-sump-lamps"
      },
-     "note": "The round walked: who drains it; found out: the choice at Edda (P-C).",
+     "note": "The round walked: who drains it; found out: the choice at the Lamp and Wick (P-C).",
      "actions": [
       {
        "do": "if",
@@ -653,24 +653,24 @@
          "do": "effect",
          "effect": {
           "kind": "npc.offer",
-          "npc": "rm_edda_gullford",
+          "npc": "rm_dorcas_rainford",
           "id": "sl_tell",
           "player": "$actor",
           "once": true,
           "words": "It's the old lamplighter. He's been taking the oil.",
-          "reply": "Him. #oath#, I'd have bet on anyone else. Forty years on that round. I'll take it to the Watch Office myself, quiet, so there's no crowd at his door."
+          "reply": "Him. #oath#, I'd have bet on anyone else. Forty years on that round. I'll take it to the Lamp Store myself, quiet, and they can take it to the Watch, so there's no crowd at his door."
          }
         },
         {
          "do": "effect",
          "effect": {
           "kind": "npc.offer",
-          "npc": "rm_edda_gullford",
+          "npc": "rm_dorcas_rainford",
           "id": "sl_cover",
           "player": "$actor",
           "once": true,
-          "words": "I've stopped it. Don't ask who. I'll pay the oil back, and an old hand will walk half your round.",
-          "reply": "Don't ask. That's a lot to ask of me. Fine. Two flasks back in my store, and if your old hand knows the Sump lamps by their smoke, I'll have him. Half the round. Not a lamp more."
+          "words": "I've stopped it. Don't ask who. I'll pay the oil back, and an old hand will walk half the round.",
+          "reply": "Don't ask. That's a lot to ask of me. Fine. Two flasks back on our shelf, and I'll tell the Lamp Store the round has a second walker who knows the Sump lamps by their smoke. Half the round. Not a lamp more."
          }
         }
        ],
@@ -946,7 +946,7 @@
          "effect": {
           "kind": "journal.note",
           "player": "$actor",
-          "text": "The lamplighter took it to the Watch Office herself.",
+          "text": "The oil-seller took it to the Lamp Store, and the Lamp Store to the Watch Office.",
           "ifRefused": "skip"
          }
         },
@@ -954,12 +954,12 @@
          "do": "effect",
          "effect": {
           "kind": "npc.offer",
-          "npc": "rm_edda_gullford",
+          "npc": "rm_dorcas_rainford",
           "id": "sl_since",
           "player": "$actor",
           "once": true,
           "words": "How has it gone, since?",
-          "reply": "The old lamplighter. I took it to the Watch Office myself. They were gentle with him. I wasn't, and I'm sorry for it now."
+          "reply": "The old lamplighter. I took it to the Lamp Store, and they took it to the Watch Office. They were gentle with him. I wasn't, and I'm sorry for it now."
          }
         }
        ],
@@ -1068,12 +1068,12 @@
          "do": "effect",
          "effect": {
           "kind": "npc.offer",
-          "npc": "rm_edda_gullford",
+          "npc": "rm_dorcas_rainford",
           "id": "sl_since",
           "player": "$actor",
           "once": true,
           "words": "How has it gone, since?",
-          "reply": "Two of us on the Sump end again, and he knows every lamp by its smoke. I slept a whole night. Don't tell him I said so."
+          "reply": "The old lamplighter. I took it to the Lamp Store, and they took it to the Watch Office. They were gentle with him. I wasn't, and I'm sorry for it now."
          }
         }
        ]
@@ -6120,8 +6120,8 @@
   {
    "id": "mq-sump-lamps",
    "title": "The Dark Round",
-   "summary": "The Sump lamps run dry by midnight. Walk the lamplighter's round after dusk, find where the oil goes, and decide what she is told.",
-   "giver": "rm_edda_gullford",
+   "summary": "The Sump lamps run dry by midnight, and the Lamp Store blames the Lamp and Wick's oil. Walk the lamplighters' round after dusk, find where the oil goes, and decide what the oil-seller is told.",
+   "giver": "rm_dorcas_rainford",
    "repeat": "weekly",
    "lifetime": "campaign",
    "abandon": true,
@@ -6135,11 +6135,11 @@
    ],
    "offer": {
     "ask": "You look worn down to the wick.",
-    "say": "#greet#. Since the old lamplighter lost his round, I walk the Sump end on top of my own. Somebody's draining my lamps dry by midnight. I take nobody's word, so walk it yourself after dusk: Net Court, the Pawn corner, the Knucklebones steps. Two flasks. Keep your nose open.",
+    "say": "#greet#. The Lamp Store buys our oil for the Sump lamps, and since the old lamplighter lost his round they run dry by midnight. They say our oil's thin. It isn't. Walk the round after dusk: Net Court, the Pawn corner, the Knucklebones steps. Two flasks. Keep your nose open.",
     "accept": "I'll walk your round after dark.",
     "decline": "Not tonight.",
     "handIn": "The round's walked. I know where the oil went.",
-    "thanks": "#thanks#. A lamp's a small thing until it's out. I'll count them lit tonight, and I'll count you with the honest ones. It's not a long list."
+    "thanks": "#thanks#. A lamp's a small thing until it's out. The Lamp Store will hear our oil was never thin, and I'll count you with the honest ones. It's not a long list."
    },
    "objectives": [
     {
@@ -6183,7 +6183,7 @@
     },
     {
      "id": "choose",
-     "label": "Decide what the lamplighter should hear.",
+     "label": "Decide what the oil-seller at the Lamp and Wick should hear.",
      "on": "story signal",
      "signal": "sl_chose",
      "after": [
@@ -6192,10 +6192,10 @@
     },
     {
      "id": "repay",
-     "label": "Pay the lamplighter back two flasks of oil.",
+     "label": "Pay the Lamp and Wick back two flasks of oil.",
      "on": "gift",
      "match": {
-      "target": "rm_edda_gullford",
+      "target": "rm_dorcas_rainford",
       "item": "lamp_oil"
      },
      "goal": 2,
@@ -6340,7 +6340,7 @@
     },
     {
      "id": "office",
-     "label": "Ask the Grayrock Wharf Office about the north pier crane.",
+     "label": "Ask the Grayrock Wharf Office about the north pier crane. Its clerk stops at the Grey Goose when the office shuts, before the cook locks up.",
      "on": "conversation",
      "match": {
       "target": "rmx_grete_dunn"
@@ -6841,7 +6841,7 @@
      "day": 1.01,
      "actor": "player-edda-a",
      "target": "run",
-     "item": "rm_edda_gullford",
+     "item": "rm_dorcas_rainford",
      "detail": "mq-sump-lamps"
     },
     {
@@ -6931,7 +6931,7 @@
      "day": 1.08,
      "actor": "player-edda-a",
      "target": "run",
-     "item": "rm_edda_gullford",
+     "item": "rm_dorcas_rainford",
      "detail": "sl_tell"
     },
     {
@@ -6940,7 +6940,7 @@
      "day": 1.09,
      "actor": "player-edda-a",
      "target": "run",
-     "item": "rm_edda_gullford",
+     "item": "rm_dorcas_rainford",
      "detail": "mq-sump-lamps"
     }
    ],
@@ -6983,7 +6983,7 @@
      "day": 1.01,
      "actor": "player-edda-b",
      "target": "run",
-     "item": "rm_edda_gullford",
+     "item": "rm_dorcas_rainford",
      "detail": "mq-sump-lamps"
     },
     {
@@ -7032,7 +7032,7 @@
      "day": 1.06,
      "actor": "player-edda-b",
      "target": "run",
-     "item": "rm_edda_gullford",
+     "item": "rm_dorcas_rainford",
      "detail": "sl_cover"
     },
     {
@@ -7040,9 +7040,10 @@
      "kind": "gift",
      "day": 1.07,
      "actor": "player-edda-b",
-     "target": "rm_edda_gullford",
+     "target": "rm_dorcas_rainford",
      "item": "lamp_oil",
-     "quantity": 2
+     "quantity": 2,
+     "cell": "rm_the_lamp_wick"
     },
     {
      "id": "e8",
@@ -7050,7 +7051,7 @@
      "day": 1.08,
      "actor": "player-edda-b",
      "target": "run",
-     "item": "rm_edda_gullford",
+     "item": "rm_dorcas_rainford",
      "detail": "mq-sump-lamps"
     }
    ],

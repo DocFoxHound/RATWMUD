@@ -126,3 +126,22 @@ For wave G, two Talk lines should follow this program rather than the design: 45
 comes in early, most mornings (not only "the wagons"), and 32's "they don't back off" should say a cornered badger bites.
 Done at the commit (2026-11-22): both lines, and Coldwater's "they don't run" badger line, now say so
 (`artifacts/quests/build/talk2/build_packs.py`).
+
+## Givers behind locked doors (2026-11-22, second pass; doc 86 "Givers behind locked doors")
+Farm sheds, mills, presses, boat sheds and boiling houses are locked to wolves (doc 82), so their workers can be met
+only on their walks. Where the town had a free resident a wolf can reach at work, the errand moved to them, in their
+own speech:
+- Larkfield: `sq-plumtree-badger` Vale Miremore (the Looms, larkfield); `sq-mill-race` Eskar Cornley, the baker, whose
+  flour comes short (larkfield); `sq-swill-for-southwood` Rowan Chalkley at the Bakehouse, whose swill cart goes out to
+  Southwood at dusk (plain).
+- Fenshore: `sq-fenside-pans` Briar Greenshaw, the peat cutter at the Fenshore cutting (plain), who now has the
+  drowned village's names for the Book (`sq-fallow-names`, said over the pans by the salt workers); `sq-boardwalk-plank`
+  Ludo Ashwood, pot hand at the Heron (mirebridge).
+- Southmeadow: `sq-festival-garlands` Briar Sedgebridge, who digs clay at the Sallow pits (plain; the garland gossip
+  line is hers now, without "ripe").
+- Still open (no free resident left in the town): `sq-hare-in-the-seed-rows` (Emrys Stillshore),
+  `sq-smoke-for-the-hives` (Hob Meadowfield), `sq-twine-for-the-nets` (Leif Rainley), and Saltwell's
+  `sq-ochre-rabbits` (Senna Applegarth) and `sq-salt-for-the-road` (Winifred Fogridge). Doc 86 lists what would close
+  them (an engine or catalogue change, or board-only).
+- Briar Greenshaw, Ludo Ashwood and Briar Sedgebridge share a first name with campaign cast: they are their towns' only
+  free residents (decisions §1.2.5), and no line names them.

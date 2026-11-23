@@ -33,7 +33,7 @@
 "self.dialect=plain",
 "world.mem.sq_last=bread"
 ],
-"line": "The infirmary had its bread warm today. Even the nurse smiled, and she never smiles.",
+"line": "The infirmary had its bread warm today. The porter at the Stairs says even the nurse smiled, and she never smiles.",
 "ln": 425
 },
 {
@@ -45,7 +45,7 @@
 "self.dialect=plain",
 "world.mem.sq_on=yes"
 ],
-"line": "The abbey's healer pays for herbs. Long grass and willows give them, any season but winter. | Herbs for the House of Mending? Any green bunch from the grass outside the walls, he says.",
+"line": "The apothecary on the square pays for herbs, for the House of Mending's draughts. Long grass and willows give them, any season but winter. | Herbs for the House of Mending? Any green bunch from the grass outside the walls, he says.",
 "ln": 458
 },
 {
@@ -57,7 +57,7 @@
 "self.dialect=plain",
 "world.mem.sq_on=yes"
 ],
-"line": "Yarrow's the one the healer wants most. It grows on open grass, spring to autumn.",
+"line": "Yarrow's the one the apothecary wants most. It grows on open grass, spring to autumn.",
 "ln": 459
 },
 {
@@ -69,7 +69,7 @@
 "self.dialect=plain",
 "world.mem.sq_last=herbs"
 ],
-"line": "The House of Mending had a full shelf today. Someone brought the healer an armful.",
+"line": "The House of Mending had a full shelf today. Someone brought the apothecary on the square an armful.",
 "ln": 460
 },
 {
@@ -219,7 +219,7 @@
 "self.quarter=office",
 "world.mem.sq_on=yes"
 ],
-"line": "Upstairs at the Records Office they pay for copying. You read the old count while you do it.",
+"line": "The Council Press is printing the old rolls. They pay for paper and ink brought in, and you hear the old count read off the proofs.",
 "ln": 609
 },
 {
@@ -231,7 +231,7 @@
 "self.dialect=plain",
 "world.mem.sq_on=yes"
 ],
-"line": "If you want to know how the city was counted, sort a drawer at the Records Office. They'll even pay you for it.",
+"line": "If you want to know how the city was counted, take the Council Press some paper. The printer reads the old rolls aloud as she sets them.",
 "ln": 610
 },
 {
@@ -244,7 +244,7 @@
 "self.quarter=office",
 "world.mem.sq_last=records"
 ],
-"line": "There was a new paw at the copying desk today. Neat letters, they say.",
+"line": "Somebody brought the Council Press a stack of good paper today. The old rolls are nearly set.",
 "ln": 611
 },
 {
@@ -269,7 +269,7 @@
 "self.quarter=heights",
 "world.mem.sq_on=yes"
 ],
-"line": "A letter for this street? Bring it to the door, not the gate. The doorkeepers here don't come down for anyone.",
+"line": "A letter for the Vances? Don't climb for it. Their doorkeeper doesn't come down for anyone, but the one who runs the Rag Mill takes the House's letters.",
 "ln": 646
 },
 {
@@ -282,7 +282,7 @@
 "self.quarter=heights",
 "world.mem.sq_last=letter"
 ],
-"line": "A City Office letter came to one of our doors today. The servant took it like it might bite.",
+"line": "A City Office letter came up to one of our houses today. The servant took it like it might bite.",
 "ln": 647
 },
 {
@@ -294,7 +294,7 @@
 "self.dialect=plain",
 "world.mem.sq_on=yes"
 ],
-"line": "The cathedral's sexton takes candles any day, but she wants you at the service on Restday too.",
+"line": "Wickham's chandler takes candles for the cathedral any day, but wants you at the cathedral door on Restday too.",
 "ln": 678
 },
 {
@@ -331,7 +331,7 @@
 "self.quarter=sump",
 "world.mem.sq_on=yes"
 ],
-"line": "The young almoner from the lake country sends bread down here. Some wolf carries it, and doesn't ask questions.",
+"line": "The young almoner from the lake country leaves bread at the abbey brewhouse for us. Some wolf carries it down, and doesn't ask questions.",
 "ln": 716
 },
 {
@@ -356,7 +356,7 @@
 "self.dialect=coldwater",
 "world.mem.sq_on=yes"
 ],
-"line": "The abbey's almoner is lake-born, eh? She'll find you work if you've a strong back and a closed mouth.",
+"line": "The abbey's brewer hands out the almoner's bread. He'll find you work if you've a strong back and a closed mouth.",
 "ln": 718
 },
 {
@@ -494,7 +494,7 @@
 "self.dialect=plain",
 "world.mem.sq_on=yes"
 ],
-"line": "The Greatly stables pay for oats and straw. Don't expect the steward to thank you; the stable wolf will.",
+"line": "The Greatly Yard pays for oats and straw for the stables. Don't expect the steward to thank you; the yard hand will.",
 "ln": 853
 },
 {
@@ -531,7 +531,7 @@
 "self.dialect=plain",
 "world.mem.sq_on=yes"
 ],
-"line": "The lamplighter wants somebody to ring the morning bell. You climb the Clock Tower at first light; he can't, at his age.",
+"line": "A porter at the Sump Stairs wants somebody to ring the morning bell. The rope comes down by the Clock Tower door; pull it at first light.",
 "ln": 886
 },
 {
@@ -643,7 +643,7 @@
 "self.quarter=heights",
 "world.mem.sq_on=yes"
 ],
-"line": "The wolf who visits our sick swears by willow bark for stiff joints. Says it beats any physician on the Commons.",
+"line": "The Mortar and Pestle's hand who brings our physic up swears by willow bark for stiff joints. Says it beats any physician on the Commons.",
 "ln": 989
 },
 {
@@ -668,7 +668,7 @@
 "self.quarter=heights",
 "world.mem.sq_last=willow"
 ],
-"line": "Half the Heights smells of willow tea. Somebody brought the healer bark enough for every stiff knee on the street.",
+"line": "Half the Heights smells of willow tea. Somebody brought the Mortar and Pestle bark enough for every stiff knee on the street.",
 "ln": 991
 },
 {
@@ -911,7 +911,7 @@
 "self.dialect=coldwater",
 "world.mem.sq_on=yes"
 ],
-"line": "The Larkdowns shepherd pays for straw for his pens. Calm sort, eh? He hums to the ewes.",
+"line": "The Looms carts straw up to the Larkdowns pens, and pays for it, eh? The shepherd hums to his ewes, they say.",
 "ln": 1247
 },
 {
@@ -935,7 +935,7 @@
 "self.dialect=coldwater",
 "world.mem.sq_on=yes"
 ],
-"line": "The fen-born shepherd at Larkdowns loses ewes up the downs, eh? They leave wool on the thorns; a good nose follows it.",
+"line": "A Larkdowns shepherd loses ewes up the downs, eh? The Looms finds him a nose to follow the wool on the thorns.",
 "ln": 1287
 },
 {
@@ -947,7 +947,7 @@
 "self.dialect=coldwater",
 "world.mem.sq_on=yes"
 ],
-"line": "If both his strays are being tracked, the other Larkdowns shepherd wants straw for the pens, eh?",
+"line": "If both his strays are being tracked, the Looms wants straw for the Larkdowns pens, eh?",
 "ln": 1288
 },
 {
@@ -1271,7 +1271,7 @@
 "self.dialect=larkfield",
 "world.mem.sq_on=yes"
 ],
-"line": "The Longmead miller wants the reeds pulled from his race. Wet work, but he pays in flour, eh?",
+"line": "The Longmead mill race wants its reeds pulled, and the baker's asking: his flour comes short. Wet work, but it pays in flour, eh?",
 "ln": 1635
 },
 {
@@ -1283,7 +1283,7 @@
 "self.dialect=larkfield",
 "world.mem.sq_last=race"
 ],
-"line": "The Longmead wheel's turning sweet again. Somebody waded in for the miller.",
+"line": "The Longmead wheel's turning sweet again. Somebody waded in for the baker.",
 "ln": 1636
 },
 {
@@ -1367,7 +1367,7 @@
 "self.dialect=southmeadow",
 "world.mem.sq_on=yes"
 ],
-"line": "The Larkholm farmhand's stringing garlands round the square for the festival. Every bunch helps the rope reach, bless it.",
+"line": "The clay digger from the Sallow pits is stringing garlands round the square for the festival. Every bunch helps the rope reach, bless it.",
 "ln": 1759
 },
 {
@@ -1387,11 +1387,10 @@
 "quest": "sq-festival-garlands",
 "node": "gossip",
 "gates": [
-"self.id=cty_willa_wheatcombe",
-"world.mem.sq_last=garland",
-"self.from=southmeadow"
+"self.id=cty_briar_sedgebridge",
+"world.mem.sq_last=garland"
 ],
-"line": "The rope's round the square. Ripe, every bunch of it, and not one of them city-bought.",
+"line": "The rope's round the square, every bunch of it, and not one of them city-bought.",
 "ln": 1761
 },
 {
@@ -1451,7 +1450,7 @@
 "self.dialect=mirebridge",
 "world.mem.sq_on=yes"
 ],
-"line": "The Fenside salt worker has a grandmother story for everything, no? Ask her about Mirebridge, if you've the stomach for it.",
+"line": "The Fenside salt workers say the old names over the pans, no? Ask the peat cutter about Mirebridge, if you've the stomach for it.",
 "ln": 1837
 },
 {
@@ -1463,7 +1462,7 @@
 "self.dialect=mirebridge",
 "world.mem.sq_last=pans"
 ],
-"line": "The Fenside pans came up white today. Somebody hauled her wood, fen-sure.",
+"line": "The Fenside pans came up white today. Somebody hauled them wood, fen-sure.",
 "ln": 1838
 },
 {
@@ -1511,7 +1510,7 @@
 "self.dialect=mirebridge",
 "world.mem.sq_on=yes"
 ],
-"line": "There's a plank gone by the Heron. The deckhand who mends the boardwalks takes planks and nails, no?",
+"line": "There's a plank gone by the Heron. The Heron's pot hand mends the boardwalk, and takes planks and nails, no?",
 "ln": 1909
 },
 {
@@ -1644,7 +1643,7 @@
 "self.quarter=estate",
 "world.mem.sq_on=yes"
 ],
-"line": "The Fellhall kitchen is always a basket short. The hall servant pays for eggs and cheese brought round the back.",
+"line": "The Fellhall kitchen is always a basket short. The Lamp and Wick hand from the Fell cottages pays for eggs and cheese, and carries them up.",
 "ln": 2086
 },
 {
@@ -1656,7 +1655,7 @@
 "self.dialect=plain",
 "world.mem.sq_on=yes"
 ],
-"line": "Fellhall's kitchen buys eggs off the Commons most days. Go in by the kitchens; the front door's for the family.",
+"line": "Fellhall's kitchen buys eggs off the Commons most days. Nobody goes in; the Lamp and Wick hand who lives in the cottages takes them up.",
 "ln": 2087
 },
 {
@@ -1682,7 +1681,7 @@
 "self.quarter=estate",
 "world.mem.sq_on=yes"
 ],
-"line": "Grayrock Hall buys linen when the sea damp gets into the sheets. The young hall servant pays, and talks loud enough for two.",
+"line": "Grayrock Hall buys linen when the sea damp gets into the sheets. The Bridge Stores hand from the Grayrock cottages pays, and carries it up.",
 "ln": 2125
 },
 {
@@ -1720,7 +1719,7 @@
 "self.quarter=estate",
 "world.mem.sq_on=yes"
 ],
-"line": "Looking for the Court's chamber keeper? He takes his supper below stairs, and you'll hear him humming before you see him.",
+"line": "Looking for the Court's chamber keeper? He never comes out. Wenna Timberland takes things in for the Court; she's in the yard with the iron carts all day.",
 "ln": 2166
 },
 {
@@ -1782,7 +1781,7 @@
 "self.dialect=plain",
 "world.mem.nh_stage=moot_called|reckoning"
 ],
-"line": "The City Office is sending the Moot's summons to every farmstead on the roll. The clerk pays carriers who don't mind hills.",
+"line": "The carters are taking the Moot's summons to every farmstead on the roll. One of them pays wolves to leave a summons where a farm's cart calls.",
 "ln": 2340
 },
 {
@@ -1914,7 +1913,7 @@
 "self.dialect=plain",
 "world.mem.nh_stage=letters|lights"
 ],
-"line": "The Rainward orchard keeper sends bread up to the wolves walking the bounds. Carry some and she'll fill your waterskin.",
+"line": "A woodcutter at the Rainwood coppice sends bread up to the wolves walking the bounds. Carry some and she'll fill your waterskin.",
 "ln": 2477
 },
 {
@@ -1926,7 +1925,7 @@
 "self.dialect=oakhaven",
 "world.mem.nh_stage=letters|lights"
 ],
-"line": "Bread comes up from the Rainward orchard for the bounds-walkers, mm? Good bark, that keeper.",
+"line": "Bread comes up from the Rainwood coppice for the bounds-walkers, mm? Good bark, that woodcutter.",
 "ln": 2478
 },
 {
@@ -1938,7 +1937,7 @@
 "self.dialect=plain",
 "world.mem.st_last=bounds"
 ],
-"line": "The wolves on the bounds were fed today. The orchard keeper's bread, carried up into the hills.",
+"line": "The wolves on the bounds were fed today. The coppice's bread, carried up into the hills.",
 "ln": 2479
 },
 {
@@ -2035,7 +2034,7 @@
 "world.mem.nh_stage=harvest|bell",
 "world.mem.nh_ford=burned"
 ],
-"line": "The Longmead farmhand's giving out bread for the burned houses, eh? Find him at the granary and he'll load you up.",
+"line": "The Print House vat hand's giving out Longmead's bread for the burned houses, eh? Find her at the press and she'll load you up.",
 "ln": 2605
 },
 {
@@ -3318,7 +3317,7 @@
 "self.dialect=coldwater",
 "world.mem.st_ice=bell"
 ],
-"line": "A shepherd took his rope to the Upper Mere shed. Says a wolf sat the ice and heard the bell. Net and line.",
+"line": "A still hand took his rope to the Upper Mere shed. Says a wolf sat the ice and heard the bell. Net and line.",
 "ln": 1597
 },
 {
@@ -3762,7 +3761,7 @@
 "here.region=ridgemere",
 "world.mem.lq_runnel=fever"
 ],
-"line": "There's a cough in the Sump courts by the cisterns. The nurse at the Sump Infirmary wants willow bark and legs.",
+"line": "There's a cough in the Sump courts by the cisterns. The honest apothecary at the Mortar and Pestle wants willow bark for the infirmary, and legs.",
 "ln": 932
 },
 {
@@ -3837,7 +3836,7 @@
 "here.region=ridgemere",
 "world.mem.lq_wreck=lamp"
 ],
-"line": "Ships are going onto the North Headland in fog. A skipper at North Cove says somebody lights a lamp there.",
+"line": "Ships are going onto the North Headland in fog. A crane hand on the Wharf says somebody lights a lamp there.",
 "ln": 1069
 },
 {
@@ -3908,7 +3907,7 @@
 "self.dialect=mirebridge",
 "world.mem.lq_eels=run"
 ],
-"line": "The eels are up Withy Creek again, thick as reeds. Mud and eels, it's a fair-dry season after all.",
+"line": "The eels are up Withy Creek again, thick as reeds. Mud and eels, it's a fair-dry season after all. | The eels are up Withy Creek again, thick as reeds. Mud and eels, there's supper in every pot.",
 "ln": 1298
 },
 {
@@ -3944,7 +3943,7 @@
 "here.region=fenshore",
 "world.mem.lq_eels=weir"
 ],
-"line": "No eels running this season. The skipper at Fen Shore landing thinks somebody's stopped them on the river.",
+"line": "No eels running this season. The skipper at Fen Shore landing thinks somebody's stopped them on the river. | The eels never came up Withy Creek. The skipper at Fen Shore landing thinks somebody's stopped them on the river.",
 "ln": 1302
 },
 {
@@ -3994,7 +3993,7 @@
 "self.dialect=larkfield",
 "world.mem.lq_thief=named"
 ],
-"line": "Ridgemere caught its wall-walking thief. A pup, they say, no Gift at all. Short-weighed magic, that.",
+"line": "Ridgemere caught its wall-walking thief. A young Sump wolf, they say, no Gift at all. Short-weighed magic, that.",
 "ln": 1422
 },
 {
@@ -4017,7 +4016,7 @@
 "here.region=ridgemere",
 "world.mem.lq_thief=walking"
 ],
-"line": "Pledges vanishing from a locked room on the Rise. The lender at Vance House wants a plain answer.",
+"line": "Pledges vanishing from a locked room on the Rise. The Vance at the Rag Mill wants a plain answer.",
 "ln": 1425
 },
 {
@@ -4041,7 +4040,7 @@
 "self.dialect=frosthollow",
 "world.mem.lq_hearths=undersold"
 ],
-"line": "Upper hearths charcoal at half price in the city. Dead rock luck, or somebody's hand in it. Deep, I'd say the hand.",
+"line": "Upper hearths charcoal at half price in the city. Dead rock luck, or somebody's hand in it. Deep, I'd say the hand. | Upper hearths charcoal at half price in the city. That's no cracked seam, cousin. That's somebody's hand in it.",
 "ln": 1550
 },
 {
@@ -4066,7 +4065,7 @@
 "self.dialect=frosthollow",
 "world.mem.lq_hearths=home"
 ],
-"line": "Frosthollow charcoal on the Frosthollow square, Marketday. Deep and plain, the way it should be, stone.",
+"line": "Frosthollow charcoal on the Frosthollow square, Marketday. Deep and plain, the way it should be, stone. | Frosthollow charcoal on the Frosthollow square, Marketday. Sound sacks at our own price, the way it should be, stone.",
 "ln": 1552
 },
 {
@@ -4294,6 +4293,213 @@
 "world.mem.st_posts=probed"
 ],
 "line": "Somebody stood the Pass post the whole night through, cousin. Warm hearth to them. Deep quiet, that.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-black-hearths",
+"node": "hub",
+"gates": [
+"self.id=cty_ebba_coalgate",
+"self.from=frosthollow",
+"world.mem.lq_hearths=undersold"
+],
+"line": "Half, cousin. Half, and a face at the store like I'd brought them mud. Those sacks were dry when I loaded them. Cold iron, I'd swear it on the top bend.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-black-hearths",
+"node": "hub",
+"gates": [
+"self.id=cty_iris_fernhaven",
+"world.mem.lq_hearths=undersold"
+],
+"line": "I came up late, the way I always do, and the east clamps were open on the side and steaming. Wet ash, all of it. We raked it out as waste. By noon it was gone.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-black-hearths",
+"node": "hub",
+"gates": [
+"self.id=rm_arne_ashton",
+"world.mem.lq_hearths=undersold"
+],
+"line": "Strangers bring sacks to the yard door at half price, dry as a good song. I didn't ask where from. I should have. The hill carter gets what's left of our coin.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-black-hearths",
+"node": "hub",
+"gates": [
+"self.id=cty_stone_acorndell",
+"self.from=frosthollow",
+"world.mem.lq_hearths=undersold"
+],
+"line": "'Arth, cousin. Twelve sacks of waste raked out, twelve gone by noon. I counted. Drag marks north, deep, to the tarn. Black seam, somebody's drying our char.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-black-hearths",
+"node": "hub",
+"gates": [
+"self.id=cty_leif_driphand",
+"self.from=frosthollow",
+"world.mem.lq_hearths=undersold"
+],
+"line": "A cart on the quarry road at night, no lamp, black sacks to the tail. Going west, to the city. Nothing good goes that way in the dark, cousin.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-black-hearths",
+"node": "hub",
+"gates": [
+"self.id=rm_arne_ashton",
+"world.mem.lq_hearths=contract"
+],
+"line": "A price by the sack, and dry sacks from the hill. No more strangers at the yard door. I'd sing about it if you stood still long enough.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-black-hearths",
+"node": "hub",
+"gates": [
+"self.id=cty_ebba_coalgate",
+"self.from=frosthollow",
+"world.mem.lq_hearths=contract"
+],
+"line": "Marketday, down the pass road with a full cart and a paper that says what they'll pay. Warm hearth, cousin. That's all a carter wants.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-black-hearths",
+"node": "hub",
+"gates": [
+"self.id=cty_marl_craghearth",
+"world.mem.lq_hearths_thin=yes"
+],
+"line": "The stores are scraped bare this week. Bread, and my thanks, and a riddle owed. Sit long enough and you'll get the riddle.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-eel-famine",
+"node": "news",
+"gates": [
+"here.region=fenshore",
+"self.dialect=mirebridge",
+"world.mem.lq_eels=weir"
+],
+"line": "Take friends and a strong back to the weir below Rivermouth. The guards come out after dark and don't like being outnumbered. The stakes pull easy in the mud.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-eel-famine",
+"node": "hub",
+"gates": [
+"self.id=cty_ivo_sootridge",
+"self.from=fenshore",
+"world.mem.lq_eels_thin=yes"
+],
+"line": "#thanks#, fen-friend. The stores are sunk this week, so it's bread and my word. The eels'll pay you back, mark me.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-blight-and-boar",
+"node": "hub",
+"gates": [
+"self.id=tn_oh_harl_oakbough",
+"self.from=southmeadow",
+"world.mem.lq_vines=blight"
+],
+"line": "Down from the Southwood, along the stream, under the old fence. I was lost three days in that wood once. I know its paths. Good harvest if you find the gap.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-blight-and-boar",
+"node": "hub",
+"gates": [
+"self.id=tn_oh_harl_oakbough",
+"self.from=southmeadow",
+"world.mem.lq_vines=reckoning"
+],
+"line": "Where I was raised they paint a sick root with oak bark and lime, and pray to the Bright One it takes. Three of bark and two of lime, and I'll do the painting.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-runnel-fever",
+"node": "hub",
+"gates": [
+"self.id=rm_liv_slagstack",
+"world.mem.lq_runnel=fever"
+],
+"line": "Thyme syrup? Bring me herbs and I'll brew it the old way, with honey, not sugar. A spoon at night and one at dawn. I cough in the damp myself.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-runnel-fever",
+"node": "hub",
+"gates": [
+"self.id=rm_halvard_ashley",
+"world.mem.nh_stage=howls|letters|lights|harvest|bell|moot",
+"world.mem.nh_cough!=tended"
+],
+"line": "Boil the Runnel water. And they say the cough's up at the Residence too. Damp doesn't care whose lungs it gets.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-runnel-fever",
+"node": "hub",
+"gates": [
+"self.id=rm_rupert_fogton",
+"self.mem.lq_rupert=paid"
+],
+"line": "Come to count my bottles again? Count away. Every penny went back to the courts, and I'll thank you not to mention it.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-wreckers-light",
+"node": "hub",
+"gates": [
+"self.id=rm_dorcas_rainford",
+"world.mem.lq_wreck=lamp"
+],
+"line": "Full measure to the Lamp Store, and one of their lamplighters buys a jar more of her own on blowy days. Says the wind snuffs her wicks. I've said nothing.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-wreckers-light",
+"node": "watch.hub",
+"gates": [
+"self.id=rm_bettany_nailley",
+"world.mem.lq_wreck=watch"
+],
+"line": "A wrecker of Grayrock ships, and I'm the one who locks her up. The Bright One has a sense of humour. Thank you. I mean it.",
+"ln": 0
+},
+{
+"src": "notes",
+"quest": "lq-vanishing-thief",
+"node": "hub",
+"gates": [
+"self.id=rm_eleanor_vance",
+"world.mem.lq_thief_thin=yes"
+],
+"line": "The treasury's short this week, so it's bread and my thanks. Bright One knows I've had my fill of counting coin.",
 "ln": 0
 }
 ]

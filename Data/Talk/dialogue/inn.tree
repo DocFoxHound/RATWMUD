@@ -56,10 +56,10 @@ say[here.region=oakhaven world.mem.lq_cedars=dying priority=1] Somebody's killin
 say[here.region=coldwater world.mem.lq_brown=rustled priority=1] Sheep going off the Greyteeth fold. Some say a bear, some say wolves. One of the shepherds there wants help.
 say[here.region=larkfield world.mem.lq_silver=clipping priority=1] Larkfield's grain comes home short-weighed and paid in light coin. The shopkeeper at the Stores wants somebody to find out who.
 say[here.region=southmeadow world.mem.lq_vines=blight priority=1] Blight in the south vine rows and boar in at night. The vine-tender wants help before the harvest's gone.
-say[here.region=ridgemere world.mem.lq_runnel=fever priority=1] There's a cough in the Sump courts by the cisterns. The nurse at the Sump Infirmary wants willow bark and legs.
-say[here.region=ridgemere world.mem.lq_wreck=lamp priority=1] Ships are going onto the North Headland in fog. A skipper at North Cove says somebody lights a lamp there.
-say[here.region=fenshore world.mem.lq_eels=weir priority=1] No eels running this season. The skipper at Fen Shore landing thinks somebody's stopped them on the river.
-say[here.region=ridgemere world.mem.lq_thief=walking priority=1] Pledges vanishing from a locked room on the Rise. The lender at Vance House wants a plain answer.
+say[here.region=ridgemere world.mem.lq_runnel=fever priority=1] There's a cough in the Sump courts by the cisterns. The honest apothecary at the Mortar and Pestle wants willow bark for the infirmary, and legs.
+say[here.region=ridgemere world.mem.lq_wreck=lamp priority=1] Ships are going onto the North Headland in fog. A crane hand on the Wharf says somebody lights a lamp there.
+say[here.region=fenshore world.mem.lq_eels=weir priority=1] No eels running this season. The skipper at Fen Shore landing thinks somebody's stopped them on the river. | The eels never came up Withy Creek. The skipper at Fen Shore landing thinks somebody's stopped them on the river.
+say[here.region=ridgemere world.mem.lq_thief=walking priority=1] Pledges vanishing from a locked room on the Rise. The Vance at the Rag Mill wants a plain answer.
 say[here.region=frosthollow world.mem.lq_hearths=undersold priority=1] The Upper hearths' charcoal sells at half in the city. The colliers want somebody to find out why.
 # <<< Ninth Howl talk, part 2: inn recaps
 # ---- The Ninth Howl: the cast's own greetings (Docs/Design/86 section 6; cast-and-talk.md section 3). Each is

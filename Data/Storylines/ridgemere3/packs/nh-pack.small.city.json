@@ -125,6 +125,22 @@
    "y1": 94,
    "x2": 171,
    "y2": 99
+  },
+  {
+   "id": "cathedral_door",
+   "cell": "w_ridgemere_0_0",
+   "x1": 228,
+   "y1": 172,
+   "x2": 234,
+   "y2": 178
+  },
+  {
+   "id": "clock_door",
+   "cell": "w_ridgemere_1_0",
+   "x1": 110,
+   "y1": 178,
+   "x2": 116,
+   "y2": 184
   }
  ],
  "phases": [
@@ -395,7 +411,7 @@
      "on": "gift",
      "audience": "participant",
      "match": {
-      "target": "rm_theodora_wickley",
+      "target": "rm_ottilie_nailmarsh",
       "item": "bread"
      },
      "if": {
@@ -425,7 +441,7 @@
        }
       ]
      },
-     "note": "Bread given to the nurse before the tenth hour completes the hidden optional objective.",
+     "note": "Bread given to the infirmary's porter before the tenth hour completes the hidden optional objective.",
      "actions": [
       {
        "do": "effect",
@@ -701,13 +717,12 @@
     },
     {
      "id": "records-roll",
-     "on": "archive work",
+     "on": "conversation",
      "audience": "participant",
      "match": {
-      "item": "sort",
-      "detail": "ridgemere"
+      "target": "rm_runa_ashridge"
      },
-     "note": "A second drawer sorted while the page is shown: the page is found, and the Book of Names gains a name (Ch 4-6).",
+     "note": "Asked after the paper and ink while the page is shown: the page is found, and the Book of Names gains a name (Ch 4-6).",
      "actions": [
       {
        "do": "if",
@@ -787,7 +802,7 @@
      "on": "gift",
      "audience": "participant",
      "match": {
-      "target": "rm_berit_coalworth",
+      "target": "rm_sten_kelpwell",
       "item": "candle_tallow"
      },
      "if": {
@@ -845,10 +860,10 @@
     },
     {
      "id": "candles-service",
-     "on": "enter place",
+     "on": "region entered",
      "audience": "participant",
      "match": {
-      "target": "r2_the_cathedral_of_ridgemere"
+      "target": "cathedral_door"
      },
      "if": {
       "test": "all",
@@ -892,7 +907,8 @@
         "player": "$actor"
        }
       }
-     ]
+     ],
+     "note": "The cathedral is locked to wolves (doc 82): the service is kept at its door, on Restday between the ninth hour and the eleventh."
     },
     {
      "id": "marketday-stall",
@@ -942,10 +958,10 @@
     },
     {
      "id": "dawn-bell",
-     "on": "enter place",
+     "on": "region entered",
      "audience": "participant",
      "match": {
-      "target": "r2_the_clock_tower_up"
+      "target": "clock_door"
      },
      "if": {
       "test": "all",
@@ -1000,7 +1016,8 @@
         "player": "$actor"
        }
       }
-     ]
+     ],
+     "note": "The Clock Tower is locked to wolves (doc 82): the bell is rung from the rope at its door."
     },
     {
      "id": "ship-lines",
@@ -1138,7 +1155,7 @@
      "on": "gift",
      "audience": "participant",
      "match": {
-      "target": "rm_egil_grantham",
+      "target": "rm_mogens_ashley",
       "item": "willow_tea"
      },
      "if": {
@@ -1295,12 +1312,12 @@
          "do": "effect",
          "effect": {
           "kind": "npc.offer",
-          "npc": "rm_ansel_tarley",
+          "npc": "rm_erland_fogley",
           "id": "fell-upstairs",
           "player": "$actor",
           "once": true,
-          "words": "How is it upstairs?",
-          "reply": "The family and Timberland aren't speaking, so the kitchen cooks for one House and feeds the gossip of two. We don't take sides down here. We take plates."
+          "words": "How is it up at Fellhall?",
+          "reply": "The family and Timberland aren't speaking, so the kitchen cooks for one House and feeds the gossip of two. The cottages don't take sides. We take plates."
          }
         }
        ],
@@ -1337,11 +1354,11 @@
            "do": "effect",
            "effect": {
             "kind": "npc.offer",
-            "npc": "rm_ansel_tarley",
+            "npc": "rm_erland_fogley",
             "id": "fell-houses",
             "player": "$actor",
             "once": true,
-            "words": "How is it upstairs?",
+            "words": "How is it up at Fellhall?",
             "reply": "The Houses have fallen out, and the family's at the windows all day watching who calls on whom. The kitchen just counts the plates coming back."
            }
           }
@@ -1361,12 +1378,12 @@
            "do": "effect",
            "effect": {
             "kind": "npc.offer",
-            "npc": "rm_ansel_tarley",
+            "npc": "rm_erland_fogley",
             "id": "fell-quiet",
             "player": "$actor",
             "once": true,
-            "words": "How is it upstairs?",
-            "reply": "Upstairs is the steward's business, and the family's. Down here we know the price of eggs and which lanes flood first. That's enough knowing for anyone."
+            "words": "How is it up at Fellhall?",
+            "reply": "Upstairs is the steward's business, and the family's. In the cottages we know the price of eggs and which lanes flood first. That's enough knowing for anyone."
            }
           }
          ]
@@ -1417,12 +1434,12 @@
          "do": "effect",
          "effect": {
           "kind": "npc.offer",
-          "npc": "rm_erland_cinderridge",
+          "npc": "rm_agna_dripridge",
           "id": "grayrock-upstairs",
           "player": "$actor",
           "once": true,
-          "words": "How is it upstairs?",
-          "reply": "The Hall and Greatly are at each other's throats. Every Greatly cart that passes the gate gets a look from the steward that'd curdle milk. I just fold the sheets."
+          "words": "How is it up at the Hall?",
+          "reply": "The Hall and Greatly are at each other's throats. Every Greatly cart that passes the gate gets a look from the steward that'd curdle milk. I just carry the sheets."
          }
         }
        ],
@@ -1459,12 +1476,12 @@
            "do": "effect",
            "effect": {
             "kind": "npc.offer",
-            "npc": "rm_erland_cinderridge",
+            "npc": "rm_agna_dripridge",
             "id": "grayrock-houses",
             "player": "$actor",
             "once": true,
-            "words": "How is it upstairs?",
-            "reply": "The Houses have fallen out, and the Hall's doors are shut to callers half the day. More sheets to fold, and fewer feet to dirty them."
+            "words": "How is it up at the Hall?",
+            "reply": "The Houses have fallen out, and the Hall's doors are shut to callers half the day. More sheets to carry, and fewer feet to dirty them."
            }
           }
          ]
@@ -1483,12 +1500,12 @@
            "do": "effect",
            "effect": {
             "kind": "npc.offer",
-            "npc": "rm_erland_cinderridge",
+            "npc": "rm_agna_dripridge",
             "id": "grayrock-quiet",
             "player": "$actor",
             "once": true,
-            "words": "How is it upstairs?",
-            "reply": "Upstairs is upstairs. The family's away more than it's home, and the steward keeps the keys. Down here we keep the rain out, or try."
+            "words": "How is it up at the Hall?",
+            "reply": "Upstairs is upstairs. The family's away more than it's home, and the steward keeps the keys. Down in the cottages we keep the rain out, or try."
            }
           }
          ]
@@ -2220,7 +2237,7 @@
        "effect": {
         "kind": "deed.award",
         "player": "$actor",
-        "detail": "copied the rolls at the Records Office"
+        "detail": "brought paper and ink for the Council Press's printing of the old rolls"
        }
       }
      ]
@@ -2536,7 +2553,7 @@
   {
    "id": "sq-morning-bread",
    "title": "Morning Bread for the Sump",
-   "summary": "Carry the Morning Oven's first loaves down the Sump Stairs to the nurse at the Sump Infirmary.",
+   "summary": "Carry the Morning Oven's first loaves down the Sump Stairs, to the porter who carries for the Sump Infirmary.",
    "giver": "rm_tove_brinegate",
    "repeat": "daily",
    "join": {
@@ -2544,19 +2561,19 @@
    },
    "offer": {
     "ask": "You've flour to your elbows. Something wanted?",
-    "say": "#greet#. The first loaves go down to the Sump Infirmary every morning, and my carrier's off his feet. Four loaves to the nurse there, still warm if you're quick. Take the Sump Stairs, not the lanes; the lanes flood first. Will you?",
+    "say": "#greet#. The first loaves go down to the Sump Infirmary every morning, and my carrier's off his feet. The nurse can't leave her sick, so four loaves to the porter at the foot of the Sump Stairs who carries for the infirmary. Take the Stairs, not the lanes; the lanes flood first. Will you?",
     "accept": "I'll take them down.",
     "decline": "Not today.",
-    "handIn": "The nurse has her bread.",
+    "handIn": "The infirmary has its bread.",
     "thanks": "#thanks#. Warm bread for the sick, and not a loaf dropped. Take a cake for the walk. Same again tomorrow, if your paws are willing."
    },
    "objectives": [
     {
      "id": "deliver",
-     "label": "Give the four loaves to the nurse at the Sump Infirmary.",
+     "label": "Give the four loaves to the infirmary's porter at the foot of the Sump Stairs.",
      "on": "gift",
      "match": {
-      "target": "rm_theodora_wickley",
+      "target": "rm_ottilie_nailmarsh",
       "item": "bread"
      },
      "goal": 4,
@@ -2597,27 +2614,27 @@
   {
    "id": "sq-mending-herbs",
    "title": "Herbs for the House of Mending",
-   "summary": "The abbey's House of Mending goes through herbs faster than its garden grows them.",
-   "giver": "rm_frederick_nailgate",
+   "summary": "The apothecary on Market Square mixes the House of Mending's draughts, and the abbey garden can't keep up.",
+   "giver": "rm_rupert_pitchford",
    "repeat": "daily",
    "join": {
     "cap": 4
    },
    "offer": {
-    "ask": "Is the abbey short of something?",
-    "say": "#greet#. The House of Mending goes through herbs faster than the abbey garden grows them. Five bunches, from the long grass outside the walls or under the willows. Yarrow too, if you find it. I'll not ask where you picked them.",
+    "ask": "Is the House of Mending short of something?",
+    "say": "#greet#. I mix the draughts for the abbey's House of Mending, and it goes through herbs faster than the abbey garden grows them. Five bunches, from the long grass outside the walls or under the willows. Yarrow too, if you find it. I'll not ask where you picked them.",
     "accept": "Five bunches. I'll find them.",
     "decline": "Not today.",
     "handIn": "Your herbs, and yarrow if I found it.",
-    "thanks": "#thanks#. That's the week's draughts. If you come in hurt one day, I'll remember whose herbs these were. That's more than I promise most."
+    "thanks": "#thanks#. That's the week's draughts for the House of Mending. If you come in hurt one day, it'll be your own herbs in the poultice, and I'll tell the healer whose they were."
    },
    "objectives": [
     {
      "id": "herbs",
-     "label": "Bring the healer five bunches of herbs.",
+     "label": "Bring the apothecary five bunches of herbs.",
      "on": "gift",
      "match": {
-      "target": "rm_frederick_nailgate",
+      "target": "rm_rupert_pitchford",
       "item": "herbs"
      },
      "goal": 5,
@@ -2628,7 +2645,7 @@
      "label": "Find two sprigs of yarrow for the poultices.",
      "on": "gift",
      "match": {
-      "target": "rm_frederick_nailgate",
+      "target": "rm_rupert_pitchford",
       "item": "yarrow"
      },
      "goal": 2,
@@ -2833,43 +2850,45 @@
   },
   {
    "id": "sq-records-copying",
-   "title": "A Page and a Drawer",
-   "summary": "The copyists at the Records Office are a paw short. Copy a page and sort a drawer.",
-   "giver": "rmx_harriet_platt",
+   "title": "Paper for the Rolls",
+   "summary": "The Council Press is setting the Records Office's old rolls in type, and runs short of paper and ink.",
+   "giver": "rm_runa_ashridge",
    "repeat": "daily",
    "join": {
     "cap": 6
    },
    "offer": {
-    "ask": "Are they short of paws up there?",
-    "say": "#greet#. The copyists are a paw short and the rolls don't wait. Copy me one page and sort me one drawer. The Office pays by the page, and you'll read things up there nobody downstairs remembers.",
-    "accept": "One page, one drawer.",
+    "ask": "Is the Press short of something?",
+    "say": "#greet#. The Press is setting the Records Office's old rolls in type, and the rolls don't wait. Bring me two sheets of paper and a pot of ink. The Office pays by the page, and you'll hear things off those proofs nobody downstairs remembers.",
+    "accept": "Paper and ink.",
     "decline": "My paws are full.",
-    "handIn": "The page is copied and the drawer sorted.",
-    "thanks": "#thanks#. Square letters, too; I can tell a careless paw a room away. You'd be surprised what's in those drawers. A whole village struck off in one line, the spring after a flood. Come again."
+    "handIn": "Paper and ink, as asked.",
+    "thanks": "#thanks#. Good sheets, too. You'd be surprised what's in those old rolls. A whole village struck off in one line, the spring after a flood. Come again."
    },
    "objectives": [
     {
      "id": "copy",
-     "label": "Copy a page at the Records Office.",
-     "on": "archive work",
+     "label": "Bring the printer two sheets of paper.",
+     "on": "gift",
      "match": {
-      "item": "copy",
-      "detail": "ridgemere"
-     }
+      "target": "rm_runa_ashridge",
+      "item": "paper"
+     },
+     "goal": 2,
+     "measure": "quantity"
     },
     {
      "id": "sort",
-     "label": "Sort a drawer of old rolls.",
-     "on": "archive work",
+     "label": "Bring a pot of ink.",
+     "on": "gift",
      "match": {
-      "item": "sort",
-      "detail": "ridgemere"
+      "target": "rm_runa_ashridge",
+      "item": "ink"
      }
     },
     {
      "id": "roll",
-     "label": "Sort one more drawer, and find the drowned village's page in the old count.",
+     "label": "Ask the printer about the drowned village's page in the old count.",
      "on": "story signal",
      "signal": "records-roll",
      "optional": true,
@@ -2896,8 +2915,8 @@
   {
    "id": "sq-heights-round",
    "title": "The Heights Round",
-   "summary": "Carry a City Office letter up the hill to the wolf who keeps the Vance house's door.",
-   "giver": "rm_gwen_cinderdale",
+   "summary": "Carry a City Office letter for the Vance house to the Vance who runs the Rag Mill.",
+   "giver": "rmx_kjell_coalham",
    "repeat": "daily",
    "join": {
     "cap": 3
@@ -2906,25 +2925,25 @@
     {
      "on": "death",
      "match": {
-      "actor": "rm_gwen_cinderdale"
+      "actor": "rmx_kjell_coalham"
      }
     }
    ],
    "offer": {
     "ask": "Is the City Office sending something up the hill?",
-    "say": "#greet#. The City Office's letters for the Heights pile up on my desk, because nobody likes the climb or the looks at the door. This one's for the Vance house, to the wolf who keeps their door. My knees did that hill for forty years. They've retired, even if I haven't.",
+    "say": "#greet#. The City Office leaves its Heights letters with us at the Stairs, since nobody else likes the climb. This one's for the Vance house. Their doorkeeper never comes down, so give it to the Vance who runs the Rag Mill; she takes the House's letters home. My knees have done that hill enough.",
     "accept": "I'll take it up.",
     "decline": "Find another paw today.",
     "handIn": "Your letter is delivered.",
-    "thanks": "#thanks#. One less on the pile, and one less climb for me. Half the Heights owes a House factor, and they'd sooner not open anything with a seal on it. You got one opened. That's a day's work, that is."
+    "thanks": "#thanks#. One less on the pile, and one less climb for me. Half the Heights owes a House factor, and they'd sooner not open anything with a seal on it. You got one taken in. That's a day's work, that is."
    },
    "objectives": [
     {
      "id": "letter",
-     "label": "Give the letter to the Vances' doorkeeper.",
+     "label": "Give the letter to the Vance who runs the Rag Mill.",
      "on": "gift",
      "match": {
-      "target": "rm_roald_wickstack",
+      "target": "rm_eleanor_vance",
       "item": "letter"
      }
     }
@@ -2941,27 +2960,27 @@
   {
    "id": "sq-restday-candles",
    "title": "Candles for Restday",
-   "summary": "On Restday the cathedral burns more candles than the abbey can pour. Bring two, and come to the service.",
-   "giver": "rm_berit_coalworth",
+   "summary": "On Restday the cathedral burns more candles than Wickham's can pour. Bring two, and stand at the cathedral door for the service.",
+   "giver": "rm_sten_kelpwell",
    "repeat": "weekly",
    "join": {
     "cap": 10
    },
    "offer": {
     "ask": "Is there work for a pair of paws here?",
-    "say": "#greet#. On Restday this cathedral burns more candles than the abbey can pour. Bring me two, wax or tallow, and come to the Restday service between the ninth hour and the eleventh. The Bright One sees who fills the lamps, and so do I.",
+    "say": "#greet#. Wickham's pours the cathedral's candles, and on Restday it burns more than we can pour. Bring me two, wax or tallow, and they go up with ours. Then stand at the cathedral door for the Restday service, between the ninth hour and the eleventh. The Bright One sees who fills the lamps.",
     "accept": "Two candles, and I'll be there.",
     "decline": "Not this week.",
-    "handIn": "Candles, and I came to the service.",
-    "thanks": "#thanks#. The old King's candle is still lit by the altar. We've not let it go out since he went up. Yours will stand beside it, and I'll count them with the bells."
+    "handIn": "Candles, and I stood at the door for the service.",
+    "thanks": "#thanks#. The old King's candle is still lit by the altar, the sexton says; they've not let it go out since he went up. Yours will stand beside it."
    },
    "objectives": [
     {
      "id": "candles",
-     "label": "Bring the sexton two candles, wax or tallow.",
+     "label": "Bring the chandler two candles, wax or tallow.",
      "on": "gift",
      "match": {
-      "target": "rm_berit_coalworth",
+      "target": "rm_sten_kelpwell",
       "item": "candle_wax"
      },
      "goal": 2,
@@ -2969,7 +2988,7 @@
     },
     {
      "id": "service",
-     "label": "Come into the cathedral for the Restday service, between the ninth hour and the eleventh.",
+     "label": "Stand at the cathedral door for the Restday service, between the ninth hour and the eleventh.",
      "on": "story signal",
      "signal": "restday-service"
     }
@@ -2986,19 +3005,19 @@
   {
    "id": "sq-almoners-round",
    "title": "The Almoner's Round",
-   "summary": "Carry the abbey's alms bread down to the Wharf and the Sump: a loaf each to three wolves, and no questions asked.",
-   "giver": "rm_disa_raincot",
+   "summary": "The abbey's brewer hands out the alms bread the almoner leaves at the brewhouse: a loaf each to three wolves on the Wharf and in the Sump, and no questions asked.",
+   "giver": "rm_arne_wickdale",
    "repeat": "weekly",
    "join": {
     "cap": 6
    },
    "offer": {
     "ask": "You're carrying a lot of bread.",
-    "say": "#greet#. The abbey's alms go down to the Sump and I can't carry them all. Three loaves, one each, to three wolves on the Wharf side who look like they need it. Don't ask them why. A full net's no shame to share, eh?",
+    "say": "#greet#. The abbey's alms go down to the Sump, and the almoner can't carry them all, so she leaves the bread here at the brewhouse for whoever will. Three loaves, one each, to three wolves on the Wharf side who look like they need it. Don't ask them why.",
     "accept": "Three loaves, three wolves.",
     "decline": "Not this week.",
     "handIn": "All three loaves are given.",
-    "thanks": "#thanks#. Three fed. Back home the lake gives to whoever puts a net in. The Sump never had a lake, so it has us. #farewell#."
+    "thanks": "#thanks#. Three fed. The almoner says the Sump never had a lake to feed it, so it has us. #farewell#."
    },
    "objectives": [
     {
@@ -3196,19 +3215,19 @@
   {
    "id": "sq-greatly-stables",
    "title": "Oats for the Factors' Horses",
-   "summary": "The Greatly stables want oats and straw: the factors will soon be riding their debt rounds.",
-   "giver": "rm_philippa_rustton",
+   "summary": "The Greatly horses want oats and straw, and the Greatly Yard feeds them: the factors will soon be riding their debt rounds.",
+   "giver": "rm_hjalte_sootby",
    "repeat": "daily",
    "join": {
     "cap": 4
    },
    "offer": {
     "ask": "Do the Greatly horses want feeding?",
-    "say": "#greet#. Greatly horses eat better than half the Sump, and I'm the one feeds them. Three of oats and two bundles of straw. Any provisioner has oats; for straw, try the sundries shop in the Sump. The factors want the horses fresh for the debt rounds, chalk in their pouches.",
+    "say": "#greet#. The Yard keeps the Greatly stables fed, and Greatly horses eat better than half the Sump. Three of oats and two bundles of straw, brought to me here. Any provisioner has oats; for straw, try the sundries shop in the Sump. The factors want the horses fresh for the debt rounds.",
     "accept": "Oats and straw. I'll fetch it.",
     "decline": "Not for Greatly.",
     "handIn": "Oats and straw, as asked.",
-    "thanks": "#thanks#. Don't look so sour. Whoever owns the horse, it's the horse that's hungry. I grew up on a charcoal camp; I know what it is to work for a House and keep your own counsel."
+    "thanks": "#thanks#. Don't look so sour. Whoever owns the horse, it's the horse that's hungry. They'll be in the mangers before the stable shuts."
    },
    "objectives": [
     {
@@ -3216,7 +3235,7 @@
      "label": "Bring three of oats.",
      "on": "gift",
      "match": {
-      "target": "rm_philippa_rustton",
+      "target": "rm_hjalte_sootby",
       "item": "oats"
      },
      "goal": 3,
@@ -3227,7 +3246,7 @@
      "label": "Bring two bundles of straw for bedding.",
      "on": "gift",
      "match": {
-      "target": "rm_philippa_rustton",
+      "target": "rm_hjalte_sootby",
       "item": "straw"
      },
      "goal": 2,
@@ -3246,38 +3265,38 @@
   {
    "id": "sq-dawn-bell",
    "title": "The Dawn Bell",
-   "summary": "Nobody has rung the Clock Tower bell at first light since the old King went up. Ring it, and tell the lamplighter.",
-   "giver": "rm_corwin_bilgestack",
+   "summary": "Nobody has rung the Clock Tower bell at first light since the old King went up. Ring it, and tell the Sump Stairs porter.",
+   "giver": "rm_mathis_plankham",
    "repeat": "daily",
    "fail": [
     {
      "on": "death",
      "match": {
-      "actor": "rm_corwin_bilgestack"
+      "actor": "rm_mathis_plankham"
      }
     }
    ],
    "offer": {
     "ask": "Who rings the morning bell these days?",
-    "say": "#greet#. I light the lamps at dusk and put them out at first light, and since the old King went up nobody rings the morning bell. The rope's at the top of the Clock Tower stair. Ring it between the fifth hour and the seventh, and come and tell me.",
+    "say": "#greet#. Since the old King went up nobody rings the morning bell, and half the Sump Stairs sleep through the first hour. The tower's kept locked, but the bell rope comes down by the Clock Tower door. Pull it between the fifth hour and the seventh, and come and tell me.",
     "accept": "I'll ring it.",
     "decline": "I sleep late.",
     "handIn": "The bell's rung.",
-    "thanks": "#thanks#. I heard it from here. There's wolves in the Sump who set their day by that bell, and they've been late ever since he went up. I had a post once that mattered. This is a small thing, but it's mine to see done."
+    "thanks": "#thanks#. I heard it from the Stairs. There's wolves in the Sump who set their day by that bell, and they've been late ever since he went up. It's a small thing, but somebody had to see it done."
    },
    "objectives": [
     {
      "id": "ring",
-     "label": "Climb the Clock Tower and ring the bell at first light, between the fifth hour and the seventh.",
+     "label": "Pull the bell rope at the Clock Tower door at first light, between the fifth hour and the seventh.",
      "on": "story signal",
      "signal": "dawn-bell"
     },
     {
      "id": "tell",
-     "label": "Tell the lamplighter the bell is rung.",
+     "label": "Tell the porter the bell is rung.",
      "on": "conversation",
      "match": {
-      "target": "rm_corwin_bilgestack"
+      "target": "rm_mathis_plankham"
      },
      "after": [
       "ring"
@@ -3381,19 +3400,19 @@
   {
    "id": "sq-heights-thyme",
    "title": "Willow Bark for the Heights' Joints",
-   "summary": "The damp has got into every old joint in the Heights. The wolf who visits the sick there trusts willow bark.",
-   "giver": "rm_egil_grantham",
+   "summary": "The damp has got into every old joint in the Heights. The Mortar and Pestle's hand, who carries its physic up the hill, trusts willow bark.",
+   "giver": "rm_mogens_ashley",
    "repeat": "daily",
    "join": {
     "cap": 4
    },
    "offer": {
-    "ask": "Who's ailing up here?",
-    "say": "#greet#. The damp's got into every old joint in the Heights, and the good houses would sooner send for a physician than for bark. I've more faith in willow. Three strips of willow bark from any physic on the Commons, or willow tea if they've some made.",
+    "ask": "Who's ailing in the Heights?",
+    "say": "#greet#. The damp's got into every old joint in the Heights. The good houses send for a physician first, and down here for willow when the physician's done. Three strips of willow bark from any physic on the Commons, or willow tea if they've some made. I carry it up the hill myself.",
     "accept": "Three strips of willow bark.",
     "decline": "Not today.",
     "handIn": "Willow bark, as you asked.",
-    "thanks": "#thanks#, #address#. Steeped tonight, and three old wolves on this street will take their stairs tomorrow without swearing at them. My cousin in the Fell vineyards swears by it for the pickers' backs."
+    "thanks": "#thanks#, #address#. Steeped tonight, and three old wolves up the hill will take their stairs tomorrow without swearing at them."
    },
    "objectives": [
     {
@@ -3401,7 +3420,7 @@
      "label": "Bring three strips of willow bark, or willow tea.",
      "on": "gift",
      "match": {
-      "target": "rm_egil_grantham",
+      "target": "rm_mogens_ashley",
       "item": "willow_bark"
      },
      "goal": 3,
@@ -3560,27 +3579,27 @@
   {
    "id": "sq-fellhall-errand",
    "title": "Eggs for the Fellhall Kitchen",
-   "summary": "The Fellhall kitchen is short for the family's supper. Four eggs and two cheeses from the Commons, round the back.",
-   "giver": "rm_ansel_tarley",
+   "summary": "The Fellhall kitchen is short for the family's supper. Four eggs and two cheeses from the Commons, to the Lamp and Wick hand who lives in the Fell cottages.",
+   "giver": "rm_erland_fogley",
    "repeat": "daily",
    "join": {
     "cap": 4
    },
    "offer": {
-    "ask": "Does the kitchen want something fetched?",
-    "say": "#greet#. The cook's short for the family's supper and won't send me to market twice. Four eggs and two cheeses from the Commons, brought round to the kitchens. Keep to the high side of the street; the low side floods first. I'd go myself, but the hall doesn't sweep itself.",
-    "accept": "Eggs and cheese, round the back.",
+    "ask": "Does the Fellhall kitchen want something fetched?",
+    "say": "#greet#. I live in the Fell cottages, and the hall's cook won't send to market twice. She's short for the family's supper: four eggs and two cheeses from the Commons, brought to me here, and I'll carry them up when the shop shuts. Keep to the high side of the street; the low side floods first.",
+    "accept": "Eggs and cheese, for the Fellhall kitchen.",
     "decline": "Not today.",
     "handIn": "Eggs whole, and the cheese.",
-    "thanks": "#thanks#. Eggs whole and the cheese not sat on. The cook will think I went myself. I was born in the Sump, you know. One day I'll have a kitchen in the Heights and a hall servant of my own to send."
+    "thanks": "#thanks#. Eggs whole and the cheese not sat on. The cook will think I went to market myself. They'll be up the hill before the lamps are lit."
    },
    "objectives": [
     {
      "id": "eggs",
-     "label": "Bring the hall servant four eggs.",
+     "label": "Bring four eggs for the Fellhall kitchen.",
      "on": "gift",
      "match": {
-      "target": "rm_ansel_tarley",
+      "target": "rm_erland_fogley",
       "item": "eggs"
      },
      "goal": 4,
@@ -3591,18 +3610,19 @@
      "label": "Bring two cheeses.",
      "on": "gift",
      "match": {
-      "target": "rm_ansel_tarley",
+      "target": "rm_erland_fogley",
       "item": "cheese"
      },
      "goal": 2,
      "measure": "quantity"
     },
     {
-     "id": "door",
-     "label": "Come in by the kitchens, not the front door.",
-     "on": "enter place",
+     "id": "butter",
+     "label": "Bring a pat of butter for the family's bread, if the dairy has it.",
+     "on": "gift",
      "match": {
-      "target": "rm_fellhall_down"
+      "target": "rm_erland_fogley",
+      "item": "butter"
      },
      "optional": true
     }
@@ -3627,19 +3647,19 @@
   {
    "id": "sq-grayrock-hall-errand",
    "title": "Clean Linen for Grayrock Hall",
-   "summary": "The family's linen came back from the washers grey with sea damp. The chambers want fresh on every bed.",
-   "giver": "rm_erland_cinderridge",
+   "summary": "Grayrock Hall's linen came back from the washers grey with sea damp. The chambers want fresh on every bed, and the Bridge Stores hand from the Grayrock cottages carries it up.",
+   "giver": "rm_agna_dripridge",
    "repeat": "daily",
    "join": {
     "cap": 4
    },
    "offer": {
     "ask": "Is the Hall short of something?",
-    "say": "#greet#! The family's linen came back from the washers grey with sea damp, and the chamber keeper wants fresh on every bed before anyone upstairs notices. Two lengths of linen cloth from the stores, and lavender for the presses if the season's left any.",
+    "say": "#greet#! The Hall's linen came back from the washers grey with sea damp, and the chamber keeper sent down to the cottages for fresh before anyone upstairs notices. Two lengths of linen cloth, brought to me here at the Stores, and lavender if the season's left any. I'll take them up tonight.",
     "accept": "Two lengths of linen.",
     "decline": "Not today.",
     "handIn": "Linen for the beds.",
-    "thanks": "#thanks#! Every bed made before the bell. Take a candle; the chambers burn more than they need. I'll watch the rain stop one day, you'll see. Then I'll have nothing to do but fold."
+    "thanks": "#thanks#! Every bed made before the bell, and the chamber keeper none the wiser. Take a candle; the Hall burns more than it needs."
    },
    "objectives": [
     {
@@ -3647,7 +3667,7 @@
      "label": "Bring two lengths of linen cloth.",
      "on": "gift",
      "match": {
-      "target": "rm_erland_cinderridge",
+      "target": "rm_agna_dripridge",
       "item": "linen_cloth"
      },
      "goal": 2,
@@ -3658,7 +3678,7 @@
      "label": "Bring two sprigs of lavender for the linen presses.",
      "on": "gift",
      "match": {
-      "target": "rm_erland_cinderridge",
+      "target": "rm_agna_dripridge",
       "item": "lavender"
      },
      "goal": 2,
@@ -3686,7 +3706,7 @@
   {
    "id": "sq-timberland-court-errand",
    "title": "A Bolt for the Court",
-   "summary": "Greywool has finished the Court's winter hangings. Carry the bolt to the chamber keeper at Timberland Court.",
+   "summary": "Greywool has finished the Court's winter hangings. Carry the bolt to Wenna Timberland, who keeps the House's iron trade in the yard by the Court.",
    "giver": "rm_lotte_greyley",
    "repeat": "daily",
    "join": {
@@ -3696,25 +3716,25 @@
     {
      "on": "death",
      "match": {
-      "actor": "rm_arne_wetworth"
+      "actor": "rm_wenna_mossgrave"
      }
     }
    ],
    "offer": {
     "ask": "Is that bolt going somewhere?",
-    "say": "#greet#. Greywool's finished the Court's winter hangings, and I can't carry the bolt and keep my place at the loom. Take it to the chamber keeper at Timberland Court. He takes his supper in the servants' hall, and he hums, so you'll find him.",
+    "say": "#greet#. Greywool's finished the Court's winter hangings, and I can't carry the bolt and keep my place at the loom. Take it up to Timberland Court. The chamber keeper never comes out, but Wenna Timberland is in the yard by the Court all day with the iron carts, and she'll take it in.",
     "accept": "I'll carry it up.",
     "decline": "Not today.",
-    "handIn": "The bolt's with the chamber keeper.",
-    "thanks": "#thanks#. He'll have hummed at it and counted the ells twice. And if you brought wood for the hall fire, thank you for that too. The damp in that hall could drown a fish."
+    "handIn": "The bolt is with Wenna Timberland.",
+    "thanks": "#thanks#. She'll have counted the ells twice before she let it out of her sight. And if you brought wood for the hall fire, thank you for that too. The damp in that hall could drown a fish."
    },
    "objectives": [
     {
      "id": "bolt",
-     "label": "Give the bolt to the Court's chamber keeper.",
+     "label": "Give the bolt to Wenna Timberland in the yard by the Court.",
      "on": "gift",
      "match": {
-      "target": "rm_arne_wetworth",
+      "target": "rm_wenna_mossgrave",
       "item": "wool_cloth"
      }
     },
@@ -3767,20 +3787,20 @@
      "kind": "gift",
      "day": 1.002,
      "actor": "wolf-birch",
-     "target": "rm_theodora_wickley",
+     "target": "rm_ottilie_nailmarsh",
      "item": "bread",
      "quantity": 4,
-     "cell": "w_ridgemere_0_0"
+     "cell": "w_ridgemere_0_1"
     },
     {
      "id": "e3",
      "kind": "gift",
      "day": 1.003,
      "actor": "wolf-ash",
-     "target": "rm_theodora_wickley",
+     "target": "rm_ottilie_nailmarsh",
      "item": "bread",
      "quantity": 4,
-     "cell": "w_ridgemere_0_0",
+     "cell": "w_ridgemere_0_1",
      "facts": {
       "world": {
        "hour": 6
@@ -3802,7 +3822,7 @@
      "day": 1.005,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_frederick_nailgate",
+     "item": "rm_rupert_pitchford",
      "detail": "sq-mending-herbs"
     },
     {
@@ -3810,7 +3830,7 @@
      "kind": "gift",
      "day": 1.006,
      "actor": "wolf-ash",
-     "target": "rm_frederick_nailgate",
+     "target": "rm_rupert_pitchford",
      "item": "herbs",
      "quantity": 3,
      "cell": "w_ridgemere_1_1"
@@ -3820,7 +3840,7 @@
      "kind": "gift",
      "day": 1.007,
      "actor": "wolf-ash",
-     "target": "rm_frederick_nailgate",
+     "target": "rm_rupert_pitchford",
      "item": "herbs",
      "quantity": 2,
      "cell": "w_ridgemere_1_1"
@@ -3830,7 +3850,7 @@
      "kind": "gift",
      "day": 1.008,
      "actor": "wolf-ash",
-     "target": "rm_frederick_nailgate",
+     "target": "rm_rupert_pitchford",
      "item": "yarrow",
      "quantity": 2,
      "cell": "w_ridgemere_1_1"
@@ -3841,7 +3861,7 @@
      "day": 1.009,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_frederick_nailgate",
+     "item": "rm_rupert_pitchford",
      "detail": "sq-mending-herbs"
     },
     {
@@ -3954,7 +3974,7 @@
      "day": 1.021,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_philippa_rustton",
+     "item": "rm_hjalte_sootby",
      "detail": "sq-greatly-stables"
     },
     {
@@ -3962,20 +3982,20 @@
      "kind": "gift",
      "day": 1.022,
      "actor": "wolf-birch",
-     "target": "rm_philippa_rustton",
+     "target": "rm_hjalte_sootby",
      "item": "oats",
      "quantity": 3,
-     "cell": "w_ridgemere_1_1"
+     "cell": "rm_the_greatly_yard"
     },
     {
      "id": "e23",
      "kind": "gift",
      "day": 1.023,
      "actor": "wolf-birch",
-     "target": "rm_philippa_rustton",
+     "target": "rm_hjalte_sootby",
      "item": "straw",
      "quantity": 2,
-     "cell": "w_ridgemere_1_1"
+     "cell": "rm_the_greatly_yard"
     },
     {
      "id": "e24",
@@ -3983,7 +4003,7 @@
      "day": 1.024,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_philippa_rustton",
+     "item": "rm_hjalte_sootby",
      "detail": "sq-greatly-stables"
     },
     {
@@ -4000,10 +4020,10 @@
      "kind": "gift",
      "day": 2.102,
      "actor": "wolf-ash",
-     "target": "rm_theodora_wickley",
+     "target": "rm_ottilie_nailmarsh",
      "item": "bread",
      "quantity": 4,
-     "cell": "w_ridgemere_0_0",
+     "cell": "w_ridgemere_0_1",
      "facts": {
       "world": {
        "hour": 14
@@ -4263,38 +4283,36 @@
      "day": 1.001,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_harriet_platt",
+     "item": "rm_runa_ashridge",
      "detail": "sq-records-copying"
     },
     {
      "id": "e2",
-     "kind": "archive work",
+     "kind": "gift",
      "day": 1.002,
      "actor": "wolf-ash",
-     "item": "copy",
-     "detail": "ridgemere",
-     "cell": "r2_the_records_office_up",
-     "coins": 3
+     "target": "rm_runa_ashridge",
+     "item": "paper",
+     "quantity": 2,
+     "cell": "rm_the_council_press"
     },
     {
      "id": "e3",
-     "kind": "archive work",
+     "kind": "gift",
      "day": 1.003,
      "actor": "wolf-ash",
-     "item": "sort",
-     "detail": "ridgemere",
-     "cell": "r2_the_records_office_up",
-     "coins": 3
+     "target": "rm_runa_ashridge",
+     "item": "ink",
+     "quantity": 1,
+     "cell": "rm_the_council_press"
     },
     {
      "id": "e4",
-     "kind": "archive work",
+     "kind": "conversation",
      "day": 1.004,
      "actor": "wolf-ash",
-     "item": "sort",
-     "detail": "ridgemere",
-     "cell": "r2_the_records_office_up",
-     "coins": 3
+     "target": "rm_runa_ashridge",
+     "cell": "rm_the_council_press"
     },
     {
      "id": "e5",
@@ -4302,7 +4320,7 @@
      "day": 1.005,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_harriet_platt",
+     "item": "rm_runa_ashridge",
      "detail": "sq-records-copying"
     },
     {
@@ -4311,7 +4329,7 @@
      "day": 1.006,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_gwen_cinderdale",
+     "item": "rmx_kjell_coalham",
      "detail": "sq-heights-round"
     },
     {
@@ -4319,10 +4337,10 @@
      "kind": "gift",
      "day": 1.007,
      "actor": "wolf-birch",
-     "target": "rm_roald_wickstack",
+     "target": "rm_eleanor_vance",
      "item": "letter",
      "quantity": 1,
-     "cell": "w_ridgemere_1_1"
+     "cell": "rm_the_rag_mill"
     },
     {
      "id": "e8",
@@ -4330,7 +4348,7 @@
      "day": 1.008,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_gwen_cinderdale",
+     "item": "rmx_kjell_coalham",
      "detail": "sq-heights-round"
     },
     {
@@ -4339,7 +4357,7 @@
      "day": 1.009,
      "actor": "wolf-elm",
      "target": "run",
-     "item": "rm_berit_coalworth",
+     "item": "rm_sten_kelpwell",
      "detail": "sq-restday-candles"
     },
     {
@@ -4347,29 +4365,30 @@
      "kind": "gift",
      "day": 1.01,
      "actor": "wolf-elm",
-     "target": "rm_berit_coalworth",
+     "target": "rm_sten_kelpwell",
      "item": "candle_tallow",
      "quantity": 1,
-     "cell": "w_ridgemere_1_1"
+     "cell": "rm_wickham_s_chandlery"
     },
     {
      "id": "e11",
      "kind": "gift",
      "day": 1.011,
      "actor": "wolf-elm",
-     "target": "rm_berit_coalworth",
+     "target": "rm_sten_kelpwell",
      "item": "candle_wax",
      "quantity": 1,
-     "cell": "w_ridgemere_1_1"
+     "cell": "rm_wickham_s_chandlery"
     },
     {
      "id": "e12",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 1.012,
      "actor": "wolf-elm",
-     "target": "r2_the_cathedral_of_ridgemere",
-     "cell": "r2_the_cathedral_of_ridgemere",
-     "detail": "w_ridgemere_0_0",
+     "target": "cathedral_door",
+     "cell": "w_ridgemere_0_0",
+     "x": 231,
+     "y": 176,
      "facts": {
       "world": {
        "hour": 10,
@@ -4383,7 +4402,7 @@
      "day": 1.013,
      "actor": "wolf-elm",
      "target": "run",
-     "item": "rm_berit_coalworth",
+     "item": "rm_sten_kelpwell",
      "detail": "sq-restday-candles"
     },
     {
@@ -4392,7 +4411,7 @@
      "day": 1.014,
      "actor": "wolf-fern",
      "target": "run",
-     "item": "rm_disa_raincot",
+     "item": "rm_arne_wickdale",
      "detail": "sq-almoners-round"
     },
     {
@@ -4449,7 +4468,7 @@
      "day": 1.02,
      "actor": "wolf-fern",
      "target": "run",
-     "item": "rm_disa_raincot",
+     "item": "rm_arne_wickdale",
      "detail": "sq-almoners-round"
     }
    ],
@@ -4573,17 +4592,18 @@
      "day": 1.009,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_corwin_bilgestack",
+     "item": "rm_mathis_plankham",
      "detail": "sq-dawn-bell"
     },
     {
      "id": "e10",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 1.01,
      "actor": "wolf-birch",
-     "target": "r2_the_clock_tower_up",
-     "cell": "r2_the_clock_tower_up",
-     "detail": "r2_the_clock_tower",
+     "target": "clock_door",
+     "cell": "w_ridgemere_1_0",
+     "x": 113,
+     "y": 182,
      "facts": {
       "world": {
        "weekday": "Marketday",
@@ -4596,8 +4616,8 @@
      "kind": "conversation",
      "day": 1.011,
      "actor": "wolf-birch",
-     "target": "rm_corwin_bilgestack",
-     "cell": "w_ridgemere_1_1"
+     "target": "rm_mathis_plankham",
+     "cell": "w_ridgemere_0_1"
     },
     {
      "id": "e12",
@@ -4605,7 +4625,7 @@
      "day": 1.012,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_corwin_bilgestack",
+     "item": "rm_mathis_plankham",
      "detail": "sq-dawn-bell"
     },
     {
@@ -4769,7 +4789,7 @@
      "day": 1.021,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_egil_grantham",
+     "item": "rm_mogens_ashley",
      "detail": "sq-heights-thyme"
     },
     {
@@ -4777,30 +4797,30 @@
      "kind": "gift",
      "day": 1.022,
      "actor": "wolf-birch",
-     "target": "rm_egil_grantham",
+     "target": "rm_mogens_ashley",
      "item": "willow_tea",
      "quantity": 1,
-     "cell": "w_ridgemere_1_1"
+     "cell": "rm_the_harness_shop"
     },
     {
      "id": "e23",
      "kind": "gift",
      "day": 1.023,
      "actor": "wolf-birch",
-     "target": "rm_egil_grantham",
+     "target": "rm_mogens_ashley",
      "item": "willow_tea",
      "quantity": 1,
-     "cell": "w_ridgemere_1_1"
+     "cell": "rm_the_harness_shop"
     },
     {
      "id": "e24",
      "kind": "gift",
      "day": 1.024,
      "actor": "wolf-birch",
-     "target": "rm_egil_grantham",
+     "target": "rm_mogens_ashley",
      "item": "willow_bark",
      "quantity": 1,
-     "cell": "w_ridgemere_1_1"
+     "cell": "rm_the_harness_shop"
     },
     {
      "id": "e25",
@@ -4808,7 +4828,7 @@
      "day": 1.025,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_egil_grantham",
+     "item": "rm_mogens_ashley",
      "detail": "sq-heights-thyme"
     }
    ],
@@ -4984,37 +5004,28 @@
      "day": 1.015,
      "actor": "wolf-elm",
      "target": "run",
-     "item": "rm_ansel_tarley",
+     "item": "rm_erland_fogley",
      "detail": "sq-fellhall-errand"
-    },
-    {
-     "id": "e16",
-     "kind": "enter place",
-     "day": 1.016,
-     "actor": "wolf-elm",
-     "target": "rm_fellhall_down",
-     "cell": "rm_fellhall_down",
-     "detail": "rm_fellhall"
     },
     {
      "id": "e17",
      "kind": "gift",
      "day": 1.017,
      "actor": "wolf-elm",
-     "target": "rm_ansel_tarley",
+     "target": "rm_erland_fogley",
      "item": "eggs",
      "quantity": 4,
-     "cell": "w_ridgemere_1_1"
+     "cell": "rm_the_lamp_wick"
     },
     {
      "id": "e18",
      "kind": "gift",
      "day": 1.018,
      "actor": "wolf-elm",
-     "target": "rm_ansel_tarley",
+     "target": "rm_erland_fogley",
      "item": "cheese",
      "quantity": 2,
-     "cell": "w_ridgemere_1_1"
+     "cell": "rm_the_lamp_wick"
     },
     {
      "id": "e19",
@@ -5022,7 +5033,7 @@
      "day": 1.019,
      "actor": "wolf-elm",
      "target": "run",
-     "item": "rm_ansel_tarley",
+     "item": "rm_erland_fogley",
      "detail": "sq-fellhall-errand"
     },
     {
@@ -5031,7 +5042,7 @@
      "day": 1.02,
      "actor": "wolf-fern",
      "target": "run",
-     "item": "rm_erland_cinderridge",
+     "item": "rm_agna_dripridge",
      "detail": "sq-grayrock-hall-errand"
     },
     {
@@ -5039,20 +5050,20 @@
      "kind": "gift",
      "day": 1.021,
      "actor": "wolf-fern",
-     "target": "rm_erland_cinderridge",
+     "target": "rm_agna_dripridge",
      "item": "linen_cloth",
      "quantity": 2,
-     "cell": "w_ridgemere_1_1"
+     "cell": "rm_bridge_stores"
     },
     {
      "id": "e22",
      "kind": "gift",
      "day": 1.022,
      "actor": "wolf-fern",
-     "target": "rm_erland_cinderridge",
+     "target": "rm_agna_dripridge",
      "item": "lavender",
      "quantity": 2,
-     "cell": "w_ridgemere_1_1"
+     "cell": "rm_bridge_stores"
     },
     {
      "id": "e23",
@@ -5060,7 +5071,7 @@
      "day": 1.023,
      "actor": "wolf-fern",
      "target": "run",
-     "item": "rm_erland_cinderridge",
+     "item": "rm_agna_dripridge",
      "detail": "sq-grayrock-hall-errand"
     },
     {
@@ -5077,10 +5088,10 @@
      "kind": "gift",
      "day": 1.025,
      "actor": "wolf-ash",
-     "target": "rm_arne_wetworth",
+     "target": "rm_wenna_mossgrave",
      "item": "wool_cloth",
      "quantity": 1,
-     "cell": "w_ridgemere_1_1"
+     "cell": "w_ridgemere_1_2"
     },
     {
      "id": "e26",
@@ -6443,7 +6454,7 @@
      "day": 1.001,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_gwen_cinderdale",
+     "item": "rmx_kjell_coalham",
      "detail": "sq-heights-round"
     },
     {
@@ -6460,7 +6471,7 @@
      "day": 1.003,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_gwen_cinderdale",
+     "item": "rmx_kjell_coalham",
      "detail": "sq-heights-round"
     },
     {
@@ -6468,10 +6479,10 @@
      "kind": "gift",
      "day": 1.004,
      "actor": "wolf-ash",
-     "target": "rm_roald_wickstack",
+     "target": "rm_eleanor_vance",
      "item": "letter",
      "quantity": 1,
-     "cell": "rm_vance_house"
+     "cell": "rm_the_rag_mill"
     },
     {
      "id": "e5",
@@ -6479,7 +6490,7 @@
      "day": 1.005,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_gwen_cinderdale",
+     "item": "rmx_kjell_coalham",
      "detail": "sq-heights-round"
     },
     {

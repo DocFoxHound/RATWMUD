@@ -1167,7 +1167,7 @@
      "match": {
       "detail": "sq-apple-nose"
      },
-     "note": "P7: the pup is down the mere shore by the wild trees, held there, and the picker has a hint for this wolf.",
+     "note": "P7: the pup is down the mere shore by the wild trees, held there, and the inn has a hint for this wolf.",
      "actions": [
       {
        "do": "effect",
@@ -1190,7 +1190,7 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "cty_oriel_blossomby",
+        "npc": "tn_fh_laurel_pinefell",
         "id": "pup-where",
         "words": "Which way does his nose take him?",
         "reply": "Downwind of anything sweet. The wild trees down the mere shore drop their fruit early, so follow the fallers toward the water. And mind the camp along the shore, eh? There's wolves out there with no orchard of their own.",
@@ -1256,7 +1256,7 @@
      "on": "near resident",
      "audience": "participant",
      "match": {
-      "target": "cty_oriel_blossomby"
+      "target": "tn_fh_laurel_pinefell"
      },
      "if": {
       "test": "all",
@@ -1280,7 +1280,7 @@
        }
       ]
      },
-     "note": "P7: back with the apple picker; he goes back to his day.",
+     "note": "P7: back at the Glasswater Inn; he goes back to his day.",
      "actions": [
       {
        "do": "effect",
@@ -1420,7 +1420,7 @@
          "effect": {
           "kind": "journal.note",
           "player": "$actor",
-          "text": "The shepherd's ewes are all in the fold this week, and there is no wool on the thorns to follow. Ask again in a few days."
+          "text": "The Larkdowns ewes are all in the fold this week, and there is no wool on the thorns to follow. Ask again in a few days."
          }
         },
         {
@@ -2194,20 +2194,20 @@
   {
    "id": "sq-fox-at-the-hen-run",
    "title": "The Fox at the Hen-Run",
-   "summary": "A fox is taking the hens that scratch round the Oakhurst pig yard. Find it in the scrub and see it off.",
-   "giver": "cty_ingram_hazelshaw",
+   "summary": "A fox is taking the hens that scratch round the Oakhurst pig yard. The soapworks hand who buys Oakhurst's fat wants it seen off.",
+   "giver": "tn_lf_flint_downcombe",
    "board": "coldwater",
    "repeat": "weekly",
    "join": {
     "cap": 3
    },
    "offer": {
-    "ask": "Trouble at the yard?",
-    "say": "#greet#, #address#. There's a fox at my hens, and the pigs just stand and watch it, the great lumps. Three birds this week. Find it in the scrub round the yard and see it off for good, eh? Net and line, I'd do it myself, but it runs rings round me.",
+    "ask": "Trouble at Oakhurst?",
+    "say": "#greet#, #address#. Oakhurst sends us its pig fat for the soap, and the pig keeper says there's a fox at his hens, and the pigs just stand and watch it, the great lumps. Three birds this week. Find it in the scrub round the yard and see it off, eh? He can't leave the yard.",
     "accept": "I'll find your fox.",
     "decline": "Not this week.",
-    "handIn": "Your fox won't be back.",
-    "thanks": "#thanks#. A full net, that. Eggs from the hens that are left; they'll lay better now they can sleep. My grandmother would've had that fox for a scarf, eh? Yours too, I'd say."
+    "handIn": "Oakhurst's fox won't be back.",
+    "thanks": "#thanks#. A full net, that. Eggs from the hens that are left; the pig keeper sent them down with the fat. They'll lay better now they can sleep, eh?"
    },
    "objectives": [
     {
@@ -2237,7 +2237,7 @@
   {
    "id": "sq-bread-to-the-landing",
    "title": "Bread to the Landing",
-   "summary": "Carry three of the Coldwater Bakehouse's loaves down to the boatman at the Glasswater boat shed.",
+   "summary": "Carry three of the Coldwater Bakehouse's loaves to the Coldwater Stores, for the boat crews on the Glasswater landing.",
    "giver": "tn_lf_lichen_hedgemead",
    "board": "coldwater",
    "repeat": "daily",
@@ -2246,19 +2246,19 @@
    },
    "offer": {
     "ask": "Anything need carrying?",
-    "say": "#greet#. The boat crews on the Glasswater landing go out before my oven's warm, and they come back hungry as gulls. Three loaves down to the boatman at the boat shed. It's a short walk, and the best view in the Greenholt, eh?",
+    "say": "#greet#. The boat crews on the Glasswater landing go out before my oven's warm, and they come back hungry as gulls. Three loaves over to the Stores: their hand takes the crews their bread with the catch cart. It's a short walk, eh?",
     "accept": "Three loaves to the landing.",
     "decline": "Not today.",
-    "handIn": "The boatman has his bread.",
+    "handIn": "The landing has its bread.",
     "thanks": "#thanks#. Full bellies on the water, and that's a fair catch. If you're ever going Southmeadow way, I might have a letter for you. Might, mind. #farewell#."
    },
    "objectives": [
     {
      "id": "loaves",
-     "label": "Give the three loaves to the boatman at the Glasswater boat shed.",
+     "label": "Give the three loaves to the Coldwater Stores hand, for the Glasswater landing.",
      "on": "gift",
      "match": {
-      "target": "tn_cw_grist_reedmere",
+      "target": "tn_sm_fennel_cornley",
       "item": "bread"
      },
      "goal": 3,
@@ -2341,8 +2341,8 @@
   {
    "id": "sq-apple-nose",
    "title": "The Pup Who Follows His Nose",
-   "summary": "The Meresend orchard's pup has followed his nose down the Upper Mere shore. Find him and bring him home.",
-   "giver": "cty_oriel_blossomby",
+   "summary": "The Meresend orchard's pup has followed his nose down the Upper Mere shore. Find him and bring him to the Glasswater Inn, where his mother will fetch him.",
+   "giver": "tn_fh_laurel_pinefell",
    "repeat": "weekly",
    "join": {
     "cap": 1
@@ -2354,11 +2354,11 @@
    ],
    "offer": {
     "ask": "Are you looking for someone?",
-    "say": "#greet#. The orchard's pup has slipped me again, and his mother's out in the far rows. He can smell an apple a mile off and follows his nose wherever it goes. Down the shore by the wild trees, I'd wager. A pup that's missed is a pup that's loved, eh? Fetch him back.",
+    "say": "#greet#. The Meresend orchard's pup has slipped off again, and his mother's out in the far rows; she sent word down with the apple cart. He can smell an apple a mile off. Down the shore by the wild trees, I'd wager. Fetch him back here to the inn, eh?",
     "accept": "I'll find him.",
     "decline": "I can't today.",
     "handIn": "Here's your pup, nose and all.",
-    "thanks": "There he is, nose first. #thanks#, #address#. Apples, the good ones off the bough. Still water finds its way back to the lake, the old ones say, and a pup finds his way back to the orchard. Mostly with help."
+    "thanks": "There he is, nose first. #thanks#, #address#. Apples off the cart, the good ones. Still water finds its way back to the lake, the old ones say, and a pup finds his way back to the orchard. Mostly with help."
    },
    "objectives": [
     {
@@ -2369,7 +2369,7 @@
     },
     {
      "id": "home",
-     "label": "Bring him back to the apple picker.",
+     "label": "Bring him to the pot hand at the Glasswater Inn.",
      "on": "story signal",
      "signal": "pup-home",
      "after": [
@@ -2410,28 +2410,28 @@
   {
    "id": "sq-straw-for-the-pens",
    "title": "Straw for the Lambing Pens",
-   "summary": "Ewes lamb better on clean straw. Bring three bales to the Larkdowns shepherd, and walk the fold at dusk if you can.",
-   "giver": "tn_lf_rusk_downfield",
+   "summary": "Ewes lamb better on clean straw. Bring three bales to the Coldwater Looms for the Larkdowns pens, and walk the fold at dusk if you can.",
+   "giver": "tn_oh_varg_acorndell",
    "board": "coldwater",
    "repeat": "daily",
    "join": {
     "cap": 4
    },
    "offer": {
-    "ask": "Your flock looks restless.",
-    "say": "#greet#, #address#. Ewes lamb better on clean straw, and my pens are down to dust. Three bales from the stores, eh? And if you're about at dusk, walk the fold with me. A wolf the flock knows is a wolf they don't run from.",
+    "ask": "Is the Looms short of wool?",
+    "say": "#greet#, #address#. The Looms buys the Larkdowns wool, and the shepherd sent word: his lambing pens are down to dust. Three bales of straw from the stores, brought here, and I'll cart them up with the empty sacks. And walk his fold at dusk, eh? A wolf the flock knows is one they don't run from.",
     "accept": "Three bales of straw.",
     "decline": "Another day.",
-    "handIn": "Straw for your pens.",
-    "thanks": "#thanks#. That's a full net for the flock. One day I'll have a fold of my own, and you'll be the first I ask to walk it. #farewell#."
+    "handIn": "Straw for the Larkdowns pens.",
+    "thanks": "#thanks#. That's a full net for the flock. Clean straw, clean lambs, and clean wool for my loom come shearing. #farewell#."
    },
    "objectives": [
     {
      "id": "straw",
-     "label": "Bring three bales of straw to the Larkdowns shepherd (every town store keeps straw).",
+     "label": "Bring three bales of straw to the Looms, for the Larkdowns pens (every town store keeps straw).",
      "on": "gift",
      "match": {
-      "target": "tn_lf_rusk_downfield",
+      "target": "tn_oh_varg_acorndell",
       "item": "straw"
      },
      "goal": 3,
@@ -2465,7 +2465,7 @@
    "id": "sq-strayed-ewe",
    "title": "Wool on the Thorns",
    "summary": "A ewe has strayed up the Larkdowns. Follow the wool she left on the thorns and say where the trail leads.",
-   "giver": "cty_brock_marshholm",
+   "giver": "tn_fh_marl_cragpeak",
    "repeat": "weekly",
    "join": {
     "cap": 2
@@ -2476,12 +2476,12 @@
     }
    ],
    "offer": {
-    "ask": "Lost one of your flock?",
-    "say": "#greet#, #address#. One of my ewes is off on the downs, and the flock won't settle without her, no? She'll have left wool on every thorn she passed. Follow the tufts, pick up three, and come and tell me how far they lead. I keep a tally, and you'll be on the good side of it.",
+    "ask": "Lost something?",
+    "say": "#greet#, #address#. A Larkdowns ewe is off on the downs, and the shepherd can't leave the flock, so he sent down to the Looms for a good nose. She'll have left wool on every thorn she passed. Follow the tufts, pick up three, and come and tell me how far they lead, eh?",
     "accept": "I'll follow the wool.",
     "decline": "Not today.",
     "handIn": "I followed the wool to the end of it.",
-    "thanks": "That far, is it? I'll have her home before dark. #thanks#. That's a mark in my tally, fen-sure, and I keep it honest. I came up this road with nothing, and I've counted every ewe in that fold twice. Keep the wool."
+    "thanks": "That far, is it? I'll send word up, and he'll have her home before dark. #thanks#. Keep the wool; it's good fleece, and I'd know."
    },
    "objectives": [
     {
@@ -2873,7 +2873,7 @@
      "day": 1.0,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "cty_ingram_hazelshaw",
+     "item": "tn_lf_flint_downcombe",
      "detail": "sq-fox-at-the-hen-run"
     },
     {
@@ -2902,7 +2902,7 @@
      "day": 1.04,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "cty_ingram_hazelshaw",
+     "item": "tn_lf_flint_downcombe",
      "detail": "sq-fox-at-the-hen-run"
     },
     {
@@ -2919,9 +2919,10 @@
      "kind": "gift",
      "day": 1.06,
      "actor": "wolf-ash",
-     "target": "tn_cw_grist_reedmere",
+     "target": "tn_sm_fennel_cornley",
      "item": "bread",
-     "quantity": 3
+     "quantity": 3,
+     "cell": "cn_coldwater_store"
     },
     {
      "id": "e7",
@@ -2983,7 +2984,7 @@
      "day": 1.13,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "tn_lf_rusk_downfield",
+     "item": "tn_oh_varg_acorndell",
      "detail": "sq-straw-for-the-pens"
     },
     {
@@ -2991,9 +2992,10 @@
      "kind": "gift",
      "day": 1.14,
      "actor": "wolf-ash",
-     "target": "tn_lf_rusk_downfield",
+     "target": "tn_oh_varg_acorndell",
      "item": "straw",
-     "quantity": 3
+     "quantity": 3,
+     "cell": "cn_coldwater_weavers"
     },
     {
      "id": "e15",
@@ -3027,7 +3029,7 @@
      "day": 1.16,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "tn_lf_rusk_downfield",
+     "item": "tn_oh_varg_acorndell",
      "detail": "sq-straw-for-the-pens"
     }
    ],
@@ -3211,7 +3213,7 @@
      "day": 1.0,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "cty_oriel_blossomby",
+     "item": "tn_fh_laurel_pinefell",
      "detail": "sq-apple-nose"
     },
     {
@@ -3220,7 +3222,7 @@
      "day": 1.01,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "cty_oriel_blossomby",
+     "item": "tn_fh_laurel_pinefell",
      "detail": "sq-apple-nose"
     },
     {
@@ -3229,7 +3231,7 @@
      "day": 1.02,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "cty_oriel_blossomby",
+     "item": "tn_fh_laurel_pinefell",
      "detail": "pup-where"
     },
     {
@@ -3237,7 +3239,7 @@
      "kind": "near resident",
      "day": 1.03,
      "actor": "wolf-ash",
-     "target": "cty_oriel_blossomby",
+     "target": "tn_fh_laurel_pinefell",
      "cell": "fs_orchard_coldwater_store",
      "quantity": 2
     },
@@ -3264,7 +3266,7 @@
      "kind": "near resident",
      "day": 1.2,
      "actor": "wolf-ash",
-     "target": "cty_oriel_blossomby",
+     "target": "tn_fh_laurel_pinefell",
      "cell": "fs_orchard_coldwater_store",
      "quantity": 2
     },
@@ -3274,7 +3276,7 @@
      "day": 1.21,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "cty_oriel_blossomby",
+     "item": "tn_fh_laurel_pinefell",
      "detail": "sq-apple-nose"
     },
     {
@@ -3283,7 +3285,7 @@
      "day": 1.3,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "cty_oriel_blossomby",
+     "item": "tn_fh_laurel_pinefell",
      "detail": "sq-apple-nose"
     },
     {
@@ -3310,7 +3312,7 @@
      "day": 2.6,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "cty_oriel_blossomby",
+     "item": "tn_fh_laurel_pinefell",
      "detail": "sq-apple-nose"
     },
     {
@@ -3396,7 +3398,7 @@
      "day": 1.0,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "cty_brock_marshholm",
+     "item": "tn_fh_marl_cragpeak",
      "detail": "sq-strayed-ewe"
     },
     {
@@ -3405,7 +3407,7 @@
      "day": 1.01,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "cty_brock_marshholm",
+     "item": "tn_fh_marl_cragpeak",
      "detail": "sq-strayed-ewe"
     },
     {
@@ -3510,7 +3512,7 @@
      "day": 1.1,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "cty_brock_marshholm",
+     "item": "tn_fh_marl_cragpeak",
      "detail": "sq-strayed-ewe"
     },
     {
@@ -3527,7 +3529,7 @@
      "day": 1.3,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "cty_brock_marshholm",
+     "item": "tn_fh_marl_cragpeak",
      "detail": "sq-strayed-ewe"
     },
     {
@@ -3536,7 +3538,7 @@
      "day": 1.31,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "cty_brock_marshholm",
+     "item": "tn_fh_marl_cragpeak",
      "detail": "sq-strayed-ewe"
     },
     {
@@ -4431,9 +4433,10 @@
      "kind": "gift",
      "day": 1.03,
      "actor": "wolf-ash",
-     "target": "tn_cw_grist_reedmere",
+     "target": "tn_sm_fennel_cornley",
      "item": "bread",
-     "quantity": 3
+     "quantity": 3,
+     "cell": "cn_coldwater_store"
     },
     {
      "id": "e5",
@@ -4450,7 +4453,7 @@
      "day": 1.1,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "cty_brock_marshholm",
+     "item": "tn_fh_marl_cragpeak",
      "detail": "sq-strayed-ewe"
     },
     {
@@ -4467,7 +4470,7 @@
      "day": 1.12,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "cty_brock_marshholm",
+     "item": "tn_fh_marl_cragpeak",
      "detail": "sq-strayed-ewe"
     },
     {
@@ -4545,7 +4548,7 @@
      "day": 8.2,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "cty_brock_marshholm",
+     "item": "tn_fh_marl_cragpeak",
      "detail": "sq-strayed-ewe"
     }
    ],
@@ -4656,7 +4659,7 @@
      "phase": "open",
      "kind": "journal.note",
      "player": "wolf-birch",
-     "text": "The shepherd's ewes are all in the fold this week, and there is no wool on the thorns to follow. Ask again in a few days."
+     "text": "The Larkdowns ewes are all in the fold this week, and there is no wool on the thorns to follow. Ask again in a few days."
     },
     {
      "phase": "open",

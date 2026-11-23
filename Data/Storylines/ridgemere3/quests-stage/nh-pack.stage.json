@@ -3331,7 +3331,7 @@
          "effect": {
           "kind": "deed.award",
           "player": "$actor",
-          "detail": "carried a Moot summons out to Hillside"
+          "detail": "sent a Moot summons up to Hillside"
          }
         },
         {
@@ -5291,8 +5291,8 @@
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "cty_ada_coalstack",
-     "text": "Bounders in the hills, and green stakes where the old line ran. Walk the bounds, my apple, before somebody moves them."
+     "npc": "cty_mogens_mudstack",
+     "text": "Bounders in the hills, and green stakes where the old line ran. Walk the bounds before somebody moves them."
     }
    ],
    "exits": [],
@@ -5385,7 +5385,7 @@
            "effect": {
             "kind": "journal.note",
             "player": "$actor",
-            "text": "You were handed the orchard's bread once already today. Carry those, or bring your own."
+            "text": "You were handed the coppice's bread once already today. Carry those, or bring your own."
            }
           }
          ]
@@ -5796,7 +5796,7 @@
          "test": "field",
          "field": "target",
          "op": "=",
-         "value": "cty_juniper_larkham"
+         "value": "cty_vesper_greenholt"
         }
        }
       ]
@@ -5976,7 +5976,7 @@
           "player": "$actor",
           "coins": 2,
           "purse": "town:ridgemere",
-          "reason": "the Rainward orchard thanks you",
+          "reason": "the Rainwood coppice thanks you",
           "ifRefused": "skip"
          }
         },
@@ -6060,7 +6060,7 @@
          "effect": {
           "kind": "journal.note",
           "player": "$actor",
-          "text": "The orchard keeper gives you a waterskin of her own for your walking."
+          "text": "The woodcutter gives you a waterskin of her own for your walking."
          }
         }
        ]
@@ -7584,7 +7584,7 @@
      "id": "feed_offer",
      "on": "near resident",
      "match": {
-      "target": "cty_brand_sunham"
+      "target": "tn_fh_clover_snowhollow"
      },
      "if": {
       "test": "all",
@@ -7636,7 +7636,7 @@
        }
       ]
      },
-     "note": "P10: only if the ford burned (nh_b_ford), near the Longmead farmhand, once a game day; no giver, no board.",
+     "note": "P10: only if the ford burned (nh_b_ford), near the Print House vat hand who hands out Longmead's bread, once a game day; no giver, no board.",
      "actions": [
       {
        "do": "if",
@@ -7671,9 +7671,9 @@
      "on": "near resident",
      "audience": "participant",
      "match": {
-      "target": "cty_brand_sunham"
+      "target": "tn_fh_clover_snowhollow"
      },
-     "note": "P10: the farmhand's own words in his window, for the wolf the errand is offered to.",
+     "note": "P10: the vat hand's own words in her window, for the wolf the errand is offered to.",
      "actions": [
       {
        "do": "if",
@@ -7701,10 +7701,10 @@
          "do": "effect",
          "effect": {
           "kind": "npc.offer",
-          "npc": "cty_brand_sunham",
+          "npc": "tn_fh_clover_snowhollow",
           "id": "feed-ask",
           "words": "What happened at the ford?",
-          "reply": "The ford burned, and the houses by it with it. Longmead's grain is what's left, eh? There's bread baked from it, and meal besides. Carry it to whoever lost a roof. I'll not short-weigh a wolf who's lost everything.",
+          "reply": "The ford burned, and the houses by it with it. Longmead's grain is what's left, and they've baked it and sent it here to the press yard to hand out. Carry it to whoever lost a roof. I'll not short-weigh a wolf who's lost everything.",
           "player": "$actor",
           "once": true
          }
@@ -7855,7 +7855,7 @@
         "npc": "tn_sm_lichen_harvestton",
         "id": "haul-ask",
         "words": "Who's the bread for?",
-        "reply": "The haulers at the Upper Mere boat shed, eh? They're out on the ice all day with ropes, and a cold wolf eats twice. Three loaves to the young boatman there. Smoked fish too, if you can find any.",
+        "reply": "The haulers at the Upper Mere boat shed, eh? They're out on the ice all day with ropes, and a cold wolf eats twice. Three loaves to the pot hand at the Glasswater Inn; she sends their basket up. Smoked fish too, if you can find any.",
         "player": "$actor",
         "once": true
        }
@@ -8046,7 +8046,7 @@
          "do": "effect",
          "effect": {
           "kind": "npc.offer",
-          "npc": "cty_brand_sunham",
+          "npc": "tn_fh_clover_snowhollow",
           "id": "feed-thanks",
           "words": "The bread's given out.",
           "reply": "#thanks#. Full weight, every loaf. I'll be honest, since I can't help it: I'd sooner the ford had held. But it didn't, and you came. That's the trade.",
@@ -8765,10 +8765,10 @@
            "do": "effect",
            "effect": {
             "kind": "npc.offer",
-            "npc": "cty_garth_barleyton",
+            "npc": "tn_lf_wald_larkwell",
             "id": "iw_bell",
             "words": "It rang. There's a bell down there.",
-            "reply": "Deep and dark. I knew it. I'll take my rope down to the Boat Shed, then. If they're hauling, a shepherd can pull as well as anyone, eh?",
+            "reply": "Deep and dark. I knew it. I'll tell the shepherd, and take my own rope down to the Boat Shed. If they're hauling, a still hand can pull as well as anyone, eh?",
             "player": "$each",
             "once": true
            }
@@ -8777,10 +8777,10 @@
            "do": "effect",
            "effect": {
             "kind": "npc.offer",
-            "npc": "cty_garth_barleyton",
+            "npc": "tn_lf_wald_larkwell",
             "id": "iw_ice",
             "words": "It's only the ice settling. Sleep.",
-            "reply": "The ice. Aye. Well. I'll sleep, and so will they. I'll not ask if you're being kind. Calm water.",
+            "reply": "The ice. Aye. Well. I'll tell him so, and he'll sleep, and so will they. I'll not ask if you're being kind. Calm water.",
             "player": "$each",
             "once": true
            }
@@ -9038,7 +9038,7 @@
          "effect": {
           "kind": "journal.note",
           "player": "$actor",
-          "text": "The shepherd took his rope down to the Boat Shed."
+          "text": "The Still's hand took his rope down to the Boat Shed."
          }
         }
        ],
@@ -11242,7 +11242,7 @@
   {
    "id": "st-summons",
    "title": "A Summons to Hillside",
-   "summary": "The Moot is called, and every farmstead on the old roll gets its summons in writing. The City Office wants Hillside's carried out past Rainmere to the cattle herder.",
+   "summary": "The Moot is called, and every farmstead on the old roll gets its summons in writing. A carter wants Hillside's left at the Round and Rind, where Hillside's dairy cart calls every morning.",
    "scope": "player",
    "lifetime": "phase",
    "phases": [
@@ -11252,23 +11252,23 @@
    "join": {
     "cap": 4
    },
-   "giver": "rm_olaf_pitchmore",
+   "giver": "rmx_delphine_brackwick",
    "board": "ridgemere",
    "offer": {
-    "ask": "Is the City Office sending out summonses?",
-    "say": "#greet#. The Moot's called, and every farmstead on the old roll gets its summons in writing. That's the law, and the law has two paws, both mine. This one's for Hillside, up past Rainmere, to the wolf who herds the cattle. She'll be late to the Moot. They always are.",
-    "accept": "To Hillside, then.",
+    "ask": "Are the carters taking out summonses?",
+    "say": "#greet#. The Moot's called, and every farmstead on the old roll gets its summons in writing. The City Office gives the country ones to us carters, and I'm on the Fell road all week. This one's for Hillside. Their cart calls at the Round and Rind each morning: give it to the cheese-seller there.",
+    "accept": "To the Round and Rind, then.",
     "decline": "Not today.",
-    "handIn": "Hillside has its summons.",
-    "thanks": "#thanks#. One summons served. The law's satisfied, and so am I, nearly. Forty more on my desk. If your paws are good tomorrow, the office stairs are the long ones. I take them two at a time."
+    "handIn": "Hillside's summons is on its way.",
+    "thanks": "#thanks#. One summons served. The law's satisfied, and so am I, nearly. Forty more in the Yard's box, and every one of them late."
    },
    "objectives": [
     {
      "id": "summons",
-     "label": "Give the summons to the Hillside cattle herder.",
+     "label": "Give the summons to the cheese-seller at the Round and Rind, for Hillside's cart.",
      "on": "gift",
      "match": {
-      "target": "cty_isolde_gullwick",
+      "target": "rm_edda_ropeton",
       "item": "letter"
      }
     }
@@ -11438,7 +11438,7 @@
   {
    "id": "st-bounds-water",
    "title": "Bread for the Bounds",
-   "summary": "Wolves are walking the old bounds of the cut through the Rainward Hills, long days out on the hills. The Rainward orchard keeper sends bread up for them.",
+   "summary": "Wolves are walking the old bounds of the cut through the Rainward Hills, long days out on the hills. A woodcutter at the Rainwood coppice sends bread up for them.",
    "scope": "player",
    "lifetime": "phase",
    "phases": [
@@ -11448,7 +11448,7 @@
    "join": {
     "cap": 8
    },
-   "giver": "cty_juniper_larkham",
+   "giver": "cty_vesper_greenholt",
    "board": "ridgemere",
    "offer": {
     "ask": "Who's all that bread for?",
@@ -11456,7 +11456,7 @@
     "accept": "Three loaves for the bounds.",
     "decline": "Not today.",
     "handIn": "The bounds-walkers are fed.",
-    "thanks": "#thanks#. I swore at a wedding once to feed whoever came to my door. The bounds are a long way from my door, but an oath runs deep, stone."
+    "thanks": "#thanks#. The coppice feeds whoever works the hills, my mother used to say. The bounds are a long way from the coppice, but they're the same hills."
    },
    "objectives": [
     {
@@ -11675,7 +11675,7 @@
   {
    "id": "st-haulers-food",
    "title": "Bread for the Haulers",
-   "summary": "The haulers at the Upper Mere are out on the ice with ropes all day, and a cold wolf eats twice. The Coldwater Bakehouse sends three loaves up to the boat shed.",
+   "summary": "The haulers at the Upper Mere are out on the ice with ropes all day, and a cold wolf eats twice. The Coldwater Bakehouse sends three loaves, and the Glasswater Inn sends the haulers' basket up to the boat shed.",
    "scope": "player",
    "lifetime": "phase",
    "phases": [
@@ -11688,10 +11688,10 @@
    "objectives": [
     {
      "id": "bread",
-     "label": "Give the three loaves to the boatman at the Upper Mere boat shed.",
+     "label": "Give the three loaves to the Glasswater Inn's pot hand, for the haulers' basket.",
      "on": "gift",
      "match": {
-      "target": "cty_thorn_mistmere",
+      "target": "tn_fh_laurel_pinefell",
       "item": "bread"
      },
      "goal": 3,
@@ -11699,10 +11699,10 @@
     },
     {
      "id": "fish",
-     "label": "Smoked fish for the haulers too, if you can find any.",
+     "label": "Smoked fish for the basket too, if you can find any.",
      "on": "gift",
      "match": {
-      "target": "cty_thorn_mistmere",
+      "target": "tn_fh_laurel_pinefell",
       "item": "smoked_fish"
      },
      "goal": 2,
@@ -12041,7 +12041,7 @@
   {
    "id": "st-ice-watch",
    "title": "A Night on the Ice",
-   "summary": "Since the mere froze, the Larkdowns ewes stand up at night and stare at the ice, and their shepherd swears it rings under them. He can't leave the flock. Sit a night on the Upper Mere shore and listen.",
+   "summary": "Since the mere froze, the Larkdowns ewes stand up at night and stare at the ice, and their shepherd swears it rings under them. He can't leave the flock, and a hand at the Coldwater Still asks for him. Sit a night on the Upper Mere shore and listen.",
    "scope": "player",
    "lifetime": "phase",
    "phases": [
@@ -12051,14 +12051,14 @@
    "join": {
     "cap": 6
    },
-   "giver": "cty_garth_barleyton",
+   "giver": "tn_lf_wald_larkwell",
    "offer": {
-    "ask": "Ewes restless?",
-    "say": "#greet#. Since the mere froze. They stand up at night and stare at the ice, eh, and I'd swear it rings under them, low, like a bell. I can't leave the flock. Sit a night on the shore by the Boat Shed and listen for me? Then tell me what it was. Truly, or kindly. I'll know which.",
+    "ask": "Ewes restless up the downs?",
+    "say": "#greet#. Since the mere froze, the Larkdowns ewes stand up at night and stare at the ice, eh, and the shepherd swears it rings under them, low, like a bell. He can't leave the flock. Sit a night on the shore by the Boat Shed and listen for him? Then tell me what it was. Truly, or kindly.",
     "accept": "I'll sit a night by the Boat Shed.",
     "decline": "Too cold for me.",
     "handIn": "I sat the night.",
-    "thanks": "#thanks#. Waterlogged, you look. Here's a seat by the fold. They've settled since you came, the daft things."
+    "thanks": "#thanks#. Waterlogged, you look. Here's a cup by the stove. I'll send word up to the fold; they'll settle now, the daft things."
    },
    "objectives": [
     {
@@ -12087,7 +12087,7 @@
     },
     {
      "id": "choose",
-     "label": "Tell the shepherd what you heard.",
+     "label": "Tell the Still's hand what you heard, for the shepherd.",
      "on": "story signal",
      "signal": "iw_chose",
      "after": [
@@ -12413,15 +12413,15 @@
     "s56"
    ],
    "repeat": "weekly",
-   "giver": "cty_ada_coalstack",
+   "giver": "cty_mogens_mudstack",
    "board": "oakhaven",
    "offer": {
     "ask": "You walk these hills a lot?",
-    "say": "#greet#, #address#. The old bounds of these hills were walked in a day, once, every one of them, so nobody could say the line had moved. I petitioned the Council about these hills and lost. Walk all twelve in a day and they'll know it's been done again. Begin wherever you like. Just don't stop.",
+    "say": "#greet#, #address#. The old bounds of these hills were walked in a day, once, every one of them, so nobody could say the line had moved. The bounders say it has. Walk all twelve in a day and they'll know it's been done again. Begin wherever you like. Just don't stop.",
     "accept": "Twelve bounds, one day.",
     "decline": "My paws say no.",
     "handIn": "Twelve bounds walked.",
-    "thanks": "#thanks#. Twelve in a day. Sheaf and sickle, the Council can keep its papers. The hills have your paw-prints now. Here, the honey's on me."
+    "thanks": "#thanks#. Twelve in a day. The Council can keep its papers. The hills have your paw-prints now. Here, honey from the Heatherside hives; the hive hands owe me for their firewood."
    },
    "objectives": [
     {
@@ -12710,7 +12710,7 @@
      "day": 0.18,
      "actor": "player-birch",
      "target": "run",
-     "item": "rm_olaf_pitchmore",
+     "item": "rmx_delphine_brackwick",
      "detail": "st-summons"
     },
     {
@@ -12718,10 +12718,10 @@
      "kind": "gift",
      "day": 0.19,
      "actor": "player-birch",
-     "target": "cty_isolde_gullwick",
+     "target": "rm_edda_ropeton",
      "item": "letter",
      "quantity": 1,
-     "cell": "fs_dairy_rainward_home"
+     "cell": "r2_the_round_and_rind"
     },
     {
      "id": "e10",
@@ -12729,7 +12729,7 @@
      "day": 0.2,
      "actor": "player-birch",
      "target": "run",
-     "item": "rm_olaf_pitchmore",
+     "item": "rmx_delphine_brackwick",
      "detail": "st-summons"
     },
     {
@@ -13593,7 +13593,7 @@
      "day": 0.12,
      "actor": "player-ash",
      "target": "run",
-     "item": "cty_juniper_larkham",
+     "item": "cty_vesper_greenholt",
      "detail": "st-bounds-water"
     },
     {
@@ -13632,7 +13632,7 @@
      "day": 0.16,
      "actor": "player-ash",
      "target": "run",
-     "item": "cty_juniper_larkham",
+     "item": "cty_vesper_greenholt",
      "detail": "st-bounds-water"
     },
     {
@@ -13903,7 +13903,7 @@
      "day": 0.34,
      "actor": "player-elm",
      "target": "run",
-     "item": "cty_ada_coalstack",
+     "item": "cty_mogens_mudstack",
      "detail": "st-twelve-bounds"
     },
     {
@@ -14020,7 +14020,7 @@
      "day": 0.59,
      "actor": "player-elm",
      "target": "run",
-     "item": "cty_ada_coalstack",
+     "item": "cty_mogens_mudstack",
      "detail": "st-twelve-bounds"
     },
     {
@@ -14029,7 +14029,7 @@
      "day": 0.6,
      "actor": "player-fay",
      "target": "run",
-     "item": "cty_ada_coalstack",
+     "item": "cty_mogens_mudstack",
      "detail": "st-twelve-bounds"
     },
     {
@@ -14201,7 +14201,7 @@
      "kind": "near resident",
      "day": 0.19,
      "actor": "player-birch",
-     "target": "cty_brand_sunham",
+     "target": "tn_fh_clover_snowhollow",
      "cell": "w_ridgemere_6_9",
      "quantity": 2
     },
@@ -14210,7 +14210,7 @@
      "kind": "near resident",
      "day": 0.2,
      "actor": "player-ash",
-     "target": "cty_brand_sunham",
+     "target": "tn_fh_clover_snowhollow",
      "cell": "w_ridgemere_6_9",
      "quantity": 2
     },
@@ -14246,17 +14246,17 @@
      "kind": "gift",
      "day": 0.24,
      "actor": "player-cedar",
-     "target": "cty_thorn_mistmere",
+     "target": "tn_fh_laurel_pinefell",
      "item": "smoked_fish",
      "quantity": 2,
-     "cell": "fs_fishing_uppermere_shed"
+     "cell": "cn_coldwater_inn"
     },
     {
      "id": "e15",
      "kind": "gift again",
      "day": 0.25,
      "actor": "player-cedar",
-     "target": "cty_thorn_mistmere",
+     "target": "tn_fh_laurel_pinefell",
      "item": "bread",
      "quantity": 3,
      "cell": "fs_fishing_uppermere_shed"
@@ -14379,7 +14379,7 @@
      "day": 0.36,
      "actor": "player-fay",
      "target": "run",
-     "item": "cty_garth_barleyton",
+     "item": "tn_lf_wald_larkwell",
      "detail": "st-ice-watch"
     },
     {
@@ -14467,7 +14467,7 @@
      "day": 0.59,
      "actor": "player-fay",
      "target": "run",
-     "item": "cty_garth_barleyton",
+     "item": "tn_lf_wald_larkwell",
      "detail": "iw_bell"
     },
     {
@@ -14476,7 +14476,7 @@
      "day": 0.6,
      "actor": "player-fay",
      "target": "run",
-     "item": "cty_garth_barleyton",
+     "item": "tn_lf_wald_larkwell",
      "detail": "st-ice-watch"
     }
    ],

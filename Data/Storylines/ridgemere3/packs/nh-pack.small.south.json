@@ -1420,7 +1420,7 @@
    "match": {
     "detail": "sq-fenside-pans"
    },
-   "note": "While the Book of Names is open (Ch 4-6), the salt worker has the drowned village's names for the wolf.",
+   "note": "While the Book of Names is open (Ch 4-6), the peat cutter has the drowned village's names for the wolf.",
    "actions": [
     {
      "do": "if",
@@ -1450,10 +1450,10 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "cty_fallow_reedwell",
+        "npc": "tn_oh_briar_greenshaw",
         "id": "sq-fallow-names",
         "words": "Whose names did the water take?",
-        "reply": "My grandmother was Mirebridge-born. Every Restday she said them over the pans: the ferry wolf, the trapper by the causeway, the pup who rang the bell. Carry them to whoever keeps the Book of Names. Somebody ought to.",
+        "reply": "The salt workers at Fenside say them over the pans every Restday: the ferry wolf, the trapper by the causeway, the pup who rang the bell. Carry them to whoever keeps the Book of Names. Somebody ought to.",
         "player": "$actor",
         "once": true
        }
@@ -1854,7 +1854,7 @@
      "on": "gift",
      "audience": "participant",
      "match": {
-      "target": "cty_willa_wheatcombe"
+      "target": "cty_briar_sedgebridge"
      },
      "if": {
       "test": "all",
@@ -2355,20 +2355,20 @@
   {
    "id": "sq-plumtree-badger",
    "title": "The Badger Under the Apple Store",
-   "summary": "A badger has dug in under the Plumtree apple store. Bring it down for the orchard keeper.",
-   "giver": "cty_fallow_plumfield",
+   "summary": "A badger has dug in under the Plumtree apple store. The orchard keeper can't leave her store, and a Looms hand asks for her: bring it down.",
+   "giver": "tn_mb_vale_miremore",
    "board": "larkfield",
    "repeat": "weekly",
    "join": {
     "cap": 3
    },
    "offer": {
-    "ask": "Something's been at your apples.",
-    "say": "#greet#. A badger's dug in under my apple store and leaves me short-weighed every night. It'll run, mind, but corner it and it bites. Follow your nose from the hedges. Bring it down and I'll pay full weight. Scales and silver, I'd go myself, but not into that wood.",
+    "ask": "Who wants a badger seen to?",
+    "say": "#greet#. A badger's dug in under the Plumtree apple store, and the orchard keeper's short-weighed every night. She can't leave her store, so she asked us at the Looms. It'll run, mind, but corner it and it bites. Follow your nose from the hedges. Bring it down and she'll pay full weight.",
     "accept": "One badger, gone.",
     "decline": "Not this week.",
-    "handIn": "Your badger's dealt with.",
-    "thanks": "#thanks#. Full weight, as promised, and dried apples on top. You'll not get a bargain like that in the city, eh? My grandmother would've seen it off with a broom. Yours, I couldn't say."
+    "handIn": "Plumtree's badger is dealt with.",
+    "thanks": "#thanks#. Full weight, as she promised, and dried apples on top, sent down with the cart. You'll not get a bargain like that in the city, eh? Scales and silver, I'd not have gone into that wood."
    },
    "objectives": [
     {
@@ -2399,28 +2399,28 @@
   {
    "id": "sq-swill-for-southwood",
    "title": "Swill for Southwood",
-   "summary": "Carry meal and oats from Larkfield Stores out to the Southwood pig yard.",
-   "giver": "cty_njal_rustwick",
+   "summary": "Carry meal and oats from Larkfield Stores to the bakehouse, for the Southwood swill cart.",
+   "giver": "tn_lf_rowan_chalkley",
    "board": "larkfield",
    "repeat": "daily",
    "join": {
     "cap": 4
    },
    "offer": {
-    "ask": "Your pigs sound hungry.",
-    "say": "#greet#. Southwood's pigs eat more than the whole of Larkfield, and the granary's short-weighing us this month. Two of meal and two of oats from the stores, carried out to the yard, eh? I keep a tally. You'll be on the good side of it.",
+    "ask": "Is that the swill cart?",
+    "say": "#greet#. Southwood's pigs eat more than the whole of Larkfield, and the granary's short this month. The swill cart goes out from here at dusk: two of meal and two of oats from the stores, brought to me, and they go out to the yard with it.",
     "accept": "Meal and oats, coming.",
     "decline": "Not today.",
-    "handIn": "Swill for the yard.",
-    "thanks": "#thanks#. That's one in the tally, #address#, and I don't forget a mark. I owe a wolf in Ridgemere more than I'll say, so it's good to have something owed the other way. Good trading."
+    "handIn": "Meal and oats for the swill cart.",
+    "thanks": "#thanks#. That's the swill cart full. The swineherd keeps a tally of who feeds his pigs, #address#, and you're on the good side of it now."
    },
    "objectives": [
     {
      "id": "meal",
-     "label": "Bring the swineherd two of meal from Larkfield Stores.",
+     "label": "Bring the bakehouse hand two of meal from Larkfield Stores, for the swill cart.",
      "on": "gift",
      "match": {
-      "target": "cty_njal_rustwick",
+      "target": "tn_lf_rowan_chalkley",
       "item": "meal"
      },
      "goal": 2,
@@ -2428,10 +2428,10 @@
     },
     {
      "id": "oats",
-     "label": "Bring the swineherd two of oats.",
+     "label": "Bring her two of oats.",
      "on": "gift",
      "match": {
-      "target": "cty_njal_rustwick",
+      "target": "tn_lf_rowan_chalkley",
       "item": "oats"
      },
      "goal": 2,
@@ -2496,20 +2496,20 @@
   {
    "id": "sq-mill-race",
    "title": "Reeds in the Mill Race",
-   "summary": "The Longmead mill race is choking on reeds. Pull four bundles from the bank and bring them to the miller.",
-   "giver": "cty_gorse_hedgewell",
+   "summary": "The Longmead mill race is choking on reeds, and the baker's flour comes short. Pull four bundles from the bank by the mill and bring them to the Larkfield Bakehouse.",
+   "giver": "tn_sm_eskar_cornley",
    "board": "larkfield",
    "repeat": "daily",
    "join": {
     "cap": 4
    },
    "offer": {
-    "ask": "Your wheel sounds slow.",
-    "say": "#greet#. The mill race is choking on reeds again and the wheel's turning light. Pull four bundles from the bank by the mill and bring them here, eh? I'd do it myself, but I start humming and forget why I'm standing in the water.",
+    "ask": "Is your flour coming short?",
+    "say": "#greet#. The Longmead mill race is choking on reeds again, the wheel's turning light, and my flour comes short-weighed. Pull four bundles from the bank by the mill and bring them here, eh? The miller can't leave his stones, and I can't leave my oven.",
     "accept": "Four bundles of reeds.",
     "decline": "Not today.",
-    "handIn": "Your race is clear.",
-    "thanks": "#thanks#. Hear that? Full weight on the wheel again. Take some flour, ground fine and top-weight. I'll hum you a march for the road, and you'll not get it out of your head till Restday."
+    "handIn": "The mill race is clear.",
+    "thanks": "#thanks#. Full weight on the wheel again, the miller says. Take some of his flour, ground fine and top-weight. Scales and silver, my loaves will rise like they mean it."
    },
    "objectives": [
     {
@@ -2677,7 +2677,7 @@
    "id": "sq-festival-garlands",
    "title": "Garlands for the Square",
    "summary": "Southmeadow dresses its square for the festival, and every wolf's green goes on one rope.",
-   "giver": "cty_willa_wheatcombe",
+   "giver": "cty_briar_sedgebridge",
    "board": "southmeadow",
    "repeat": "weekly",
    "lifetime": "phase",
@@ -2686,19 +2686,19 @@
    ],
    "offer": {
     "ask": "Is the square being dressed?",
-    "say": "#greet#. The festival's on us and the square's as bare as a stubble field. Bring me green things for the garlands: herbs, and any flowers the season's left. Every wolf's bunch goes on one rope. When it reaches round the square, Southmeadow's ready.",
+    "say": "#greet#. The festival's on us and Southmeadow's square is as bare as a stubble field. Bring me green things for the garlands: herbs, and any flowers the season's left. I take them in when I come off the pits. Every wolf's bunch goes on one rope.",
     "accept": "Green for the rope.",
     "decline": "Not this festival.",
     "handIn": "Green things for your garland.",
-    "thanks": "#thanks#. Ripe, that, and on the rope already. My mother strung this rope, and hers before her, and I feel the both of them watching. I'd not have taken green from a stranger's paw once. I'll take yours."
+    "thanks": "#thanks#. On the rope it goes, tonight. My mother strung that rope, and hers before her. I'd not have taken green from a stranger's paw once. I'll take yours."
    },
    "objectives": [
     {
      "id": "green",
-     "label": "Bring the Larkholm farmhand two bunches of herbs for the garland rope.",
+     "label": "Bring the clay digger two bunches of herbs for the garland rope.",
      "on": "gift",
      "match": {
-      "target": "cty_willa_wheatcombe",
+      "target": "cty_briar_sedgebridge",
       "item": "herbs"
      },
      "goal": 2,
@@ -2797,8 +2797,8 @@
   {
    "id": "sq-fenside-pans",
    "title": "Fire Under the Pans",
-   "summary": "The Fenside salt pans boil on firewood, and the fen has none worth burning.",
-   "giver": "cty_fallow_reedwell",
+   "summary": "The Fenside salt pans boil on firewood, and the fen has none worth burning. The peat cutter who supplies them takes wood over with her peat.",
+   "giver": "tn_oh_briar_greenshaw",
    "board": "fenshore",
    "repeat": "daily",
    "join": {
@@ -2806,19 +2806,19 @@
    },
    "offer": {
     "ask": "Are the pans boiling?",
-    "say": "#greet#. The pans boil on firewood, and the fen's got none worth burning. Four armfuls from the dry ground and the salt comes up white. Peat too, if you've the back for it. My grandmother carried peat on her head and called it a hat.",
+    "say": "#greet#. The Fenside pans boil on firewood, and the fen's got none worth burning. Four armfuls from the dry ground, brought to me at the cutting, and I'll take them over with my peat. Peat too, if you've the back for it. Cut your own, it's all round you.",
     "accept": "Four armfuls of wood.",
     "decline": "Not today.",
-    "handIn": "Wood for your pans.",
-    "thanks": "#thanks#. White as a wedding cloth, that'll come up. Take a measure of salt. If you see lights out on the fen, don't follow them. My grandmother said they were only the marsh. She said a lot of things."
+    "handIn": "Wood for the pans.",
+    "thanks": "#thanks#. The salt will come up white as a wedding cloth. Take a measure of it, from the pans. If you see lights out on the fen, don't follow them. They're only the marsh, the old ones say."
    },
    "objectives": [
     {
      "id": "wood",
-     "label": "Bring the salt worker four armfuls of firewood from the dry ground.",
+     "label": "Bring the peat cutter four armfuls of firewood from the dry ground, for the Fenside pans.",
      "on": "gift",
      "match": {
-      "target": "cty_fallow_reedwell",
+      "target": "tn_oh_briar_greenshaw",
       "item": "firewood"
      },
      "goal": 4,
@@ -2829,7 +2829,7 @@
      "label": "Peat, if you have the back for it.",
      "on": "gift",
      "match": {
-      "target": "cty_fallow_reedwell",
+      "target": "tn_oh_briar_greenshaw",
       "item": "peat"
      },
      "goal": 2,
@@ -2924,8 +2924,8 @@
   {
    "id": "sq-boardwalk-plank",
    "title": "A Plank Gone by the Heron",
-   "summary": "A plank has gone on the Fenshore boardwalk by the Heron. Bring planks and nails for the deckhand who mends it.",
-   "giver": "cty_yrsa_plankgate",
+   "summary": "A plank has gone on the Fenshore boardwalk by the Heron. Bring planks and nails for the Heron's pot hand, who mends it.",
+   "giver": "tn_oh_ludo_ashwood",
    "board": "fenshore",
    "repeat": "daily",
    "join": {
@@ -2933,7 +2933,7 @@
    },
    "offer": {
     "ask": "Is that a gap in the boardwalk?",
-    "say": "#greet#. There's a plank gone on the boardwalk by the Heron, and the next wolf through will be wet to the knee, no? Two planks and a paw of nails, and I'll do the hammering. I don't hurry, mind, but what I mend stays mended.",
+    "say": "#greet#. There's a plank gone on the boardwalk by the Heron, and the next wolf through will be wet to the knee, no? Two planks and a paw of nails, and I'll do the hammering when the taproom's quiet. I don't hurry, mind, but what I mend stays mended.",
     "accept": "Planks and nails.",
     "decline": "Not today.",
     "handIn": "Planks and nails for the boardwalk.",
@@ -2942,10 +2942,10 @@
    "objectives": [
     {
      "id": "planks",
-     "label": "Bring the deckhand two planks.",
+     "label": "Bring the Heron's pot hand two planks.",
      "on": "gift",
      "match": {
-      "target": "cty_yrsa_plankgate",
+      "target": "tn_oh_ludo_ashwood",
       "item": "planks"
      },
      "goal": 2,
@@ -2953,10 +2953,10 @@
     },
     {
      "id": "nails",
-     "label": "Bring her a paw of nails: four will do.",
+     "label": "Bring him a paw of nails: four will do.",
      "on": "gift",
      "match": {
-      "target": "cty_yrsa_plankgate",
+      "target": "tn_oh_ludo_ashwood",
       "item": "nails"
      },
      "goal": 4,
@@ -3155,7 +3155,7 @@
      "day": 1.01,
      "actor": "ash",
      "target": "run",
-     "item": "cty_fallow_plumfield",
+     "item": "tn_mb_vale_miremore",
      "detail": "sq-plumtree-badger"
     },
     {
@@ -3194,7 +3194,7 @@
      "day": 1.05,
      "actor": "ash",
      "target": "run",
-     "item": "cty_fallow_plumfield",
+     "item": "tn_mb_vale_miremore",
      "detail": "sq-plumtree-badger"
     },
     {
@@ -3203,7 +3203,7 @@
      "day": 1.06,
      "actor": "ash",
      "target": "run",
-     "item": "cty_njal_rustwick",
+     "item": "tn_lf_rowan_chalkley",
      "detail": "sq-swill-for-southwood"
     },
     {
@@ -3211,16 +3211,17 @@
      "kind": "gift",
      "day": 1.07,
      "actor": "ash",
-     "target": "cty_njal_rustwick",
+     "target": "tn_lf_rowan_chalkley",
      "item": "oats",
-     "quantity": 2
+     "quantity": 2,
+     "cell": "cn_larkfield_bakehouse"
     },
     {
      "id": "e8",
      "kind": "gift again",
      "day": 1.08,
      "actor": "ash",
-     "target": "cty_njal_rustwick",
+     "target": "tn_lf_rowan_chalkley",
      "item": "meal",
      "quantity": 1
     },
@@ -3229,7 +3230,7 @@
      "kind": "gift again",
      "day": 1.09,
      "actor": "ash",
-     "target": "cty_gorse_hedgewell",
+     "target": "tn_sm_eskar_cornley",
      "item": "meal",
      "quantity": 1
     },
@@ -3238,7 +3239,7 @@
      "kind": "gift again",
      "day": 1.1,
      "actor": "ash",
-     "target": "cty_njal_rustwick",
+     "target": "tn_lf_rowan_chalkley",
      "item": "meal",
      "quantity": 1
     },
@@ -3248,7 +3249,7 @@
      "day": 1.11,
      "actor": "ash",
      "target": "run",
-     "item": "cty_njal_rustwick",
+     "item": "tn_lf_rowan_chalkley",
      "detail": "sq-swill-for-southwood"
     },
     {
@@ -3284,7 +3285,7 @@
      "day": 1.15,
      "actor": "ash",
      "target": "run",
-     "item": "cty_gorse_hedgewell",
+     "item": "tn_sm_eskar_cornley",
      "detail": "sq-mill-race"
     },
     {
@@ -3323,7 +3324,7 @@
      "day": 1.19,
      "actor": "ash",
      "target": "run",
-     "item": "cty_gorse_hedgewell",
+     "item": "tn_sm_eskar_cornley",
      "detail": "sq-mill-race"
     },
     {
@@ -3332,7 +3333,7 @@
      "day": 2.19,
      "actor": "ash",
      "target": "run",
-     "item": "cty_fallow_plumfield",
+     "item": "tn_mb_vale_miremore",
      "detail": "sq-plumtree-badger"
     },
     {
@@ -3341,7 +3342,7 @@
      "day": 2.2,
      "actor": "birch",
      "target": "run",
-     "item": "cty_njal_rustwick",
+     "item": "tn_lf_rowan_chalkley",
      "detail": "sq-swill-for-southwood"
     },
     {
@@ -3349,9 +3350,10 @@
      "kind": "gift",
      "day": 2.21,
      "actor": "birch",
-     "target": "cty_njal_rustwick",
+     "target": "tn_lf_rowan_chalkley",
      "item": "oats",
-     "quantity": 1
+     "quantity": 1,
+     "cell": "cn_larkfield_bakehouse"
     }
    ],
    "expect": [
@@ -3829,7 +3831,7 @@
      "day": 1.01,
      "actor": "ash",
      "target": "run",
-     "item": "cty_willa_wheatcombe",
+     "item": "cty_briar_sedgebridge",
      "detail": "sq-festival-garlands"
     },
     {
@@ -3847,7 +3849,7 @@
      "day": 2.02,
      "actor": "ash",
      "target": "run",
-     "item": "cty_willa_wheatcombe",
+     "item": "cty_briar_sedgebridge",
      "detail": "sq-festival-garlands"
     },
     {
@@ -3855,16 +3857,17 @@
      "kind": "gift",
      "day": 2.03,
      "actor": "ash",
-     "target": "cty_willa_wheatcombe",
+     "target": "cty_briar_sedgebridge",
      "item": "herbs",
-     "quantity": 2
+     "quantity": 2,
+     "cell": "w_ridgemere_6_13"
     },
     {
      "id": "e6",
      "kind": "gift again",
      "day": 2.04,
      "actor": "ash",
-     "target": "cty_willa_wheatcombe",
+     "target": "cty_briar_sedgebridge",
      "item": "lavender",
      "quantity": 1
     },
@@ -3883,7 +3886,7 @@
      "kind": "gift again",
      "day": 2.06,
      "actor": "ash",
-     "target": "cty_willa_wheatcombe",
+     "target": "cty_briar_sedgebridge",
      "item": "herbs",
      "quantity": 4
     },
@@ -3893,7 +3896,7 @@
      "day": 2.07,
      "actor": "ash",
      "target": "run",
-     "item": "cty_willa_wheatcombe",
+     "item": "cty_briar_sedgebridge",
      "detail": "sq-festival-garlands"
     },
     {
@@ -3902,7 +3905,7 @@
      "day": 2.08,
      "actor": "birch",
      "target": "run",
-     "item": "cty_willa_wheatcombe",
+     "item": "cty_briar_sedgebridge",
      "detail": "sq-festival-garlands"
     },
     {
@@ -3910,16 +3913,17 @@
      "kind": "gift",
      "day": 2.09,
      "actor": "birch",
-     "target": "cty_willa_wheatcombe",
+     "target": "cty_briar_sedgebridge",
      "item": "herbs",
-     "quantity": 1
+     "quantity": 1,
+     "cell": "w_ridgemere_6_13"
     },
     {
      "id": "e12",
      "kind": "gift again",
      "day": 2.1,
      "actor": "birch",
-     "target": "cty_willa_wheatcombe",
+     "target": "cty_briar_sedgebridge",
      "item": "bread",
      "quantity": 1
     },
@@ -4141,7 +4145,7 @@
      "day": 1.05,
      "actor": "ash",
      "target": "run",
-     "item": "cty_fallow_reedwell",
+     "item": "tn_oh_briar_greenshaw",
      "detail": "sq-fenside-pans"
     },
     {
@@ -4149,16 +4153,17 @@
      "kind": "gift",
      "day": 1.06,
      "actor": "ash",
-     "target": "cty_fallow_reedwell",
+     "target": "tn_oh_briar_greenshaw",
      "item": "firewood",
-     "quantity": 4
+     "quantity": 4,
+     "cell": "w_ridgemere_3_14"
     },
     {
      "id": "e7",
      "kind": "gift again",
      "day": 1.07,
      "actor": "ash",
-     "target": "cty_fallow_reedwell",
+     "target": "tn_oh_briar_greenshaw",
      "item": "peat",
      "quantity": 1
     },
@@ -4168,7 +4173,7 @@
      "day": 1.08,
      "actor": "ash",
      "target": "run",
-     "item": "cty_fallow_reedwell",
+     "item": "tn_oh_briar_greenshaw",
      "detail": "sq-fenside-pans"
     },
     {
@@ -4177,7 +4182,7 @@
      "day": 1.09,
      "actor": "ash",
      "target": "run",
-     "item": "cty_fallow_reedwell",
+     "item": "tn_oh_briar_greenshaw",
      "detail": "sq-fallow-names"
     },
     {
@@ -4243,7 +4248,7 @@
      "day": 1.16,
      "actor": "ash",
      "target": "run",
-     "item": "cty_yrsa_plankgate",
+     "item": "tn_oh_ludo_ashwood",
      "detail": "sq-boardwalk-plank"
     },
     {
@@ -4251,16 +4256,17 @@
      "kind": "gift",
      "day": 1.17,
      "actor": "ash",
-     "target": "cty_yrsa_plankgate",
+     "target": "tn_oh_ludo_ashwood",
      "item": "planks",
-     "quantity": 2
+     "quantity": 2,
+     "cell": "cn_fenshore_alehouse"
     },
     {
      "id": "e18",
      "kind": "gift again",
      "day": 1.18,
      "actor": "ash",
-     "target": "cty_yrsa_plankgate",
+     "target": "tn_oh_ludo_ashwood",
      "item": "nails",
      "quantity": 4
     },
@@ -4279,7 +4285,7 @@
      "day": 1.2,
      "actor": "ash",
      "target": "run",
-     "item": "cty_yrsa_plankgate",
+     "item": "tn_oh_ludo_ashwood",
      "detail": "sq-boardwalk-plank"
     },
     {

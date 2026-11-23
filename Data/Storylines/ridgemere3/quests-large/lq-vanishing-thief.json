@@ -140,19 +140,35 @@
   },
   {
    "id": "old_drain",
-   "cell": "r2_the_sunken_street",
-   "x1": 20,
-   "y1": 1,
-   "x2": 34,
-   "y2": 5
+   "cell": "w_ridgemere_1_1",
+   "x1": 13,
+   "y1": 41,
+   "x2": 20,
+   "y2": 42
+  },
+  {
+   "id": "vance_door",
+   "cell": "w_ridgemere_1_1",
+   "x1": 195,
+   "y1": 130,
+   "x2": 199,
+   "y2": 134
+  },
+  {
+   "id": "ss_stair",
+   "cell": "w_ridgemere_1_1",
+   "x1": 60,
+   "y1": 63,
+   "x2": 64,
+   "y2": 67
   }
  ],
  "quests": [
   {
    "id": "locked",
    "title": "Locked Rooms",
-   "summary": "Pledges vanish from a locked strongroom at Vance House. The lender wants a plain answer.",
-   "giver": "rm_petra_vance",
+   "summary": "Pledges vanish from the locked strongroom at Vance House. The Vance who runs the Rag Mill wants a plain answer for the House.",
+   "giver": "rm_eleanor_vance",
    "board": "ridgemere",
    "repeat": "once",
    "join": {
@@ -167,7 +183,7 @@
    ],
    "offer": {
     "ask": "Something missing from your strongroom?",
-    "say": "#greet#, #address#. Pledges gone from a locked room: a ring, a clip, a bracelet. No lock forced, no window open. The Heights say a Quickened wolf walks through walls. I'd rather a plain answer. See the room, ask my servant and the Thornburys' man, and watch my street one night.",
+    "say": "#greet#, #address#. Pledges gone from our strongroom on the Rise: a ring, a clip, a bracelet. No lock forced, no window open. The Heights say a Quickened wolf walks through walls. Petra wants a plain answer, and so do I. Look the house over, ask about, and watch our street one night.",
     "accept": "I'll watch your street.",
     "decline": "Not my business.",
     "handIn": "Nobody came by the street.",
@@ -176,27 +192,27 @@
    "objectives": [
     {
      "id": "room",
-     "label": "See the strongroom at Vance House.",
-     "on": "enter place",
+     "label": "Look Vance House over from its door: no lock forced, no window open.",
+     "on": "region entered",
      "match": {
-      "target": "rm_vance_house"
+      "target": "vance_door"
      }
     },
     {
      "id": "servant",
-     "label": "Question the Vances' servant.",
+     "label": "Ask the Harrowgates' man, out on the Rise all day, what he hears at night.",
      "on": "dialogue choice",
      "match": {
-      "item": "rm_roald_wickstack",
+      "item": "rm_emmerich_greyridge",
       "detail": "lq_th_roald"
      }
     },
     {
      "id": "thornbury",
-     "label": "Ask the Thornburys' man what went from their house.",
+     "label": "Ask the Eastgate stable keeper what went from the Thornburys' harness.",
      "on": "dialogue choice",
      "match": {
-      "item": "rm_silas_brinemore",
+      "item": "rm_ragnar_roperidge",
       "detail": "lq_th_silas"
      }
     },
@@ -234,19 +250,19 @@
     "after_blinker",
     "after_blinker_wardens"
    ],
-   "summary": "Follow the scent of old stone under the Heights, find the bricked arch, and find who knows the old street.",
+   "summary": "Follow the scent of old stone to the Sunken Street, find the bricked arch by its far door, and find who knows the old street.",
    "objectives": [
     {
      "id": "down",
-     "label": "Follow the scent of old stone down to the Sunken Street.",
-     "on": "enter place",
+     "label": "Follow the scent of old stone to the Sunken Street's Commons stair.",
+     "on": "region entered",
      "match": {
-      "target": "r2_the_sunken_street"
+      "target": "ss_stair"
      }
     },
     {
      "id": "arch",
-     "label": "Find the bricked arch and what's behind it.",
+     "label": "Find the bricked arch by the Sunken Street's far door, and what's behind it.",
      "on": "region entered",
      "match": {
       "target": "old_drain"
@@ -269,7 +285,7 @@
      "label": "Find the one who knows the old street.",
      "on": "dialogue choice",
      "match": {
-      "item": "rmx_hester_greyby",
+      "item": "rmx_una_brineridge",
       "detail": "lq_th_street"
      },
      "after": [
@@ -281,7 +297,7 @@
      "label": "Ask her lookout.",
      "on": "dialogue choice",
      "match": {
-      "item": "rmx_palle_brinewell",
+      "item": "rmx_finn_dripwick",
       "detail": "lq_th_palle"
      },
      "after": [
@@ -310,14 +326,14 @@
     "after_blinker_wardens"
    ],
    "repeat": "once",
-   "summary": "Give the pledges back to their owners, and put the lender's rates to her plainly.",
+   "summary": "Give the pledges back to their owners, and put Petra Vance's rates plainly to the Vance at the Rag Mill.",
    "objectives": [
     {
      "id": "face",
-     "label": "Tell the pup who knows the old street what she did.",
+     "label": "Tell the young wolf who knows the old street what she did.",
      "on": "dialogue choice",
      "match": {
-      "item": "rmx_hester_greyby",
+      "item": "rmx_una_brineridge",
       "detail": "lq_th_face"
      }
     },
@@ -359,10 +375,10 @@
     },
     {
      "id": "plain",
-     "label": "Put the lender's rates to her plainly.",
+     "label": "Put Petra's rates plainly to the Vance at the Rag Mill.",
      "on": "dialogue choice",
      "match": {
-      "item": "rm_petra_vance",
+      "item": "rm_eleanor_vance",
       "detail": "lq_th_forgive"
      },
      "after": [
@@ -405,20 +421,20 @@
     "after_blinker_wardens"
    ],
    "repeat": "once",
-   "summary": "Take a pledge back to the lender and name the thief.",
+   "summary": "Take a pledge back to the Vance at the Rag Mill and name the thief.",
    "objectives": [
     {
      "id": "face",
-     "label": "Tell the pup who knows the old street what she did.",
+     "label": "Tell the young wolf who knows the old street what she did.",
      "on": "dialogue choice",
      "match": {
-      "item": "rmx_hester_greyby",
+      "item": "rmx_una_brineridge",
       "detail": "lq_th_face"
      }
     },
     {
      "id": "pledge",
-     "label": "Give the lender one of her pledges back.",
+     "label": "Give the Vance at the Rag Mill one of the pledges back.",
      "on": "story signal",
      "signal": "pledge_returned",
      "after": [
@@ -427,10 +443,10 @@
     },
     {
      "id": "name",
-     "label": "Name the thief to the lender.",
+     "label": "Name the thief to the Vance at the Rag Mill.",
      "on": "dialogue choice",
      "match": {
-      "item": "rm_petra_vance",
+      "item": "rm_eleanor_vance",
       "detail": "lq_th_name"
      },
      "after": [
@@ -442,7 +458,7 @@
     {
      "kind": "deed.award",
      "player": "$actor",
-     "detail": "named the Heights thief to the lender"
+     "detail": "named the Heights thief to Vance House"
     },
     {
      "kind": "story.practice",
@@ -468,23 +484,23 @@
     "after_blinker_wardens"
    ],
    "repeat": "once",
-   "summary": "Tell the lender it was a Quickened wolf, and keep the pup's secret.",
+   "summary": "Tell the Vances it was a Quickened wolf, and keep the young thief's secret.",
    "objectives": [
     {
      "id": "face",
-     "label": "Tell the pup who knows the old street what she did.",
+     "label": "Tell the young wolf who knows the old street what she did.",
      "on": "dialogue choice",
      "match": {
-      "item": "rmx_hester_greyby",
+      "item": "rmx_una_brineridge",
       "detail": "lq_th_face"
      }
     },
     {
      "id": "lie",
-     "label": "Tell the lender a Quickened wolf walked through her walls.",
+     "label": "Tell the Vance at the Rag Mill a Quickened wolf walked through the walls.",
      "on": "dialogue choice",
      "match": {
-      "item": "rm_petra_vance",
+      "item": "rm_eleanor_vance",
       "detail": "lq_th_blinker"
      },
      "after": [
@@ -590,7 +606,7 @@
    "on": "item picked up",
    "audience": "participant",
    "match": {
-    "cell": "r2_the_sunken_street"
+    "cell": "w_ridgemere_1_1"
    },
    "if": {
     "test": "any",
@@ -707,9 +723,9 @@
           "kind": "item.place",
           "item": "brass_clip",
           "quantity": 1,
-          "cell": "r2_the_sunken_street",
-          "x": 32,
-          "y": 4,
+          "cell": "w_ridgemere_1_1",
+          "x": 15,
+          "y": 41,
           "ifRefused": "skip"
          }
         }
@@ -724,9 +740,9 @@
           "kind": "item.place",
           "item": "silver_bracelet",
           "quantity": 1,
-          "cell": "r2_the_sunken_street",
-          "x": 33,
-          "y": 4,
+          "cell": "w_ridgemere_1_1",
+          "x": 16,
+          "y": 41,
           "ifRefused": "skip"
          }
         }
@@ -741,9 +757,9 @@
           "kind": "item.place",
           "item": "ear_ring",
           "quantity": 1,
-          "cell": "r2_the_sunken_street",
-          "x": 34,
-          "y": 3,
+          "cell": "w_ridgemere_1_1",
+          "x": 17,
+          "y": 42,
           "ifRefused": "skip"
          }
         }
@@ -759,7 +775,7 @@
    "audience": "participant",
    "once": "member",
    "match": {
-    "item": "rmx_hester_greyby",
+    "item": "rmx_una_brineridge",
     "detail": "lq_th_face"
    },
    "if": {
@@ -864,7 +880,7 @@
        "effect": {
         "kind": "journal.note",
         "player": "$actor",
-        "text": "The pup digs the rest of the pledges out from behind the bricked arch and puts them in your paws, to go home.",
+        "text": "She digs the rest of the pledges out from behind the bricked arch and puts them in your paws, to go home.",
         "ifRefused": "skip"
        }
       }
@@ -902,9 +918,9 @@
           "kind": "item.place",
           "item": "brass_clip",
           "quantity": 1,
-          "cell": "r2_the_sunken_street",
-          "x": 32,
-          "y": 4,
+          "cell": "w_ridgemere_1_1",
+          "x": 15,
+          "y": 41,
           "ifRefused": "skip"
          }
         },
@@ -913,7 +929,7 @@
          "effect": {
           "kind": "journal.note",
           "player": "$actor",
-          "text": "One pledge still lies in the cache behind the bricked arch, if you mean to take it to the lender.",
+          "text": "One pledge still lies in the cache behind the bricked arch, if you mean to take it to the Vances.",
           "ifRefused": "skip"
          }
         }
@@ -1456,7 +1472,7 @@
    "on": "gift",
    "audience": "participant",
    "match": {
-    "target": "rm_petra_vance"
+    "target": "rm_eleanor_vance"
    },
    "if": {
     "test": "any",
@@ -1696,7 +1712,7 @@
      "effect": {
       "kind": "journal.note",
       "player": "$actor",
-      "text": "The pup has been sent to the abbey school's board for her keep.",
+      "text": "The young thief is in debt to Vance House, and Greywool keeps her on.",
       "ifRefused": "skip"
      }
     }
@@ -1929,34 +1945,34 @@
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "rm_petra_vance",
-     "text": "Lock your doors, they say. Mine were locked. Bright One keep us from wolves who walk through walls."
+     "npc": "rm_eleanor_vance",
+     "text": "Lock your doors, they say. Ours were locked. Bright One keep us from wolves who walk through walls."
     },
     {
      "kind": "item.place",
      "item": "brass_clip",
      "quantity": 1,
-     "cell": "r2_the_sunken_street",
-     "x": 32,
-     "y": 4,
+     "cell": "w_ridgemere_1_1",
+     "x": 15,
+     "y": 41,
      "ifRefused": "skip"
     },
     {
      "kind": "item.place",
      "item": "silver_bracelet",
      "quantity": 1,
-     "cell": "r2_the_sunken_street",
-     "x": 33,
-     "y": 4,
+     "cell": "w_ridgemere_1_1",
+     "x": 16,
+     "y": 41,
      "ifRefused": "skip"
     },
     {
      "kind": "item.place",
      "item": "ear_ring",
      "quantity": 1,
-     "cell": "r2_the_sunken_street",
-     "x": 34,
-     "y": 3,
+     "cell": "w_ridgemere_1_1",
+     "x": 17,
+     "y": 42,
      "ifRefused": "skip"
     }
    ],
@@ -1973,27 +1989,27 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_roald_wickstack",
+        "npc": "rm_emmerich_greyridge",
         "id": "lq_th_roald",
-        "words": "Did you take the pledges?",
-        "reply": "I've never touched the strongroom key. But I've heard scratching under the cellar floor at night, like something in the drains, and the cellar smells of old stone and wet. Nobody believes a servant."
+        "words": "Have you heard anything on the Rise at night?",
+        "reply": "I'm out on the Rise from first light, and I go home late. There's scratching under the street at night, like something in the drains, and the Vance cellars smell of old stone and wet. Nobody believes a servant."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_silas_brinemore",
+        "npc": "rm_ragnar_roperidge",
         "id": "lq_th_silas",
-        "words": "Was your house robbed too?",
-        "reply": "Not robbed, no. The master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back, and it went from his harness room. Funny sort of thief, that takes back only what was pawned."
+        "words": "Was anything taken from the Thornburys?",
+        "reply": "Not from the house. The Thornburys stable here, and their master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back. It went off his harness, off my own peg. Funny sort of thief, that takes back only what was pawned."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_street",
         "words": "Somebody knows the old street under the Heights. Is it you?",
         "reply": "Might be. Folk who know it don't shout it in the lane. You found the cache, so you know I'm not much of a ghost. Ask me straight what I did, and I'll tell you straight."
@@ -2003,7 +2019,7 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_palle_brinewell",
+        "npc": "rmx_finn_dripwick",
         "id": "lq_th_palle",
         "words": "Do you keep watch for her?",
         "reply": "Somebody has to whistle. She's cleverer than the whole Heights lot. If you're going to name her, name me too. It's only fair."
@@ -2086,8 +2102,8 @@
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "rm_petra_vance",
-     "text": "Another pledge gone, and the whole Heights whispering about Gifts. I want a plain answer, and nobody will give me one."
+     "npc": "rm_eleanor_vance",
+     "text": "Another pledge gone, and the whole Heights whispering about Gifts. Petra wants a plain answer, and nobody will give her one."
     }
    ],
    "exits": [],
@@ -2103,27 +2119,27 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_roald_wickstack",
+        "npc": "rm_emmerich_greyridge",
         "id": "lq_th_roald",
-        "words": "Did you take the pledges?",
-        "reply": "I've never touched the strongroom key. But I've heard scratching under the cellar floor at night, like something in the drains, and the cellar smells of old stone and wet. Nobody believes a servant."
+        "words": "Have you heard anything on the Rise at night?",
+        "reply": "I'm out on the Rise from first light, and I go home late. There's scratching under the street at night, like something in the drains, and the Vance cellars smell of old stone and wet. Nobody believes a servant."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_silas_brinemore",
+        "npc": "rm_ragnar_roperidge",
         "id": "lq_th_silas",
-        "words": "Was your house robbed too?",
-        "reply": "Not robbed, no. The master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back, and it went from his harness room. Funny sort of thief, that takes back only what was pawned."
+        "words": "Was anything taken from the Thornburys?",
+        "reply": "Not from the house. The Thornburys stable here, and their master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back. It went off his harness, off my own peg. Funny sort of thief, that takes back only what was pawned."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_street",
         "words": "Somebody knows the old street under the Heights. Is it you?",
         "reply": "Might be. Folk who know it don't shout it in the lane. You found the cache, so you know I'm not much of a ghost. Ask me straight what I did, and I'll tell you straight."
@@ -2133,7 +2149,7 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_palle_brinewell",
+        "npc": "rmx_finn_dripwick",
         "id": "lq_th_palle",
         "words": "Do you keep watch for her?",
         "reply": "Somebody has to whistle. She's cleverer than the whole Heights lot. If you're going to name her, name me too. It's only fair."
@@ -2160,15 +2176,15 @@
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "rm_petra_vance",
-     "text": "So somebody's found the way in. Then tell me plainly who it is. I'll not have tales of magic in my house."
+     "npc": "rm_eleanor_vance",
+     "text": "So somebody's found the way in. Then tell me plainly who it is. Petra will not have tales of magic in the house."
     },
     {
      "kind": "board.post",
      "town": "ridgemere",
      "days": 7,
      "ifRefused": "skip",
-     "text": "VANCE HOUSE: plain word wanted of the wall-walking thief. Come to the house on the Rise. Petra Vance."
+     "text": "VANCE HOUSE: plain word wanted of the wall-walking thief. Ask at the Vances' Rag Mill. Petra Vance."
     }
    ],
    "exits": [],
@@ -2184,27 +2200,27 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_roald_wickstack",
+        "npc": "rm_emmerich_greyridge",
         "id": "lq_th_roald",
-        "words": "Did you take the pledges?",
-        "reply": "I've never touched the strongroom key. But I've heard scratching under the cellar floor at night, like something in the drains, and the cellar smells of old stone and wet. Nobody believes a servant."
+        "words": "Have you heard anything on the Rise at night?",
+        "reply": "I'm out on the Rise from first light, and I go home late. There's scratching under the street at night, like something in the drains, and the Vance cellars smell of old stone and wet. Nobody believes a servant."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_silas_brinemore",
+        "npc": "rm_ragnar_roperidge",
         "id": "lq_th_silas",
-        "words": "Was your house robbed too?",
-        "reply": "Not robbed, no. The master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back, and it went from his harness room. Funny sort of thief, that takes back only what was pawned."
+        "words": "Was anything taken from the Thornburys?",
+        "reply": "Not from the house. The Thornburys stable here, and their master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back. It went off his harness, off my own peg. Funny sort of thief, that takes back only what was pawned."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_palle_brinewell",
+        "npc": "rmx_finn_dripwick",
         "id": "lq_th_palle",
         "words": "Do you keep watch for her?",
         "reply": "Somebody has to whistle. She's cleverer than the whole Heights lot. If you're going to name her, name me too. It's only fair."
@@ -2214,7 +2230,7 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_street",
         "words": "Somebody knows the old street under the Heights. Is it you?",
         "reply": "Might be. Folk who know it don't shout it in the lane. You found the cache, so you know I'm not much of a ghost. Ask me straight what I did, and I'll tell you straight."
@@ -2224,7 +2240,7 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_face",
         "words": "You took the pledges from Vance House.",
         "reply": "Took them back. A feller's harness clip, a bracelet a lighterman left his brother, an old ear-ring. My mother's shawl. The Vances lend at a penny a week on the mark and keep the pledge if you're a day late. I'm not Quickened. I know the old street."
@@ -2234,17 +2250,17 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_way",
         "words": "Show me the way you came.",
-        "reply": "Down the Sunken Street, past the bricked arch, up the drain under the Vance cellar. Mind the low bit. And don't tell the school. They think I'm at lessons."
+        "reply": "Down the Sunken Street, past the bricked arch, up the drain under the Vance cellar. Mind the low bit. And don't tell Greywool. They think I'm at the loom."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_gift",
         "words": "If I carried a Gift, I'd know one. You haven't got one, have you?",
         "reply": "No. I've just got four paws and a good nose and an old street nobody remembers. You lot make everything into magic."
@@ -2254,30 +2270,30 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_petra_vance",
+        "npc": "rm_eleanor_vance",
         "id": "lq_th_forgive",
         "words": "Your rates are robbery. Let the Sump pledges go.",
-        "reply": "Robbery? A penny a week on a mark is... a great deal, put that way. Bright One forgive me, I keep a ledger like a fist. Let them go, then. And the girl stays out of my cellar."
+        "reply": "Robbery? A penny a week on a mark is... a great deal, put that way. Bright One forgive us, Petra keeps a ledger like a fist. I'll have her let them go. And the girl stays out of our cellar."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_petra_vance",
+        "npc": "rm_eleanor_vance",
         "id": "lq_th_blinker",
         "words": "It was a Quickened wolf. Nobody could have stopped it.",
-        "reply": "Then the Heights were right, and I was a fool to want a plain answer. I'll write to whoever answers for such wolves. Somebody must."
+        "reply": "Then the Heights were right, and we were fools to want a plain answer. Petra will write to whoever answers for such wolves. Somebody must."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_petra_vance",
+        "npc": "rm_eleanor_vance",
         "id": "lq_th_name",
-        "words": "It was a Sump pup, through an old drain. No Gift at all.",
-        "reply": "A child? Through my cellar? Bright One, and the whole Heights talking of Gifts. Her debt is called in, and the abbey's board can feed her. A plain answer. I asked for it."
+        "words": "It was a young Sump wolf, through an old drain. No Gift at all.",
+        "reply": "A Sump girl? Through our cellar? Bright One, and the whole Heights talking of Gifts. Petra will call her debt in, and Greywool can keep her or not. A plain answer. We asked for it."
        }
       },
       {
@@ -2448,12 +2464,12 @@
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "rm_petra_vance",
-     "text": "A penny a week on a mark. Put plainly, it was robbery. I keep a gentler ledger now, Bright One forgive me the old one."
+     "npc": "rm_eleanor_vance",
+     "text": "A penny a week on a mark. Put plainly, it was robbery. Petra keeps a gentler ledger now, Bright One forgive us the old one."
     },
     {
      "kind": "npc.line",
-     "npc": "rmx_hester_greyby",
+     "npc": "rmx_una_brineridge",
      "text": "Mam's shawl is back on my peg. Somebody put it to the lender plain, and she listened. Fancy that."
     },
     {
@@ -2477,27 +2493,27 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_roald_wickstack",
+        "npc": "rm_emmerich_greyridge",
         "id": "lq_th_roald",
-        "words": "Did you take the pledges?",
-        "reply": "I've never touched the strongroom key. But I've heard scratching under the cellar floor at night, like something in the drains, and the cellar smells of old stone and wet. Nobody believes a servant."
+        "words": "Have you heard anything on the Rise at night?",
+        "reply": "I'm out on the Rise from first light, and I go home late. There's scratching under the street at night, like something in the drains, and the Vance cellars smell of old stone and wet. Nobody believes a servant."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_silas_brinemore",
+        "npc": "rm_ragnar_roperidge",
         "id": "lq_th_silas",
-        "words": "Was your house robbed too?",
-        "reply": "Not robbed, no. The master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back, and it went from his harness room. Funny sort of thief, that takes back only what was pawned."
+        "words": "Was anything taken from the Thornburys?",
+        "reply": "Not from the house. The Thornburys stable here, and their master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back. It went off his harness, off my own peg. Funny sort of thief, that takes back only what was pawned."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_palle_brinewell",
+        "npc": "rmx_finn_dripwick",
         "id": "lq_th_palle",
         "words": "Do you keep watch for her?",
         "reply": "Somebody has to whistle. She's cleverer than the whole Heights lot. If you're going to name her, name me too. It's only fair."
@@ -2507,7 +2523,7 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_street",
         "words": "Somebody knows the old street under the Heights. Is it you?",
         "reply": "Might be. Folk who know it don't shout it in the lane. You found the cache, so you know I'm not much of a ghost. Ask me straight what I did, and I'll tell you straight."
@@ -2517,7 +2533,7 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_face",
         "words": "You took the pledges from Vance House.",
         "reply": "Took them back. A feller's harness clip, a bracelet a lighterman left his brother, an old ear-ring. My mother's shawl. The Vances lend at a penny a week on the mark and keep the pledge if you're a day late. I'm not Quickened. I know the old street."
@@ -2527,17 +2543,17 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_way",
         "words": "Show me the way you came.",
-        "reply": "Down the Sunken Street, past the bricked arch, up the drain under the Vance cellar. Mind the low bit. And don't tell the school. They think I'm at lessons."
+        "reply": "Down the Sunken Street, past the bricked arch, up the drain under the Vance cellar. Mind the low bit. And don't tell Greywool. They think I'm at the loom."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_gift",
         "words": "If I carried a Gift, I'd know one. You haven't got one, have you?",
         "reply": "No. I've just got four paws and a good nose and an old street nobody remembers. You lot make everything into magic."
@@ -2547,30 +2563,30 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_petra_vance",
+        "npc": "rm_eleanor_vance",
         "id": "lq_th_forgive",
         "words": "Your rates are robbery. Let the Sump pledges go.",
-        "reply": "Robbery? A penny a week on a mark is... a great deal, put that way. Bright One forgive me, I keep a ledger like a fist. Let them go, then. And the girl stays out of my cellar."
+        "reply": "Robbery? A penny a week on a mark is... a great deal, put that way. Bright One forgive us, Petra keeps a ledger like a fist. I'll have her let them go. And the girl stays out of our cellar."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_petra_vance",
+        "npc": "rm_eleanor_vance",
         "id": "lq_th_blinker",
         "words": "It was a Quickened wolf. Nobody could have stopped it.",
-        "reply": "Then the Heights were right, and I was a fool to want a plain answer. I'll write to whoever answers for such wolves. Somebody must."
+        "reply": "Then the Heights were right, and we were fools to want a plain answer. Petra will write to whoever answers for such wolves. Somebody must."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_petra_vance",
+        "npc": "rm_eleanor_vance",
         "id": "lq_th_name",
-        "words": "It was a Sump pup, through an old drain. No Gift at all.",
-        "reply": "A child? Through my cellar? Bright One, and the whole Heights talking of Gifts. Her debt is called in, and the abbey's board can feed her. A plain answer. I asked for it."
+        "words": "It was a young Sump wolf, through an old drain. No Gift at all.",
+        "reply": "A Sump girl? Through our cellar? Bright One, and the whole Heights talking of Gifts. Petra will call her debt in, and Greywool can keep her or not. A plain answer. We asked for it."
        }
       }
      ]
@@ -2579,24 +2595,24 @@
   },
   {
    "id": "after_named",
-   "journal": "The Heights thief was named: a Sump pup with no Gift at all.",
+   "journal": "The Heights thief was named: a young Sump wolf with no Gift at all.",
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "rm_petra_vance",
-     "text": "Named, and her debt called in. I asked for a plain answer. I didn't think it would sit so cold."
+     "npc": "rm_eleanor_vance",
+     "text": "Named, and her debt called in. We asked for a plain answer. Neither of us thought it would sit so cold."
     },
     {
      "kind": "npc.line",
-     "npc": "rmx_hester_greyby",
-     "text": "You named me. Fine. The abbey board feeds me now, and the Vances keep their ledger. Don't come down my street."
+     "npc": "rmx_una_brineridge",
+     "text": "You named me. Fine. Greywool kept me on, no thanks to you, and the Vances keep their ledger. Don't come down my street."
     },
     {
      "kind": "board.post",
      "town": "ridgemere",
      "days": 28,
      "ifRefused": "skip",
-     "text": "VANCE HOUSE: the Heights thief was a Sump pup, through an old drain. No Gift. The cellar is bricked up. Petra Vance."
+     "text": "VANCE HOUSE: the Heights thief was a young Sump wolf, through an old drain. No Gift. The cellar is bricked up. Petra Vance."
     }
    ],
    "exits": [],
@@ -2612,27 +2628,27 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_roald_wickstack",
+        "npc": "rm_emmerich_greyridge",
         "id": "lq_th_roald",
-        "words": "Did you take the pledges?",
-        "reply": "I've never touched the strongroom key. But I've heard scratching under the cellar floor at night, like something in the drains, and the cellar smells of old stone and wet. Nobody believes a servant."
+        "words": "Have you heard anything on the Rise at night?",
+        "reply": "I'm out on the Rise from first light, and I go home late. There's scratching under the street at night, like something in the drains, and the Vance cellars smell of old stone and wet. Nobody believes a servant."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_silas_brinemore",
+        "npc": "rm_ragnar_roperidge",
         "id": "lq_th_silas",
-        "words": "Was your house robbed too?",
-        "reply": "Not robbed, no. The master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back, and it went from his harness room. Funny sort of thief, that takes back only what was pawned."
+        "words": "Was anything taken from the Thornburys?",
+        "reply": "Not from the house. The Thornburys stable here, and their master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back. It went off his harness, off my own peg. Funny sort of thief, that takes back only what was pawned."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_palle_brinewell",
+        "npc": "rmx_finn_dripwick",
         "id": "lq_th_palle",
         "words": "Do you keep watch for her?",
         "reply": "Somebody has to whistle. She's cleverer than the whole Heights lot. If you're going to name her, name me too. It's only fair."
@@ -2642,7 +2658,7 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_street",
         "words": "Somebody knows the old street under the Heights. Is it you?",
         "reply": "Might be. Folk who know it don't shout it in the lane. You found the cache, so you know I'm not much of a ghost. Ask me straight what I did, and I'll tell you straight."
@@ -2652,7 +2668,7 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_face",
         "words": "You took the pledges from Vance House.",
         "reply": "Took them back. A feller's harness clip, a bracelet a lighterman left his brother, an old ear-ring. My mother's shawl. The Vances lend at a penny a week on the mark and keep the pledge if you're a day late. I'm not Quickened. I know the old street."
@@ -2662,17 +2678,17 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_way",
         "words": "Show me the way you came.",
-        "reply": "Down the Sunken Street, past the bricked arch, up the drain under the Vance cellar. Mind the low bit. And don't tell the school. They think I'm at lessons."
+        "reply": "Down the Sunken Street, past the bricked arch, up the drain under the Vance cellar. Mind the low bit. And don't tell Greywool. They think I'm at the loom."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_gift",
         "words": "If I carried a Gift, I'd know one. You haven't got one, have you?",
         "reply": "No. I've just got four paws and a good nose and an old street nobody remembers. You lot make everything into magic."
@@ -2682,30 +2698,30 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_petra_vance",
+        "npc": "rm_eleanor_vance",
         "id": "lq_th_forgive",
         "words": "Your rates are robbery. Let the Sump pledges go.",
-        "reply": "Robbery? A penny a week on a mark is... a great deal, put that way. Bright One forgive me, I keep a ledger like a fist. Let them go, then. And the girl stays out of my cellar."
+        "reply": "Robbery? A penny a week on a mark is... a great deal, put that way. Bright One forgive us, Petra keeps a ledger like a fist. I'll have her let them go. And the girl stays out of our cellar."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_petra_vance",
+        "npc": "rm_eleanor_vance",
         "id": "lq_th_blinker",
         "words": "It was a Quickened wolf. Nobody could have stopped it.",
-        "reply": "Then the Heights were right, and I was a fool to want a plain answer. I'll write to whoever answers for such wolves. Somebody must."
+        "reply": "Then the Heights were right, and we were fools to want a plain answer. Petra will write to whoever answers for such wolves. Somebody must."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_petra_vance",
+        "npc": "rm_eleanor_vance",
         "id": "lq_th_name",
-        "words": "It was a Sump pup, through an old drain. No Gift at all.",
-        "reply": "A child? Through my cellar? Bright One, and the whole Heights talking of Gifts. Her debt is called in, and the abbey's board can feed her. A plain answer. I asked for it."
+        "words": "It was a young Sump wolf, through an old drain. No Gift at all.",
+        "reply": "A Sump girl? Through our cellar? Bright One, and the whole Heights talking of Gifts. Petra will call her debt in, and Greywool can keep her or not. A plain answer. We asked for it."
        }
       }
      ]
@@ -2718,12 +2734,12 @@
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "rm_petra_vance",
-     "text": "A Gift, then. I'll sleep with a lamp lit and a letter written. Somebody must answer for such wolves."
+     "npc": "rm_eleanor_vance",
+     "text": "A Gift, then. Petra sleeps with a lamp lit and a letter written. Somebody must answer for such wolves."
     },
     {
      "kind": "npc.line",
-     "npc": "rmx_hester_greyby",
+     "npc": "rmx_una_brineridge",
      "text": "Quickened, they say. Ha. Mind your strongrooms, Heights."
     },
     {
@@ -2755,27 +2771,27 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_roald_wickstack",
+        "npc": "rm_emmerich_greyridge",
         "id": "lq_th_roald",
-        "words": "Did you take the pledges?",
-        "reply": "I've never touched the strongroom key. But I've heard scratching under the cellar floor at night, like something in the drains, and the cellar smells of old stone and wet. Nobody believes a servant."
+        "words": "Have you heard anything on the Rise at night?",
+        "reply": "I'm out on the Rise from first light, and I go home late. There's scratching under the street at night, like something in the drains, and the Vance cellars smell of old stone and wet. Nobody believes a servant."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_silas_brinemore",
+        "npc": "rm_ragnar_roperidge",
         "id": "lq_th_silas",
-        "words": "Was your house robbed too?",
-        "reply": "Not robbed, no. The master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back, and it went from his harness room. Funny sort of thief, that takes back only what was pawned."
+        "words": "Was anything taken from the Thornburys?",
+        "reply": "Not from the house. The Thornburys stable here, and their master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back. It went off his harness, off my own peg. Funny sort of thief, that takes back only what was pawned."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_palle_brinewell",
+        "npc": "rmx_finn_dripwick",
         "id": "lq_th_palle",
         "words": "Do you keep watch for her?",
         "reply": "Somebody has to whistle. She's cleverer than the whole Heights lot. If you're going to name her, name me too. It's only fair."
@@ -2785,7 +2801,7 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_street",
         "words": "Somebody knows the old street under the Heights. Is it you?",
         "reply": "Might be. Folk who know it don't shout it in the lane. You found the cache, so you know I'm not much of a ghost. Ask me straight what I did, and I'll tell you straight."
@@ -2795,7 +2811,7 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_face",
         "words": "You took the pledges from Vance House.",
         "reply": "Took them back. A feller's harness clip, a bracelet a lighterman left his brother, an old ear-ring. My mother's shawl. The Vances lend at a penny a week on the mark and keep the pledge if you're a day late. I'm not Quickened. I know the old street."
@@ -2805,17 +2821,17 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_way",
         "words": "Show me the way you came.",
-        "reply": "Down the Sunken Street, past the bricked arch, up the drain under the Vance cellar. Mind the low bit. And don't tell the school. They think I'm at lessons."
+        "reply": "Down the Sunken Street, past the bricked arch, up the drain under the Vance cellar. Mind the low bit. And don't tell Greywool. They think I'm at the loom."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_gift",
         "words": "If I carried a Gift, I'd know one. You haven't got one, have you?",
         "reply": "No. I've just got four paws and a good nose and an old street nobody remembers. You lot make everything into magic."
@@ -2825,30 +2841,30 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_petra_vance",
+        "npc": "rm_eleanor_vance",
         "id": "lq_th_forgive",
         "words": "Your rates are robbery. Let the Sump pledges go.",
-        "reply": "Robbery? A penny a week on a mark is... a great deal, put that way. Bright One forgive me, I keep a ledger like a fist. Let them go, then. And the girl stays out of my cellar."
+        "reply": "Robbery? A penny a week on a mark is... a great deal, put that way. Bright One forgive us, Petra keeps a ledger like a fist. I'll have her let them go. And the girl stays out of our cellar."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_petra_vance",
+        "npc": "rm_eleanor_vance",
         "id": "lq_th_blinker",
         "words": "It was a Quickened wolf. Nobody could have stopped it.",
-        "reply": "Then the Heights were right, and I was a fool to want a plain answer. I'll write to whoever answers for such wolves. Somebody must."
+        "reply": "Then the Heights were right, and we were fools to want a plain answer. Petra will write to whoever answers for such wolves. Somebody must."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_petra_vance",
+        "npc": "rm_eleanor_vance",
         "id": "lq_th_name",
-        "words": "It was a Sump pup, through an old drain. No Gift at all.",
-        "reply": "A child? Through my cellar? Bright One, and the whole Heights talking of Gifts. Her debt is called in, and the abbey's board can feed her. A plain answer. I asked for it."
+        "words": "It was a young Sump wolf, through an old drain. No Gift at all.",
+        "reply": "A Sump girl? Through our cellar? Bright One, and the whole Heights talking of Gifts. Petra will call her debt in, and Greywool can keep her or not. A plain answer. We asked for it."
        }
       }
      ]
@@ -2861,8 +2877,8 @@
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "rm_petra_vance",
-     "text": "Black cloaks on the Pass Road, and they say I sent for them. Bright One help me, perhaps I did."
+     "npc": "rm_eleanor_vance",
+     "text": "Black cloaks on the Pass Road, and they say the Vances sent for them. Bright One help us, perhaps we did."
     }
    ],
    "exits": [],
@@ -2878,27 +2894,27 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_roald_wickstack",
+        "npc": "rm_emmerich_greyridge",
         "id": "lq_th_roald",
-        "words": "Did you take the pledges?",
-        "reply": "I've never touched the strongroom key. But I've heard scratching under the cellar floor at night, like something in the drains, and the cellar smells of old stone and wet. Nobody believes a servant."
+        "words": "Have you heard anything on the Rise at night?",
+        "reply": "I'm out on the Rise from first light, and I go home late. There's scratching under the street at night, like something in the drains, and the Vance cellars smell of old stone and wet. Nobody believes a servant."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_silas_brinemore",
+        "npc": "rm_ragnar_roperidge",
         "id": "lq_th_silas",
-        "words": "Was your house robbed too?",
-        "reply": "Not robbed, no. The master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back, and it went from his harness room. Funny sort of thief, that takes back only what was pawned."
+        "words": "Was anything taken from the Thornburys?",
+        "reply": "Not from the house. The Thornburys stable here, and their master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back. It went off his harness, off my own peg. Funny sort of thief, that takes back only what was pawned."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_palle_brinewell",
+        "npc": "rmx_finn_dripwick",
         "id": "lq_th_palle",
         "words": "Do you keep watch for her?",
         "reply": "Somebody has to whistle. She's cleverer than the whole Heights lot. If you're going to name her, name me too. It's only fair."
@@ -2908,7 +2924,7 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_street",
         "words": "Somebody knows the old street under the Heights. Is it you?",
         "reply": "Might be. Folk who know it don't shout it in the lane. You found the cache, so you know I'm not much of a ghost. Ask me straight what I did, and I'll tell you straight."
@@ -2918,7 +2934,7 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_face",
         "words": "You took the pledges from Vance House.",
         "reply": "Took them back. A feller's harness clip, a bracelet a lighterman left his brother, an old ear-ring. My mother's shawl. The Vances lend at a penny a week on the mark and keep the pledge if you're a day late. I'm not Quickened. I know the old street."
@@ -2928,17 +2944,17 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_way",
         "words": "Show me the way you came.",
-        "reply": "Down the Sunken Street, past the bricked arch, up the drain under the Vance cellar. Mind the low bit. And don't tell the school. They think I'm at lessons."
+        "reply": "Down the Sunken Street, past the bricked arch, up the drain under the Vance cellar. Mind the low bit. And don't tell Greywool. They think I'm at the loom."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_hester_greyby",
+        "npc": "rmx_una_brineridge",
         "id": "lq_th_gift",
         "words": "If I carried a Gift, I'd know one. You haven't got one, have you?",
         "reply": "No. I've just got four paws and a good nose and an old street nobody remembers. You lot make everything into magic."
@@ -2948,30 +2964,30 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_petra_vance",
+        "npc": "rm_eleanor_vance",
         "id": "lq_th_forgive",
         "words": "Your rates are robbery. Let the Sump pledges go.",
-        "reply": "Robbery? A penny a week on a mark is... a great deal, put that way. Bright One forgive me, I keep a ledger like a fist. Let them go, then. And the girl stays out of my cellar."
+        "reply": "Robbery? A penny a week on a mark is... a great deal, put that way. Bright One forgive us, Petra keeps a ledger like a fist. I'll have her let them go. And the girl stays out of our cellar."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_petra_vance",
+        "npc": "rm_eleanor_vance",
         "id": "lq_th_blinker",
         "words": "It was a Quickened wolf. Nobody could have stopped it.",
-        "reply": "Then the Heights were right, and I was a fool to want a plain answer. I'll write to whoever answers for such wolves. Somebody must."
+        "reply": "Then the Heights were right, and we were fools to want a plain answer. Petra will write to whoever answers for such wolves. Somebody must."
        }
       },
       {
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rm_petra_vance",
+        "npc": "rm_eleanor_vance",
         "id": "lq_th_name",
-        "words": "It was a Sump pup, through an old drain. No Gift at all.",
-        "reply": "A child? Through my cellar? Bright One, and the whole Heights talking of Gifts. Her debt is called in, and the abbey's board can feed her. A plain answer. I asked for it."
+        "words": "It was a young Sump wolf, through an old drain. No Gift at all.",
+        "reply": "A Sump girl? Through our cellar? Bright One, and the whole Heights talking of Gifts. Petra will call her debt in, and Greywool can keep her or not. A plain answer. We asked for it."
        }
       }
      ]
@@ -2990,17 +3006,18 @@
      "day": 0.05,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e2",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.055,
      "actor": "wolf-ash",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e3",
@@ -3008,7 +3025,7 @@
      "day": 0.06,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -3017,7 +3034,7 @@
      "day": 0.065,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -3053,7 +3070,7 @@
      "day": 0.08,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -3062,17 +3079,18 @@
      "day": 0.1,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e8",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.105,
      "actor": "wolf-birch",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e9",
@@ -3080,7 +3098,7 @@
      "day": 0.11,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -3089,7 +3107,7 @@
      "day": 0.115,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -3112,7 +3130,7 @@
      "day": 0.13,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -3121,17 +3139,18 @@
      "day": 0.14,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e14",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.145,
      "actor": "wolf-cedar",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e15",
@@ -3139,7 +3158,7 @@
      "day": 0.15,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -3148,7 +3167,7 @@
      "day": 0.155,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -3171,7 +3190,7 @@
      "day": 0.17,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -3180,17 +3199,18 @@
      "day": 0.18,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e20",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.185,
      "actor": "wolf-dun",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e21",
@@ -3198,7 +3218,7 @@
      "day": 0.19,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -3207,7 +3227,7 @@
      "day": 0.195,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -3230,7 +3250,7 @@
      "day": 0.21,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -3244,12 +3264,13 @@
     },
     {
      "id": "e26",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.22,
      "actor": "wolf-ash",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e27",
@@ -3257,8 +3278,10 @@
      "day": 0.225,
      "actor": "wolf-ash",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e28",
@@ -3266,7 +3289,7 @@
      "day": 0.23,
      "actor": "wolf-ash",
      "item": "brass_clip",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -3275,7 +3298,7 @@
      "day": 0.235,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -3284,7 +3307,7 @@
      "day": 0.24,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_palle_brinewell",
+     "item": "rmx_finn_dripwick",
      "detail": "lq_th_palle"
     },
     {
@@ -3298,12 +3321,13 @@
     },
     {
      "id": "e32",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.27,
      "actor": "wolf-birch",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e33",
@@ -3311,8 +3335,10 @@
      "day": 0.275,
      "actor": "wolf-birch",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e34",
@@ -3320,7 +3346,7 @@
      "day": 0.28,
      "actor": "wolf-birch",
      "item": "silver_bracelet",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -3329,7 +3355,7 @@
      "day": 0.285,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -3343,12 +3369,13 @@
     },
     {
      "id": "e37",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.32,
      "actor": "wolf-cedar",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e38",
@@ -3356,8 +3383,10 @@
      "day": 0.325,
      "actor": "wolf-cedar",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e39",
@@ -3365,7 +3394,7 @@
      "day": 0.33,
      "actor": "wolf-cedar",
      "item": "ear_ring",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -3374,7 +3403,7 @@
      "day": 0.335,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -3388,12 +3417,13 @@
     },
     {
      "id": "e42",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.37,
      "actor": "wolf-dun",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e43",
@@ -3401,8 +3431,10 @@
      "day": 0.375,
      "actor": "wolf-dun",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e44",
@@ -3410,7 +3442,7 @@
      "day": 0.38,
      "actor": "wolf-dun",
      "item": "brass_clip",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -3419,7 +3451,7 @@
      "day": 0.385,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -3479,7 +3511,7 @@
      "day": 0.52,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_face"
     },
     {
@@ -3488,7 +3520,7 @@
      "day": 0.53,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_gift"
     },
     {
@@ -3524,7 +3556,7 @@
      "day": 0.55,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "lq_th_forgive"
     },
     {
@@ -3533,7 +3565,7 @@
      "day": 0.56,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_face"
     },
     {
@@ -3541,9 +3573,10 @@
      "kind": "gift",
      "day": 0.57,
      "actor": "wolf-cedar",
-     "target": "rm_petra_vance",
+     "target": "rm_eleanor_vance",
      "item": "silver_bracelet",
-     "quantity": 1
+     "quantity": 1,
+     "cell": "rm_the_rag_mill"
     },
     {
      "id": "e60",
@@ -3551,7 +3584,7 @@
      "day": 0.58,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "lq_th_name"
     },
     {
@@ -3560,7 +3593,7 @@
      "day": 0.59,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_face"
     },
     {
@@ -3569,7 +3602,7 @@
      "day": 0.6,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "lq_th_blinker"
     },
     {
@@ -3654,7 +3687,7 @@
    }
   },
   {
-   "name": "The lie wins; the Wardens come; next season the pup is at it again",
+   "name": "The lie wins; the Wardens come; next season the young thief is at it again",
    "cohort": [],
    "events": [
     {
@@ -3663,17 +3696,18 @@
      "day": 0.05,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e2",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.055,
      "actor": "wolf-ash",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e3",
@@ -3681,7 +3715,7 @@
      "day": 0.06,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -3690,7 +3724,7 @@
      "day": 0.065,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -3713,7 +3747,7 @@
      "day": 0.08,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -3722,17 +3756,18 @@
      "day": 0.09,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e8",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.095,
      "actor": "wolf-birch",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e9",
@@ -3740,7 +3775,7 @@
      "day": 0.1,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -3749,7 +3784,7 @@
      "day": 0.105,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -3772,7 +3807,7 @@
      "day": 0.12,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -3781,17 +3816,18 @@
      "day": 0.13,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e14",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.135,
      "actor": "wolf-cedar",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e15",
@@ -3799,7 +3835,7 @@
      "day": 0.14,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -3808,7 +3844,7 @@
      "day": 0.145,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -3831,7 +3867,7 @@
      "day": 0.16,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -3840,17 +3876,18 @@
      "day": 0.17,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e20",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.175,
      "actor": "wolf-dun",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e21",
@@ -3858,7 +3895,7 @@
      "day": 0.18,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -3867,7 +3904,7 @@
      "day": 0.185,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -3890,7 +3927,7 @@
      "day": 0.2,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -3904,12 +3941,13 @@
     },
     {
      "id": "e26",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.21,
      "actor": "wolf-ash",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e27",
@@ -3917,8 +3955,10 @@
      "day": 0.215,
      "actor": "wolf-ash",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e28",
@@ -3926,7 +3966,7 @@
      "day": 0.22,
      "actor": "wolf-ash",
      "item": "brass_clip",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -3935,7 +3975,7 @@
      "day": 0.225,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -3944,7 +3984,7 @@
      "day": 0.23,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_palle_brinewell",
+     "item": "rmx_finn_dripwick",
      "detail": "lq_th_palle"
     },
     {
@@ -3958,12 +3998,13 @@
     },
     {
      "id": "e32",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.26,
      "actor": "wolf-birch",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e33",
@@ -3971,8 +4012,10 @@
      "day": 0.265,
      "actor": "wolf-birch",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e34",
@@ -3980,7 +4023,7 @@
      "day": 0.27,
      "actor": "wolf-birch",
      "item": "silver_bracelet",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -3989,7 +4032,7 @@
      "day": 0.275,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -4003,12 +4046,13 @@
     },
     {
      "id": "e37",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.31,
      "actor": "wolf-cedar",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e38",
@@ -4016,8 +4060,10 @@
      "day": 0.315,
      "actor": "wolf-cedar",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e39",
@@ -4025,7 +4071,7 @@
      "day": 0.32,
      "actor": "wolf-cedar",
      "item": "ear_ring",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -4034,7 +4080,7 @@
      "day": 0.325,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -4048,12 +4094,13 @@
     },
     {
      "id": "e42",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.36,
      "actor": "wolf-dun",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e43",
@@ -4061,8 +4108,10 @@
      "day": 0.365,
      "actor": "wolf-dun",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e44",
@@ -4070,7 +4119,7 @@
      "day": 0.37,
      "actor": "wolf-dun",
      "item": "brass_clip",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -4079,7 +4128,7 @@
      "day": 0.375,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -4174,7 +4223,7 @@
    }
   },
   {
-   "name": "Naming the pup wins two to one",
+   "name": "Naming the young thief wins two to one",
    "cohort": [],
    "events": [
     {
@@ -4183,17 +4232,18 @@
      "day": 0.05,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e2",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.055,
      "actor": "wolf-ash",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e3",
@@ -4201,7 +4251,7 @@
      "day": 0.06,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -4210,7 +4260,7 @@
      "day": 0.065,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -4233,7 +4283,7 @@
      "day": 0.08,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -4242,17 +4292,18 @@
      "day": 0.09,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e8",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.095,
      "actor": "wolf-birch",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e9",
@@ -4260,7 +4311,7 @@
      "day": 0.1,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -4269,7 +4320,7 @@
      "day": 0.105,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -4292,7 +4343,7 @@
      "day": 0.12,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -4301,17 +4352,18 @@
      "day": 0.13,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e14",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.135,
      "actor": "wolf-cedar",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e15",
@@ -4319,7 +4371,7 @@
      "day": 0.14,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -4328,7 +4380,7 @@
      "day": 0.145,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -4351,7 +4403,7 @@
      "day": 0.16,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -4360,17 +4412,18 @@
      "day": 0.17,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e20",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.175,
      "actor": "wolf-dun",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e21",
@@ -4378,7 +4431,7 @@
      "day": 0.18,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -4387,7 +4440,7 @@
      "day": 0.185,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -4410,7 +4463,7 @@
      "day": 0.2,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -4424,12 +4477,13 @@
     },
     {
      "id": "e26",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.21,
      "actor": "wolf-ash",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e27",
@@ -4437,8 +4491,10 @@
      "day": 0.215,
      "actor": "wolf-ash",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e28",
@@ -4446,7 +4502,7 @@
      "day": 0.22,
      "actor": "wolf-ash",
      "item": "brass_clip",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -4455,7 +4511,7 @@
      "day": 0.225,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -4464,7 +4520,7 @@
      "day": 0.23,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_palle_brinewell",
+     "item": "rmx_finn_dripwick",
      "detail": "lq_th_palle"
     },
     {
@@ -4478,12 +4534,13 @@
     },
     {
      "id": "e32",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.26,
      "actor": "wolf-birch",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e33",
@@ -4491,8 +4548,10 @@
      "day": 0.265,
      "actor": "wolf-birch",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e34",
@@ -4500,7 +4559,7 @@
      "day": 0.27,
      "actor": "wolf-birch",
      "item": "silver_bracelet",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -4509,7 +4568,7 @@
      "day": 0.275,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -4523,12 +4582,13 @@
     },
     {
      "id": "e37",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.31,
      "actor": "wolf-cedar",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e38",
@@ -4536,8 +4596,10 @@
      "day": 0.315,
      "actor": "wolf-cedar",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e39",
@@ -4545,7 +4607,7 @@
      "day": 0.32,
      "actor": "wolf-cedar",
      "item": "ear_ring",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -4554,7 +4616,7 @@
      "day": 0.325,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -4568,12 +4630,13 @@
     },
     {
      "id": "e42",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.36,
      "actor": "wolf-dun",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e43",
@@ -4581,8 +4644,10 @@
      "day": 0.365,
      "actor": "wolf-dun",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e44",
@@ -4590,7 +4655,7 @@
      "day": 0.37,
      "actor": "wolf-dun",
      "item": "brass_clip",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -4599,7 +4664,7 @@
      "day": 0.375,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -4662,7 +4727,7 @@
    }
   },
   {
-   "name": "A tie between naming and forgiving forgives the pup",
+   "name": "A tie between naming and forgiving forgives the young thief",
    "cohort": [],
    "events": [
     {
@@ -4671,17 +4736,18 @@
      "day": 0.05,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e2",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.055,
      "actor": "wolf-ash",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e3",
@@ -4689,7 +4755,7 @@
      "day": 0.06,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -4698,7 +4764,7 @@
      "day": 0.065,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -4721,7 +4787,7 @@
      "day": 0.08,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -4730,17 +4796,18 @@
      "day": 0.09,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e8",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.095,
      "actor": "wolf-birch",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e9",
@@ -4748,7 +4815,7 @@
      "day": 0.1,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -4757,7 +4824,7 @@
      "day": 0.105,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -4780,7 +4847,7 @@
      "day": 0.12,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -4789,17 +4856,18 @@
      "day": 0.13,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e14",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.135,
      "actor": "wolf-cedar",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e15",
@@ -4807,7 +4875,7 @@
      "day": 0.14,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -4816,7 +4884,7 @@
      "day": 0.145,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -4839,7 +4907,7 @@
      "day": 0.16,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -4848,17 +4916,18 @@
      "day": 0.17,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e20",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.175,
      "actor": "wolf-dun",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e21",
@@ -4866,7 +4935,7 @@
      "day": 0.18,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -4875,7 +4944,7 @@
      "day": 0.185,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -4898,7 +4967,7 @@
      "day": 0.2,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -4912,12 +4981,13 @@
     },
     {
      "id": "e26",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.21,
      "actor": "wolf-ash",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e27",
@@ -4925,8 +4995,10 @@
      "day": 0.215,
      "actor": "wolf-ash",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e28",
@@ -4934,7 +5006,7 @@
      "day": 0.22,
      "actor": "wolf-ash",
      "item": "brass_clip",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -4943,7 +5015,7 @@
      "day": 0.225,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -4952,7 +5024,7 @@
      "day": 0.23,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_palle_brinewell",
+     "item": "rmx_finn_dripwick",
      "detail": "lq_th_palle"
     },
     {
@@ -4966,12 +5038,13 @@
     },
     {
      "id": "e32",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.26,
      "actor": "wolf-birch",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e33",
@@ -4979,8 +5052,10 @@
      "day": 0.265,
      "actor": "wolf-birch",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e34",
@@ -4988,7 +5063,7 @@
      "day": 0.27,
      "actor": "wolf-birch",
      "item": "silver_bracelet",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -4997,7 +5072,7 @@
      "day": 0.275,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -5011,12 +5086,13 @@
     },
     {
      "id": "e37",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.31,
      "actor": "wolf-cedar",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e38",
@@ -5024,8 +5100,10 @@
      "day": 0.315,
      "actor": "wolf-cedar",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e39",
@@ -5033,7 +5111,7 @@
      "day": 0.32,
      "actor": "wolf-cedar",
      "item": "ear_ring",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -5042,7 +5120,7 @@
      "day": 0.325,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -5056,12 +5134,13 @@
     },
     {
      "id": "e42",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.36,
      "actor": "wolf-dun",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e43",
@@ -5069,8 +5148,10 @@
      "day": 0.365,
      "actor": "wolf-dun",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e44",
@@ -5078,7 +5159,7 @@
      "day": 0.37,
      "actor": "wolf-dun",
      "item": "brass_clip",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -5087,7 +5168,7 @@
      "day": 0.375,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -5135,7 +5216,7 @@
    }
   },
   {
-   "name": "Nobody takes a road: after 7 days the pup is forgiven by default",
+   "name": "Nobody takes a road: after 7 days the young thief is forgiven by default",
    "cohort": [],
    "events": [
     {
@@ -5144,17 +5225,18 @@
      "day": 0.05,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e2",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.055,
      "actor": "wolf-ash",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e3",
@@ -5162,7 +5244,7 @@
      "day": 0.06,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -5171,7 +5253,7 @@
      "day": 0.065,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -5194,7 +5276,7 @@
      "day": 0.08,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -5203,17 +5285,18 @@
      "day": 0.09,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e8",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.095,
      "actor": "wolf-birch",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e9",
@@ -5221,7 +5304,7 @@
      "day": 0.1,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -5230,7 +5313,7 @@
      "day": 0.105,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -5253,7 +5336,7 @@
      "day": 0.12,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -5262,17 +5345,18 @@
      "day": 0.13,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e14",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.135,
      "actor": "wolf-cedar",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e15",
@@ -5280,7 +5364,7 @@
      "day": 0.14,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -5289,7 +5373,7 @@
      "day": 0.145,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -5312,7 +5396,7 @@
      "day": 0.16,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -5321,17 +5405,18 @@
      "day": 0.17,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
      "id": "e20",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.175,
      "actor": "wolf-dun",
-     "target": "rm_vance_house",
-     "cell": "rm_vance_house",
-     "detail": "w_ridgemere_1_1"
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
     },
     {
      "id": "e21",
@@ -5339,7 +5424,7 @@
      "day": 0.18,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_roald_wickstack",
+     "item": "rm_emmerich_greyridge",
      "detail": "lq_th_roald"
     },
     {
@@ -5348,7 +5433,7 @@
      "day": 0.185,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_silas_brinemore",
+     "item": "rm_ragnar_roperidge",
      "detail": "lq_th_silas"
     },
     {
@@ -5371,7 +5456,7 @@
      "day": 0.2,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rm_petra_vance",
+     "item": "rm_eleanor_vance",
      "detail": "locked"
     },
     {
@@ -5385,12 +5470,13 @@
     },
     {
      "id": "e26",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.21,
      "actor": "wolf-ash",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e27",
@@ -5398,8 +5484,10 @@
      "day": 0.215,
      "actor": "wolf-ash",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e28",
@@ -5407,7 +5495,7 @@
      "day": 0.22,
      "actor": "wolf-ash",
      "item": "brass_clip",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -5416,7 +5504,7 @@
      "day": 0.225,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -5425,7 +5513,7 @@
      "day": 0.23,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_palle_brinewell",
+     "item": "rmx_finn_dripwick",
      "detail": "lq_th_palle"
     },
     {
@@ -5439,12 +5527,13 @@
     },
     {
      "id": "e32",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.26,
      "actor": "wolf-birch",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e33",
@@ -5452,8 +5541,10 @@
      "day": 0.265,
      "actor": "wolf-birch",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e34",
@@ -5461,7 +5552,7 @@
      "day": 0.27,
      "actor": "wolf-birch",
      "item": "silver_bracelet",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -5470,7 +5561,7 @@
      "day": 0.275,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -5484,12 +5575,13 @@
     },
     {
      "id": "e37",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.31,
      "actor": "wolf-cedar",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e38",
@@ -5497,8 +5589,10 @@
      "day": 0.315,
      "actor": "wolf-cedar",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e39",
@@ -5506,7 +5600,7 @@
      "day": 0.32,
      "actor": "wolf-cedar",
      "item": "ear_ring",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -5515,7 +5609,7 @@
      "day": 0.325,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {
@@ -5529,12 +5623,13 @@
     },
     {
      "id": "e42",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.36,
      "actor": "wolf-dun",
-     "target": "r2_the_sunken_street",
-     "cell": "r2_the_sunken_street",
-     "detail": "w_ridgemere_1_1"
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
     },
     {
      "id": "e43",
@@ -5542,8 +5637,10 @@
      "day": 0.365,
      "actor": "wolf-dun",
      "target": "old_drain",
-     "cell": "r2_the_sunken_street",
-     "detail": "run"
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
     },
     {
      "id": "e44",
@@ -5551,7 +5648,7 @@
      "day": 0.37,
      "actor": "wolf-dun",
      "item": "brass_clip",
-     "cell": "r2_the_sunken_street",
+     "cell": "w_ridgemere_1_1",
      "quantity": 1
     },
     {
@@ -5560,7 +5657,7 @@
      "day": 0.375,
      "actor": "wolf-dun",
      "target": "run",
-     "item": "rmx_hester_greyby",
+     "item": "rmx_una_brineridge",
      "detail": "lq_th_street"
     },
     {

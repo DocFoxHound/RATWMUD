@@ -133,3 +133,20 @@ under `decisions.md` §1, §3, §4, §6.4, §7.3, §8 and P2-22. Check with
    `world.mem.nh_stage=…` and `world.mem.st_*`).
 4. If a chapter is moved by hand, the next game hour moves the pack (it reads `nh_stage`). To end it early, stop a chapter
    (the pack goes quiet) or stop this run.
+
+## Givers behind locked doors (2026-11-22, second pass; doc 86 "Givers behind locked doors")
+A door into a private interior is locked to wolves (doc 82), and no story effect lifts it. Re-cast where the town has a
+free resident a wolf can reach at work, in their own speech; `givers.tsv` rows moved; talk lines follow:
+- `st-summons`: the City Office clerk -> Delphine Brackwick, a carter at the Carters' Yard (8-18); the summons goes to
+  Edda Ropeton at the Round and Rind (6-16), where Hillside's cart calls (the herder is in the Hillside byre).
+- `st-bounds-water` and `st-twelve-bounds`: the Rainward orchard keeper and the Heatherside beekeeper -> Vesper
+  Greenholt and Mogens Mudstack, who cut wood at the Rainwood coppice, out on the hills (6-17).
+- `st-ice-watch`: the Larkdowns shepherd -> Wald Larkwell, a hand at the Coldwater Still (7-19), who asks for him.
+- `st-haulers-food`: the loaves and fish go to Laurel Pinefell, pot hand at the Glasswater Inn, who sends the haulers'
+  basket up (the boatman is in the Upper Mere boat shed).
+- `st-feed-larkfield`: its offer and words are Clover Snowhollow's, a vat hand at the Larkfield Print House (7-19), who
+  hands out Longmead's bread.
+- Kept: the three patrol guards (`st-post-night`, `st-camp-bounty`, `st-patrol-round`) walk the street patrol.
+- Still open (no free resident left in the town): `st-chorus-wrong` (Alder Blossomcroft) and `st-relief-convoy` (Myrtle
+  Larkcombe) in Southmeadow, `st-fog-lanterns` (Stone Marshmore) in Fenshore.
+

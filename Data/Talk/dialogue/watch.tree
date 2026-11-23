@@ -89,6 +89,11 @@ say[self.id=rmx_desmond_hollis self.from=coldwater world.mem.nh_desmond=redeemed
 say[self.id=rmx_desmond_hollis self.from=coldwater world.mem.nh_desmond=pillory priority=5] A day in the pillory. The Sump threw fish. Fair enough, I suppose.
 say[self.id=rmx_desmond_hollis self.from=coldwater world.mem.nh_desmond=fled priority=5] Go away. I've nothing for the city, and the city's nothing for me.
 say[self.id=rmx_desmond_hollis self.from=coldwater world.mem.nh_desmond=mercy priority=5] They let me walk. I don't know why. I'm trying to be worth it.
+# >>> Ninth Howl talk, part 2 (gossip and helpful knowledge; generated, doc 86 §6.4): hub lines
+# The quest packs: their targets' and givers' own greetings, gated on the line's talk key (quests-large
+# notes, "Talk lines for wave G"; C8, or the DM by hand), priority 4 like the cast's above.
+say[self.id=rm_bettany_nailley world.mem.lq_wreck=watch priority=4] A wrecker of Grayrock ships, and I'm the one who locks her up. The Bright One has a sense of humour. Thank you. I mean it.
+# <<< Ninth Howl talk, part 2: hub lines
 mood formal
 free
 choice What do I owe the watch? [here.wanted=yes] -> fine

@@ -286,6 +286,38 @@
    "y1": 16,
    "x2": 163,
    "y2": 35
+  },
+  {
+   "id": "bay_foot",
+   "cell": "w_ridgemere_0_0",
+   "x1": 72,
+   "y1": 176,
+   "x2": 76,
+   "y2": 180
+  },
+  {
+   "id": "ls_door",
+   "cell": "w_ridgemere_1_1",
+   "x1": 19,
+   "y1": 15,
+   "x2": 23,
+   "y2": 19
+  },
+  {
+   "id": "tide_door",
+   "cell": "w_ridgemere_0_1",
+   "x1": 205,
+   "y1": 7,
+   "x2": 209,
+   "y2": 15
+  },
+  {
+   "id": "keep_door",
+   "cell": "w_ridgemere_1_1",
+   "x1": 143,
+   "y1": 77,
+   "x2": 153,
+   "y2": 81
   }
  ],
  "scenes": [
@@ -297,11 +329,11 @@
    "visibility": "public",
    "lockMovement": false,
    "area": {
-    "cell": "rm_the_chapel_of_the_tide",
-    "x1": 0,
-    "y1": 0,
-    "x2": 21,
-    "y2": 15
+    "cell": "w_ridgemere_0_1",
+    "x1": 203,
+    "y1": 5,
+    "x2": 211,
+    "y2": 17
    },
    "cast": [
     {
@@ -356,11 +388,11 @@
    "visibility": "public",
    "lockMovement": false,
    "area": {
-    "cell": "rm_the_chapel_of_the_tide",
-    "x1": 0,
-    "y1": 0,
-    "x2": 21,
-    "y2": 15
+    "cell": "w_ridgemere_0_1",
+    "x1": 203,
+    "y1": 5,
+    "x2": 211,
+    "y2": 17
    },
    "cast": [
     {
@@ -406,6 +438,54 @@
      "text": "There. It's said. The lamp on the headland is out, and it stays out."
     }
    ]
+  },
+  {
+   "format": "ratw-scene",
+   "version": 1,
+   "id": "wr_priest",
+   "title": "At the Chapel of the Tide door",
+   "visibility": "individual",
+   "lockMovement": false,
+   "cast": [
+    {
+     "id": "priest",
+     "npc": "rm_solveig_tarwell"
+    }
+   ],
+   "start": "line",
+   "beats": [
+    {
+     "id": "line",
+     "type": "line",
+     "speaker": "priest",
+     "seconds": 9,
+     "text": "The Tide hears any name that's owed it. Bring her to this door, and I'll come out to the step for her. Nobody names the drowned through a shut door."
+    }
+   ]
+  },
+  {
+   "format": "ratw-scene",
+   "version": 1,
+   "id": "wr_sergeant",
+   "title": "At the Keep door",
+   "visibility": "individual",
+   "lockMovement": false,
+   "cast": [
+    {
+     "id": "sergeant",
+     "npc": "rm_bettany_nailley"
+    }
+   ],
+   "start": "line",
+   "beats": [
+    {
+     "id": "line",
+     "type": "line",
+     "speaker": "sergeant",
+     "seconds": 10,
+     "text": "A hooded lamp, set low to look like the Mole. Grayrock will want her hanged for the cargo. The Watch will give her a week for the lighters, and not a day more. Keep the lamp. Your word's enough, and I'll fetch her myself."
+    }
+   ]
   }
  ],
  "triggers": [
@@ -418,10 +498,10 @@
      "do": "effect",
      "effect": {
       "kind": "npc.offer",
-      "npc": "rm_septimus_plankmarsh",
+      "npc": "rm_florence_millhand",
       "id": "lq_wr_ledger",
       "words": "What became of the lighters' crews?",
-      "reply": "Crews? Here it says cargo lost, eh, and a line under it. Same words as the one that went down in the bay years back. A crew of three, I think, and the ledger calls them cargo. Rough water, to be written down like that.",
+      "reply": "Crews? The Wharf Office reads the losses out on the pier: cargo lost, eh, and a line under it. Same words as for the one that went down in the bay years back. A crew of three, I think, and the ledger calls them cargo. Rough water, to be written down like that.",
       "once": false
      }
     },
@@ -478,7 +558,7 @@
         "npc": "rm_ilse_coalley",
         "id": "lq_wr_tide",
         "words": "Come and name him at the Tide.",
-        "reply": "Out loud, in the Chapel of the Tide? All these years and nobody once asked his name. Walk with me, then. I'll put the lamp out on the way.",
+        "reply": "Out loud, at the Chapel of the Tide? All these years and nobody once asked his name. Walk with me, then. I'll put the lamp out on the way.",
         "once": true
        }
       }
@@ -496,10 +576,10 @@
      "do": "effect",
      "effect": {
       "kind": "npc.offer",
-      "npc": "rm_septimus_plankmarsh",
+      "npc": "rm_florence_millhand",
       "id": "lq_wr_ledger",
       "words": "What became of the lighters' crews?",
-      "reply": "Crews? Here it says cargo lost, eh, and a line under it. Same words as the one that went down in the bay years back. A crew of three, I think, and the ledger calls them cargo. Rough water, to be written down like that.",
+      "reply": "Crews? The Wharf Office reads the losses out on the pier: cargo lost, eh, and a line under it. Same words as for the one that went down in the bay years back. A crew of three, I think, and the ledger calls them cargo. Rough water, to be written down like that.",
       "once": false
      }
     },
@@ -1974,9 +2054,9 @@
   },
   {
    "id": "shadow",
-   "on": "near resident",
+   "on": "region entered",
    "match": {
-    "target": "rm_ilse_coalley"
+    "target": "ls_door"
    },
    "audience": "participant",
    "if": {
@@ -1984,7 +2064,7 @@
     "from": 17,
     "to": 22
    },
-   "note": "Near the lamplighter between five and ten in the evening: one evening of her round followed (once a game day).",
+   "note": "At the Lamp Store door between five and ten in the evening: one evening of the lamplighters watched (once a game day). The lamplighters work inside, behind a door locked to wolves.",
    "actions": [
     {
      "do": "if",
@@ -2015,6 +2095,15 @@
       ]
      },
      "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "ifRefused": "skip",
+        "text": "At dusk the lamplighters go in and out of the Lamp Store. One of them, an old one, comes out with a jar more than the rest and goes off toward the Salt Row stair."
+       }
+      },
       {
        "do": "effect",
        "effect": {
@@ -2405,7 +2494,7 @@
         "npc": "rm_ilse_coalley",
         "id": "lq_wr_tide",
         "words": "Come and name him at the Tide.",
-        "reply": "Out loud, in the Chapel of the Tide? All these years and nobody once asked his name. Walk with me, then. I'll put the lamp out on the way.",
+        "reply": "Out loud, at the Chapel of the Tide? All these years and nobody once asked his name. Walk with me, then. I'll put the lamp out on the way.",
         "once": true
        }
       },
@@ -2706,17 +2795,12 @@
       "right": "tide"
      },
      {
-      "test": "wolf in place",
-      "place": "rm_the_chapel_of_the_tide"
-     },
-     {
-      "test": "resident in place",
-      "npc": "rm_ilse_coalley",
-      "place": "rm_the_chapel_of_the_tide"
+      "test": "wolf in region",
+      "region": "tide_door"
      }
     ]
    },
-   "note": "The wolf and the lamplighter in the Chapel of the Tide together: she names her brother (the scene plays once).",
+   "note": "The wolf and the lamplighter at the Chapel of the Tide's door together (the chapel is locked to wolves): she names her brother there (the scene plays once).",
    "actions": [
     {
      "do": "effect",
@@ -2776,108 +2860,6 @@
           "cue": "lq-tide-naming",
           "ifRefused": "skip"
          }
-        }
-       ]
-      }
-     ]
-    }
-   ]
-  },
-  {
-   "id": "at-chapel-door",
-   "on": "enter place",
-   "match": {
-    "target": "rm_the_chapel_of_the_tide"
-   },
-   "audience": "participant",
-   "note": "The same as at-chapel, for a wolf who comes through the chapel door when the lamplighter is already inside.",
-   "actions": [
-    {
-     "do": "if",
-     "if": {
-      "test": "all",
-      "conditions": [
-       {
-        "test": "compare",
-        "left": {
-         "var": "road",
-         "of": "$actor"
-        },
-        "op": "=",
-        "right": "tide"
-       },
-       {
-        "test": "wolf in place",
-        "place": "rm_the_chapel_of_the_tide"
-       },
-       {
-        "test": "resident in place",
-        "npc": "rm_ilse_coalley",
-        "place": "rm_the_chapel_of_the_tide"
-       }
-      ]
-     },
-     "then": [
-      {
-       "do": "effect",
-       "effect": {
-        "kind": "objective.complete",
-        "quest": "wreck_tide",
-        "objective": "chapel",
-        "player": "$actor"
-       }
-      },
-      {
-       "do": "effect",
-       "effect": {
-        "kind": "npc.unfollow",
-        "npc": "rm_ilse_coalley",
-        "ifRefused": "skip"
-       }
-      },
-      {
-       "do": "if",
-       "if": {
-        "test": "switch",
-        "var": "named",
-        "is": false
-       },
-       "then": [
-        {
-         "do": "turn on",
-         "var": "named"
-        },
-        {
-         "do": "if",
-         "if": {
-          "test": "switch",
-          "var": "nh_b_wharf",
-          "is": true
-         },
-         "then": [
-          {
-           "do": "effect",
-           "effect": {
-            "kind": "scene.play",
-            "scene": "tide_naming_wharf",
-            "player": "world",
-            "cue": "lq-tide-naming",
-            "ifRefused": "skip"
-           }
-          }
-         ],
-         "else": [
-          {
-           "do": "effect",
-           "effect": {
-            "kind": "scene.play",
-            "scene": "tide_naming",
-            "player": "world",
-            "cue": "lq-tide-naming",
-            "ifRefused": "skip"
-           }
-          }
-         ]
         }
        ]
       }
@@ -3485,13 +3467,13 @@
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "cty_linden_sedgeditch",
+     "npc": "rm_greta_gullton",
      "text": "Mind the North Headland in fog. There's a light there that wants ships."
     },
     {
      "kind": "npc.line",
-     "npc": "rm_corwin_bilgestack",
-     "text": "Full measure for every one of us, and one draws a jar more on blowy days. Says the wind snuffs her wicks. I've not said a word, and I'd thank you not to say I did."
+     "npc": "rm_dorcas_rainford",
+     "text": "Full measure to the Lamp Store, and one of their lamplighters buys a jar more of her own on blowy days. Says the wind snuffs her wicks. I've not said a word, and I'd thank you not to say I did."
     }
    ],
    "exits": []
@@ -3501,8 +3483,21 @@
    "journal": "The false lamp has been traced to an old lamplighter who lost a brother on the wharf. Now it is for the wolves to say what is done with her.",
    "effects": [
     {
+     "kind": "npc.move",
+     "npc": "rm_ilse_coalley",
+     "cell": "w_ridgemere_0_0",
+     "x": 214,
+     "y": 236,
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.hold",
+     "npc": "rm_ilse_coalley",
+     "ifRefused": "skip"
+    },
+    {
      "kind": "npc.line",
-     "npc": "cty_linden_sedgeditch",
+     "npc": "rm_greta_gullton",
      "text": "The lamplighter's name is out, then. What's done with it is yours to choose. Gently, I said, and I meant it."
     },
     {
@@ -3511,15 +3506,251 @@
      "text": "You've come about the headland. I know you have. Sit, if you want. I'll not run."
     }
    ],
-   "exits": []
+   "exits": [],
+   "triggers": [
+    {
+     "id": "at-chapel-door",
+     "on": "region entered",
+     "match": {
+      "target": "tide_door"
+     },
+     "audience": "participant",
+     "note": "A wolf on the road to the Tide comes to the chapel door: the priest answers at it, in a scene; and if the lamplighter is already there, the naming is said.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "road",
+           "of": "$actor"
+          },
+          "op": "=",
+          "right": "tide"
+         },
+         {
+          "test": "objective is",
+          "quest": "wreck_tide",
+          "objective": "solveig",
+          "status": "to do"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "scene.play",
+          "scene": "wr_priest",
+          "player": "$actor",
+          "cue": "wr_priest",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "wreck_tide",
+          "objective": "solveig",
+          "player": "$actor"
+         }
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "road",
+           "of": "$actor"
+          },
+          "op": "=",
+          "right": "tide"
+         },
+         {
+          "test": "resident in region",
+          "npc": "rm_ilse_coalley",
+          "region": "tide_door"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "wreck_tide",
+          "objective": "chapel",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.unfollow",
+          "npc": "rm_ilse_coalley",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "named",
+          "is": false
+         },
+         "then": [
+          {
+           "do": "turn on",
+           "var": "named"
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "switch",
+            "var": "nh_b_wharf",
+            "is": true
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "scene.play",
+              "scene": "tide_naming_wharf",
+              "player": "world",
+              "cue": "lq-tide-naming",
+              "ifRefused": "skip"
+             }
+            }
+           ],
+           "else": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "scene.play",
+              "scene": "tide_naming",
+              "player": "world",
+              "cue": "lq-tide-naming",
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "watch-door",
+     "on": "region entered",
+     "match": {
+      "target": "keep_door"
+     },
+     "audience": "participant",
+     "note": "The Watch Office at the Keep is locked to wolves: the sergeant answers at its door, to a wolf on the Watch road carrying the false lamp.",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "road",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": "watch"
+       },
+       {
+        "test": "objective is",
+        "quest": "wreck_watch",
+        "objective": "face",
+        "status": "done"
+       },
+       {
+        "test": "objective is",
+        "quest": "wreck_watch",
+        "objective": "lamp",
+        "status": "to do"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "carries",
+        "item": "oil_lamp",
+        "op": ">=",
+        "value": 1
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "scene.play",
+          "scene": "wr_sergeant",
+          "player": "$actor",
+          "cue": "wr_sergeant",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "wreck_watch",
+          "objective": "sergeant",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "wreck_watch",
+          "objective": "lamp",
+          "player": "$actor"
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "ifRefused": "skip",
+          "text": "The Keep door stays shut. Bring the false lamp off the rocks first."
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
   },
   {
    "id": "after_named",
    "journal": "A lighter crew the Wharf wrote down as cargo was named at the Chapel of the Tide. The headland is dark.",
    "effects": [
     {
+     "kind": "npc.release",
+     "npc": "rm_ilse_coalley",
+     "ifRefused": "skip"
+    },
+    {
      "kind": "npc.line",
-     "npc": "cty_linden_sedgeditch",
+     "npc": "rm_greta_gullton",
      "text": "The headland's dark in a blow now, the way it should be. Somebody said a name out loud, I hear."
     },
     {
@@ -3548,7 +3779,7 @@
    "effects": [
     {
      "kind": "npc.line",
-     "npc": "cty_linden_sedgeditch",
+     "npc": "rm_greta_gullton",
      "text": "They've her in the cells, I hear. A week, for two lighters. It doesn't bring the cargo back, nor her brother."
     },
     {
@@ -3584,8 +3815,13 @@
    "journal": "The Grayrock Wharf Office knows who lit the false lamp, and the headland is dark.",
    "effects": [
     {
+     "kind": "npc.release",
+     "npc": "rm_ilse_coalley",
+     "ifRefused": "skip"
+    },
+    {
      "kind": "npc.line",
-     "npc": "cty_linden_sedgeditch",
+     "npc": "rm_greta_gullton",
      "text": "Grayrock turned her out of the Lamp Store, they say. The Wharf got its cargo back, in a way. I'd not call it even."
     }
    ],
@@ -3608,8 +3844,8 @@
   {
    "id": "lamp",
    "title": "A Lamp Where None Should Be",
-   "summary": "Ships steering for the Mole in fog run onto the North Headland instead. The skipper at North Cove wants the false light found.",
-   "giver": "cty_linden_sedgeditch",
+   "summary": "Ships steering for the Mole in fog run onto the North Headland instead. A crane hand on the Wharf wants the false light found.",
+   "giver": "rm_greta_gullton",
    "board": "ridgemere",
    "scope": "player",
    "repeat": "once",
@@ -3622,8 +3858,8 @@
    ],
    "offer": {
     "ask": "Your nets came up heavy?",
-    "say": "#greet#, #address#. Heavy with Grayrock cargo, two lighters' worth since spring. Both ran onto the North Headland in fog, steering for a light low on the rocks as if it were the Mole. Take the true bearing from the Bay Light, walk the cove, then find me that other light after dark.",
-    "accept": "The lamp room, then the rocks after dark.",
+    "say": "#greet#, #address#. I unload what Grayrock's lighters bring in, and two lighters' worth never came, both onto the North Headland in fog, steering for a light low on the rocks as if it were the Mole. Take the true bearing at the Bay Light, walk North Cove, then find me that other light after dark.",
+    "accept": "The Bay Light, then the rocks after dark.",
     "decline": "Not tonight.",
     "handIn": "Here's the lamp from the rocks.",
     "thanks": "#thanks#. A lamp in a hood, set low to look like the Mole. City oil, the Lamp Store's own; I'd know the stink anywhere. One of the lamplighters, then. I know a story about that House and the wharf I won't repeat. Follow the oil, gently."
@@ -3639,10 +3875,10 @@
     },
     {
      "id": "bearing",
-     "label": "Climb to the Bay Light's lamp room and take the true bearing.",
-     "on": "enter place",
+     "label": "Take the true bearing at the foot of the Bay Light.",
+     "on": "region entered",
      "match": {
-      "target": "r2_the_bay_light_up"
+      "target": "bay_foot"
      }
     },
     {
@@ -3717,32 +3953,32 @@
    "objectives": [
     {
      "id": "store",
-     "label": "Find where that oil is kept.",
-     "on": "enter place",
+     "label": "Find where that oil is kept: the Lamp Store's door.",
+     "on": "region entered",
      "match": {
-      "target": "r2_the_lamp_store"
+      "target": "ls_door"
      }
     },
     {
      "id": "corwin",
-     "label": "Ask the lamplighter who counts the oil who draws extra.",
+     "label": "Ask the oil-seller at the Lamp and Wick who buys extra.",
      "on": "conversation",
      "match": {
-      "target": "rm_corwin_bilgestack"
+      "target": "rm_dorcas_rainford"
      }
     },
     {
      "id": "ledger",
-     "label": "Ask the clerk at the Grayrock Wharf Office what became of the lost lighters' crews.",
+     "label": "Ask Grayrock's pier hand on the Wharf what became of the lost lighters' crews.",
      "on": "dialogue choice",
      "match": {
-      "item": "rm_septimus_plankmarsh",
+      "item": "rm_florence_millhand",
       "detail": "lq_wr_ledger"
      }
     },
     {
      "id": "shadow",
-     "label": "Follow the lamplighter on her dusk round, on two evenings.",
+     "label": "Watch the Lamp Store door at dusk, on two evenings, for the lamplighter who carries out more.",
      "on": "story signal",
      "signal": "shadowed",
      "goal": 2
@@ -3772,7 +4008,7 @@
   {
    "id": "wreck_tide",
    "title": "Name Him at the Tide",
-   "summary": "Bring the lamplighter to the Chapel of the Tide to name her drowned brother.",
+   "summary": "Bring the lamplighter to the Chapel of the Tide's door, to name her drowned brother.",
    "scope": "player",
    "repeat": "once",
    "phases": [
@@ -3803,18 +4039,16 @@
     },
     {
      "id": "solveig",
-     "label": "Speak to the priest at the Chapel of the Tide.",
-     "on": "conversation",
-     "match": {
-      "target": "rm_solveig_tarwell"
-     },
+     "label": "Knock at the Chapel of the Tide's door and speak to the priest.",
+     "on": "story signal",
      "after": [
       "face"
-     ]
+     ],
+     "signal": "wr_priest"
     },
     {
      "id": "chapel",
-     "label": "Walk with her into the Chapel of the Tide.",
+     "label": "Walk with her to the Chapel of the Tide's door.",
      "on": "story signal",
      "signal": "tide_named",
      "after": [
@@ -3863,26 +4097,21 @@
     },
     {
      "id": "sergeant",
-     "label": "Tell the Watch sergeant at the Keep who lit the lamp.",
-     "on": "conversation",
-     "match": {
-      "target": "rm_bettany_nailley"
-     },
+     "label": "Tell the Watch sergeant at the Keep door who lit the lamp.",
+     "on": "story signal",
      "after": [
       "face"
-     ]
+     ],
+     "signal": "wr_sergeant"
     },
     {
      "id": "lamp",
-     "label": "Give her the false lamp.",
-     "on": "gift",
-     "match": {
-      "target": "rm_bettany_nailley",
-      "item": "oil_lamp"
-     },
+     "label": "Show her the false lamp.",
+     "on": "story signal",
      "after": [
       "face"
-     ]
+     ],
+     "signal": "wr_lamp"
     }
    ],
    "rewards": [
@@ -3907,7 +4136,7 @@
   {
    "id": "wreck_wharf",
    "title": "Tell the Wharf Office",
-   "summary": "Take the false lamp to the Grayrock Wharf Office.",
+   "summary": "Take the false lamp to Grayrock's pier hand on the Wharf, for the Wharf Office.",
    "scope": "player",
    "repeat": "once",
    "phases": [
@@ -3926,10 +4155,10 @@
     },
     {
      "id": "lamp",
-     "label": "Give the clerk at the Grayrock Wharf Office the false lamp.",
+     "label": "Give Grayrock's pier hand on the Wharf the false lamp, for the Wharf Office.",
      "on": "gift",
      "match": {
-      "target": "rm_septimus_plankmarsh",
+      "target": "rm_florence_millhand",
       "item": "oil_lamp"
      },
      "after": [
@@ -3976,7 +4205,7 @@
      "day": 0.1,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -3990,12 +4219,13 @@
     },
     {
      "id": "e4",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.10200000000000001,
      "actor": "wolf-ash",
-     "target": "r2_the_bay_light_up",
-     "cell": "r2_the_bay_light_up",
-     "detail": "r2_the_bay_light"
+     "target": "bay_foot",
+     "cell": "w_ridgemere_0_0",
+     "x": 74,
+     "y": 178
     },
     {
      "id": "e5",
@@ -4045,7 +4275,7 @@
      "day": 0.18,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -4054,7 +4284,7 @@
      "day": 0.2,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -4068,12 +4298,13 @@
     },
     {
      "id": "e10",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.202,
      "actor": "wolf-birch",
-     "target": "r2_the_bay_light_up",
-     "cell": "r2_the_bay_light_up",
-     "detail": "r2_the_bay_light"
+     "target": "bay_foot",
+     "cell": "w_ridgemere_0_0",
+     "x": 74,
+     "y": 178
     },
     {
      "id": "e11",
@@ -4123,7 +4354,7 @@
      "day": 0.28,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -4132,7 +4363,7 @@
      "day": 0.30000000000000004,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -4146,12 +4377,13 @@
     },
     {
      "id": "e16",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.30200000000000005,
      "actor": "wolf-cedar",
-     "target": "r2_the_bay_light_up",
-     "cell": "r2_the_bay_light_up",
-     "detail": "r2_the_bay_light"
+     "target": "bay_foot",
+     "cell": "w_ridgemere_0_0",
+     "x": 74,
+     "y": 178
     },
     {
      "id": "e17",
@@ -4201,7 +4433,7 @@
      "day": 0.38000000000000006,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -4215,20 +4447,21 @@
     },
     {
      "id": "e21",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.401,
      "actor": "wolf-ash",
-     "target": "r2_the_lamp_store",
-     "cell": "r2_the_lamp_store",
-     "detail": "w_ridgemere_1_1"
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17
     },
     {
      "id": "e22",
      "kind": "conversation",
      "day": 0.402,
      "actor": "wolf-ash",
-     "target": "rm_corwin_bilgestack",
-     "cell": "r2_the_lamp_store"
+     "target": "rm_dorcas_rainford",
+     "cell": "rm_the_lamp_wick"
     },
     {
      "id": "e23",
@@ -4236,17 +4469,18 @@
      "day": 0.403,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_septimus_plankmarsh",
+     "item": "rm_florence_millhand",
      "detail": "lq_wr_ledger"
     },
     {
      "id": "e24",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 0.404,
      "actor": "wolf-ash",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -4255,12 +4489,13 @@
     },
     {
      "id": "e25",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 1.0,
      "actor": "wolf-ash",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -4287,20 +4522,21 @@
     },
     {
      "id": "e28",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 1.101,
      "actor": "wolf-birch",
-     "target": "r2_the_lamp_store",
-     "cell": "r2_the_lamp_store",
-     "detail": "w_ridgemere_1_1"
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17
     },
     {
      "id": "e29",
      "kind": "conversation",
      "day": 1.102,
      "actor": "wolf-birch",
-     "target": "rm_corwin_bilgestack",
-     "cell": "r2_the_lamp_store"
+     "target": "rm_dorcas_rainford",
+     "cell": "rm_the_lamp_wick"
     },
     {
      "id": "e30",
@@ -4308,17 +4544,18 @@
      "day": 1.103,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_septimus_plankmarsh",
+     "item": "rm_florence_millhand",
      "detail": "lq_wr_ledger"
     },
     {
      "id": "e31",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 1.104,
      "actor": "wolf-birch",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -4327,12 +4564,13 @@
     },
     {
      "id": "e32",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 1.7000000000000002,
      "actor": "wolf-birch",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -4359,20 +4597,21 @@
     },
     {
      "id": "e35",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 1.801,
      "actor": "wolf-cedar",
-     "target": "r2_the_lamp_store",
-     "cell": "r2_the_lamp_store",
-     "detail": "w_ridgemere_1_1"
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17
     },
     {
      "id": "e36",
      "kind": "conversation",
      "day": 1.802,
      "actor": "wolf-cedar",
-     "target": "rm_corwin_bilgestack",
-     "cell": "r2_the_lamp_store"
+     "target": "rm_dorcas_rainford",
+     "cell": "rm_the_lamp_wick"
     },
     {
      "id": "e37",
@@ -4380,17 +4619,18 @@
      "day": 1.803,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_septimus_plankmarsh",
+     "item": "rm_florence_millhand",
      "detail": "lq_wr_ledger"
     },
     {
      "id": "e38",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 1.804,
      "actor": "wolf-cedar",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -4399,12 +4639,13 @@
     },
     {
      "id": "e39",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 2.4,
      "actor": "wolf-cedar",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -4449,20 +4690,23 @@
     },
     {
      "id": "e44",
-     "kind": "conversation",
+     "kind": "region entered",
      "day": 2.53,
      "actor": "wolf-ash",
-     "target": "rm_solveig_tarwell",
-     "cell": "rm_the_chapel_of_the_tide"
-    },
-    {
-     "id": "e44b",
-     "kind": "enter place",
-     "day": 2.535,
-     "actor": "wolf-ash",
-     "target": "rm_the_chapel_of_the_tide",
-     "cell": "rm_the_chapel_of_the_tide",
-     "detail": "w_ridgemere_1_1"
+     "target": "tide_door",
+     "cell": "w_ridgemere_0_1",
+     "x": 207,
+     "y": 11,
+     "facts": {
+      "residents": {
+       "rm_ilse_coalley": {
+        "alive": true,
+        "cell": "w_ridgemere_0_1",
+        "x": 200,
+        "y": 11
+       }
+      }
+     }
     },
     {
      "id": "e45",
@@ -4470,22 +4714,22 @@
      "day": 2.54,
      "actor": "wolf-ash",
      "target": "rm_ilse_coalley",
-     "cell": "rm_the_chapel_of_the_tide",
+     "cell": "w_ridgemere_0_1",
      "quantity": 1,
      "facts": {
       "wolves": {
        "wolf-ash": {
-        "cell": "rm_the_chapel_of_the_tide",
-        "x": 10,
-        "y": 8
+        "cell": "w_ridgemere_0_1",
+        "x": 207,
+        "y": 11
        }
       },
       "residents": {
        "rm_ilse_coalley": {
         "alive": true,
-        "cell": "rm_the_chapel_of_the_tide",
-        "x": 11,
-        "y": 8
+        "cell": "w_ridgemere_0_1",
+        "x": 207,
+        "y": 12
        }
       },
       "world": {
@@ -4564,7 +4808,7 @@
      "day": 0.1,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -4578,12 +4822,13 @@
     },
     {
      "id": "e4",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.10200000000000001,
      "actor": "wolf-ash",
-     "target": "r2_the_bay_light_up",
-     "cell": "r2_the_bay_light_up",
-     "detail": "r2_the_bay_light"
+     "target": "bay_foot",
+     "cell": "w_ridgemere_0_0",
+     "x": 74,
+     "y": 178
     },
     {
      "id": "e5",
@@ -4670,7 +4915,7 @@
      "day": 0.18,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -4679,7 +4924,7 @@
      "day": 0.2,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -4693,12 +4938,13 @@
     },
     {
      "id": "e13",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.202,
      "actor": "wolf-birch",
-     "target": "r2_the_bay_light_up",
-     "cell": "r2_the_bay_light_up",
-     "detail": "r2_the_bay_light"
+     "target": "bay_foot",
+     "cell": "w_ridgemere_0_0",
+     "x": 74,
+     "y": 178
     },
     {
      "id": "e14",
@@ -4748,7 +4994,7 @@
      "day": 0.28,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -4757,7 +5003,7 @@
      "day": 0.30000000000000004,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -4771,12 +5017,13 @@
     },
     {
      "id": "e19",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.30200000000000005,
      "actor": "wolf-cedar",
-     "target": "r2_the_bay_light_up",
-     "cell": "r2_the_bay_light_up",
-     "detail": "r2_the_bay_light"
+     "target": "bay_foot",
+     "cell": "w_ridgemere_0_0",
+     "x": 74,
+     "y": 178
     },
     {
      "id": "e20",
@@ -4826,7 +5073,7 @@
      "day": 0.38000000000000006,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -4916,20 +5163,21 @@
     },
     {
      "id": "e28",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 1.101,
      "actor": "wolf-ash",
-     "target": "r2_the_lamp_store",
-     "cell": "r2_the_lamp_store",
-     "detail": "w_ridgemere_1_1"
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17
     },
     {
      "id": "e29",
      "kind": "conversation",
      "day": 1.102,
      "actor": "wolf-ash",
-     "target": "rm_corwin_bilgestack",
-     "cell": "r2_the_lamp_store"
+     "target": "rm_dorcas_rainford",
+     "cell": "rm_the_lamp_wick"
     },
     {
      "id": "e30",
@@ -4937,17 +5185,18 @@
      "day": 1.103,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_septimus_plankmarsh",
+     "item": "rm_florence_millhand",
      "detail": "lq_wr_ledger"
     },
     {
      "id": "e31",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 1.104,
      "actor": "wolf-ash",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -4956,12 +5205,13 @@
     },
     {
      "id": "e32",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 1.7000000000000002,
      "actor": "wolf-ash",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -4988,20 +5238,21 @@
     },
     {
      "id": "e35",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 1.801,
      "actor": "wolf-birch",
-     "target": "r2_the_lamp_store",
-     "cell": "r2_the_lamp_store",
-     "detail": "w_ridgemere_1_1"
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17
     },
     {
      "id": "e36",
      "kind": "conversation",
      "day": 1.802,
      "actor": "wolf-birch",
-     "target": "rm_corwin_bilgestack",
-     "cell": "r2_the_lamp_store"
+     "target": "rm_dorcas_rainford",
+     "cell": "rm_the_lamp_wick"
     },
     {
      "id": "e37",
@@ -5009,17 +5260,18 @@
      "day": 1.803,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_septimus_plankmarsh",
+     "item": "rm_florence_millhand",
      "detail": "lq_wr_ledger"
     },
     {
      "id": "e38",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 1.804,
      "actor": "wolf-birch",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -5028,12 +5280,13 @@
     },
     {
      "id": "e39",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 2.4,
      "actor": "wolf-birch",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -5060,20 +5313,21 @@
     },
     {
      "id": "e42",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 2.501,
      "actor": "wolf-cedar",
-     "target": "r2_the_lamp_store",
-     "cell": "r2_the_lamp_store",
-     "detail": "w_ridgemere_1_1"
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17
     },
     {
      "id": "e43",
      "kind": "conversation",
      "day": 2.502,
      "actor": "wolf-cedar",
-     "target": "rm_corwin_bilgestack",
-     "cell": "r2_the_lamp_store"
+     "target": "rm_dorcas_rainford",
+     "cell": "rm_the_lamp_wick"
     },
     {
      "id": "e44",
@@ -5081,17 +5335,18 @@
      "day": 2.503,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_septimus_plankmarsh",
+     "item": "rm_florence_millhand",
      "detail": "lq_wr_ledger"
     },
     {
      "id": "e45",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 2.504,
      "actor": "wolf-cedar",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -5100,12 +5355,13 @@
     },
     {
      "id": "e46",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 3.1,
      "actor": "wolf-cedar",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -5159,21 +5415,22 @@
     },
     {
      "id": "e52",
-     "kind": "conversation",
+     "kind": "region entered",
      "day": 3.25,
      "actor": "wolf-birch",
-     "target": "rm_bettany_nailley",
-     "cell": "r2_the_keep"
-    },
-    {
-     "id": "e53",
-     "kind": "gift",
-     "day": 3.2600000000000002,
-     "actor": "wolf-birch",
-     "target": "rm_bettany_nailley",
-     "item": "oil_lamp",
-     "quantity": 1,
-     "cell": "r2_the_keep"
+     "target": "keep_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 148,
+     "y": 80,
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "carries": {
+         "oil_lamp": 1
+        }
+       }
+      }
+     }
     },
     {
      "id": "e54",
@@ -5268,7 +5525,7 @@
      "day": 0.1,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -5282,12 +5539,13 @@
     },
     {
      "id": "e4",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.10200000000000001,
      "actor": "wolf-ash",
-     "target": "r2_the_bay_light_up",
-     "cell": "r2_the_bay_light_up",
-     "detail": "r2_the_bay_light"
+     "target": "bay_foot",
+     "cell": "w_ridgemere_0_0",
+     "x": 74,
+     "y": 178
     },
     {
      "id": "e5",
@@ -5337,7 +5595,7 @@
      "day": 0.18,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -5346,7 +5604,7 @@
      "day": 0.2,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -5360,12 +5618,13 @@
     },
     {
      "id": "e10",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.202,
      "actor": "wolf-birch",
-     "target": "r2_the_bay_light_up",
-     "cell": "r2_the_bay_light_up",
-     "detail": "r2_the_bay_light"
+     "target": "bay_foot",
+     "cell": "w_ridgemere_0_0",
+     "x": 74,
+     "y": 178
     },
     {
      "id": "e11",
@@ -5415,7 +5674,7 @@
      "day": 0.28,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -5424,7 +5683,7 @@
      "day": 0.30000000000000004,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -5438,12 +5697,13 @@
     },
     {
      "id": "e16",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.30200000000000005,
      "actor": "wolf-cedar",
-     "target": "r2_the_bay_light_up",
-     "cell": "r2_the_bay_light_up",
-     "detail": "r2_the_bay_light"
+     "target": "bay_foot",
+     "cell": "w_ridgemere_0_0",
+     "x": 74,
+     "y": 178
     },
     {
      "id": "e17",
@@ -5493,7 +5753,7 @@
      "day": 0.38000000000000006,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -5507,20 +5767,21 @@
     },
     {
      "id": "e21",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.401,
      "actor": "wolf-ash",
-     "target": "r2_the_lamp_store",
-     "cell": "r2_the_lamp_store",
-     "detail": "w_ridgemere_1_1"
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17
     },
     {
      "id": "e22",
      "kind": "conversation",
      "day": 0.402,
      "actor": "wolf-ash",
-     "target": "rm_corwin_bilgestack",
-     "cell": "r2_the_lamp_store"
+     "target": "rm_dorcas_rainford",
+     "cell": "rm_the_lamp_wick"
     },
     {
      "id": "e23",
@@ -5528,17 +5789,18 @@
      "day": 0.403,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_septimus_plankmarsh",
+     "item": "rm_florence_millhand",
      "detail": "lq_wr_ledger"
     },
     {
      "id": "e24",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 0.404,
      "actor": "wolf-ash",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -5547,12 +5809,13 @@
     },
     {
      "id": "e25",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 1.0,
      "actor": "wolf-ash",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -5579,20 +5842,21 @@
     },
     {
      "id": "e28",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 1.101,
      "actor": "wolf-birch",
-     "target": "r2_the_lamp_store",
-     "cell": "r2_the_lamp_store",
-     "detail": "w_ridgemere_1_1"
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17
     },
     {
      "id": "e29",
      "kind": "conversation",
      "day": 1.102,
      "actor": "wolf-birch",
-     "target": "rm_corwin_bilgestack",
-     "cell": "r2_the_lamp_store"
+     "target": "rm_dorcas_rainford",
+     "cell": "rm_the_lamp_wick"
     },
     {
      "id": "e30",
@@ -5600,17 +5864,18 @@
      "day": 1.103,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_septimus_plankmarsh",
+     "item": "rm_florence_millhand",
      "detail": "lq_wr_ledger"
     },
     {
      "id": "e31",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 1.104,
      "actor": "wolf-birch",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -5619,12 +5884,13 @@
     },
     {
      "id": "e32",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 1.7000000000000002,
      "actor": "wolf-birch",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -5651,20 +5917,21 @@
     },
     {
      "id": "e35",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 1.801,
      "actor": "wolf-cedar",
-     "target": "r2_the_lamp_store",
-     "cell": "r2_the_lamp_store",
-     "detail": "w_ridgemere_1_1"
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17
     },
     {
      "id": "e36",
      "kind": "conversation",
      "day": 1.802,
      "actor": "wolf-cedar",
-     "target": "rm_corwin_bilgestack",
-     "cell": "r2_the_lamp_store"
+     "target": "rm_dorcas_rainford",
+     "cell": "rm_the_lamp_wick"
     },
     {
      "id": "e37",
@@ -5672,17 +5939,18 @@
      "day": 1.803,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_septimus_plankmarsh",
+     "item": "rm_florence_millhand",
      "detail": "lq_wr_ledger"
     },
     {
      "id": "e38",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 1.804,
      "actor": "wolf-cedar",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -5691,12 +5959,13 @@
     },
     {
      "id": "e39",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 2.4,
      "actor": "wolf-cedar",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -5757,10 +6026,10 @@
      "kind": "gift",
      "day": 2.54,
      "actor": "wolf-ash",
-     "target": "rm_septimus_plankmarsh",
+     "target": "rm_florence_millhand",
      "item": "oil_lamp",
      "quantity": 1,
-     "cell": "rm_the_harbourmaster_s_office"
+     "cell": "w_ridgemere_0_1"
     },
     {
      "id": "e46",
@@ -5817,7 +6086,7 @@
      "day": 0.1,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -5831,12 +6100,13 @@
     },
     {
      "id": "e4",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.10200000000000001,
      "actor": "wolf-ash",
-     "target": "r2_the_bay_light_up",
-     "cell": "r2_the_bay_light_up",
-     "detail": "r2_the_bay_light"
+     "target": "bay_foot",
+     "cell": "w_ridgemere_0_0",
+     "x": 74,
+     "y": 178
     },
     {
      "id": "e5",
@@ -5886,7 +6156,7 @@
      "day": 0.18,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -5895,7 +6165,7 @@
      "day": 0.2,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -5909,12 +6179,13 @@
     },
     {
      "id": "e10",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.202,
      "actor": "wolf-birch",
-     "target": "r2_the_bay_light_up",
-     "cell": "r2_the_bay_light_up",
-     "detail": "r2_the_bay_light"
+     "target": "bay_foot",
+     "cell": "w_ridgemere_0_0",
+     "x": 74,
+     "y": 178
     },
     {
      "id": "e11",
@@ -5964,7 +6235,7 @@
      "day": 0.28,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -5973,7 +6244,7 @@
      "day": 0.30000000000000004,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -5987,12 +6258,13 @@
     },
     {
      "id": "e16",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.30200000000000005,
      "actor": "wolf-cedar",
-     "target": "r2_the_bay_light_up",
-     "cell": "r2_the_bay_light_up",
-     "detail": "r2_the_bay_light"
+     "target": "bay_foot",
+     "cell": "w_ridgemere_0_0",
+     "x": 74,
+     "y": 178
     },
     {
      "id": "e17",
@@ -6042,7 +6314,7 @@
      "day": 0.38000000000000006,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "cty_linden_sedgeditch",
+     "item": "rm_greta_gullton",
      "detail": "lamp"
     },
     {
@@ -6056,20 +6328,21 @@
     },
     {
      "id": "e21",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.401,
      "actor": "wolf-ash",
-     "target": "r2_the_lamp_store",
-     "cell": "r2_the_lamp_store",
-     "detail": "w_ridgemere_1_1"
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17
     },
     {
      "id": "e22",
      "kind": "conversation",
      "day": 0.402,
      "actor": "wolf-ash",
-     "target": "rm_corwin_bilgestack",
-     "cell": "r2_the_lamp_store"
+     "target": "rm_dorcas_rainford",
+     "cell": "rm_the_lamp_wick"
     },
     {
      "id": "e23",
@@ -6077,17 +6350,18 @@
      "day": 0.403,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rm_septimus_plankmarsh",
+     "item": "rm_florence_millhand",
      "detail": "lq_wr_ledger"
     },
     {
      "id": "e24",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 0.404,
      "actor": "wolf-ash",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -6096,12 +6370,13 @@
     },
     {
      "id": "e25",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 1.0,
      "actor": "wolf-ash",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -6128,20 +6403,21 @@
     },
     {
      "id": "e28",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 1.101,
      "actor": "wolf-birch",
-     "target": "r2_the_lamp_store",
-     "cell": "r2_the_lamp_store",
-     "detail": "w_ridgemere_1_1"
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17
     },
     {
      "id": "e29",
      "kind": "conversation",
      "day": 1.102,
      "actor": "wolf-birch",
-     "target": "rm_corwin_bilgestack",
-     "cell": "r2_the_lamp_store"
+     "target": "rm_dorcas_rainford",
+     "cell": "rm_the_lamp_wick"
     },
     {
      "id": "e30",
@@ -6149,17 +6425,18 @@
      "day": 1.103,
      "actor": "wolf-birch",
      "target": "run",
-     "item": "rm_septimus_plankmarsh",
+     "item": "rm_florence_millhand",
      "detail": "lq_wr_ledger"
     },
     {
      "id": "e31",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 1.104,
      "actor": "wolf-birch",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -6168,12 +6445,13 @@
     },
     {
      "id": "e32",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 1.7000000000000002,
      "actor": "wolf-birch",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -6200,20 +6478,21 @@
     },
     {
      "id": "e35",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 1.801,
      "actor": "wolf-cedar",
-     "target": "r2_the_lamp_store",
-     "cell": "r2_the_lamp_store",
-     "detail": "w_ridgemere_1_1"
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17
     },
     {
      "id": "e36",
      "kind": "conversation",
      "day": 1.802,
      "actor": "wolf-cedar",
-     "target": "rm_corwin_bilgestack",
-     "cell": "r2_the_lamp_store"
+     "target": "rm_dorcas_rainford",
+     "cell": "rm_the_lamp_wick"
     },
     {
      "id": "e37",
@@ -6221,17 +6500,18 @@
      "day": 1.803,
      "actor": "wolf-cedar",
      "target": "run",
-     "item": "rm_septimus_plankmarsh",
+     "item": "rm_florence_millhand",
      "detail": "lq_wr_ledger"
     },
     {
      "id": "e38",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 1.804,
      "actor": "wolf-cedar",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18
@@ -6240,12 +6520,13 @@
     },
     {
      "id": "e39",
-     "kind": "near resident",
+     "kind": "region entered",
      "day": 2.4,
      "actor": "wolf-cedar",
-     "target": "rm_ilse_coalley",
-     "cell": "w_ridgemere_0_0",
-     "quantity": 3,
+     "target": "ls_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 21,
+     "y": 17,
      "facts": {
       "world": {
        "hour": 18

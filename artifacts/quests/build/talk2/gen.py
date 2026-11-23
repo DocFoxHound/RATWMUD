@@ -6,8 +6,10 @@
   python3 artifacts/quests/build/talk2/gen.py Data/Talk
 
 writes rules/story_ninth_howl.talk and scenes/common/story_ninth_howl.talk, and inserts the window lines into
-dialogue/resident.tree (news, gossip, and part 1's nh_story, nh_help, nh_who, nh_ask) and dialogue/inn.tree (greet),
-each between ">>> Ninth Howl talk, part 2" markers, replaced on a re-run. Re-run it after anything rewrites those trees.
+dialogue/resident.tree (hub, news, gossip, and part 1's nh_story, nh_help, nh_who, nh_ask), dialogue/inn.tree (greet)
+and dialogue/watch.tree (hub), each between ">>> Ninth Howl talk, part 2" markers, replaced on a re-run. The hub lines
+are the quest packs' targets' and givers' own greetings (packs.json nodes 'hub' and 'watch.hub', priority 4 like part
+1's cast greetings), after part 1's and before the hub's choices. Re-run it after anything rewrites those trees.
 The campaign's lines are campaign.dsl (its head says how to read it); the packs' are packs.json.
 """
 import json, re, sys
@@ -143,7 +145,7 @@ def rules(lines):
 
 
 def pack_window(packs):
-    nodes = {'news': [], 'gossip': [], 'inn.greet': []}
+    nodes = {'news': [], 'gossip': [], 'inn.greet': [], 'hub': [], 'watch.hub': []}
     for r in packs:
         check_len(r['line'], f"{r['src']} {r['quest']}")
         node = r['node']
@@ -151,6 +153,8 @@ def pack_window(packs):
                                        else (2 if node == 'inn.greet' else None))
         if node == 'news' and any('nh_coin=thin' in g for g in r['gates']):
             pr = 3
+        if node in ('hub', 'watch.hub'):
+            pr = 4                                  # (A resident's own greeting, as part 1's cast greetings.)
         nodes[node].append((r['quest'], say(r['gates'], r['line'], pr)))
     return nodes
 
@@ -296,6 +300,21 @@ def insert_after(text, anchor, lines):
     return text[:i] + '\n'.join(lines) + '\n' + text[i:]
 
 
+def insert_in_hub(text, lines, tree):
+    """Before the hub's `mood` and `free` (its choices follow), so after every greeting part 1 wrote."""
+    m = re.search(r'^node hub\n(?:(?!node ).*\n)*?free\n', text, flags=re.M)
+    if not m:
+        raise SystemExit(f'{tree}: node hub has no free line')
+    i = m.end() - len('free\n')
+    while text.rfind('\n', 0, i - 1) >= 0 and text[text.rfind('\n', 0, i - 1) + 1:i].startswith('mood '):
+        i = text.rfind('\n', 0, i - 1) + 1         # (and before the hub's mood, which closes its lines)
+    return text[:i] + '\n'.join(lines) + '\n' + text[i:]
+
+
+HUB_NOTE = ['# The quest packs: their targets\' and givers\' own greetings, gated on the line\'s talk key (quests-large',
+            '# notes, "Talk lines for wave G"; C8, or the DM by hand), priority 4 like the cast\'s above.']
+
+
 def main(talk):
     talk = Path(talk)
     camp = parse_dsl(HERE / 'campaign.dsl')
@@ -316,6 +335,8 @@ def main(talk):
               '# priority, so a fresh real claim (here.gossip=yes) still competes (cast-and-talk §5.1).'] + cw['gossip']
     gossip += ['# The quest packs: "someone did it" lines (quests-*.md, talk).'] + [s for _, s in pw['gossip']]
     t = insert_after(t, 'node gossip\nsay #gossip_none#\n', block('gossip lines', gossip))
+    t = strip_block(t, 'hub lines')
+    t = insert_in_hub(t, block('hub lines', HUB_NOTE + [s for _, s in pw['hub']]), 'resident.tree')
     # The campaign's own nodes are part 1's (cast-and-talk §3, §5.2): its nh_story, nh_help, nh_who and nh_ask hold the
     # recap and the plain floor. This fills them by stage and dialect, after each node's bare say.
     for node in ('nh_story', 'nh_help', 'nh_who', 'nh_ask'):
@@ -336,6 +357,12 @@ def main(talk):
     recaps += [s for _, s in pw['inn.greet']]
     anchor = 'say[pair.disposition=hostile priority=10] You. Say what you want and go. | What now? | I\'ll serve you, and that\'s all.\n'
     t = insert_after(t, anchor, block('inn recaps', recaps))
+    p.write_text(t)
+
+    # watch.tree: the watch's own targets' greetings (its hub).
+    p = talk / 'dialogue' / 'watch.tree'
+    t = strip_block(p.read_text(), 'hub lines')
+    t = insert_in_hub(t, block('hub lines', HUB_NOTE + [s for _, s in pw['watch.hub']]), 'watch.tree')
     p.write_text(t)
 
     (talk / 'rules' / 'story_ninth_howl.talk').write_text(RULES_HEAD + '\n'.join(rules(camp)))

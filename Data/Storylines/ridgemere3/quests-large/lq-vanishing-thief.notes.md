@@ -79,3 +79,19 @@ say[self.id=rm_petra_vance world.mem.lq_thief_thin=yes priority=4] The treasury'
 say[world.mem.lq_thief=walking here.region=ridgemere] Pledges vanishing from a locked room on the Rise. The lender at Vance House wants a plain answer.
 ```
 - Allow-list: "Sunken Street" (already in large §14.2's list), "the Rise", "the Heights".
+
+## Givers behind locked doors (2026-11-22, second pass; doc 86 "Givers behind locked doors")
+Every resident of this line lived and worked behind doors locked to wolves (doc 82), and two of its places were locked
+interiors: the strongroom, and the Sunken Street, where the cache lay (so it could never be picked up). Now:
+- The Vance who runs the Rag Mill, Eleanor Vance (6-18, plain), gives `locked` and holds the three roads' choices
+  (`lq_th_forgive`, `lq_th_name`, `lq_th_blinker`), speaking for the House; Petra stays in the words, as the lender, and
+  signs the board notices ("Ask at the Vances' Rag Mill"). Her window line and the thin-purse line are Eleanor's.
+- "Ask my servant" is the Harrowgates' man, Emmerich Greyridge, out on the Rise all day (6-21); "the Thornburys' man" is
+  the Eastgate stable keeper, Ragnar Roperidge (6-18), whose peg the Thornburys' harness clip went from.
+- The thief is Una Brineridge, 18, a Greywool hand (8-18), and her lookout Finn Dripwick, 18, at the Sailors' Rest
+  (7-18). The words say "young Sump wolf" for the pup, and Greywool for the school.
+- The strongroom is looked over from Vance House's door (`vance_door`); the old street is found at the Sunken Street's
+  Commons stair (`ss_stair`); the bricked arch is by its far door, on the street (`old_drain` on `w_ridgemere_1_1`),
+  and the cache's three pledges are laid there (15,41 / 16,41 / 17,42), so `pledge-found` listens on that cell.
+- `givers.tsv` rows moved to the five new residents. Rehearsals follow (region events for the door and the stair).
+

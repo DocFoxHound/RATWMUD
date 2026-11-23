@@ -160,7 +160,7 @@
    "type": "number",
    "scope": "story",
    "initial": 0,
-   "note": "Answers under way: the Council's clerk shows her choice while any is."
+   "note": "Answers under way: the Council Press's printer shows her choice while any is."
   },
   {
    "id": "wagon_in",
@@ -311,6 +311,14 @@
    "y1": 106,
    "x2": 230,
    "y2": 126
+  },
+  {
+   "id": "co_door",
+   "cell": "w_ridgemere_1_1",
+   "x1": 35,
+   "y1": 111,
+   "x2": 41,
+   "y2": 117
   }
  ],
  "triggers": [
@@ -370,7 +378,7 @@
         "npc": "rmx_florence_pennock",
         "id": "lq_run_sheet",
         "words": "I've come for the time-sheet.",
-        "reply": "Here it is, sealed. Every square's hour, as the tube came through. Straight to the Council's clerk with it, and the Bright One speed you.",
+        "reply": "Here it is, sealed. Every square's hour, as the tube came through. Straight to the Council Press with it, and the Bright One speed you.",
         "once": false
        }
       },
@@ -378,10 +386,10 @@
        "do": "effect",
        "effect": {
         "kind": "npc.offer",
-        "npc": "rmx_philippa_pitchstack",
+        "npc": "rm_wynn_fogworth",
         "id": "lq_run_clerk",
         "words": "Here is the Long Run's time-sheet.",
-        "reply": "#greet#. The timekeeper's seal, and every square's hour on it. The Council will have to read this one, whatever it would rather. Much obliged.",
+        "reply": "#greet#. The timekeeper's seal, and every square's hour on it. It goes on every board in the realm by morning, so the Council will have to read this one, whatever it would rather. Much obliged.",
         "once": false
        }
       }
@@ -3142,35 +3150,6 @@
    ]
   },
   {
-   "id": "trial-start",
-   "on": "quest started",
-   "match": {
-    "detail": "trial"
-   },
-   "audience": "participant",
-   "note": "Taken in the Couriers' Office itself: the tube is handed over there and then (from the board, the wolf collects it at the Office).",
-   "actions": [
-    {
-     "do": "if",
-     "if": {
-      "test": "wolf in place",
-      "place": "rm_the_hall_of_records"
-     },
-     "then": [
-      {
-       "do": "effect",
-       "effect": {
-        "kind": "objective.complete",
-        "quest": "trial",
-        "objective": "tube",
-        "player": "$actor"
-       }
-      }
-     ]
-    }
-   ]
-  },
-  {
    "id": "tube-taken",
    "on": "objective completed",
    "match": {
@@ -3322,9 +3301,9 @@
   },
   {
    "id": "trial-back",
-   "on": "enter place",
+   "on": "region entered",
    "match": {
-    "target": "rm_the_hall_of_records"
+    "target": "co_door"
    },
    "audience": "participant",
    "if": {
@@ -3542,7 +3521,7 @@
       "npc": "rmx_florence_pennock",
       "id": "lq_run_sheet",
       "words": "I've come for the time-sheet.",
-      "reply": "Here it is, sealed. Every square's hour, as the tube came through. Straight to the Council's clerk with it, and the Bright One speed you.",
+      "reply": "Here it is, sealed. Every square's hour, as the tube came through. Straight to the Council Press with it, and the Bright One speed you.",
       "once": false
      }
     },
@@ -3550,10 +3529,10 @@
      "do": "effect",
      "effect": {
       "kind": "npc.offer",
-      "npc": "rmx_philippa_pitchstack",
+      "npc": "rm_wynn_fogworth",
       "id": "lq_run_clerk",
       "words": "Here is the Long Run's time-sheet.",
-      "reply": "#greet#. The timekeeper's seal, and every square's hour on it. The Council will have to read this one, whatever it would rather. Much obliged.",
+      "reply": "#greet#. The timekeeper's seal, and every square's hour on it. It goes on every board in the realm by morning, so the Council will have to read this one, whatever it would rather. Much obliged.",
       "once": false
      }
     }
@@ -3857,7 +3836,7 @@
   {
    "id": "trial",
    "title": "A Trial Leg",
-   "summary": "Run the Couriers' tube to the Oakhaven square and back to the Couriers' Office against the sand-glass.",
+   "summary": "Run the Couriers' tube from the Couriers' Office door to the Oakhaven square and back, against the sand-glass.",
    "giver": "rmx_grete_dimmock",
    "board": "ridgemere",
    "scope": "player",
@@ -3876,10 +3855,10 @@
    "objectives": [
     {
      "id": "tube",
-     "label": "Collect the courier's tube at the Couriers' Office.",
-     "on": "enter place",
+     "label": "Collect the courier's tube at the Couriers' Office door.",
+     "on": "region entered",
      "match": {
-      "target": "rm_the_hall_of_records"
+      "target": "co_door"
      }
     },
     {
@@ -3893,7 +3872,7 @@
     },
     {
      "id": "back",
-     "label": "And back to the Couriers' Office inside six.",
+     "label": "And back to the Couriers' Office door inside six.",
      "on": "story signal",
      "signal": "trial_back",
      "after": [
@@ -3987,13 +3966,13 @@
   {
    "id": "answer",
    "title": "The Council's Answer",
-   "summary": "Take the time-sheet from the timekeeper to the Council's clerk.",
+   "summary": "Take the time-sheet from the timekeeper to the Council Press.",
    "scope": "player",
    "repeat": "once",
    "objectives": [
     {
      "id": "sheet",
-     "label": "Take the time-sheet from the timekeeper at the Couriers' Office.",
+     "label": "Take the time-sheet from the timekeeper, who drinks at the Grey Gull of an evening.",
      "on": "dialogue choice",
      "match": {
       "item": "rmx_florence_pennock",
@@ -4002,10 +3981,10 @@
     },
     {
      "id": "council",
-     "label": "Carry it to the Council's clerk in the Administrative Wing.",
+     "label": "Carry it to the Council Press, where the Council's notices are set.",
      "on": "dialogue choice",
      "match": {
-      "item": "rmx_philippa_pitchstack",
+      "item": "rm_wynn_fogworth",
       "detail": "lq_run_clerk"
      },
      "after": [
@@ -4024,13 +4003,13 @@
   {
    "id": "answer_again",
    "title": "The Council's Answer, Again",
-   "summary": "Another season, another time-sheet: take it from the timekeeper to the Council's clerk.",
+   "summary": "Another season, another time-sheet: take it from the timekeeper to the Council Press.",
    "scope": "player",
    "repeat": "weekly",
    "objectives": [
     {
      "id": "sheet",
-     "label": "Take the time-sheet from the timekeeper at the Couriers' Office.",
+     "label": "Take the time-sheet from the timekeeper, who drinks at the Grey Gull of an evening.",
      "on": "dialogue choice",
      "match": {
       "item": "rmx_florence_pennock",
@@ -4039,10 +4018,10 @@
     },
     {
      "id": "council",
-     "label": "Carry it to the Council's clerk in the Administrative Wing.",
+     "label": "Carry it to the Council Press, where the Council's notices are set.",
      "on": "dialogue choice",
      "match": {
-      "item": "rmx_philippa_pitchstack",
+      "item": "rm_wynn_fogworth",
       "detail": "lq_run_clerk"
      },
      "after": [
@@ -4084,12 +4063,13 @@
     },
     {
      "id": "e3",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.101,
      "actor": "wolf-ash",
-     "target": "rm_the_hall_of_records",
-     "cell": "rm_the_hall_of_records",
-     "detail": "w_ridgemere_1_1"
+     "target": "co_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 38,
+     "y": 115
     },
     {
      "id": "e4",
@@ -4111,12 +4091,13 @@
     },
     {
      "id": "e5",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.30000000000000004,
      "actor": "wolf-ash",
-     "target": "rm_the_hall_of_records",
-     "cell": "rm_the_hall_of_records",
-     "detail": "w_ridgemere_1_1"
+     "target": "co_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 38,
+     "y": 115
     },
     {
      "id": "e6",
@@ -4340,7 +4321,7 @@
      "day": 14.950000000000005,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_philippa_pitchstack",
+     "item": "rm_wynn_fogworth",
      "detail": "lq_run_clerk"
     },
     {
@@ -4415,12 +4396,13 @@
     },
     {
      "id": "e3",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.101,
      "actor": "wolf-ash",
-     "target": "rm_the_hall_of_records",
-     "cell": "rm_the_hall_of_records",
-     "detail": "w_ridgemere_1_1"
+     "target": "co_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 38,
+     "y": 115
     },
     {
      "id": "e4",
@@ -4442,12 +4424,13 @@
     },
     {
      "id": "e5",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.30000000000000004,
      "actor": "wolf-ash",
-     "target": "rm_the_hall_of_records",
-     "cell": "rm_the_hall_of_records",
-     "detail": "w_ridgemere_1_1"
+     "target": "co_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 38,
+     "y": 115
     },
     {
      "id": "e6",
@@ -4469,12 +4452,13 @@
     },
     {
      "id": "e8",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.401,
      "actor": "wolf-birch",
-     "target": "rm_the_hall_of_records",
-     "cell": "rm_the_hall_of_records",
-     "detail": "w_ridgemere_1_1"
+     "target": "co_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 38,
+     "y": 115
     },
     {
      "id": "e9",
@@ -4496,12 +4480,13 @@
     },
     {
      "id": "e10",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.6000000000000001,
      "actor": "wolf-birch",
-     "target": "rm_the_hall_of_records",
-     "cell": "rm_the_hall_of_records",
-     "detail": "w_ridgemere_1_1"
+     "target": "co_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 38,
+     "y": 115
     },
     {
      "id": "e11",
@@ -4523,12 +4508,13 @@
     },
     {
      "id": "e13",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.701,
      "actor": "wolf-cedar",
-     "target": "rm_the_hall_of_records",
-     "cell": "rm_the_hall_of_records",
-     "detail": "w_ridgemere_1_1"
+     "target": "co_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 38,
+     "y": 115
     },
     {
      "id": "e14",
@@ -4550,12 +4536,13 @@
     },
     {
      "id": "e15",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.8999999999999999,
      "actor": "wolf-cedar",
-     "target": "rm_the_hall_of_records",
-     "cell": "rm_the_hall_of_records",
-     "detail": "w_ridgemere_1_1"
+     "target": "co_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 38,
+     "y": 115
     },
     {
      "id": "e16",
@@ -4776,12 +4763,13 @@
     },
     {
      "id": "e4",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.101,
      "actor": "wolf-dunn",
-     "target": "rm_the_hall_of_records",
-     "cell": "rm_the_hall_of_records",
-     "detail": "w_ridgemere_1_1"
+     "target": "co_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 38,
+     "y": 115
     },
     {
      "id": "e5",
@@ -4812,12 +4800,13 @@
     },
     {
      "id": "e7",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.401,
      "actor": "wolf-dunn",
-     "target": "rm_the_hall_of_records",
-     "cell": "rm_the_hall_of_records",
-     "detail": "w_ridgemere_1_1"
+     "target": "co_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 38,
+     "y": 115
     },
     {
      "id": "e8",
@@ -4839,12 +4828,13 @@
     },
     {
      "id": "e9",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.6000000000000001,
      "actor": "wolf-dunn",
-     "target": "rm_the_hall_of_records",
-     "cell": "rm_the_hall_of_records",
-     "detail": "w_ridgemere_1_1"
+     "target": "co_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 38,
+     "y": 115
     },
     {
      "id": "e10",
@@ -5095,12 +5085,13 @@
     },
     {
      "id": "e3",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.101,
      "actor": "wolf-ash",
-     "target": "rm_the_hall_of_records",
-     "cell": "rm_the_hall_of_records",
-     "detail": "w_ridgemere_1_1"
+     "target": "co_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 38,
+     "y": 115
     },
     {
      "id": "e4",
@@ -5122,12 +5113,13 @@
     },
     {
      "id": "e5",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.30000000000000004,
      "actor": "wolf-ash",
-     "target": "rm_the_hall_of_records",
-     "cell": "rm_the_hall_of_records",
-     "detail": "w_ridgemere_1_1"
+     "target": "co_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 38,
+     "y": 115
     },
     {
      "id": "e6",
@@ -5364,12 +5356,13 @@
     },
     {
      "id": "e3",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.101,
      "actor": "wolf-ash",
-     "target": "rm_the_hall_of_records",
-     "cell": "rm_the_hall_of_records",
-     "detail": "w_ridgemere_1_1"
+     "target": "co_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 38,
+     "y": 115
     },
     {
      "id": "e4",
@@ -5391,12 +5384,13 @@
     },
     {
      "id": "e5",
-     "kind": "enter place",
+     "kind": "region entered",
      "day": 0.30000000000000004,
      "actor": "wolf-ash",
-     "target": "rm_the_hall_of_records",
-     "cell": "rm_the_hall_of_records",
-     "detail": "w_ridgemere_1_1"
+     "target": "co_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 38,
+     "y": 115
     },
     {
      "id": "e6",
@@ -5620,7 +5614,7 @@
      "day": 15.509999999999993,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_philippa_pitchstack",
+     "item": "rm_wynn_fogworth",
      "detail": "lq_run_clerk"
     },
     {
@@ -5842,7 +5836,7 @@
      "day": 31.669999999999998,
      "actor": "wolf-ash",
      "target": "run",
-     "item": "rmx_philippa_pitchstack",
+     "item": "rm_wynn_fogworth",
      "detail": "lq_run_clerk"
     }
    ],

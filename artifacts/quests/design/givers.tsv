@@ -112,39 +112,39 @@ tn_sm_orrin_appleley	Orrin Appleley	southmeadow	The Sunfields, Southmeadow	campa
 cty_stone_sunton	Stone Sunton	ridgemere	Ridgemere, the Commons and the Rise	look-alike	ninth-howl: the Grey Captain (like: only; no pack role)
 rm_palle_bilgemarsh	Palle Bilgemarsh	ridgemere	commons	look-alike	ninth-howl: Hakon (like: only; no pack role)
 tn_sm_brisk_plumby	Brisk Plumby	southmeadow	The Sunfields, Southmeadow	look-alike	ninth-howl: the Envoy (like: only; no pack role)
-rm_disa_raincot	Disa Raincot	ridgemere	estate	small:sq-almoners-round	nh-pack.small.city
-cty_oriel_blossomby	Oriel Blossomby	coldwater	The Greenholt, Middle	small:sq-apple-nose	nh-pack.small.north
-cty_yrsa_plankgate	Yrsa Plankgate	fenshore	The Sallow Fens, Fenshore	small:sq-boardwalk-plank	nh-pack.small.south
+rm_arne_wickdale	Arne Wickdale	ridgemere	sump	small:sq-almoners-round	nh-pack.small.city
+tn_fh_laurel_pinefell	Laurel Pinefell	coldwater	The Greenholt, Coldwater	small:sq-apple-nose	nh-pack.small.north
+tn_oh_ludo_ashwood	Ludo Ashwood	fenshore	The Sallow Fens, Fenshore	small:sq-boardwalk-plank	nh-pack.small.south
 tn_lf_lichen_hedgemead	Lichen Hedgemead	coldwater	The Greenholt, Coldwater	small:sq-bread-to-the-landing	nh-pack.small.north
 tn_lf_moss_downridge	Moss Downridge	saltwell	The Red Waste, Saltwell	small:sq-caravan-welcome	nh-pack.small.south
 cty_iris_fernhaven	Iris Fernhaven	frosthollow	The Greenholt, Frosthollow	small:sq-clamp-watch	nh-pack.small.north
-rm_corwin_bilgestack	Corwin Bilgestack	ridgemere	sump	small:sq-dawn-bell	nh-pack.small.city
-rm_ansel_tarley	Ansel Tarley	ridgemere	estate	small:sq-fellhall-errand	nh-pack.small.city
-cty_fallow_reedwell	Fallow Reedwell	fenshore	The Sallow Fens, North-west	small:sq-fenside-pans	nh-pack.small.south
-cty_willa_wheatcombe	Willa Wheatcombe	southmeadow	The Sunfields, Southmeadow	small:sq-festival-garlands	nh-pack.small.south
-cty_ingram_hazelshaw	Ingram Hazelshaw	coldwater	The Greenholt, West	small:sq-fox-at-the-hen-run	nh-pack.small.north
+rm_mathis_plankham	Mathis Plankham	ridgemere	sump	small:sq-dawn-bell	nh-pack.small.city
+rm_erland_fogley	Erland Fogley	ridgemere	estate	small:sq-fellhall-errand	nh-pack.small.city
+tn_oh_briar_greenshaw	Briar Greenshaw	fenshore	The Sallow Fens, Fenshore	small:sq-fenside-pans	nh-pack.small.south
+cty_briar_sedgebridge	Briar Sedgebridge	southmeadow	The Sunfields, Southmeadow	small:sq-festival-garlands	nh-pack.small.south
+tn_lf_flint_downcombe	Flint Downcombe	coldwater	The Greenholt, Coldwater	small:sq-fox-at-the-hen-run	nh-pack.small.north
 rm_soren_ropewick	Soren Ropewick	ridgemere	sump	small:sq-gone-to-see-the-ships	nh-pack.small.city
-rm_erland_cinderridge	Erland Cinderridge	ridgemere	estate	small:sq-grayrock-hall-errand	nh-pack.small.city
-rm_philippa_rustton	Philippa Rustton	ridgemere	sump	small:sq-greatly-stables	nh-pack.small.city
+rm_agna_dripridge	Agna Dripridge	ridgemere	estate	small:sq-grayrock-hall-errand	nh-pack.small.city
+rm_hjalte_sootby	Hjalte Sootby	ridgemere	sump	small:sq-greatly-stables	nh-pack.small.city
 cty_emrys_stillshore	Emrys Stillshore	southmeadow	The Sunfields, Southmeadow	small:sq-hare-in-the-seed-rows	nh-pack.small.south
-rm_gwen_cinderdale	Gwen Cinderdale	ridgemere	office	small:sq-heights-round	nh-pack.small.city
-rm_egil_grantham	Egil Grantham	ridgemere	heights	small:sq-heights-thyme	nh-pack.small.city
+rmx_kjell_coalham	Kjell Coalham	ridgemere	sump	small:sq-heights-round	nh-pack.small.city
+rm_mogens_ashley	Mogens Ashley	ridgemere	commons	small:sq-heights-thyme	nh-pack.small.city
 tn_lf_sage_wheatridge	Sage Wheatridge	coldwater	The Greenholt, Coldwater	small:sq-kettle-wood	nh-pack.small.north
 tn_cw_fern_mistshore	Fern Mistshore	larkfield	The Greenholt, Larkfield	small:sq-linen-for-the-press	nh-pack.small.south
 rm_thyra_plankridge	Thyra Plankridge	ridgemere	commons	small:sq-marketday-stock	nh-pack.small.city
-rm_frederick_nailgate	Frederick Nailgate	ridgemere	estate	small:sq-mending-herbs	nh-pack.small.city
-cty_gorse_hedgewell	Gorse Hedgewell	larkfield	The Greenholt, Larkfield	small:sq-mill-race	nh-pack.small.south
+rm_rupert_pitchford	Rupert Pitchford	ridgemere	commons	small:sq-mending-herbs	nh-pack.small.city
+tn_sm_eskar_cornley	Eskar Cornley	larkfield	The Greenholt, Larkfield	small:sq-mill-race	nh-pack.small.south
 cty_lichen_reedford	Lichen Reedford	fenshore	The Sallow Fens, Fenshore	small:sq-mirebridge-clay	nh-pack.small.south
 rm_wystan_coalmarsh	Wystan Coalmarsh	ridgemere	works	small:sq-mooring-lines	nh-pack.small.city
 rm_tove_brinegate	Tove Brinegate	ridgemere	commons	small:sq-morning-bread	nh-pack.small.city
 rm_wynn_sootworth	Wynn Sootworth	ridgemere	works	small:sq-nailers-charcoal	nh-pack.small.city
 rm_petra_plankhand	Petra Plankhand	ridgemere	sump	small:sq-oakhaven-load	nh-pack.small.city
 cty_senna_applegarth	Senna Applegarth	saltwell	The Larkdowns, South-west	small:sq-ochre-rabbits	nh-pack.small.south
-cty_fallow_plumfield	Fallow Plumfield	larkfield	The Greenholt, South	small:sq-plumtree-badger	nh-pack.small.south
+tn_mb_vale_miremore	Vale Miremore	larkfield	The Greenholt, Larkfield	small:sq-plumtree-badger	nh-pack.small.south
 rm_agnes_millford	Agnes Millford	ridgemere	commons	small:sq-rag-market-mushrooms	nh-pack.small.city
 rm_corwin_sootstack	Corwin Sootstack	ridgemere	sump	small:sq-rainward-pheasants	nh-pack.small.city
-rmx_harriet_platt	Harriet Platt	ridgemere	office	small:sq-records-copying	nh-pack.small.city
-rm_berit_coalworth	Berit Coalworth	ridgemere	estate	small:sq-restday-candles	nh-pack.small.city
+rm_runa_ashridge	Runa Ashridge	ridgemere	sump	small:sq-records-copying	nh-pack.small.city
+rm_sten_kelpwell	Sten Kelpwell	ridgemere	wharf	small:sq-restday-candles	nh-pack.small.city
 rm_kari_bilgehand	Kari Bilgehand	ridgemere	commons	small:sq-ropewalk-resin	nh-pack.small.city
 cty_winifred_fogridge	Winifred Fogridge	saltwell	The Red Waste, Saltwell	small:sq-salt-for-the-road	nh-pack.small.south
 cty_leif_driphand	Leif Driphand	frosthollow	The Greenholt, Frosthollow	small:sq-scree-goats	nh-pack.small.north
@@ -152,9 +152,9 @@ cty_ingram_ashleaf	Ingram Ashleaf	oakhaven	The Rainwood, North-east	small:sq-sle
 tn_sm_hob_meadowfield	Hob Meadowfield	southmeadow	The Larkdowns, South-west	small:sq-smoke-for-the-hives	nh-pack.small.south
 rm_rosamund_coalford	Rosamund Coalford	ridgemere	sump	small:sq-smokehouse-wood	nh-pack.small.city
 rm_yrsa_nailridge	Yrsa Nailridge	ridgemere	commons	small:sq-sounding-the-tarns	nh-pack.small.city
-tn_lf_rusk_downfield	Rusk Downfield	coldwater	The Larkdowns, South-west	small:sq-straw-for-the-pens	nh-pack.small.north
-cty_brock_marshholm	Brock Marshholm	coldwater	The Greenholt, Coldwater	small:sq-strayed-ewe	nh-pack.small.north
-cty_njal_rustwick	Njal Rustwick	larkfield	The Greenholt, Larkfield	small:sq-swill-for-southwood	nh-pack.small.south
+tn_oh_varg_acorndell	Varg Acorndell	coldwater	The Greenholt, Middle	small:sq-straw-for-the-pens	nh-pack.small.north
+tn_fh_marl_cragpeak	Marl Cragpeak	coldwater	The Greenholt, Middle	small:sq-strayed-ewe	nh-pack.small.north
+tn_lf_rowan_chalkley	Rowan Chalkley	larkfield	The Greenholt, Larkfield	small:sq-swill-for-southwood	nh-pack.small.south
 rm_lotte_greyley	Lotte Greyley	ridgemere	estate	small:sq-timberland-court-errand	nh-pack.small.city
 cty_leif_rainley	Leif Rainley	fenshore	The Sallow Fens, South-west	small:sq-twine-for-the-nets	nh-pack.small.south
 cty_frost_colddrift	Frost Colddrift	oakhaven	The Rainwood, North-east	small:sq-venison-for-the-cut	nh-pack.small.north
@@ -163,18 +163,18 @@ rm_palle_plankmore	Palle Plankmore	ridgemere	sump	medium:mq-cinder-gate-tally	nh
 tn_sm_linden_harvestton	Linden Harvestton	coldwater	The Greenholt, Middle	medium:mq-coldwater-still	nh-pack.medium.greenholt
 rm_edric_millton	Edric Millton	ridgemere	commons	medium:mq-coopers-note	nh-pack.medium.city
 tn_mb_kite_bogditch	Kite Bogditch	saltwell	The Saltpan, Saltpan workings	medium:mq-crossroads-names	nh-pack.medium.south
-tn_cw_grist_reedmere	Grist Reedmere	coldwater	The Greenholt, Coldwater	medium:mq-glasswater-nets	nh-pack.medium.greenholt
+tn_sm_fennel_cornley	Fennel Cornley	coldwater	The Greenholt, Coldwater	medium:mq-glasswater-nets	nh-pack.medium.greenholt
 cty_stone_acorndell	Stone Acorndell	frosthollow	The Greenholt, Frosthollow	medium:mq-lamp-oil-share	nh-pack.medium.north
 tn_mb_heather_reedwater	Heather Reedwater	larkfield	The Greenholt, Larkfield	medium:mq-linen-bolt	nh-pack.medium.greenholt
 cty_fern_merewick	Fern Merewick	saltwell	The Red Waste, Saltwell	medium:mq-lost-raker	nh-pack.medium.south
 tn_mb_ridge_eelbank	Ridge Eelbank	saltwell	The Red Waste, Saltwell	medium:mq-lost-raker	nh-pack.medium.south (npc.offer in the same quest)
 cty_ebba_coalgate	Ebba Coalgate	frosthollow	The Greenholt, Frosthollow	medium:mq-low-drift-props	nh-pack.medium.north
-tn_sm_pell_harvestley	Pell Harvestley	coldwater	The Larkdowns, the Upper Mere	medium:mq-meresend-blight	nh-pack.medium.greenholt
+tn_sm_kindle_applemeadow	Kindle Applemeadow	coldwater	The Greenholt, Middle	medium:mq-meresend-blight	nh-pack.medium.greenholt
 cty_imogen_rustford	Imogen Rustford	larkfield	The Greenholt, Larkfield	medium:mq-mud-to-the-axles	nh-pack.medium.greenholt
 rm_sten_ropeford	Sten Ropeford	ridgemere	commons	medium:mq-northgate-smoke	nh-pack.medium.city
 cty_oda_cinderdale	Oda Cinderdale	oakhaven	The Rainwood, North-east	medium:mq-logs-adrift	nh-pack.medium.north
 tn_sm_bram_harvestgarth	Bram Harvestgarth	fenshore	The Sallow Fens, Fenshore	medium:mq-potters-place	nh-pack.medium.south
-rm_edda_gullford	Edda Gullford	ridgemere	sump	medium:mq-sump-lamps	nh-pack.medium.city
+rm_dorcas_rainford	Dorcas Rainford	ridgemere	sump	medium:mq-sump-lamps	nh-pack.medium.city
 rm_desmond_bilgeridge	Desmond Bilgeridge	ridgemere	commons	medium:mq-sunken-street	nh-pack.medium.city (npc.offer in the same quest)
 rm_theodora_bilgeridge	Theodora Bilgeridge	ridgemere	commons	medium:mq-sunken-street	nh-pack.medium.city
 rm_vidar_ashhand	Vidar Ashhand	ridgemere	estate	medium:mq-court-larder	nh-pack.medium.city
@@ -200,7 +200,7 @@ rmx_florence_pennock	Florence Pennock	ridgemere	commons	large:lq-long-run	lq-lon
 rmx_grete_dimmock	Grete Dimmock	ridgemere	commons	large:lq-long-run	lq-long-run
 rmx_hanne_ash	Hanne Ash	ridgemere	commons	large:lq-long-run	lq-long-run (npc.offer in the same line)
 rmx_orm_carlisle	Orm Carlisle	ridgemere	heights	large:lq-long-run	lq-long-run (npc.offer in the same line)
-rmx_philippa_pitchstack	Philippa Pitchstack	ridgemere	commons	large:lq-long-run	lq-long-run (npc.offer in the same line)
+rm_wynn_fogworth	Wynn Fogworth	ridgemere	commons	large:lq-long-run	lq-long-run (npc.offer in the same line)
 cty_flint_snowdrift	Flint Snowdrift	ridgemere	Ridgemere, the Wharf and the Sump	large:lq-mast-cedars	lq-mast-cedars (npc.offer in the same line)
 cty_senna_beechleaf	Senna Beechleaf	ridgemere	Ridgemere, the Wharf and the Sump	large:lq-mast-cedars	lq-mast-cedars (npc.offer in the same line)
 rm_brenna_slaggate	Brenna Slaggate	ridgemere	commons	large:lq-mast-cedars	lq-mast-cedars (npc.offer in the same line)
@@ -209,33 +209,32 @@ cty_jessamy_greyford	Jessamy Greyford	coldwater	The Greenholt, Coldwater	large:l
 cty_vale_pikebridge	Vale Pikebridge	coldwater	The Greenholt, Coldwater	large:lq-old-brown	lq-old-brown (npc.offer in the same line)
 tn_lf_juniper_larkcombe	Juniper Larkcombe	coldwater	The Greenholt, Coldwater	large:lq-old-brown	lq-old-brown (npc.offer in the same line)
 rm_dunstan_greywick	Dunstan Greywick	ridgemere	commons	large:lq-runnel-fever	lq-runnel-fever (npc.offer in the same line)
-rm_halvard_ashley	Halvard Ashley	ridgemere	commons	large:lq-runnel-fever	lq-runnel-fever (npc.offer in the same line)
-rm_ivo_fogstack	Ivo Fogstack	ridgemere	sump	large:lq-runnel-fever	lq-runnel-fever (npc.offer in the same line)
+rm_halvard_ashley	Halvard Ashley	ridgemere	commons	large:lq-runnel-fever	lq-runnel-fever
+rmx_dirk_langstead	Dirk Langstead	ridgemere	commons	large:lq-runnel-fever	lq-runnel-fever (npc.offer in the same line)
 rm_rupert_fogton	Rupert Fogton	ridgemere	commons	large:lq-runnel-fever	lq-runnel-fever (npc.offer in the same line)
-rm_theodora_wickley	Theodora Wickley	ridgemere	commons	large:lq-runnel-fever	lq-runnel-fever
 cty_orm_sootgate	Orm Sootgate	saltwell	The Red Waste, Saltwell	large:lq-salt-road	lq-salt-road
 rm_osric_ropeworth	Osric Ropeworth	ridgemere	commons	large:lq-salt-road	lq-salt-road (npc.offer in the same line)
 rmx_fenwick_mossdale	Fenwick Mossdale	ridgemere	commons	large:lq-salt-road	lq-salt-road (npc.offer in the same line)
-rm_petra_vance	Petra Vance	ridgemere	heights	large:lq-vanishing-thief	lq-vanishing-thief
-rm_roald_wickstack	Roald Wickstack	ridgemere	heights	large:lq-vanishing-thief	lq-vanishing-thief (npc.offer in the same line)
-rm_silas_brinemore	Silas Brinemore	ridgemere	heights	large:lq-vanishing-thief	lq-vanishing-thief (npc.offer in the same line)
-rmx_hester_greyby	Hester Greyby	ridgemere	sump	large:lq-vanishing-thief	lq-vanishing-thief (npc.offer in the same line)
-rmx_palle_brinewell	Palle Brinewell	ridgemere	sump	large:lq-vanishing-thief	lq-vanishing-thief (npc.offer in the same line)
-cty_linden_sedgeditch	Linden Sedgeditch	ridgemere	Cedar Sound, West	large:lq-wreckers-light	lq-wreckers-light
+rm_eleanor_vance	Eleanor Vance	ridgemere	heights	large:lq-vanishing-thief	lq-vanishing-thief
+rm_emmerich_greyridge	Emmerich Greyridge	ridgemere	office	large:lq-vanishing-thief	lq-vanishing-thief (npc.offer in the same line)
+rm_ragnar_roperidge	Ragnar Roperidge	ridgemere	commons	large:lq-vanishing-thief	lq-vanishing-thief (npc.offer in the same line)
+rmx_una_brineridge	Una Brineridge	ridgemere	sump	large:lq-vanishing-thief	lq-vanishing-thief (npc.offer in the same line)
+rmx_finn_dripwick	Finn Dripwick	ridgemere	sump	large:lq-vanishing-thief	lq-vanishing-thief (npc.offer in the same line)
+rm_greta_gullton	Greta Gullton	ridgemere	sump	large:lq-wreckers-light	lq-wreckers-light
 rm_ilse_coalley	Ilse Coalley	ridgemere	sump	large:lq-wreckers-light	lq-wreckers-light (npc.offer in the same line)
 rm_ivo_cinderham	Ivo Cinderham	ridgemere	sump	large:lq-wreckers-light	lq-wreckers-light (npc.offer in the same line)
-rm_septimus_plankmarsh	Septimus Plankmarsh	ridgemere	commons	large:lq-wreckers-light	lq-wreckers-light (npc.offer in the same line)
+rm_florence_millhand	Florence Millhand	ridgemere	sump	large:lq-wreckers-light	lq-wreckers-light (npc.offer in the same line)
 tn_fh_jory_rimepeak	Jory Rimepeak	coldwater	The Greenholt, Middle	stage:st-bell-road	nh-pack.stage (medium)
 cty_wick_marshwade	Wick Marshwade	coldwater	The Greenholt, Coldwater	stage:st-black-cloak-road	nh-pack.stage (medium)
-cty_juniper_larkham	Juniper Larkham	ridgemere	The Rainward Hills, South-west	stage:st-bounds-water	nh-pack.stage (small)
+cty_vesper_greenholt	Vesper Greenholt	ridgemere	Ridgemere, the Commons and the Rise	stage:st-bounds-water	nh-pack.stage (small)
 rm_frederick_rainham	Frederick Rainham	ridgemere	heights	stage:st-camp-bounty	nh-pack.stage (large)
 cty_alder_blossomcroft	Alder Blossomcroft	southmeadow	The Sunfields, Southmeadow	stage:st-chorus-wrong	nh-pack.stage (small)
-cty_brand_sunham	Brand Sunham	larkfield	The Greenholt, Larkfield	stage:st-feed-larkfield	nh-pack.stage (small)
+tn_fh_clover_snowhollow	Clover Snowhollow	larkfield	The Greenholt, Larkfield	stage:st-feed-larkfield	nh-pack.stage (small)
 cty_stone_marshmore	Stone Marshmore	fenshore	The Sallow Fens, Fenshore	stage:st-fog-lanterns	nh-pack.stage (small)
 tn_oh_quill_oakdell	Quill Oakdell	larkfield	The Greenholt, Larkfield	stage:st-ford-blankets	nh-pack.stage (small)
 rmx_aud_saltridge	Aud Saltridge	ridgemere	sump	stage:st-greenholt-wagon	nh-pack.stage (medium)
 tn_sm_lichen_harvestton	Lichen Harvestton	coldwater	The Greenholt, Coldwater	stage:st-haulers-food	nh-pack.stage (small)
-cty_garth_barleyton	Garth Barleyton	coldwater	The Greenholt, Coldwater	stage:st-ice-watch	nh-pack.stage (medium)
+tn_lf_wald_larkwell	Wald Larkwell	coldwater	The Greenholt, Coldwater	stage:st-ice-watch	nh-pack.stage (medium)
 rm_cedric_mudley	Cedric Mudley	ridgemere	heights	stage:st-midsummer-road	nh-pack.stage (large)
 rm_runa_gullley	Runa Gullley	ridgemere	commons	stage:st-moot-benches	nh-pack.stage (small)
 rmx_bertil_saltcot	Bertil Saltcot	ridgemere	commons	stage:st-patrol-round	nh-pack.stage (large)
@@ -243,6 +242,6 @@ rm_beatha_foggate	Beatha Foggate	ridgemere	heights	stage:st-post-night	nh-pack.s
 rmx_frida_netherby	Frida Netherby	ridgemere	commons	stage:st-post-stone	nh-pack.stage (small)
 cty_odo_icewell	Odo Icewell	ridgemere	Ridgemere, the Commons and the Rise	stage:st-post-timber	nh-pack.stage (small)
 cty_myrtle_larkcombe	Myrtle Larkcombe	southmeadow	The Sunfields, Southmeadow	stage:st-relief-convoy	nh-pack.stage (medium)
-rm_olaf_pitchmore	Olaf Pitchmore	ridgemere	office	stage:st-summons	nh-pack.stage (small)
-cty_ada_coalstack	Ada Coalstack	ridgemere	The Rainward Hills, North	stage:st-twelve-bounds	nh-pack.stage (large)
+rmx_delphine_brackwick	Delphine Brackwick	ridgemere	commons	stage:st-summons	nh-pack.stage (small)
+cty_mogens_mudstack	Mogens Mudstack	ridgemere	Ridgemere, the Wharf and the Sump	stage:st-twelve-bounds	nh-pack.stage (large)
 rm_winifred_cinderworth	Winifred Cinderworth	ridgemere	commons	stage:st-wake-bread	nh-pack.stage (small)

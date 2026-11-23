@@ -956,7 +956,9 @@ phases. Nothing has been approved, published or loaded into Ridgemere 3, and no 
   (`nh` `sq` `mq` `lq` `st` `coin`), and `nh_check` refuses a world variable without one.
 - **Locked doors** (doc 82, `World::playerDoorLocked`): a wolf can't enter a private interior, and `door.unlock`
   doesn't lift that. Every `enter place` into a locked building is an outdoor region at its door instead. Residents
-  who never come out speak in a one-line scene at their own door.
+  who never come out speak in a one-line scene at their own door. Every quest giver, `npc.offer` holder and gift or
+  talk target is a resident a wolf can reach where they are in their working hours, or the exception is written down
+  (see "Givers behind locked doors" below).
 - **Props are rationed per wolf** with player timers (once a game day, or once a week for laid trails). A quest set
   aside and taken again would otherwise hand out new goods each time.
 - **Fights scale per copy**: two bandits for each wolf's copy of a player-scope quest, and one party-sized band for a
@@ -993,13 +995,148 @@ phases. Nothing has been approved, published or loaded into Ridgemere 3, and no 
 | 8 | J2 per-wolf state across acts, C14, L4 |
 | 9 | SQ3, M3 House purses (needs an economy run, asked first), T6 a story topic for the scenes |
 
+### Givers behind locked doors (second pass, 2026-11-22)
+**The rule, from the code.** `World::playerDoorLocked` (Core/RatwWorld.cpp) decides it, and every one of Ridgemere 3's
+414 doors falls under it (all its 241 cells are `w_ridgemere_*`). A door from a street into an interior is locked to
+wolves unless the interior is an inn, alehouse or tavern (open day and night), or a **merchant** post works in it and
+the hour is inside that merchant's hours. Stairs and passages inside are never locked, so a flat over an open shop can
+be reached too. Residents' posts come from `live.npcs` (`role`, `work_label`, `hours_start`/`hours_end`,
+`work_area`), so the rule can be worked out read only. A civilian therefore can be reached at work only when they work
+out of doors (streets, the wharf, the piers, a stall, a field, a cutting), in an inn, or in a shop whose merchant is in.
+Farm sheds, barns, boat sheds, mills, presses, halls, offices, the abbey, the schools and every home are shut to wolves.
+
+**The survey** (a read-only pass over the 21 programs and `ratw_ridgemere3`): 167 residents are named as a giver,
+`npc.offer` holder or gift, talk, trade or near target. 84 had a workplace locked to wolves (or none) at every hour of
+their working day (the first note of this problem counted the medium packs only). Nine places that
+steps needed were locked interiors too: the Couriers' Office (`lq-long-run`), Vance House and the Sunken Street, where
+the cache was laid (`lq-vanishing-thief`), the Bay Light's lamp room, the Lamp Store and the Chapel of the Tide
+(`lq-wreckers-light`), the cathedral, the Clock Tower and Fellhall's kitchens (`nh-pack.small.city`). And archive work is given nowhere on Ridgemere 3: no work label matches a post in
+`Data/Lore/archives.json` ("copying at the Records Office" is not "copying the city rolls"), and the Records Office is
+locked anyway.
+
+**Order of fixes, as decided.**
+1. *A story's door effects*: not available. `door.unlock` and `door.open` set `Door::locked` and `Door::open`
+   (`World::setDoorState`, undone at the run's end), but `playerDoorLocked` is worked out from the cell, the inn names
+   and the merchants' hours and never reads them. No effect in today's catalogue opens a workplace to wolves.
+2. *Re-cast* to an unused, placed, living resident of the same town who works where a wolf can walk in during their
+   hours, keeping one pack quest per resident (`givers.tsv` updated row by row), with the lines rewritten in the new
+   giver's speech (`live.npc_voice`: same town, mostly the same dialect; a set phrase only in its own dialect's mouth).
+   Most re-casts are the wolf who trades with the locked workplace: the soapworks for Oakhurst's fat, the Looms for
+   the Larkdowns wool, the Still for Meresend's apples, the Stores for the Glasswater catch, the estates' cottagers who
+   work in city shops.
+3. Where a required place was a locked interior, the step moved to an outdoor region at its door (the convention above).
+
+**Re-cast, Ridgemere** (old resident, where locked → new resident, where a wolf finds them):
+
+| Program · quest | Role | Was | Now |
+|---|---|---|---|
+| small.city · `sq-morning-bread` | target | Theodora Wickley (Sump Infirmary) | Ottilie Nailmarsh `rm_ottilie_nailmarsh`, porter at the foot of the Sump Stairs, out of doors 6–18 |
+| small.city · `sq-mending-herbs` | giver | Frederick Nailgate (House of Mending) | Rupert Pitchford `rm_rupert_pitchford`, apothecary's stall on Market Square 6–16 |
+| small.city · `sq-heights-round` | giver, target | Gwen Cinderdale (City Office); Roald Wickstack (Vance House) | Kjell Coalham `rmx_kjell_coalham`, Sump Stairs porter 8–18; Eleanor Vance `rm_eleanor_vance`, runs the Rag Mill 6–18 |
+| small.city · `sq-restday-candles` | giver | Berit Coalworth (cathedral) | Sten Kelpwell `rm_sten_kelpwell`, chandler at Wickham's 7–19; the service is kept at the cathedral door (region `cathedral_door`) |
+| small.city · `sq-almoners-round` | giver | Disa Raincot (Chapter House) | Arne Wickdale `rm_arne_wickdale`, brewer at the Abbey Brewhouse 6–18 |
+| small.city · `sq-greatly-stables` | giver | Philippa Rustton (Greatly Stables) | Hjalte Sootby `rm_hjalte_sootby`, the Greatly Yard 6–18 |
+| small.city · `sq-dawn-bell` | giver | Corwin Bilgestack (Lamp Store) | Mathis Plankham `rm_mathis_plankham`, Sump Stairs porter 6–18; the bell rope at the Clock Tower door (region `clock_door`) |
+| small.city · `sq-heights-thyme` | giver | Egil Grantham (Grantham House) | Mogens Ashley `rm_mogens_ashley`, the Mortar and Pestle 8–18 |
+| small.city · `sq-records-copying` | giver | Harriet Platt (Records Office) | Runa Ashridge `rm_runa_ashridge`, the Council Press 8–18; now "Paper for the Rolls": two of paper and an ink, and the hidden page asked of the printer (Ch 4–6) |
+| small.city · `sq-fellhall-errand` | giver | Ansel Tarley (Fellhall) | Erland Fogley `rm_erland_fogley`, the Lamp and Wick 8–18, lives in the Fell Cottages; the optional "in by the kitchens" became an optional butter |
+| small.city · `sq-grayrock-hall-errand` | giver | Erland Cinderridge (Grayrock Hall) | Agna Dripridge `rm_agna_dripridge`, Bridge Stores 8–18, lives in the Grayrock Cottages |
+| small.city · `sq-timberland-court-errand` | target | Arne Wetworth (Timberland Court) | Wenna Timberland `rm_wenna_mossgrave`, the House's iron trade in the yard by the Court, out of doors 6–18 (a campaign target, Ch 6) |
+| medium.city · `mq-sump-lamps` | giver | Edda Gullford (Lamp Store, 17–23) | Dorcas Rainford `rm_dorcas_rainford`, the Lamp and Wick 8–18, who sells the Lamp Store its oil |
+| `lq-long-run` · answers | offer | Philippa Pitchstack (Administrative Wing) | Wynn Fogworth `rm_wynn_fogworth`, the Council Press 8–18; the tube is taken and brought back at the Couriers' Office door (`co_door`) |
+| `lq-runnel-fever` | giver, offer | Theodora Wickley (Sump Infirmary); Ivo Fogstack (Washhouse) | Halvard Ashley `rm_halvard_ashley`, the honest apothecary at the Mortar and Pestle 7–19 (he held the line's "what's in it" choice already); Dirk Langstead `rmx_dirk_langstead`, rag-crier in the Rag Market, out of doors 7–18 |
+| `lq-vanishing-thief` | giver, offers | Petra Vance, Roald Wickstack (Vance House); Silas Brinemore (Thornbury House); Hester Greyby, Palle Brinewell (Abbey School) | Eleanor Vance (Rag Mill) speaks for the House, Petra signs the notices; Emmerich Greyridge `rm_emmerich_greyridge`, in service to the Harrowgates, out on the Commons 6–21; Ragnar Roperidge `rm_ragnar_roperidge`, runs the Eastgate Stables 6–18; the thief Una Brineridge `rmx_una_brineridge` (18, Greywool 8–18) and her lookout Finn Dripwick `rmx_finn_dripwick` (18, the Sailors' Rest 7–18). The strongroom is looked over from its door (`vance_door`), the Sunken Street found at its Commons stair (`ss_stair`), and the bricked arch and its cache are by its far door, on the street (`old_drain`) |
+| `lq-wreckers-light` | giver, offers, targets | Linden Sedgeditch (North Cove boat shed); Corwin Bilgestack (Lamp Store); Septimus Plankmarsh (Wharf Office) | Greta Gullton `rm_greta_gullton`, the Wharf's cranes 6–18; Dorcas Rainford (the Lamp and Wick); Florence Millhand `rm_florence_millhand`, unloads ships at the piers 6–18. The bearing at the Bay Light's foot (`bay_foot`), the oil at the Lamp Store door (`ls_door`), the dusk round watched at that door; in the reckoning Ilse Coalley waits on her Salt Row stair (`npc.move` + `npc.hold`, let go when the reckoning ends or the run does); the priest and the sergeant answer at the Chapel of the Tide's door and the Keep door, in scenes (`wr_priest`, `wr_sergeant`), and the naming is said at the chapel door |
+| stage · `st-summons` | giver, target | Olaf Pitchmore (City Office); Isolde Gullwick (Hillside byre) | Delphine Brackwick `rmx_delphine_brackwick`, the Carters' Yard 8–18; Edda Ropeton `rm_edda_ropeton`, the Round and Rind 6–16, where Hillside's cart calls |
+| stage · `st-bounds-water` | giver | Juniper Larkham (Rainward drying house) | Vesper Greenholt `cty_vesper_greenholt`, Rainwood coppice, out of doors 6–17 |
+| stage · `st-twelve-bounds` | giver | Ada Coalstack (Heatherside hive shed) | Mogens Mudstack `cty_mogens_mudstack`, Rainwood coppice, out of doors 6–17 |
+
+**Re-cast, the country towns:**
+
+| Town · quest | Role | Was | Now |
+|---|---|---|---|
+| Coldwater · `sq-fox-at-the-hen-run` | giver | Ingram Hazelshaw (Oakhurst pig yard) | Flint Downcombe `tn_lf_flint_downcombe`, Coldwater Soapworks 7–19 |
+| Coldwater · `sq-apple-nose` | giver, offer | Oriel Blossomby (Meresend apple store) | Laurel Pinefell `tn_fh_laurel_pinefell`, pot hand at the Glasswater Inn 7–19; the pup is brought to the inn |
+| Coldwater · `sq-straw-for-the-pens` | giver | Rusk Downfield (Larkdowns barn) | Varg Acorndell `tn_oh_varg_acorndell`, Coldwater Looms 7–19 |
+| Coldwater · `sq-strayed-ewe` | giver | Brock Marshholm (Larkdowns barn) | Marl Cragpeak `tn_fh_marl_cragpeak`, Coldwater Looms 7–19 |
+| Coldwater · `sq-bread-to-the-landing` | target | Grist Reedmere (Glasswater boat shed) | Fennel Cornley, who sends the crews' bread down with the catch cart |
+| Coldwater · `mq-glasswater-nets` | giver, offers | Grist Reedmere | Fennel Cornley `tn_sm_fennel_cornley`, Coldwater Stores 7–19 |
+| Coldwater · `mq-meresend-blight` | giver, offers | Pell Harvestley (Meresend apple store) | Kindle Applemeadow `tn_sm_kindle_applemeadow`, Coldwater Still 7–19 |
+| Coldwater · `st-ice-watch` | giver, offers | Garth Barleyton (Larkdowns barn) | Wald Larkwell `tn_lf_wald_larkwell`, Coldwater Still 7–19 |
+| Coldwater · `st-haulers-food` | target | Thorn Mistmere (Upper Mere boat shed) | Laurel Pinefell, who sends the haulers' basket up |
+| Larkfield · `sq-plumtree-badger` | giver | Fallow Plumfield (Plumtree apple store) | Vale Miremore `tn_mb_vale_miremore`, Larkfield Looms 7–19 |
+| Larkfield · `sq-mill-race` | giver | Gorse Hedgewell (Longmead mill) | Eskar Cornley `tn_sm_eskar_cornley`, the baker at the Larkfield Bakehouse 7–19 |
+| Larkfield · `sq-swill-for-southwood` | giver | Njal Rustwick (Southwood pig yard) | Rowan Chalkley `tn_lf_rowan_chalkley`, Larkfield Bakehouse 7–19, whose swill cart goes out at dusk |
+| Larkfield · `st-feed-larkfield` | offers | Brand Sunham (Longmead granary) | Clover Snowhollow `tn_fh_clover_snowhollow`, Larkfield Print House 7–19 |
+| Fenshore · `sq-fenside-pans` | giver, offer | Fallow Reedwell (Fenside boiling house) | Briar Greenshaw `tn_oh_briar_greenshaw`, peat cutter at the Fenshore cutting, out of doors 6–17 |
+| Fenshore · `sq-boardwalk-plank` | giver | Yrsa Plankgate (Fen Shore boat shed) | Ludo Ashwood `tn_oh_ludo_ashwood`, pot hand at the Heron 7–19 |
+| Southmeadow · `sq-festival-garlands` | giver | Willa Wheatcombe (Larkholm granary) | Briar Sedgebridge `cty_briar_sedgebridge`, digs clay at the Sallow pits, out of doors 6–17 |
+
+Names: Briar Greenshaw, Ludo Ashwood and Briar Sedgebridge share a first name with campaign cast, as the only free
+residents of their towns (decisions §1.2.5's exception); no line names them. Eleanor Vance shares hers with Eleanor
+Saltcot, because she is the only Vance a wolf can reach; the lines call her "the Vance at the Rag Mill". The talk
+library follows every re-cast (`artifacts/quests/build/talk2/build_packs.py`: the FIX map, the three id-gated window
+lines of Halvard, Dorcas and Eleanor, and the garland line now Briar Sedgebridge's, plain), regenerated with `gen.py`.
+
+**Kept, because a wolf can already reach them:**
+- The patrol guards (Beatha Foggate, Frederick Rainham, Bertil Saltcot) walk the street patrol.
+- The story itself moves or holds them where the wolf needs them: Corra Ropewick, Desmond Bilgeridge, Edric
+  Harvestley, Ridge Eelbank, Vidar Ashhand, and now Ilse Coalley in the reckoning.
+- Every evening at the Grey Gull, an inn whose door never locks: the couriers Florence Pennock (the timekeeper) and
+  Hanne Ash, and the clerks Harriet Pennock and Lothar Abbot ("after work at the Grey Gull" by design).
+- At the Grey Goose, which is open only in its cook's hours (7-19), so from the end of work until 19 and all day on a
+  day off: the courier Grete Dimmock (the trial leg is taken from the board too, but handed in to her) and the Wharf
+  Office clerk Grete Dunn (`mq-wharf-brother`'s "office" step now says where she stops). These are narrow windows,
+  not closed ones. The time-sheet labels no longer send the wolf into the Couriers' Office by day.
+- Met on a walk the quest itself tells: Kell Reedwade (`mq-logs-adrift`: "walks up from his boat shed at first light
+  and at dusk") and Ragnar Wetby (`mq-linen-bolt`: the pig yard is pinged, "walks home to Larkfield at dusk").
+- Ludo Beechshaw has no workplace; his home, a flat over the Fenshore pottery, is open in its hours.
+- Bettany Nailley and Solveig Tarwell are now only in scenes at their own doors. (Bettany's wave G window line, gated
+  on `lq_wreck=watch`, plays only if a wolf meets her on her walks.)
+
+**Still open: 23 residents in towns with no free resident a wolf can reach** (every one there already has a pack
+quest, or none is left):
+- Southmeadow: Alder Blossomcroft (`st-chorus-wrong`), Emrys Stillshore (`sq-hare-in-the-seed-rows`), Hob Meadowfield
+  (`sq-smoke-for-the-hives`), Myrtle Larkcombe (`st-relief-convoy`), Disa Fogford (`mq-bee-garth-bear`), Harl Oakbough
+  and the cellar hand Briar Cornby (`mq-vineyard-cellar`), and the whole `lq-blight-and-boar` line (Sloe Harvestby,
+  Aster Cornley, Harl, and Brisk Lakemere of Larkfield).
+- Saltwell (no free resident at all): Fern Merewick (`mq-lost-raker`), Kite Bogditch (`mq-crossroads-names`), both
+  also targets in `lq-salt-road`, Senna Applegarth (`sq-ochre-rabbits`), Winifred Fogridge (`sq-salt-for-the-road`).
+- Fenshore (its two free residents now give the pans and the plank): Leif Rainley (`sq-twine-for-the-nets`), Stone
+  Marshmore (`st-fog-lanterns`), Iris Pikeford and the fowler Nab Bogditch (`mq-withy-lights`), and `lq-eel-famine`
+  (Ivo Sootridge, Jasper Greymore, Nab Bogditch).
+- Coldwater: `lq-old-brown` (Jessamy Greyford, Vale Pikebridge, Juniper Larkcombe). Two free residents are left (Wren
+  Coldpeak, Stone Pinefell), not enough for the line's three, and half a line re-cast is worse than none.
+
+Closing these needs one of: a small engine change (`playerDoorLocked` treats a producer's workplace, never a home,
+like a merchant's, open in its posts' hours; or it skips doors a running story has unlocked, already undone at the
+run's end); a story effect that does the same (a catalogue addition); or the small quests turned board-only
+(decisions §1.2.6), which does not help the choices of the medium quests and the lines. The user decides.
+
+Two optional objectives still ask for archive work, which Ridgemere 3 gives nowhere: `lq-clipped-silver` "trail"
+(the factors' chalk-list) and `lq-salt-road`'s three "ledger" steps. They need a records post on Ridgemere 3 (a world
+data change, or "records office" added to the posts in `Data/Lore/archives.json`) and the Records Office open to
+wolves, or rewriting.
+
+**The checks after this pass:** `python3 tools/nh_check.py --all` **23 of 23 PASS**; the across-programs check (ids
+unique, nobody a giver or choice holder in two programs, nobody a target in more than two programs outside their own)
+passes; `ctest` talk_golden, talk_topics, talk_library, dialogue_trees, dialect_check, dialect_check_rules,
+talk_lint, talk_lint_rules and talk_coverage pass, and talk_scorecard_quick passes with R2 refrozen (open problem 2;
+its B1L timing gate, a 99th-percentile director look, is noisy on this laptop and fails some runs). A read-only pass
+modelled on `playerDoorLocked` (each hour's open doors, merchants' hours, stairs open) confirmed every resident re-cast
+above is reachable at work in every working hour, and that the regions at the doors lie on the street beside them. The
+talk library regenerates byte for byte (`build_packs.py`, then `gen.py Data/Talk`). No database was written.
+
 ### Open problems
-1. **Givers behind locked doors** (medium packs, mostly). Several givers and targets live and work in buildings locked
-   to wolves, so they can only be met on their walks to and from work (about 6 and 17). Fixing this needs a world or
-   engine decision, such as opening a quest giver's workplace to wolves.
-2. **22 window lines** that the large lines' notes wrote "for wave G" are not in `resident.tree` yet: black-hearths 10,
-   eel-famine 4, lines 5–8 7, vanishing-thief 1. These are greetings gated on a line's keys. They are inert until C8,
-   and today the phase `npc.line`s carry the words. A short talk pass adds them.
+1. **Givers behind locked doors**: 23 residents in Southmeadow, Saltwell, Fenshore and Coldwater's Old Brown line
+   are still met only on their walks; see "Givers behind locked doors" above for the list and the choices that would
+   close it.
+2. **22 window lines (closed 2026-11-22).** The large lines' notes wrote 22 lines "for wave G"; they are now in the
+   trees (`build_packs.py` `NOTES` and `ALSO`; new `hub` and `watch.hub` nodes in `gen.py`), spoken by the re-cast
+   residents where the line's speaker moved. They stay silent until C8 lands or the DM seeds the keys. Adding them moved
+   `talk_scorecard_quick`'s R2 (the number of say lines in the hub reseeds the run: 18 dummy lines gated on a resident
+   nobody is give the same value), so R2 was refrozen with that reason. The lines: black-hearths 10, eel-famine 4,
+   lines 5–8 7, vanishing-thief 1 (`artifacts/quests/build/talk2/notes.md`).
 3. **Today's engine limits, accepted as they are:**
    - A story can't take goods out of a pack without the "may act on players' wolves" permission. So Q2a's tally paper
      and Q3b's candle stay with the wolf.

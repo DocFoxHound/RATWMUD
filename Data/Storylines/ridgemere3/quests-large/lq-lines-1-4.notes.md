@@ -136,3 +136,12 @@ The conversation objectives complete without those lines; the lines carry the cl
   - C5, Vigdis thanking a mercy wolf by name;
   - C14, Vigdis's fate;
   - SQ2, Silver & Rain's till for the restitution and the shares.
+
+## Givers behind locked doors (2026-11-22, second pass; doc 86 "Givers behind locked doors")
+- **The Old Brown: still open.** Jessamy Greyford (giver), Vale Pikebridge and Juniper Larkcombe (choices and targets)
+  all work in the Greyteeth shearing barn, locked to wolves (doc 82). Coldwater has two free residents left that a wolf
+  can reach at work (Wren Coldpeak, Stone Pinefell), not enough for the line's three, and half a line re-cast is worse
+  than none. Doc 86 lists what would close it.
+- The Salt Road's Fern Merewick and Kite Bogditch (conversation targets) work in the Saltpan salt store, also locked;
+  Saltwell has no free resident. Its optional "ledger" steps ask for archive work, which Ridgemere 3 gives nowhere
+  (no records post), as does the Clipped Silver's optional chalk-list.

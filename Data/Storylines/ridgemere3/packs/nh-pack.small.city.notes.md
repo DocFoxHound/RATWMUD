@@ -72,3 +72,29 @@
 1. Wave A first: the world variables declared (`tools/nh_world_vars.py --apply`), `nh-purses` approved and published.
 2. Approve this program on Ridgemere 3 and publish it; it runs with or without the campaign.
 3. Seed the talk key `sq_on=yes` for Ridgemere and Oakhaven by hand until C8.
+
+## Givers behind locked doors (2026-11-22, second pass; doc 86 "Givers behind locked doors")
+A wolf can't go through a door into a private interior (doc 82, `World::playerDoorLocked`): only inns, alehouses and
+taverns, and a shop while its merchant is in, are open, and no story effect lifts that (`door.unlock` sets the door's
+own lock, which the player rule never reads). So every giver and target here now works where a wolf can walk in
+during their hours, and the lines are rewritten in their speech (all plain):
+- 1 the bread goes to the infirmary's porter at the foot of the Sump Stairs, Ottilie Nailmarsh (the nurse never leaves
+  the Sump Infirmary); 2 the apothecary on Market Square, Rupert Pitchford, mixes the House of Mending's draughts;
+  7 a Sump Stairs porter, Kjell Coalham, carries the City Office's Heights letters, and the Vance who runs the Rag
+  Mill, Eleanor Vance, takes the letter (the doorkeeper never comes down); 8 Wickham's chandler, Sten Kelpwell, and the
+  service is kept at the cathedral door (region `cathedral_door`, Restday 9-11); 9 the abbey's brewer, Arne Wickdale,
+  hands out the almoner's bread; 13 a Greatly Yard hand, Hjalte Sootby, feeds the stables; 14 a Sump Stairs porter,
+  Mathis Plankham, wants the bell, rung from the rope at the Clock Tower door (region `clock_door`); 18 the Mortar and
+  Pestle's hand, Mogens Ashley, carries the Heights' physic; 6 the Council Press's printer, Runa Ashridge: archive work
+  is given nowhere on Ridgemere 3 (no records post) and the Records Office is locked, so the errand is now "Paper for
+  the Rolls" (two of paper and an ink), and the hidden page is asked of the printer (`records-roll` on a conversation,
+  Ch 4-6, still adding a name to `nh_names`).
+- 46 Erland Fogley (the Lamp and Wick, lives in the Fell Cottages) and 47 Agna Dripridge (Bridge Stores, lives in the
+  Grayrock Cottages) carry the estates' errands up the hill; 46's optional "come in by the kitchens" (a locked interior)
+  is an optional pat of butter, so its bonus pie still has an optional objective. 48's bolt goes to Wenna Timberland,
+  in the yard by the Court with the iron carts all day (the chamber keeper never comes out).
+- The estates' coloured lines (`fell-*`, `grayrock-*`) are now asked "How is it up at Fellhall?" / "up at the Hall?",
+  and answered from the cottages.
+- `givers.tsv` rows moved to the new givers. The talk library's lines for these errands follow
+  (`artifacts/quests/build/talk2/build_packs.py` FIX map; trees regenerated). Rehearsals follow (the region events,
+  the paper and ink, the new residents' cells).
