@@ -308,7 +308,8 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
         const auto outcome = world_.setDoorState(target, open, locked);
         if (!outcome.ok)
             return outcome;
-        if (locked != -1)
+        const auto* held = story->held.isObject() ? story->held.find("doors") : nullptr;
+        if (locked != -1 || open == 1 || (held && held->has(target)))
         {
             // (The lock it had before the story first touched it comes back when the story ends; kept again after a restart.)
             auto& doors = section(*story, "doors");
@@ -318,7 +319,13 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
                 j.add("was", wasLocked);
                 doors.set(target, std::move(j));
             }
-            doors.find(target)->set("locked", locked == 1);
+            auto& j = *doors.find(target);
+            if (locked != -1)
+                j.set("locked", locked == 1);
+            // (Doc 86: a door the story unlocked or opened is open to wolves while it holds it, a private home's never
+            // (World::setStoryOpenDoors); locking it ends that, shutting it does not.)
+            if (kind != "door.close")
+                j.set("wolves", kind != "door.lock");
             changed();
         }
         saveSoon();
@@ -460,7 +467,7 @@ void Game::endStoryWorld(storylines::Storyline& story)
         return;
     auto& h = story.held;
     for (const auto& [door, j] : h.object("doors").fields())
-        if (world_.door(door))
+        if (world_.door(door) && j.has("locked"))
             world_.setDoorState(door, -1, j.boolean("was") ? 1 : 0);
     for (const auto& [npc, pace] : h.object("npcs").fields())
         if (!story.sceneOrders.count(npc))
@@ -495,6 +502,7 @@ void Game::endStoryWorld(storylines::Storyline& story)
         kept.set("notes", h["notes"]);
     story.held = std::move(kept);
     storiesHolding_.erase(story.id);
+    refreshStoryDoors();    // (Its doors no longer open to wolves.)
     saveSoon();
 }
 
@@ -515,7 +523,7 @@ void Game::tickStoryWorld(double dt)
                 world_.sceneHold(npc, true, int(pace.asNumber()));
         // Locks kept (a restart, or a cell loaded again, gives a door the lock its map has).
         for (const auto& [door, j] : s->held.object("doors").fields())
-            if (const auto* d = world_.door(door); d && d->locked != j.boolean("locked"))
+            if (const auto* d = world_.door(door); d && j.has("locked") && d->locked != j.boolean("locked"))
                 world_.setDoorState(door, -1, j.boolean("locked") ? 1 : 0);
         // The weather runs out on the world's clock; markers on the real one.
         if (auto* weather = s->held.find("weather"); weather && weather->size())

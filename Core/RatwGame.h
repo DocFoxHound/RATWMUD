@@ -2644,6 +2644,7 @@ class Game
     static bool storyWorldOrder(const std::string& kind);
     Result applyStoryWorld(const std::string& kind, const std::string& target, const json::Value& payload);
     void endStoryWorld(storylines::Storyline& story);   // Undoes what the story's world effects left (a run that ends).
+    void refreshStoryDoors();                           // The doors live stories hold open to wolves, told to the world.
     void tickStoryWorld(double dt);                     // Holds kept, locks kept, the weather and markers run out.
     std::set<std::string> storiesHolding_;              // Live world stories with something held (refreshStoryWatch).
     double storyWorldAccumulator_ = 0;

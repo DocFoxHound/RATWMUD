@@ -705,6 +705,30 @@ the load. A pass is accepted when every row's 95% interval lies inside its band,
 Up to **4 passes**, one knob per strength each (skill, then hp, then flee); only `foes.json` changes. A row still out
 after pass 4 goes to the user. Load runs go to 20, 100 and 250 players. Economy sims are not covered by answer (c).
 
+### 7.3 Story doors open to wolves (as built)
+
+**decided (coordinator's, for the user to overturn).** Before this, a story's `door.unlock` lifted a door's own lock, but
+the town's rule for wolves (`World::playerDoorLocked`: a Ridgemere or community interior is locked to them unless it is
+an inn or a merchant keeps shop there in hours) still kept them out, so a story could not open a shop at night or a hall
+for a quest. Now:
+
+- **A door a live story has unlocked or opened is open to wolves while the story holds it**, both sides, even where the
+  town's rule would lock it. The story records it with the door (`held.doors.<door>.wolves`; `door.open` is now kept
+  there too, with no lock, so its end restores none). `door.lock` closes it to wolves again; `door.close` does not (they
+  may open it). The game rebuilds the set from the live stories on every watch refresh (a restart included:
+  `Game::refreshStoryDoors` → `World::setStoryOpenDoors`), and the run's end lets it go.
+- **Never a private home**: an interior some resident lives in and nobody works in (a shop with a flat above is a
+  workplace; a post's work place counts even when vacant). Approval refuses `door.unlock` or `door.open` of such a door
+  (`story_runner.phase9_references`, "A story may not open a private home to wolves", from `dm.story_residents` and
+  `live.profession_slots`), so §9.3 check 2 catches it; and the game never lets one through for wolves even so
+  (`World::privateHome`, from the residents' homes and works and the posts). The effect itself still works on a home
+  for residents (its own lock).
+- On Ridgemere 3 today 157 of the 414 doors lead into somebody's home, 34 of them private homes; the rest are shops and
+  workshops with flats.
+- Tests: `story_world_tests` (`storyDoorsForWolves`: a hall, a private home and a shop with a flat behind community
+  doors; unlocked, opened, shut, locked, rebuilt, ended) and `test_story_effects` (the refusal, by every form of the
+  door's id, in a trigger and in a phase's opening effects; lock and close allowed; a workplace allowed).
+
 ---
 
 ## 8. Build phases

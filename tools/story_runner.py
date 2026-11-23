@@ -207,6 +207,22 @@ def references(conn, world, program, chapters=False):
             phase9_references(conn, world, e)
 
 
+# (Doc 86, "Story doors open to wolves": a door a story unlocks or opens is open to wolves while it holds it.)
+DOORS_FOR_WOLVES = ('door.unlock', 'door.open')
+
+
+def private_home(conn, world, areas):
+    """The first of these areas that is a private home (some resident's home, nobody's work, a post's even when vacant),
+    or None. A shop with a flat above is a workplace. The game keeps the same rule (World::privateHome)."""
+    row = conn.execute(
+        """SELECT room FROM unnest(%s::text[]) AS room
+           WHERE EXISTS (SELECT 1 FROM dm.story_residents WHERE world_id=%s AND home_area=room)
+             AND NOT EXISTS (SELECT 1 FROM dm.story_residents WHERE world_id=%s AND work_area=room)
+             AND NOT EXISTS (SELECT 1 FROM live.profession_slots WHERE world_id=%s AND work_area=room)
+           LIMIT 1""", (areas, world, world, world)).fetchone()
+    return row[0] if row else None
+
+
 def phase9_references(conn, world, e):
     """Doc 85, Phase 9: what the new world effects name, checked against the world at approval (as references() does)."""
     kind = e['kind']
@@ -216,9 +232,14 @@ def phase9_references(conn, world, e):
     if kind in ('story.ping', 'item.place', 'visitor.add'):
         check_tile(conn, world, e['cell'], e['x'], e['y'])
     if kind.startswith('door.'):
-        rules.require(conn.execute(
-            "SELECT 1 FROM world.links WHERE world_id=%s AND kind='door' AND %s IN ('link_'||id||'_a','link_'||id||'_b','link_'||id)",
-            (world, e['door'])).fetchone(), 'Unknown door in this world: ' + e['door'])
+        link = conn.execute(
+            "SELECT a_area,b_area FROM world.links WHERE world_id=%s AND kind='door' AND %s IN ('link_'||id||'_a','link_'||id||'_b','link_'||id)",
+            (world, e['door'])).fetchone()
+        rules.require(link, 'Unknown door in this world: ' + e['door'])
+        if kind in DOORS_FOR_WOLVES:
+            home = private_home(conn, world, list(link))
+            rules.require(not home, f"A story may not open a private home to wolves: {e['door']} leads into {home}, "
+                                    "someone's home and nobody's work.")
     if kind == 'mantle.assign':
         rules.require(conn.execute("SELECT to_regclass('live.mantles')").fetchone()[0] and conn.execute(
             "SELECT 1 FROM live.mantles WHERE world_id=%s AND id=%s AND state<>'retired'", (world, e['mantle'])).fetchone(),

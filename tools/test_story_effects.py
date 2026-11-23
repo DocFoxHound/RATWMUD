@@ -266,6 +266,34 @@ class InTheWorld(unittest.TestCase):
         self.assertEqual(refs['doors'], [{'id': 'link_inn_a', 'name': 'The inn door', 'cell': 'gate'}])
         self.assertEqual(refs['mantles'], [])
 
+    def test_a_story_never_opens_a_private_home_to_wolves(self):
+        # (Doc 86: a house Ivo lives in and nobody works in; the inn, where Wren lives above her work, is a workplace.)
+        self.conn.execute('RESET ROLE')
+        self.conn.execute("INSERT INTO world.areas(world_id,id,kind) VALUES (%s,'house','cell')", (self.world,))
+        self.conn.execute("INSERT INTO world.cells(world_id,id,name,x,y,width,height,region) VALUES (%s,'house','A house',400,100,6,6,'greyfen')",
+                          (self.world,))
+        self.conn.execute("""INSERT INTO world.links(world_id,id,name,kind,open,a_area,a_x,a_y,b_area,b_x,b_y)
+                             VALUES (%s,'house','The house door','door',false,'gate',6,1,'house',1,1)""", (self.world,))
+        self.conn.execute("UPDATE live.npcs SET home_area='house', work_area='gate' WHERE world_id=%s AND id='rm111'", (self.world,))
+        self.conn.execute("UPDATE live.npcs SET home_area='inn', work_area='inn' WHERE world_id=%s AND id='rm112'", (self.world,))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+        for kind in ('door.unlock', 'door.open'):
+            for door in ('link_house_a', 'link_house_b', 'link_house'):
+                with self.subTest(kind=kind, door=door):
+                    self.assertRaisesRegex(ValueError, "may not open a private home to wolves: .* leads into house",
+                                           self.approve, program([{**effect(kind), 'door': door}]))
+        # (Locking or shutting a home is fine, and so is opening the inn, a workplace with a home above it.)
+        self.approve(program([{**effect('door.lock'), 'door': 'link_house_a'}, {**effect('door.close'), 'door': 'link_house_a'},
+                              effect('door.unlock'), effect('door.open')]))
+        # (In the trigger and in a phase's opening effects alike.)
+        self.assertRaisesRegex(ValueError, 'private home', self.approve, program(entry=[{**effect('door.open'), 'door': 'link_house_a'}]))
+        # (Once Wren works at the gate, the inn is only her home: a private one.)
+        self.conn.execute('RESET ROLE')
+        self.conn.execute("UPDATE live.npcs SET work_area='gate' WHERE world_id=%s AND id='rm112'", (self.world,))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+        self.assertRaisesRegex(ValueError, 'leads into inn', self.approve, program([effect('door.unlock')]))
+        self.assertEqual(runner.private_home(self.conn, self.world, ['gate']), None)
+
     def test_a_published_story_sends_them_to_the_game_in_one_batch(self):
         ticket = self.approve(program(self.every()))['ticket']
         run = runner.publish(self.conn, self.world, ticket)['run']

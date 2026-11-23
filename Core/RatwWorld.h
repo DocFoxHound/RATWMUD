@@ -732,6 +732,16 @@ class World
     // A door set by a story (doc 85, Phase 9): open (-1 leaves it, 0 shuts, 1 opens) and locked (-1, 0, 1), both sides of
     // it alike. Locking shuts it; opening a locked door is refused. False for no such door, or a passage or stairs.
     Result setDoorState(const std::string& id, int open, int locked);
+    // The doors a live story holds open to wolves (doc 86, "Story doors open to wolves"): door.unlock and door.open, kept
+    // while the run lasts. playerDoorLocked passes them, both sides alike, but never a private home's (privateHome).
+    // Replaced whole (Game::refreshStoryWatch); an unknown id is skipped.
+    void setStoryOpenDoors(const std::set<std::string>& ids);
+    bool storyOpenDoor(const std::string& id) const { return storyOpenDoors_.count(id) > 0; }
+    // Whether a door leads into a private home: the interior behind it is some resident's home and nobody's work (a
+    // shop with a flat above is a workplace, not a private home).
+    bool privateHome(const Door& door) const;
+    // Whether a wolf finds this door locked (its own lock, or a closed shop or a house: playerDoorLocked).
+    bool lockedToWolves(const Door& door) const { return door.locked || playerDoorLocked(door); }
     // The doors, stairs and seams in one cell, in ID order (an index over doors(); rebuilt when doors change).
     const std::vector<Door*>& doorsIn(const std::string& cellId) const;
     // Cells one step away through any portal (seams, doors, stairs), locked or not.
@@ -2594,6 +2604,7 @@ class World
 
   private:
     bool playerDoorLocked(const Door& door) const;
+    std::set<std::string> storyOpenDoors_;          // (setStoryOpenDoors: both sides of each.)
     std::vector<std::pair<std::string, std::string>> notices_;
     bool noticesMoved_ = false;                     // (Any of notices_ told of something moved: takeNotices.)
     bool noticesCrime_ = false;                     // (Any told of an incident, a warrant or custody: takeNotices.)
