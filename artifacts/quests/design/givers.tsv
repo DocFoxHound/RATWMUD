@@ -1,0 +1,248 @@
+resident_id	name	town	quarter	role_in_content	chapter_or_pack
+cty_briar_cornby	Briar Cornby	southmeadow	The Sunfields, Southmeadow	campaign cast	ninth-howl Ch 4
+cty_fenwick_plankworth	Fenwick Plankworth	frosthollow	The Greenholt, Frosthollow	campaign cast	ninth-howl Ch 2,4
+cty_lorn_hedgeton	Lorn Hedgeton	coldwater	The Larkdowns, Middle	campaign cast	ninth-howl Ch 3
+cty_nan_ashhand	Nan Ashhand	ridgemere	Ridgemere, the Commons and the Rise	campaign cast	ninth-howl Ch 5
+cty_sloe_mistwick	Sloe Mistwick	fenshore	The Sallow Fens, North-west	campaign cast	ninth-howl Ch 6
+rm_aldric_grayrock_	Aldric Grayrock	ridgemere	estate	campaign cast	ninth-howl Ch 5
+rm_ambrose_greatly	Ambrose Greatly	ridgemere	estate	campaign cast	ninth-howl Ch 2
+rm_bettany_nailley	Bettany Nailley	ridgemere	sump	campaign cast	ninth-howl Ch 3
+rm_celestine_greatly	Celestine Greatly	ridgemere	estate	campaign cast	ninth-howl Ch 5,6,9
+rm_corra_coalcot	Corra Coalcot	ridgemere	works	campaign cast	ninth-howl Ch 3
+rm_corra_slagmore	Corra Slagmore	ridgemere	heights	campaign cast	ninth-howl Ch 2,3
+rm_corwin_fell_	Corwin Fell	ridgemere	estate	campaign cast	ninth-howl Ch 5
+rm_dagny_ropeley	Dagny Ropeley	ridgemere	sump	campaign cast	ninth-howl Ch 3
+rm_desmond_dripcot	Desmond Dripcot	ridgemere	sump	campaign cast	ninth-howl Ch 2,3
+rm_edric_kelpham	Edric Kelpham	ridgemere	estate	campaign cast	ninth-howl Ch 2,6
+rm_eleanor_saltcot	Eleanor Saltcot	ridgemere	commons	campaign cast	ninth-howl Ch 2,8
+rm_gerrit_mudhand	Gerrit Mudhand	ridgemere	office	campaign cast	ninth-howl Ch 1-9 (story-heard nodes; the Moot backing Ch 2-9, decisions §1.4)
+rm_gorm_plankgate	Gorm Plankgate	ridgemere	commons	campaign cast	ninth-howl Ch 4
+rm_gudrun_fell_	Gudrun Fell	ridgemere	estate	campaign cast	ninth-howl Ch 5
+rm_halvard_mossgrave	Halvard Timberland	ridgemere	estate	campaign cast	ninth-howl (talk and scenes; cast-and-talk.md)
+rm_hanne_coalton	Hanne Coalton	ridgemere	sump	campaign cast	ninth-howl (talk and scenes; cast-and-talk.md)
+rm_hilde_dripby	Hilde Dripby	ridgemere	wharf	campaign cast	ninth-howl Ch 8
+rm_hollis_nailwick	Hollis Nailwick	ridgemere	estate	campaign cast	ninth-howl Ch 6
+rm_ingrid_ashwell	Ingrid Ashwell	ridgemere	sump	campaign cast	ninth-howl Ch 3,5
+rm_ingrid_grayrock_	Ingrid Grayrock	ridgemere	estate	campaign cast	ninth-howl Ch 5
+rm_isolde_fell_	Isolde Fell	ridgemere	estate	campaign cast	ninth-howl Ch 5,9
+rm_ivar_pitchwick	Ivar Pitchwick	ridgemere	office	campaign cast	ninth-howl Ch 1,5,7
+rm_jasper_bilgeford	Jasper Bilgeford	ridgemere	office	campaign cast	ninth-howl Ch 2
+rm_jorunn_ropewick	Jorunn Ropewick	ridgemere	sump	campaign cast	ninth-howl Ch 2
+rm_julian_greatly	Julian Greatly	ridgemere	estate	campaign cast	ninth-howl Ch 5
+rm_karin_stanmore	Karin Stanmore	ridgemere	heights	campaign cast	ninth-howl Ch 3
+rm_lavinia_plankwick	Lavinia Plankwick	ridgemere	estate	campaign cast	ninth-howl Ch 5,6,8
+rm_lionel_ropestack	Lionel Ropestack	ridgemere	sump	campaign cast	ninth-howl Ch 3
+rm_mab_coalridge	Mab Coalridge	ridgemere	works	campaign cast	ninth-howl Ch 2
+rm_maren_grayrock_	Maren Grayrock	ridgemere	estate	campaign cast	ninth-howl (talk and scenes; cast-and-talk.md)
+rm_millicent_rustwell	Millicent Rustwell	ridgemere	estate	campaign cast	ninth-howl Ch 6
+rm_oda_harrowgate	Oda Harrowgate	ridgemere	office	campaign cast	ninth-howl (talk and scenes; cast-and-talk.md)
+rm_oskar_gullworth	Oskar Gullworth	ridgemere	office	campaign cast	ninth-howl (talk and scenes; cast-and-talk.md)
+rm_osric_mossgrave	Osric Timberland	ridgemere	estate	campaign cast	ninth-howl Ch 5
+rm_ottilie_harrowgate	Ottilie Harrowgate	ridgemere	office	campaign cast	ninth-howl (talk and scenes; cast-and-talk.md)
+rm_rosalind_greatly	Rosalind Greatly	ridgemere	estate	campaign cast	ninth-howl Ch 2
+rm_rune_gullwell	Rune Gullwell	ridgemere	office	campaign cast	ninth-howl Ch 1,2,3
+rm_signe_mossgrave	Signe Timberland	ridgemere	estate	campaign cast	ninth-howl Ch 9
+rm_solveig_tarwell	Solveig Tarwell	ridgemere	office	campaign cast	ninth-howl Ch 5
+rm_tobias_grayrock_	Tobias Grayrock	ridgemere	estate	campaign cast	ninth-howl Ch 5
+rmx_cressida_cotton	Cressida Cotton	ridgemere	commons	campaign cast	ninth-howl Ch 1
+rmx_dagfinn_thornham	Dagfinn Thornham	ridgemere	works	campaign cast	ninth-howl Ch 1
+rmx_desmond_farrow	Desmond Farrow	ridgemere	commons	campaign cast	ninth-howl Ch 3
+rmx_desmond_hollis	Desmond Hollis	ridgemere	commons	campaign cast	ninth-howl Ch 2,3,7,8
+rmx_ingrid_kendrick	Ingrid Kendrick	ridgemere	commons	campaign cast	ninth-howl Ch 3
+rmx_piet_lumley	Piet Lumley	ridgemere	commons	campaign cast	ninth-howl Ch 2
+tn_cw_bramble_reedmere	Bramble Reedmere	coldwater	The Greenholt, Coldwater	campaign cast	ninth-howl Ch 8
+tn_cw_gorse_reedmere	Gorse Reedmere	coldwater	The Greenholt, Coldwater	campaign cast	ninth-howl Ch 8
+tn_cw_harrow_reedford	Harrow Reedford	coldwater	The Greenholt, Coldwater	campaign cast	ninth-howl Ch 8
+tn_cw_kell_greyton	Kell Greyton	coldwater	The Greenholt, the Upper Mere	campaign cast	ninth-howl Ch 8
+tn_cw_tansy_reedmere	Tansy Reedmere	coldwater	The Greenholt, Coldwater	campaign cast	ninth-howl (talk and scenes; cast-and-talk.md)
+tn_cw_willa_coldwick	Willa Coldwick	coldwater	The Greenholt, Coldwater	campaign cast	ninth-howl Ch 1,6,8
+tn_lf_rook_wheatfield	Rook Wheatfield	larkfield	The Greenholt, Glasswater	campaign cast	ninth-howl Ch 2,7
+tn_mb_bramble_bogditch	Bramble Bogditch	saltwell	The Saltpan, Saltpan workings	campaign cast	ninth-howl Ch 4
+tn_mb_fell_miremore	Fell Miremore	coldwater	The Greenholt, Middle	campaign cast	ninth-howl Ch 4
+tn_mb_tansy_eelbridge	Tansy Eelbridge	larkfield	The Greenholt, Larkfield	campaign cast	ninth-howl Ch 4,7
+tn_mb_thorn_marshditch	Thorn Marshditch	larkfield	The Greenholt, Larkfield	campaign cast	ninth-howl Ch 4
+tn_oh_ludo_beechshaw	Ludo Beechshaw	fenshore	The Sallow Fens, Fenshore	campaign cast	ninth-howl Ch 6
+tn_sm_moss_blossomwell	Moss Blossomwell	oakhaven	Cedar Sound, Oakhaven	campaign cast	ninth-howl (talk and scenes; cast-and-talk.md)
+rm_gunnar_harrowgate	Gunnar Harrowgate	ridgemere	office	campaign cast (dead; named only)	ninth-howl
+tn_cw_iris_greywater	Iris Greywater	fenshore	The Sallow Fens, Fenshore	campaign cast (dead; named only)	ninth-howl
+cty_eskar_rimedrift	Eskar Rimedrift			campaign cast (unplaced; foe or stranger only)	ninth-howl
+cty_jory_corncroft	Jory Corncroft	fenshore	The Sallow Fens, Fenshore	keeper	ninth-howl: Fenshore fallback (only if the Keeper is dead or not named)
+cty_lavinia_mudworth	Lavinia Mudworth	saltwell	The Ochre Hills, Middle	keeper	ninth-howl: Saltwell fallback (only if the Keeper is dead or not named)
+cty_ulla_rusthand	Ulla Rusthand	oakhaven	The Rainwood, North-east	keeper	ninth-howl: Oakhaven Keeper (if cleared); pledge every chapter; howl quest Ch 4; post quest Ch 9 (never more than 2 a chapter: decisions §1.4)
+cty_ulric_stonevein	Ulric Stonevein	frosthollow	The Greenholt, Frosthollow	keeper	ninth-howl: Frosthollow Keeper; pledge every chapter; howl quest Ch 4; post quest Ch 9 (never more than 2 a chapter: decisions §1.4)
+rm_imogen_nailridge	Imogen Nailridge	ridgemere	commons	keeper	ninth-howl: Mirebridge pledges Ch 4-6 until Skye is named; The Scattered (Ch 4)
+rmx_brenna_abbot	Brenna Abbot	ridgemere	commons	keeper	ninth-howl: Ridgemere Keeper; pledge every chapter; howl quest Ch 4; post quest Ch 9 (never more than 2 a chapter: decisions §1.4)
+rmx_corra_coldridge	Corra Coldridge	ridgemere	commons	keeper	ninth-howl: Ridgemere fallback (only if the Keeper is dead or not named)
+tn_cw_fallow_lakewick	Fallow Lakewick	coldwater	The Greenholt, Middle	keeper	ninth-howl: Coldwater Keeper; pledge every chapter; howl quest Ch 4; post quest Ch 9 (never more than 2 a chapter: decisions §1.4)
+tn_cw_myrtle_stillford	Myrtle Stillford	coldwater	The Greenholt, Coldwater	keeper	ninth-howl: Coldwater fallback (only if the Keeper is dead or not named)
+tn_fh_aster_coldfell	Aster Coldfell	frosthollow	The Larkdowns, North-west	keeper	ninth-howl: Frosthollow fallback (only if the Keeper is dead or not named)
+tn_fh_thistle_stonepick	Thistle Stonepick	saltwell	The Red Waste, Saltwell	keeper	ninth-howl: Saltwell Keeper; pledge every chapter; howl quest Ch 4; post quest Ch 9 (never more than 2 a chapter: decisions §1.4)
+tn_mb_aspen_marshholm	Aspen Marshholm	larkfield	The Greenholt, Larkfield	keeper	ninth-howl: Larkfield Keeper; pledge every chapter; howl quest Ch 4; post quest Ch 9 (never more than 2 a chapter: decisions §1.4)
+tn_mb_roan_pikewater	Roan Pikewater	fenshore	The Sallow Fens, Fenshore	keeper	ninth-howl: Fenshore Keeper; pledge every chapter; howl quest Ch 4; post quest Ch 9 (never more than 2 a chapter: decisions §1.4)
+tn_mb_skye_eelbank	Skye Eelbank	fenshore	The Sallow Fens, Middle	keeper	ninth-howl: Mirebridge Keeper (from Ch 6); pledge every chapter; howl quest Ch 4; post quest Ch 9 (never more than 2 a chapter: decisions §1.4)
+tn_mb_tamsin_eelbank	Tamsin Eelbank	fenshore	The Sallow Fens, Middle	keeper	ninth-howl: Mirebridge fallback (only if the Keeper is dead or not named)
+tn_oh_cairn_oakhaven	Cairn Oakhaven	oakhaven	Cedar Sound, Oakhaven	keeper	ninth-howl: Oakhaven Keeper (fallback) (only if the Keeper is dead or not named)
+tn_sm_dun_harvestley	Dun Harvestley	larkfield	The Greenholt, Larkfield	keeper	ninth-howl: Larkfield fallback (only if the Keeper is dead or not named)
+tn_sm_iris_meadowfield	Iris Meadowfield	southmeadow	The Larkdowns, South-west	keeper	ninth-howl: Southmeadow Keeper; pledge every chapter; howl quest Ch 4; post quest Ch 9 (never more than 2 a chapter: decisions §1.4)
+tn_sm_rusk_plummeadow	Rusk Plummeadow	southmeadow	The Sunfields, Southmeadow	keeper	ninth-howl: Southmeadow fallback (only if the Keeper is dead or not named)
+cty_nell_plummeadow	Nell Plummeadow	fenshore	The Sallow Fens, Fenshore	innkeeper	recaps and helpful lines only (inn.tree)
+rm_hollis_gullmore	Hollis Gullmore	ridgemere	commons	innkeeper	recaps and helpful lines only (inn.tree)
+rm_karin_ashgate	Karin Ashgate	ridgemere	commons	innkeeper	recaps and helpful lines only (inn.tree)
+rm_mab_carlisle	Mab Carlisle	ridgemere	heights	innkeeper	recaps and helpful lines only (inn.tree)
+rm_rosamund_tarridge	Rosamund Tarridge	ridgemere	commons	innkeeper	recaps and helpful lines only (inn.tree)
+tn_cw_bramble_reedford	Bramble Reedford	larkfield	The Greenholt, Larkfield	innkeeper	recaps and helpful lines only (inn.tree)
+tn_fh_loam_pinefell	Loam Pinefell	coldwater	The Greenholt, Coldwater	innkeeper	recaps and helpful lines only (inn.tree)
+tn_fh_tamsin_icefell	Tamsin Icefell	oakhaven	Cedar Sound, Oakhaven	innkeeper	recaps and helpful lines only (inn.tree)
+tn_lf_rowan_downridge	Rowan Downridge	southmeadow	The Sunfields, Southmeadow	innkeeper	recaps and helpful lines only (inn.tree)
+tn_mb_oriel_marshditch	Oriel Marshditch	saltwell	The Red Waste, Saltwell	innkeeper	recaps and helpful lines only (inn.tree)
+tn_oh_thorn_ashwood	Thorn Ashwood	frosthollow	The Greenholt, Frosthollow	innkeeper	recaps and helpful lines only (inn.tree)
+cty_aster_cornley	Aster Cornley	southmeadow	The Sunfields, North-west	campaign target	ninth-howl Ch 4,6
+rm_bertil_grantham	Bertil Grantham	ridgemere	heights	campaign target	ninth-howl Ch 5
+rm_dagny_rustcot	Dagny Rustcot	ridgemere	office	campaign target	ninth-howl Ch 5
+rm_mathis_slagwell	Mathis Slagwell	ridgemere	sump	campaign target	ninth-howl Ch 1,8
+rm_oda_greywell	Oda Greywell	ridgemere	sump	campaign target	ninth-howl Ch 1
+rm_palle_plankmore	Palle Plankmore	ridgemere	sump	campaign target	ninth-howl Ch 3
+rm_percival_rustford	Percival Rustford	ridgemere	sump	campaign target	ninth-howl Ch 8
+rm_piet_wickridge	Piet Wickridge	ridgemere	sump	campaign target	ninth-howl Ch 1
+rm_rune_fogworth	Rune Fogworth	ridgemere	commons	campaign target	ninth-howl Ch 5
+rm_wenna_mossgrave	Wenna Timberland	ridgemere	estate	campaign target	ninth-howl Ch 6
+rmx_dunstan_plankham	Dunstan Plankham	ridgemere	sump	campaign target	ninth-howl (a list or gift target)
+tn_sm_linden_harvestton	Linden Harvestton	coldwater	The Greenholt, Middle	campaign target	ninth-howl Ch 6
+tn_sm_orrin_appleley	Orrin Appleley	southmeadow	The Sunfields, Southmeadow	campaign target	ninth-howl Ch 4
+cty_stone_sunton	Stone Sunton	ridgemere	Ridgemere, the Commons and the Rise	look-alike	ninth-howl: the Grey Captain (like: only; no pack role)
+rm_palle_bilgemarsh	Palle Bilgemarsh	ridgemere	commons	look-alike	ninth-howl: Hakon (like: only; no pack role)
+tn_sm_brisk_plumby	Brisk Plumby	southmeadow	The Sunfields, Southmeadow	look-alike	ninth-howl: the Envoy (like: only; no pack role)
+rm_disa_raincot	Disa Raincot	ridgemere	estate	small:sq-almoners-round	nh-pack.small.city
+cty_oriel_blossomby	Oriel Blossomby	coldwater	The Greenholt, Middle	small:sq-apple-nose	nh-pack.small.north
+cty_yrsa_plankgate	Yrsa Plankgate	fenshore	The Sallow Fens, Fenshore	small:sq-boardwalk-plank	nh-pack.small.south
+tn_lf_lichen_hedgemead	Lichen Hedgemead	coldwater	The Greenholt, Coldwater	small:sq-bread-to-the-landing	nh-pack.small.north
+tn_lf_moss_downridge	Moss Downridge	saltwell	The Red Waste, Saltwell	small:sq-caravan-welcome	nh-pack.small.south
+cty_iris_fernhaven	Iris Fernhaven	frosthollow	The Greenholt, Frosthollow	small:sq-clamp-watch	nh-pack.small.north
+rm_corwin_bilgestack	Corwin Bilgestack	ridgemere	sump	small:sq-dawn-bell	nh-pack.small.city
+rm_ansel_tarley	Ansel Tarley	ridgemere	estate	small:sq-fellhall-errand	nh-pack.small.city
+cty_fallow_reedwell	Fallow Reedwell	fenshore	The Sallow Fens, North-west	small:sq-fenside-pans	nh-pack.small.south
+cty_willa_wheatcombe	Willa Wheatcombe	southmeadow	The Sunfields, Southmeadow	small:sq-festival-garlands	nh-pack.small.south
+cty_ingram_hazelshaw	Ingram Hazelshaw	coldwater	The Greenholt, West	small:sq-fox-at-the-hen-run	nh-pack.small.north
+rm_soren_ropewick	Soren Ropewick	ridgemere	sump	small:sq-gone-to-see-the-ships	nh-pack.small.city
+rm_erland_cinderridge	Erland Cinderridge	ridgemere	estate	small:sq-grayrock-hall-errand	nh-pack.small.city
+rm_philippa_rustton	Philippa Rustton	ridgemere	sump	small:sq-greatly-stables	nh-pack.small.city
+cty_emrys_stillshore	Emrys Stillshore	southmeadow	The Sunfields, Southmeadow	small:sq-hare-in-the-seed-rows	nh-pack.small.south
+rm_gwen_cinderdale	Gwen Cinderdale	ridgemere	office	small:sq-heights-round	nh-pack.small.city
+rm_egil_grantham	Egil Grantham	ridgemere	heights	small:sq-heights-thyme	nh-pack.small.city
+tn_lf_sage_wheatridge	Sage Wheatridge	coldwater	The Greenholt, Coldwater	small:sq-kettle-wood	nh-pack.small.north
+tn_cw_fern_mistshore	Fern Mistshore	larkfield	The Greenholt, Larkfield	small:sq-linen-for-the-press	nh-pack.small.south
+rm_thyra_plankridge	Thyra Plankridge	ridgemere	commons	small:sq-marketday-stock	nh-pack.small.city
+rm_frederick_nailgate	Frederick Nailgate	ridgemere	estate	small:sq-mending-herbs	nh-pack.small.city
+cty_gorse_hedgewell	Gorse Hedgewell	larkfield	The Greenholt, Larkfield	small:sq-mill-race	nh-pack.small.south
+cty_lichen_reedford	Lichen Reedford	fenshore	The Sallow Fens, Fenshore	small:sq-mirebridge-clay	nh-pack.small.south
+rm_wystan_coalmarsh	Wystan Coalmarsh	ridgemere	works	small:sq-mooring-lines	nh-pack.small.city
+rm_tove_brinegate	Tove Brinegate	ridgemere	commons	small:sq-morning-bread	nh-pack.small.city
+rm_wynn_sootworth	Wynn Sootworth	ridgemere	works	small:sq-nailers-charcoal	nh-pack.small.city
+rm_petra_plankhand	Petra Plankhand	ridgemere	sump	small:sq-oakhaven-load	nh-pack.small.city
+cty_senna_applegarth	Senna Applegarth	saltwell	The Larkdowns, South-west	small:sq-ochre-rabbits	nh-pack.small.south
+cty_fallow_plumfield	Fallow Plumfield	larkfield	The Greenholt, South	small:sq-plumtree-badger	nh-pack.small.south
+rm_agnes_millford	Agnes Millford	ridgemere	commons	small:sq-rag-market-mushrooms	nh-pack.small.city
+rm_corwin_sootstack	Corwin Sootstack	ridgemere	sump	small:sq-rainward-pheasants	nh-pack.small.city
+rmx_harriet_platt	Harriet Platt	ridgemere	office	small:sq-records-copying	nh-pack.small.city
+rm_berit_coalworth	Berit Coalworth	ridgemere	estate	small:sq-restday-candles	nh-pack.small.city
+rm_kari_bilgehand	Kari Bilgehand	ridgemere	commons	small:sq-ropewalk-resin	nh-pack.small.city
+cty_winifred_fogridge	Winifred Fogridge	saltwell	The Red Waste, Saltwell	small:sq-salt-for-the-road	nh-pack.small.south
+cty_leif_driphand	Leif Driphand	frosthollow	The Greenholt, Frosthollow	small:sq-scree-goats	nh-pack.small.north
+cty_ingram_ashleaf	Ingram Ashleaf	oakhaven	The Rainwood, North-east	small:sq-sleepless-logger	nh-pack.small.north
+tn_sm_hob_meadowfield	Hob Meadowfield	southmeadow	The Larkdowns, South-west	small:sq-smoke-for-the-hives	nh-pack.small.south
+rm_rosamund_coalford	Rosamund Coalford	ridgemere	sump	small:sq-smokehouse-wood	nh-pack.small.city
+rm_yrsa_nailridge	Yrsa Nailridge	ridgemere	commons	small:sq-sounding-the-tarns	nh-pack.small.city
+tn_lf_rusk_downfield	Rusk Downfield	coldwater	The Larkdowns, South-west	small:sq-straw-for-the-pens	nh-pack.small.north
+cty_brock_marshholm	Brock Marshholm	coldwater	The Greenholt, Coldwater	small:sq-strayed-ewe	nh-pack.small.north
+cty_njal_rustwick	Njal Rustwick	larkfield	The Greenholt, Larkfield	small:sq-swill-for-southwood	nh-pack.small.south
+rm_lotte_greyley	Lotte Greyley	ridgemere	estate	small:sq-timberland-court-errand	nh-pack.small.city
+cty_leif_rainley	Leif Rainley	fenshore	The Sallow Fens, South-west	small:sq-twine-for-the-nets	nh-pack.small.south
+cty_frost_colddrift	Frost Colddrift	oakhaven	The Rainwood, North-east	small:sq-venison-for-the-cut	nh-pack.small.north
+cty_disa_fogford	Disa Fogford	southmeadow	The Sunfields, Southmeadow	medium:mq-bee-garth-bear	nh-pack.medium.south
+rm_palle_plankmore	Palle Plankmore	ridgemere	sump	medium:mq-cinder-gate-tally	nh-pack.medium.city
+tn_sm_linden_harvestton	Linden Harvestton	coldwater	The Greenholt, Middle	medium:mq-coldwater-still	nh-pack.medium.greenholt
+rm_edric_millton	Edric Millton	ridgemere	commons	medium:mq-coopers-note	nh-pack.medium.city
+tn_mb_kite_bogditch	Kite Bogditch	saltwell	The Saltpan, Saltpan workings	medium:mq-crossroads-names	nh-pack.medium.south
+tn_cw_grist_reedmere	Grist Reedmere	coldwater	The Greenholt, Coldwater	medium:mq-glasswater-nets	nh-pack.medium.greenholt
+cty_stone_acorndell	Stone Acorndell	frosthollow	The Greenholt, Frosthollow	medium:mq-lamp-oil-share	nh-pack.medium.north
+tn_mb_heather_reedwater	Heather Reedwater	larkfield	The Greenholt, Larkfield	medium:mq-linen-bolt	nh-pack.medium.greenholt
+cty_fern_merewick	Fern Merewick	saltwell	The Red Waste, Saltwell	medium:mq-lost-raker	nh-pack.medium.south
+tn_mb_ridge_eelbank	Ridge Eelbank	saltwell	The Red Waste, Saltwell	medium:mq-lost-raker	nh-pack.medium.south (npc.offer in the same quest)
+cty_ebba_coalgate	Ebba Coalgate	frosthollow	The Greenholt, Frosthollow	medium:mq-low-drift-props	nh-pack.medium.north
+tn_sm_pell_harvestley	Pell Harvestley	coldwater	The Larkdowns, the Upper Mere	medium:mq-meresend-blight	nh-pack.medium.greenholt
+cty_imogen_rustford	Imogen Rustford	larkfield	The Greenholt, Larkfield	medium:mq-mud-to-the-axles	nh-pack.medium.greenholt
+rm_sten_ropeford	Sten Ropeford	ridgemere	commons	medium:mq-northgate-smoke	nh-pack.medium.city
+cty_oda_cinderdale	Oda Cinderdale	oakhaven	The Rainwood, North-east	medium:mq-logs-adrift	nh-pack.medium.north
+tn_sm_bram_harvestgarth	Bram Harvestgarth	fenshore	The Sallow Fens, Fenshore	medium:mq-potters-place	nh-pack.medium.south
+rm_edda_gullford	Edda Gullford	ridgemere	sump	medium:mq-sump-lamps	nh-pack.medium.city
+rm_desmond_bilgeridge	Desmond Bilgeridge	ridgemere	commons	medium:mq-sunken-street	nh-pack.medium.city (npc.offer in the same quest)
+rm_theodora_bilgeridge	Theodora Bilgeridge	ridgemere	commons	medium:mq-sunken-street	nh-pack.medium.city
+rm_vidar_ashhand	Vidar Ashhand	ridgemere	estate	medium:mq-court-larder	nh-pack.medium.city
+tn_oh_harl_oakbough	Harl Oakbough	southmeadow	The Sunfields, Southmeadow	medium:mq-vineyard-cellar	nh-pack.medium.south
+cty_tor_chalkfield	Tor Chalkfield	southmeadow	The Sunfields, Southmeadow	medium:mq-waste-road-salt	nh-pack.medium.south
+rm_leif_fogcot	Leif Fogcot	ridgemere	wharf	medium:mq-wharf-brother	nh-pack.medium.city
+cty_tristram_rainridge	Tristram Rainridge	oakhaven	The Rainwood, North-east	medium:mq-windthrown-cedar	nh-pack.medium.north
+tn_mb_iris_pikeford	Iris Pikeford	fenshore	The Sallow Fens, Fenshore	medium:mq-withy-lights	nh-pack.medium.south
+cty_marl_craghearth	Marl Craghearth	frosthollow	The Greenholt, Frosthollow	large:lq-black-hearths	lq-black-hearths
+cty_aster_cornley	Aster Cornley	southmeadow	The Sunfields, North-west	large:lq-blight-and-boar	lq-blight-and-boar (npc.offer in the same line)
+cty_brisk_lakemere	Brisk Lakemere	larkfield	The Greenholt, Larkfield	large:lq-blight-and-boar	lq-blight-and-boar (npc.offer in the same line)
+cty_sloe_harvestby	Sloe Harvestby	southmeadow	The Sunfields, North-east	large:lq-blight-and-boar	lq-blight-and-boar
+rm_dirk_rainmore	Dirk Rainmore	ridgemere	commons	large:lq-clipped-silver	lq-clipped-silver (npc.offer in the same line)
+rm_vigdis_rainmore	Vigdis Rainmore	ridgemere	commons	large:lq-clipped-silver	lq-clipped-silver (npc.offer in the same line)
+tn_lf_harrow_larkwell	Harrow Larkwell	larkfield	The Greenholt, Larkfield	large:lq-clipped-silver	lq-clipped-silver (npc.offer in the same line)
+tn_lf_pike_chalkley	Pike Chalkley	larkfield	The Greenholt, Larkfield	large:lq-clipped-silver	lq-clipped-silver
+cty_ivo_sootridge	Ivo Sootridge	fenshore	The Sallow Fens, South-west	large:lq-eel-famine	lq-eel-famine
+cty_jasper_greymore	Jasper Greymore	fenshore	The Sallow Fens, Fenshore	large:lq-eel-famine	lq-eel-famine (npc.offer in the same line)
+rm_karin_wetridge	Karin Wetridge	ridgemere	sump	large:lq-eel-famine	lq-eel-famine (npc.offer in the same line)
+tn_fh_rowan_cragpeak	Rowan Cragpeak	fenshore	The Sallow Fens, Fenshore	large:lq-eel-famine	lq-eel-famine (npc.offer in the same line)
+tn_mb_nab_bogditch	Nab Bogditch	fenshore	The Sallow Fens, Fenshore	large:lq-eel-famine	lq-eel-famine (npc.offer in the same line)
+rmx_florence_pennock	Florence Pennock	ridgemere	commons	large:lq-long-run	lq-long-run (npc.offer in the same line)
+rmx_grete_dimmock	Grete Dimmock	ridgemere	commons	large:lq-long-run	lq-long-run
+rmx_hanne_ash	Hanne Ash	ridgemere	commons	large:lq-long-run	lq-long-run (npc.offer in the same line)
+rmx_orm_carlisle	Orm Carlisle	ridgemere	heights	large:lq-long-run	lq-long-run (npc.offer in the same line)
+rmx_philippa_pitchstack	Philippa Pitchstack	ridgemere	commons	large:lq-long-run	lq-long-run (npc.offer in the same line)
+cty_flint_snowdrift	Flint Snowdrift	ridgemere	Ridgemere, the Wharf and the Sump	large:lq-mast-cedars	lq-mast-cedars (npc.offer in the same line)
+cty_senna_beechleaf	Senna Beechleaf	ridgemere	Ridgemere, the Wharf and the Sump	large:lq-mast-cedars	lq-mast-cedars (npc.offer in the same line)
+rm_brenna_slaggate	Brenna Slaggate	ridgemere	commons	large:lq-mast-cedars	lq-mast-cedars (npc.offer in the same line)
+tn_fh_ivy_stonehollow	Ivy Stonehollow	ridgemere	Ridgemere, Northgate	large:lq-mast-cedars	lq-mast-cedars
+cty_jessamy_greyford	Jessamy Greyford	coldwater	The Greenholt, Coldwater	large:lq-old-brown	lq-old-brown
+cty_vale_pikebridge	Vale Pikebridge	coldwater	The Greenholt, Coldwater	large:lq-old-brown	lq-old-brown (npc.offer in the same line)
+tn_lf_juniper_larkcombe	Juniper Larkcombe	coldwater	The Greenholt, Coldwater	large:lq-old-brown	lq-old-brown (npc.offer in the same line)
+rm_dunstan_greywick	Dunstan Greywick	ridgemere	commons	large:lq-runnel-fever	lq-runnel-fever (npc.offer in the same line)
+rm_halvard_ashley	Halvard Ashley	ridgemere	commons	large:lq-runnel-fever	lq-runnel-fever (npc.offer in the same line)
+rm_ivo_fogstack	Ivo Fogstack	ridgemere	sump	large:lq-runnel-fever	lq-runnel-fever (npc.offer in the same line)
+rm_rupert_fogton	Rupert Fogton	ridgemere	commons	large:lq-runnel-fever	lq-runnel-fever (npc.offer in the same line)
+rm_theodora_wickley	Theodora Wickley	ridgemere	commons	large:lq-runnel-fever	lq-runnel-fever
+cty_orm_sootgate	Orm Sootgate	saltwell	The Red Waste, Saltwell	large:lq-salt-road	lq-salt-road
+rm_osric_ropeworth	Osric Ropeworth	ridgemere	commons	large:lq-salt-road	lq-salt-road (npc.offer in the same line)
+rmx_fenwick_mossdale	Fenwick Mossdale	ridgemere	commons	large:lq-salt-road	lq-salt-road (npc.offer in the same line)
+rm_petra_vance	Petra Vance	ridgemere	heights	large:lq-vanishing-thief	lq-vanishing-thief
+rm_roald_wickstack	Roald Wickstack	ridgemere	heights	large:lq-vanishing-thief	lq-vanishing-thief (npc.offer in the same line)
+rm_silas_brinemore	Silas Brinemore	ridgemere	heights	large:lq-vanishing-thief	lq-vanishing-thief (npc.offer in the same line)
+rmx_hester_greyby	Hester Greyby	ridgemere	sump	large:lq-vanishing-thief	lq-vanishing-thief (npc.offer in the same line)
+rmx_palle_brinewell	Palle Brinewell	ridgemere	sump	large:lq-vanishing-thief	lq-vanishing-thief (npc.offer in the same line)
+cty_linden_sedgeditch	Linden Sedgeditch	ridgemere	Cedar Sound, West	large:lq-wreckers-light	lq-wreckers-light
+rm_ilse_coalley	Ilse Coalley	ridgemere	sump	large:lq-wreckers-light	lq-wreckers-light (npc.offer in the same line)
+rm_ivo_cinderham	Ivo Cinderham	ridgemere	sump	large:lq-wreckers-light	lq-wreckers-light (npc.offer in the same line)
+rm_septimus_plankmarsh	Septimus Plankmarsh	ridgemere	commons	large:lq-wreckers-light	lq-wreckers-light (npc.offer in the same line)
+tn_fh_jory_rimepeak	Jory Rimepeak	coldwater	The Greenholt, Middle	stage:st-bell-road	nh-pack.stage (medium)
+cty_wick_marshwade	Wick Marshwade	coldwater	The Greenholt, Coldwater	stage:st-black-cloak-road	nh-pack.stage (medium)
+cty_juniper_larkham	Juniper Larkham	ridgemere	The Rainward Hills, South-west	stage:st-bounds-water	nh-pack.stage (small)
+rm_frederick_rainham	Frederick Rainham	ridgemere	heights	stage:st-camp-bounty	nh-pack.stage (large)
+cty_alder_blossomcroft	Alder Blossomcroft	southmeadow	The Sunfields, Southmeadow	stage:st-chorus-wrong	nh-pack.stage (small)
+cty_brand_sunham	Brand Sunham	larkfield	The Greenholt, Larkfield	stage:st-feed-larkfield	nh-pack.stage (small)
+cty_stone_marshmore	Stone Marshmore	fenshore	The Sallow Fens, Fenshore	stage:st-fog-lanterns	nh-pack.stage (small)
+tn_oh_quill_oakdell	Quill Oakdell	larkfield	The Greenholt, Larkfield	stage:st-ford-blankets	nh-pack.stage (small)
+rmx_aud_saltridge	Aud Saltridge	ridgemere	sump	stage:st-greenholt-wagon	nh-pack.stage (medium)
+tn_sm_lichen_harvestton	Lichen Harvestton	coldwater	The Greenholt, Coldwater	stage:st-haulers-food	nh-pack.stage (small)
+cty_garth_barleyton	Garth Barleyton	coldwater	The Greenholt, Coldwater	stage:st-ice-watch	nh-pack.stage (medium)
+rm_cedric_mudley	Cedric Mudley	ridgemere	heights	stage:st-midsummer-road	nh-pack.stage (large)
+rm_runa_gullley	Runa Gullley	ridgemere	commons	stage:st-moot-benches	nh-pack.stage (small)
+rmx_bertil_saltcot	Bertil Saltcot	ridgemere	commons	stage:st-patrol-round	nh-pack.stage (large)
+rm_beatha_foggate	Beatha Foggate	ridgemere	heights	stage:st-post-night	nh-pack.stage (large)
+rmx_frida_netherby	Frida Netherby	ridgemere	commons	stage:st-post-stone	nh-pack.stage (small)
+cty_odo_icewell	Odo Icewell	ridgemere	Ridgemere, the Commons and the Rise	stage:st-post-timber	nh-pack.stage (small)
+cty_myrtle_larkcombe	Myrtle Larkcombe	southmeadow	The Sunfields, Southmeadow	stage:st-relief-convoy	nh-pack.stage (medium)
+rm_olaf_pitchmore	Olaf Pitchmore	ridgemere	office	stage:st-summons	nh-pack.stage (small)
+cty_ada_coalstack	Ada Coalstack	ridgemere	The Rainward Hills, North	stage:st-twelve-bounds	nh-pack.stage (large)
+rm_winifred_cinderworth	Winifred Cinderworth	ridgemere	commons	stage:st-wake-bread	nh-pack.stage (small)
