@@ -772,8 +772,8 @@ LINE = {
 # Doc 86, Phase 5 (J5, J6, L1): howls, crowds and the wild. At nightfall the tarn-keeper howls (npc.howl) and a bear waits for
 # the next hunt begun at the tarn (hunt.stage); every wolf's howl is counted (howled); the ropes are manned when three of the
 # seven of the crew stand at the tarn (count in region, the residents of a list), not when one of them is dead there; a
-# chorus of two does not call the hunt, one of three does (chorus closed, the exit's minQuantity); the bear, killed at the
-# tarn, ends the quest (an ordinary "hunted", target the bear).
+# chorus of two does not call the hunt, one of three does (chorus closed, the exit's minQuantity); the bear, killed in the
+# hunt begun at the tarn, ends the quest (an ordinary "hunted", target the bear).
 TARN = {'id': 'tarn', 'cell': 'grey', 'x1': 2, 'y1': 2, 'x2': 6, 'y2': 6}
 CREW = ['rm111', 'rm112', 'rm113', 'rm114', 'rm115', 'rm116', 'rm117']
 
@@ -794,8 +794,10 @@ HOWLS = {
     'quests': [
         {'id': 'bear', 'title': 'Old Brown', 'giver': 'rm111', 'handIn': False,
          'offer': {'say': '#greet# There is a bear at the tarn, old and brown. Go out after him at dusk, when he comes to drink.'},
+         # (Where by the cell, not the region: a hunt's kill is recorded at the killer's tile in its arena, which spans more
+         # than the tarn; the stage already ties the bear to the tarn's hunts.)
          'objectives': [{'id': 'kill', 'label': 'Bring down Old Brown at the tarn.', 'on': 'hunted', 'match': {'target': 'bear'},
-                         'where': {'region': 'tarn'}}]},
+                         'where': {'cells': ['grey']}}]},
     ],
     'phases': [
         {'id': 'gather', 'journal': 'The tarn crew gather at dusk, and the keeper howls for the hunters.', 'effects': [],

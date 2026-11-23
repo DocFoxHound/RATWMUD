@@ -638,3 +638,26 @@ test('doc 86, Phase 5: Old Brown at the tarn in words; a count of residents in a
     assert.equal(cat.effects.find(e => e.id === 'hunt.stage')!.params!.find(x => x.key === 'species')!.type, 'species');
 });
 
+import {countWho} from './workbench.ts';
+test('doc 86, Phase 5 after review: once residents are counted the list is asked for, and going back to wolves drops it', () => {
+    const p = v2['v2-old-brown'];
+    const ns = namesOf(null, p);
+    const slotOf = (c: Record<string, unknown>) => conditionParts(cat, c as unknown as Condition, ns)
+        .find((x): x is Extract<typeof x, {slot: string}> => 'slot' in x && x.slot === 'list')!;
+    // (Wolves counted: no list, and no "+the residents" either.)
+    assert.equal(slotOf({test: 'count in region', region: 'tarn', op: '>=', value: 3}).hidden, true);
+    assert.equal(slotOf({test: 'count in region', region: 'tarn', op: '>=', value: 3, who: 'wolves'}).hidden, true);
+    // (Residents counted, the list not yet picked: shown, empty, under its label, so the author can pick it.)
+    const asked = slotOf({test: 'count in region', region: 'tarn', op: '>=', value: 3, who: 'residents'});
+    assert.ok(!asked.hidden && asked.empty, JSON.stringify(asked));
+    assert.equal(asked.label, 'the residents');
+    assert.deepEqual(asked.param?.of, ['residents']);
+    // (Picked: it reads as the sentence.)
+    const picked = {test: 'count in region', region: 'tarn', op: '>=', value: 3, who: 'residents', list: 'crew'};
+    assert.match(plain(conditionParts(cat, picked as unknown as Condition, ns)), /at least 3 of the residents in crew stand in tarn/);
+    // (Back to wolves: the stale list goes; a residents count keeps it; other conditions are left alone.)
+    assert.deepEqual(countWho({...picked, who: 'wolves'}), {test: 'count in region', region: 'tarn', op: '>=', value: 3, who: 'wolves'});
+    assert.deepEqual(countWho(picked), picked);
+    const other = {test: 'in list', list: 'crew'};
+    assert.equal(countWho(other), other);
+});

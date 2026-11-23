@@ -6807,7 +6807,7 @@
    "group": "talk",
    "title": "A chorus ends",
    "sentence": "a chorus ends at {cell} ({item}), begun by {actor}",
-   "help": "A gathering howl closed: actor began it, quantity is how many howled in it (residents too), item the town or wild, detail the chorus. Written only while a live story listens for it (the story's watch list).",
+   "help": "A gathering howl closed: actor began it, quantity is how many howled in it (residents too), item the town or wild, detail the chorus. When a resident began it (a story's npc.howl), the actor is that resident: a quest objective on it should credit the wolves present (credit: present), or it credits nobody who joined. Written only while a live story listens for it (the story's watch list).",
    "fields": {
     "actor": {
      "type": "character",
@@ -11650,7 +11650,7 @@
    "group": "places",
    "title": "An animal waits for the next hunt",
    "sentence": "The next hunt in {region} meets {count} {species} (for {minutes} minutes)",
-   "help": "The next hunt a wolf begins inside the region has this animal in its arena, as well as whatever the ground gives. The kill is an ordinary 'hunted' with the animal as target. One hunt meets it; it lapses after the minutes of the world's clock. Nothing roams the map: the animal lives only in that hunt. Undone when the story ends.",
+   "help": "The next hunt any wolf begins inside the region (one of the story's or a passer-by) has this animal in its arena, as well as whatever the ground gives, even on ground too built up or bare for game of its own; never in a town or indoors. The kill is an ordinary 'hunted' with the animal as target. One hunt meets it; it lapses after the minutes of the world's clock. Nothing roams the map: the animal lives only in that hunt. Undone when the story ends.",
    "params": [
     {
      "key": "region",

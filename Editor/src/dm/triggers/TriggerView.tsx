@@ -2,7 +2,7 @@
 // catalogue, every parameter a slot with the picker for its type. Also the action list that a phase's entry effects share.
 import {useState} from 'react';
 import {
-    actionItem, actionParts, allActions, AMOUNTS, conditionParts, effectParts, eventOf, eventParts, FIELDS, headWords, isV2, isWorldCondition, itemOf, newAction, refusable,
+    actionItem, actionParts, allActions, AMOUNTS, conditionParts, countWho, effectParts, eventOf, eventParts, FIELDS, headWords, isV2, isWorldCondition, itemOf, newAction, refusable,
     newCondition, triggersOf, usesOf, withEvent, withTriggers, type Action, type Condition, type Effect, type Part, type Program, type Ref,
     type CatItem, type Slot, type Trigger,
 } from '../../lib/workbench';
@@ -84,6 +84,7 @@ export function ConditionNode({node, change, remove, depth, phase, problems, eac
                 const own = (program.variables ?? []).find(x => x.scope === 'player' && x.type === 'number')?.id ?? 'progress';
                 next = rest.source === 'where' ? {...rest, where: {test: 'compare', left: {var: own, of: '$each'}, op: '>=', right: 1}} : {...rest, list: wolves};
             }
+            if (slot.slot === 'who' && (next.test as string) === 'count in region') next = countWho(next as unknown as Record<string, unknown>) as unknown as Condition;
             if (slot.slot === 'what' && (next.test as string) === 'wolf has') {
                 // (Doc 86, J10: a tier is normal, gifted or quickened; a family starts at none, a normal wolf's.)
                 const r = next as unknown as {what: string; value: string};

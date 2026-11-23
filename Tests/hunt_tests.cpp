@@ -473,6 +473,42 @@ void aStagedAnimal()
     expect(ibex == 2, "the two ibex are in the arena (they never live on this ground): " + std::to_string(ibex));
     expect(r.message.find(wild::speciesById("ibex")->name) != std::string::npos, "and the hunter is told of them: " + r.message);
     (void)other;
+    // (After review: a yard too built up or bare for any game of its own still meets a story's animal, out in the world;
+    // indoors, never.)
+    const auto bare = [](bool outdoors) {
+        auto files = wildsFiles();
+        auto& cell = files["cells/wilds.cell"];
+        const auto grid = cell.find("grid:\n") + 6;
+        for (auto i = grid; i < cell.size(); ++i)
+            if (cell[i] != '\n')
+                cell[i] = '.';
+        if (!outdoors)
+        {
+            cell.replace(cell.find("outdoors: true"), 14, "outdoors: false");
+            cell.erase(cell.find("wind: "), cell.find("lighting:") - cell.find("wind: "));
+        }
+        World w;
+        const auto loaded = w.loadWorldFiles(files, "wilds");
+        expect(loaded.ok, "the yard loads: " + loaded.message);
+        hunter(w, "player-ada");
+        return w;
+    };
+    {
+        auto w = bare(true);
+        const auto none = w.startHunt("player-ada");
+        expect(!none.ok && none.message.find("too built up or bare") != std::string::npos, "a bare yard gives no game: " + none.message);
+        const auto met = w.startHunt("player-ada", {}, {"ibex"});
+        expect(met.ok, "but a story's ibex is met there: " + met.message);
+        int ibex = 0, others = 0;
+        for (const auto& id : animalsIn(w, huntOf(w, "player-ada")))
+            (w.animalOf(id) == "ibex" ? ibex : others) += 1;
+        expect(ibex == 1 && others == 0, "the ibex alone: " + std::to_string(ibex) + " and " + std::to_string(others));
+    }
+    {
+        auto w = bare(false);
+        const auto indoors = w.startHunt("player-ada", {}, {"ibex"});
+        expect(!indoors.ok && indoors.message.find("go out into the wild") != std::string::npos, "never indoors: " + indoors.message);
+    }
 }
 
 // Doc 86, L1, through the game: a story's hunt.stage held with the story; the next hunt begun inside its region meets the

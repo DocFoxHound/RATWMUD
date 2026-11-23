@@ -432,6 +432,15 @@ export function actionItem(cat: Catalogue, a: Action | {do: string; var?: unknow
     return itemOf(cat.actions, a.do);
 }
 
+/** Doc 86, J6: a count in a region names its residents list when residents are counted, and only then: going back to
+ *  the story's wolves drops the list. */
+export function countWho<T extends Record<string, unknown>>(c: T): T {
+    if (c.test !== 'count in region' || c.who === 'residents' || !('list' in c)) return c;
+    const {list, ...rest} = c;
+    void list;
+    return rest as T;
+}
+
 /** The params of an item filled from a record (an action, a condition, an effect): a slot per sentence slot. */
 export function itemParts(item: CatItem, record: Record<string, unknown>, names: Names): Part[] {
     const params = item.params ?? [];
@@ -461,7 +470,9 @@ export function itemParts(item: CatItem, record: Record<string, unknown>, names:
         }
         if (param?.optional && (value === undefined || value === '')) {
             // (A list or a timer variable that only some choices need: asked for when "the list" or "the timer" is chosen.)
-            const wanted = param.type === 'variable' && (record.over === 'list' || record.from === 'var');
+            // (Doc 86, J6: a count in a region asks for its residents list once residents are counted.)
+            const wanted = param.type === 'variable' && (record.over === 'list' || record.from === 'var'
+                || (item.id === 'count in region' && param.key === 'list' && record.who === 'residents'));
             return {keys, type, label: wanted ? param.label : param.words?.[''] ?? '', value, param, shown: param.words?.[''] ?? '', empty: true,
                 hidden: !param.words?.[''] && !wanted} as Omit<Slot, 'slot'>;
         }

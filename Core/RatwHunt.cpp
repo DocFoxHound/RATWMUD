@@ -140,6 +140,7 @@ World::WildHere World::wildAround(const std::string& player) const
         here.huntWhy = "There is no game to hunt here; go out into the wild.";
         return here;
     }
+    here.wild = true;
     // Foraging: the ground right beside one.
     const int px = int(std::floor(p->position.x)), py = int(std::floor(p->position.y));
     std::vector<std::string> names;
@@ -262,7 +263,7 @@ Result World::startHunt(const std::string& player, const std::vector<std::string
     if (!ensureLoaded(p->cellId).ok || !cell(p->cellId))
         return {false, "This place isn't loaded.", {}};
     const auto here = wildAround(player);
-    if (!here.hunt)
+    if (!here.hunt && !(here.wild && !staged.empty()))   // (Doc 86, L1: a story's animal on ground too bare for any other.)
         return {false, here.huntWhy.empty() ? "There is no game to hunt here." : here.huntWhy, {}};
     leaveObserving(player);
     Battle b;

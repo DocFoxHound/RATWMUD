@@ -469,8 +469,11 @@ save whenever they changed (`state.watchSent`, a digest of what was sent). Both 
 it in the story's `held.hunts` (8 at most; `{region, cell, x1, y1, x2, y2, species, count, until}`, `until` in world
 seconds). A wolf's `hunt` inside the rectangle (the wolf's tile), before `until`, adds the animals to what the ground gives
 (`World::startHunt`'s `staged`) and uses the entry up; `tickStoryWorld` drops lapsed ones and `endStoryWorld` the rest
-(`UNDONE_AT_END`). The kill is an ordinary `hunted` (target the species). Approval warns of an animal whose `habitats` the
-region's ground has none of, and of a region indoors (`story_runner.region_ground`). The workbench's species picker reads
+(`UNDONE_AT_END`). Any wolf's hunt there meets it, of the story's audience or not. A staged animal is met on ground too
+built up or bare for game of its own (`WildHere::wild`: outdoors and in no town); never in a town or indoors. The kill is an
+ordinary `hunted` (target the species), recorded at the killer's tile in the arena, so an objective on it names the region's cell in `where`, not the
+region. Approval warns of an animal whose `habitats` the region's ground has none of, of a region indoors
+(`story_runner.region_ground`), and of one in a town (a market town as last saved, not a plain Country community). The workbench's species picker reads
 `refs.species` (`static_refs`).
 
 ## Writing a program

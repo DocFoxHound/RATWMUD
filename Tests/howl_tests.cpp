@@ -383,11 +383,29 @@ void aResidentHowls()
     const auto closed = *std::find_if(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "chorus closed"; });
     expect(closed.actor == other && closed.quantity == 3 && closed.detail == first.detail && closed.item == first.item,
            "begun by the resident, three howled in it: " + std::to_string(closed.quantity));
-    // Refused for a resident dead, or in a fight.
+    // Refused for a resident dead, down, away (offstage) or in a fight.
     world.setDead(npc, true);
     r = order("npc.howl", npc);
     expect(!r.ok && r.message.find("died") != std::string::npos, "a dead resident does not howl: " + r.message);
     world.setDead(npc, false);
+    world.entity(npc)->downedLeft = 30;
+    r = order("npc.howl", npc);
+    expect(!r.ok && r.message.find("is down") != std::string::npos, "a resident down does not howl: " + r.message);
+    world.entity(npc)->downedLeft = 0;
+    std::string third;                              // (One who has not howled, so the rest does not answer first.)
+    for (const auto& [id, e] : world.entities())
+        if (third.empty() && e.npc && !e.dead && !e.transient && id != npc && id != other && world.society().resident(id))
+            third = id;
+    expect(!third.empty(), "a third resident");
+    world.entity(third)->offstage = true;
+    r = order("npc.howl", third);
+    expect(!r.ok && r.message.find("nowhere to howl from") != std::string::npos, "a resident away does not howl: " + r.message);
+    world.entity(third)->offstage = false;
+    expect(world.teleport(w.adaId, place, 10.5, 12.5).ok && world.teleport(npc, place, 11.5, 12.5).ok, "Ada beside the resident");
+    const auto fight = world.attack(w.adaId, npc, "yield");
+    expect(fight.ok && world.inBattle(npc), "Ada falls on the resident: " + fight.message);
+    r = order("npc.howl", npc);
+    expect(!r.ok && r.message.find("in a fight") != std::string::npos, "a resident in a fight does not howl: " + r.message);
 }
 } // namespace
 

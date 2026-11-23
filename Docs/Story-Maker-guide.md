@@ -560,17 +560,22 @@ camp is numbered as before. Approval refuses an objective on a `camp_story_` the
 
 **An animal waits for the next hunt** (`hunt.stage`): the next hunt a wolf begins inside one of the story's regions has 1
 to 3 of an animal of `Data/Wild/animals.json` in its arena, beside whatever the ground gives (even ground that gives
-nothing that day). One hunt meets it; it lapses after its minutes of the world's clock (1 to 1,440), or when the story ends.
-Nothing roams the map: the animal lives only in that one hunt, so no wild population is made and none is left behind. The
-kill is an ordinary `hunted`, with the animal as its target, so the objective is a plain one:
+nothing that day, or ground too built up or bare to give game of its own, such as a road or a yard out in the Country).
+Hunts never begin in a town or indoors, staged or not. One hunt meets it, begun by any wolf there, one of the story's or a
+passer-by; it lapses after its minutes of the world's clock (1 to 1,440), or when the story ends. Nothing roams the map:
+the animal lives only in that one hunt, so no wild population is made and none is left behind. The kill is an ordinary
+`hunted`, with the animal as its target, so the objective is a plain one:
 
 ```json
 {"kind": "hunt.stage", "region": "greytarn", "species": "bear", "count": 1, "minutes": 120}
-{"id": "kill", "label": "Bring down Old Brown at the tarn.", "on": "hunted", "match": {"target": "bear"}, "where": {"region": "greytarn"}}
+{"id": "kill", "label": "Bring down Old Brown at the tarn.", "on": "hunted", "match": {"target": "bear"}, "where": {"cells": ["w_ridgemere_7_6"]}}
 ```
 
-A story holds at most 8 at once. Approval warns (it does not refuse) when the animal lives on none of the region's ground
-("a bear on open water"), or when the region is indoors (no hunt begins there). Stage it when the wolves are about to go out
+Give the kill's `where` as the region's cell, not the region: a hunt's `hunted` is recorded at the killer's tile in its
+arena, which spans more than a small region, so a kill of the staged bear can fall outside the region. The stage already
+ties the bear to the region's hunts. A story
+holds at most 8 at once. Approval warns (it does not refuse) when the animal lives on none of the region's ground ("a bear
+on open water"), when the region is indoors, or when it is in a town (no hunt begins there). Stage it when the wolves are about to go out
 (at dusk, when a quest is taken): an animal no hunt meets is gone after its minutes.
 
 ## 8. The world's facts and watched events
@@ -623,8 +628,10 @@ in, or `wild`; `detail` the chorus it opened or joined) and **A chorus ends** (`
 resident howls** (`npc.howl`) has a resident howl where they stand: it opens or joins a chorus, wolves hear it as any howl
 (a direction and a distance, never a name) and the town remembers it. A howl's rest holds for a resident as for a wolf (a
 few minutes), so a second `npc.howl` too soon is refused ("howled a moment ago": give it `"ifRefused": "skip"` in a trigger
-that may fire often); so is one for a resident dead, down or in a fight. "Three howled together" is an exit on `chorus
-closed` with `"minQuantity": 3`, or a trigger with the condition **The event's field** `quantity` at least 3.
+that may fire often); so is one for a resident dead, down, away or in a fight. "Three howled together" is an exit on `chorus
+closed` with `"minQuantity": 3`, or a trigger with the condition **The event's field** `quantity` at least 3. When a
+resident began the chorus, `chorus closed`'s actor is that resident: a quest objective on it credits the wolves who joined
+only with `"credit": "present"`.
 
 **How many residents stand in a region.** **How many stand in a region** (`count in region`) counts the story's wolves, or,
 with `"who": "residents"` and a `list` (a residents list the story or the world keeps), the residents of that list standing in
@@ -869,7 +876,7 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | Approval refuses words | the words | a word of `words.json` (it says what to write instead), an id in speech, a `#symbol#` the library lacks, a banner that quotes a resident: see section 10. |
 | A quest is not offered to a wolf | the quest's **Only for wolves who…** | It holds for that wolf? (A chain: is the quest before it done for them?) Taken back from them (`quest.withdraw`)? Too many stories at one giver: see "Many stories at one resident". |
 | A chapter never hears a pack | the pack's Timeline and the chapter's trigger | `story.notify`'s news name and the chapter's `"match": {"detail": ...}` the same words; a named `story` is the chapter's id, and it is running. |
-| A staged animal never shows | the hunt's place | The hunt must begin inside the region (the wolf's tile), within the minutes, and only the first hunt there meets it. Hunts begin only out in the wild, never in a town. |
+| A staged animal never shows | the hunt's place | The hunt must begin inside the region (the wolf's tile), within the minutes, and only the first hunt there meets it, whoever begins it. Hunts begin only outdoors, never in a town. |
 | `npc.howl` was refused | the order | "howled a moment ago": a resident's voice rests as a wolf's does; "dead", "down", "in a fight". |
 | A count of residents is always unknown | the world's facts | None of the list's residents is in the facts yet: the list was empty when the phase began and the game has not been told again (is the runner running?). |
 | Problems in the draft | Story Creator → **Problems** | Every problem at once with **Go**, and the world's warnings (a signal nothing hears, a counter nothing sets, an id the world lacks). |
@@ -1810,7 +1817,7 @@ A wolf (or a resident a story asked to) howls: item is the town it was howled in
 
 <a id="event-chorus-closed"></a>**`chorus closed`**: A chorus ends (watched, mission evidence, has a tile)
 
-A gathering howl closed: actor began it, quantity is how many howled in it (residents too), item the town or wild, detail the chorus. Written only while a live story listens for it (the story's watch list).
+A gathering howl closed: actor began it, quantity is how many howled in it (residents too), item the town or wild, detail the chorus. When a resident began it (a story's npc.howl), the actor is that resident: a quest objective on it should credit the wolves present (credit: present), or it credits nobody who joined. Written only while a live story listens for it (the story's watch list).
 
 | Field | Holds | Left out means |
 |---|---|---|
@@ -6450,7 +6457,7 @@ Reads: The weather in **greyfen** is **snow** for **6** hours
 
 <a id="effect-hunt-stage"></a>**`hunt.stage`**: An animal waits for the next hunt (undone at the end)
 
-The next hunt a wolf begins inside the region has this animal in its arena, as well as whatever the ground gives. The kill is an ordinary 'hunted' with the animal as target. One hunt meets it; it lapses after the minutes of the world's clock. Nothing roams the map: the animal lives only in that hunt. Undone when the story ends.
+The next hunt any wolf begins inside the region (one of the story's or a passer-by) has this animal in its arena, as well as whatever the ground gives, even on ground too built up or bare for game of its own; never in a town or indoors. The kill is an ordinary 'hunted' with the animal as target. One hunt meets it; it lapses after the minutes of the world's clock. Nothing roams the map: the animal lives only in that hunt. Undone when the story ends.
 
 Reads: The next hunt in **square** meets **1** **bear** (for **120** minutes)
 

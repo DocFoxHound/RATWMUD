@@ -686,7 +686,12 @@ class Phase5Howls(unittest.TestCase):
         self.assertEqual(report['tests'][0]['path'], ['gather'])
 
     def test_a_bear_killed_away_from_the_tarn_is_not_old_brown(self):
+        # (After review: the kill is at the killer's tile in the hunt's arena, wider than the tarn: in the tarn's cell it
+        # counts wherever it fell; in another cell it is not Old Brown.)
         report = self.review(lambda ev: [*ev[:6], {**ev[6], 'x': 9}])
+        self.assertTrue(report['passed'], report['tests'][0])
+        self.assertEqual(report['tests'][0]['quests'], {'bear': {samples.ASH: 'done'}})
+        report = self.review(lambda ev: [*ev[:6], {**ev[6], 'cell': 'elsewhere'}])
         self.assertTrue(report['passed'], report['tests'][0])
         self.assertEqual(report['tests'][0]['quests'], {'bear': {samples.ASH: 'active'}})
 

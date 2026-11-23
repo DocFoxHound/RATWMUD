@@ -820,11 +820,13 @@ class World
     struct WildHere
     {
         bool hunt = false, forage = false;
+        bool wild = false;                          // Outdoors and in no town: a story's staged animal is met here (doc 86, L1).
         std::string huntWhy, forageWhat;            // Why not; what is to be foraged here ("the trees, the grass").
     };
     WildHere wildAround(const std::string& player) const;
     // `only`: the game to find (species ids), for the Dev Console's /hunt and tests; empty, what the ground gives.
-    // `staged`: animals a story staged for this hunt (doc 86, L1), added to what the ground gives (even when it gives none).
+    // `staged`: animals a story staged for this hunt (doc 86, L1), added to what the ground gives. Outdoors and in no town
+    // they are met even where the ground is too built up or bare to give any game of its own; never in a town or indoors.
     Result startHunt(const std::string& player, const std::vector<std::string>& only = {}, const std::vector<std::string>& staged = {});
     // Hunting together (Docs/Design/53-hunting-and-working-together.md, Phase 2). Anyone may join a hunt while its
     // starter allows hunting partners (the user: only the starter's setting counts); its party, Chapter and companions

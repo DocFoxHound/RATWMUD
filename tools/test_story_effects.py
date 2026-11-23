@@ -244,6 +244,9 @@ class Orders(unittest.TestCase):
         self.assertNotIn('hunt.stage', rules.WOLF_EFFECTS | rules.BUILDER_EFFECTS)
         self.assertNotIn('npc.howl', rules.WOLF_EFFECTS | rules.BUILDER_EFFECTS)
         self.assertEqual({s['id'] for s in runner.static_refs()['species']}, set(rules.animal_habitats()))
+        # (A glyph under two grounds is the first's, as the game reads animals.json: w is water, not mud.)
+        self.assertEqual(rules.animal_ground()['w'], 'water')
+        self.assertEqual(rules.animal_ground()['D'], 'mud')
 
     def test_the_tracker_is_hidden_and_shown_again_by_the_story(self):
         p = rules.validate(program([effect('story.tracker')]))
@@ -300,6 +303,19 @@ class InTheWorld(unittest.TestCase):
         refs = runner.refs(self.conn, self.world)
         self.assertEqual(refs['doors'], [{'id': 'link_inn_a', 'name': 'The inn door', 'cell': 'gate'}])
         self.assertEqual(refs['mantles'], [])
+
+    def test_a_hunt_staged_in_a_town_is_warned_of(self):
+        # (Doc 86, L1, after review: no hunt begins in a town, as the game has its towns, two or more with a market.)
+        staged = program([effect('hunt.stage')])
+        town = lambda out: [c['text'] for c in out if 'no hunt begins in a town' in c['text']]
+        self.assertEqual(town(runner.world_checks(self.conn, self.world, staged)), [], 'no towns saved yet')
+        self.conn.execute('RESET ROLE')
+        self.conn.execute("""UPDATE game.checkpoints SET payload='{"calendarDays":10,"society":{"report":{"markets":
+                             [{"id":"greyfen"},{"id":"tarnby"}]}}}' WHERE world_id=%s""", (self.world,))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+        out = [c for c in runner.world_checks(self.conn, self.world, staged) if 'no hunt begins in a town' in c['text']]
+        self.assertEqual([(c['text'], c['blocks']) for c in out],
+                         [('gate is in the town of greyfen: no hunt begins in a town, so this animal is never met.', False)])
 
     def test_a_published_story_sends_them_to_the_game_in_one_batch(self):
         ticket = self.approve(program(self.every()))['ticket']

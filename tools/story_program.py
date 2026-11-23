@@ -398,7 +398,12 @@ def animal_habitats():
     if not _ANIMALS:
         doc = json.loads((CATALOGUE_FILE.parents[1] / 'Wild/animals.json').read_text(encoding='utf-8'))
         _ANIMALS['species'] = {a['id']: dict(a.get('habitats') or {}) for a in doc['species']}
-        _ANIMALS['ground'] = {glyph: ground for ground, glyphs in doc['ground'].items() for glyph in glyphs}
+        # (A glyph listed under two grounds is the first's, as the game reads it: w is water, not mud. RatwWild.cpp.)
+        ground = {}
+        for kind, glyphs in doc['ground'].items():
+            for glyph in glyphs:
+                ground.setdefault(glyph, kind)
+        _ANIMALS['ground'] = ground
     return _ANIMALS['species']
 
 

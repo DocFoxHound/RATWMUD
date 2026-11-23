@@ -1721,7 +1721,7 @@ effects' own).
 - **Sample** `story_v2_samples.HOWLS` ("Old Brown at the tarn", `v2-old-brown`, in `all_samples()`, so both twins run it): at
   nightfall the tarn-keeper howls and a bear is staged at the tarn; a wolf's howl counted; the ropes manned when three of the
   seven of the crew stand at the tarn, not when one of the three is dead there; a chorus of two calls nothing, one of three
-  moves the story on (an exit with `minQuantity: 3`); the bear killed at the tarn ends the quest. It rehearses clean: nothing
+  moves the story on (an exit with `minQuantity: 3`); the bear killed in the tarn's hunt ends the quest. It rehearses clean: nothing
   uncovered.
 - **Tests**: `Tests/howl_tests.cpp` (`aResidentHowls`: a resident's howl heard as any howl, a wolf joins, one chorus of two, no
   event with no story listening, the rest refused; listening, a resident and two wolves give three `howled` of one chorus and
@@ -1756,6 +1756,22 @@ effects' own).
   watch sent again is a game order of its own (`story.watch`) rather than a revised `story.phase`, which would replace the
   visit's missions and words. A dead listed resident is not counted (a dead resident stands nowhere), which the spec did not
   say. An empty list counts 0 (known), not unknown.
+- **After review** (2026-11-23). (1) The workbench asks for a count's residents list: `itemParts` shows the `list` slot of
+  `count in region` once `who` is `residents` (it was hidden, so a residents count could be finished only in Source), and
+  choosing the wolves again drops a stale `list` (`countWho`, from the condition picker). (2) A staged animal is met on
+  ground too built up or bare for game of its own: `WildHere` gains `wild` (outdoors and in no town) and `startHunt` goes on
+  with a story's `staged` there; a town or an interior still refuses. Approval also warns of a stage in a town
+  (`world_checks`: the cell's region a market town of the last checkpoint, two or more of them, not a plain Country
+  community of `communities.json`; `checkpoint_markets`, shared with the notice board check). (3) The Python ground map
+  keeps a glyph's first ground, as the game does: `w` is water, not mud. (4) `chorus closed`'s help, and the guide, say that
+  a resident who began the chorus is its actor, so an objective on it credits the wolves who joined only with `"credit":
+  "present"`. (5) Any wolf's hunt in the region meets a stage, a passer-by's too: said in `hunt.stage`'s help, the guide and
+  the format (kept: the spec says "a wolf"). (6) The sample's kill objective's `where` is the tarn's cell, not the region (a
+  hunt's `hunted` is at the killer's tile in an arena wider than the tarn), and the guide's example and §7 say so;
+  `test_story_v2` now has a kill away from the tarn in its cell count, one in another cell not. (7) `howl_tests` covers `npc.howl`
+  refused for a resident down, away and in a fight. Tests: `hunt_tests` (a bare yard gives no game but meets a staged ibex,
+  alone; indoors refused), `howl_tests`, `test_story_effects` (`w` is water; a stage in a town warned of, with a throwaway
+  database), `workbench.test.ts` (the list asked for once residents are counted, dropped going back to wolves).
 - **Going live** on `ratw_ridgemere3` needs no migration; the game server restarted from this branch (`npc.howl`, the howl
   events, `hunt.stage` and the staged hunt, `story.watch`), the story runner from this branch with the rebuilt
   `libratw_story.so` (a residents count needs both twins), the Editor released from it. The client needs no change.

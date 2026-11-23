@@ -350,6 +350,21 @@ def _resident_sites(program):
                 yield path, at, target, 'target'
 
 
+def checkpoint_markets(conn, world):
+    """The towns with a market as the world was last saved (its society's report, or failing that its notice boards)."""
+    society = conn.execute("SELECT payload::jsonb->'society' FROM game.checkpoints WHERE world_id=%s", (world,)).fetchone()
+    society = society[0] if society and isinstance(society[0], dict) else {}
+    report = society.get('report') if isinstance(society.get('report'), dict) else {}
+    board = society.get('board') if isinstance(society.get('board'), dict) else {}
+    return {m.get('id') for m in report.get('markets', []) if isinstance(m, dict)} or set(board.get('cell') or {})
+
+
+def plain_communities():
+    """The Country's communities not made towns (Data/Economy/communities.json `town`): plain places, where a hunt may begin."""
+    doc = json.loads((rules.CATALOGUE_FILE.parents[1] / 'Economy/communities.json').read_text(encoding='utf-8'))
+    return {c['region'] for c in doc.get('communities', []) if isinstance(c, dict) and c.get('region') and not c.get('town')}
+
+
 def region_ground(conn, world, region):
     """Doc 86, L1: the kinds of ground (Data/Wild/animals.json's) inside a story region as the world's terrain has them, or
     None when its place is not a world cell (an interior: no hunt begins there)."""
@@ -449,11 +464,7 @@ def world_checks(conn, world, program, chapters=False):
     # V1.3: a quest's notice board is one of the world's boards (its market towns).
     boards = [(qi, q) for qi, q in enumerate(program.get('quests', []) or []) if isinstance(q.get('board'), str)]
     if boards:
-        society = conn.execute("SELECT payload::jsonb->'society' FROM game.checkpoints WHERE world_id=%s", (world,)).fetchone()
-        society = society[0] if society and isinstance(society[0], dict) else {}
-        report = society.get('report') if isinstance(society.get('report'), dict) else {}
-        board = society.get('board') if isinstance(society.get('board'), dict) else {}
-        markets = {m.get('id') for m in report.get('markets', []) if isinstance(m, dict)} or set(board.get('cell') or {})
+        markets = checkpoint_markets(conn, world)
         for qi, q in boards:
             at = {'kind': 'quest', 'index': qi, 'id': q.get('id'), 'part': 'board'}
             if not markets:
@@ -514,16 +525,22 @@ def world_checks(conn, world, program, chapters=False):
     # Doc 86, L1: an animal staged where the ground has none of its habitats is a warning ("a bear on open water").
     staged = [(path, at, e) for path, at, e in _effect_sites(program, quests_too=True) if e.get('kind') == 'hunt.stage'
               and isinstance(e.get('species'), str) and e['species'] in rules.animal_habitats() and isinstance(e.get('region'), str)]
+    # (After review: no hunt begins in a town either, as the game has its towns, those of two or more with a market.)
     if staged:
         regions = rules.region_index(program)
+        markets = checkpoint_markets(conn, world) - plain_communities()
+        markets = markets if len(markets) >= 2 else set()   # (One settlement: the game has no towns.)
         for path, at, e in staged:
             region = regions.get(e['region'])
             if not region:
                 continue
             ground = region_ground(conn, world, region)
             habitats = rules.animal_habitats()[e['species']]
+            town = conn.execute('SELECT region FROM world.cells WHERE world_id=%s AND id=%s', (world, region['cell'])).fetchone()
             if ground is None:
                 add(path, at, f'{region["cell"]} is not a place out in the world: no hunt begins there.', False)
+            elif town and town[0] in markets:
+                add(path, at, f'{region["cell"]} is in the town of {town[0]}: no hunt begins in a town, so this animal is never met.', False)
             elif not set(habitats) & ground:
                 add(path, at, f'The {e["species"]} lives on {", ".join(sorted(habitats))}; the ground of {e["region"]} is '
                     f'{", ".join(sorted(ground)) or "none a hunt can use"}. It is staged there all the same.', False)
