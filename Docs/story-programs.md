@@ -211,7 +211,8 @@ personal quests, stopping a scene) are each in the catalogue with their paramete
 all with an example. **What the game undoes when a run ends** (`story.stop`, `story.finish`, an ending phase): a door's lock
 as it was before the story first touched it (`door.lock`, `door.unlock`), held residents (`npc.hold`), residents sent along
 (`npc.follow`), strangers (`visitor.add`), mantles bound (`mantle.assign`), notices (`board.post`), the weather
-(`weather.set`) and the maps' markers (`story.ping`), and since doc 86, Phase 5, a staged hunt not yet met (`hunt.stage`); journal notes stay, and everything given (items, coins, deeds, standing,
+(`weather.set`), the maps' markers (`story.ping`), a door held open to wolves (doc 86: a door a story unlocks or opens is
+open to wolves until the story closes or locks it, or ends, never one into a private home, which approval refuses), and since doc 86, Phase 5, a staged hunt not yet met (`hunt.stage`); journal notes stay, and everything given (items, coins, deeds, standing,
 warrants, relations, market events, prices, projects) stays. **The permission marks** in the catalogue drive every hosted
 check: `actsOnWolves` (`character.injury`, `story.area.damage`, `item.take`, `warrant.issue`) needs the owner or "may act on
 players' wolves"; `needsBuilder` (`faction.relation`, `standing.adjust`, and since Phase 10 `prices.reset`,

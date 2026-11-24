@@ -41,6 +41,18 @@ const char* Game::moonQuarter(double phase)
     return octant == 0 ? "new" : octant < 4 ? "waxing" : octant == 4 ? "full" : "waning";
 }
 
+void Game::refreshStoryDoors()
+{
+    // (Doc 86: the doors the live stories hold unlocked or open, open to wolves while they do.)
+    std::set<std::string> open;
+    for (const auto& id : storiesHolding_)
+        if (const auto* s = storylines_.find(id); s && s->live() && s->held.isObject())
+            for (const auto& [door, j] : s->held.object("doors").fields())
+                if (j.boolean("wolves"))
+                    open.insert(door);
+    world_.setStoryOpenDoors(open);
+}
+
 void Game::refreshStoryWatch()
 {
     StoryWatch w;
@@ -84,6 +96,7 @@ void Game::refreshStoryWatch()
     if (w.events != storyWatch_.events)
         world_.setWatchedEvents(w.events);
     storyWatch_ = std::move(w);
+    refreshStoryDoors();
 }
 
 void Game::handEventsToStore()

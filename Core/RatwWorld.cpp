@@ -2776,8 +2776,58 @@ void World::transition(Entity& a, const Door& d)
     }
 }
 
+void World::setStoryOpenDoors(const std::set<std::string>& ids)
+{
+    storyOpenDoors_.clear();
+    for (const auto& id : ids)
+        if (const auto it = doors_.find(id); it != doors_.end() && !privateHome(it->second))
+        {
+            storyOpenDoors_.insert(id);
+            if (!it->second.linkedDoor.empty())
+                storyOpenDoors_.insert(it->second.linkedDoor);
+        }
+}
+
+bool World::privateHome(const Door& d) const
+{
+    // (The interior behind it: the side that is indoors, with every room its stairs, passages and inner doors reach
+    // without going out of doors (none of those is ever locked to wolves): a lodging house's empty ground floor is the
+    // way into the homes above it, and a shop's flat is up the stairs from its work.)
+    const auto* there = cell(d.targetCell);
+    const auto* here = cell(d.cellId);
+    const std::string inside = there && !there->outdoors ? d.targetCell : here && !here->outdoors ? d.cellId : std::string();
+    if (inside.empty())
+        return false;
+    std::set<std::string> rooms{inside};
+    for (std::vector<std::string> todo{inside}; !todo.empty();)
+    {
+        const auto room = todo.back();
+        todo.pop_back();
+        for (const auto* p : doorsIn(room))
+            if (const auto* next = cell(p->targetCell); next && !next->outdoors && rooms.insert(p->targetCell).second)
+                todo.push_back(p->targetCell);
+    }
+    bool home = false;
+    for (const auto& r : society_.authored().residents)
+    {
+        if (rooms.count(r.work.cell))
+            return false;
+        home = home || rooms.count(r.home.cell);
+    }
+    for (const auto& position : society_.positions())
+        if (rooms.count(position.work.cell))
+            return false;
+    // (A resident who has moved house lives where their life says.)
+    for (const auto& [id, life] : society_.state().residents)
+        home = home || rooms.count(life.homeCell);
+    return home;
+}
+
 bool World::playerDoorLocked(const Door& d) const
 {
+    // (A door a live story holds open, doc 86: open to wolves while it holds it.)
+    if (!storyOpenDoors_.empty() && storyOpenDoors_.count(d.id))
+        return false;
     // The authored city and cn_ community interiors share the same public-door
     // rule.  The outward door remains usable when a shop's shift ends.
     if ((d.cellId.rfind("w_ridgemere_", 0) != 0 && d.targetCell.rfind("cn_", 0) != 0) ||

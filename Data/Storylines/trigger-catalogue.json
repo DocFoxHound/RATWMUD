@@ -11870,7 +11870,7 @@
    "group": "places",
    "title": "Lock a door",
    "sentence": "Lock {door}",
-   "help": "Both sides of the door are locked (it closes first). Unlocked again when the story ends.",
+   "help": "Both sides of the door are locked (it closes first). Unlocked again when the story ends. A door this story had opened to wolves is closed to them again. Residents are locked out too: to close a door to wolves only, close it instead.",
    "params": [
     {
      "key": "door",
@@ -11884,7 +11884,7 @@
    "group": "places",
    "title": "Unlock a door",
    "sentence": "Unlock {door}",
-   "help": "Both sides of a locked door are unlocked. Locked again when the story ends.",
+   "help": "Both sides of a locked door are unlocked. Wolves may go through it until the story closes or locks it, or ends, even a shop's out of hours, but never into a private home (someone's home and nobody's work, or the stairs up to one): approval refuses one. Locked again when the story ends.",
    "params": [
     {
      "key": "door",
@@ -11898,7 +11898,7 @@
    "group": "places",
    "title": "Open a door",
    "sentence": "Open {door}",
-   "help": "The door stands open (an unlocked one). It stays as a wolf would leave it.",
+   "help": "The door stands open (an unlocked one). Wolves may go through it until the story closes or locks it, or ends, even a shop's out of hours, but never into a private home (someone's home and nobody's work, or the stairs up to one): approval refuses one. It stays as a wolf would leave it.",
    "params": [
     {
      "key": "door",
@@ -11912,7 +11912,7 @@
    "group": "places",
    "title": "Close a door",
    "sentence": "Close {door}",
-   "help": "The door is shut. It stays as a wolf would leave it.",
+   "help": "The door is shut. It stays as a wolf would leave it. One the story opened to wolves is closed to them again, its own lock left alone so its residents still go in: how a story ends the window it opened.",
    "params": [
     {
      "key": "door",
