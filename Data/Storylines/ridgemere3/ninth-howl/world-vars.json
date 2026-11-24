@@ -209,6 +209,13 @@
    "group": "progress (campaign 4.1)"
   },
   {
+   "name": "nh_grace",
+   "type": "switch",
+   "value": false,
+   "note": "The DM turns it on when seeding the optional realm talk key nh_debts=grace by hand (campaign 3.4.4): Ch 1's chalk notice then begins THE GRACE IS OVER, and Ch 1 turns it off again. Ch 1 only.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
    "name": "nh_scars",
    "type": "texts",
    "value": [],
@@ -227,13 +234,6 @@
    "type": "residents",
    "value": [],
    "note": "Debtors who pledged to Greatly (Ch 2; Ch 4 takes out the ones bought back). Chapters only.",
-   "group": "resident lists (campaign 4.2)"
-  },
-  {
-   "name": "nh_petitions_returned",
-   "type": "residents",
-   "value": [],
-   "note": "Petitioners answered (Ch 1-3). Chapters only.",
    "group": "resident lists (campaign 4.2)"
   },
   {
@@ -297,6 +297,13 @@
    "type": "text",
    "value": "",
    "note": "Branch result, set in Ch 2. Values: honest, crooked, none. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_loan",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 2: the Counting House's loan to the Crown (campaign Ch 2, two thirds). Values: offered (open), taken (every small note paid; House Greatly's vote counts 2 at the Moot), refused, or empty (never offered). Packs read it; packs never write a branch.",
    "group": "branch results (campaign 4.3; packs read, never write)"
   },
   {
@@ -381,6 +388,20 @@
    "type": "text",
    "value": "",
    "note": "Branch result, set in Ch 5. Values: walked, alone. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_tobias",
+   "type": "switch",
+   "value": false,
+   "note": "Branch result, set in Ch 5. on: Tobias Grayrock was coached in how a House vote is weighed (two wolves did it), so an absent lord's vote is not Lavinia's to cast. Packs read it; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_julian",
+   "type": "switch",
+   "value": false,
+   "note": "Branch result, set in Ch 5. on: Julian Greatly signed on the Grey Tern for spring (A Berth for Julian), an empty chair in the Bought Crown. Packs read it; packs never write a branch.",
    "group": "branch results (campaign 4.3; packs read, never write)"
   },
   {
@@ -475,6 +496,34 @@
    "group": "branch results (campaign 4.3; packs read, never write)"
   },
   {
+   "name": "nh_ulric",
+   "type": "number",
+   "value": 0,
+   "note": "Ulric's thread: 1 once the lamp-oil list with no Deepvein name is read to him (Ch 3, or Ch 8 for a late joiner), 2 once the mine captain has confessed at the Lamp and Pick (Ch 8). Ch 8 needs 1 for the confession. Packs read it; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_code_known",
+   "type": "switch",
+   "value": false,
+   "note": "The lamp code is known: two long and one short (Ch 3, when Lorn Hedgeton turned and gave it up). Ch 7 reads it: the Larkfield smith's flash from the reed end walks a river wave into the shallows. Packs read it; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_note",
+   "type": "switch",
+   "value": false,
+   "note": "Branch result, set in Ch 8. on: Ambrose's note to the Chancellor ('Lose it, and your note is torn') was found at the Greatly Bank flat; opens the Press road for the Chancellor and counts as Ambrose's lie shown at Ch 9's Turn. Packs read it; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_draft",
+   "type": "switch",
+   "value": false,
+   "note": "Branch result, set in Ch 8. on: the old King's draft of the lamp-book line was found in the cathedral crypt; at the Moot it adds 1 free-wolf voice if the writ was never found (campaign 9.4). Packs read it; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
    "name": "nh_b_captain",
    "type": "text",
    "value": "",
@@ -494,125 +543,6 @@
    "value": "",
    "note": "Branch result, set in Ch 9. Values: answers, holds, bends. Packs read it to gate a quest; packs never write a branch.",
    "group": "branch results (campaign 4.3; packs read, never write)"
-  },
-  {
-   "name": "nh_pledge_ridgemere",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves pledged to Ridgemere's howl (p_howl), carried across acts until J2.",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_pledge_coldwater",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves pledged to Coldwater's howl (p_howl), carried across acts until J2.",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_pledge_larkfield",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves pledged to Larkfield's howl (p_howl), carried across acts until J2.",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_pledge_southmeadow",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves pledged to Southmeadow's howl (p_howl), carried across acts until J2.",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_pledge_fenshore",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves pledged to Fenshore's howl (p_howl), carried across acts until J2.",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_pledge_saltwell",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves pledged to Saltwell's howl (p_howl), carried across acts until J2.",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_pledge_oakhaven",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves pledged to Oakhaven's howl (p_howl), carried across acts until J2.",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_pledge_frosthollow",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves pledged to Frosthollow's howl (p_howl), carried across acts until J2.",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_pledge_mirebridge",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves pledged to Mirebridge's howl (p_howl), carried across acts until J2.",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_backs_lamp",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves backing the lamp (p_backs), carried across acts until J2.",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_backs_blood",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves backing the blood (p_backs), carried across acts until J2.",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_backs_moot",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves backing the moot (p_backs), carried across acts until J2.",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_backs_purse",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves backing the purse (p_backs), carried across acts until J2.",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_roll",
-   "type": "wolves",
-   "value": [],
-   "note": "Every wolf who gave a deed to the campaign, carried across acts.",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_tier_ember",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves whose voice reached 20 in an act (the Ember tier).",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_tier_blaze",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves whose voice reached 60 in an act (the Blaze tier).",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
-  },
-  {
-   "name": "nh_marked",
-   "type": "wolves",
-   "value": [],
-   "note": "Wolves the Purse path has marked (Counting House errands).",
-   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
   },
   {
    "name": "nh_quick_registered",

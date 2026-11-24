@@ -3514,11 +3514,12 @@ def directed(program):
     out = set()
     for phase in rules.phases_of(program):
         for e in rules.possible_effects(phase):
-            if 'npc' in e:
+            # (Doc 86, C1a: a resident given by an operand, {"each": true} or a variable, is named by no id here.)
+            if isinstance(e.get('npc'), str):
                 out.add(e['npc'])
         out.update(phase.get('guestVoices', []))
     for scene in program.get('scenes', []):
-        out.update(role['npc'] for role in scene.get('cast', []) if 'npc' in role)
+        out.update(role['npc'] for role in scene.get('cast', []) if isinstance(role.get('npc'), str))
     return sorted(out)
 
 

@@ -1396,7 +1396,7 @@
       "kind": "npc.walk",
       "npc": "cty_orm_sootgate",
       "cell": "w_ridgemere_13_12",
-      "x": 96,
+      "x": 95,
       "y": 238,
       "pace": "walk",
       "cue": "lq_yard",

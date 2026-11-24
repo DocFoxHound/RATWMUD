@@ -483,7 +483,7 @@ rule nh_signals_plain_4
 when concept=talk.news|talk.gossip world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=captain
 does tell.news
 cooldown 1d
-say The Watch lists went to the grey captain, they say. Every House on them is paying twice now.
+say The Watch Captain burned the lists in front of the sergeants, they say. Nobody on them pays twice now.
 
 rule nh_signals_plain_5
 when concept=talk.news|talk.gossip world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=lost

@@ -413,6 +413,21 @@ class ReadinessInTheConsole(ReadyFixture, unittest.TestCase):
         self.assertIn('ready, and the admin agrees', audit)
 
 
+class DirectedResidents(unittest.TestCase):
+    """The console's map marks the residents a run directs (doc 86's campaign check: a chapter protecting its cast with
+    npc.protect {"each": true} inside a For each made every status read of the run fail, "Malformed request")."""
+
+    def test_a_resident_given_by_an_operand_is_left_out_and_the_named_ones_kept(self):
+        program = ({
+            'format': 'ratw-story-program', 'version': 2, 'id': 'directed', 'title': 'Directed', 'audience': {'kind': 'open'},
+            'start': 'a', 'variables': [{'id': 'cast', 'type': 'residents', 'scope': 'story', 'initial': ['npc-1', 'npc-2']}],
+            'phases': [{'id': 'a', 'journal': 'A.', 'effects': [{'kind': 'npc.hold', 'npc': 'npc-3'}], 'exits': [],
+                        'triggers': [{'id': 't', 'on': 'clock', 'afterDays': 0.01, 'once': 'visit', 'actions': [
+                            {'do': 'each', 'over': 'list', 'list': 'cast', 'actions': [
+                                {'do': 'effect', 'effect': {'kind': 'npc.protect', 'npc': {'each': True}}}]}]}]}]})
+        self.assertEqual(runner.directed(program), ['npc-3'])
+
+
 @unittest.skipUnless(database_available(), 'local PostgreSQL required')
 class HousePursesRoute(unittest.TestCase):
     """Doc 86, M3 (review of Phase 9): the world switch for House purses through POST /api/story-program: read by a Dungeon

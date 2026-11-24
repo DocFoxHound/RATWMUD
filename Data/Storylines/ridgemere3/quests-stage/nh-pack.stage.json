@@ -12209,7 +12209,7 @@
    "board": "ridgemere",
    "offer": {
     "ask": "Who's all that bread for?",
-    "say": "#greet#, #address#. There's wolves out walking the old bounds of the cut, long days on the hills, and nobody feeds a wolf on a boundary. Three loaves, one each to whoever you meet up on the Rainward Hills. Keep your lamp lit on the high paths.",
+    "say": "#greet#, #address#. There's wolves out walking the old bounds of the cut, long days on the hills, and nobody feeds a wolf on a boundary. Three loaves, one each to whoever you meet up on the Rainward Hills. Mind your footing on the high paths.",
     "accept": "Three loaves for the bounds.",
     "decline": "Not today.",
     "handIn": "The bounds-walkers are fed.",

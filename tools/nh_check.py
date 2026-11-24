@@ -93,6 +93,8 @@ RESIDENT_KEYS = {'npc', 'giver', 'from', 'like', 'resident'}
 RESIDENT_TARGET_EVENTS = {'conversation', 'gift', 'gift again', 'trade done', 'near resident', 'dialogue opened',
                           'dialogue node', 'dialogue closed', 'dialogue choice', 'death', 'old age'}
 SYMBOL = re.compile(r'#[^#\s]+#')
+# (Doc 86, C1: a fill names a declared variable, {name} or a wolf's own {name.of}, filled with its value or a name.)
+FILL = re.compile(r'\{[a-z][a-z0-9_]*(?:\.of)?\}')
 KEYLIKE = re.compile(r'\b[a-z][a-z0-9]*_[a-z0-9_]+\b')
 
 
@@ -328,16 +330,20 @@ def residents_named(p, known):
                 keyed.add(v)
         if v in known:
             anywhere.add(v)
+    def ids(v):
+        # (Doc 86, C12b: a filter is a text, {"in": [texts]} or {"starts": text}; a "begins with" names nobody.)
+        return [v] if isinstance(v, str) else [x for x in v.get('in', ()) if isinstance(x, str)] if isinstance(v, dict) else []
+
     for t in all_triggers(p):
         if t.get('on') in RESIDENT_TARGET_EVENTS and t.get('match', {}).get('target'):
-            keyed.add(t['match']['target'])
+            keyed.update(ids(t['match']['target']))
     for q in p.get('quests', []):
         for o in q.get('objectives', []):
             if o.get('on') in RESIDENT_TARGET_EVENTS and o.get('match', {}).get('target'):
-                keyed.add(o['match']['target'])
+                keyed.update(ids(o['match']['target']))
         for f in q.get('fail', []):
             if f.get('on') in RESIDENT_TARGET_EVENTS and f.get('match', {}).get('actor'):
-                keyed.add(f['match']['actor'])
+                keyed.update(ids(f['match']['actor']))
     return keyed, anywhere
 
 
@@ -492,6 +498,10 @@ def check_purses(p, r, accounts=None, saved=None):
 
 def check_words(p, r):
     in_tests = lambda path: path and path[0] == 'tests'   # noqa: E731
+    # (Ch 9: an effect under an If on the Moot's name or the winter season may say "Midwinter", decisions 6.4.)
+    winter = [path for _, path, _, conds, _ in effects_in(p)
+              if any('midwinter' in json.dumps(c) or '"winter"' in json.dumps(c) for c in conds)]
+    gated = lambda path: any(path[:len(w)] == w for w in winter)   # noqa: E731
     for path, key, v in walk(p):
         if not isinstance(v, str) or in_tests(path):
             continue
@@ -502,9 +512,9 @@ def check_words(p, r):
             continue
         if key in PROSE:
             for rx, why in WARNED:
-                if rx.search(v):
+                if rx.search(v) and not (gated(path) and 'Midwinter' in why):
                     r.warn(f'{where(path)}: "{rx.search(v).group(0)}": {why}')
-            spoken = SYMBOL.sub('', v)
+            spoken = FILL.sub('', SYMBOL.sub('', v))
             ids = KEYLIKE.findall(spoken)
             if ids:
                 r.error(f'{where(path)}: ids or keys in what is read or said: {", ".join(sorted(set(ids)))}')
@@ -608,9 +618,19 @@ def check_program(path, conn, world, rows, declarations, accounts, saved, doors=
     if rows is not None:
         check_givers(p, r, rows)
     if conn is not None:
-        chapters = p['id'].startswith('ninth-howl.') and bool(story_runner.chapter_starts(p))
+        # (A numbered chapter is always approved as a chapter of its act's campaign, the last one too, which starts none.)
+        chapters = p['id'].startswith('ninth-howl.') and (bool(story_runner.chapter_starts(p))
+                                                          or re.fullmatch(r'ninth-howl\.\d+', p['id']) is not None)
+        checked = p
+        if any(v.get('scope') == 'realm' for v in p.get('variables', [])) and \
+                not conn.execute("SELECT to_regclass('dm.story_realm_vars')").fetchone()[0]:
+            # (Doc 86, J2: a world without migration 0081 refuses realm variables at approval. Everything else is checked
+            # here with them as each wolf's own of the story; the world needs 0081 before the act is approved.)
+            r.warn('this world has no migration 0081 (realm variables, J2): apply it before approving; the rest of '
+                   'references is checked with the realm variables read as player ones')
+            checked = {**p, 'variables': [{**v, 'scope': 'player'} if v.get('scope') == 'realm' else v for v in p['variables']]}
         try:
-            story_runner.references(conn, world, p, chapters=chapters)
+            story_runner.references(conn, world, checked, chapters=chapters)
             r.note('references: passed on the world (read only)')
         except Exception as error:   # noqa: BLE001
             r.error(f'references: {error}')

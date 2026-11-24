@@ -505,7 +505,7 @@ say[world.mem.nh_stage=lights self.from=saltwell world.mem.nh_quarrel=peace] Bre
 say[world.mem.nh_stage=lights self.from=oakhaven world.mem.nh_potter=cleared] The carpenter at Fenshore's cleared, they say. He carved a bird for whoever did it.
 say[world.mem.nh_stage=lights self.from=frosthollow world.mem.nh_lights=laid] The fen lights are laid, they say. Lamp's thanks to whoever walked the path.
 say[world.mem.nh_stage=harvest self.from=ridgemere] Every wolf who went down to the Larkfield ford, blood and bread, the city's proud of you.
-say[world.mem.nh_stage=harvest self.from=ridgemere world.mem.nh_desmond=mercy] The dismissed guard stood the granary door all the third night. Mercy paid, for once.
+say[world.mem.nh_stage=harvest self.from=ridgemere world.mem.nh_desmond=redeemed] The dismissed guard stood the granary door all the third night. Mercy paid, for once.
 say[world.mem.nh_stage=harvest self.from=coldwater world.mem.nh_ford=held] The ford held. Calm water to every wolf who stood in it.
 say[world.mem.nh_stage=harvest self.from=larkfield world.mem.nh_ford=held] Three nights held! Full weight, every wolf who stood.
 say[world.mem.nh_stage=harvest self.from=southmeadow world.mem.nh_ford=held] Southmeadow went to the ford. Ripe days, we'll tell it at every harvest.
@@ -849,7 +849,7 @@ say[world.mem.nh_stage=reckoning self.from=frosthollow world.mem.nh_seam=crooked
 say[world.mem.nh_stage=signals self.from=ridgemere] Somebody's gathering the lists of who pays the Watch. Mind whose name you say aloud in a taproom.
 say[world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=press] It's printed. The whole list, on every board. Half the Watch can't meet your eye.
 say[world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=sold] The lists went to the Counting House, they say. The sergeant's on the Harbour Gate now. Funny, that.
-say[world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=captain] The Watch lists went to the grey captain, they say. Every House on them is paying twice now.
+say[world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=captain] The Watch Captain burned the lists in front of the sergeants, they say. Nobody on them pays twice now.
 say[world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=lost] The Watch lists went into the river, they say. Half the Watch slept easy that night.
 say[world.mem.nh_stage=signals self.from=ridgemere] Three Houses on every list, they say. One on none. Ask yourself why it needn't pay.
 say[world.mem.nh_stage=signals self.from=ridgemere] The Cinder Gate looks away for a grey paw-mark. Don't trust that gate after dark.
@@ -1524,7 +1524,7 @@ say[world.mem.nh_stage=reckoning self.from=frosthollow world.mem.nh_seam=crooked
 say[world.mem.nh_stage=signals self.from=ridgemere priority=2] Somebody's gathering the lists of who pays the Watch. Mind whose name you say aloud in a taproom.
 say[world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=press priority=2] It's printed. The whole list, on every board. Half the Watch can't meet your eye.
 say[world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=sold priority=2] The lists went to the Counting House, they say. The sergeant's on the Harbour Gate now. Funny, that.
-say[world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=captain priority=2] The Watch lists went to the grey captain, they say. Every House on them is paying twice now.
+say[world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=captain priority=2] The Watch Captain burned the lists in front of the sergeants, they say. Nobody on them pays twice now.
 say[world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=lost priority=2] The Watch lists went into the river, they say. Half the Watch slept easy that night.
 say[world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=bettany priority=2] The sergeant took the list to the magistrate. Door open, at noon. Blood and bread.
 say[world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_dark=1 priority=2] No lamps on the ridges last night, the carters say. Blood and bread to whoever sat up there.
@@ -1622,7 +1622,7 @@ say[world.mem.nh_stage=harvest self.from=ridgemere priority=2] Every wolf who ca
 say[world.mem.nh_stage=harvest self.from=ridgemere world.mem.nh_ford=held priority=2] They held the Larkfield ford three nights. Blood and bread, I'd have liked to see it.
 say[world.mem.nh_stage=harvest self.from=ridgemere world.mem.nh_ford=burned priority=2] The ford burned, and Larkfield's houses with it. The realm will be short of bread before spring.
 say[world.mem.nh_stage=harvest self.from=ridgemere priority=2] Every wolf who went down to the Larkfield ford, blood and bread, the city's proud of you.
-say[world.mem.nh_stage=harvest self.from=ridgemere world.mem.nh_desmond=mercy priority=2] The dismissed guard stood the granary door all the third night. Mercy paid, for once.
+say[world.mem.nh_stage=harvest self.from=ridgemere world.mem.nh_desmond=redeemed priority=2] The dismissed guard stood the granary door all the third night. Mercy paid, for once.
 say[world.mem.nh_stage=harvest self.from=coldwater priority=2] The Captain's at the ford, eh? Then the downs are quiet. Fair catch, for once.
 say[world.mem.nh_stage=harvest self.from=coldwater world.mem.nh_ford=held priority=2] The ford held. Calm water to every wolf who stood in it.
 say[world.mem.nh_stage=harvest self.from=larkfield priority=2] Every sack in Longmead's gone to the ford walls. Scales and silver, I never thought I'd see grain for a rampart.
@@ -2709,13 +2709,13 @@ say A Sump patrolman climbed the Steps and lit a lamp, and the Palace forgot it 
 mood cross
 free
 choice Who pays you now? -> nh_dh_pay
-choice You saw the Chancellor weep, didn't you? [world.mem.nh_stage=bell world.mem.nh_desmond=held] -> nh_dh_weep
+choice You saw the Chancellor weep, didn't you? [world.mem.nh_stage=bell world.mem.nh_desmond=held|pillory|mercy|redeemed] -> nh_dh_weep
 choice I was wondering about something else... -> hub
 choice Goodbye for now. -> bye
 
 node nh_dh_pay
 say Ask the carters' yard what it sells at night. I'll not say it.
-say[world.mem.nh_desmond=held] A tall black arctic out of the north, eyes like a frozen tarn. Pays in Greatly pennies. There. Happy?
+say[world.mem.nh_desmond=held|pillory|mercy|redeemed] A tall black arctic out of the north, eyes like a frozen tarn. Pays in Greatly pennies. There. Happy?
 choice Can I ask you something more? -> nh_dh
 choice Goodbye for now. -> bye
 

@@ -98,3 +98,11 @@ program here passes `python3 tools/nh_check.py --all` (now with the wave J check
   let go only of that story's own (or its campaign's) holds, so for the chapters' campaign-long holds the undo is the
   Campaigns console's **Let go of the campaign's holds…**; this program stays the fallback for protections with the
   default `ever` mark. No `npc.unspare` was added: it would undo nothing of another story's.
+
+## Campaign check (2026-11-24)
+- `world-vars.json`: the eighteen fallback lists of campaign §4.6 for an engine without realm variables
+  (`nh_pledge_<town>` x9, `nh_backs_<x>` x4, `nh_roll`, `nh_tier_ember`, `nh_tier_blaze`, `nh_marked`) and
+  `nh_petitions_returned` are gone: no program reads or writes them (J2 landed; the chapters keep `p_howl`, `p_backs`,
+  `p_voice` per wolf in the realm scope). 116 variables now.
+- `ninth-howl.cleanup.json` needs no `npc.unspare`: a spare lasts the campaign, so stopping an act ends it, and one story
+  cannot end another's spare. Its 40 are exactly Ch 1's `nh_cast` and Ch 9's epilogue's list.

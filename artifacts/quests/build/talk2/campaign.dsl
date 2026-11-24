@@ -187,7 +187,7 @@ X :: Lamps on the ridges, a captain in grey taking a mark a wagon, and the Watch
 R :: Somebody's gathering the lists of who pays the Watch. Mind whose name you say aloud in a taproom.
 R nh_lists=press :: It's printed. The whole list, on every board. Half the Watch can't meet your eye.
 R nh_lists=sold :: The lists went to the Counting House, they say. The sergeant's on the Harbour Gate now. Funny, that.
-R nh_lists=captain :: The Watch lists went to the grey captain, they say. Every House on them is paying twice now.
+R nh_lists=captain :: The Watch Captain burned the lists in front of the sergeants, they say. Nobody on them pays twice now.
 R nh_lists=lost :: The Watch lists went into the river, they say. Half the Watch slept easy that night.
 A @ridgemere :: They say the abbot keeps a list too, and shares it only after the Restday service.
 W :: The fish-hall papers smell of fish oil. A real Watch list smells of a Watch House: wet cloaks and old ink.
@@ -496,7 +496,7 @@ A nh_desmond=held :: The magistrate's court hears the dismissed guard's case. Si
 V :: The Counting House is buying Longmead grain at siege price. Somebody always profits.
 ! :: Wolves carrying sacks from Longmead to the Counting House. Don't be one.
 H :: Every wolf who went down to the Larkfield ford, blood and bread, the city's proud of you.
-H nh_desmond=mercy :: The dismissed guard stood the granary door all the third night. Mercy paid, for once.
+H nh_desmond=redeemed :: The dismissed guard stood the granary door all the third night. Mercy paid, for once.
 A @ridgemere :: The sergeant at the Watch Office rides with the ford escorts. Ask her when they leave, and bring a lamp you're willing to lose.
 - coldwater
 R :: The Captain's at the ford, eh? Then the downs are quiet. Fair catch, for once.
