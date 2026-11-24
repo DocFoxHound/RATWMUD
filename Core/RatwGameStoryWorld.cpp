@@ -5,12 +5,19 @@
 // ends is kept with the story (Storyline::held): a lock, a hold, a follower, a stranger, a mantle, a notice, the weather,
 // a marker. A story may set the weather for a while, never the calendar or the hour.
 #include "RatwGame.h"
+#include "RatwClaims.h"
+#include "RatwFame.h"
 #include "RatwItems.h"
 #include "RatwNames.h"
+#include "RatwStoryFoes.h"
+#include "RatwWild.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <set>
+
+#include <cstdio>
 
 namespace ratw::game
 {
@@ -58,7 +65,7 @@ void unlist(Value& list, const std::string& id)
     list = std::move(kept);
 }
 
-constexpr std::size_t NotesKept = 12, PingsAtOnce = 16;
+constexpr std::size_t NotesKept = 12, PingsAtOnce = 16, HuntsAtOnce = 8;   // (Doc 86, L1: staged hunts a run holds at once.)
 const char* StoryNoticeAuthor = "story";            // (Its notices' author: never counted against a board's pins.)
 } // namespace
 
@@ -67,7 +74,8 @@ bool Game::storyWorldOrder(const std::string& kind)
     static const std::set<std::string> kinds{"journal.note", "story.ping",  "item.take",    "item.place",  "warrant.issue",
                                              "warrant.clear", "npc.hold",   "npc.release",  "npc.follow",  "npc.unfollow",
                                              "door.lock",    "door.unlock", "door.open",    "door.close",  "board.post",
-                                             "weather.set",  "scene.stop"};
+                                             "weather.set",  "scene.stop",  "hunt.stage",   "foe.add",     "foe.leave",
+                                             "foe.outlaw",   "npc.sentence"};
     return kinds.count(kind) > 0;
 }
 
@@ -77,6 +85,12 @@ bool Game::heldByAnotherStory(const std::string& npc, const std::string& run) co
         if (id != run)
             if (const auto* s = storylines_.find(id); s && s->live() && s->held.isObject() && s->held["npcs"].has(npc))
                 return true;
+    // (Doc 86, C10: a resident another story made a foe is that story's while they are one.)
+    if (const auto* foe = world_.storyFoeOf(npc); foe && foe->spec.npc == npc && foe->spec.run != run)
+        return true;
+    // (Doc 86, L4: and one another story sentenced, while they serve it, even after that story has ended.)
+    if (const auto s = storySentences_.find(npc); s != storySentences_.end() && s->second.run != run)
+        return true;
     return false;
 }
 
@@ -99,7 +113,7 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
     // ------------------------------------------------------------------------------------- the journal and the maps
     if (kind == "journal.note")
     {
-        const auto text = p.string("text"), to = p.string("player");
+        const auto text = fillStoryNames(p.string("text"), 200), to = p.string("player");   // (Doc 86, C1b: names for tokens.)
         if (!oneLine(text, 200))
             return {false, "A journal note is one line of up to 200 characters.", run};
         if (!to.empty() && !story->takesPart(to))
@@ -221,6 +235,9 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
         auto* e = world_.entity(target);
         if (!e || !e->npc || !world_.society().resident(target))
             return {false, "No such resident.", target};
+        // (Both made first: making one adds a field to what the story holds, which may move the other.)
+        section(*story, "npcs");
+        section(*story, "follow", true);
         auto& holds = section(*story, "npcs");
         auto& follow = section(*story, "follow", true);
         if (kind == "npc.hold")
@@ -308,7 +325,8 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
         const auto outcome = world_.setDoorState(target, open, locked);
         if (!outcome.ok)
             return outcome;
-        if (locked != -1)
+        const auto* held = story->held.isObject() ? story->held.find("doors") : nullptr;
+        if (locked != -1 || open == 1 || (held && held->has(target)))
         {
             // (The lock it had before the story first touched it comes back when the story ends; kept again after a restart.)
             auto& doors = section(*story, "doors");
@@ -318,7 +336,13 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
                 j.add("was", wasLocked);
                 doors.set(target, std::move(j));
             }
-            doors.find(target)->set("locked", locked == 1);
+            auto& j = *doors.find(target);
+            if (locked != -1)
+                j.set("locked", locked == 1);
+            // (Doc 86: a door the story unlocked or opened is open to wolves while it holds it, a private home's never
+            // (World::setStoryOpenDoors); shutting it or locking it ends that. Shutting leaves its own lock alone, so its
+            // residents still go in and out: the way a story closes to wolves a workplace it opened for a quest.)
+            j.set("wolves", kind == "door.unlock" || kind == "door.open");
             changed();
         }
         saveSoon();
@@ -338,7 +362,7 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
     }
     if (kind == "board.post")
     {
-        const auto text = p.string("text");
+        const auto text = fillStoryNames(p.string("text"), 300);   // (Doc 86, C1b: names for tokens.)
         const int days = whole(p, "days", 1, 28);
         if (!oneLine(text, 300) || days < 1)
             return {false, "A notice is one line of up to 300 characters, up 1 to 28 days.", target};
@@ -411,7 +435,219 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
         return {true, "The weather in " + (p.boolean("streets") ? "the streets of " + target : world_.cell(target)->name) + " is " +
                           weatherName(weather) + " for " + std::to_string(hours) + " hours.", target};
     }
+    // ------------------------------------------------------------------------- the wild (doc 86, L1)
+    if (kind == "hunt.stage")
+    {
+        // An animal waiting for the next hunt a wolf begins inside one of the story's regions: kept with the story (its
+        // held.hunts), met once by storyHunt, lapsing on the world's clock or when the story ends. Nothing roams the map.
+        const auto regionId = p["region"].string("id", p.string("region"));
+        const auto found = story->regions.find(regionId);
+        if (found == story->regions.end())
+            return {false, "Stage the hunt in one of the story's regions.", run};
+        const auto& r = found->second;
+        const auto* species = wild::speciesById(p.string("species"));
+        const int count = whole(p, "count", 1, 3), minutes = whole(p, "minutes", 1, 1440);
+        if (!species)
+            return {false, "No such animal: " + p.string("species") + ".", run};
+        if (count < 1 || minutes < 1)
+            return {false, "Stage 1 to 3 animals for 1 to 1440 minutes.", run};
+        if (!world_.ensureLoaded(r.cell).ok || !world_.cell(r.cell))
+            return {false, "That region's place is not in the world.", run};
+        auto& hunts = section(*story, "hunts", true);
+        if (hunts.size() >= HuntsAtOnce)
+            return {false, "A story stages at most " + std::to_string(HuntsAtOnce) + " hunts at once.", run};
+        auto j = Value::object();
+        j.add("region", regionId);
+        j.add("cell", r.cell);
+        j.add("x1", r.x1);
+        j.add("y1", r.y1);
+        j.add("x2", r.x2);
+        j.add("y2", r.y2);
+        j.add("species", species->id);
+        j.add("count", count);
+        j.add("until", world_.time() + minutes * 60.0);
+        hunts.push(std::move(j));
+        changed();
+        saveSoon();
+        return {true, "The next hunt in " + regionId + " meets " + std::to_string(count) + " " + species->name + " (for " +
+                          std::to_string(minutes) + " minutes).", run};
+    }
+    // ------------------------------------------------------------------------------ foes (doc 86, C10)
+    if (kind == "foe.add" || kind == "foe.outlaw")
+    {
+        // A foe, or a resident made one for a while: kept with the story (held.foes, by camp), so a restart makes it again
+        // and the story's end takes it away. The game itself (RatwStoryFoes.cpp) fights it, ends it on time, and lets a
+        // beaten one go.
+        const bool outlaw = kind == "foe.outlaw";
+        if (!outlaw && target.rfind("npc-", 0) == 0)
+            return {false, "A foe's id never begins npc- (that is a resident made a foe).", target};
+        if (!foes::leaderKind(p.string("strength", "tough")))
+            return {false, "A foe is tough, fierce or champion.", target};
+        const auto camp = storyFoeCampId(run, outlaw ? "npc-" + target : target);
+        auto& foes = section(*story, "foes");
+        if (foes.has(camp) && world_.storyFoe(camp))
+            return {false, outlaw ? "That resident is a foe already." : "That foe is already here.", target};
+        if (!outlaw && foes.size() >= 8)
+            return {false, "A story brings at most 8 foes at once.", run};
+        if (outlaw && heldByAnotherStory(target, run))
+            return {false, "Another story holds this resident.", target};
+        const int minutes = whole(p, "minutes", 1, outlaw ? 720 : 1440);
+        if (minutes < 1)
+            return {false, outlaw ? "A resident is a foe for 1 to 720 minutes." : "A foe stays 1 to 1440 minutes.", target};
+        const int band = p.has("band") ? whole(p, "band", 0, outlaw ? 6 : 8) : 0;
+        if (band < 0)
+            return {false, outlaw ? "A resident made a foe has 0 to 6 followers." : "A foe has 0 to 8 followers.", target};
+        auto kept = Value::object();
+        kept.add("kind", kind);
+        kept.add("foe", target);
+        kept.add("until", world_.time() + minutes * 60.0);
+        kept.add("strength", p.string("strength", "tough"));
+        kept.add("band", band);
+        if (outlaw)
+            kept.add("lethal", p.boolean("lethal"));
+        else
+        {
+            kept.add("name", p.string("name"));
+            kept.add("description", p.string("description"));
+            kept.add("like", p.string("like"));
+            kept.add("cell", p.string("cell"));
+            kept.add("x", p.number("x", -1));
+            kept.add("y", p.number("y", -1));
+            kept.add("stance", p.string("stance", "waits"));
+        }
+        auto made = storyFoeFrom(*story, camp, kept);
+        if (!made.ok)
+            return made;
+        foes.set(camp, std::move(kept));
+        changed();
+        saveSoon();
+        return made;
+    }
+    if (kind == "npc.sentence")
+        return applyStorySentence(*story, target, p);   // (Doc 86, L4: lasting; never in held.)
+    if (kind == "foe.leave")
+    {
+        auto& foes = section(*story, "foes");
+        const auto camp = storyFoeCampId(run, target);
+        if (!foes.has(camp))
+            return {false, "This story brought no such foe.", target};
+        if (world_.storyFoe(camp) && !world_.endStoryFoe(camp, {}))
+            return {false, "That foe is fighting: they go when the fight is over.", target};
+        foes.erase(camp);
+        changed();
+        saveSoon();
+        return {true, "The foe and their followers leave.", target};
+    }
     return {false, "Unknown story effect.", target};
+}
+
+std::string Game::storyFoeCampId(const std::string& run, const std::string& foe)
+{
+    // foe_<8 hex digits of the run>_<the story's id for it>: never two runs' foes the same, the same after a restart.
+    char hex[9];
+    std::snprintf(hex, sizeof hex, "%08x", unsigned(foes::runMark(run)));
+    return "foe_" + std::string(hex) + "_" + foe;
+}
+
+Result Game::storyFoeFrom(storylines::Storyline& story, const std::string& camp, const Value& kept)
+{
+    World::StoryFoeSpec spec;
+    spec.camp = camp;
+    spec.run = story.id;
+    spec.foe = kept.string("foe");
+    spec.tier = kept.string("strength", "tough");
+    spec.band = int(kept.number("band"));
+    spec.until = kept.number("until");
+    if (kept.string("kind") == "foe.outlaw")
+    {
+        spec.npc = spec.foe;
+        spec.lethal = kept.boolean("lethal");
+        return world_.outlawResident(spec);
+    }
+    spec.name = fillStoryNames(kept.string("name"), 60);
+    spec.description = kept.string("description");
+    spec.cell = kept.string("cell");
+    spec.x = kept.number("x", -1);
+    spec.y = kept.number("y", -1);
+    spec.stance = kept.string("stance", "waits");
+    if (const auto like = kept.string("like"); !like.empty())
+    {
+        const auto* look = world_.entity(like);
+        if (!look || !look->npc || look->transient)
+            return {false, "A foe looks like a resident: no such resident " + like + ".", spec.foe};
+        spec.look = *look->appearance;
+        spec.hasLook = true;
+        if (spec.description.empty())
+            spec.description = look->description;
+    }
+    return world_.addStoryFoe(spec);
+}
+
+Result Game::storyHunt(const std::string& wolf)
+{
+    // Doc 86, L1: a wolf begins a hunt. The first live story's staged animal whose region holds the wolf's tile, and has not
+    // lapsed, joins what the ground gives; that stage is then used up (one hunt a stage).
+    std::vector<std::string> staged;
+    storylines::Storyline* from = nullptr;
+    std::size_t at = 0;
+    if (const auto* e = world_.entity(wolf); e && !e->npc && !storiesHolding_.empty())
+    {
+        const auto [x, y] = world_.eventTile(*e);
+        const double t = world_.time();
+        for (const auto& run : storiesHolding_)
+        {
+            auto* s = storylines_.find(run);
+            if (!s || !s->live() || !s->held.isObject())
+                continue;
+            const auto& hunts = s->held.array("hunts");
+            for (std::size_t i = 0; i < hunts.size() && !from; ++i)
+            {
+                const auto& h = hunts[i];
+                if (h.number("until") > t && h.string("cell") == e->cellId && h.number("x1") <= x && x <= h.number("x2") &&
+                    h.number("y1") <= y && y <= h.number("y2"))
+                {
+                    from = s;
+                    at = i;
+                    staged.assign(std::size_t(std::clamp(int(h.number("count", 1)), 1, 3)), h.string("species"));
+                }
+            }
+            if (from)
+                break;
+        }
+    }
+    auto result = world_.startHunt(wolf, {}, staged);
+    if (result.ok && from)
+    {
+        auto& hunts = section(*from, "hunts", true);
+        auto kept = Value::array();
+        for (std::size_t i = 0; i < hunts.size(); ++i)
+            if (i != at)
+                kept.push(hunts.items()[i]);
+        hunts = std::move(kept);
+        storylines_.touch();
+        refreshStoryWatch();
+        record(StoryBook);
+    }
+    return result;
+}
+
+Result Game::applyStoryWatch(const std::string& run, const Value& p)
+{
+    // Doc 86, J6: what a running story asks the game to tell it, sent again by the runner when the residents its count in a
+    // region reads change (the members of a residents list). Only for the visit it is in.
+    auto* story = storylines_.find(run);
+    if (!story || story->kind != "world" || story->source != "storykeeper" || !story->live())
+        return {false, "That story is not running.", run};
+    if (std::to_string(whole(p, "visit", 1, 1000000000)) != story->sourceRef)
+        return {false, "This story visit is no longer active.", run};
+    const auto& watch = p["watch"];
+    if (!watch.isObject() || json::dump(watch).size() > 64 * 1024)
+        return {false, "Invalid world story watch list.", run};
+    story->watch = watch;
+    storylines_.touch();
+    refreshStoryWatch();
+    record(StoryBook);
+    return {true, "What the story is told is updated.", run};
 }
 
 void Game::noteStoryHeld(const Value& payload, const char* key, const std::string& id)
@@ -424,6 +660,114 @@ void Game::noteStoryHeld(const Value& payload, const char* key, const std::strin
         list.push(id);
     storylines_.touch();
     record(StoryBook);
+}
+
+namespace
+{
+// held.mantles as {npc: before}; an array from an older save is read as {npc: ""} (doc 86, C15).
+Value& storyMantles(storylines::Storyline& s)
+{
+    auto& m = section(s, "mantles");
+    if (m.isArray())
+    {
+        auto o = Value::object();
+        for (const auto& v : m.items())
+            if (v.isString())
+                o.set(v.asString(), "");
+        m = o;
+    }
+    return m;
+}
+} // namespace
+
+void Game::noteStoryMantle(const Value& payload, const std::string& npc, const std::string& before, const std::string& how,
+                           const std::string& bound)
+{
+    auto* s = storylines_.find(payload.string("run"));
+    if (!s || s->kind != "world" || s->source != "storykeeper" || !s->live())
+        return;
+    auto& m = storyMantles(*s);
+    if (!m.has(npc))   // (A second binding by the same story keeps what they wore before the first.)
+    {
+        m.set(npc, before);
+        auto& hows = section(*s, "mantleHow");
+        hows.set(npc, how);
+    }
+    section(*s, "mantleBound").set(npc, bound);   // (What it bound last: put back only while they still wear it.)
+    storylines_.touch();
+    record(StoryBook);
+}
+
+bool Game::storyBoundMantle(const Value& payload, const std::string& npc, std::string& before, std::string& how, std::string& bound)
+{
+    // The story's own mantle.release of a mantle it bound: what they wore before (taken out of what it holds), true.
+    auto* s = storylines_.find(payload.string("run"));
+    if (!s || s->kind != "world" || !s->held.isObject() || !s->held.has("mantles"))
+        return false;
+    auto& m = storyMantles(*s);
+    if (!m.has(npc))
+        return false;
+    before = m.string(npc);
+    how = s->held.has("mantleHow") ? (*s->held.find("mantleHow")).string(npc) : std::string();
+    bound = s->held.has("mantleBound") ? (*s->held.find("mantleBound")).string(npc) : std::string();
+    m.erase(npc);
+    for (const char* key : {"mantleHow", "mantleBound"})
+        if (s->held.has(key))
+            s->held.find(key)->erase(npc);
+    storylines_.touch();
+    record(StoryBook);
+    return true;
+}
+
+bool Game::handOnStoryMantle(const std::string& run, const std::string& npc, const std::string& before, const std::string& how,
+                             const std::string& bound)
+{
+    // Doc 86, C15 (after review): two stories bound one resident in turn. When the first lets go, the later one (whose
+    // "before" is the first's mantle) is given the first's "before", so the end of both leaves them as they were before
+    // either; the later's binding stands meanwhile.
+    if (bound.empty())
+        return false;
+    for (const auto& [id, other] : storylines_.all())
+    {
+        if (id == run || other.kind != "world" || !other.live() || !other.held.isObject() || !other.held.has("mantles"))
+            continue;
+        auto* s = storylines_.find(id);
+        auto& m = storyMantles(*s);
+        if (!m.has(npc) || m.string(npc) != bound)
+            continue;
+        m.set(npc, before);
+        section(*s, "mantleHow").set(npc, how);
+        storylines_.touch();
+        record(StoryBook);
+        return true;
+    }
+    return false;
+}
+
+Result Game::putBackMantle(const std::string& npc, const std::string& before, const std::string& how, const std::string& bound)
+{
+    // Doc 86, C15: the mantle they wore before the story's binding is theirs again; none before, the story's let go of.
+    // One given since to another (passed on, or bound by the DM) cannot come back: theirs is let go of instead. And one
+    // who no longer wears what the story bound (the DM, or another story, bound another since) is left as they are.
+    if (!bound.empty())
+    {
+        const auto* b = world_.society().mantleOf(npc);
+        if (!b || b->releasedDay >= 0 || b->mantle != bound)
+            return {true, "They no longer wear " + bound + ": left as they are.", npc};
+    }
+    if (!before.empty())
+    {
+        if (const auto* b = world_.society().mantleOf(npc); b && b->mantle == before && b->releasedDay < 0)
+            return {true, "They wear " + before + " already.", npc};
+        auto r = assignMantle(npc, before, how.empty() ? std::string("dm") : how);
+        if (r.ok)
+            return {true, r.message + " (as before the story)", npc};
+        note("warn", "RATW_STORY mantle " + before + " could not be given back to " + npc + ": " + r.message);
+    }
+    auto r = releaseMantle(npc);
+    if (!r.ok && r.message.find("wears no mantle") != std::string::npos)
+        return {true, r.message, npc};
+    return r;
 }
 
 std::string Game::storyProject(const std::string& town, const std::string& kind) const
@@ -454,13 +798,80 @@ std::string Game::storyStoryline(const std::string& wolf, const std::string& tem
     return {};
 }
 
+// ------------------------------------------------------------------------------------ doc 86, J9: a story's own items
+namespace
+{
+constexpr std::size_t StoryItemNamesMost = 4000;    // (Names the world keeps for stories' own items, kept ones included.)
+
+bool tagWord(const std::string& s, std::size_t most)
+{
+    return !s.empty() && s.size() <= most &&
+           std::all_of(s.begin(), s.end(), [](char c) { return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_'; });
+}
+
+// <base>^<8 hex>.<tag>, the base a plain item of the catalogue (story_program.tagged_item makes it).
+bool storyItemId(const std::string& id)
+{
+    const auto caret = id.find('^');
+    if (caret == std::string::npos || id.size() < caret + 11 || id[caret + 9] != '.')
+        return false;
+    const auto base = id.substr(0, caret), hash = id.substr(caret + 1, 8), tag = id.substr(caret + 10);
+    return tagWord(base, 40) && tagWord(tag, 32) && items::good(base) &&
+           std::all_of(hash.begin(), hash.end(), [](char c) { return (c >= 'a' && c <= 'f') || (c >= '0' && c <= '9'); });
+}
+} // namespace
+
+Result Game::storyItemGiven(const std::string& wolf, const std::string& item, const Value& payload, std::string& name)
+{
+    if (!storyItemId(item))
+        return {false, "A story's own item is a plain item with the story's mark.", wolf};
+    const auto* story = storylines_.find(payload.string("run"));
+    if (!story || story->kind != "world" || story->source != "storykeeper" || !story->live())
+        return {false, "That story is not running.", wolf};
+    name = payload.string("name");
+    if (!name.empty() && (!oneLine(name, 60) || name.find_first_of("#[]{}") != std::string::npos))
+        return {false, "A story item's name is one line of up to 60 characters.", wolf};
+    if (!name.empty() && !storyItemNames_.count(item) && storyItemNames_.size() >= StoryItemNamesMost)
+        return {false, "The world keeps the names of " + std::to_string(StoryItemNamesMost) + " story items at most.", wolf};
+    return {true, {}, wolf};
+}
+
+void Game::storyItemHeld(const std::string& item, const Value& payload, const std::string& name)
+{
+    // (Named only now it is in a pack: a give refused for a full pack leaves no name in the world.)
+    if (!name.empty())
+    {
+        storyItemNames_[item] = name;
+        items::nameStoryItem(item, name);
+    }
+    // (Kept after the story: it stays with its name. Otherwise the run takes every unit of it back when it ends.)
+    auto* story = storylines_.find(payload.string("run"));
+    if (!story || payload.boolean("keep"))
+        return;
+    auto& tags = section(*story, "tags", true);
+    if (!listed(tags, item))
+        tags.push(item);
+    storylines_.touch();
+    record(StoryBook);
+    saveSoon();
+}
+
 void Game::endStoryWorld(storylines::Storyline& story)
 {
+    // (Doc 86, C11 and C8: its holds on residents let go; what it had residents remember forgotten, unless it was kept.)
+    dropStoryHolds("run:" + story.id);
+    for (auto it = storyMemory_.begin(); it != storyMemory_.end();)
+    {
+        for (auto m = it->second.begin(); m != it->second.end();)
+            m = m->second.run == story.id && !m->second.keep ? it->second.erase(m) : std::next(m);
+        it = it->second.empty() ? storyMemory_.erase(it) : std::next(it);
+    }
+    storyTopicsChanged();                           // (Doc 86, T6: its realm keys no longer open the story topic.)
     if (!story.held.isObject() || !story.held.size())
         return;
     auto& h = story.held;
     for (const auto& [door, j] : h.object("doors").fields())
-        if (world_.door(door))
+        if (world_.door(door) && j.has("locked"))
             world_.setDoorState(door, -1, j.boolean("was") ? 1 : 0);
     for (const auto& [npc, pace] : h.object("npcs").fields())
         if (!story.sceneOrders.count(npc))
@@ -476,8 +887,20 @@ void Game::endStoryWorld(storylines::Storyline& story)
         releaseCompanions();
     for (const auto& v : h.array("visitors"))
         world_.sendVisitorAway(v.asString());
-    for (const auto& npc : h.array("mantles"))
-        releaseMantle(npc.asString());
+    for (const auto& [camp, j] : h.object("foes").fields())   // (Doc 86, C10: its foes go, even mid-fight, with no event.)
+        world_.endStoryFoe(camp, {}, true);
+    if (h.has("mantles"))   // (Doc 86, C15: each given back the mantle they wore before, or let go of.)
+    {
+        const auto mantles = storyMantles(story);
+        const auto hows = story.held.has("mantleHow") ? *story.held.find("mantleHow") : Value::object();
+        const auto bounds = story.held.has("mantleBound") ? *story.held.find("mantleBound") : Value::object();
+        for (const auto& [npc, before] : mantles.fields())
+        {
+            const auto was = before.isString() ? before.asString() : std::string();
+            if (!handOnStoryMantle(story.id, npc, was, hows.string(npc), bounds.string(npc)))
+                putBackMantle(npc, was, hows.string(npc), bounds.string(npc));
+        }
+    }
     for (const auto& id : h.array("notices"))
         if (documents_.find(id.asString()))
             documents_.erase(id.asString());
@@ -489,20 +912,106 @@ void Game::endStoryWorld(storylines::Storyline& story)
         else if (parseWeather(j.string("was"), was))
             world_.setWeather(cell, was);
     }
+    // (Doc 86, J9: its own items not kept, taken back from every purse and the ground; the wolves who carried them told.)
+    std::set<std::string> tags;
+    for (const auto& t : h.array("tags"))
+        if (t.isString() && items::storyTagged(t.asString()))
+            tags.insert(t.asString());
+    if (!tags.empty())
+    {
+        std::vector<std::string> told;
+        for (const auto& [account, n] : world_.takeBackItems(tags))
+            if (n > 0 && playerAccountId(account))
+                told.push_back(account);
+        for (const auto& item : tags)
+        {
+            storyItemNames_.erase(item);
+            items::nameStoryItem(item, "");
+        }
+        record(Economy);
+        recordCharacters(Economy, told);
+        for (const auto& wolf : told)
+            tellActedOn(wolf, "What the story \"" + story.title + "\" gave you to carry is gone with it.");
+    }
     // (Its notes stay in the journal, with the story; everything else it held is gone.)
     auto kept = Value::object();
     if (h.array("notes").size())
         kept.set("notes", h["notes"]);
     story.held = std::move(kept);
     storiesHolding_.erase(story.id);
+    refreshStoryDoors();    // (Its doors no longer open to wolves.)
     saveSoon();
+}
+
+std::string Game::housePurseFaction(const std::string& purse) const
+{
+    if (purse.rfind("house:", 0) != 0 || purse.size() <= 6)
+        return {};
+    const auto name = purse.substr(6);
+    for (const auto& id : {name, "house_" + name})
+        if (const auto* f = factions_.find(id); f && f->name.rfind("House ", 0) == 0)
+            return f->id;
+    return {};
+}
+
+void Game::tendHousePurses()
+{
+    // Doc 86, M3: once a game day, each House's businesses (the posts held, whose work place the House claims first, as
+    // its members are found) put a share of what their tills hold over the float into the House's purse. Money only moves.
+    const auto day = std::int64_t(std::floor(world_.calendarDays()));
+    if (!storyHousePurses_ || day == housePurseDay_)
+        return;
+    housePurseDay_ = day;
+    auto& society = world_.society();
+    const auto& held = society.state().careers.positions;
+    std::int64_t moved = 0;
+    for (const auto& [id, f] : factions_.all())
+    {
+        if (f.name.rfind("House ", 0) != 0)
+            continue;
+        const auto purse = "purse:" + id;
+        if (!society.account(purse) && !society.openAccount(purse))
+            continue;
+        for (const auto& p : society.positions())
+        {
+            const auto h = held.find(p.id);
+            const auto* cell = world_.cell(p.work.cell);
+            if (h == held.end() || h->second.holder.empty() || !cell || cell->factionClaims.empty() || cell->factionClaims.front() != id)
+                continue;
+            const auto till = "till:" + p.id;
+            const auto* a = society.account(till);
+            const auto room = HousePurseMost - society.cash(purse);
+            if (room <= 0)
+                break;
+            if (!a || a->cash <= HouseTillFloat)
+                continue;
+            const auto share = std::min(room, (a->cash - HouseTillFloat) * HouseShare / 100);
+            if (share >= 1 && society.shift(till, purse, "", 0, share, "a House's share"))
+                moved += share;
+        }
+    }
+    if (moved > 0)
+    {
+        record(Economy);
+        saveSoon();
+    }
 }
 
 void Game::tickStoryWorld(double dt)
 {
-    if (storiesHolding_.empty() || (storyWorldAccumulator_ += dt) < .5)
+    if (storyHousePurses_)
+        tendHousePurses();                          // (Doc 86, M3: once a game day, behind its switch.)
+    if (const auto day = std::int64_t(std::floor(world_.calendarDays())); day != storyTopicsDay_)
+    {
+        storyTopicsDay_ = day;                      // (Doc 86, T6: a realm key whose days ran out closes its topic.)
+        storyTopicsChanged();
+    }
+    if ((storiesHolding_.empty() && storySentences_.empty()) || (storyWorldAccumulator_ += dt) < .5)
         return;
     storyWorldAccumulator_ = 0;
+    tendSentences();                                // (Doc 86, L4: they outlive every story, so before the stories.)
+    if (storiesHolding_.empty())
+        return;
     bool touched = false;
     for (const auto& run : std::vector<std::string>(storiesHolding_.begin(), storiesHolding_.end()))
     {
@@ -515,7 +1024,7 @@ void Game::tickStoryWorld(double dt)
                 world_.sceneHold(npc, true, int(pace.asNumber()));
         // Locks kept (a restart, or a cell loaded again, gives a door the lock its map has).
         for (const auto& [door, j] : s->held.object("doors").fields())
-            if (const auto* d = world_.door(door); d && d->locked != j.boolean("locked"))
+            if (const auto* d = world_.door(door); d && j.has("locked") && d->locked != j.boolean("locked"))
                 world_.setDoorState(door, -1, j.boolean("locked") ? 1 : 0);
         // The weather runs out on the world's clock; markers on the real one.
         if (auto* weather = s->held.find("weather"); weather && weather->size())
@@ -535,6 +1044,83 @@ void Game::tickStoryWorld(double dt)
                 weather->erase(cell);
                 touched = true;
             }
+        }
+        if (auto* hunts = s->held.find("hunts"); hunts && hunts->size())
+        {
+            // (Doc 86, L1: an animal no hunt met in time lapses.)
+            auto kept = Value::array();
+            for (const auto& h : hunts->items())
+                if (h.number("until") > world_.time())
+                    kept.push(h);
+            if (kept.size() != hunts->size())
+            {
+                *hunts = std::move(kept);
+                touched = true;
+            }
+        }
+        if (auto* foes = s->held.find("foes"); foes && foes->size())
+        {
+            // (Doc 86, C10: a foe gone in this run of the world is let go of; one a restart lost is made again while its
+            // time lasts; a resident made a foe and beaten, not killed, is held until the story ends.)
+            std::vector<std::string> done, beatenHeld;
+            std::vector<std::pair<std::string, Value>> seen;   // (What the console's Foes panel shows, where it changed.)
+            for (const auto& [camp, j] : foes->fields())
+            {
+                if (const auto* live = world_.storyFoe(camp))
+                {
+                    // (Doc 86, C10: the followers standing, whether it fights now, and when its time runs out, in real
+                    // seconds: kept with the story, which the console reads.)
+                    int left = 0;
+                    for (int i = 1; i <= live->spec.band; ++i)
+                        if (const auto* f = world_.entity("road:" + camp + ":" + std::to_string(i)); f && !f->dead && f->downedLeft <= 0)
+                            ++left;
+                    const bool fighting = world_.foeInFight(camp);
+                    const double endsAt = std::floor(now() + std::max(0.0, live->spec.until - world_.time()) / (speed_ > 0 ? speed_ : 1.0));   // (World seconds, run faster by --speed.)
+                    if (!j.has("left") || int(j.number("left")) != left || j.boolean("fighting") != fighting ||
+                        std::abs(j.number("endsAt") - endsAt) >= 60)
+                    {
+                        auto v = j;
+                        v.set("left", left);
+                        v.set("fighting", fighting);
+                        v.set("endsAt", endsAt);
+                        seen.emplace_back(camp, std::move(v));
+                    }
+                    continue;
+                }
+                const auto how = world_.storyFoeEndedHow(camp);
+                if (how == "beaten" && j.string("kind") == "foe.outlaw" && !j.boolean("lethal"))
+                    if (auto* e = world_.entity(j.string("foe")); e && !e->dead)
+                        beatenHeld.push_back(e->id);   // (Held after the loop: a new "npcs" would move `foes` under it.)
+                if (world_.storyFoeEnded(camp))
+                    done.push_back(camp);
+                else if (j.number("until") <= world_.time() || !storyFoeFrom(*s, camp, j).ok)
+                {
+                    // (Lost to a restart and not to be made again: its time ran out meanwhile, or its resident has died,
+                    // is down or away, or its ground is gone. The story hears it got away, never waits on it for ever.)
+                    const auto* who = world_.entity(j.string("foe"));
+                    WorldEvent ev{"foe fled", {}, j.string("foe"), j.string("cell", who ? who->cellId : std::string())};
+                    ev.item = "time";
+                    ev.coins = foes::runMark(s->id);
+                    ev.detail = j.string("kind") == "foe.outlaw" ? (who ? who->name : j.string("foe")) : fillStoryNames(j.string("name"), 60);
+                    world_.recordEvent(ev);
+                    done.push_back(camp);
+                }
+            }
+            for (auto& [camp, v] : seen)
+                foes->set(camp, std::move(v));
+            for (const auto& camp : done)
+                foes->erase(camp);
+            touched = touched || !done.empty() || !seen.empty();
+            for (const auto& id : beatenHeld)
+                if (auto* e = world_.entity(id))
+                {
+                    auto& holds = section(*s, "npcs");
+                    if (!holds.has(id))
+                        holds.set(id, e->pace);
+                    if (!e->sceneDirected && !world_.inBattle(id) && e->leaderId.empty())
+                        world_.sceneHold(id, true, e->pace);
+                    e->activity = "kept here by a story";
+                }
         }
         if (auto* pings = s->held.find("pings"); pings && pings->size())
         {
@@ -607,5 +1193,789 @@ Value Game::storyJournalExtras(const storylines::Storyline& s, const std::string
     if (pings.size())
         out.add("pings", std::move(pings));
     return out;
+}
+
+// ---- Doc 86, Phase 1b: a story's holds on a resident (C11: spared from old age, protected for a while) and what the
+// residents remember and come to believe from it (C8, T7). Each hold has owners, "run:<run>" (let go when the run ends)
+// or "campaign:<id>" (let go when the runner says the campaign has ended: story.campaign_end); a resident is spared or
+// protected while any owner holds them. A memory belongs to an owner as talk's own does (realm, town:<region>,
+// person:<npc>, pair:<a>|<b>), kept apart from talk's so a story's is never evicted by talk's, and recalled under it.
+namespace
+{
+constexpr std::size_t MemoryPerOwner = 64, MemoryMost = 8192, PairPerOwner = 16, PairMost = 20000;
+
+bool talkWord(const std::string& v, bool key)
+{
+    if (v.empty() || v.size() > 40 || (key && !(v[0] >= 'a' && v[0] <= 'z')))
+        return false;
+    return std::all_of(v.begin(), v.end(), [](char c) { return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_'; });
+}
+
+// (A rumour's phrase never holds an id: a word with _ or -, or letters run into digits, rm111. As story_program.CLAIM_ID.)
+bool idInWords(const std::string& text)
+{
+    std::size_t i = 0;
+    while (i < text.size())
+    {
+        while (i < text.size() && !std::isalnum(static_cast<unsigned char>(text[i])) && text[i] != '_')
+            ++i;
+        const auto start = i;
+        bool under = false, digit = false, letter = false;
+        while (i < text.size() && (std::isalnum(static_cast<unsigned char>(text[i])) || text[i] == '_' || text[i] == '-'))
+        {
+            under |= text[i] == '_';
+            digit |= std::isdigit(static_cast<unsigned char>(text[i])) != 0;
+            letter |= std::isalpha(static_cast<unsigned char>(text[i])) != 0;
+            ++i;
+        }
+        const auto word = text.substr(start, i - start);
+        if (under || (digit && letter) || word.rfind("wolf-", 0) == 0)
+            return true;
+    }
+    return false;
+}
+
+std::uint64_t storyHash(const std::string& text)
+{
+    std::uint64_t h = 1469598103934665603ULL;
+    for (const unsigned char c : text)
+        h = (h ^ c) * 1099511628211ULL;
+    return h;
+}
+} // namespace
+
+std::set<std::string> Game::storyHoldOwners(const std::string& kind, const std::string& npc) const
+{
+    const auto k = storyHolds_.find(kind);
+    if (k == storyHolds_.end())
+        return {};
+    const auto n = k->second.find(npc);
+    return n == k->second.end() ? std::set<std::string>{} : n->second;
+}
+
+void Game::storyTopicsChanged()
+{
+    std::set<std::string> prefixes;
+    if (talk_.has("talk.story"))
+        if (const auto realm = storyMemory_.find("realm"); realm != storyMemory_.end())
+            for (const auto& [key, m] : realm->second)
+            {
+                const auto* s = m.run.empty() ? nullptr : storylines_.find(m.run);
+                const auto bar = key.find('_');
+                if ((m.until < 0 || m.until >= world_.calendarDays()) && s && s->live() && bar != std::string::npos && bar >= 2 && bar <= 8)
+                    prefixes.insert(key.substr(0, bar));
+            }
+    world_.setStoryTopics(std::move(prefixes));
+}
+
+void Game::sparedChanged()
+{
+    std::set<std::string> spared;
+    if (const auto k = storyHolds_.find("spare"); k != storyHolds_.end())
+        for (const auto& [npc, owners] : k->second)
+            if (!owners.empty())
+                spared.insert(npc);
+    world_.setStorySpared(std::move(spared));
+}
+
+void Game::dropStoryHolds(const std::string& owner)
+{
+    bool changed = false;
+    for (auto& [kind, npcs] : storyHolds_)
+        for (auto it = npcs.begin(); it != npcs.end();)
+        {
+            changed |= it->second.erase(owner) > 0;
+            it = it->second.empty() ? npcs.erase(it) : std::next(it);
+        }
+    if (changed)
+    {
+        sparedChanged();
+        saveSoon();
+    }
+}
+
+// ------------------------------------------------------------------------- sentences (doc 86, L4: npc.sentence)
+
+Result Game::applyStorySentence(const storylines::Storyline& story, const std::string& npc, const Value& p)
+{
+    // Taken to a place indoors and kept there for the days (1 to 28), past the story's end; their post and home kept.
+    auto* e = world_.entity(npc);
+    if (!e || !e->npc || e->transient || !world_.society().resident(npc))
+        return {false, "No such resident.", npc};
+    if (isProtected(npc))
+        return {false, "That resident is protected: no story sentences them.", npc};
+    if (e->dead)
+        return {false, "That resident has died.", npc};
+    if (world_.inBattle(npc) || e->downedLeft > 0)
+        return {false, "That resident is in a fight.", npc};
+    if (!e->leaderId.empty() || parties_.companion(npc) || !world_.cell(e->cellId))
+        return {false, "That resident is away.", npc};
+    if (const auto s = storySentences_.find(npc); s != storySentences_.end())
+    {
+        // (The same order sent again, as after a restart mid-batch: no change, no refusal.)
+        if (s->second.run == story.id && s->second.place == p.string("place") && s->second.days == whole(p, "days", 1, 28))
+            return {true, e->name + " is held there already.", npc};
+        return {false, "That resident is serving a sentence already.", npc};
+    }
+    if (world_.storyFoeOf(npc))
+        return {false, "That resident is a foe just now.", npc};
+    if (heldByAnotherStory(npc, story.id))
+        return {false, "Another story holds this resident.", npc};
+    const int days = whole(p, "days", 1, 28);
+    if (days < 1)
+        return {false, "A sentence is 1 to 28 days.", npc};
+    const auto place = p.string("place");
+    const auto* room = !place.empty() && world_.ensureLoaded(place).ok ? world_.cell(place) : nullptr;
+    if (!room || room->outdoors)
+        return {false, "A sentence is served in a place indoors.", npc};
+    // (The tile they are kept on: the open one nearest the room's middle that they can stand on.)
+    std::vector<std::pair<int, int>> tiles;
+    for (int y = 0; y < room->height; ++y)
+        for (int x = 0; x < room->width; ++x)
+            if (const auto* t = room->tile(x, y); t && !t->solid)
+                tiles.push_back({x, y});
+    const double mx = room->width / 2.0, my = room->height / 2.0;
+    std::stable_sort(tiles.begin(), tiles.end(), [&](const auto& a, const auto& b) {
+        return std::hypot(a.first + .5 - mx, a.second + .5 - my) < std::hypot(b.first + .5 - mx, b.second + .5 - my);
+    });
+    Result moved{false, "Nobody can stand in that place.", npc};
+    for (const auto& [x, y] : tiles)
+        if ((moved = world_.teleport(npc, place, x + .5, y + .5)).ok)
+            break;
+    if (!moved.ok)
+        return {false, "Nobody can stand in that place.", npc};
+    StorySentence s;
+    s.place = place;
+    s.by = story.templateId.empty() ? story.id : story.templateId;
+    s.run = story.id;
+    s.x = e->position.x;
+    s.y = e->position.y;
+    s.began = world_.calendarDays();
+    s.until = s.began + days;
+    s.days = days;
+    s.pace = e->pace;
+    storySentences_[npc] = s;
+    if (!e->sceneDirected)
+        world_.sceneHold(npc, true, e->pace);
+    e->activity = "held at " + room->name;
+    world_.recordEvent({"sentence begun", npc, story.id, place, 0, 0, {}, days, 0, s.by, int(s.x), int(s.y)});
+    saveSoon();
+    return {true, e->name + " is held at " + room->name + " for " + std::to_string(days) + (days == 1 ? " day." : " days."), npc};
+}
+
+bool Game::endSentence(const std::string& npc, const std::string& why)
+{
+    const auto found = storySentences_.find(npc);
+    if (found == storySentences_.end())
+        return false;
+    const auto s = found->second;
+    storySentences_.erase(found);
+    if (auto* e = world_.entity(npc); e && e->npc)
+    {
+        // (Let go unless a story holds them still: they walk home on their own day.)
+        bool still = false;
+        for (const auto& id : storiesHolding_)
+            if (const auto* st = storylines_.find(id); st && st->live() && st->held.isObject() &&
+                                                       (st->held["npcs"].has(npc) || st->sceneOrders.count(npc)))
+                still = true;
+        if (!still && !e->dead)
+            world_.sceneHold(npc, false, s.pace);
+        if (e->activity.rfind("held at ", 0) == 0)
+            e->activity.clear();
+    }
+    const int served = int(std::floor(std::max(0.0, world_.calendarDays() - s.began)));
+    world_.recordEvent({"sentence served", npc, s.run, s.place, 0, 0, why, std::min(served, s.days), 0, s.by, int(s.x), int(s.y)});
+    saveSoon();
+    return true;
+}
+
+void Game::tendSentences()
+{
+    if (storySentences_.empty())
+        return;
+    const double today = world_.calendarDays();
+    std::vector<std::string> done, dead;
+    for (const auto& [npc, s] : storySentences_)
+    {
+        auto* e = world_.entity(npc);
+        if (!e || !e->npc || e->dead)
+        {
+            dead.push_back(npc);
+            continue;
+        }
+        if (today >= s.until)
+        {
+            done.push_back(npc);
+            continue;
+        }
+        // (Kept there: after a restart, or once out of a fight; never pulled out of one.)
+        if (world_.inBattle(npc) || e->downedLeft > 0 || e->sceneDirected && e->cellId == s.place)
+            continue;
+        if (e->cellId != s.place && !world_.teleport(npc, s.place, s.x, s.y).ok)
+            continue;
+        world_.sceneHold(npc, true, s.pace);
+        if (const auto* room = world_.cell(s.place))
+            e->activity = "held at " + room->name;
+    }
+    for (const auto& npc : done)
+        endSentence(npc, "served");
+    for (const auto& npc : dead)
+    {
+        storySentences_.erase(npc);   // (The dead keep their own place: no event.)
+        saveSoon();
+    }
+}
+
+Result Game::applyStoryHold(const std::string& kind, const std::string& npc, const Value& p)
+{
+    // npc.spare / npc.unspare, and npc.protect / npc.unprotect with `lasts` run or campaign: the payload's run (and its
+    // campaign) owns the hold. A Dungeon Master's protect (no run, or `lasts` ever) is the mark it always was.
+    if (!world_.society().resident(npc))
+        return {false, "No such resident.", npc};
+    const auto run = p.string("run"), campaign = p.string("campaign");
+    const bool sparing = kind == "npc.spare" || kind == "npc.unspare";
+    const auto holdKind = sparing ? std::string("spare") : std::string("protect");
+    if (kind == "npc.spare" || kind == "npc.protect")
+    {
+        const auto lasts = p.string("lasts", sparing ? "run" : "ever");
+        if (lasts != "run" && lasts != "campaign")
+            return {false, "A story's hold lasts for its run or its campaign.", npc};
+        if (lasts == "campaign" && campaign.empty())
+            return {false, "Only a chapter of a campaign holds a resident for the campaign.", npc};
+        if (const auto* s = run.empty() ? nullptr : storylines_.find(run); !s || s->source != "storykeeper" || !s->live())
+            return {false, "A story's hold names its run, and that story is running.", npc};
+        if (!sparing && unprotectedMarks_.count(npc))
+            return {false, "A Dungeon Master has taken that resident's protection off.", npc};
+        storyHolds_[holdKind][npc].insert(lasts == "campaign" ? "campaign:" + campaign : "run:" + run);
+        if (sparing)
+            sparedChanged();
+        saveSoon();
+        return {true, std::string(sparing ? "Spared from old age " : "Protected ") +
+                          (lasts == "campaign" ? "while the campaign runs." : "while the story runs."), npc};
+    }
+    // npc.unspare (npc.unprotect drops its holds beside the mark: RatwGame.cpp): this run's and its campaign's owners go.
+    bool any = false;
+    if (auto k = storyHolds_.find(holdKind); k != storyHolds_.end())
+        if (auto n = k->second.find(npc); n != k->second.end())
+        {
+            any |= n->second.erase("run:" + run) > 0;
+            if (!campaign.empty())
+                any |= n->second.erase("campaign:" + campaign) > 0;
+            if (n->second.empty())
+                k->second.erase(n);
+        }
+    if (sparing)
+        sparedChanged();
+    saveSoon();
+    const bool still = !storyHoldOwners(holdKind, npc).empty();
+    return {true, std::string(any ? "No longer spared by this story" : "This story was not sparing them") +
+                      (still ? " (another story still does)." : "."), npc};
+}
+
+void Game::storyRecall(const std::string& owner, const std::string& prefix, talk::Facts& into)
+{
+    const auto found = storyMemory_.find(owner);
+    if (found == storyMemory_.end())
+        return;
+    const double today = world_.calendarDays();
+    for (const auto& [key, m] : found->second)
+        if (m.until < 0 || m.until >= today)
+            into[prefix + "mem." + key] = m.value;
+}
+
+Result Game::applyStoryTalk(const std::string& kind, const std::string& target, const Value& p)
+{
+    const auto run = p.string("run");
+    auto* story = storylines_.find(run);
+    if (!story || story->kind != "world" || story->source != "storykeeper" || !story->live())
+        return {false, "That story is not running.", target};
+    const auto& society = world_.society();
+    if (kind == "belief.plant")
+    {
+        // A rumour (T7: or its clearing) about a resident, believed by `count` residents of a town: placed, living, not
+        // the one it is about, chosen by the run's seed so the same story picks the same.
+        const auto subject = target, town = p.string("town"), claim = p.string("claim"), claimKind = p.string("claimKind", "story.rumour");
+        const int count = whole(p, "count", 1, 50), confidence = whole(p, "confidence", 10, 90);
+        if (!society.resident(subject))
+            return {false, "No such resident to be talked of.", subject};
+        if (claimKind != "story.rumour" && claimKind != "story.cleared")
+            return {false, "A story's rumour is story.rumour or story.cleared.", subject};
+        if (town.empty() || claim.empty() || !oneLine(claim, 120) || claim.find('#') != std::string::npos || claims::rawId(claim) || idInWords(claim) ||
+            count < 1 || confidence < 10)
+            return {false, "A rumour needs a town, a phrase of up to 120 characters (no ids), how many and how sure.", subject};
+        std::vector<std::pair<std::uint64_t, std::string>> holders;
+        for (const auto& [id, e] : world_.entities())
+        {
+            const auto* life = society.resident(id);
+            if (!e.npc || e.dead || e.transient || id == subject || !life || life->homeCell.empty() || world_.townIdOf(life->homeCell) != town)
+                continue;
+            holders.push_back({storyHash(run + "|" + subject + "|" + claim + "|" + id), id});
+        }
+        if (holders.empty())
+            return {false, "Nobody lives in " + town + " to hear it.", subject};
+        std::sort(holders.begin(), holders.end());
+        // (A clearing keeps words of its own: "never took the silver", so it never merges with the rumour it answers.)
+        const auto words = claimKind == "story.cleared" ? "never " + claim : claim;
+        std::size_t n = 0;
+        for (const auto& [h, id] : holders)
+        {
+            if (n >= std::size_t(count))
+                break;
+            Belief b;
+            b.holder = id;
+            b.subject = subject;
+            b.claim = words;
+            b.source = "story:" + run;
+            b.confidence = confidence / 100.0;
+            b.kind = claimKind;
+            world_.believe(b);
+            ++n;
+        }
+        saveSoon();
+        return {true, std::to_string(n) + " residents of " + town + " believe it now.", subject};
+    }
+    // talk.remember / talk.forget: the owner as talk names it.
+    const auto scope = p.string("scope", "town"), key = p.string("key");
+    std::string owner;
+    if (scope == "realm")
+        owner = "realm";
+    else if (scope == "town")
+        owner = p.string("town").empty() ? std::string() : "town:" + p.string("town");
+    else if (scope == "npc")
+        owner = society.resident(p.string("npc")) ? "person:" + p.string("npc") : std::string();
+    else if (scope == "pair")
+    {
+        const auto npc = p.string("npc"), wolf = p.string("player");
+        if (!society.resident(npc) || wolf.empty() || !story->takesPart(wolf))
+            return {false, "Pair memory names a resident and a wolf of the story.", target};
+        owner = "pair:" + std::min(npc, wolf) + "|" + std::max(npc, wolf);
+    }
+    if (owner.empty())
+        return {false, "Name whose memory: the realm, a town, a resident, or a resident and a wolf.", target};
+    if (!talkWord(key, true))
+        return {false, "A talk memory's key is small letters, digits and _, up to 40.", target};
+    if (kind == "talk.forget")
+    {
+        bool gone = false;
+        if (auto found = storyMemory_.find(owner); found != storyMemory_.end())
+        {
+            gone = found->second.erase(key) > 0;
+            if (found->second.empty())
+                storyMemory_.erase(found);
+        }
+        saveSoon();
+        return {true, gone ? "Forgotten." : "Nobody remembered that.", target};
+    }
+    const auto value = p.string("value");
+    const int days = whole(p, "days", 1, 365);
+    if (!talkWord(value, false) || days < 1)
+        return {false, "A talk memory's value is small letters, digits and _ (up to 40), for 1 to 365 days.", target};
+    const bool pair = owner.rfind("pair:", 0) == 0;
+    auto& memos = storyMemory_[owner];
+    memos[key] = {value, world_.calendarDays() + days, run, p.boolean("keep")};
+    // The caps: an owner's (64, a pair's 16) and all of them (8,192; pairs 20,000): the soonest to be forgotten goes first.
+    const auto soonestOf = [](std::map<std::string, StoryMemo>& m) {
+        auto s = m.begin();
+        for (auto it = m.begin(); it != m.end(); ++it)
+            if (it->second.until < s->second.until)
+                s = it;
+        return s;
+    };
+    bool dropped = false;
+    while (memos.size() > (pair ? PairPerOwner : MemoryPerOwner))
+        memos.erase(soonestOf(memos)), dropped = true;
+    std::size_t total = 0;
+    for (const auto& [o, m] : storyMemory_)
+        if ((o.rfind("pair:", 0) == 0) == pair)
+            total += m.size();
+    while (total > (pair ? PairMost : MemoryMost))
+    {
+        std::string ownerOf, keyOf;
+        double until = 1e300;
+        for (auto& [o, m] : storyMemory_)
+            if ((o.rfind("pair:", 0) == 0) == pair)
+                for (auto& [k, memo] : m)
+                    if (memo.until < until)
+                        until = memo.until, ownerOf = o, keyOf = k;
+        if (ownerOf.empty())
+            break;
+        storyMemory_[ownerOf].erase(keyOf);
+        if (storyMemory_[ownerOf].empty())
+            storyMemory_.erase(ownerOf);
+        --total, dropped = true;
+    }
+    if (dropped && std::floor(world_.calendarDays()) != storyMemoryWarnedDay_)
+    {
+        storyMemoryWarnedDay_ = std::floor(world_.calendarDays());
+        note("warn", "RATW_STORY_MEMORY full: the residents forgot the soonest-to-go of the stories' memories to remember " + key + ".");
+    }
+    // (End of slice, doc 86: the new memory may be the soonest to go, and the one the caps let go of. Said so, and not
+    // kept with the story; applied all the same, so the run goes on.)
+    if (const auto kept = storyMemory_.find(owner); kept == storyMemory_.end() || !kept->second.count(key))
+    {
+        saveSoon();
+        return {true, "Not remembered (" + owner + ": " + key + "): the residents' memory is full of ones that last longer.", target};
+    }
+    auto& held = section(*story, "memory", true);
+    if (!listed(held, owner + "#" + key))
+        held.push(owner + "#" + key);
+    storiesHolding_.insert(story->id);
+    storylines_.touch();
+    record(StoryBook);
+    saveSoon();
+    return {true, "Remembered (" + owner + ": " + key + " = " + value + ", " + std::to_string(days) + " days).", target};
+}
+
+void Game::storyTalkSave(Value& root) const
+{
+    auto holds = Value::object();
+    for (const auto& [kind, npcs] : storyHolds_)
+    {
+        auto byNpc = Value::object();
+        for (const auto& [npc, owners] : npcs)
+        {
+            auto list = Value::array();
+            for (const auto& o : owners)
+                list.push(o);
+            if (list.size())
+                byNpc.add(npc, std::move(list));
+        }
+        if (byNpc.size())
+            holds.add(kind, std::move(byNpc));
+    }
+    root.add("storyHolds", std::move(holds));
+    auto memory = Value::object();
+    for (const auto& [owner, memos] : storyMemory_)
+    {
+        auto kept = Value::object();
+        for (const auto& [key, m] : memos)
+            if (m.until < 0 || m.until >= world_.calendarDays())
+            {
+                auto j = Value::object();
+                j.add("value", m.value);
+                j.add("until", m.until);
+                j.add("run", m.run);
+                if (m.keep)
+                    j.add("keep", true);
+                kept.add(key, std::move(j));
+            }
+        if (kept.size())
+            memory.add(owner, std::move(kept));
+    }
+    root.add("storyMemory", std::move(memory));
+    storyGreetsSave(root);                          // (Doc 86, C5: the greetings waiting.)
+    auto names = Value::object();                   // (Doc 86, J9: the stories' own items' names.)
+    for (const auto& [item, name] : storyItemNames_)
+        names.add(item, name);
+    root.add("storyItemNames", std::move(names));
+    auto sentences = Value::object();               // (Doc 86, L4: the residents a story sentenced.)
+    for (const auto& [npc, s] : storySentences_)
+    {
+        auto j = Value::object();
+        j.add("place", s.place);
+        j.add("by", s.by);
+        j.add("run", s.run);
+        j.add("x", s.x);
+        j.add("y", s.y);
+        j.add("began", s.began);
+        j.add("until", s.until);
+        j.add("days", s.days);
+        j.add("pace", s.pace);
+        sentences.add(npc, std::move(j));
+    }
+    root.add("storySentences", std::move(sentences));
+    if (storyHousePurses_)
+        root.add("storyHousePurses", true);         // (Doc 86, M3: the world switch, read at approval.)
+    if (housePurseDay_ >= 0)
+        root.add("storyHousePurseDay", double(housePurseDay_));   // (The game day the Houses last took their share.)
+}
+
+void Game::storyTalkLoad(const Value& saved)
+{
+    storyHousePurses_ = saved.boolean("storyHousePurses");
+    // (Kept, so a restart the same game day takes no second share: review of Phase 9.)
+    housePurseDay_ = saved.has("storyHousePurseDay") ? std::int64_t(saved.number("storyHousePurseDay")) : -1;
+    storySentences_.clear();
+    for (const auto& [npc, j] : saved.object("storySentences").fields())
+        if (npc.size() <= 80 && j.isObject() && !j.string("place").empty() && j.number("until") > 0)
+            storySentences_[npc] = {j.string("place"), j.string("by"), j.string("run"), j.number("x"), j.number("y"),
+                                    j.number("began"), j.number("until"), int(j.number("days")), int(j.number("pace"))};
+    storyHolds_.clear();
+    for (const auto& [kind, npcs] : saved.object("storyHolds").fields())
+        if (kind == "spare" || kind == "protect")
+            for (const auto& [npc, owners] : npcs.fields())
+                for (const auto& o : owners.items())
+                    if (o.isString() && npc.size() <= 80 && (o.asString().rfind("run:", 0) == 0 || o.asString().rfind("campaign:", 0) == 0))
+                        storyHolds_[kind][npc].insert(o.asString());
+    storyMemory_.clear();
+    for (const auto& [owner, kept] : saved.object("storyMemory").fields())
+    {
+        // (As remembering caps them: a pair's owner keeps PairPerOwner, any other MemoryPerOwner; no empty owner made.)
+        const auto cap = owner.rfind("pair:", 0) == 0 ? PairPerOwner : MemoryPerOwner;
+        for (const auto& [key, j] : kept.fields())
+            if (talkWord(key, true) && talkWord(j.string("value"), false))
+            {
+                auto& mine = storyMemory_[owner];
+                if (mine.size() < cap || mine.count(key))
+                    mine[key] = {j.string("value"), j.number("until", -1), j.string("run"), j.boolean("keep")};
+            }
+    }
+    storyGreetsLoad(saved);
+    storyTopicsChanged();
+    for (const auto& [item, _] : storyItemNames_)
+        items::nameStoryItem(item, "");
+    storyItemNames_.clear();
+    for (const auto& [item, name] : saved.object("storyItemNames").fields())
+        if (storyItemNames_.size() < StoryItemNamesMost && storyItemId(item) && name.isString() && oneLine(name.asString(), 60))
+        {
+            storyItemNames_[item] = name.asString();
+            items::nameStoryItem(item, name.asString());
+        }
+    sparedChanged();
+}
+
+// ------------------------------------------------------------------ doc 86, Phase 3: thanks, titles and doubt
+namespace
+{
+constexpr std::size_t TitlesKept = 8, GreetsMost = 20000;
+
+std::string lowered(std::string s)
+{
+    for (auto& c : s)
+        c = char(std::tolower(static_cast<unsigned char>(c)));
+    return s;
+}
+
+// (The kinds of claim a story may put to rest: about a resident, from claims.json; story_program checks the same list.)
+bool doubtable(const std::string& kind)
+{
+    static const std::set<std::string> kinds{"theft", "theft.attempt", "theft.unseen", "assault", "assault.unseen", "violent",
+                                             "warrant", "promise.broken", "prowling", "story.rumour"};
+    return kinds.count(kind) > 0;
+}
+} // namespace
+
+std::string Game::storyTitleFor(const std::string& wolf, const std::string& npc) const
+{
+    // C4: the newest title known where the resident lives (the realm, or their town); a lapsed one is never used.
+    const auto* e = world_.entity(wolf);
+    if (!e || e->npc)
+    {
+        const auto saved = characters_.find(wolf);
+        e = saved == characters_.end() ? nullptr : &saved->second;
+    }
+    if (!e)
+        return {};
+    std::string town;
+    if (const auto* life = world_.society().resident(npc); life && !life->homeCell.empty())
+        town = world_.townIdOf(life->homeCell);
+    const double today = world_.calendarDays();
+    const StoryTitle* best = nullptr;
+    for (const auto& t : e->titles)
+        if ((t.until < 0 || t.until >= today) && (t.known == "realm" || (!town.empty() && t.known == "town:" + town)) &&
+            (!best || t.since >= best->since))
+            best = &t;
+    return best ? best->title : std::string();
+}
+
+Value Game::titlesView(const Entity& wolf, const std::string& viewer) const
+{
+    // The card's titles (newest first), each with where it is known and when it lapses (-1: for good).
+    auto list = Value::array();
+    const double today = world_.calendarDays();
+    std::vector<const StoryTitle*> live;
+    for (const auto& t : wolf.titles)
+        if (t.until < 0 || t.until >= today)
+            live.push_back(&t);
+    std::stable_sort(live.begin(), live.end(), [](const auto* a, const auto* b) { return a->since > b->since; });
+    for (const auto* t : live)
+    {
+        auto j = Value::object();
+        j.add("title", viewer.empty() ? t->title : veilFor(viewer, t->title));
+        const auto town = t->known.rfind("town:", 0) == 0 ? t->known.substr(5) : std::string();
+        j.add("known", town.empty() ? std::string("realm") : std::string("town"));
+        if (!town.empty())
+            j.add("town", townWords(town));
+        j.add("days", t->until < 0 ? -1.0 : std::max(0.0, std::ceil(t->until - today)));
+        list.push(std::move(j));
+    }
+    return list;
+}
+
+std::string Game::takeStoryGreet(const std::string& npc, const std::string& wolf)
+{
+    const auto byNpc = storyGreets_.find(npc);
+    if (byNpc == storyGreets_.end())
+        return {};
+    const auto found = byNpc->second.find(wolf);
+    if (found == byNpc->second.end())
+        return {};
+    const auto text = found->second.until >= world_.calendarDays() ? found->second.text : std::string();
+    byNpc->second.erase(found);
+    if (byNpc->second.empty())
+        storyGreets_.erase(byNpc);
+    saveSoon();
+    return text;
+}
+
+Result Game::applyStoryThanks(const std::string& kind, const std::string& target, const Value& p)
+{
+    const auto run = p.string("run");
+    auto* story = storylines_.find(run);
+    if (!story || story->kind != "world" || story->source != "storykeeper" || !story->live())
+        return {false, "That story is not running.", target};
+    const double today = world_.calendarDays();
+    if (kind == "belief.forget")
+    {
+        // J8: residents (of one town, or everywhere) less sure that a resident did one kind of thing.
+        const auto claimKind = p.string("claimKind"), town = p.string("town");
+        const int share = whole(p, "share", 10, 100);
+        if (!world_.society().resident(target))
+            return {false, "No such resident to be talked of.", target};
+        if (!doubtable(claimKind) || share < 10)
+            return {false, "Name the kind of claim (a theft, a story's rumour...) and by how much (10 to 100%).", target};
+        const int touched = world_.doubt(target, claimKind, town, share);
+        saveSoon();
+        return {true, std::to_string(touched) + (touched == 1 ? " belief" : " beliefs") + " grew less sure" + (town.empty() ? "." : " in " + town + "."),
+                target};
+    }
+    if (kind == "npc.greet")
+    {
+        // C5: the next time this wolf opens the resident's window (within the days), these words are its greeting, once.
+        const auto wolf = p.string("player");
+        const auto text = fillStoryNames(p.string("text"), 200);
+        const int days = p.has("days") ? whole(p, "days", 1, 28) : 7;
+        if (!world_.society().resident(target))
+            return {false, "No such resident.", target};
+        if (wolf.empty() || !story->takesPart(wolf))
+            return {false, "A greeting is for a wolf of the story.", target};
+        if (!oneLine(text, 200) || days < 1)
+            return {false, "A greeting is one line of up to 200 characters, for 1 to 28 days.", target};
+        storyGreets_[target][wolf] = {text, run, today + days};
+        std::size_t total = 0;
+        for (const auto& [npc, wolves] : storyGreets_)
+            total += wolves.size();
+        while (total > GreetsMost)
+        {
+            // (The soonest to lapse goes first.)
+            auto npcAt = storyGreets_.end();
+            std::map<std::string, StoryGreet>::iterator wolfAt;
+            double soonest = 1e300;
+            for (auto n = storyGreets_.begin(); n != storyGreets_.end(); ++n)
+                for (auto w = n->second.begin(); w != n->second.end(); ++w)
+                    if (w->second.until < soonest)
+                        soonest = w->second.until, npcAt = n, wolfAt = w;
+            if (npcAt == storyGreets_.end())
+                break;
+            npcAt->second.erase(wolfAt);
+            if (npcAt->second.empty())
+                storyGreets_.erase(npcAt);
+            --total;
+        }
+        saveSoon();
+        return {true, "A greeting waits for " + wolf + " (" + std::to_string(days) + " days).", target};
+    }
+    // title.give / title.take: the wolf named (online, or as saved).
+    auto* online = world_.entity(target);
+    Entity* e = online && !online->npc ? online : nullptr;
+    if (!e)
+        if (auto saved = characters_.find(target); saved != characters_.end())
+            e = &saved->second;
+    if (!e || e->npc)
+        return {false, "Titles are for players' wolves.", target};
+    const auto by = story->templateId.empty() ? run : story->templateId;
+    std::string said;
+    if (kind == "title.give")
+    {
+        const auto title = fillStoryNames(p.string("title"), 60);
+        const auto known = p.string("known", "realm"), town = p.string("town");
+        if (!oneLine(title, 60) || title.find('#') != std::string::npos || idInWords(title))
+            return {false, "A title is one line of up to 60 characters, with no symbols and no ids.", target};
+        if (known != "realm" && known != "town")
+            return {false, "A title is known in the realm or in one town.", target};
+        const auto& cells = world_.cells();
+        if (known == "town" && (town.empty() || std::none_of(cells.begin(), cells.end(), [&](const auto& c) { return c.second.region == town; })))
+            return {false, "Name the town the title is known in.", target};
+        const int days = p.has("days") ? whole(p, "days", 0, 365) : 0;
+        if (days < 0)
+            return {false, "A title lasts 0 (for good) to 365 days.", target};
+        StoryTitle t{title, known == "town" ? "town:" + town : std::string("realm"), by, run, today, days > 0 ? today + days : -1.0};
+        auto& list = e->titles;
+        list.erase(std::remove_if(list.begin(), list.end(), [&](const StoryTitle& o) { return o.until >= 0 && o.until < today; }), list.end());
+        auto same = std::find_if(list.begin(), list.end(), [&](const StoryTitle& o) { return lowered(o.title) == lowered(title); });
+        const bool renewed = same != list.end();
+        if (renewed)
+            *same = t;                              // (Given again: renewed, known where it now says.)
+        else
+        {
+            if (list.size() >= TitlesKept)
+            {
+                // (A ninth: the oldest that lapses goes, else the oldest.)
+                auto drop = list.end();
+                for (auto it = list.begin(); it != list.end(); ++it)
+                    if (it->until >= 0 && (drop == list.end() || it->since < drop->since))
+                        drop = it;
+                if (drop == list.end())
+                    drop = std::min_element(list.begin(), list.end(), [](const auto& a, const auto& b) { return a.since < b.since; });
+                list.erase(drop);
+            }
+            list.push_back(t);
+        }
+        // The fame machinery carries it into gossip and the crier as any deed: once, when first given (a title renewed
+        // each chapter is no new fame).
+        if (!renewed)
+            recordDeed("award", {target}, {}, e->cellId, "story", "was named " + title, fame::weightOf("notable"));
+        world_.recordEvent({"title given", target, run, {}, 0, 0, t.known, 0, 0, title});
+        said = "Named " + title + ".";
+    }
+    else
+    {
+        const auto title = fillStoryNames(p.string("title"), 60);   // (As it was given: its names filled.)
+        const auto before = e->titles.size();
+        e->titles.erase(std::remove_if(e->titles.begin(), e->titles.end(),
+                                       [&](const StoryTitle& o) { return o.by == by && (title.empty() || lowered(o.title) == lowered(title)); }),
+                        e->titles.end());
+        const auto gone = before - e->titles.size();
+        said = gone ? "Took back " + std::to_string(gone) + (gone == 1 ? " title." : " titles.") : std::string("This story gave no such title.");
+    }
+    if (e == online)
+        characters_[target] = *online;
+    record(Character, target);
+    saveSoon();
+    return {true, said, target};
+}
+
+void Game::storyGreetsSave(Value& root) const
+{
+    auto greets = Value::object();
+    for (const auto& [npc, wolves] : storyGreets_)
+    {
+        auto byWolf = Value::object();
+        for (const auto& [wolf, g] : wolves)
+            if (g.until >= world_.calendarDays())
+            {
+                auto j = Value::object();
+                j.add("text", g.text);
+                j.add("run", g.run);
+                j.add("until", g.until);
+                byWolf.add(wolf, std::move(j));
+            }
+        if (byWolf.size())
+            greets.add(npc, std::move(byWolf));
+    }
+    root.add("storyGreets", std::move(greets));
+}
+
+void Game::storyGreetsLoad(const Value& saved)
+{
+    storyGreets_.clear();
+    std::size_t total = 0;
+    for (const auto& [npc, wolves] : saved.object("storyGreets").fields())
+        for (const auto& [wolf, j] : wolves.fields())
+            if (total < GreetsMost && npc.size() <= 80 && wolf.size() <= 80 && j.isObject() && oneLine(j.string("text"), 200))
+            {
+                storyGreets_[npc][wolf] = {j.string("text"), json::utf8Prefix(j.string("run"), 80), j.number("until")};
+                ++total;
+            }
 }
 } // namespace ratw::game

@@ -126,6 +126,9 @@ struct Standing
     std::vector<std::pair<int, std::string>> titles{{1, "Stranger"}};
     std::vector<std::string> socialReasons{"qualified_session_settlement", "gold_star", "story_star", "story_closure", "npc_dialogue"};
     int dailyCap = 150;
+    // Doc 86, J3: a story's closure quest done counts as a finished Story (a story_closure receipt): this much social XP,
+    // and at most this many for one wolf from one story (its program id).
+    int storyQuestClosure = 3, storyQuestClosuresMost = 4;
 };
 const Standing& standing();
 

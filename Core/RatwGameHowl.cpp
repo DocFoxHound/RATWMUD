@@ -34,11 +34,9 @@ double Game::howlCooldownLeft(const std::string& id) const
 
 Result Game::howl(const std::string& id)
 {
-    const auto& r = stars::rules().howl;
     auto* e = world_.entity(id);
     if (!e || e->npc)
         return {false, "There is no one to howl.", {}};
-    const auto* place = world_.cell(e->cellId);
     if (const auto* fight = world_.battleOf(id); fight && !fight->over)
         return {false, "Not in a fight.", {}};
     if (e->dead || e->downedLeft > 0)
@@ -49,10 +47,40 @@ Result Game::howl(const std::string& id)
         return {false, "Not with something in your mouth.", {}};
     if (const double left = howlCooldownLeft(id); left > 0)
         return {false, "Your voice needs a rest: another " + std::to_string(int(std::ceil(left / 60))) + " min.", {}};
-    if (!place)
+    if (!world_.cell(e->cellId))
         return {false, "There is nowhere to howl from.", {}};
+    const bool joined = howlFrom(*e, false);
+    return {true, joined ? "You join the howl." : "You howl.", {}};
+}
+
+Result Game::residentHowl(const std::string& npc)
+{
+    // Doc 86, J5: a story's resident howls where they stand. Never dead, down or in a fight; the howl's rest holds for them
+    // as for a wolf (so a story's howls come one a rest at most), without a wolf's words or the client's checks.
+    auto* e = world_.entity(npc);
+    if (!e || !e->npc || e->transient)
+        return {false, "No such resident.", npc};
+    if (e->dead)
+        return {false, "That resident has died.", npc};
+    if (e->downedLeft > 0)
+        return {false, "That resident is down.", npc};
+    if (world_.inBattle(npc))
+        return {false, "That resident is in a fight.", npc};
+    if (howlCooldownLeft(npc) > 0)
+        return {false, "That resident howled a moment ago.", npc};
+    if (e->offstage || !world_.cell(e->cellId))
+        return {false, "That resident is nowhere to howl from.", npc};
+    const bool joined = howlFrom(*e, true);
+    return {true, names::capitalised(e->name) + (joined ? " joins the howl." : " howls."), npc};
+}
+
+bool Game::howlFrom(Entity& e, bool resident)
+{
+    const auto& r = stars::rules().howl;
+    const auto& id = e.id;
+    const auto* place = world_.cell(e.cellId);
     const double t = world_.time();
-    const double wx = place->worldX + e->position.x, wy = place->worldY + e->position.y;
+    const double wx = place->worldX + e.position.x, wy = place->worldY + e.position.y;
     howledAt_[id] = t;
     // A chorus near, still open: this howl joins it, and keeps it open a little longer (to twenty seconds at most).
     Chorus* chorus = nullptr;
@@ -61,6 +89,7 @@ Result Game::howl(const std::string& id)
             std::find(ch.howlers.begin(), ch.howlers.end(), id) == ch.howlers.end())
             chorus = &ch;
     const bool joined = chorus != nullptr;
+    const auto [tx, ty] = world_.eventTile(e);
     if (chorus)
     {
         chorus->howlers.push_back(id);
@@ -68,19 +97,26 @@ Result Game::howl(const std::string& id)
     }
     else
     {
-        choruses_.push_back({"howl-" + guid().substr(0, 12), e->cellId, wx, wy, place->worldZ, t, t + r.chorusWindow, {id},
-                             !place->outdoors, {}});
+        choruses_.push_back({"howl-" + guid().substr(0, 12), e.cellId, wx, wy, place->worldZ, t, t + r.chorusWindow, {id},
+                             !place->outdoors, {}, tx, ty});
         chorus = &choruses_.back();
     }
     // A real sound: a wolf sneaking about gives itself away to residents near enough to hear it, as a yell does.
-    for (const auto* other : world_.entitiesIn(e->cellId))
-        if (other->npc && !other->dead && std::hypot(other->position.x - e->position.x, other->position.y - e->position.y) <= r.sneakRange)
-            world_.heardVoice(other->id, id);
+    if (!resident)
+        for (const auto* other : world_.entitiesIn(e.cellId))
+            if (other->npc && !other->dead && std::hypot(other->position.x - e.position.x, other->position.y - e.position.y) <= r.sneakRange)
+                world_.heardVoice(other->id, id);
+    // (Doc 86, J5: for a story that listens: the town it was howled in, or the wild, and the chorus it opened or joined.)
+    if (world_.storyListens("howled"))
+    {
+        const auto town = townFor(e.cellId);
+        world_.recordEvent({"howled", id, {}, e.cellId, 0, 0, town.empty() ? "wild" : town, int(chorus->howlers.size()), 0, chorus->id, tx, ty});
+    }
     sendHowl(*chorus);
     if (!joined)
         residentsHear(*chorus);
     saveSoon();
-    return {true, joined ? "You join the howl." : "You howl.", {}};
+    return joined;
 }
 
 void Game::sendHowl(Chorus& ch)
@@ -155,7 +191,8 @@ void Game::residentsHear(const Chorus& ch)
         if (std::abs(cell.worldX - ch.wx) > r.residentRange + 1024 || std::abs(cell.worldY - ch.wy) > r.residentRange + 1024)
             continue;
         for (const auto* other : world_.entitiesIn(cid))
-            if (other->npc && !other->dead && !other->transient && !world_.battleOf(other->id) && !pendingNpc_.count(other->id))
+            if (other->npc && !other->dead && !other->transient && !world_.battleOf(other->id) && !pendingNpc_.count(other->id) &&
+                std::find(ch.howlers.begin(), ch.howlers.end(), other->id) == ch.howlers.end())   // (Doc 86, J5: not one who howled.)
                 if (const double apart = std::hypot(cell.worldX + other->position.x - ch.wx, cell.worldY + other->position.y - ch.wy);
                     apart <= r.residentRange)
                     near.push_back({world_.entity(other->id), apart, cid});
@@ -201,6 +238,13 @@ void Game::tendHowls()
             continue;
         }
         const auto& ch = *it;
+        // (Doc 86, J5: for a story that listens: who began it, how many howled in it (residents too), the town or the wild.)
+        if (world_.storyListens("chorus closed"))
+        {
+            const auto town = townFor(ch.cell);
+            world_.recordEvent({"chorus closed", ch.howlers.front(), {}, ch.cell, 0, 0, town.empty() ? "wild" : town,
+                                int(ch.howlers.size()), 0, ch.id, ch.x, ch.y});
+        }
         const auto day = std::floor(world_.calendarDays());
         for (std::size_t i = 0; i < ch.howlers.size(); ++i)
             for (std::size_t j = i + 1; j < ch.howlers.size(); ++j)

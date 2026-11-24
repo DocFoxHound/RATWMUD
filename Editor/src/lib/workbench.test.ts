@@ -10,7 +10,7 @@ import {fileURLToPath} from 'node:url';
 import {
     actionParts, buildTree, commit, conditionParts, editable, eventParts, exitParts, fragmentOf, historyOf, insertTriggers, moveTrigger, namesOf,
     pasteFragment, plain, pretty, readFragment, redo, refOfProblem, removeTriggers, renameCounter, renameSignal, renameTrigger, search, signalsOf,
-    countersOf, takenIds, triggersOf, undo, unique, usesOf, withEvent, type Catalogue, type Condition, type Program, type Ref,
+    countersOf, takenIds, triggersOf, undo, unique, usesOf, withEvent, type Action, type Catalogue, type Condition, type Program, type Ref,
 } from './workbench.ts';
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -183,7 +183,7 @@ const v2: Record<string, Program> = JSON.parse(execFileSync('python3', ['-c',
 const ledger = v2['v2-ledger'];
 
 test('version 2: the samples and the 108 programs made version 2 are shown by the workbench, every nested action a sentence', () => {
-    assert.equal(Object.keys(v2).length, 110);
+    assert.equal(Object.keys(v2).length, 120);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road; Phase 3: the oil drive; Phase 4: the lamp line; Phase 5: Old Brown at the tarn; Phase 6: the watch list; Phase 7: the Grey Captain at the Pass; Phase 8: the Moot Night; Phase 9: the carter wanted.)
     let nested = 0;
     for (const [name, p] of Object.entries(v2)) {
         assert.ok(editable(p), name);
@@ -247,7 +247,7 @@ test('version 2: every action and condition the workbench adds is one the story 
 // ------------------------------------------------------------------------------------------------- quests (doc 85, Phase 6)
 
 import {
-    editableQuest, fromTemplate, newEffect, newQuest, renameObjective, renameQuest, smallQuestProgram, withQuests, type Quest,
+    editableQuest, fromTemplate, giverWords, newEffect, newQuest, renameObjective, renameQuest, smallQuestProgram, withQuests, type Quest,
 } from './workbench.ts';
 import {questCampaignOf, SMALL_QUEST_INPUT} from './fixtures/inputs.ts';
 
@@ -371,7 +371,7 @@ test('Phase 8: the night watch opens in the workbench, every world condition and
         const words = plain(eventParts(cat, t, names));
         assert.ok(!words.includes('{'), t.on + ': ' + words);
     }
-    assert.equal(cat.events.filter(e => (e as {watch?: boolean}).watch).length, 32);   // (Phase 8's 24, Phase 10's 8.)
+    assert.equal(cat.events.filter(e => (e as {watch?: boolean}).watch).length, 36);   // (Phase 8's 24, Phase 10's 8, doc 86's moon and month begins, howled, chorus closed.)
 });
 
 // ------------------------------------------------------------------------------------------ new world effects (doc 85, Phase 9)
@@ -444,4 +444,348 @@ test('Phase 10: each of the 100 library events starts a small quest whose rehear
         + "ps = json.loads(sys.stdin.read())\nout = []\nfor p in ps:\n    r = P.review(p)\n    if not r['passed']: out.append([p['title'], [t.get('error') for t in r['tests']]])\n"
         + "print(json.dumps(out))"], {cwd: repo, input: JSON.stringify(programs), maxBuffer: 1 << 26}).toString());
     assert.deepEqual(failed, []);
+});
+
+// ------------------------------------------------------------------------------- readiness and participation (doc 86, Phase 1a)
+import {conditionVars, isStep, operandWords as words2} from './workbench.ts';
+
+test('doc 86: the audience, times and div, the shares, participation and the ready exit read as sentences', () => {
+    const muster = v2['v2-muster'];
+    assert.ok(editable(muster), 'a case with readiness steps is shown');
+    assert.ok(muster.tests[0].events.some(isStep));
+    const ns = namesOf(null, muster);
+    assert.equal(words2({audience: 'active'}, ns), 'how many wolves are active');
+    assert.equal(words2({times: [{audience: 'active'}, 2]}, ns), '(how many wolves are active × 2)');
+    assert.equal(words2({div: [{audience: 'all'}, 2]}, ns), "(how many wolves the story has ÷ 2, whole)");
+    assert.equal(words2({percent: {list: 'did'}, of: 'active'}, ns), 'the share (%) of the active wolves in did');
+    assert.equal(words2({among: {where: {test: 'switch', var: 'cheered', is: true}}, of: 'all'}, ns), "how many of the story's wolves are meeting a test");
+    const cheer = muster.phases[0].triggers![1];
+    assert.equal(plain(conditionParts(cat, cheer.if!, ns)),
+        "at least 15% of the story's wolves (at least 1; no cap) meet the test (the wolf's hauls >= 2)");
+    const listed = plain(conditionParts(cat, {test: 'participation', list: 'did', percent: 35, floor: 3, cap: 150}, ns));
+    assert.equal(listed, 'at least 35% of the active wolves (at least 3; 150 always enough) are in the list did');
+    assert.equal(plain(exitParts(cat, muster.phases[0].exits[0], ns, [])),
+        'the phase is ready (its Readiness is met, or an admin presses Advance) → go to ford');
+    const made = newCondition('participation', muster, 0, cat);
+    assert.deepEqual(made, {test: 'participation', source: 'list', list: 'did', of: 'active', percent: 35, floor: 3});
+    assert.ok(conditionVars(made).includes('did'));
+    const renamed = renameVariable(muster, 'did', 'brought');
+    assert.ok(!pretty(renamed.phases[0].triggers).includes('"did"'), 'a share\'s list follows a renamed variable');
+});
+
+test('doc 86: the variables and missions a Readiness reads are its uses, and follow a rename', () => {
+    const muster = v2['v2-muster'];
+    for (const id of ['did', 'cheered', 'goal', 'rope'])
+        assert.ok(usesOf(muster, {type: 'variable', id}).some(u => u.ref.kind === 'phase' && u.where.includes('Readiness')), id);
+    assert.ok(usesOf(muster, {type: 'mission', id: 'scout'}).some(u => u.ref.kind === 'phase' && u.where.includes('Readiness')));
+    const ready = (p: typeof muster) => pretty(p.phases.map(ph => ph.ready ?? null));
+    for (const [from, to] of [['did', 'brought'], ['cheered', 'roared'], ['goal', 'target'], ['rope', 'cord']]) {
+        const renamed = renameVariable(muster, from, to);
+        assert.ok(!ready(renamed).includes(`"${from}"`) && ready(renamed).includes(`"${to}"`), `Readiness follows ${from} → ${to}`);
+        assert.equal(usesOf(renamed, {type: 'variable', id: to}).length, usesOf(muster, {type: 'variable', id: from}).length);
+    }
+    // (A wolf's own variable read inside a share's test, and a participation's own test, follow it too.)
+    const hauls = renameVariable(muster, 'hauls', 'loads');
+    assert.ok(!pretty(hauls.phases[0].triggers).includes('"hauls"'));
+    assert.equal(renameVariable(muster, 'nothing', 'else').phases[0].ready, muster.phases[0].ready, 'nothing renamed: the same Readiness');
+});
+
+test('doc 86, Phase 1b: talk memory, rumours, figures and holds read as sentences; their keys, values and figures offered back', async () => {
+    const {effectValuesOf, figuresOf, purseNames, talkKeysOf, talkValuesOf} = await import('./workbench.ts');
+    const ns = namesOf({residents: [{id: 'rm111', name: 'Ivo Tarmarsh'}], towns: [{id: 'greyfen', name: 'Greyfen'}],
+        tills: [{id: 'till:job:rm111', name: "Ivo Tarmarsh's till"}]});
+    const say = (effect: Record<string, unknown>) => plain(actionParts(cat, {do: 'effect', effect: effect as never}, ns));
+    const pair = say({kind: 'talk.remember', scope: 'pair', npc: 'rm111', player: '$actor', key: 'nh_stone', value: 'brought', days: 60, keep: true});
+    assert.ok(pair.includes('Ivo Tarmarsh') && pair.includes('nh_stone') && pair.includes('brought') && pair.includes('60') && !pair.includes('{'), pair);
+    const rumour = say({kind: 'belief.plant', subject: 'rm111', claim: 'took the silver', town: 'greyfen', count: 4, confidence: 70, claimKind: 'story.cleared'});
+    assert.ok(rumour.includes('not true') && rumour.includes('took the silver') && !rumour.includes('{'), rumour);
+    for (const e of [{kind: 'npc.spare', npc: 'rm111', lasts: 'campaign'}, {kind: 'npc.unspare', npc: 'rm111'},
+        {kind: 'figure.set', figure: 'nh_villain', role: 'villain', name: 'The Ledger Keeper', known: 'realm'}, {kind: 'figure.clear', figure: 'nh_villain'},
+        {kind: 'npc.protect', npc: 'rm111', lasts: 'run'}, {kind: 'talk.forget', scope: 'realm', key: 'nh_stage'}])
+        assert.ok(!say(e).includes('{'), say(e));
+    const p = {format: 'ratw-story-program', version: 2, id: 'x', title: 'X', audience: {kind: 'players', players: []}, start: 'a', tests: [],
+        phases: [{id: 'a', journal: 'A.', exits: [], effects: [{kind: 'talk.remember', scope: 'realm', key: 'nh_stage', value: 'waking', days: 3},
+            {kind: 'figure.set', figure: 'nh_villain', role: 'villain', name: 'N', known: 'realm'}],
+            triggers: [{id: 't', on: 'arrival', actions: [{do: 'effect', effect: {kind: 'talk.forget', scope: 'realm', key: 'nh_debts'}}]}]}]} as unknown as Program;
+    assert.deepEqual(talkKeysOf(p), ['nh_debts', 'nh_stage']);
+    assert.deepEqual(talkValuesOf(p), ['waking']);
+    assert.deepEqual(figuresOf(p), ['nh_villain']);
+    assert.deepEqual(effectValuesOf(p, ['npc.spare'], 'npc'), []);
+    const purses = purseNames({towns: [{id: 'greyfen', name: 'Greyfen'}], tills: [{id: 'till:job:rm111', name: "Ivo Tarmarsh's till"}]});
+    assert.deepEqual(purses, {'town:greyfen': "Greyfen's treasury", 'till:job:rm111': "Ivo Tarmarsh's till"}, 'no works, watch or church purse');
+});
+
+test('doc 86, Phase 2: values in effects, fills, filters that begin with or are one of, the moon and name tokens read as words', async () => {
+    const {fillChips, fillsOf, matchWords, tokenWords, widestFilled, isOperand} = await import('./workbench.ts');
+    const ns = namesOf({residents: [{id: 'rm111', name: 'Ivo Tarmarsh'}], towns: [{id: 'greyfen', name: 'Greyfen'}],
+        wolves: [{id: 'player-ash', name: 'Ash'}], places: [{id: 'grey', name: 'Greyfen market', kind: 'cell'}]});
+    const say = (effect: Record<string, unknown>) => plain(actionParts(cat, {do: 'effect', effect: effect as never}, ns));
+    const pay = say({kind: 'character.grant', player: '$actor', purse: 'town:greyfen', reason: 'oil',
+        coins: {min: [12, {div: [{purse: 'town:greyfen'}, 20]}]}});
+    assert.ok(pay.includes('the smaller of 12 and') && pay.includes('holds') && !pay.includes('{') && !pay.includes('[object'), pay);
+    const walk = say({kind: 'npc.walk', npc: {var: 'guide'}, cell: 'grey', x: 3, y: 4, pace: 'walk', cue: 'c'});
+    assert.ok(walk.includes('guide') && !walk.includes('[object'), walk);
+    const post = say({kind: 'board.post', town: 'greyfen', days: 3, text: '{finder} has {bar} of {bar_goal}; {{not a fill}}, {p_town.of}.'});
+    assert.ok(post.includes('⟨finder⟩') && post.includes('⟨p_town of the wolf⟩') && post.includes('{not a fill}'), post);
+    assert.equal(fillChips('a {{b}} {c}'), 'a {b} ⟨c⟩');
+    assert.deepEqual(fillsOf('{a} {b.of} {{c}}'), [{name: 'a', of: false}, {name: 'b', of: true}]);
+    const p = {variables: [{id: 'n', type: 'number', scope: 'story'}, {id: 'w', type: 'wolf', scope: 'story'}, {id: 't', type: 'text', scope: 'story'}]} as unknown as Program;
+    assert.equal(widestFilled('x{n}{w}{t}', p), 1 + 11 + 24 + 200);
+    assert.equal(matchWords({starts: 'Stood watch'}, ns), 'begins with “Stood watch”');
+    assert.equal(matchWords({in: ['rm111', 'rm112']}, ns, 'resident'), 'one of Ivo Tarmarsh, rm112');
+    assert.equal(matchWords('rm111', ns), undefined);
+    assert.ok(isOperand({purse: 'town:greyfen'}) && !isOperand({starts: 'x'}) && !isOperand({list: 'did'}));
+    const deed = plain(eventParts(cat, {on: 'deed', match: {detail: {starts: 'Stood watch at the ford'}} as never}, ns));
+    assert.ok(deed.includes('begins with “Stood watch at the ford”') && !deed.includes('[object'), deed);
+    const talk = plain(eventParts(cat, {on: 'conversation', match: {target: {in: ['rm111']}} as never}, ns));
+    assert.ok(talk.includes('one of Ivo Tarmarsh'), talk);
+    const inList = plain(conditionParts(cat, {test: 'field', field: 'cell', op: 'in', value: ['grey', 'far']} as Condition, ns));
+    assert.ok(inList.includes('is one of') && inList.includes('“grey”, “far”'), inList);
+    const moon = plain(conditionParts(cat, {test: 'calendar is', what: 'moon', value: 'new'} as unknown as Condition, ns));
+    assert.ok(moon.includes('the moon') && moon.includes('new'), moon);
+    assert.ok(plain(eventParts(cat, {on: 'moon', match: {detail: 'full'}}, ns)).includes('full'));
+    assert.equal(tokenWords('{@w:player-ash} met {@r:rm111} at {@p:grey}, {@i:rope}', ns), '«wolf: Ash» met «resident: Ivo Tarmarsh» at «place: Greyfen market», «item: rope»');
+    const spawn = say({kind: 'story.area.spawn', region: 'hollow', count: 2, camp: 'sq_beacon_camp'});
+    assert.ok(spawn.includes('sq_beacon_camp') && !spawn.includes('{'), spawn);
+    const trade = cat.events.find(e => e.id === 'trade done')!;
+    assert.ok(trade.fields.cell && !trade.tile, 'trade done has its cell (M5)');
+    for (const id of ['camp cleared', 'caravan arrives', 'ship lost', 'ship docks', 'project built', 'festival'])
+        assert.ok(cat.events.find(e => e.id === id)?.mission, id + ' is mission evidence (L3)');
+    const operands = cat.effects.flatMap(e => (e.params ?? []).filter(x => x.operand).map(x => x.type));
+    assert.ok(operands.length > 100 && operands.every(t => ['int', 'resident', 'wolf', 'place', 'item', 'faction', 'town'].includes(t)), String(operands.length));
+    assert.ok(!cat.effects.find(e => e.id === 'npc.line')!.params!.some(x => x.operand) && !cat.effects.find(e => e.id === 'story.start')!.params!.some(x => x.operand));
+});
+
+import {actionVars, operandVars} from './workbench.ts';
+
+test('doc 86, Phase 3: rank, a tally and a share in words; a rank reads and writes its lists', () => {
+    const p = v2['v2-thanks'];
+    const ns = namesOf(null, p);
+    const ts = triggersOf(p, 0);
+    const done = ts.find(t => t.id === 'done')!;
+    assert.equal(plain(actionParts(cat, done.actions[0], ns)), 'Put the top 2 wolves of the wolves of the story by p_oil (at least 2) into best');
+    const oil = ts.find(t => t.id === 'oil')!;
+    assert.match(plain(actionParts(cat, oil.actions[2], ns)), /the p_oil of every wolf of the story whose p_backs is “lamp”, added up/);
+    assert.equal(words2({tally: {}}, {}), 'how many wolves of the story');
+    assert.equal(words2({tally: {sum: 'p_oil', over: {list: 'best'}}}, {}), 'the p_oil of every wolf in best, added up');
+    assert.equal(words2({min: [20, {times: [{share: true}, 2]}]}, {}), "the smaller of 20 and (the wolf's share × 2)");
+    assert.deepEqual(actionVars(done.actions[0]), {reads: ['p_oil'], writes: ['best']});
+    assert.ok(operandVars({tally: {sum: 'p_oil', where: 'p_backs', is: 'lamp', over: {list: 'best'}}}).sort().join() === 'best,p_backs,p_oil');
+    assert.equal(p.quests![0].credit, 'share');
+});
+
+import {REQUIRES_TESTS} from './workbench.ts';
+
+test('doc 86, Phase 4: the lamp line in words; a quest\'s "Only for wolves who…" the story checks accept', () => {
+    const p = v2['v2-lamp-line'];
+    assert.ok(editable(p));
+    const ns = namesOf(null, p);
+    const ts = triggersOf(p, 0);
+    for (const t of ts) assert.ok(!plain(eventParts(cat, t, ns)).includes('{'), t.on);
+    assert.equal(plain(eventParts(cat, ts.find(t => t.id === 'news')!, ns)), plain(eventParts(cat, {on: 'story notified', match: {detail: 'voice'}}, ns)));
+    const gate = ts.find(t => t.id === 'gate')!;
+    const words = allConditions(gate).filter(c => c.test === 'wolf has' || c.test === 'resident has').map(c => plain(conditionParts(cat, c, ns)));
+    assert.ok(words.some(w => /Gift's tier is “quickened”/.test(w)) && words.some(w => /post is “reigning at the Great Palace”/.test(w)), words.join(' | '));
+    const notify = ts.find(t => t.id === 'lit')!;
+    assert.match(plain(actionParts(cat, notify.actions[1], ns)), /^Tell nh-ch1 the news lamp_lit about nobody in particular/);
+    assert.match(plain(actionParts(cat, ts.find(t => t.id === 'took-oil')!.actions[0], ns)), /is no longer offered to the acting wolf/);
+    const oil = p.quests!.find(q => q.id === 'oil')!;
+    assert.equal(oil.closure, 'line');
+    assert.equal(oil.offer?.duringAsk, 'About the oil...');
+    // (The tests the workbench offers for "Only for wolves who…" are the story checks' own.)
+    const python = JSON.parse(execFileSync('python3', ['-c', "import json, sys\nsys.path.insert(0, 'tools')\nimport story_quests as Q\nprint(json.dumps(Q.REQUIRES_TESTS))"],
+        {cwd: repo}).toString());
+    assert.deepEqual([...REQUIRES_TESTS].sort(), ['all', 'any', 'not', ...python].sort());
+});
+
+test('doc 86, Phase 4 after review: renaming a quest follows its quest.withdraw and every "quest is" and "objective is" that reads it', () => {
+    const p = v2['v2-lamp-line'];
+    const read = {...p, phases: p.phases.map(ph => ({...ph, triggers: [...(ph.triggers ?? []), {id: 'reads', on: 'deed', actions: [],
+        if: {test: 'objective is', quest: 'mill', objective: 'ask', status: 'done'} as unknown as Condition}]}))} as Program;
+    const renamed = renameQuest(renameQuest(read, 'mill', 'tallow'), 'lamp', 'the-lamp');
+    const ts = triggersOf(renamed, 0);
+    assert.equal((ts.find(t => t.id === 'took-oil')!.actions[0] as {effect: {quest: string}}).effect.quest, 'tallow', 'quest.withdraw follows');
+    assert.equal((ts.find(t => t.id === 'reads')!.if as unknown as {quest: string}).quest, 'tallow', "a trigger's objective is follows");
+    assert.equal((renamed.quests!.find(q => q.id === 'oil')!.requires as unknown as {quest: string}).quest, 'the-lamp', '"Only for wolves who…" follows');
+    assert.equal(pretty(renameQuest(renameQuest(renamed, 'the-lamp', 'lamp'), 'tallow', 'mill')), pretty(read));
+    const moved = renameObjective(read, 'mill', 'ask', 'asked');
+    assert.equal((triggersOf(moved, 0).find(t => t.id === 'reads')!.if as unknown as {objective: string}).objective, 'asked');
+    assert.equal(pretty(renameObjective(moved, 'mill', 'asked', 'ask')), pretty(read));
+});
+
+test('doc 86, Phase 5: Old Brown at the tarn in words; a count of residents in a region follows its list when it is renamed', () => {
+    const p = v2['v2-old-brown'];
+    assert.ok(editable(p));
+    const ns = namesOf(null, p);
+    const ts = triggersOf(p, 0);
+    for (const t of ts) assert.ok(!plain(eventParts(cat, t, ns)).includes('{'), t.on);
+    assert.match(plain(eventParts(cat, ts.find(t => t.id === 'heard')!, ns)), /howls/);
+    const dusk = ts.find(t => t.id === 'dusk')!;
+    assert.match(plain(actionParts(cat, dusk.actions[0], ns)), /rm112 howls/);
+    assert.match(plain(actionParts(cat, dusk.actions[1], ns)), /^The next hunt in tarn meets 1 bear \(for 120 minutes\)/);
+    const manned = ts.find(t => t.id === 'manned')!;
+    const count = allConditions(manned).find(c => c.test === 'count in region')!;
+    assert.match(plain(conditionParts(cat, count, ns)), /at least 3 of the residents in crew stand in tarn/);
+    assert.match(plain(conditionParts(cat, {test: 'count in region', region: 'tarn', op: '>=', value: 2} as unknown as Condition, ns)),
+        /at least 2 of the story's wolves +stand in tarn/);
+    assert.deepEqual(conditionVars(count), ['crew']);
+    const renamed = renameVariable(p, 'crew', 'ropers');
+    assert.equal((allConditions(triggersOf(renamed, 0).find(t => t.id === 'manned')!).find(c => c.test === 'count in region') as unknown as {list: string}).list, 'ropers');
+    assert.equal(pretty(renameVariable(renamed, 'ropers', 'crew')), pretty(p));
+    // (A new count names no list until the author picks residents: the checks accept it as it is.)
+    const fresh = newCondition('count in region', p, 0, cat) as unknown as Record<string, unknown>;
+    assert.ok(!('list' in fresh) && !('who' in fresh), JSON.stringify(fresh));
+    assert.equal(cat.effects.find(e => e.id === 'hunt.stage')!.params!.find(x => x.key === 'species')!.type, 'species');
+});
+
+import {countWho} from './workbench.ts';
+test('doc 86, Phase 5 after review: once residents are counted the list is asked for, and going back to wolves drops it', () => {
+    const p = v2['v2-old-brown'];
+    const ns = namesOf(null, p);
+    const slotOf = (c: Record<string, unknown>) => conditionParts(cat, c as unknown as Condition, ns)
+        .find((x): x is Extract<typeof x, {slot: string}> => 'slot' in x && x.slot === 'list')!;
+    // (Wolves counted: no list, and no "+the residents" either.)
+    assert.equal(slotOf({test: 'count in region', region: 'tarn', op: '>=', value: 3}).hidden, true);
+    assert.equal(slotOf({test: 'count in region', region: 'tarn', op: '>=', value: 3, who: 'wolves'}).hidden, true);
+    // (Residents counted, the list not yet picked: shown, empty, under its label, so the author can pick it.)
+    const asked = slotOf({test: 'count in region', region: 'tarn', op: '>=', value: 3, who: 'residents'});
+    assert.ok(!asked.hidden && asked.empty, JSON.stringify(asked));
+    assert.equal(asked.label, 'the residents');
+    assert.deepEqual(asked.param?.of, ['residents']);
+    // (Picked: it reads as the sentence.)
+    const picked = {test: 'count in region', region: 'tarn', op: '>=', value: 3, who: 'residents', list: 'crew'};
+    assert.match(plain(conditionParts(cat, picked as unknown as Condition, ns)), /at least 3 of the residents in crew stand in tarn/);
+    // (Back to wolves: the stale list goes; a residents count keeps it; other conditions are left alone.)
+    assert.deepEqual(countWho({...picked, who: 'wolves'}), {test: 'count in region', region: 'tarn', op: '>=', value: 3, who: 'wolves'});
+    assert.deepEqual(countWho(picked), picked);
+    const other = {test: 'in list', list: 'crew'};
+    assert.equal(countWho(other), other);
+});
+
+import {ownItemsHere, storyItemsOf, tagsOf, type Slot} from './workbench.ts';
+test('doc 86, Phase 6: the watch list in words; a story\'s own items offered by item^tag and named as the story names them', () => {
+    const p = v2['v2-watch-list'];
+    assert.ok(editable(p));
+    const ns = namesOf(null, p);
+    assert.deepEqual(storyItemsOf(p), [
+        {id: 'letter^watch_list', item: 'letter', tag: 'watch_list', name: 'The watch list', keep: false},
+        {id: 'writ^thanks', item: 'writ', tag: 'thanks', name: "The warden's writ of thanks", keep: true}]);
+    assert.deepEqual(tagsOf(p), ['thanks', 'watch_list']);
+    const ts = triggersOf(p, 0);
+    const list = ts.find(t => t.id === 'list')!;
+    assert.match(plain(actionParts(cat, list.actions[0], ns)), /^Give the acting wolf 1 letter watch_list “The watch list”/);
+    const writ = p.quests![0].rewards![0];
+    assert.match(plain(itemParts(cat.effects.find(e => e.id === 'item.give')!, writ as Record<string, unknown>, ns)), /kept after the story/);
+    const seen = allConditions(ts.find(t => t.id === 'seen')!).find(c => c.test === 'carries')!;
+    assert.match(plain(conditionParts(cat, seen, ns)), /carries at least 1 “The watch list” \(the story's letter\)/);
+    assert.match(plain(eventParts(cat, ts.find(t => t.id === 'any')!, ns)), /gives letter to/);
+    // (A plain item.give hides the story's parts; the catalogue's tag parameter is its own type, for its picker.)
+    const plainGive = {kind: 'item.give', player: '$actor', item: 'rope', quantity: 2};
+    assert.equal(plain(itemParts(cat.effects.find(e => e.id === 'item.give')!, plainGive, ns)), 'Give the acting wolf 2 rope');
+    assert.equal(cat.effects.find(e => e.id === 'item.give')!.params!.find(x => x.key === 'tag')!.type, 'tag');
+    // (The story's own items are offered where a filter or "carries" names them, never for an effect's own item: the game
+    // refuses item^tag there.)
+    const slotOf = (ps: ReturnType<typeof itemParts>, key: string) => ps.find(x => 'slot' in x && x.slot === key) as Slot;
+    assert.equal(ownItemsHere(slotOf(conditionParts(cat, seen, ns), 'item')), true, 'carries');
+    assert.equal(ownItemsHere(slotOf(eventParts(cat, ts.find(t => t.id === 'any')!, ns), 'item')), true, 'a gift filter');
+    for (const kind of ['item.give', 'item.take', 'item.place', 'story.area.item']) {
+        const item = cat.effects.find(e => e.id === kind)!;
+        assert.equal(ownItemsHere(slotOf(itemParts(item, {kind, item: 'rope'}, ns), 'item')), false, kind);
+    }
+    // (An item.give anywhere in the program is found: in a chapter's phase exit's actions, deep in a branch.)
+    const deep = {...p, phases: [...p.phases, {id: 'later', journal: '', effects: [], triggers: [{id: 'x', on: 'gift', actions: [{do: 'if',
+        if: {test: 'compare', left: 1, op: '>=', right: 1}, then: [{do: 'effect', effect: {kind: 'item.give', player: '$actor', item: 'rope', quantity: 1, tag: 'coil'}}]}]}]}],
+        tests: [{events: [{kind: 'item.give', item: 'bread', tag: 'nope'}]}]} as unknown as Program;
+    assert.deepEqual(storyItemsOf(deep).map(s => s.id), ['letter^watch_list', 'rope^coil', 'writ^thanks'], 'not a rehearsal\'s');
+});
+
+// ------------------------------------------------------------------------------------------- foes and strangers (doc 86, Phase 7)
+
+import {foesOf} from './workbench.ts';
+
+test('doc 86, Phase 7: the Grey Captain in words; a foe named as the story names them; a new foe and one sent away', () => {
+    const p = v2['v2-grey-pass'];
+    assert.ok(editable(p));
+    const ns = namesOf(null, p);
+    assert.deepEqual(foesOf(p), [{id: 'captain', name: 'The Grey Captain'}]);
+    assert.equal(ns.foe.captain, 'The Grey Captain (captain)');
+    const muster = triggersOf(p, 0).find(t => t.id === 'muster')!;
+    const words = plain(actionParts(cat, muster.actions[0], ns));
+    assert.equal(words, '“The Grey Captain” (captain), a champion foe with a band of the smaller of 8 and (how many wolves are active ÷ 2, whole), comes to grey (5, 5) for 120 minutes, looking like rm111, and holds the ground');
+    assert.match(plain(actionParts(cat, muster.actions[1], ns)), /turns on the wolves with a band of 1 for 60 minutes \(tough\)/);
+    const beaten = triggersOf(p, 1).find(t => t.id === 'beaten')!;
+    assert.match(plain(eventParts(cat, beaten, ns)), /beats/);
+    assert.equal(cat.effects.find(e => e.id === 'foe.add')!.params!.find(x => x.key === 'foe')!.type, 'foe');
+    assert.equal(cat.events.find(e => e.id === 'foe defeated')!.fields.target.type, 'foe');
+    // (A new foe: an id of the story's own; one sent away: the first the story brings. Both pass the checks.)
+    const fresh = newEffect(cat, 'foe.add', p);
+    assert.equal(fresh.foe, 'foe-2');
+    assert.equal(newEffect(cat, 'foe.leave', p).foe, 'captain');
+    const q = structuredClone(p);
+    q.phases[1].triggers!.push({id: 'fresh', on: 'arrival', audience: 'participant', actions: [{do: 'effect', effect: {...fresh, name: 'Hakon', cell: 'grey'}},
+        {do: 'effect', effect: newEffect(cat, 'foe.leave', p)}]});
+    const found = JSON.parse(execFileSync('python3', ['-c', "import json, sys\nsys.path.insert(0, 'tools')\nimport story_program as P\n"
+        + "print(json.dumps([x for x in P.problems(json.loads(sys.stdin.read())) if x['level'] == 'error']))"], {cwd: repo, input: JSON.stringify(q)}).toString());
+    assert.deepEqual(found, []);
+});
+
+
+test('doc 86, Phase 8: the Moot Night in words; a realm variable renamed in a case; the crown\'s change and a sentence the checks accept', () => {
+    const p = v2['v2-moot-night'];
+    assert.ok(editable(p));
+    const ns = namesOf(null, p);
+    const chorus = triggersOf(p, 0).find(t => t.id === 'chorus')!;
+    const then = (chorus.actions[2] as {then: Action[]}).then;
+    assert.equal(plain(actionParts(cat, then[0], ns)), 'rm111 takes the post job:rm112; whoever held it gives it up');
+    assert.equal(plain(actionParts(cat, then[1], ns)), 'rm113 is held at grey-cells for 7 days');
+    assert.match(plain(actionParts(cat, chorus.actions[0], ns)), /nh_voice/);
+    // (After review: a realm variable is a wolf's own, so its "whose" slot is shown, and the looped wolf's can be picked.)
+    const whose = (a: Record<string, unknown>) => actionParts(cat, a as unknown as Action, ns)
+        .find((x): x is Extract<typeof x, {slot: string}> => 'slot' in x && x.slot === 'of')!;
+    const each = whose({do: 'add', var: 'nh_voice', value: 1, of: '$each'});
+    assert.ok(!each.hidden && !each.empty, JSON.stringify(each));
+    assert.equal(each.shown, "the looped wolf's");
+    assert.equal(whose({do: 'add', var: 'nh_voice', value: 1}).shown, "the acting wolf's");
+    assert.equal(cat.effects.find(e => e.id === 'npc.post')!.params!.find(x => x.key === 'post')!.type, 'post');
+    assert.equal(cat.variables!.scopes.realm.startsWith("each wolf's own, kept after the story"), true);
+    for (const id of ['sentence begun', 'sentence served']) assert.ok(plain(eventParts(cat, {id: 'x', on: id, actions: []}, ns)).length > 0, id);
+    // (A realm variable renamed: its uses, the case's realm values and the expected values follow.)
+    const renamed = renameVariable(p, 'nh_voice', 'nh_howl');
+    assert.equal(renamed.tests[0].realm!['player-ash'].nh_howl, 3);
+    assert.equal((renamed.tests[0].expectVariables as Record<string, Record<string, Record<string, number>>>).realm['player-ash'].nh_howl, 4);
+    // (A new post and a new sentence, as the workbench adds them, their slots filled, pass the checks.)
+    const q = structuredClone(p);
+    q.phases[1].triggers = [{id: 'more', on: 'arrival', audience: 'participant', actions: [
+        {do: 'effect', effect: {...newEffect(cat, 'npc.post', p), npc: 'rm112', post: 'job:rm113'}},
+        {do: 'effect', effect: {...newEffect(cat, 'npc.sentence', p), npc: 'rm112', place: 'grey-cells', days: 3}}]}];
+    const found = JSON.parse(execFileSync('python3', ['-c', "import json, sys\nsys.path.insert(0, 'tools')\nimport story_program as P\n"
+        + "print(json.dumps([x for x in P.problems(json.loads(sys.stdin.read())) if x['level'] == 'error']))"], {cwd: repo, input: JSON.stringify(q)}).toString());
+    assert.deepEqual(found, []);
+});
+
+test('doc 86, Phase 9: the carter wanted in words; a giver from a variable; a casting\'s variables renamed with the case and the quest', () => {
+    const p = v2['v2-carter-wanted'];
+    assert.ok(editable(p));
+    const ns = namesOf(null, p);
+    const seek = triggersOf(p, 0);
+    const cast = seek.find(t => t.id === 'cast')!;
+    assert.match(plain(actionParts(cat, cast.actions[0], ns)), /Choose a resident .*carter.*greyfen.*not in .*tried.*near .*as .*carter/);
+    const nobody = seek.find(t => t.id === 'nobody')!;
+    assert.equal(plain(actionParts(cat, nobody.actions[0], ns)), 'cty_carter is first in line for the next post that falls vacant in greyfen');
+    for (const id of ['cast chosen', 'cast failed']) assert.ok(plain(eventParts(cat, {id: 'x', on: id, actions: []}, ns)).length > 0, id);
+    assert.equal(giverWords(p.quests![0], ns), 'whoever carter holds');
+    assert.equal(p.quests![0].rewardLimit!.perDay, 1);
+    assert.match(cat.effects.find(e => e.id === 'mantle.assign')!.help, /wore before is theirs again/);
+    // (The cast variable renamed: the casting's into and not one of, the effects' values, the giver, the case's castings.)
+    const renamed = renameVariable(renameVariable(p, 'carter', 'wheelwright'), 'tried', 'asked');
+    const effect = (triggersOf(renamed, 0).find(t => t.id === 'cast')!.actions[0] as {effect: Record<string, unknown>}).effect;
+    assert.equal(effect.var, 'wheelwright');
+    assert.equal(effect.notIn, 'asked');
+    const paw = (triggersOf(renamed, 0).find(t => t.id === 'paw')!.actions[1] as {effect: Record<string, unknown>}).effect;
+    assert.deepEqual(paw.npc, {var: 'wheelwright'});
+    assert.deepEqual(renamed.quests![0].giver, {var: 'wheelwright'});
+    assert.deepEqual(renamed.tests[0].cast, {wheelwright: ['rm111', 'rm112']});
+    const found = JSON.parse(execFileSync('python3', ['-c', "import json, sys\nsys.path.insert(0, 'tools')\nimport story_program as P\n"
+        + "print(json.dumps([x for x in P.problems(json.loads(sys.stdin.read())) if x['level'] == 'error']))"], {cwd: repo, input: JSON.stringify(renamed)}).toString());
+    assert.deepEqual(found, []);
 });

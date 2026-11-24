@@ -36,6 +36,17 @@ using json::Value;
 
 namespace
 {
+
+// Doc 86, C11: an npc.protect a story sends for a while (lasts run or campaign), not for good.
+bool storyHoldLasts(const std::vector<std::optional<std::string>>& row)
+{
+    json::Value payload;
+    std::string problem;
+    if (row.size() <= 4 || !row[4] || !json::parse(*row[4], payload, problem) || !payload.isObject())
+        return false;
+    const auto lasts = payload.string("lasts");
+    return lasts == "run" || lasts == "campaign";
+}
 #if defined(__unix__) || defined(__APPLE__)
 // A rename on the disk: the folder holding `file` synced (best effort: a folder that can't be opened is left).
 void syncFolderOf(const std::string& file)
@@ -1459,9 +1470,18 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         mantle = payload.string("mantle", "");
         if (const auto space = npc.find(' '); space != std::string::npos)
             mantle = npc.substr(space + 1), npc = npc.substr(0, space);
-        outcome = kind == "mantle.assign" ? assignMantle(npc, mantle) : releaseMantle(npc);
-        if (outcome.ok && kind == "mantle.assign" && payload.isObject() && payload.has("run"))
-            noteStoryHeld(payload, "mantles", npc);   // (Doc 85, Phase 9: released when the story ends.)
+        // (Doc 86, C15: what they wore before a story's binding, given back when the story ends or lays it down.)
+        std::string before, how, bound;
+        if (const auto* b = world_.society().mantleOf(npc); b && !b->mantle.empty() && b->releasedDay < 0)
+            before = b->mantle, how = b->how;
+        if (kind == "mantle.release" && payload.isObject() && storyBoundMantle(payload, npc, before, how, bound))
+            outcome = handOnStoryMantle(payload.string("run"), npc, before, how, bound)
+                          ? Result{true, "Another story's binding stands; what was worn before is now its to give back.", npc}
+                          : putBackMantle(npc, before, how, bound);
+        else
+            outcome = kind == "mantle.assign" ? assignMantle(npc, mantle) : releaseMantle(npc);
+        if (outcome.ok && kind == "mantle.assign" && payload.isObject() && payload.has("run") && before != mantle)
+            noteStoryMantle(payload, npc, before, how, mantle);   // (Doc 85, Phase 9: put back when the story ends.)
     }
     else if (kind == "deed.award" || kind == "deed.revoke")
     {
@@ -1486,7 +1506,7 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         {
             const auto weight = fame::weightOf(payload.string("weight", "great"));
             const auto id = recordDeed(payload.string("kind", "award"), {target}, payload.string("beneficiary"),
-                                       payload.string("cell", doer->cellId), "dm", json::utf8Prefix(payload.string("detail"), 160), weight);
+                                       payload.string("cell", doer->cellId), "dm", fillStoryNames(payload.string("detail"), 160), weight);
             outcome = id.empty() ? Result{false, "No such kind of deed.", target} : Result{true, "Awarded " + id + ".", target};
         }
         saveSoon();
@@ -1684,6 +1704,124 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         }
         saveSoon();
     }
+    else if (kind == "npc.spare" || kind == "npc.unspare" || (kind == "npc.protect" && storyHoldLasts(row)))
+    {
+        // Doc 86, C11: a story's hold on a resident (spared from old age; protected while the story or its campaign runs).
+        json::Value payload;
+        std::string problem;
+        if (row.size() > 4 && row[4])
+            json::parse(*row[4], payload, problem);
+        outcome = applyStoryHold(kind, target, payload.isObject() ? payload : json::Value::object());
+    }
+    else if (kind == "story.campaign_end")
+    {
+        // Doc 86, C11: the runner says a campaign has ended; its holds are let go (target: the campaign's id).
+        if (target.empty() || target.size() > 80)
+            outcome = {false, "Name the campaign.", target};
+        else
+        {
+            dropStoryHolds("campaign:" + target);
+            outcome = {true, "The campaign's holds are let go.", target};
+        }
+    }
+    else if (kind == "story.closure")
+    {
+        // Doc 86, J3: a story's closure quest done by a wolf counts as a finished Story (RatwGameSocial.cpp).
+        json::Value payload;
+        std::string problem;
+        outcome = row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject()
+                      ? storyClosure(target, payload)
+                      : Result{false, "Invalid story order.", target};
+    }
+    else if (kind == "npc.howl")
+        outcome = residentHowl(target);   // (Doc 86, J5: a resident a story asks to howl, RatwGameHowl.cpp.)
+    else if (kind == "npc.post")
+    {
+        // Doc 86, C14: a post given to a resident by a story in one step, whoever held it (lasting; payload {post}).
+        json::Value payload;
+        std::string problem;
+        const auto post = row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject()
+                              ? payload.string("post") : std::string();
+        if (!world_.society().resident(target))
+            outcome = {false, "No such resident.", target};
+        else if (post.empty())
+            outcome = {false, "Name the post.", target};
+        else
+        {
+            outcome = world_.postResident(post, target);
+            if (outcome.ok)
+            {
+                record(Careers | Economy);              // (The posts are journalled with the careers: a crash keeps the change.)
+                saveSoon();
+            }
+        }
+    }
+    else if (kind == "story.house_purses")
+    {
+        // Doc 86, M3: the world switch for House purses (target on or off); the owner's (the runner checks who sends it).
+        if (target != "on" && target != "off")
+            outcome = {false, "House purses are on or off.", target};
+        else
+        {
+            storyHousePurses_ = target == "on";     // (Off and on again the same game day takes no second share.)
+            if (storyHousePurses_)
+                tendHousePurses();
+            record(Economy);
+            saveSoon();
+            outcome = {true, storyHousePurses_ ? "House purses are on: each House's businesses put a share of their tills in its purse daily."
+                                               : "House purses are off: no money moves to them, and a story's house: purse pays nothing.",
+                       target};
+        }
+    }
+    else if (kind == "npc.queue")
+    {
+        // Doc 86, J7: an unplaced resident first in line for the next post that falls vacant in a town (payload {town});
+        // lasting, kept with the careers.
+        json::Value payload;
+        std::string problem;
+        const auto town = row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject()
+                              ? payload.string("town") : std::string();
+        outcome = world_.queueResident(target, town);
+        if (outcome.ok)
+        {
+            record(Careers);
+            saveSoon();
+        }
+    }
+    else if (kind == "npc.unsentence")
+    {
+        // Doc 86, L4: the console's "Release now" for a resident a story sentenced ("sentence served", item "released").
+        outcome = endSentence(target, "released") ? Result{true, "Let go: they walk home.", target}
+                                                  : Result{false, "That resident is serving no sentence.", target};
+    }
+    else if (kind == "story.watch")
+    {
+        // Doc 86, J6: what a running story asks the game to tell it, sent again when the residents it counts change.
+        json::Value payload;
+        std::string problem;
+        outcome = row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject()
+                      ? applyStoryWatch(target, payload)
+                      : Result{false, "Invalid story watch list.", target};
+    }
+    else if (kind == "title.give" || kind == "title.take" || kind == "npc.greet" || kind == "belief.forget")
+    {
+        // Doc 86, Phase 3: a wolf named by a title (C4), a resident's words for one wolf (C5), a rumour put to rest (J8).
+        json::Value payload;
+        std::string problem;
+        outcome = row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject()
+                      ? applyStoryThanks(kind, target, payload)
+                      : Result{false, "Invalid story order.", target};
+    }
+    else if (kind == "talk.remember" || kind == "talk.forget" || kind == "belief.plant")
+    {
+        // Doc 86, C8 and T7: what residents remember of a story, and a rumour it starts (RatwGameStoryWorld.cpp).
+        json::Value payload;
+        std::string problem;
+        outcome = row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject()
+                      ? applyStoryTalk(kind, target, payload)
+                      : Result{false, "Invalid story talk.", target};
+        storyTopicsChanged();                       // (Doc 86, T6: the realm's story keys, the director's story topic.)
+    }
     else if (kind == "npc.protect" || kind == "npc.unprotect")
     {
         // Protected residents (doc 57, 6): marked, or unmarked (even one Atlas or the game's rule protects).
@@ -1691,9 +1829,30 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             outcome = {false, "No such resident.", target};
         else
         {
-            (kind == "npc.protect" ? unprotectedMarks_ : protectedMarks_).erase(target);
-            (kind == "npc.protect" ? protectedMarks_ : unprotectedMarks_).insert(target);
-            outcome = {true, kind == "npc.protect" ? "Protected." : "No longer protected.", target};
+            bool ownHold = false;
+            if (kind == "npc.unprotect")
+            {
+                // (Doc 86, C11: a story's Unprotect lets go of its own holds, and only those: the resident's own
+                // protection, a House head's or Atlas's, stays. One with no hold of its own unmarks, as ever.)
+                json::Value payload;
+                std::string problem;
+                if (row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject() && payload.has("run"))
+                    if (auto k = storyHolds_.find("protect"); k != storyHolds_.end())
+                        if (auto n = k->second.find(target); n != k->second.end())
+                        {
+                            ownHold = n->second.erase("run:" + payload.string("run")) > 0;
+                            if (payload.has("campaign"))
+                                ownHold = n->second.erase("campaign:" + payload.string("campaign")) > 0 || ownHold;
+                            if (n->second.empty())
+                                k->second.erase(n);
+                        }
+            }
+            if (!ownHold)
+            {
+                (kind == "npc.protect" ? unprotectedMarks_ : protectedMarks_).erase(target);
+                (kind == "npc.protect" ? protectedMarks_ : unprotectedMarks_).insert(target);
+            }
+            outcome = {true, kind == "npc.protect" ? "Protected." : ownHold ? "The story's protection is let go." : "No longer protected.", target};
             saveSoon();
         }
     }
@@ -1875,7 +2034,7 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         if (row.size() > 4 && row[4])
             json::parse(*row[4], payload, problem);
         const int count = payload.isObject() ? int(wire::number(payload, "count", 1)) : 1;
-        outcome = world_.entity(target) ? world_.callBandits(target, count)
+        outcome = world_.entity(target) ? world_.callBandits(target, count, payload.isObject() ? payload.string("camp") : std::string())
                                         : Result{false, "They aren't in the world: bandits come only where someone is.", {}};
     }
     else if (kind == "book.storyline")
@@ -4277,6 +4436,10 @@ void Game::sendSnapshot(Connection* c, const Value* preparedScene)
         }
         if (const auto nicknames = nicknamesView(id); !nicknames.items().empty())
             self.set("nicknames", nicknames);       // (What residents call them, and who first did: doc 56, 4.)
+        if (const auto titles = titlesView(*me); !titles.items().empty())
+            self.set("titles", titles);             // (The titles stories named them by: doc 86, C4.)
+        if (me->titlesHidden)
+            self.set("titlesHidden", true);
         if (const auto festival = festivalSelf(id); !festival.isNull())
             self.set("festival", festival);         // (A festival today or soon: its programme, and what one does now: doc 54, 6.)
         if (const auto table = tableSelf(id); !table.isNull())
@@ -4674,7 +4837,7 @@ void Game::sendSnapshot(Connection* c, const Value* preparedScene)
         else if (e.transient && world_.hostile(e.id))
         {
             j.set("rel", "hostile");
-            j.set("why", "bandit");
+            j.set("why", world_.storyFoeOf(e.id) ? "a foe" : "bandit");   // (Doc 86, C10: a story's foe is no bandit.)
         }
         if (!e.npc)
             if (const auto portrait = visiblePortrait(e.id, id); !portrait.empty())
@@ -4873,6 +5036,10 @@ void Game::sendSnapshot(Connection* c, const Value* preparedScene)
             if (const auto* act = world_.residentWorkAt(e.id))
                 if (const auto* mine = world_.jointOf(view.self.id); !mine || mine->target != e.id)
                     actions.push(act->verb);
+        // Doc 86, SQ3: Lend a paw to a resident at their own post (no farm work or bench), near.
+        if (e.npc && apart <= together::rules().lendTiles && !world_.inBattle(view.self.id) && world_.besideWorkAt(e.id))
+            if (const auto* mine = world_.jointOf(view.self.id); !mine || mine->target != e.id)
+                actions.push("lend a paw");
         // Working together (doc 53, 2.3): Lend a paw to a wolf at work; Ask to lend a paw of one near, while at work.
         if (!e.npc && e.id != view.self.id)
         {
@@ -6215,7 +6382,7 @@ void Game::command(Connection* c, const std::string& raw)
     else if (type == "hunt" || type == "forage" || type == "leaveHunt")
     {
         // Hunting and foraging (doc 41): out in the wild.
-        result = type == "hunt" ? world_.startHunt(id) : type == "forage" ? world_.forage(id) : world_.leaveHunt(id);
+        result = type == "hunt" ? storyHunt(id) : type == "forage" ? world_.forage(id) : world_.leaveHunt(id);
         report = true;
         if (result.ok && type == "forage")
             record(Economy | Character, id);
@@ -6742,7 +6909,8 @@ void Game::command(Connection* c, const std::string& raw)
             }
             if (npc->transient)
             {
-                system(c, world_.hostile(target)                 ? "They want your purse, not your conversation."
+                system(c, world_.storyFoeOf(target)              ? "They want a fight, not your conversation."
+                          : world_.hostile(target)              ? "They want your purse, not your conversation."
                           : world_.visitorLeaves(target) >= 0 ? npc->name + " has nothing to say to you just now."
                                                               : "The carters are too busy with the road to talk.");
                 return;
@@ -6984,6 +7152,9 @@ void Game::command(Connection* c, const std::string& raw)
             e.add("description", written ? profile.string("description") : described);
             if (!other->npc)
             {
+                if (!other->titlesHidden || target == id)
+                    if (auto titles = titlesView(*other, id); !titles.items().empty())
+                        e.add("titles", std::move(titles));   // (Doc 86, C4: what the stories named them, unless they hide it.)
                 e.add("profile", std::move(profile));
                 e.add("stars", starsFor(id, other->id));   // (Their account's stars, as this viewer may see them: doc 51.)
             }

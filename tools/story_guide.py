@@ -30,6 +30,7 @@ SAMPLE = {
     'signal': 'gate-opens', 'counter': 'ropes', 'variable': 'ropes', 'trigger': 'count-rope', 'quest': 'axle', 'objective': 'ask',
     'purse': 'town:greyfen', 'offer': 'ask-about-the-ford', 'door': 'link_inn_door_a', 'mantle': 'ferryman', 'visitor': 'stranger-1',
     'story': 'the-crossing', 'notice': 'notice-1', 'contract': 'contract-1', 'letter': 'letter-1', 'run': 'world-…',
+    'post': 'job:rm112',
 }
 TEXT = {'text': 'The bells ring for the ford.', 'words': 'the ford is open again', 'reason': 'for the ford', 'detail': 'Kept the ford.',
         'label': 'The ford', 'name': 'The Pale Rider', 'title': 'The ford is open'}
@@ -43,6 +44,25 @@ EXAMPLE = {
     'faction.relation': {'faction': 'watch', 'other': 'road-company', 'stance': 'tense', 'disposition': -30, 'reason': 'the blockade'},
     'story.tracker': {'shown': False, 'var': 'ropes'},
     'visitor.add': {'visitor': 'pale-rider', 'name': 'The Pale Rider', 'like': 'rm111', 'cell': 'greyfen-square', 'x': 12, 'y': 9, 'minutes': 60},
+    # (Doc 86, Phase 1b.)
+    'talk.remember': {'scope': 'town', 'town': 'greyfen', 'key': 'ford_open', 'value': 'yes', 'days': 30},
+    'talk.forget': {'scope': 'town', 'town': 'greyfen', 'key': 'ford_open'},
+    'belief.plant': {'subject': 'rm111', 'claim': 'was seen at the ford at midnight', 'town': 'greyfen', 'count': 6, 'confidence': 60},
+    'figure.set': {'figure': 'ford_villain', 'role': 'villain', 'npc': 'rm111', 'title': 'the ford breaker', 'known': 'region', 'region': 'greyfen'},
+    'figure.clear': {'figure': 'ford_villain'},
+    # (Doc 86, Phase 5: the bear at the tarn.)
+    'hunt.stage': {'region': 'square', 'species': 'bear', 'count': 1, 'minutes': 120},
+    # (Doc 86, Phase 7: the Grey Captain at the Pass, and a turncoat.)
+    'foe.add': {'foe': 'captain', 'name': 'The Grey Captain', 'cell': 'greyfen-square', 'x': 12, 'y': 9, 'strength': 'champion', 'band': 4,
+                'stance': 'waits', 'minutes': 120, 'like': 'rm111'},
+    'foe.leave': {'foe': 'captain'},
+    'foe.outlaw': {'npc': 'rm113', 'minutes': 60, 'strength': 'tough', 'band': 1},
+    # (Doc 86, Phase 8: the crown's change, and a week in the Watch's cells.)
+    'npc.post': {'npc': 'rm111', 'post': 'job:rm112'},
+    'npc.sentence': {'npc': 'rm113', 'place': 'greyfen-cells', 'days': 7},
+    # (Doc 86, Phase 9: a wolf of the Country first in line, and a carter cast for a quest any town can give.)
+    'npc.queue': {'npc': 'cty_fisher', 'town': 'greyfen'},
+    'cast.pick': {'var': 'carter', 'job': 'carter', 'town': 'greyfen', 'near': '$actor'},
 }
 GROUP_NOTES = {
     'flow': 'Version 2 only. Nested lists of actions: up to 24 actions in a trigger counting nested ones, three deep.',

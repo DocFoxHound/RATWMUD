@@ -1,0 +1,100 @@
+# The Ninth Howl's NPC-to-NPC scenes, one per stage (cast-and-talk.md §4.13; doc 86 §6.4). Gated on the campaign's
+# talk memory (C8 talk.remember writes it; the DM seeds it by hand until then), so the test town never plays them and
+# the talk scorecards don't move. No line dates the Moot (decisions §6.4): "the Moot night", and "Midwinter" only under
+# nh_moot=midwinter. No names: roles only.
+
+scene nh_s1_king
+when topic=news world.mem.nh_stage=king|moot_called
+does tell.news / react.news / assess
+a : The old King's gone up, and a patrolman keeps the Palace lamp. | They say the wolf with the Palace lamp still walks the Sump round.
+b[from=mirebridge|fenshore] : A fen wolf, I hear. Talks like the old ones on the boardwalk, no? | Fen-sure, the drowned get a king.
+b[quarter=sump] : One of ours, then. About time. | He's walked my alley of an evening for years.
+b : A patrolman? The Houses won't like that. | Strange times.
+a : Times change. | Bright One keep him, whoever he is.
+
+scene nh_s2_debts
+when topic=gossip world.mem.nh_stage=reckoning
+does tell.news / react.news / assess
+a : The Counting House chalked my neighbour's door. | They want the debtors' howls by the new moon.
+b[quarter=sump] : They chalked mine. I scrubbed it. They chalked it again. | A howl for a note. I'd sooner starve.
+b[from=saltwell] : A loan the borrower cannot refuse is a leash. | The well remembers who drew from it.
+b : A wolf of the road is working off notes, I hear. | Then there's hope.
+a : Hard days. | I'll scrub till the moon's up.
+
+scene nh_s3_lists
+when topic=gossip world.mem.nh_lists=gathering
+does tell.news / react.news / assess
+a : There's a wolf going round asking who keeps a list of who pays the Watch. | Somebody's putting the Watch lists together.
+b[quarter=sump] : About time. The Sump's paid for the Watch twice, once in coin and once in looking away. | Let them. We've nothing to hide down here but hunger.
+b : Careful. Lists like that get wolves hurt. | I'd keep my head down, if I were asked.
+a : Maybe so. | Bright One keep whoever's carrying it.
+
+scene nh_s4_howls
+when topic=day world.mem.nh_stage=howls
+does tell.news / react.news / assess
+a : Did you hear the chorus on the square? | Somebody's teaching the old howl again.
+b[from=coldwater] : One for the drowned, one for a catch and one for supper, eh? I'd not swear which. | Like a rising fish, it went.
+b[from=larkfield] : Up at the end like a price. That's ours. | Full weight, that howl.
+b : I heard. I'd forgotten it went like that. | The old folk used to sing that one.
+a : Next time, I'm joining in. | I'll hum it till I've got it.
+
+scene nh_s5_letters
+when topic=gossip world.mem.nh_stage=letters
+does tell.news / react.news / assess
+a : Somebody's carrying the Grayrock lord's letters out to his road. All forty. | I gave mine up at last. A wolf of the road took it.
+b[quarter=wharf|sump] : Forty letters. Not one answered in six years. | He'll read them or he won't.
+b[from=oakhaven] : And Fell's stakes in our cut, mm? Somebody walk those bounds. | Mark every ninth cedar, mm?
+b : The lord's coming home, they say. | Home? That I'll believe when I see it.
+a : #bc_we_will_see# | The Bright One keep the letters dry.
+
+scene nh_s6_lights
+when topic=news world.mem.nh_lights=walking
+does tell.news / react.news / assess
+a : Lights in the fens, every night now. | They say the drowned are walking.
+b[from=mirebridge|fenshore] : Only the cold ones are the drowned. The warm ones are lamps, no? | Dark One's mire, they want something said.
+b[from=saltwell] : A light that smells of lamp oil is no ghost, #address#. | A mirage of the fen.
+b : Lamps, more like. Somebody's moving goods. | I'd not follow one.
+a : Maybe so. | Then let somebody say the names.
+
+scene nh_s7_ford
+when topic=bandits world.mem.nh_ford=siege
+does tell.news / react.news / assess
+a : The Captain's whole company is at the Larkfield ford. | Three nights, they say, before the harvest's safe.
+b[from=larkfield] : Every sack in Longmead's on the walls. Scales and silver! | Grain for a rampart.
+b[from=southmeadow] : If the runner comes, we go. Sheaf and sickle. | Round by the vine lanes.
+b : Then I hope enough wolves go. | Bright One keep the ford.
+a : Let's hope so. | I'm taking bread down tomorrow.
+
+scene nh_s8_bell
+when topic=lore world.mem.nh_stage=bell
+does tell.news / react.news / assess
+a : They say a bell rings under the Upper Mere ice. | The Chancellor wept over a paper, and half the city saw it.
+b[from=coldwater] : Lie flat on the ice and you'll hear it, eh? | Bright One's tide, it's ringing.
+b[from=mirebridge|fenshore] : Our bell. Mud and eels, I'd walk the Long River for it. | It's ours, under there.
+b : A bell and a writ in one season. | Strange times, these.
+a : Maybe so. | The Moot's coming either way.
+
+scene nh_s9_moot
+when topic=day world.mem.nh_stage=moot
+does tell.news / react.news / assess
+a : Which post are you standing on the Moot night? | Every post on the Line wants a keeper.
+b[from=frosthollow] : The Pass. Lamp lit. | Frosthollow starts it. Cold iron.
+b[from=saltwell] : The pool, #address#. Saltwell starts the south road. | By the well, with a still heart.
+b : The square, if my legs hold. | I'll listen for the Bay Light bell.
+a : Then howl loud. | I'll listen for yours.
+
+scene nh_s9_moot_winter
+when topic=day world.mem.nh_stage=moot world.mem.nh_moot=midwinter
+does tell.news / react.news / assess
+a : A Midwinter Moot. Which post are you standing? | Every post on the Line wants a keeper, and a coat.
+b[from=coldwater] : The mere post. A howl carries over ice, eh? | The skipper's, with a hot stone in my pocket.
+b : The square, if my paws don't freeze to it. | I'll listen for the Bay Light bell.
+a : Then howl loud, and stamp your feet. | I'll listen for yours.
+
+scene nh_s10_after
+when topic=day world.mem.nh_howl=ran
+does tell.news / react.news / assess
+a : Did you hear it come in off the Bay Light? Like a wave up the hill. | I counted a hundred breaths and there it was, the far howl.
+b[from=coldwater] : Glasswater answered, eh? I'd swear I heard the mere in it. | Calm water, and a howl over it.
+b : I heard. I've never heard the like. | Every town on one howl. Who'd have thought it.
+a : A night to remember. | The Bright One heard it too, I'd say.

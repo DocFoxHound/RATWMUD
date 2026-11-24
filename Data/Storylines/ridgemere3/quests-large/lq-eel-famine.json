@@ -1,0 +1,4780 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "lq-eel-famine",
+ "title": "The Eel Famine",
+ "prefix": "lq",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "quietAfterHours": 0,
+ "variables": [
+  {
+   "id": "weir_left",
+   "type": "number",
+   "scope": "story",
+   "initial": 40,
+   "show": "Stakes left in the weir",
+   "note": "The shared goal: 40 stakes, and 5 more for each wolf who pulls their first (large 1.3). At 0 the weir is gone."
+  },
+  {
+   "id": "helpers",
+   "type": "wolves",
+   "scope": "story",
+   "note": "Wolves who have pulled a stake this visit (each grows the goal once)."
+  },
+  {
+   "id": "stakes_down",
+   "type": "number",
+   "scope": "story",
+   "note": "Stakes the story has laid in the reeds and nobody has pulled yet."
+  },
+  {
+   "id": "t_run",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for letting the eels run (1 a wolf, 2 after a pack)."
+  },
+  {
+   "id": "t_share",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for a gap and a share."
+  },
+  {
+   "id": "reckon_set",
+   "type": "switch",
+   "scope": "story",
+   "note": "The 3-day tally has begun."
+  },
+  {
+   "id": "kept",
+   "type": "switch",
+   "scope": "story",
+   "note": "A wolf took a chapter this season (the river is being kept)."
+  },
+  {
+   "id": "spawned_weir",
+   "type": "switch",
+   "scope": "story",
+   "note": "A story wave stands in the weir region (decisions 4.1)."
+  },
+  {
+   "id": "spawned_weir_b",
+   "type": "switch",
+   "scope": "story",
+   "note": "A story wave stands upstream of the weir."
+  },
+  {
+   "id": "share_paid",
+   "type": "number",
+   "scope": "story",
+   "note": "The Fish Hall share paid out, in all (60 at most, large 1.5)."
+  },
+  {
+   "id": "lamp_today",
+   "type": "switch",
+   "scope": "story",
+   "note": "A float lamp has been left in the reeds today (one a day, so the camps are no lamp farm)."
+  },
+  {
+   "id": "threat_day",
+   "type": "number",
+   "scope": "story",
+   "note": "Story camps that have lowered nh_threat today (3 at most a day; set to 0 at day begins)."
+  },
+  {
+   "id": "stake_seen",
+   "type": "timer",
+   "scope": "story",
+   "note": "When a stake was last pulled or driven (stakes on the ground do not outlast a restart)."
+  },
+  {
+   "id": "lq_coin",
+   "type": "number",
+   "scope": "player",
+   "note": "Coin this line has paid the wolf, ever (35 at most)."
+  },
+  {
+   "id": "lq_thin",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf was paid in kind (a thin purse)."
+  },
+  {
+   "id": "road",
+   "type": "text",
+   "scope": "player",
+   "note": "The road the wolf took in chapter 3 (one only)."
+  },
+  {
+   "id": "pack2",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf did the weir with a pack of two or more (a heavier vote)."
+  },
+  {
+   "id": "paid_weir",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf has pulled the weir once (its first reward given)."
+  },
+  {
+   "id": "lq_eels",
+   "type": "text",
+   "scope": "world",
+   "note": "The Eel Famine: weir (the weir stands), run (the eels run free) or shared (a gap and a share)."
+  },
+  {
+   "id": "nh_stage",
+   "type": "number",
+   "scope": "world",
+   "note": "Read only: the Ninth Howl chapter running."
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "note": "The realm's voice; a road done adds 16."
+  },
+  {
+   "id": "nh_voice_fenshore",
+   "type": "number",
+   "scope": "world",
+   "note": "Fenshore's strand; a road done adds 16."
+  },
+  {
+   "id": "nh_threat",
+   "type": "number",
+   "scope": "world",
+   "note": "The roads' threat; each guard camp cleared takes 1 (never below 0).",
+   "initial": 30
+  },
+  {
+   "id": "nh_names",
+   "type": "number",
+   "scope": "world",
+   "note": "The Book of Names; the gran's name adds 1 a wolf while the chapter is 4 to 6."
+  },
+  {
+   "id": "coin_fenshore_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:fenshore; nh-purses owns it (sets it to 0 each day). This story only reads and adds."
+  },
+  {
+   "id": "coin_fenshore_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:fenshore above its floor (nh-purses turns it off below 60, on at 80). Read only here."
+  },
+  {
+   "id": "coin_ridgemere_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:ridgemere; nh-purses owns it (sets it to 0 each day). This story only reads and adds."
+  },
+  {
+   "id": "coin_ridgemere_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:ridgemere above its floor (nh-purses turns it off below 60, on at 80). Read only here."
+  }
+ ],
+ "regions": [
+  {
+   "id": "withy",
+   "cell": "w_ridgemere_4_13",
+   "x1": 24,
+   "y1": 96,
+   "x2": 48,
+   "y2": 120
+  },
+  {
+   "id": "weir",
+   "cell": "w_ridgemere_3_12",
+   "x1": 230,
+   "y1": 90,
+   "x2": 249,
+   "y2": 109
+  },
+  {
+   "id": "weir_b",
+   "cell": "w_ridgemere_3_12",
+   "x1": 236,
+   "y1": 40,
+   "x2": 255,
+   "y2": 59
+  }
+ ],
+ "quests": [
+  {
+   "id": "traps",
+   "title": "Empty Traps",
+   "summary": "The eels never came up Withy Creek. Ask along the river why the traps come up empty.",
+   "giver": "cty_ivo_sootridge",
+   "board": "fenshore",
+   "repeat": "once",
+   "join": {
+    "cap": 40
+   },
+   "offer": {
+    "ask": "Poor catch, skipper?",
+    "say": "#greet#, #address#. No catch at all. The eels never came up Withy Creek, not one, and Fenshore eats eels the way the city eats bread, no? Look in the creek traps, ask the fowler and the peat cutter, and ask the Rivermouth lad what lifts the nets.",
+    "accept": "I'll ask along the river.",
+    "decline": "Not today.",
+    "handIn": "There's a weir below Rivermouth.",
+    "thanks": "#thanks#. A weir of stakes right across the reeds, and a Ridgemere boat lifting the nets at dawn. #oath#. They take our eels before the eels reach us. Pull it, #address#. Every stake you pull is a supper here."
+   },
+   "objectives": [
+    {
+     "id": "creek",
+     "label": "Look in the eel traps at Withy Creek.",
+     "on": "region entered",
+     "match": {
+      "target": "withy"
+     }
+    },
+    {
+     "id": "fowler",
+     "label": "Ask the fowler at the creek where the eels have gone.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "tn_mb_nab_bogditch",
+      "detail": "lq_eel_nab"
+     }
+    },
+    {
+     "id": "peat",
+     "label": "Ask the peat cutter whether she saw anyone on the river.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "tn_fh_rowan_cragpeak",
+      "detail": "lq_eel_rowan"
+     }
+    },
+    {
+     "id": "delta",
+     "label": "Ask the Rivermouth deckhand what lifts the nets.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "cty_jasper_greymore",
+      "detail": "lq_eel_jasper"
+     }
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "asked along the river why the eels never came"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    }
+   ]
+  },
+  {
+   "id": "weir",
+   "title": "The Weir",
+   "scope": "party",
+   "repeat": "weekly",
+   "join": {
+    "cap": 12
+   },
+   "summary": "Find the weir below Rivermouth with a pack, drive off its guards and pull its stakes.",
+   "objectives": [
+    {
+     "id": "find",
+     "label": "Find the weir in the reeds below Rivermouth.",
+     "on": "story signal",
+     "signal": "weir_found"
+    },
+    {
+     "id": "guards",
+     "label": "Drive off the weir's night guards.",
+     "on": "bandit falls",
+     "match": {
+      "cell": "w_ridgemere_3_12",
+      "target": {
+       "in": [
+        "camp_story_lq_weir",
+        "camp_story_lq_weir_b"
+       ]
+      }
+     },
+     "goal": 3,
+     "after": [
+      "find"
+     ]
+    },
+    {
+     "id": "stakes",
+     "label": "Pull six of the weir's stakes.",
+     "on": "item picked up",
+     "match": {
+      "item": "staves",
+      "cell": "w_ridgemere_3_12"
+     },
+     "goal": 6,
+     "measure": "quantity",
+     "after": [
+      "find"
+     ]
+    },
+    {
+     "id": "float",
+     "label": "Take the guards' float lamp.",
+     "on": "item picked up",
+     "match": {
+      "item": "oil_lamp",
+      "cell": "w_ridgemere_3_12"
+     },
+     "after": [
+      "guards"
+     ],
+     "hidden": true,
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    }
+   ]
+  },
+  {
+   "id": "eels_run",
+   "title": "Let the Eels Run",
+   "phases": [
+    "reckoning",
+    "after_run",
+    "after_shared"
+   ],
+   "repeat": "once",
+   "summary": "Be at Withy Creek at dusk when the first eels come up, and take the skipper the first of the run.",
+   "objectives": [
+    {
+     "id": "dusk",
+     "label": "Be at Withy Creek at dusk when the eels come up.",
+     "on": "story signal",
+     "signal": "eels_dusk"
+    },
+    {
+     "id": "fish",
+     "label": "Give the skipper at Fen Shore landing two fish, the first of the run.",
+     "on": "gift",
+     "match": {
+      "target": "cty_ivo_sootridge",
+      "item": "fish"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "after": [
+      "dusk"
+     ]
+    },
+    {
+     "id": "gran",
+     "label": "Ask the fowler his gran's name, for the Book.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "tn_mb_nab_bogditch",
+      "detail": "lq_eel_name"
+     },
+     "optional": true,
+     "hidden": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "let the eels run up Withy Creek again"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "smoked_fish",
+     "quantity": 4
+    }
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "traps",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "weir",
+      "status": "done"
+     }
+    ]
+   }
+  },
+  {
+   "id": "eels_share",
+   "title": "A Gap and a Share",
+   "phases": [
+    "reckoning",
+    "after_run",
+    "after_shared"
+   ],
+   "repeat": "once",
+   "summary": "Go to the Fish Hall, bargain one gap in the weir for a share of the eels, and carry the first share to Fenshore.",
+   "objectives": [
+    {
+     "id": "hall",
+     "label": "Go to the Fish Hall in Ridgemere.",
+     "on": "enter place",
+     "match": {
+      "target": "rm_the_fish_hall"
+     }
+    },
+    {
+     "id": "bargain",
+     "label": "Bargain with the Hall's eel buyer: one gap in the weir, and a share of every eel.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_karin_wetridge",
+      "detail": "lq_eel_share"
+     },
+     "after": [
+      "hall"
+     ]
+    },
+    {
+     "id": "carry",
+     "label": "Give the skipper at Fen Shore landing the first share, ten pennies.",
+     "on": "gift",
+     "match": {
+      "target": "cty_ivo_sootridge"
+     },
+     "goal": 10,
+     "measure": "coins",
+     "after": [
+      "bargain"
+     ]
+    },
+    {
+     "id": "gran",
+     "label": "Ask the fowler his gran's name, for the Book.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "tn_mb_nab_bogditch",
+      "detail": "lq_eel_name"
+     },
+     "optional": true,
+     "hidden": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "carried the Fish Hall's first eel-share to Fenshore"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "fishing_net",
+     "quantity": 1
+    }
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "traps",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "weir",
+      "status": "done"
+     }
+    ]
+   }
+  }
+ ],
+ "triggers": [
+  {
+   "id": "traps-done",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "traps"
+   },
+   "note": "Chapter 2 by journal (no giver: large 1.1).",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "quest.offer",
+      "quest": "weir",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "weir-done",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "weir"
+   },
+   "note": "Each of the pack: the first-time rewards and 6 from the Fenshore stores (decisions 3.2), the roads by journal.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "party size",
+      "op": ">=",
+      "value": 2
+     },
+     "then": [
+      {
+       "do": "each",
+       "over": "party",
+       "actions": [
+        {
+         "do": "turn on",
+         "var": "pack2",
+         "of": "$each"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "each",
+     "over": "party",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "paid_weir",
+        "is": false,
+        "of": "$each"
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "paid_weir",
+         "of": "$each"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$each",
+          "detail": "pulled the Fish Hall's weir out of the reeds below Rivermouth",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$each",
+          "item": "marsh_wraps",
+          "quantity": 1,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_fenshore_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_fenshore_day"
+            },
+            "op": "<=",
+            "right": 15
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "lq_coin",
+             "of": "$each"
+            },
+            "op": "<=",
+            "right": 29
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:fenshore"
+            },
+            "op": ">=",
+            "right": 66
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$each",
+            "coins": {
+             "min": [
+              6,
+              {
+               "div": [
+                {
+                 "purse": "town:fenshore"
+                },
+                20
+               ]
+              }
+             ]
+            },
+            "purse": "town:fenshore",
+            "reason": "the Fenshore stores thank you for the weir",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_fenshore_day",
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:fenshore"
+               },
+               20
+              ]
+             }
+            ]
+           }
+          },
+          {
+           "do": "add",
+           "var": "lq_coin",
+           "of": "$each",
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:fenshore"
+               },
+               20
+              ]
+             }
+            ]
+           }
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$each",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "turn on",
+           "var": "lq_thin",
+           "of": "$each"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "talk.remember",
+            "scope": "realm",
+            "key": "lq_eels_thin",
+            "value": "yes",
+            "days": 1
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$each",
+            "text": "The Fenshore stores are thin this week, so the thanks comes as bread instead of coin.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "eels_run",
+        "player": "$each"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "eels_share",
+        "player": "$each"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-start",
+   "on": "quest started",
+   "audience": "participant",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "compare",
+      "left": {
+       "field": "detail"
+      },
+      "op": "=",
+      "right": "eels_run"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "field": "detail"
+      },
+      "op": "=",
+      "right": "eels_share"
+     }
+    ]
+   },
+   "note": "One road a wolf. The first: its weight goes on the tally, and the first of all starts the 3-day reckoning.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "eels_run"
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "road",
+         "value": "eels_run"
+        },
+        {
+         "do": "add",
+         "var": "t_run",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "pack2",
+          "is": true
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "t_run",
+           "value": 1
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "set",
+         "var": "road",
+         "value": "eels_share"
+        },
+        {
+         "do": "add",
+         "var": "t_share",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "pack2",
+          "is": true
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "t_share",
+           "value": 1
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "reckoning"
+         },
+         {
+          "test": "switch",
+          "var": "reckon_set",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "reckon_set"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 4
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": "<=",
+          "right": 6
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "eels_run"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.reveal",
+            "quest": "eels_run",
+            "objective": "gran",
+            "player": "$actor"
+           }
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.reveal",
+            "quest": "eels_share",
+            "objective": "gran",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "road"
+        },
+        "op": "!=",
+        "right": {
+         "field": "detail"
+        }
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "eels_run"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.fail",
+            "quest": "eels_run",
+            "player": "$actor"
+           }
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.fail",
+            "quest": "eels_share",
+            "player": "$actor"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Another road taken: you have already chosen what comes of the eels.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "run-done",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "eels_run"
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_fenshore_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_fenshore_day"
+        },
+        "op": "<=",
+        "right": 9
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:fenshore"
+        },
+        "op": ">=",
+        "right": 72
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:fenshore"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:fenshore",
+        "reason": "Fenshore thanks you for the run of eels",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_fenshore_day",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:fenshore"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:fenshore"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "realm",
+        "key": "lq_eels_thin",
+        "value": "yes",
+        "days": 1
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The Fenshore stores are thin this week, so the thanks comes as bread instead of coin.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 16
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_fenshore",
+     "value": 16
+    }
+   ]
+  },
+  {
+   "id": "share-done",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "eels_share"
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_fenshore_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_fenshore_day"
+        },
+        "op": "<=",
+        "right": 19
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 33
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:fenshore"
+        },
+        "op": ">=",
+        "right": 62
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          2,
+          {
+           "div": [
+            {
+             "purse": "town:fenshore"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:fenshore",
+        "reason": "Fenshore thanks you for the eel-share",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_fenshore_day",
+       "value": {
+        "min": [
+         2,
+         {
+          "div": [
+           {
+            "purse": "town:fenshore"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": {
+        "min": [
+         2,
+         {
+          "div": [
+           {
+            "purse": "town:fenshore"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "realm",
+        "key": "lq_eels_thin",
+        "value": "yes",
+        "days": 1
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The Fenshore stores are thin this week, so the thanks comes as bread instead of coin.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 16
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_fenshore",
+     "value": 16
+    }
+   ]
+  },
+  {
+   "id": "bargain",
+   "on": "dialogue choice",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "item": "rm_karin_wetridge",
+    "detail": "lq_eel_share"
+   },
+   "if": {
+    "test": "compare",
+    "left": {
+     "var": "road"
+    },
+    "op": "=",
+    "right": "eels_share"
+   },
+   "note": "The Fish Hall's first share: 10 a wolf, 60 in all (large 1.5); the treasury pays it until SQ2 gives the Hall's own till.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "share_paid"
+        },
+        "op": "<=",
+        "right": 50
+       },
+       {
+        "test": "switch",
+        "var": "coin_ridgemere_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_ridgemere_day"
+        },
+        "op": "<=",
+        "right": 125
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 25
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 70
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          10,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:ridgemere",
+        "reason": "the Fish Hall's first eel-share",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_ridgemere_day",
+       "value": {
+        "min": [
+         10,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": {
+        "min": [
+         10,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "do": "add",
+       "var": "share_paid",
+       "value": 10
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "eels_share",
+        "objective": "carry",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "fish",
+        "quantity": 4,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "realm",
+        "key": "lq_eels_thin",
+        "value": "yes",
+        "days": 1
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The Fish Hall sends Fenshore's first share down by its own boat this time, and gives you four fish for your trouble.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dusk-enter",
+   "on": "region entered",
+   "audience": "participant",
+   "match": {
+    "target": "withy"
+   },
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "hour between",
+      "from": 18,
+      "to": 21
+     },
+     {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": "eels_run"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "eels_run",
+      "objective": "dusk",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "dusk-hour",
+   "on": "hour",
+   "match": {
+    "detail": "19"
+   },
+   "note": "A wolf already waiting at the creek when dusk comes.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "road",
+           "of": "$each"
+          },
+          "op": "=",
+          "right": "eels_run"
+         },
+         {
+          "test": "wolf in region",
+          "region": "withy",
+          "who": "$each"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "eels_run",
+          "objective": "dusk",
+          "player": "$each"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "weir-found",
+   "on": "region entered",
+   "audience": "participant",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "compare",
+      "left": {
+       "field": "target"
+      },
+      "op": "=",
+      "right": "weir"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "field": "target"
+      },
+      "op": "=",
+      "right": "weir_b"
+     }
+    ]
+   },
+   "note": "The weir found. Stakes on the ground do not outlast a server restart, so when nobody has pulled one for a game day, the wolf who comes finds a few freshly driven where they stand.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "weir",
+      "objective": "find",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "days since",
+       "from": "var",
+       "var": "stake_seen",
+       "op": "<",
+       "days": 1
+      }
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "target"
+        },
+        "op": "=",
+        "right": "weir_b"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "staves",
+          "quantity": 2,
+          "cell": "w_ridgemere_3_12",
+          "x": 240,
+          "y": 44,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "staves",
+          "quantity": 2,
+          "cell": "w_ridgemere_3_12",
+          "x": 246,
+          "y": 50,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "staves",
+          "quantity": 1,
+          "cell": "w_ridgemere_3_12",
+          "x": 251,
+          "y": 55,
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "staves",
+          "quantity": 2,
+          "cell": "w_ridgemere_3_12",
+          "x": 235,
+          "y": 97,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "staves",
+          "quantity": 2,
+          "cell": "w_ridgemere_3_12",
+          "x": 241,
+          "y": 101,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "staves",
+          "quantity": 1,
+          "cell": "w_ridgemere_3_12",
+          "x": 246,
+          "y": 104,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "stakes_down",
+       "value": 5
+      },
+      {
+       "do": "start timer",
+       "var": "stake_seen"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dusk-stakes",
+   "on": "hour",
+   "match": {
+    "detail": "19"
+   },
+   "if": {
+    "test": "compare",
+    "left": {
+     "var": "stakes_down"
+    },
+    "op": "<",
+    "right": 6
+   },
+   "note": "Dusk: the Hall's wolves have driven new stakes (a few, never piling up).",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "item.place",
+      "item": "staves",
+      "quantity": 2,
+      "cell": "w_ridgemere_3_12",
+      "x": 235,
+      "y": 97,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "item.place",
+      "item": "staves",
+      "quantity": 2,
+      "cell": "w_ridgemere_3_12",
+      "x": 241,
+      "y": 101,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "item.place",
+      "item": "staves",
+      "quantity": 1,
+      "cell": "w_ridgemere_3_12",
+      "x": 246,
+      "y": 104,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "item.place",
+      "item": "staves",
+      "quantity": 2,
+      "cell": "w_ridgemere_3_12",
+      "x": 240,
+      "y": 44,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "item.place",
+      "item": "staves",
+      "quantity": 2,
+      "cell": "w_ridgemere_3_12",
+      "x": 246,
+      "y": 50,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "item.place",
+      "item": "staves",
+      "quantity": 1,
+      "cell": "w_ridgemere_3_12",
+      "x": 251,
+      "y": 55,
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "add",
+     "var": "stakes_down",
+     "value": 10
+    }
+   ]
+  },
+  {
+   "id": "wave-weir",
+   "on": "hour",
+   "note": "Night (21:00 to 03:00): a band of weir guards where the story's wolves stand, if none stands there now.",
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "field": "quantity"
+        },
+        "op": ">=",
+        "right": 21
+       },
+       {
+        "test": "compare",
+        "left": {
+         "field": "quantity"
+        },
+        "op": "<=",
+        "right": 3
+       }
+      ]
+     },
+     {
+      "test": "switch",
+      "var": "spawned_weir",
+      "is": false
+     },
+     {
+      "test": "count in region",
+      "region": "weir",
+      "op": ">=",
+      "value": 1
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "spawned_weir"
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "count in region",
+      "region": "weir",
+      "op": ">=",
+      "value": 5
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.area.spawn",
+        "region": "weir",
+        "count": 6,
+        "ifRefused": "skip",
+        "camp": "lq_weir"
+       }
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "count in region",
+        "region": "weir",
+        "op": ">=",
+        "value": 3
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "weir",
+          "count": 4,
+          "ifRefused": "skip",
+          "camp": "lq_weir"
+         }
+        }
+       ]
+      },
+      {
+       "if": {
+        "test": "count in region",
+        "region": "weir",
+        "op": ">=",
+        "value": 2
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "weir",
+          "count": 3,
+          "ifRefused": "skip",
+          "camp": "lq_weir"
+         }
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.area.spawn",
+        "region": "weir",
+        "count": 2,
+        "ifRefused": "skip",
+        "camp": "lq_weir"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "wave-weir_b",
+   "on": "hour",
+   "note": "Night (21:00 to 03:00): a band of weir guards where the story's wolves stand, if none stands there now.",
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "field": "quantity"
+        },
+        "op": ">=",
+        "right": 21
+       },
+       {
+        "test": "compare",
+        "left": {
+         "field": "quantity"
+        },
+        "op": "<=",
+        "right": 3
+       }
+      ]
+     },
+     {
+      "test": "switch",
+      "var": "spawned_weir_b",
+      "is": false
+     },
+     {
+      "test": "count in region",
+      "region": "weir_b",
+      "op": ">=",
+      "value": 1
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "spawned_weir_b"
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "count in region",
+      "region": "weir_b",
+      "op": ">=",
+      "value": 5
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.area.spawn",
+        "region": "weir_b",
+        "count": 6,
+        "ifRefused": "skip",
+        "camp": "lq_weir_b"
+       }
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "count in region",
+        "region": "weir_b",
+        "op": ">=",
+        "value": 3
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "weir_b",
+          "count": 4,
+          "ifRefused": "skip",
+          "camp": "lq_weir_b"
+         }
+        }
+       ]
+      },
+      {
+       "if": {
+        "test": "count in region",
+        "region": "weir_b",
+        "op": ">=",
+        "value": 2
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "weir_b",
+          "count": 3,
+          "ifRefused": "skip",
+          "camp": "lq_weir_b"
+         }
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.area.spawn",
+        "region": "weir_b",
+        "count": 2,
+        "ifRefused": "skip",
+        "camp": "lq_weir_b"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "camp-cleared",
+   "on": "camp cleared",
+   "match": {
+    "cell": "w_ridgemere_3_12",
+    "target": {
+     "in": [
+      "camp_story_lq_weir",
+      "camp_story_lq_weir_b"
+     ]
+    }
+   },
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "spawned_weir",
+      "is": true
+     },
+     {
+      "test": "switch",
+      "var": "spawned_weir_b",
+      "is": true
+     }
+    ]
+   },
+   "note": "A story wave broken (matched by cell and switch: decisions 4.1). The float lamp is left where it stood, one a day. Broken by a wolf outside both regions (the fight moved), or by the watch: both switches off, so neither stays stuck.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "wolf in region",
+      "region": "weir_b"
+     },
+     "then": [
+      {
+       "do": "turn off",
+       "var": "spawned_weir_b"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "lamp_today",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "oil_lamp",
+          "quantity": 1,
+          "cell": "w_ridgemere_3_12",
+          "x": 245,
+          "y": 49,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "lamp_today"
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "wolf in region",
+        "region": "weir"
+       },
+       "then": [
+        {
+         "do": "turn off",
+         "var": "spawned_weir"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "lamp_today",
+          "is": false
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.place",
+            "item": "oil_lamp",
+            "quantity": 1,
+            "cell": "w_ridgemere_3_12",
+            "x": 239,
+            "y": 99,
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "turn on",
+           "var": "lamp_today"
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "turn off",
+       "var": "spawned_weir"
+      },
+      {
+       "do": "turn off",
+       "var": "spawned_weir_b"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "lamp_today",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "oil_lamp",
+          "quantity": 1,
+          "cell": "w_ridgemere_3_12",
+          "x": 239,
+          "y": 99,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "lamp_today"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "threat_day"
+      },
+      "op": "<",
+      "right": 3
+     },
+     "then": [
+      {
+       "do": "subtract",
+       "var": "nh_threat",
+       "value": 1
+      },
+      {
+       "do": "clamp",
+       "var": "nh_threat",
+       "min": 0,
+       "max": 100
+      },
+      {
+       "do": "add",
+       "var": "threat_day",
+       "value": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "camp-scattered",
+   "on": "bandits scattered",
+   "match": {
+    "cell": "w_ridgemere_3_12"
+   },
+   "note": "A band nobody came to fight starves out after a few weeks: the switches go off, so the weir gets guards again.",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "spawned_weir"
+    },
+    {
+     "do": "turn off",
+     "var": "spawned_weir_b"
+    }
+   ]
+  },
+  {
+   "id": "stake-count",
+   "on": "item picked up",
+   "match": {
+    "item": "staves",
+    "cell": "w_ridgemere_3_12"
+   },
+   "actions": [
+    {
+     "do": "subtract",
+     "var": "stakes_down",
+     "value": {
+      "field": "quantity"
+     }
+    },
+    {
+     "do": "start timer",
+     "var": "stake_seen"
+    },
+    {
+     "do": "clamp",
+     "var": "stakes_down",
+     "min": 0,
+     "max": 1000
+    }
+   ]
+  },
+  {
+   "id": "names",
+   "on": "dialogue choice",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "item": "tn_mb_nab_bogditch",
+    "detail": "lq_eel_name"
+   },
+   "if": {
+    "test": "compare",
+    "left": {
+     "var": "road"
+    },
+    "op": "!=",
+    "right": ""
+   },
+   "note": "nh_names: a Mirebridge eel-wife's name for the Book, once a wolf who has taken a road, only while the chapter is 4 to 6.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "nh_stage"
+        },
+        "op": ">=",
+        "right": 4
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "nh_stage"
+        },
+        "op": "<=",
+        "right": 6
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "add",
+       "var": "nh_names",
+       "value": 1
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "You carry a Mirebridge eel-wife's name for the Book of Names.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "day-sweep",
+   "on": "day begins",
+   "note": "The road needs keeping: the weir again each week to those who did it, and the roads to those who have none.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "paid_weir",
+        "is": true,
+        "of": "$each"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "quest.offer",
+          "quest": "weir",
+          "player": "$each"
+         }
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "road",
+           "of": "$each"
+          },
+          "op": "=",
+          "right": ""
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "eels_run",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "eels_share",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "set",
+     "var": "threat_day",
+     "value": 0
+    },
+    {
+     "do": "turn off",
+     "var": "lamp_today"
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 4
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": "<=",
+          "right": 6
+         }
+        ]
+       },
+       {
+        "test": "not",
+        "condition": {
+         "test": "phase is",
+         "phase": "open"
+        }
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_mb_nab_bogditch",
+        "id": "lq_eel_name",
+        "words": "What was your gran's name?",
+        "reply": "A Mirebridge name, from before the water came over. I'll say it to you, and you say it to whoever's writing the names down. She'd have liked that."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "season",
+   "on": "season begins",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "phase is",
+      "phase": "after_run"
+     },
+     {
+      "test": "phase is",
+      "phase": "after_shared"
+     }
+    ]
+   },
+   "note": "A new season: the Hall drives a new weir (large 1.1), at the cost of a fresh shared goal.",
+   "actions": [
+    {
+     "do": "enter",
+     "phase": "open"
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "The eels never came up Withy Creek. Someone has staked the river below Rivermouth.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_ivo_sootridge",
+     "text": "Dry feet. Traps up empty again. Fen-sure, something's wrong with the river, and it isn't the drowned."
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_fishing_fencoast_shed_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_fishing_delta_shed_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_marsh_eels_eelhouse_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_eels",
+     "value": "weir",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "open-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "Each visit: the witnesses' choices, a fresh shared goal; a season's return gives the river 14 days before the weir counts as back.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_mb_nab_bogditch",
+        "id": "lq_eel_nab",
+        "words": "Where have the eels gone?",
+        "reply": "Not here, and the herons are leaving too. My gran said the eels come up the creek because the drowned send them. If the drowned have stopped sending, somebody's standing in the way."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_fh_rowan_cragpeak",
+        "id": "lq_eel_rowan",
+        "words": "Did you see anyone on the river?",
+        "reply": "Wolves with mallets in the drizzle, driving stakes below Rivermouth. I didn't ask whose. I've a cottage and no wish to lose it."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_jasper_greymore",
+        "id": "lq_eel_jasper",
+        "words": "What lifts the nets at the weir?",
+        "reply": "A Ridgemere boat with a Fish Hall mark on the oars, every dawn, friend. Two guards keep the weir by night, with a lamp on a float. Folk say that's the drowned walking. It isn't. It's a lamp on a float."
+       }
+      },
+      {
+       "do": "set",
+       "var": "weir_left",
+       "value": 40
+      },
+      {
+       "do": "list clear",
+       "var": "helpers"
+      },
+      {
+       "do": "turn off",
+       "var": "kept"
+      },
+      {
+       "do": "turn off",
+       "var": "reckon_set"
+      },
+      {
+       "do": "set",
+       "var": "t_run",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "t_share",
+       "value": 0
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "lq_eels"
+        },
+        "op": "=",
+        "right": ""
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "lq_eels",
+         "value": "weir"
+        }
+       ],
+       "else": [
+        {
+         "do": "schedule",
+         "signal": "weir_back",
+         "days": 14
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "keeping",
+     "on": "quest started",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "traps"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "weir"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "kept"
+      }
+     ]
+    },
+    {
+     "id": "weir-back",
+     "on": "story signal",
+     "signal": "weir_back",
+     "if": {
+      "test": "switch",
+      "var": "kept",
+      "is": false
+     },
+     "note": "Nobody came to the river in 14 days: the weir is back, and the town hears it.",
+     "actions": [
+      {
+       "do": "set",
+       "var": "lq_eels",
+       "value": "weir"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "board.post",
+        "town": "fenshore",
+        "days": 28,
+        "text": "THE WEIR IS BACK below Rivermouth, new stakes in the reeds. The skipper at Fen Shore landing asks for strong backs again.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "id": "stake-pulled",
+     "on": "item picked up",
+     "match": {
+      "item": "staves",
+      "cell": "w_ridgemere_3_12"
+     },
+     "note": "The shared goal: each stake pulled takes one off; each new helper adds five; a stake pulled is driven again while the weir stands.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "in list",
+        "list": "helpers",
+        "value": {
+         "field": "actor"
+        }
+       },
+       "then": [
+        {
+         "do": "subtract",
+         "var": "weir_left",
+         "value": {
+          "field": "quantity"
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "list add",
+         "var": "helpers",
+         "value": {
+          "field": "actor"
+         }
+        },
+        {
+         "do": "add",
+         "var": "weir_left",
+         "value": 5
+        },
+        {
+         "do": "subtract",
+         "var": "weir_left",
+         "value": {
+          "field": "quantity"
+         }
+        }
+       ]
+      },
+      {
+       "do": "random",
+       "choices": [
+        {
+         "weight": 1,
+         "actions": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.place",
+            "item": "staves",
+            "quantity": 1,
+            "cell": "w_ridgemere_3_12",
+            "x": 235,
+            "y": 97,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "weight": 1,
+         "actions": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.place",
+            "item": "staves",
+            "quantity": 1,
+            "cell": "w_ridgemere_3_12",
+            "x": 246,
+            "y": 50,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "weight": 1,
+         "actions": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.place",
+            "item": "staves",
+            "quantity": 1,
+            "cell": "w_ridgemere_3_12",
+            "x": 246,
+            "y": 104,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "stakes_down",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "weir_left"
+          },
+          "op": "<=",
+          "right": 0
+         },
+         {
+          "test": "not",
+          "condition": {
+           "test": "timer",
+           "signal": "weir_gone"
+          }
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "weir_left",
+         "value": 0
+        },
+        {
+         "do": "schedule",
+         "signal": "weir_gone",
+         "days": 0.0006944444444444445
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "weir-gone",
+     "on": "story signal",
+     "signal": "weir_gone",
+     "note": "A game minute after the last stake, so the pulling wolf's own chapter is settled first.",
+     "actions": [
+      {
+       "do": "enter",
+       "phase": "reckoning"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "reckoning",
+   "journal": "The weir is out of the reeds. Fenshore must choose what comes of the river.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_ivo_sootridge",
+     "text": "The weir's out of the reeds, fen-friend! Now we choose: let the eels run free, or take a share of the Hall's. Sure as mud, I know which I'd pick. A share is coin, mind."
+    },
+    {
+     "kind": "board.post",
+     "town": "fenshore",
+     "days": 7,
+     "ifRefused": "skip",
+     "text": "THE WEIR IS DOWN below Rivermouth. Mud and eels, and thanks to every wolf who pulled a stake. Fenshore must choose: let the eels run, or take the Fish Hall's share. Ask at Fen Shore landing."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_eels",
+     "value": "weir",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "reckoning-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "A game minute in: the choices, the roads to every wolf who has pulled the weir, and the default in 7 days if nobody chooses.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_mb_nab_bogditch",
+        "id": "lq_eel_nab",
+        "words": "Where have the eels gone?",
+        "reply": "Not here, and the herons are leaving too. My gran said the eels come up the creek because the drowned send them. If the drowned have stopped sending, somebody's standing in the way."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_fh_rowan_cragpeak",
+        "id": "lq_eel_rowan",
+        "words": "Did you see anyone on the river?",
+        "reply": "Wolves with mallets in the drizzle, driving stakes below Rivermouth. I didn't ask whose. I've a cottage and no wish to lose it."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_jasper_greymore",
+        "id": "lq_eel_jasper",
+        "words": "What lifts the nets at the weir?",
+        "reply": "A Ridgemere boat with a Fish Hall mark on the oars, every dawn, friend. Two guards keep the weir by night, with a lamp on a float. Folk say that's the drowned walking. It isn't. It's a lamp on a float."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_karin_wetridge",
+        "id": "lq_eel_share",
+        "words": "One gap in the weir, and Fenshore gets a share of every eel.",
+        "reply": "#greet#. A gap and a share? The Hall sells more eels than Fenshore ever ate. A share is cheaper than a war on the river. Take the first of it now, and carry it down to them. The Hall will grumble the whole while."
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 4
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": "<=",
+          "right": 6
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_mb_nab_bogditch",
+          "id": "lq_eel_name",
+          "words": "What was your gran's name?",
+          "reply": "A Mirebridge name, from before the water came over. I'll say it to you, and you say it to whoever's writing the names down. She'd have liked that."
+         }
+        }
+       ]
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "paid_weir",
+            "is": true,
+            "of": "$each"
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "road",
+             "of": "$each"
+            },
+            "op": "=",
+            "right": ""
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "eels_run",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "eels_share",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "schedule",
+       "signal": "reckon",
+       "days": 7
+      }
+     ]
+    },
+    {
+     "id": "reckon",
+     "on": "story signal",
+     "signal": "reckon",
+     "note": "The reckoning (large 1.2): the heavier road wins; a tie, or nobody, lets the eels run.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "t_share"
+        },
+        "op": ">",
+        "right": {
+         "var": "t_run"
+        }
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "lq_eels",
+         "value": "shared"
+        },
+        {
+         "do": "enter",
+         "phase": "after_shared"
+        }
+       ],
+       "else": [
+        {
+         "do": "set",
+         "var": "lq_eels",
+         "value": "run"
+        },
+        {
+         "do": "enter",
+         "phase": "after_run"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_run",
+   "journal": "The eels run up Withy Creek again.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_ivo_sootridge",
+     "text": "Dry feet, and full traps! Thick as reeds up Withy Creek, and supper in every pot."
+    },
+    {
+     "kind": "harvest.override",
+     "area": "fish",
+     "word": "good",
+     "days": 60,
+     "words": "the eels run up Withy Creek again",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "times.nudge",
+     "market": "ridgemere",
+     "points": 10,
+     "days": 14,
+     "words": "eels dear at the Fish Hall",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "board.post",
+     "town": "fenshore",
+     "days": 28,
+     "ifRefused": "skip",
+     "text": "THE EELS ARE UP WITHY CREEK. Mud and eels, and thanks to every wolf who pulled a stake."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_eels",
+     "value": "run",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "after_run-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "A game minute in: the witnesses' choices in their windows for this visit (npc.offer is a trigger's).",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_mb_nab_bogditch",
+        "id": "lq_eel_nab",
+        "words": "Where have the eels gone?",
+        "reply": "Not here, and the herons are leaving too. My gran said the eels come up the creek because the drowned send them. If the drowned have stopped sending, somebody's standing in the way."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_fh_rowan_cragpeak",
+        "id": "lq_eel_rowan",
+        "words": "Did you see anyone on the river?",
+        "reply": "Wolves with mallets in the drizzle, driving stakes below Rivermouth. I didn't ask whose. I've a cottage and no wish to lose it."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_jasper_greymore",
+        "id": "lq_eel_jasper",
+        "words": "What lifts the nets at the weir?",
+        "reply": "A Ridgemere boat with a Fish Hall mark on the oars, every dawn, friend. Two guards keep the weir by night, with a lamp on a float. Folk say that's the drowned walking. It isn't. It's a lamp on a float."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_karin_wetridge",
+        "id": "lq_eel_share",
+        "words": "One gap in the weir, and Fenshore gets a share of every eel.",
+        "reply": "#greet#. A gap and a share? The Hall sells more eels than Fenshore ever ate. A share is cheaper than a war on the river. Take the first of it now, and carry it down to them. The Hall will grumble the whole while."
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 4
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": "<=",
+          "right": 6
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_mb_nab_bogditch",
+          "id": "lq_eel_name",
+          "words": "What was your gran's name?",
+          "reply": "A Mirebridge name, from before the water came over. I'll say it to you, and you say it to whoever's writing the names down. She'd have liked that."
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_shared",
+   "journal": "One gap is left in the weir, and Fenshore has a share of the Fish Hall's eels.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_ivo_sootridge",
+     "text": "Dry feet. One gap in the weir, and the Hall pays its share. Half a pot is still supper. I'd rather the whole run, mind."
+    },
+    {
+     "kind": "harvest.override",
+     "area": "fish",
+     "word": "fair",
+     "days": 60,
+     "words": "one gap left in the weir",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "board.post",
+     "town": "fenshore",
+     "days": 28,
+     "ifRefused": "skip",
+     "text": "ONE GAP IN THE WEIR, and a share of every Fish Hall eel to Fenshore. Mud and eels, it's more supper than we had."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_eels",
+     "value": "shared",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "after_shared-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "A game minute in: the witnesses' choices in their windows for this visit (npc.offer is a trigger's).",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_mb_nab_bogditch",
+        "id": "lq_eel_nab",
+        "words": "Where have the eels gone?",
+        "reply": "Not here, and the herons are leaving too. My gran said the eels come up the creek because the drowned send them. If the drowned have stopped sending, somebody's standing in the way."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_fh_rowan_cragpeak",
+        "id": "lq_eel_rowan",
+        "words": "Did you see anyone on the river?",
+        "reply": "Wolves with mallets in the drizzle, driving stakes below Rivermouth. I didn't ask whose. I've a cottage and no wish to lose it."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_jasper_greymore",
+        "id": "lq_eel_jasper",
+        "words": "What lifts the nets at the weir?",
+        "reply": "A Ridgemere boat with a Fish Hall mark on the oars, every dawn, friend. Two guards keep the weir by night, with a lamp on a float. Folk say that's the drowned walking. It isn't. It's a lamp on a float."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_karin_wetridge",
+        "id": "lq_eel_share",
+        "words": "One gap in the weir, and Fenshore gets a share of every eel.",
+        "reply": "#greet#. A gap and a share? The Hall sells more eels than Fenshore ever ate. A share is cheaper than a war on the river. Take the first of it now, and carry it down to them. The Hall will grumble the whole while."
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 4
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": "<=",
+          "right": 6
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_mb_nab_bogditch",
+          "id": "lq_eel_name",
+          "words": "What was your gran's name?",
+          "reply": "A Mirebridge name, from before the water came over. I'll say it to you, and you say it to whoever's writing the names down. She'd have liked that."
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "tests": [
+  {
+   "name": "A pack pulls the weir; a tie at the reckoning lets the eels run; the weir is back next season",
+   "cohort": [],
+   "parties": {
+    "wolf-ash": "p1",
+    "wolf-birch": "p1"
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "withy",
+     "cell": "w_ridgemere_4_13",
+     "detail": "run"
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 0.12,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_mb_nab_bogditch",
+     "detail": "lq_eel_nab"
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 0.13,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_fh_rowan_cragpeak",
+     "detail": "lq_eel_rowan"
+    },
+    {
+     "id": "e5",
+     "kind": "dialogue choice",
+     "day": 0.14,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_jasper_greymore",
+     "detail": "lq_eel_jasper"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.15,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 0.2,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e8",
+     "kind": "region entered",
+     "day": 0.21,
+     "actor": "wolf-cedar",
+     "target": "withy",
+     "cell": "w_ridgemere_4_13",
+     "detail": "run"
+    },
+    {
+     "id": "e9",
+     "kind": "dialogue choice",
+     "day": 0.22,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "tn_mb_nab_bogditch",
+     "detail": "lq_eel_nab"
+    },
+    {
+     "id": "e10",
+     "kind": "dialogue choice",
+     "day": 0.23,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "tn_fh_rowan_cragpeak",
+     "detail": "lq_eel_rowan"
+    },
+    {
+     "id": "e11",
+     "kind": "dialogue choice",
+     "day": 0.24,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_jasper_greymore",
+     "detail": "lq_eel_jasper"
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 0.25,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 0.3,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "weir"
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 0.31,
+     "actor": "wolf-birch",
+     "target": "weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "run"
+    },
+    {
+     "id": "e15",
+     "kind": "region entered",
+     "day": 0.32,
+     "actor": "wolf-ash",
+     "target": "weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "run"
+    },
+    {
+     "id": "e16",
+     "kind": "hour",
+     "day": 0.79,
+     "detail": "19",
+     "quantity": 19
+    },
+    {
+     "id": "e17",
+     "kind": "hour",
+     "day": 0.875,
+     "detail": "21",
+     "quantity": 21,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_3_12",
+        "x": 240,
+        "y": 100,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 2,
+        "carries": {},
+        "coins": 10
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_3_12",
+        "x": 240,
+        "y": 100,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 2,
+        "carries": {},
+        "coins": 10
+       }
+      },
+      "world": {
+       "hour": 21
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "bandit falls",
+     "day": 0.88,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e19",
+     "kind": "bandit falls",
+     "day": 0.881,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e20",
+     "kind": "bandit falls",
+     "day": 0.882,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e21",
+     "kind": "camp cleared",
+     "day": 0.885,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "by Ash"
+    },
+    {
+     "id": "e22",
+     "kind": "item picked up",
+     "day": 0.886,
+     "actor": "wolf-ash",
+     "item": "oil_lamp",
+     "cell": "w_ridgemere_3_12",
+     "quantity": 1
+    },
+    {
+     "id": "e23",
+     "kind": "item picked up",
+     "day": 0.887,
+     "actor": "wolf-ash",
+     "item": "staves",
+     "cell": "w_ridgemere_3_12",
+     "quantity": 6
+    },
+    {
+     "id": "e24",
+     "kind": "item picked up",
+     "day": 0.888,
+     "actor": "wolf-birch",
+     "item": "staves",
+     "cell": "w_ridgemere_3_12",
+     "quantity": 20
+    },
+    {
+     "id": "e25",
+     "kind": "item picked up",
+     "day": 0.889,
+     "actor": "wolf-cedar",
+     "item": "staves",
+     "cell": "w_ridgemere_3_12",
+     "quantity": 20
+    },
+    {
+     "id": "e26",
+     "kind": "item picked up",
+     "day": 0.89,
+     "actor": "wolf-ash",
+     "item": "staves",
+     "cell": "w_ridgemere_3_12",
+     "quantity": 9
+    },
+    {
+     "id": "e27",
+     "kind": "arrival",
+     "day": 0.895,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e28",
+     "kind": "quest accepted",
+     "day": 0.9,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "eels_run"
+    },
+    {
+     "id": "e29",
+     "kind": "quest accepted",
+     "day": 0.91,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "eels_share"
+    },
+    {
+     "id": "e30",
+     "kind": "quest accepted",
+     "day": 0.92,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "eels_share"
+    },
+    {
+     "id": "e31",
+     "kind": "hour",
+     "day": 1.79,
+     "detail": "19",
+     "quantity": 19,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_4_13",
+        "x": 36,
+        "y": 108,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_2_14",
+        "x": 168,
+        "y": 190,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      },
+      "world": {
+       "hour": 19
+      }
+     }
+    },
+    {
+     "id": "e32",
+     "kind": "gift",
+     "day": 1.8,
+     "actor": "wolf-ash",
+     "target": "cty_ivo_sootridge",
+     "item": "fish",
+     "quantity": 2,
+     "cell": "w_ridgemere_2_14"
+    },
+    {
+     "id": "e33",
+     "kind": "dialogue choice",
+     "day": 1.805,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_karin_wetridge",
+     "detail": "lq_eel_share"
+    },
+    {
+     "id": "e34",
+     "kind": "enter place",
+     "day": 1.81,
+     "actor": "wolf-birch",
+     "target": "rm_the_fish_hall",
+     "cell": "rm_the_fish_hall",
+     "detail": "w_ridgemere_0_0"
+    },
+    {
+     "id": "e35",
+     "kind": "dialogue choice",
+     "day": 1.82,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_karin_wetridge",
+     "detail": "lq_eel_share"
+    },
+    {
+     "id": "e36",
+     "kind": "gift",
+     "day": 1.83,
+     "actor": "wolf-birch",
+     "target": "cty_ivo_sootridge",
+     "item": "",
+     "quantity": 0,
+     "coins": 10,
+     "cell": "w_ridgemere_2_14"
+    },
+    {
+     "id": "e37",
+     "kind": "day begins",
+     "day": 2.0,
+     "detail": "Hearthday",
+     "item": "spring",
+     "quantity": 12
+    },
+    {
+     "id": "e38",
+     "kind": "hour",
+     "day": 4.0,
+     "detail": "0",
+     "quantity": 0
+    },
+    {
+     "id": "e39",
+     "kind": "season begins",
+     "day": 5.0,
+     "detail": "summer"
+    },
+    {
+     "id": "e40",
+     "kind": "hour",
+     "day": 5.01,
+     "detail": "0",
+     "quantity": 0
+    },
+    {
+     "id": "e41",
+     "kind": "day begins",
+     "day": 20.0,
+     "detail": "Riverday",
+     "item": "summer",
+     "quantity": 15
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_run",
+    "open"
+   ],
+   "expectQuests": {
+    "traps": {
+     "wolf-ash": "done",
+     "wolf-cedar": "done"
+    },
+    "weir": {
+     "party:p1": "done"
+    },
+    "eels_run": {
+     "wolf-ash": "done"
+    },
+    "eels_share": {
+     "wolf-ash": "failed",
+     "wolf-birch": "done"
+    }
+   },
+   "expectVariables": {
+    "story": {
+     "t_run": 0,
+     "t_share": 0,
+     "share_paid": 10,
+     "kept": false
+    },
+    "player": {
+     "wolf-ash": {
+      "road": "eels_run",
+      "lq_coin": 6,
+      "lq_thin": true
+     },
+     "wolf-birch": {
+      "road": "eels_share",
+      "lq_coin": 18
+     }
+    },
+    "world": {
+     "lq_eels": "weir",
+     "coin_fenshore_day": 14,
+     "coin_ridgemere_day": 10,
+     "nh_realm": 32,
+     "nh_voice_fenshore": 32,
+     "nh_threat": 29
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:ridgemere": 2000
+    }
+   }
+  },
+  {
+   "name": "Four wolves at the upper weir; the share wins; the last pay is bread; the river is kept next season",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "withy",
+     "cell": "w_ridgemere_4_13",
+     "detail": "run"
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 0.12,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_mb_nab_bogditch",
+     "detail": "lq_eel_nab"
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 0.13,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_fh_rowan_cragpeak",
+     "detail": "lq_eel_rowan"
+    },
+    {
+     "id": "e5",
+     "kind": "dialogue choice",
+     "day": 0.14,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_jasper_greymore",
+     "detail": "lq_eel_jasper"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.15,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 0.2,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e8",
+     "kind": "region entered",
+     "day": 0.21,
+     "actor": "wolf-birch",
+     "target": "withy",
+     "cell": "w_ridgemere_4_13",
+     "detail": "run"
+    },
+    {
+     "id": "e9",
+     "kind": "dialogue choice",
+     "day": 0.22,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "tn_mb_nab_bogditch",
+     "detail": "lq_eel_nab"
+    },
+    {
+     "id": "e10",
+     "kind": "dialogue choice",
+     "day": 0.23,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "tn_fh_rowan_cragpeak",
+     "detail": "lq_eel_rowan"
+    },
+    {
+     "id": "e11",
+     "kind": "dialogue choice",
+     "day": 0.24,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_jasper_greymore",
+     "detail": "lq_eel_jasper"
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 0.25,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 0.3,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 0.31,
+     "actor": "wolf-cedar",
+     "target": "withy",
+     "cell": "w_ridgemere_4_13",
+     "detail": "run"
+    },
+    {
+     "id": "e15",
+     "kind": "dialogue choice",
+     "day": 0.32,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "tn_mb_nab_bogditch",
+     "detail": "lq_eel_nab"
+    },
+    {
+     "id": "e16",
+     "kind": "dialogue choice",
+     "day": 0.33,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "tn_fh_rowan_cragpeak",
+     "detail": "lq_eel_rowan"
+    },
+    {
+     "id": "e17",
+     "kind": "dialogue choice",
+     "day": 0.34,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_jasper_greymore",
+     "detail": "lq_eel_jasper"
+    },
+    {
+     "id": "e18",
+     "kind": "quest handed in",
+     "day": 0.35,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e19",
+     "kind": "quest accepted",
+     "day": 0.4,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e20",
+     "kind": "region entered",
+     "day": 0.41,
+     "actor": "wolf-dun",
+     "target": "withy",
+     "cell": "w_ridgemere_4_13",
+     "detail": "run"
+    },
+    {
+     "id": "e21",
+     "kind": "dialogue choice",
+     "day": 0.42,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "tn_mb_nab_bogditch",
+     "detail": "lq_eel_nab"
+    },
+    {
+     "id": "e22",
+     "kind": "dialogue choice",
+     "day": 0.43,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "tn_fh_rowan_cragpeak",
+     "detail": "lq_eel_rowan"
+    },
+    {
+     "id": "e23",
+     "kind": "dialogue choice",
+     "day": 0.44,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_jasper_greymore",
+     "detail": "lq_eel_jasper"
+    },
+    {
+     "id": "e24",
+     "kind": "quest handed in",
+     "day": 0.45,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e25",
+     "kind": "quest accepted",
+     "day": 0.5,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "weir"
+    },
+    {
+     "id": "e26",
+     "kind": "quest accepted",
+     "day": 0.5,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "weir"
+    },
+    {
+     "id": "e27",
+     "kind": "quest accepted",
+     "day": 0.5,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "weir"
+    },
+    {
+     "id": "e28",
+     "kind": "quest accepted",
+     "day": 0.5,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "",
+     "detail": "weir"
+    },
+    {
+     "id": "e29",
+     "kind": "region entered",
+     "day": 0.51,
+     "actor": "wolf-ash",
+     "target": "weir_b",
+     "cell": "w_ridgemere_3_12",
+     "detail": "run"
+    },
+    {
+     "id": "e30",
+     "kind": "region entered",
+     "day": 0.51,
+     "actor": "wolf-birch",
+     "target": "weir_b",
+     "cell": "w_ridgemere_3_12",
+     "detail": "run"
+    },
+    {
+     "id": "e31",
+     "kind": "region entered",
+     "day": 0.51,
+     "actor": "wolf-cedar",
+     "target": "weir_b",
+     "cell": "w_ridgemere_3_12",
+     "detail": "run"
+    },
+    {
+     "id": "e32",
+     "kind": "region entered",
+     "day": 0.51,
+     "actor": "wolf-dun",
+     "target": "weir_b",
+     "cell": "w_ridgemere_3_12",
+     "detail": "run"
+    },
+    {
+     "id": "e33",
+     "kind": "hour",
+     "day": 0.9,
+     "detail": "22",
+     "quantity": 22,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_3_12",
+        "x": 245,
+        "y": 50,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_3_12",
+        "x": 245,
+        "y": 50,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       },
+       "wolf-cedar": {
+        "cell": "w_ridgemere_3_12",
+        "x": 245,
+        "y": 50,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       },
+       "wolf-dun": {
+        "cell": "w_ridgemere_3_12",
+        "x": 245,
+        "y": 50,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      },
+      "world": {
+       "hour": 22
+      }
+     }
+    },
+    {
+     "id": "e34",
+     "kind": "bandit falls",
+     "day": 0.91,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e35",
+     "kind": "bandit falls",
+     "day": 0.91,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e36",
+     "kind": "bandit falls",
+     "day": 0.91,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e37",
+     "kind": "bandit falls",
+     "day": 0.91,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e38",
+     "kind": "bandit falls",
+     "day": 0.91,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e39",
+     "kind": "bandit falls",
+     "day": 0.91,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e40",
+     "kind": "bandit falls",
+     "day": 0.91,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e41",
+     "kind": "bandit falls",
+     "day": 0.91,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e42",
+     "kind": "bandit falls",
+     "day": 0.91,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e43",
+     "kind": "bandit falls",
+     "day": 0.91,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e44",
+     "kind": "bandit falls",
+     "day": 0.91,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e45",
+     "kind": "bandit falls",
+     "day": 0.91,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e46",
+     "kind": "camp cleared",
+     "day": 0.92,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "by Dun"
+    },
+    {
+     "id": "e47",
+     "kind": "item picked up",
+     "day": 0.93,
+     "actor": "wolf-ash",
+     "item": "staves",
+     "cell": "w_ridgemere_3_12",
+     "quantity": 15
+    },
+    {
+     "id": "e48",
+     "kind": "item picked up",
+     "day": 0.93,
+     "actor": "wolf-birch",
+     "item": "staves",
+     "cell": "w_ridgemere_3_12",
+     "quantity": 15
+    },
+    {
+     "id": "e49",
+     "kind": "item picked up",
+     "day": 0.93,
+     "actor": "wolf-cedar",
+     "item": "staves",
+     "cell": "w_ridgemere_3_12",
+     "quantity": 15
+    },
+    {
+     "id": "e50",
+     "kind": "item picked up",
+     "day": 0.93,
+     "actor": "wolf-dun",
+     "item": "staves",
+     "cell": "w_ridgemere_3_12",
+     "quantity": 15
+    },
+    {
+     "id": "e51",
+     "kind": "arrival",
+     "day": 0.95,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e52",
+     "kind": "quest accepted",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "eels_share"
+    },
+    {
+     "id": "e53",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "eels_share"
+    },
+    {
+     "id": "e54",
+     "kind": "quest accepted",
+     "day": 1.02,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "eels_run"
+    },
+    {
+     "id": "e55",
+     "kind": "dialogue choice",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_mb_nab_bogditch",
+     "detail": "lq_eel_name"
+    },
+    {
+     "id": "e56",
+     "kind": "region entered",
+     "day": 1.78,
+     "actor": "wolf-cedar",
+     "target": "withy",
+     "cell": "w_ridgemere_4_13",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 18
+      },
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_4_13",
+        "x": 36,
+        "y": 108,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e57",
+     "kind": "hour",
+     "day": 4.1,
+     "detail": "2",
+     "quantity": 2
+    },
+    {
+     "id": "e58",
+     "kind": "season begins",
+     "day": 6.0,
+     "detail": "summer"
+    },
+    {
+     "id": "e59",
+     "kind": "hour",
+     "day": 6.01,
+     "detail": "0",
+     "quantity": 0
+    },
+    {
+     "id": "e60",
+     "kind": "quest accepted",
+     "day": 6.1,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e61",
+     "kind": "hour",
+     "day": 21.0,
+     "detail": "0",
+     "quantity": 0
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_shared",
+    "open"
+   ],
+   "expectQuests": {
+    "weir": {
+     "party:wolf-ash": "done",
+     "party:wolf-birch": "done",
+     "party:wolf-cedar": "done",
+     "party:wolf-dun": "done"
+    },
+    "eels_share": {
+     "wolf-ash": "active",
+     "wolf-birch": "active"
+    },
+    "eels_run": {
+     "wolf-cedar": "active"
+    }
+   },
+   "expectVariables": {
+    "story": {
+     "t_run": 0,
+     "t_share": 0,
+     "kept": true
+    },
+    "player": {
+     "wolf-ash": {
+      "lq_coin": 6
+     },
+     "wolf-dun": {
+      "lq_thin": true
+     }
+    },
+    "world": {
+     "lq_eels": "shared",
+     "coin_fenshore_day": 18,
+     "nh_names": 0
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:ridgemere": 2000
+    }
+   }
+  },
+  {
+   "name": "A lone wolf finishes the weir after it falls; the gran is asked; nobody shares, the eels run",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "withy",
+     "cell": "w_ridgemere_4_13",
+     "detail": "run"
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 0.12,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_mb_nab_bogditch",
+     "detail": "lq_eel_nab"
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 0.13,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_fh_rowan_cragpeak",
+     "detail": "lq_eel_rowan"
+    },
+    {
+     "id": "e5",
+     "kind": "dialogue choice",
+     "day": 0.14,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_jasper_greymore",
+     "detail": "lq_eel_jasper"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.15,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 0.2,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "weir"
+    },
+    {
+     "id": "e8",
+     "kind": "region entered",
+     "day": 0.21,
+     "actor": "wolf-ash",
+     "target": "weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "run"
+    },
+    {
+     "id": "e9",
+     "kind": "item picked up",
+     "day": 0.3,
+     "actor": "wolf-ash",
+     "item": "staves",
+     "cell": "w_ridgemere_3_12",
+     "quantity": 45
+    },
+    {
+     "id": "e10",
+     "kind": "arrival",
+     "day": 0.305,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e11",
+     "kind": "bandit falls",
+     "day": 0.31,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e12",
+     "kind": "bandit falls",
+     "day": 0.31,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e13",
+     "kind": "bandit falls",
+     "day": 0.31,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_weir",
+     "cell": "w_ridgemere_3_12",
+     "detail": "a weir guard"
+    },
+    {
+     "id": "e14",
+     "kind": "day begins",
+     "day": 1.0,
+     "detail": "Hearthday",
+     "item": "spring",
+     "quantity": 2
+    },
+    {
+     "id": "e15",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "eels_run"
+    },
+    {
+     "id": "e16",
+     "kind": "dialogue choice",
+     "day": 1.2,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_mb_nab_bogditch",
+     "detail": "lq_eel_name"
+    },
+    {
+     "id": "e17",
+     "kind": "hour",
+     "day": 1.875,
+     "detail": "21",
+     "quantity": 21,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_3_12",
+        "x": 240,
+        "y": 100,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      },
+      "world": {
+       "hour": 21
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "bandits scattered",
+     "day": 1.9,
+     "actor": "camp_story_9",
+     "cell": "w_ridgemere_3_12",
+     "detail": "starved out"
+    },
+    {
+     "id": "e19",
+     "kind": "hour",
+     "day": 4.2,
+     "detail": "3",
+     "quantity": 3
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_run"
+   ],
+   "expectVariables": {
+    "world": {
+     "nh_names": 0,
+     "lq_eels": "run"
+    },
+    "story": {
+     "t_run": 1
+    }
+   },
+   "expectQuests": {
+    "eels_run": {
+     "wolf-ash": "active"
+    },
+    "weir": {
+     "party:wolf-ash": "done"
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:ridgemere": 2000
+    }
+   }
+  },
+  {
+   "name": "The weir falls and nobody takes a road: after 7 days the eels run by default",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "withy",
+     "cell": "w_ridgemere_4_13",
+     "detail": "run"
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 0.12,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_mb_nab_bogditch",
+     "detail": "lq_eel_nab"
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 0.13,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "tn_fh_rowan_cragpeak",
+     "detail": "lq_eel_rowan"
+    },
+    {
+     "id": "e5",
+     "kind": "dialogue choice",
+     "day": 0.14,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_jasper_greymore",
+     "detail": "lq_eel_jasper"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.15,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_ivo_sootridge",
+     "detail": "traps"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 0.2,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "weir"
+    },
+    {
+     "id": "e8",
+     "kind": "item picked up",
+     "day": 0.3,
+     "actor": "wolf-ash",
+     "item": "staves",
+     "cell": "w_ridgemere_3_12",
+     "quantity": 50
+    },
+    {
+     "id": "e9",
+     "kind": "hour",
+     "day": 0.31,
+     "detail": "7",
+     "quantity": 7
+    },
+    {
+     "id": "e10",
+     "kind": "arrival",
+     "day": 0.32,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e11",
+     "kind": "hour",
+     "day": 7.5,
+     "detail": "12",
+     "quantity": 12
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_run"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_eels": "run"
+    },
+    "story": {
+     "t_run": 0,
+     "t_share": 0,
+     "weir_left": 0
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:ridgemere": 2000
+    }
+   }
+  }
+ ]
+}

@@ -348,6 +348,81 @@ void whereArrivalsStay()
         expect(r.skill == 5, "new to the docks' work");
     }
 }
+// Doc 86, J7 (npc.queue): an unplaced resident a story put first in line for the next post that falls vacant in a town
+// comes for it before anyone the rules would choose (the baker, of another class, before the fisher); never a vacancy
+// made; refused for one placed or not of working age; kept through a save.
+void firstInLine()
+{
+    Society s(Roster::None);
+    s.configure(docks(false));
+    Fates f;
+    auto world = [&] {
+        auto w = f.world(s);
+        w.townOf = [](const std::string&) { return std::string("docks"); };
+        return w;
+    };
+    s.tendCareers(1.3, world());
+    expect(s.queueResident("tn_baker", "docks").kind == "queued", "the baker first in line at the docks");
+    expect(s.queueResident("tn_baker", "docks").kind == "held", "again: no change");
+    expect(s.queueResident("ivar", "docks").kind == "refused", "a placed resident is refused");
+    expect(s.queueResident("cty_pup", "docks").kind == "refused" && s.queueResident("cty_old", "docks").kind == "refused",
+           "a pup and the old are refused (not of an age to work)");
+    expect(s.queueResident("nobody", "docks").kind == "refused", "nobody the world knows is refused");
+    json::Value saved;
+    std::string problem;
+    expect(json::parse(json::dump(wire::society(s.state())), saved, problem), "the save reads: " + problem);
+    const auto again = wire::readSociety(saved);
+    expect(again.careers.queued.count("docks") && again.careers.queued.at("docks") == std::vector<std::string>{"tn_baker"},
+           "kept through a save");
+    const auto residents = s.state().residents.size();
+    for (int day = 2; day <= 14; ++day)
+    {
+        s.tendCareers(day + .3, world());
+        expect(count(s.takeRequests(), "arrival") == 0, "no vacancy, nobody sent for: it never makes one");
+    }
+    expect(s.state().residents.size() == residents, "and nobody new");
+    f.dead.insert("ivar");
+    s.died("ivar", 14.5);
+    std::vector<ResidentRequest> arrivals;
+    for (int day = 15; day <= 30 && arrivals.empty(); ++day)
+    {
+        s.tendCareers(day + .3, world());
+        for (auto& r : s.takeRequests())
+            if (r.kind == "arrival")
+                arrivals.push_back(r);
+    }
+    expect(arrivals.size() == 1 && arrivals[0].templateId == "tn_baker" && arrivals[0].positionId == "job:ivar",
+           "the baker, first in line, comes for the docker's post: " + (arrivals.empty() ? std::string("nobody") : arrivals[0].templateId));
+    expect(s.fills().count("first in line, by a story") && !s.fills().count("from the Country"), "first in line, not the Country's choice");
+    expect(s.state().careers.queued.empty(), "and the line is empty again");
+    // (Review of Phase 9: one first in line no longer of an age to work leaves the line, and the next is sent for.)
+    Society t(Roster::None);
+    t.configure(docks(false));
+    Fates g;
+    auto world2 = [&] {
+        auto w = g.world(t);
+        w.townOf = [](const std::string&) { return std::string("docks"); };
+        return w;
+    };
+    t.tendCareers(1.3, world2());
+    auto line = t.state();
+    line.careers.queued["docks"] = {"cty_old", "tn_baker"};
+    expect(t.restore(line), "a line with the old first");
+    g.dead.insert("ivar");
+    t.died("ivar", 1.5);
+    arrivals.clear();
+    for (int day = 2; day <= 20 && arrivals.empty(); ++day)
+    {
+        t.tendCareers(day + .3, world2());
+        for (auto& r : t.takeRequests())
+            if (r.kind == "arrival")
+                arrivals.push_back(r);
+    }
+    expect(arrivals.size() == 1 && arrivals[0].templateId == "tn_baker",
+           "the old one leaves the line; the baker behind them comes: " + (arrivals.empty() ? std::string("nobody") : arrivals[0].templateId));
+    expect(t.state().careers.queued.empty(), "nobody left in line");
+}
+
 // Doc 79, 6.3: a post's kind and class without the city's loop (postKind, postRules in RatwCareers.cpp: city_loop.json's
 // `wages` as they stood, the file gone since Phase 3).
 void postKindsWithoutTheLoop()
@@ -499,6 +574,7 @@ int main()
         postKindsWithoutTheLoop();
         theStagedEconomy();
         stagedPostsStillFill();
+        firstInLine();
     }
     catch (const std::exception& error)
     {

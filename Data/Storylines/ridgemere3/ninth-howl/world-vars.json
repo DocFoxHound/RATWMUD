@@ -1,0 +1,821 @@
+{
+ "format": "ratw-world-vars",
+ "version": 1,
+ "world": "ridgemere3",
+ "worldId": "upper_accord",
+ "about": "The Ninth Howl's world variables (Docs/Design/86 10.1 step 2; artifacts/quests/design/campaign.md 4 and 2.11). The DM declares every one before nh-purses and Act I are approved: tools/nh_world_vars.py --apply, or by hand in Campaigns > World variables (a type, the first value, the note). Every story that uses one declares it with the same name and type.",
+ "variables": [
+  {
+   "name": "nh_stage",
+   "type": "number",
+   "value": 0,
+   "note": "The Ninth Howl chapter now running, 1-9 (0: none yet; the stage pack waits in quiet). Written by the chapters; packs only read it.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_realm",
+   "type": "number",
+   "value": 0,
+   "note": "The realm's voice: every deed point of the campaign, cumulative. Chapters and packs add.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_voice_ridgemere",
+   "type": "number",
+   "value": 0,
+   "note": "Ridgemere's strand of the realm's voice, in deed points with distance weight. Chapters and packs add.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_voice_coldwater",
+   "type": "number",
+   "value": 0,
+   "note": "Coldwater's strand of the realm's voice, in deed points with distance weight. Chapters and packs add.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_voice_larkfield",
+   "type": "number",
+   "value": 0,
+   "note": "Larkfield's strand of the realm's voice, in deed points with distance weight. Chapters and packs add.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_voice_southmeadow",
+   "type": "number",
+   "value": 0,
+   "note": "Southmeadow's strand of the realm's voice, in deed points with distance weight. Chapters and packs add.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_voice_fenshore",
+   "type": "number",
+   "value": 0,
+   "note": "Fenshore's strand of the realm's voice, in deed points with distance weight. Chapters and packs add.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_voice_saltwell",
+   "type": "number",
+   "value": 0,
+   "note": "Saltwell's strand of the realm's voice, in deed points with distance weight. Chapters and packs add.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_voice_oakhaven",
+   "type": "number",
+   "value": 0,
+   "note": "Oakhaven's strand of the realm's voice, in deed points with distance weight. Chapters and packs add.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_voice_frosthollow",
+   "type": "number",
+   "value": 0,
+   "note": "Frosthollow's strand of the realm's voice, in deed points with distance weight. Chapters and packs add.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_voice_mirebridge",
+   "type": "number",
+   "value": 0,
+   "note": "Mirebridge's strand of the realm's voice, in deed points with distance weight. Chapters and packs add.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_raised",
+   "type": "texts",
+   "value": [],
+   "note": "Communities whose voice is raised (for good). Chapters only.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_steps",
+   "type": "texts",
+   "value": [],
+   "note": "Ember steps already fired, e.g. coldwater-2. Chapters only.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_keepers",
+   "type": "texts",
+   "value": [],
+   "note": "Communities whose gathering howl has been found (Ch 4 on). Chapters only.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_posts",
+   "type": "texts",
+   "value": [],
+   "note": "Howl Line posts raised (campaign 5.2 ids). Chapters only.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_surplus",
+   "type": "number",
+   "value": 0,
+   "note": "Deed points past the chapter goals. Chapters only.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_threat",
+   "type": "number",
+   "value": 30,
+   "note": "The Grey Captain's grip on the roads, 0-100: +5 a camp formed, +3 a raid, -5 a camp cleared, -1 a bandit falling. Chapters; pack bounties lower it.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_names",
+   "type": "number",
+   "value": 0,
+   "note": "The Book of Names (Ch 4-6). Chapters; packs add in Ch 4-6 only.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_bought",
+   "type": "number",
+   "value": 0,
+   "note": "Debtors' howls pledged to Greatly: every 5 is one Purse voice at the Moot, 3 at most. Chapters and Purse errands.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_back_lamp",
+   "type": "number",
+   "value": 0,
+   "note": "The lamp backing's weight: the sum of its backers' voices when they backed it. Chapters only.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_back_blood",
+   "type": "number",
+   "value": 0,
+   "note": "The blood backing's weight: the sum of its backers' voices when they backed it. Chapters only.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_back_moot",
+   "type": "number",
+   "value": 0,
+   "note": "The moot backing's weight: the sum of its backers' voices when they backed it. Chapters only.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_back_purse",
+   "type": "number",
+   "value": 0,
+   "note": "The purse backing's weight: the sum of its backers' voices when they backed it. Chapters only.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_t_stand",
+   "type": "number",
+   "value": 0,
+   "note": "Dagfinn's Question: the voices advising him to stand. Chapters only.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_t_step",
+   "type": "number",
+   "value": 0,
+   "note": "Dagfinn's Question: the voices advising him to keep the lamp and let others stand. Chapters only.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_answered",
+   "type": "number",
+   "value": 0,
+   "note": "Howl Line posts that answered on the Moot night, 0-13. Ch 9.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_pushed",
+   "type": "texts",
+   "value": [],
+   "note": "Chapters the admin advanced (ch1 ... ch9), for the epilogue. Each closing phase, when its cause was advance.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_mere_frozen",
+   "type": "switch",
+   "value": false,
+   "note": "The Upper Mere is iced: winter, or Ch 8's early freeze. Ch 8 writes it; packs read it.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_moot",
+   "type": "text",
+   "value": "",
+   "note": "The Moot's name, set at the call: midwinter or nine_howls. Packs withdraw their s9 quests once it is set. Ch 9.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_grace",
+   "type": "switch",
+   "value": false,
+   "note": "The DM turns it on when seeding the optional realm talk key nh_debts=grace by hand (campaign 3.4.4): Ch 1's chalk notice then begins THE GRACE IS OVER, and Ch 1 turns it off again. Ch 1 only.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_scars",
+   "type": "texts",
+   "value": [],
+   "note": "Scars the realm carries (nobody_came, houses_first, voices_sold, ...; campaign 4.1). Chapters only.",
+   "group": "progress (campaign 4.1)"
+  },
+  {
+   "name": "nh_debtors_freed",
+   "type": "residents",
+   "value": [],
+   "note": "Debtors freed (Ch 2). Chapters only.",
+   "group": "resident lists (campaign 4.2)"
+  },
+  {
+   "name": "nh_bought_from",
+   "type": "residents",
+   "value": [],
+   "note": "Debtors who pledged to Greatly (Ch 2; Ch 4 takes out the ones bought back). Chapters only.",
+   "group": "resident lists (campaign 4.2)"
+  },
+  {
+   "name": "nh_carriers_done",
+   "type": "residents",
+   "value": [],
+   "note": "Grayrock letter carriers whose letter was taken (Ch 5). Chapters only.",
+   "group": "resident lists (campaign 4.2)"
+  },
+  {
+   "name": "nh_witnesses_heard",
+   "type": "residents",
+   "value": [],
+   "note": "Weep witnesses who have spoken (Ch 8). Chapters only.",
+   "group": "resident lists (campaign 4.2)"
+  },
+  {
+   "name": "nh_owners_returned",
+   "type": "residents",
+   "value": [],
+   "note": "Owners of the Captain's cache who got their goods back (Ch 6). Chapters only.",
+   "group": "resident lists (campaign 4.2)"
+  },
+  {
+   "name": "nh_b_willa",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 1. Values: home, alone. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_logger",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 1. Values: cleared, believed (sets Oakhaven's Keeper). Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_purse1",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 1. Values: household, greatly (the Queen's Purse). Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_ledger",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 2. Values: shown, kept, ash, none. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_spy",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 2. Values: told_king, told_queen, paid, none. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_seam",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 2. Values: honest, crooked, none. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_loan",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 2: the Counting House's loan to the Crown (campaign Ch 2, two thirds). Values: offered (open), taken (every small note paid; House Greatly's vote counts 2 at the Moot), refused, or empty (never offered). Packs read it; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_lists",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 3. Values: bettany, press, captain, sold, lost. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_desmond",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 3, Ch 7. Values: held, fled, free; later mercy, pillory, redeemed. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_lorn",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 3. Values: turned, shamed, none. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_relay",
+   "type": "number",
+   "value": 0,
+   "note": "Branch result, set in Ch 4. posts answered at the rehearsal. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_silver",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 4. Values: crown, greatly, none. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_cough",
+   "type": "switch",
+   "value": false,
+   "note": "Branch result, set in Ch 4. on: Ottilie tended. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_gudrun",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 5. Values: match, shown, ash, none. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_hills",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 5. Values: oakhaven, split, fell. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_toll",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 5. Values: cried, bargained, none. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_grayrock",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 5. Values: crown, wharf, absent. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_wharf",
+   "type": "switch",
+   "value": false,
+   "note": "Branch result, set in Ch 5. on: Aldric heard the drowned names. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_envoy",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 5. Values: walked, alone. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_tobias",
+   "type": "switch",
+   "value": false,
+   "note": "Branch result, set in Ch 5. on: Tobias Grayrock was coached in how a House vote is weighed (two wolves did it), so an absent lord's vote is not Lavinia's to cast. Packs read it; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_julian",
+   "type": "switch",
+   "value": false,
+   "note": "Branch result, set in Ch 5. on: Julian Greatly signed on the Grey Tern for spring (A Berth for Julian), an empty chair in the Bought Crown. Packs read it; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_lights",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 6. Values: laid, turned, faded. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_quarrel",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 6. Values: fell_timber, houses_greatly, greatly_grayrock, against_crown. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_peace",
+   "type": "switch",
+   "value": false,
+   "note": "Branch result, set in Ch 6. on: the peace was kept. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_sloe",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 6. Values: turned, exposed, none. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_ford",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 7. Values: held, burned. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_parley",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 7. Values: offered, refused, broken, none. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_writ",
+   "type": "switch",
+   "value": false,
+   "note": "Branch result, set in Ch 8. on: the writ was found. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_oskar",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 8. Values: confessed, exposed, fled, paid. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_oda",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 8. Values: contest, accept, none. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_tansy",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 8. Values: taught, pledged, hidden, found. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_bell",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 8. Values: rung, cracked, lost. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_fenwick",
+   "type": "switch",
+   "value": false,
+   "note": "Branch result, set in Ch 8. on: confessed. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_stands",
+   "type": "switch",
+   "value": false,
+   "note": "Branch result, set in Ch 8. on: Dagfinn stands. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_ulric",
+   "type": "number",
+   "value": 0,
+   "note": "Ulric's thread: 1 once the lamp-oil list with no Deepvein name is read to him (Ch 3, or Ch 8 for a late joiner), 2 once the mine captain has confessed at the Lamp and Pick (Ch 8). Ch 8 needs 1 for the confession. Packs read it; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_code_known",
+   "type": "switch",
+   "value": false,
+   "note": "The lamp code is known: two long and one short (Ch 3, when Lorn Hedgeton turned and gave it up). Ch 7 reads it: the Larkfield smith's flash from the reed end walks a river wave into the shallows. Packs read it; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_note",
+   "type": "switch",
+   "value": false,
+   "note": "Branch result, set in Ch 8. on: Ambrose's note to the Chancellor ('Lose it, and your note is torn') was found at the Greatly Bank flat; opens the Press road for the Chancellor and counts as Ambrose's lie shown at Ch 9's Turn. Packs read it; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_draft",
+   "type": "switch",
+   "value": false,
+   "note": "Branch result, set in Ch 8. on: the old King's draft of the lamp-book line was found in the cathedral crypt; at the Moot it adds 1 free-wolf voice if the writ was never found (campaign 9.4). Packs read it; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_captain",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 9. Values: turned, beaten, fled, dead. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_crown",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 9. Values: ottilie, lamp, regency, bought. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_b_concord",
+   "type": "text",
+   "value": "",
+   "note": "Branch result, set in Ch 9. Values: answers, holds, bends. Packs read it to gate a quest; packs never write a branch.",
+   "group": "branch results (campaign 4.3; packs read, never write)"
+  },
+  {
+   "name": "nh_quick_registered",
+   "type": "wolves",
+   "value": [],
+   "note": "Quickened wolves who registered with the Wardens.",
+   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
+  },
+  {
+   "name": "nh_quick_hidden",
+   "type": "wolves",
+   "value": [],
+   "note": "Quickened wolves who stayed hidden from the Wardens.",
+   "group": "per-wolf state across acts (campaign 4.4 fallback; wolves lists, 500 at most)"
+  },
+  {
+   "name": "coin_ridgemere_day",
+   "type": "number",
+   "value": 0,
+   "note": "Story coin paid today from town:ridgemere by every story (day cap 135); nh-purses sets it to 0 each day. Paying stories add.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_coldwater_day",
+   "type": "number",
+   "value": 0,
+   "note": "Story coin paid today from town:coldwater by every story (day cap 21); nh-purses sets it to 0 each day. Paying stories add.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_larkfield_day",
+   "type": "number",
+   "value": 0,
+   "note": "Story coin paid today from town:larkfield by every story (day cap 24); nh-purses sets it to 0 each day. Paying stories add.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_southmeadow_day",
+   "type": "number",
+   "value": 0,
+   "note": "Story coin paid today from town:southmeadow by every story (day cap 23); nh-purses sets it to 0 each day. Paying stories add.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_fenshore_day",
+   "type": "number",
+   "value": 0,
+   "note": "Story coin paid today from town:fenshore by every story (day cap 21); nh-purses sets it to 0 each day. Paying stories add.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_saltwell_day",
+   "type": "number",
+   "value": 0,
+   "note": "Story coin paid today from town:saltwell by every story (day cap 22); nh-purses sets it to 0 each day. Paying stories add.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_oakhaven_day",
+   "type": "number",
+   "value": 0,
+   "note": "Story coin paid today from town:oakhaven by every story (day cap 24); nh-purses sets it to 0 each day. Paying stories add.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_frosthollow_day",
+   "type": "number",
+   "value": 0,
+   "note": "Story coin paid today from town:frosthollow by every story (day cap 24); nh-purses sets it to 0 each day. Paying stories add.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_till_eleanor_saltcot_day",
+   "type": "number",
+   "value": 0,
+   "note": "Story coin paid today from till:job:rm_eleanor_saltcot by every story (day cap 16); nh-purses sets it to 0 each day. Paying stories add.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_ridgemere_ok",
+   "type": "switch",
+   "value": true,
+   "note": "town:ridgemere is above its floor: off below 60, on again at 80. nh-purses only.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_coldwater_ok",
+   "type": "switch",
+   "value": true,
+   "note": "town:coldwater is above its floor: off below 60, on again at 80. nh-purses only.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_larkfield_ok",
+   "type": "switch",
+   "value": true,
+   "note": "town:larkfield is above its floor: off below 60, on again at 80. nh-purses only.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_southmeadow_ok",
+   "type": "switch",
+   "value": true,
+   "note": "town:southmeadow is above its floor: off below 60, on again at 80. nh-purses only.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_fenshore_ok",
+   "type": "switch",
+   "value": true,
+   "note": "town:fenshore is above its floor: off below 60, on again at 80. nh-purses only.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_saltwell_ok",
+   "type": "switch",
+   "value": true,
+   "note": "town:saltwell is above its floor: off below 60, on again at 80. nh-purses only.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_oakhaven_ok",
+   "type": "switch",
+   "value": true,
+   "note": "town:oakhaven is above its floor: off below 60, on again at 80. nh-purses only.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_frosthollow_ok",
+   "type": "switch",
+   "value": true,
+   "note": "town:frosthollow is above its floor: off below 60, on again at 80. nh-purses only.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_till_eleanor_saltcot_ok",
+   "type": "switch",
+   "value": true,
+   "note": "till:job:rm_eleanor_saltcot is above its floor: off below 60, on again at 80. nh-purses only.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_till_edric_millton_day",
+   "type": "number",
+   "value": 0,
+   "note": "Story coin paid today from till:job:rm_edric_millton (Edric Millton's cooperage till); nh-purses sets it to 0 each day. medium Q6 (mq-coopers-note), day cap 19.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_till_edric_millton_ok",
+   "type": "switch",
+   "value": true,
+   "note": "till:job:rm_edric_millton at or above its floor: off below 60, on again at 80 (nh-purses).",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_till_rupert_fogton_day",
+   "type": "number",
+   "value": 0,
+   "note": "Story coin paid today from till:job:rm_rupert_fogton (Hollis Physic's till); nh-purses sets it to 0 each day. the Runnel Fever's draught money, day cap 9.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_till_rupert_fogton_ok",
+   "type": "switch",
+   "value": true,
+   "note": "till:job:rm_rupert_fogton at or above its floor: off below 60, on again at 80 (nh-purses).",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "lq_vines",
+   "type": "text",
+   "value": "",
+   "note": "Blight and Boar's lasting result at Southmeadow: burned, cured or lost (empty: not yet). Written by lq-blight-and-boar.",
+   "group": "large lines 5-8 (quests-large.md 1.6, 14.2 item 8; each written by its own line, any story may read)"
+  },
+  {
+   "name": "lq_runnel",
+   "type": "text",
+   "value": "",
+   "note": "The Runnel Fever's lasting result in the Sump: covered (the Cistern Court cover built) or drained (the tanner's soakaway); empty: not yet. Written by lq-runnel-fever.",
+   "group": "large lines 5-8 (quests-large.md 1.6, 14.2 item 8; each written by its own line, any story may read)"
+  },
+  {
+   "name": "lq_wreck",
+   "type": "text",
+   "value": "",
+   "note": "The Wreckers' Light's lasting result: named (at the Chapel of the Tide), watch (handed to the Watch) or wharf (told the Grayrock Wharf Office); empty: not yet. Written by lq-wreckers-light.",
+   "group": "large lines 5-8 (quests-large.md 1.6, 14.2 item 8; each written by its own line, any story may read)"
+  },
+  {
+   "name": "lq_post",
+   "type": "text",
+   "value": "",
+   "note": "The Long Run's last result: couriers (the tube crossed the realm inside a day) or wagons; empty: never run. Written by lq-long-run.",
+   "group": "large lines 5-8 (quests-large.md 1.6, 14.2 item 8; each written by its own line, any story may read)"
+  },
+  {
+   "name": "lq_post_time",
+   "type": "text",
+   "value": "",
+   "note": "The Long Run's best time band: half (inside half a day), day (inside a day) or last (by the day's last grain); empty: no record. Written by lq-long-run.",
+   "group": "large lines 5-8 (quests-large.md 1.6, 14.2 item 8; each written by its own line, any story may read)"
+  },
+  {
+   "name": "lq_eels",
+   "type": "text",
+   "value": "",
+   "note": "The Eel Famine at Fenshore: weir (the Fish Hall's weir stands), run (the eels run up Withy Creek) or shared (one gap and a share); empty: never opened. Written by lq-eel-famine.",
+   "group": "large lines 9-11 (quests-large.md 1.6, 14.2 item 8; each written by its own line, any story may read)"
+  },
+  {
+   "name": "lq_thief",
+   "type": "text",
+   "value": "",
+   "note": "The Thief Who Wasn't There on the Heights: walking (the wall-walking rumour), forgiven, named or blinker (the Quickened lie believed); empty: never opened. Written by lq-vanishing-thief.",
+   "group": "large lines 9-11 (quests-large.md 1.6, 14.2 item 8; each written by its own line, any story may read)"
+  },
+  {
+   "name": "lq_hearths",
+   "type": "text",
+   "value": "",
+   "note": "The Black Hearths at Frosthollow: undersold (the charcoal thieves at work), contract (a price by the sack), home (sold on the square) or greenholt (sold with the Greenholt hearths); empty: never opened. Written by lq-black-hearths.",
+   "group": "large lines 9-11 (quests-large.md 1.6, 14.2 item 8; each written by its own line, any story may read)"
+  },
+  {
+   "name": "mq_oil_list",
+   "type": "wolves",
+   "value": [],
+   "note": "Frosthollow's lamp-oil list this winter: each wolf who set oil on the common shelf (mq-lamp-oil-share). Ch 8 and the Turn at the Pass may read it.",
+   "group": "medium packs (quests-medium.md Q22; written by nh-pack.medium.north, any story may read)"
+  },
+  {
+   "name": "lq_salt",
+   "type": "text",
+   "value": "",
+   "note": "The Salt Road: '' before it began, raided while the raids go on, then board, bought or cart. Written by lq-salt-road; read by mq-waste-road-salt (board or cart: the wash is quiet).",
+   "group": "large lines 1-4 (quests-large.md 1.6, 14.2 item 8; each written by its own line, any story may read)"
+  },
+  {
+   "name": "lq_salt_sacks",
+   "type": "number",
+   "value": 0,
+   "note": "Sacks the Salt Road wagon has brought through the Waste, in all. Written by lq-salt-road.",
+   "group": "large lines 1-4 (quests-large.md 1.6, 14.2 item 8; each written by its own line, any story may read)"
+  },
+  {
+   "name": "lq_cedars",
+   "type": "text",
+   "value": "",
+   "note": "The Mast Cedars at Oakhaven: '' before it began, dying while the night crews fell, reckoning, then contract, returned or taken. Written by lq-mast-cedars; campaign Ch 5 may read it.",
+   "group": "large lines 1-4 (quests-large.md 1.6, 14.2 item 8; each written by its own line, any story may read)"
+  },
+  {
+   "name": "lq_brown",
+   "type": "text",
+   "value": "",
+   "note": "The Old Brown of the Greyteeth: '' before it began, rustled while the fold is raided, then slain or spared. Written by lq-old-brown.",
+   "group": "large lines 1-4 (quests-large.md 1.6, 14.2 item 8; each written by its own line, any story may read)"
+  },
+  {
+   "name": "lq_rustlers",
+   "type": "text",
+   "value": "",
+   "note": "grey once the Greyteeth rustlers are broken (grey-cloaked wolves on the Frosthollow road: the campaign's Ch 3 thread), for that season; '' again at the next. Written by lq-old-brown.",
+   "group": "large lines 1-4 (quests-large.md 1.6, 14.2 item 8; each written by its own line, any story may read)"
+  },
+  {
+   "name": "lq_silver",
+   "type": "text",
+   "value": "",
+   "note": "Clipped Silver at Larkfield: '' before it began, clipping while light coin goes round, then board, mercy or cut. Written by lq-clipped-silver.",
+   "group": "large lines 1-4 (quests-large.md 1.6, 14.2 item 8; each written by its own line, any story may read)"
+  }
+ ]
+}

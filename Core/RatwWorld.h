@@ -228,6 +228,14 @@ struct Occasion
     bool invitesSent = false;
 };
 
+// A title a story named a wolf by (doc 86, C4): known in the realm or one town ("realm", "town:<id>"), by which program and
+// run, since and until (calendar days; until < 0: for good).
+struct StoryTitle
+{
+    std::string title, known, by, run;
+    double since = 0, until = -1;
+};
+
 struct ScentRecord
 {
     std::string item, maker, giver;
@@ -340,6 +348,10 @@ struct Entity
     // The journal (doc 54, 7): lore fragments read at archives, in order; species brought down (first day, count);
     // forage goods found (first day, "season, ground"); the cells it has been in. Saved.
     std::vector<std::string> lore;
+    // Titles stories named it by (doc 86, C4): at most 8, oldest first; players only. Saved. Hidden from its card by its
+    // player's choice (D3), never from residents.
+    std::vector<StoryTitle> titles;
+    bool titlesHidden = false;
     std::map<std::string, std::pair<double, int>> bestiary;
     std::map<std::string, std::pair<double, std::string>> herbarium;
     std::set<std::string> places;
@@ -732,6 +744,17 @@ class World
     // A door set by a story (doc 85, Phase 9): open (-1 leaves it, 0 shuts, 1 opens) and locked (-1, 0, 1), both sides of
     // it alike. Locking shuts it; opening a locked door is refused. False for no such door, or a passage or stairs.
     Result setDoorState(const std::string& id, int open, int locked);
+    // The doors a live story holds open to wolves (doc 86, "Story doors open to wolves"): door.unlock and door.open, kept
+    // until the story shuts or locks the door, or the run ends. playerDoorLocked passes them, both sides alike, but never a private home's (privateHome).
+    // Replaced whole (Game::refreshStoryWatch); an unknown id is skipped.
+    void setStoryOpenDoors(const std::set<std::string>& ids);
+    bool storyOpenDoor(const std::string& id) const { return storyOpenDoors_.count(id) > 0; }
+    // Whether a door leads into a private home: the interior behind it, with every room its stairs, passages and inner
+    // doors reach, is some resident's home and nobody's work (a shop with a flat above is a workplace, not a private home;
+    // a lodging house's ground floor, with homes up its stairs and no work, is one).
+    bool privateHome(const Door& door) const;
+    // Whether a wolf finds this door locked (its own lock, or a closed shop or a house: playerDoorLocked).
+    bool lockedToWolves(const Door& door) const { return door.locked || playerDoorLocked(door); }
     // The doors, stairs and seams in one cell, in ID order (an index over doors(); rebuilt when doors change).
     const std::vector<Door*>& doorsIn(const std::string& cellId) const;
     // Cells one step away through any portal (seams, doors, stairs), locked or not.
@@ -808,11 +831,14 @@ class World
     struct WildHere
     {
         bool hunt = false, forage = false;
+        bool wild = false;                          // Outdoors and in no town: a story's staged animal is met here (doc 86, L1).
         std::string huntWhy, forageWhat;            // Why not; what is to be foraged here ("the trees, the grass").
     };
     WildHere wildAround(const std::string& player) const;
     // `only`: the game to find (species ids), for the Dev Console's /hunt and tests; empty, what the ground gives.
-    Result startHunt(const std::string& player, const std::vector<std::string>& only = {});
+    // `staged`: animals a story staged for this hunt (doc 86, L1), added to what the ground gives. Outdoors and in no town
+    // they are met even where the ground is too built up or bare to give any game of its own; never in a town or indoors.
+    Result startHunt(const std::string& player, const std::vector<std::string>& only = {}, const std::vector<std::string>& staged = {});
     // Hunting together (Docs/Design/53-hunting-and-working-together.md, Phase 2). Anyone may join a hunt while its
     // starter allows hunting partners (the user: only the starter's setting counts); its party, Chapter and companions
     // always; never one blocked by a hunter. A closed hunt may be asked into (30 s for a hunter to let them in), and a
@@ -871,6 +897,12 @@ class World
     // spell times its rate, from the farm's till. No work when the till can't pay or the barn is full.
     const together::Activity* residentWorkAt(const std::string& farmer) const;
     Result helpAtWork(const std::string& player, const std::string& farmer);
+    // Doc 86, SQ3: lending a paw to a resident at their own post, in their hours, when it is no farm work or bench (those
+    // are helpAtWork's): "beside", its beats by the clock, no wage and nothing of theirs made faster; once a game day for
+    // a wolf and a resident. Its end writes `together` {actor the wolf, target the resident, item "beside", quantity the
+    // beats}. besideWorkAt: that work, or null (not at their post, or one that is farm work or a bench).
+    const together::Activity* besideWorkAt(const std::string& resident) const;
+    Result lendToResident(const std::string& helper, const std::string& resident);
     // A player did something (moved, spoke, any command): farm work, paid by the beat, needs a hand who is there.
     void noteActive(const std::string& player);
     // Gifted and Quickened at work (doc 53, 4): a work Gift the joint's activity takes (Winnow and Dry at threshing)
@@ -1008,6 +1040,10 @@ class World
     // A player's help with a resident's trouble (doc 57, 3): a vacant post given to a resident now, a youth apprenticed now
     // to a position's holder (Society::appoint, apprenticeTo), each logged as the careers' own notes are. ok, or why not.
     Result appointResident(const std::string& positionId, const std::string& resident);
+    // Doc 86, C14: a post given to a resident by a story, whoever held it (Society::swapPost); the note recorded.
+    Result postResident(const std::string& positionId, const std::string& resident);
+    // Doc 86, J7: an unplaced resident first in line for the next post that falls vacant in a town (Society::queueResident).
+    Result queueResident(const std::string& resident, const std::string& town);
     // Town projects standing (doc 57, Phase 4; the game hands them over when they change): what each does where, at its
     // strength (1; 0.5 worn under half; none at 0). A watch post counts +2 guards a strength against a raid in its cell
     // and the next, and no bandit camp gathers within two cells of it; a market cover keeps its town's stalls out in foul
@@ -1224,6 +1260,9 @@ class World
     std::string placeNear(const std::string& cellId) const;
     // Every belief of this claim dropped (a deed revoked: doc 56).
     void forgetClaim(const std::string& claim);
+    // Doc 86, J8: residents (of one town, or everywhere) grow less sure of one kind of claim about a subject: each holder's
+    // belief loses `share` percent of its strength, and one at .05 or below is forgotten. Returns how many were touched.
+    int doubt(const std::string& subject, const std::string& kind, const std::string& town, int share);
     const std::vector<Belief>* beliefsOf(const std::string& holder) const;
     // What an NPC has heard about someone, in words for a conversation (empty if nothing).
     std::string rumoursAbout(const std::string& npc, const std::string& subject, const std::string& subjectName) const;
@@ -1407,6 +1446,9 @@ class World
     // Something left on the ground for whoever finds it (doc 85, Phase 9: a story's item.place): made into the ground's
     // account and laid at the tile, to be picked up as a fight's ground is.
     Result placeOnGround(const std::string& cellId, int x, int y, const std::string& item);
+    // Doc 86, J9: a story's own items taken back as its run ends: out of every purse (wolves', residents', tills, stalls,
+    // letters on the road) and off the ground. How many came out of each account (the ground's under GroundAccount).
+    std::map<std::string, int> takeBackItems(const std::set<std::string>& items);
     // Wearing (doc 35, Phase 4): putting on a wearable one owns, at a wear slot or (jewellery) a fur spot (`where`
     // empty: the first free place it fits), and taking it off again (`item` picks a piece at a fur spot). Not in a
     // fight. How many of an item one wears (or holds), and letting go of what the purse no longer has.
@@ -1531,8 +1573,53 @@ class World
     bool hostile(const std::string& id) const;               // A bandit, still standing.
     // Bandits called up near someone (the Dungeon Master: doc 33): a small camp of `count` (1..6) five to ten tiles away,
     // on open ground away from doors; they come out at once, as any camp does when someone is near.
-    Result callBandits(const std::string& near, int count);
-    Result storyBandits(const std::string& cellId, int x1, int y1, int x2, int y2, int count);
+    Result callBandits(const std::string& near, int count, const std::string& name = {});
+    // Doc 86, L2: `name` (a story camp's, 3 to 30 of a-z, 0-9 and _) makes the camp camp_story_<name>, joined by a second
+    // spawn while it stands and made again once cleared.
+    Result storyBandits(const std::string& cellId, int x1, int y1, int x2, int y2, int count, const std::string& name = {});
+    Result namedStoryCamp(const std::string& name, const std::string& cellId, Vec2 at, int count, const std::string& near);
+    // Doc 86, C10: a story's foes (RatwStoryFoes.cpp). A foe is a story camp (foe_<run8>_<foe>) with a named leader
+    // (road:<camp>:0, or a resident made a foe for a while: foe.outlaw) and up to 8 followers (road:<camp>:1..): set on
+    // without a crime, the Watch on duty on the wolves' side, the band breaking when the leader falls. Never counted with
+    // the world's camps and never saved: the story keeps what makes it again after a restart (the game's held.foes).
+    struct StoryFoeSpec
+    {
+        std::string camp, foe, run, name, description, cell, tier = "tough", stance = "waits";
+        std::string npc;                                     // foe.outlaw: the resident (the leader), else empty.
+        Appearance look;
+        bool hasLook = false, lethal = false;
+        double x = -1, y = -1, until = 0;                    // (until: world seconds.)
+        int band = 0;
+    };
+    struct StoryFoe
+    {
+        StoryFoeSpec spec;
+        bool beaten = false, fled = false;
+        bool holding = false;                                // foe.outlaw: the resident held where they were made one.
+        int pace = 0;                                        // (Their pace before, given back when the foe ends.)
+        double beatenAt = -1;
+        std::set<std::string> fought;                        // Wolves who fought it, in any of its fights.
+    };
+    Result addStoryFoe(const StoryFoeSpec& spec);
+    Result outlawResident(const StoryFoeSpec& spec);
+    // The foe goes, with its band: why "" (sent away, the story's end: no event), "time" or "fled" ('foe fled'). Not while
+    // one of them is in a fight (false then, and when there is no such foe).
+    bool endStoryFoe(const std::string& camp, const std::string& why, bool evenInAFight = false);
+    const StoryFoe* storyFoe(const std::string& camp) const;
+    const std::map<std::string, StoryFoe>& storyFoes() const { return storyFoes_; }
+    bool storyFoeEnded(const std::string& camp) const { return foesEnded_.count(camp) > 0; }
+    // How it ended in this run of the world: "beaten", "fled", "time" or "" (sent away); empty too if it never did.
+    std::string storyFoeEndedHow(const std::string& camp) const
+    {
+        const auto found = foesEnded_.find(camp);
+        return found == foesEnded_.end() ? std::string() : found->second;
+    }
+    static bool storyFoeCamp(const std::string& camp) { return camp.rfind("foe_", 0) == 0; }
+    const StoryFoe* storyFoeOf(const std::string& id) const;   // The foe `id` leads or follows (an outlaw resident too).
+    bool foeLeader(const std::string& id) const;
+    bool foeInFight(const std::string& camp) const;            // One of its band (or its leader) in a fight now.
+    // Ground a foe (or anyone) can stand on, off any doorway (for tests and foe_sim to place them).
+    bool openGround(const std::string& cellId, Vec2 p) const { return standable(cellId, p) && !nearPortal(cellId, p, 1); }
     std::int64_t banditDemand(const std::string& player) const; // What bandits are asking of them now (0: nothing).
     // Things that happened to a player that no action of theirs answered (a bandit's blow, say), since the last
     // call: (player, words), oldest first. The host shows them to the player. `moved`: whether any of them speaks of coins
@@ -1620,6 +1707,12 @@ class World
     Result setPosture(const std::string& id, const std::string& posture);
     Result stop(const std::string& id);
     void holdForScene(const std::string& id);
+    // Doc 86, C11: the residents a story spares from old age (the Game keeps who spares whom; the world only skips them).
+    void setStorySpared(std::set<std::string> ids) { storySpared_ = std::move(ids); }
+    // Doc 86, T6: the prefixes of the realm keys live stories have residents remember (nh): the `story` topic, one each.
+    void setStoryTopics(std::set<std::string> prefixes) { storyTopics_ = std::move(prefixes); }
+    const std::set<std::string>& storyTopics() const { return storyTopics_; }
+    bool storySpared(const std::string& id) const { return storySpared_.count(id) > 0; }
     // Kills (true) or brings back (false) a character or NPC: stops them and lays them down, or stands them up.
     Result setDead(const std::string& id, bool dead);
     // Live changes (Dungeon Master): makes NPC `id` exactly as `candidate` (a fully validated world loaded from the
@@ -2344,6 +2437,12 @@ class World
         double enteredAt = 0;               // When it came into its cell (a wagon stuck that long is moved on).
     };
     std::map<std::string, RoadFolk> folk_;
+    std::map<std::string, StoryFoe> storyFoes_;     // Doc 86, C10: a story's foes, by camp (RatwStoryFoes.cpp).
+    std::map<std::string, std::string> foesEnded_;  // Foes gone in this run of the world, and how (beaten, fled, time, "").
+    double foesTendedAt_ = -1;
+    void tendStoryFoes();
+    void foeFightEnds(Battle& b);
+    void dropStoryFoe(const std::string& camp, const std::string& how);
     std::map<std::string, double> visitors_;   // Temporary folk (addVisitor): when each leaves, in world seconds.
     std::set<std::string> storyVisitors_;      // Those a storyteller brought (doc 58).
     // Bandits who have stopped a player: asking (a demand) until they pay, get clear, or it comes to blows.
@@ -2399,6 +2498,8 @@ class World
     std::map<std::string, std::string> jointOf_;
     std::map<std::string, std::set<std::string>> lendAsked_;
     std::map<std::string, double> lastWorked_;
+    std::map<std::string, std::int64_t> lentToday_;   // (Doc 86, SQ3: "wolf|resident" -> the game day a paw was last lent.)
+    bool residentAtPost(const std::string& id) const;
     double jointsAccumulator_ = 0;
     std::uint64_t jointNext_ = 1;
     void tendJoints(double dt);
@@ -2594,6 +2695,7 @@ class World
 
   private:
     bool playerDoorLocked(const Door& door) const;
+    std::set<std::string> storyOpenDoors_;          // (setStoryOpenDoors: both sides of each.)
     std::vector<std::pair<std::string, std::string>> notices_;
     bool noticesMoved_ = false;                     // (Any of notices_ told of something moved: takeNotices.)
     bool noticesCrime_ = false;                     // (Any told of an incident, a warrant or custody: takeNotices.)
@@ -2748,6 +2850,8 @@ class World
     // Old age (the user, 2026-10-13): from seventy a resident may die, likelier each year, so the world's people turn
     // over: children are born to take their place (Society::tendCareers). Not those the DM has protected.
     void tendOldAge();
+    std::set<std::string> storyTopics_;             // (Doc 86, T6: the story topic's prefixes.)
+    std::set<std::string> storySpared_;             // Residents old age passes by while a story spares them (doc 86, C11).
     // An open, walkable tile near (x, y) in a cell that no resident calls home, for someone new to sleep.
     // `given`: tiles handed out already and not yet anyone's home (a pass's arrivals: takeResidentRequests), left out too.
     bool freeSpotNear(const std::string& cellId, double& x, double& y,

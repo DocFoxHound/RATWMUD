@@ -174,8 +174,8 @@ void Society::topUp(const std::string& payer, const std::string& payee, std::int
     // Staged payers topped up on demand (9.2): a staged account that must pay a player (or escrow) more than it holds is
     // set to the amount first. Never a dead account, never a real one, and never a shop's till: a till pays players from
     // its own daily budget, topped up only by Phase 1's rules (its take allowance and sell total, doc 79, 7 and 19).
-    if (coins <= 0 || classify(payer) != AccountKind::Staged || payer == "made" || startsWith(payer, "till:"))
-        return;
+    if (coins <= 0 || classify(payer) != AccountKind::Staged || payer == "made" || startsWith(payer, "till:") || startsWith(payer, "purse:"))
+        return;                                     // (Doc 86, M3: a House's purse pays what its tills put in, no more.)
     const auto to = classify(payee);
     if (to != AccountKind::Real && to != AccountKind::Escrow)
         return;
@@ -191,7 +191,7 @@ std::int64_t Society::payable(const std::string& payer, std::int64_t amount) con
     if (amount <= 0)
         return 0;
     // (A till is never topped up by the door (topUp): it pays what it holds, as topUp says.)
-    if (classify(payer) == AccountKind::Staged && account(payer) && !startsWith(payer, "till:"))
+    if (classify(payer) == AccountKind::Staged && account(payer) && !startsWith(payer, "till:") && !startsWith(payer, "purse:"))
         return std::min<std::int64_t>(amount, MoneyCap);
     return std::min(amount, cash(payer));
 }
@@ -894,7 +894,7 @@ void Society::stagedTrim(const std::string& id, int band)
     double have = 0;
     std::vector<std::pair<int, std::string>> foods;   // (Nourishment, item): the richest dropped first.
     for (const auto& [item, n] : wallet.stock)
-        if (n > 0 && nourishment(item) > 0)
+        if (n > 0 && nourishment(item) > 0 && !items::storyTagged(item))   // (A story's own item is no food: doc 86, J9.)
         {
             have += double(nourishment(item)) * n;
             if (items::makerOf(item).empty())
@@ -922,7 +922,7 @@ void Society::stagedTrim(const std::string& id, int band)
         const auto& [item, n] = *it;
         const auto* good = items::good(item);
         const bool worn = items::wearable(item) != nullptr || items::blade(item) != nullptr || (good && good->category == "weapon");
-        const bool keep = nourishment(item) > 0 || !items::makerOf(item).empty() || item == "sword";
+        const bool keep = nourishment(item) > 0 || !items::makerOf(item).empty() || item == "sword" || items::storyTagged(item);
         const int must = least(item);
         const int cap = std::max(must, worn ? std::max(1, row.goodsMost) : row.goodsMost);
         if (!keep && n > cap)

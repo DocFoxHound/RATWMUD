@@ -311,7 +311,19 @@ const std::vector<std::string>& buysFor(const std::string& business);
 // qualities.
 // A masterwork carries its maker's mark (doc 35, Part 4): "sword~masterwork@sorrel". good() and wearable() find it as
 // the masterwork kind.
-std::string baseOf(const std::string& id);                  // "hide~fine" -> "hide".
+std::string baseOf(const std::string& id);                  // "hide~fine" -> "hide"; "letter^ab12cd34.watch_list" -> "letter".
+// Doc 86, J9: a story's own item, "<base>^<hash8>.<tag>" (letter^ab12cd34.watch_list), given by a story's item.give with a
+// tag: a kind of its base (good() finds the base) that no shop or stall buys, no making uses up and nothing wears, shown by
+// the name its story gave it.
+bool storyTagged(const std::string& id);
+void nameStoryItem(const std::string& id, const std::string& name);   // ("" forgets the name.)
+const std::string* storyItemName(const std::string& id);              // The story's name for it, or none.
+// A story's name may begin with an article ("The watch list"): `counted` gives "2 rope" for a name as it is and, for a
+// story's own item named so, "the watch list", "2 of the watch list" (an "A"/"An" one: "a token", "2 token"); `theItem`
+// gives "the rope" and "the watch list" alike.
+bool articled(const std::string& name);
+std::string counted(const std::string& name, int quantity, bool story);
+std::string theItem(const std::string& name, bool story);
 std::string makerOf(const std::string& id);                 // "sword~masterwork@sorrel" -> "sorrel"; "" for none.
 std::string withMaker(const std::string& id, const std::string& maker);
 std::string unmarked(const std::string& id);                // The id without its maker's mark.

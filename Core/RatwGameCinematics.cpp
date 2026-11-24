@@ -66,8 +66,16 @@ bool validScene(const Value& d)
     for (const auto& part : cast)
     {
         const auto& selector = part["selector"];
-        if (!identifier(part.string("id")) || !roles.insert(part.string("id")).second || part.has("npc") == part.has("selector"))
+        // (A resident, a selector, or (doc 86, T3) a stranger the story brought: exactly one.)
+        if (!identifier(part.string("id")) || !roles.insert(part.string("id")).second ||
+            int(part.has("npc")) + int(part.has("selector")) + int(part.has("visitor")) != 1)
             return false;
+        if (part.has("visitor"))
+        {
+            if (!identifier(part.string("visitor"), 40))
+                return false;
+            continue;
+        }
         if (part.has("npc") ? !identifier(part.string("npc")) :
             (!selector.isObject() || (!selector.has("role") && !selector.has("cell")) ||
              (selector.has("cell") && !identifier(selector.string("cell"))) || (selector.has("role") && !words(selector["role"], 80)))) return false;
@@ -278,7 +286,23 @@ Result Game::startCinematic(const std::string& run, const Value& payload)
     for (const auto& role : doc.array("cast"))
     {
         const Entity* npc = nullptr;
-        if (role.has("npc")) npc = world_.entity(role.string("npc"));
+        if (role.has("visitor"))
+        {
+            // (Doc 86, T3: a stranger the story brought, in their own panel with the face they were given; not here, the
+            // scene fails.)
+            npc = world_.entity(role.string("visitor"));
+            bool ours = false;                      // (Brought by this story: it holds them, to send away at its end.)
+            if (story->held.isObject())
+                for (const auto& v : story->held.array("visitors"))
+                    ours = ours || (v.isString() && v.asString() == role.string("visitor"));
+            if (!npc || !npc->npc || npc->dead || !ours || world_.visitorLeaves(npc->id) < 0 || cast.count(npc->id))
+            {
+                state.set("failed",true);
+                state.set("why","a stranger is not here");
+                break;
+            }
+        }
+        else if (role.has("npc")) npc = world_.entity(role.string("npc"));
         else
         {
             const auto& sel = role["selector"];
@@ -289,7 +313,7 @@ Result Game::startCinematic(const std::string& run, const Value& payload)
                     (!sel.has("cell") || sel.string("cell")==e.cellId) && (!npc || who<npc->id)) npc=&e;
             }
         }
-        if (!npc || !npc->npc || npc->dead || !world_.society().resident(npc->id)) { state.set("failed",true); break; }
+        if (!npc || !npc->npc || npc->dead || (!role.has("visitor") && !world_.society().resident(npc->id))) { state.set("failed",true); break; }
         cast.insert(npc->id);
         auto a=Value::object();
         a.add("id",npc->id); a.add("role",role.string("id")); a.add("name",npc->name); a.add("appearance",wire::appearance(npc->appearance));
@@ -521,7 +545,13 @@ bool Game::advanceCinematic(Value& s,double wall)
     const auto fact=[&](const char* kind,const std::string& detail) {
         world_.recordEvent({kind,s.string("player"),s.string("run"),{},0,0,{},int(s.number("visit")),0,detail});
     };
-    if (s.boolean("failed")) { fact("scene failed",s.string("cue")); return true; }
+    if (s.boolean("failed"))
+    {
+        // (Why, where it is known: doc 86, T3's "a stranger is not here", as the event's item.)
+        WorldEvent e{"scene failed",s.string("player"),s.string("run"),{},0,0,s.string("why"),int(s.number("visit")),0,s.string("cue")};
+        world_.recordEvent(e);
+        return true;
+    }
     const auto& beat=beatOf(s);
     const auto type=beat.string("type"),mode=beat.string("mode");
     const auto end=s.number("end");

@@ -84,9 +84,11 @@ export function SceneWorkspace({target,libraryKey,world,roster,canDirect,openPro
             {scene.cast.map((c,i)=><fieldset key={i}><legend>{c.id}</legend><div className="scene-fields">
                 <IdInput name="Cast role ID" value={c.id} others={scene.cast.filter((_,j)=>j!==i).map(r=>r.id)} change={id=>
                     edit({...scene,cast:scene.cast.map((r,j)=>j===i?{...r,id}:r),beats:scene.beats.map(b=>b.speaker===c.id?{...b,speaker:id}:b)})}/>
-                <label>Cast from<select value={c.selector?'selector':'npc'} onChange={e=>role(i,e.target.value==='npc'?{id:c.id,npc:''}:{id:c.id,selector:{role:'guard'}})}>
-                    <option value="npc">Named resident</option><option value="selector">Resident matching conditions</option></select></label>
-                {c.selector?<><label>Resident role<input value={c.selector.role || ''} placeholder="Any role" onChange={e=>role(i,{...c,selector:{...c.selector,role:e.target.value || undefined}})}/></label>
+                <label>Cast from<select value={c.selector?'selector':c.visitor!==undefined?'visitor':'npc'} onChange={e=>role(i,e.target.value==='npc'?{id:c.id,npc:''}:e.target.value==='visitor'?{id:c.id,visitor:''}:{id:c.id,selector:{role:'guard'}})}>
+                    <option value="npc">Named resident</option><option value="selector">Resident matching conditions</option>
+                    <option value="visitor">A stranger the story brings</option></select></label>
+                {c.visitor!==undefined?<label>Stranger's id<input value={c.visitor} placeholder="as in Bring a stranger" onChange={e=>role(i,{id:c.id,visitor:e.target.value})}/></label>
+                :c.selector?<><label>Resident role<input value={c.selector.role || ''} placeholder="Any role" onChange={e=>role(i,{...c,selector:{...c.selector,role:e.target.value || undefined}})}/></label>
                     <label>Resident in cell<input list="scene-cells" value={c.selector.cell || ''} placeholder="Any cell" onChange={e=>role(i,{...c,selector:{...c.selector,cell:e.target.value || undefined}})}/></label></>
                 :<label>Resident ID<input list="scene-residents" value={c.npc ?? ''} onChange={e=>role(i,{id:c.id,npc:e.target.value})}/></label>}</div>
                 {scene.cast.length>1 && <button disabled={scene.beats.some(b=>b.speaker===c.id)} onClick={()=>edit({...scene,cast:scene.cast.filter((_,j)=>j!==i)})}>Remove cast role</button>}</fieldset>)}</section>

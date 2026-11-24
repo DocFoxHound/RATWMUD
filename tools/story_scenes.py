@@ -1,11 +1,15 @@
 """Portable authored scenes. Studio and the offline author bridge use these same checks and previews."""
 
+import re
 import json
 from pathlib import Path
 
 SCENE_DIR = Path(__file__).resolve().parents[1] / 'Data/Storylines/scenes'
 OPERATIONS = ('scene.draft', 'scene.import', 'scene.validate', 'scene.rehearse', 'scene.wrap')
 
+
+
+VISITOR = re.compile(r'[a-z0-9][a-z0-9_-]{2,39}')   # (Doc 86, T3: a stranger cast in a scene: visitor.add's id.)
 
 def examples():
     return {f.stem: json.loads(f.read_text(encoding='utf8')) for f in sorted(SCENE_DIR.glob('*.json'))}
@@ -66,12 +70,16 @@ def validate(scene):
     require(isinstance(scene['cast'], list) and 1 <= len(scene['cast']) <= 16, 'Choose 1–16 cast roles.')
     cast = set()
     for role in scene['cast']:
-        shape(role, ('id',), ('npc', 'selector'))
+        shape(role, ('id',), ('npc', 'selector', 'visitor'))
         require(identifier(role['id']) and role['id'] not in cast, 'Give each cast role a unique ID.')
         cast.add(role['id'])
-        require(('npc' in role) != ('selector' in role), 'Choose a resident or a cast selector.')
+        # (Doc 86, T3: or a stranger the same story brings with "Bring a stranger", by their id.)
+        require(sum(k in role for k in ('npc', 'selector', 'visitor')) == 1, 'Choose a resident, a cast selector or a stranger.')
         if 'npc' in role:
             require(identifier(role['npc']), 'Choose a resident ID.')
+        elif 'visitor' in role:
+            require(isinstance(role['visitor'], str) and VISITOR.fullmatch(role['visitor']) is not None,
+                    "A stranger's id is 3 to 40 small letters, digits, - and _.")
         else:
             selector = role['selector']
             shape(selector, (), ('role', 'cell'))

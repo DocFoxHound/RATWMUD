@@ -481,6 +481,72 @@ void aWagonsTrip()
     expect(w.society().realBalanced(), "real money is balanced");
 }
 
+// Doc 86, C10: a story's foe on the road (its camp foe_<run8>_<foe>) is never a bandit camp: it robs no wagon (so no bounty is
+// posted on it and nothing is stranded in its loot account), no escort is asked for because of it, the Watch never goes out
+// after it, and a bounty settled on it never clears it.
+void aStoryFoeRobsNoWagon()
+{
+    auto f = strip();
+    auto w = load(f);
+    w.addPlayer("player-ada", "Ada");
+    w.tick(.6);
+    auto spec = w.society().authored().economy;
+    spec.rules["campStrengthMost"] = 20;
+    w.society().adoptEconomy(spec);
+    const std::string foe = "foe_0badf00d_captain";
+    std::vector<WorldEvent> seen;
+    int passed = 0;
+    for (int attempt = 0; attempt < 6; ++attempt)
+    {
+        w.roads().caravans.clear();
+        w.roads().camps = {{foe, id(4), 20, 100, -100, true}};   // (Strong and starving: a bandit camp robs at once.)
+        const auto* out = w.sendCaravan(*w.roadMarket("east"), *w.roadMarket("west"), {{"nails", 10}});
+        expect(out, "a wagon sets out");
+        const auto trip = out->id;
+        w.roads().caravans.back().guards = 0;
+        bool done = false;
+        for (int t = 0; t < 1500 && !done; ++t)
+        {
+            w.tick(1);
+            for (auto& e : w.takeEvents())
+            {
+                seen.push_back(e);
+                done |= (e.kind == "caravan arrives" || e.kind == "raid") && (e.actor == trip || e.actor == foe);
+            }
+        }
+        passed += done;
+    }
+    expect(passed > 0, "the wagons come by the foe");
+    expect(std::none_of(seen.begin(), seen.end(), [&](const WorldEvent& e) { return (e.kind == "raid" || e.kind == "caravan passes") && e.actor == foe; }),
+           "a story's foe never falls on a wagon (nor weighs one up)");
+    expect(std::none_of(w.roads().contracts.begin(), w.roads().contracts.end(), [&](const Contract& k) { return k.target == foe; }),
+           "no bounty on it");
+    expect(!w.society().account("bandits:" + foe), "nothing taken into a loot account");
+    // A bounty on it all the same (an older save's, say): the Watch never goes out after it, and settling it clears nothing.
+    Contract k;
+    k.id = "bounty-foe";
+    k.kind = "bounty";
+    k.town = "west";
+    k.target = foe;
+    k.created = w.calendarDays();
+    k.due = w.calendarDays() + 30;
+    k.detail = "the foe";
+    w.roads().camps = {{foe, id(4), .6, 100, -100, true}};
+    w.roads().contracts.push_back(k);
+    for (int day = 0; day < 4; ++day)
+    {
+        nextMorning(w);
+        for (auto& e : w.takeEvents())
+            expect(!((e.kind == "patrol" || e.kind == "camp cleared") && e.target == foe), "the Watch never goes out after a story's foe");
+    }
+    const auto camp = std::find_if(w.roads().camps.begin(), w.roads().camps.end(), [&](const BanditCamp& c) { return c.id == foe; });
+    if (camp != w.roads().camps.end())                         // (A day passed by a save and a restore, which keeps it here.)
+    {
+        expect(camp->active && camp->strength == .6, "untouched by the Watch");
+        expect(w.completeContract("bounty-foe", "player-ada").ok && camp->active, "a bounty settled on it never clears it");
+    }
+}
+
 // An arrival never raises a cargo good's P (7.4): with the far end cheaper than the source, nothing moves.
 void anArrivalNeverRaises()
 {
@@ -3119,6 +3185,7 @@ int main(int argc, char** argv)
         aCarterRidesAlong();
         anArrivalNeverRaises();
         aRaid();
+        aStoryFoeRobsNoWagon();
         foundCargoIsAReward();
         aFullPackAtABrokenCamp();
         anEscortsPayWithinTheDay();

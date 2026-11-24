@@ -816,7 +816,8 @@ bool decode(const Value& root, PersistedWorld& saved, ServerState& c, std::strin
                 saved.roads.caravans.push_back(std::move(t));
         }
         for (const auto& j : roads.array("camps"))
-            saved.roads.camps.push_back({j.string("id"), j.string("cell"), num(j, "strength"), num(j, "hunger"), num(j, "lastRaid"),
+            if (!World::storyFoeCamp(j.string("id")))   // (Doc 86, C10: a story's foe is made again by its story.)
+                saved.roads.camps.push_back({j.string("id"), j.string("cell"), num(j, "strength"), num(j, "hunger"), num(j, "lastRaid"),
                                          j.boolean("active"), num(j, "x", -1), num(j, "y", -1)});
         for (const auto& j : roads.array("contracts"))
         {

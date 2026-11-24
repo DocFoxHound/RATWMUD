@@ -83,6 +83,228 @@ def number(v, low, high):
     return type(v) in (int, float) and low <= v <= high
 
 
+# Doc 86, Phase 2 (C12b): a filter's value is a text (the field is exactly it), {"starts": "<text>"} (the field begins with
+# it; case-sensitive) or {"in": ["a", "b"]} (the field is one of them, up to 32). The gift item rule (a gift's base id unless
+# a mark is given) applies inside both. Core/RatwStoryTriggers.cpp's matchOne is the twin.
+MATCH_IN_MOST = 32
+MATCH_PART = 120
+
+
+def match_value_ok(v, size=400):
+    if isinstance(v, str):
+        return word(v, size)
+    if not isinstance(v, dict) or len(v) != 1:
+        return False
+    if 'starts' in v:
+        return word(v['starts'], MATCH_PART)
+    if 'in' in v:
+        return (isinstance(v['in'], list) and 1 <= len(v['in']) <= MATCH_IN_MOST and all(word(x, MATCH_PART) for x in v['in'])
+                and len(set(v['in'])) == len(v['in']))
+    return False
+
+
+def match_ok(m, keys=None):
+    """A whole filter: {field: value} over the event's fields (or `keys`), each value a text, a starts or an in."""
+    return isinstance(m, dict) and all(k in (keys or FIELDS) and match_value_ok(v) for k, v in m.items())
+
+
+def _gift_base(actual, expected, gift):
+    # (Doc 86, J9: a story's own item, base^hash.tag, is a kind of its base too: a filter that names no mark or tag takes it.)
+    return re.split('[~@^]', actual, maxsplit=1)[0] if gift and not any(mark in expected for mark in '~@^') else actual
+
+
+# ------------------------------------------------------------------------------------- doc 86, J9: a story's own items
+# item.give with a tag makes the story's own item: its id is <base>^<hash8>.<tag>, the hash the first 8 hex digits of the
+# SHA-256 of the program's id, so two stories' tags never meet. An author writes <base>^<tag> (letter^watch_list) in a
+# filter's item and in "carries"; expand_tags gives a program those in the hashed form, as effective_phase, the quests'
+# index and the watch read it, so neither twin ever sees the short form and the author never sees the hash.
+TAG = re.compile(r'[a-z0-9_]{1,32}')
+TAGGED_SHORT = re.compile(r'([a-z0-9_]{1,40})\^([a-z0-9_]{1,32})')
+TAGGED_FULL = re.compile(r'([a-z0-9_]{1,40})\^([0-9a-f]{8})\.([a-z0-9_]{1,32})')
+TAGGED_MOST = 64   # (Kinds of the story's own item a program may give.)
+
+
+def tag_hash(program_id):
+    return hashlib.sha256(str(program_id).encode('utf-8')).hexdigest()[:8]
+
+
+def tagged_item(program_id, base, tag):
+    """The game's id of a story's own item: letter^ab12cd34.watch_list."""
+    return f'{base}^{tag_hash(program_id)}.{tag}'
+
+
+def item_ok(v):
+    """An item a condition or a filter names: an id, or a story's own as base^tag (or, as expand_tags leaves it, hashed)."""
+    return isinstance(v, str) and (identifier(v) or TAGGED_SHORT.fullmatch(v) is not None or TAGGED_FULL.fullmatch(v) is not None)
+
+
+def _expand_value(pid, v):
+    if isinstance(v, str):
+        m = TAGGED_SHORT.fullmatch(v)
+        return tagged_item(pid, m[1], m[2]) if m else v
+    if isinstance(v, dict) and isinstance(v.get('in'), list):
+        out = [_expand_value(pid, x) for x in v['in']]
+        return {**v, 'in': out} if out != v['in'] else v
+    return v
+
+
+def _expand(pid, node):
+    """The node with every `item` naming a story's own item in its short form put in the hashed form; the same object
+    where nothing changed (copied only along the way to a change)."""
+    if isinstance(node, list):
+        out = [_expand(pid, x) for x in node]
+        return out if any(a is not b for a, b in zip(out, node)) else node
+    if not isinstance(node, dict):
+        return node
+    changed = {}
+    for k, v in node.items():
+        x = _expand_value(pid, v) if k == 'item' else _expand(pid, v)
+        if x is not v:
+            changed[k] = x
+    return {**node, **changed} if changed else node
+
+
+# id(program) -> (program, expanded, {id(phase): expanded phase}), the newest last: a program is expanded once while it
+# is kept. The HTTP threads, the scheduler and rehearsals read it at once, so it is locked, and the oldest goes one at a
+# time past EXPANDED_MOST. A program is read as it was when first expanded: one changed in place is a new program only
+# once it is a new dict (the runner reads a fresh one from the database each time; the Editor sends a new one).
+_EXPANDED = {}
+_EXPANDED_LOCK = threading.Lock()
+EXPANDED_MOST = 64
+
+
+def _expanded(p):
+    """(the program expanded, {id(phase): its phase expanded}) for a program, from the cache or made now."""
+    with _EXPANDED_LOCK:
+        hit = _EXPANDED.pop(id(p), None)
+        if hit is not None and hit[0] is p:
+            _EXPANDED[id(p)] = hit   # (Put back as the newest.)
+            return hit[1], hit[2]
+    x = _expand(p.get('id', ''), p)
+    phases = {}
+    if x is not p and isinstance(p.get('phases'), list) and isinstance(x.get('phases'), list):
+        phases = {id(a): b for a, b in zip(p['phases'], x['phases'])}
+    with _EXPANDED_LOCK:
+        _EXPANDED.pop(id(p), None)
+        _EXPANDED[id(p)] = (p, x, phases)
+        while len(_EXPANDED) > EXPANDED_MOST:
+            del _EXPANDED[next(iter(_EXPANDED))]
+    return x, phases
+
+
+def expand_tags(p):
+    """The program as the runner and both twins read it: a story's own items in the hashed form (doc 86, J9). The program
+    itself when it names none."""
+    return _expanded(p)[0] if isinstance(p, dict) else p
+
+
+def expanded_phase(p, phase):
+    """One phase of a program as expand_tags gives it (a phase made up beside the program is expanded on its own)."""
+    if not isinstance(p, dict):
+        return phase
+    x, phases = _expanded(p)   # (One read of the cache: another thread may let the program go from it at any moment.)
+    if x is p:
+        return phase
+    found = phases.get(id(phase))
+    return found if found is not None else _expand(p.get('id', ''), phase)
+
+
+def own_items(p, node):
+    """A made-up fact (a rehearsal's event or facts, the console's What if) naming a story's own item as its author would,
+    item^tag, in the game's form: an `item` and the keys of a wolf's `carries` (doc 86, J9)."""
+    pid = p.get('id', '') if isinstance(p, dict) else ''
+    if isinstance(node, list):
+        return [own_items(p, x) for x in node]
+    if not isinstance(node, dict):
+        return node
+    out = {}
+    for k, v in node.items():
+        if k == 'item':
+            out[k] = _expand_value(pid, v)
+        elif k == 'carries' and isinstance(v, dict):
+            out[k] = {_expand_value(pid, item): n for item, n in v.items()}
+        else:
+            out[k] = own_items(p, v)
+    return out
+
+
+def story_items(p):
+    """Doc 86, J9: the story's own items a program gives, {base^tag: {"name", "keep", "item"}} (item: the game's id)."""
+    out = {}
+    def visit(node):
+        if isinstance(node, list):
+            for x in node:
+                visit(x)
+        elif isinstance(node, dict):
+            if node.get('kind') == 'item.give' and isinstance(node.get('tag'), str) and isinstance(node.get('item'), str):
+                key = node['item'] + '^' + node['tag']
+                out.setdefault(key, {'name': node.get('name', ''), 'keep': bool(node.get('keep')),
+                                     'item': tagged_item(p.get('id', ''), node['item'], node['tag'])})
+            for v in node.values():
+                visit(v)
+    visit(p)
+    return out
+
+
+def match_one(expected, actual, gift=False):
+    """One filter value against the event's field (`gift`: the item of a gift, read as its base id unless marked)."""
+    if isinstance(expected, str):
+        return _gift_base(actual, expected, gift) == expected
+    if 'starts' in expected:
+        return _gift_base(actual, expected['starts'], gift).startswith(expected['starts'])
+    return any(_gift_base(actual, x, gift) == x for x in expected['in'])
+
+
+def match_words(v):
+    """A filter's value in words: the text, "begins with …", or "one of …"."""
+    if isinstance(v, str):
+        return v
+    if isinstance(v, dict) and 'starts' in v:
+        return f'begins with "{v["starts"]}"'
+    if isinstance(v, dict) and isinstance(v.get('in'), list):
+        return 'one of ' + ', '.join(str(x) for x in v['in'])
+    return str(v)
+
+
+def plain_match(m):
+    """The exact values of a filter ({field: text}): what approval can look up in the world (a starts has none; an in, its
+    first; every value of an in is in match_values)."""
+    return {k: v for k, v in (m or {}).items() if isinstance(v, str)} if isinstance(m, dict) else {}
+
+
+def match_values(v):
+    """Every exact value a filter's value names: the text, the in's values (a starts names none)."""
+    if isinstance(v, str):
+        return [v]
+    if isinstance(v, dict) and isinstance(v.get('in'), list):
+        return [x for x in v['in'] if isinstance(x, str)]
+    return []
+
+
+def check_moon(on, m, pid=''):
+    """Doc 86, J4: the moon's detail is new, waxing, full or waning (a typo would never fire)."""
+    if on != 'moon' or not isinstance(m, dict) or 'detail' not in m:
+        return
+    phases = triggers.CALENDAR['moon']
+    d = m['detail']
+    require(all(v in phases for v in match_values(d)) and (not isinstance(d, dict) or 'in' in d),
+            f'{pid + ": " if pid else ""}the moon is ' + ', '.join(phases[:-1]) + ' or ' + phases[-1] + '.')
+
+
+def stand_in_match(m):
+    """A filter as an event's fields (an admin's "fire now", the console's stand-in event): a starts gives its text, an in
+    its first value."""
+    out = {}
+    for k, v in (m or {}).items():
+        if isinstance(v, str):
+            out[k] = v
+        elif isinstance(v, dict) and 'starts' in v:
+            out[k] = v['starts']
+        elif isinstance(v, dict) and v.get('in'):
+            out[k] = v['in'][0]
+    return out
+
+
 # Mission objectives take evidence from the participant who acted. Ambient events can open or close a phase.
 MISSION_EVENTS = tuple(e['id'] for e in CATALOGUE['events'] if e.get('mission'))
 MISSION_GATE = 'missions completed'
@@ -95,6 +317,20 @@ FACT_CONDITIONS = tuple(c['id'] for c in CATALOGUE['conditions'] if c.get('facts
 # (Doc 85, Phase 10: the watched events that need a trigger's filters to say what to look at, and the words for them.)
 NEEDS_MATCH = {e['id']: tuple(e['needsMatch']) for e in CATALOGUE['events'] if e.get('needsMatch')}
 MATCH_WORDS = {'target': 'what it is about (target)', 'detail': 'number (detail)', 'actor': 'wolf (actor)'}
+# (Doc 86, Phase 4: the stories' own events name other things.)
+EVENT_MATCH_WORDS = {'story notified': {'detail': 'news (detail)'}, 'variable changed': {'target': 'world variable (target)'}}
+
+
+def match_word(event, key):
+    return EVENT_MATCH_WORDS.get(event, {}).get(key) or MATCH_WORDS[key]
+
+
+def check_variable_changed(on, match, phase, where=''):
+    """Doc 86, C13a: "variable changed" names a world variable this story declares."""
+    if on != 'variable changed' or phase is None or '_vars' not in phase:
+        return
+    d = phase['_vars'].get(match.get('target')) if isinstance(match.get('target'), str) else None
+    require(d is not None and d['scope'] == 'world', f'{where}"variable changed" names a world variable this story declares.')
 
 
 def validate_missions(phase):
@@ -164,7 +400,7 @@ def validate_missions(phase):
             )
             fields = o.get('match', {})
             require(
-                isinstance(fields, dict) and all(k in FIELDS and word(v, 400) for k, v in fields.items()),
+                match_ok(fields),
                 'Invalid mission event filter.',
             )
     require(
@@ -273,7 +509,82 @@ def _param_ok(param, v, regions):
         return identifier(v) and v in (regions or {})
     if kind == 'bool':
         return type(v) is bool
+    # (Doc 86, C8 and C9: talk memory's keys and values, so a line's gate can test them; a figure's id, as live.figures has it.)
+    if kind == 'talkkey':
+        return isinstance(v, str) and TALK_KEY.fullmatch(v) is not None
+    if kind == 'talkvalue':
+        return isinstance(v, str) and TALK_VALUE.fullmatch(v) is not None
+    if kind == 'figure':
+        return isinstance(v, str) and FIGURE_ID.fullmatch(v) is not None
+    if kind == 'camp':
+        return isinstance(v, str) and CAMP_NAME.fullmatch(v) is not None   # (Doc 86, L2; its prefix is checked with the program's.)
+    if kind == 'species':
+        return isinstance(v, str) and v in animal_habitats()   # (Doc 86, L1: an animal of Data/Wild/animals.json.)
+    if kind == 'tag':
+        return isinstance(v, str) and TAG.fullmatch(v) is not None   # (Doc 86, J9: a story's own mark on an item.)
+    if kind == 'foe':
+        return isinstance(v, str) and FOE_ID.fullmatch(v) is not None   # (Doc 86, C10: a foe's id, given by the story.)
+    if kind == 'post':
+        return isinstance(v, str) and POST_ID.fullmatch(v) is not None  # (Doc 86, C14: checked against the world at approval.)
     return identifier(v) or (kind == 'wolf' and v == '$actor')
+
+
+_ANIMALS = {}
+
+
+def animal_habitats():
+    """Doc 86, L1: the animals of Data/Wild/animals.json, {id: {ground: weight}}, and the ground each map glyph is
+    (`animal_ground`), read once."""
+    if not _ANIMALS:
+        doc = json.loads((CATALOGUE_FILE.parents[1] / 'Wild/animals.json').read_text(encoding='utf-8'))
+        _ANIMALS['species'] = {a['id']: dict(a.get('habitats') or {}) for a in doc['species']}
+        # (A glyph listed under two grounds is the first's, as the game reads it: w is water, not mud. RatwWild.cpp.)
+        ground = {}
+        for kind, glyphs in doc['ground'].items():
+            for glyph in glyphs:
+                ground.setdefault(glyph, kind)
+        _ANIMALS['ground'] = ground
+    return _ANIMALS['species']
+
+
+def animal_ground():
+    animal_habitats()
+    return _ANIMALS['ground']
+
+
+TALK_KEY = re.compile(r'[a-z][a-z0-9_]{0,39}')
+TALK_VALUE = re.compile(r'[a-z0-9_]{1,40}')
+FIGURE_ID = re.compile(r'[a-z0-9_]{3,40}')
+FOE_ID = re.compile(r'(?!npc-)[a-z0-9][a-z0-9_-]{2,39}')
+POST_ID = re.compile(r'job:[A-Za-z0-9_][A-Za-z0-9_.-]{0,79}')   # (Doc 86, C14: a careers post, job:<its founder>.)   # (npc-<resident> is a resident made a foe's camp.)
+CAMP_NAME = re.compile(r'[a-z0-9_]{3,30}')
+PREFIX = re.compile(r'[a-z]{2,8}')
+TALK_SCOPES = {'realm': (), 'town': ('town',), 'npc': ('npc',), 'pair': ('npc', 'player')}
+PAIR_WORDS = 'Pair memory needs a wolf of the story: use it in a participant trigger (the acting wolf) or For each over wolves.'
+# (A rumour's phrase follows a name: "#x.name# was seen at the Customs House". Never an id, a symbol or a fill. A word is
+# a run of letters, digits, _ and - (as the game's idInWords reads it, RatwGameStoryWorld.cpp): one with an _, one that
+# mixes letters and digits (rm111, but "2am" and "3rd-rate" too) or one that starts wolf- is taken for an id; doc 86, B6.)
+CLAIM_WORD = re.compile(r'[A-Za-z0-9_][A-Za-z0-9_-]*')
+
+
+def claim_has_id(claim):
+    """Whether a rumour's phrase holds what the game takes for an id (Game's idInWords, word for word)."""
+    for w in CLAIM_WORD.findall(claim):
+        if '_' in w or w.startswith('wolf-') or (re.search('[0-9]', w) and re.search('[A-Za-z]', w)):
+            return True
+    return False
+
+
+def figure_roles():
+    """The roles a figure may have: the talk library's world facts figure_<role> (Data/Talk/facts.json)."""
+    facts = json.loads((CATALOGUE_FILE.parents[1] / 'Talk/facts.json').read_text(encoding='utf-8'))
+    return tuple(k.removeprefix('figure_') for k in facts['world'] if k.startswith('figure_'))
+
+
+def check_claim(claim, pid):
+    require(claim == claim.strip() and claim[:1].islower() and not any(ch in claim for ch in '#[]{}\n') and not claim_has_id(claim),
+            f'{pid}: a rumour\'s claim is a phrase that follows a name, in small letters at first ("was seen at the Customs House"), '
+            'with no ids, # or brackets (no word with _ or that runs letters into digits: "at two in the morning", not "at 2am").')
 
 
 # Doc 85, 3.5 and Phase 7: what the runner does when the game refuses an effect it sent. Any effect the game applies may
@@ -294,14 +605,17 @@ def check_refusal(effect, pid):
     how = effect.get('ifRefused', 'pause')
     require(how in REFUSALS, f'{pid}: ifRefused is one of: pause, skip, when here.')
     if how == 'when here':
-        require(effect.get('kind') != 'scene.play' and isinstance(effect.get('player'), str) and effect['player'] not in ('', 'world'),
+        require(effect.get('kind') != 'scene.play' and (isinstance(effect.get('player'), dict) or isinstance(effect.get('player'), str)
+                                                         and effect['player'] not in ('', 'world')),
                 f'{pid}: "when here" holds an effect for its wolf: only an effect to one wolf may wait for them.')
     if 'waitDays' in effect:
         require(how == 'when here' and integer(effect['waitDays'], *WAIT_DAYS),
                 f'{pid}: waitDays (1 to 90) goes with ifRefused "when here".')
 
 
-def validate_effect(effect, pid, regions=None, scenes=None):
+def validate_effect(effect, pid, regions=None, scenes=None, operand=None):
+    """One effect's parameters and the parts that go together. `operand(param, value)`: how a value given for a parameter
+    marked operand is checked (doc 86, C1a: a trigger's effect and a quest's reward); without it, only literals."""
     kind = effect.get('kind') if isinstance(effect, dict) else None
     require(isinstance(kind, str) and kind in EFFECTS, f'{pid}: unknown effect.')
     # (Doc 85, Phase 6: a parameter marked "optional" may be left out. Phase 7: ifRefused and waitDays on any game effect.)
@@ -310,11 +624,17 @@ def validate_effect(effect, pid, regions=None, scenes=None):
     for param in EFFECT_PARAMS[kind]:
         if param.get('optional') and param['key'] not in effect:
             continue
+        if operand is not None and param.get('operand') and isinstance(effect[param['key']], dict):
+            try:
+                operand(param, effect[param['key']])
+            except (KeyError, TypeError, AttributeError) as error:
+                raise ValueError(f"{pid}: invalid {kind}.{param['key']} ({error}).")
+            continue
         require(_param_ok(param, effect[param['key']], regions), f"{pid}: invalid {kind}.{param['key']}.")
     if refusable(kind):
         check_refusal(effect, pid)
     if kind == 'character.grant':
-        require(quests.check_purse(effect['purse']), f'{pid}: name a purse that pays: town:<town>, town:<town>:works, till:<id> or chapter:<id>.')
+        require(quests.check_purse(effect['purse']), f'{pid}: n' + quests.PURSE_WORDS[1:])
     if kind == 'scene.play':
         scene = (scenes or {}).get(effect['scene'])
         require(
@@ -334,6 +654,44 @@ def validate_effect(effect, pid, regions=None, scenes=None):
         require(effect['text'].strip() == effect['text'] and '\n' not in effect['text'], f'{pid}: a story message is one line.')
     if kind == 'weather.set':
         require(('place' in effect) != ('town' in effect), f'{pid}: set the weather of one place or one town\'s streets.')
+    # (Doc 86, Phase 1b: talk memory's owner parts, a rumour's phrase, a figure's one name and where it is known.)
+    if kind in ('talk.remember', 'talk.forget'):
+        parts = TALK_SCOPES[effect['scope']]
+        for part in ('town', 'npc', 'player'):
+            require((part in effect) == (part in parts), f'{pid}: {"the realm" if not parts else effect["scope"]} memory names '
+                    + (' and '.join({'town': 'the town', 'npc': 'the resident', 'player': 'the wolf'}[x] for x in parts) or 'no town, resident or wolf')
+                    + ', and only that.')
+        if effect['scope'] == 'pair':
+            # (Doc 86, C1a: or a value that is a wolf, worked out when it fires.)
+            require(effect['player'] == '$actor' or isinstance(effect['player'], dict), f'{pid}: {PAIR_WORDS}')
+    if kind == 'belief.plant':
+        check_claim(effect['claim'], pid)
+    if kind == 'figure.set':
+        require(sum(k in effect for k in ('npc', 'player', 'name')) == 1, f'{pid}: a figure is one resident, one wolf, or a name.')
+        require(effect['role'] in figure_roles(), f'{pid}: a figure\'s role is one of: {", ".join(figure_roles())}.')
+        known = effect.get('known', 'realm')
+        require(('region' in effect) == (known == 'region') and ('house' in effect) == (known == 'house'),
+                f'{pid}: a figure known in a town or land names it, and one known among a House names the House; only then.')
+        require('name' not in effect or (effect['name'].strip() == effect['name'] and '\n' not in effect['name']), f'{pid}: a figure\'s name is one line.')
+    # (Doc 86, Phase 3: a title is one line with no symbols, known in the realm or a named town; a greeting is one line.)
+    if kind in ('title.give', 'title.take') and 'title' in effect:
+        t = effect['title']
+        plain = triggers.FILL.sub(' ', t)   # (Its fills are names, filled as it is sent: C1b.)
+        require(t.strip() == t and t and not any(ch in t for ch in '#[]\n') and not claim_has_id(plain),
+                f'{pid}: a title is one line of words, with no #symbols#, brackets or ids.')
+    if kind == 'title.give':
+        require(('town' in effect) == (effect.get('known', 'realm') == 'town'), f'{pid}: a title known in a town names the town, and only then.')
+    if kind == 'npc.greet':
+        require(effect['text'].strip() == effect['text'] and '\n' not in effect['text'], f'{pid}: a greeting is one line.')
+    if kind == 'item.give':
+        # (Doc 86, J9: a story's own item: a name and "kept" go with a tag; its base is a plain item, no make or maker's mark.)
+        require('tag' in effect or ('name' not in effect and 'keep' not in effect),
+                f'{pid}: a name, or keeping it after the story, is for a story\'s own item: give it a story mark (tag).')
+        require('tag' not in effect or (isinstance(effect['item'], str) and TAGGED_SHORT.fullmatch(effect['item'] + '^' + effect['tag'])),
+                f'{pid}: a story\'s own item is a plain item (no ~ or @) with a mark of small letters, digits and _, up to 32.')
+        require('name' not in effect or (effect['name'].strip() == effect['name'] and '\n' not in effect['name']
+                                         and not any(ch in effect['name'] for ch in '#[]{}')),
+                f'{pid}: a story item\'s name is one line of words, with no #symbols#, brackets or fills.')
     if kind in ('visitor.add', 'visitor.leave'):
         require(re.fullmatch(r'[a-z0-9][a-z0-9_-]{2,39}', effect['visitor']) is not None,
                 f'{pid}: a stranger\'s id is 3 to 40 small letters, digits, - and _.')
@@ -347,7 +705,8 @@ BUILDER_EFFECTS = frozenset(e['id'] for e in CATALOGUE['effects'] if e.get('need
 # Effects whose world change the game undoes when the run ends (a door's lock, a hold, a stranger, a mantle, a notice,
 # the weather, a marker): the catalogue's help says so.
 UNDONE_AT_END = ('door.lock', 'door.unlock', 'npc.hold', 'npc.follow', 'visitor.add', 'mantle.assign', 'board.post', 'weather.set',
-                 'story.ping')
+                 'story.ping', 'hunt.stage',   # (Doc 86, L1: an animal not yet met lapses with the story.)
+                 'foe.add', 'foe.outlaw')      # (Doc 86, C10: a foe goes, a resident made one is themselves again.)
 
 
 def region_index(program):
@@ -362,8 +721,14 @@ def variables_of(program):
 
 
 def effective_phase(program, phase):
+    # (Doc 86, J9: a story's own items named in their hashed form, as both twins and the game see them.)
+    phase = expanded_phase(program, phase)
+    program = expand_tags(program)
+    if isinstance(program.get('id'), str):
+        phase = {**phase, '_storyId': program['id']}   # (Doc 86, J9: whose the story's own items given in this phase are.)
     if program.get('version') == 2:
-        phase = {**phase, '_v': 2, '_vars': variables_of(program)}
+        phase = {**phase, '_v': 2, '_vars': variables_of(program),
+                 '_activeDays': program.get('activeDays', triggers.ACTIVE_DAYS)}
         if program.get('quests'):
             # (Doc 85, Phase 6: the story's quests, for the effects that name them; those open in this phase keep it going.)
             phase.update(_questIndex=quests.index(program),
@@ -396,7 +761,7 @@ def possible_effects(phase):
         *phase['effects'],
         *(a['effect'] for t in phase.get('triggers', []) for _, a in triggers.walk(t['actions']) if a['do'] == 'effect'),
         # (Doc 85, Phase 6: a quest's rewards may be given in any phase: its copies outlast the phase they began in.)
-        *(e for q in phase.get('_questIndex', {}).values() for e in (*q.get('rewards', ()), *q.get('bonus', ()))),
+        *(quests.from_giver(e, q) for q in phase.get('_questIndex', {}).values() for e in (*q.get('rewards', ()), *q.get('bonus', ()))),
     ]
 
 
@@ -443,6 +808,12 @@ def _check_header(p):
     # (Doc 85, 5.6: a program may set its own "quiet" alert, or 0 for "this one is slow on purpose".)
     require('quietAfterHours' not in p or integer(p['quietAfterHours'], 0, 8760),
             'Quiet after: 0 (never) to 8760 hours.')
+    # (Doc 86, C2: how long a wolf counts as active after they were last seen, in game days.)
+    require('activeDays' not in p or (p['version'] == 2 and integer(p['activeDays'], 1, 120)),
+            'Active wolves: seen in the last 1–120 game days (a version 2 story).')
+    # (Doc 86, L2 and D2: the story's prefix, 2 to 8 small letters: its camps' names begin with it and _.)
+    require('prefix' not in p or (isinstance(p['prefix'], str) and PREFIX.fullmatch(p['prefix']) is not None),
+            'A story\'s prefix is 2 to 8 small letters (nh, sq, mq, lq, st).')
 
 
 def _check_audience(a):
@@ -477,7 +848,7 @@ def _check_phase_head(p, phase, ids):
     shape(
         phase,
         ('id', 'journal', 'effects', 'exits'),
-        ('guestVoices', 'missions', 'triggers', 'campaignRules'),
+        ('guestVoices', 'missions', 'triggers', 'campaignRules', 'ready'),
     )
     require(
         isinstance(phase.get('triggers', []), list) and type(phase.get('campaignRules', True)) is bool,
@@ -508,9 +879,18 @@ def _check_phase_head(p, phase, ids):
 
 def _check_entry_effect(effect, phase, speakers):
     pid = phase['id']
+    require(not (isinstance(effect, dict) and effect.get('kind') in ('talk.remember', 'talk.forget') and effect.get('scope') == 'pair'),
+            f'{pid}: {PAIR_WORDS}')
     validate_effect(effect, pid, phase.get('_regions'), phase.get('_scenes'))
     require(effect['kind'] not in quests.STORY_EFFECTS, f'{pid}: {effect["kind"]} goes in a trigger, not in what a phase sends as it opens.')
     quests.check_story_effect(effect, None, None)
+    if phase.get('_v') == 2:
+        # (Doc 86, C1b: words are filled as a trigger fires; what a phase sends as it opens is sent as written.)
+        for param in EFFECT_PARAMS[effect['kind']]:
+            v = effect.get(param['key'])
+            require(not (param.get('fills') and isinstance(v, str) and triggers.fills_in_quietly(v)),
+                    f'{pid}: {{name}} fills words in a trigger\'s effect (a trigger on "story started" or on entering), not in what a '
+                    'phase sends as it opens.')
     if effect['kind'] == 'npc.line':
         require(
             effect['npc'] not in speakers,
@@ -521,6 +901,12 @@ def _check_entry_effect(effect, phase, speakers):
 
 def _check_exit(e, phase, mission_ids):
     pid = phase['id']
+    if isinstance(e, dict) and e.get('on') == READY_EXIT:
+        # (Doc 86, R2: the way on when the phase's Readiness is met; it has no event, no filter and no acting wolf.)
+        shape(e, ('on', 'to'))
+        require(identifier(e['to']), f'{pid}: name where the ready exit goes.')
+        require('ready' in phase, f'{pid}: a ready exit needs the phase\'s Readiness ("ready").')
+        return
     if isinstance(e, dict) and e.get('on') == MISSION_GATE:
         shape(e, ('on', 'to', 'missions'))
         names = e['missions']
@@ -553,9 +939,23 @@ def _check_exit(e, phase, mission_ids):
     )
     m = e.get('match', {})
     require(
-        isinstance(m, dict) and all(k in FIELDS and word(v, 400) for k, v in m.items()),
+        match_ok(m),
         f'{pid}: invalid event filter.',
     )
+    # (Doc 86, C12b, as for triggers: what the game is told to look at for a watched event stays exact words.)
+    needs = NEEDS_MATCH.get(e['on'], ())
+    require(
+        all(isinstance(m.get(k, ''), str) for k in needs),
+        f'{pid}: "{e["on"]}" needs its ' + ' and '.join(match_word(e['on'], k) for k in needs)
+        + ' as exact words (not "begins with" or "one of"): the game must know what to look at.',
+    )
+    require(
+        e['on'] not in ('purse crossed', 'standing crossed') or 'detail' not in m
+        or re.fullmatch(r'-?[0-9]{1,9}', m['detail']) is not None,
+        f'{pid}: "{e["on"]}" names a whole number to cross.',
+    )
+    check_moon(e['on'], m, pid)
+    check_variable_changed(e['on'], m, phase, f'{pid}: ')
     check_region_source(e, phase.get('_regions'))
     require(
         'participant' not in e or type(e['participant']) is bool,
@@ -589,7 +989,7 @@ def _check_exit(e, phase, mission_ids):
             )
             fields = step.get('match', {})
             require(
-                isinstance(fields, dict) and all(k in FIELDS and word(v, 400) for k, v in fields.items()),
+                match_ok(fields),
                 'Invalid prerequisite filter.',
             )
             check_region_source(step, phase.get('_regions'))
@@ -627,6 +1027,364 @@ def _check_phase(p, raw, ids):
             check_region_source(objective, phase.get('_regions'))
     for e in phase['exits']:
         _check_exit(e, phase, mission_ids)
+    if 'ready' in phase:
+        _check_ready(p, _indexed(p, phase), mission_ids)
+
+
+# ------------------------------------------------------------------------------------ readiness (doc 86, Phase 1a: R2)
+# A phase may say what "ready" means: enough of the active wolves took part (R1), enough days in the phase or the chapter,
+# values, missions or a quest. The runner (and a rehearsal) measures it; once every part is met it is ready, and stays
+# ready for the visit (latched). Ready, it moves on by itself (`auto`, at once or at the `then` moment) or alerts the admin,
+# who presses Advance (the command `advance`). Held time never counts.
+
+READY_EXIT = 'ready'
+READY_PARTS = ('participation', 'minDays', 'value', 'test', 'missions', 'quest')
+READY_ANCHORS = ('day begins', 'hour', 'season begins', 'festival', 'dm signal', 'moon', 'month begins')   # (Doc 86: the moon (J4, Phase 2), the month (C13a, Phase 4).)
+READY_PARTS_MAX, READY_ANY = 8, (2, 4)
+READY_LOG = 20
+READY_DAYS = 3650
+_READY_WORDS = {'participation': 'Wolves who took part', 'value': 'A value', 'test': 'A test', 'missions': 'The missions'}
+
+
+def ready_exit(phase):
+    return next((e for e in phase.get('exits', ()) if isinstance(e, dict) and e.get('on') == READY_EXIT), None)
+
+
+def _part_kind(part):
+    kinds = [k for k in READY_PARTS if k in part]
+    require(len(kinds) == 1, 'Each part of Readiness is one of: participation, minDays, value (with atLeast), test, missions, '
+            'quest; or "any" of 2 to 4 of them.')
+    return kinds[0]
+
+
+def _storyish(o, phase):
+    """R2: a readiness value reads the story's and the world's values only: never a wolf's own, the event's or a loop's."""
+    for x in triggers.operands_in(o):
+        shared = any(k in x for k in triggers.SHARES)   # (A share's "of" is its audience, not a wolf.)
+        require('field' not in x and 'each' not in x and (shared or 'of' not in x),
+                'Readiness reads the story\'s and the world\'s values, not a wolf\'s or the event\'s.')
+        name = x.get('var') or x.get('count') or x.get('since')
+        if name in phase.get('_vars', {}):
+            require(phase['_vars'][name]['scope'] not in triggers.PERSONAL, f'Readiness reads no wolf\'s own value ("{name}").')
+
+
+def _story_operand(o, phase):
+    _storyish(o, phase)
+    require(triggers.operand_type(o, phase) == 'number', 'Readiness compares numbers.')
+
+
+def _story_test(c, phase, missions):
+    """A readiness test: a condition over the story's state (no facts, no rolls, nothing of one wolf or the event)."""
+    triggers._check_condition(c, 1, phase, missions)
+    for x in triggers.conditions_in(c):
+        kind = x.get('test')
+        require(kind not in triggers.FACTS_V2 and kind not in ('chance', 'region', 'field', 'counter'),
+                'Readiness tests the story\'s state: not the world\'s facts, the event, or a roll.')
+        if kind in triggers.QUEST_V2:
+            require(x.get('of') == 'story', 'Readiness reads the story\'s copy of a quest.')
+        else:
+            require(not triggers._personal(x, phase) and ('of' not in x or kind == 'participation'),
+                    'Readiness tests nothing of one wolf.')
+        for side in ('left', 'right', 'value'):
+            if side in x:
+                _storyish(x[side], phase)
+
+
+def _check_ready_part(p, phase, part, missions, nested=False):
+    require(isinstance(part, dict), 'A part of Readiness is an object.')
+    require('label' not in part or word(part['label'], 80), 'A part\'s label is up to 80 characters.')
+    if 'any' in part:
+        require(not nested, 'An "any" group of Readiness is one deep.')
+        shape(part, ('any',), ('label',))
+        low, high = READY_ANY
+        require(isinstance(part['any'], list) and low <= len(part['any']) <= high, f'An "any" group holds {low} to {high} parts.')
+        for child in part['any']:
+            _check_ready_part(p, phase, child, missions, True)
+        return
+    kind = _part_kind(part)
+    if kind == 'participation':
+        shape(part, ('participation', 'percent'), ('of', 'floor', 'cap', 'label'))
+        triggers._check_condition_v2(ready_condition(part), phase, None)
+    elif kind == 'minDays':
+        shape(part, ('minDays',), ('since', 'label'))
+        require(number(part['minDays'], 0, READY_DAYS), f'Least days: 0 to {READY_DAYS} game days.')
+        require(part.get('since', 'phase') in ('phase', 'chapter'), 'Days since the phase (this visit) or the chapter (the run) began.')
+    elif kind == 'value':
+        shape(part, ('value', 'atLeast'), ('label',))
+        _story_operand(part['value'], phase)
+        _story_operand(part['atLeast'], phase)
+    elif kind == 'test':
+        shape(part, ('test',), ('label',))
+        _story_test(part['test'], phase, missions)
+    elif kind == 'missions':
+        shape(part, ('missions',), ('label',))
+        names = part['missions']
+        require(isinstance(names, list) and names and all(identifier(k) and k in missions for k in names)
+                and len(set(names)) == len(names), 'Readiness names distinct missions of this phase.')
+    else:
+        shape(part, ('quest',), ('label',))
+        q = phase.get('_questIndex', {}).get(part['quest'])
+        require(q is not None and q.get('scope') == 'story', 'Readiness names a quest of the story (scope "story").')
+
+
+def _check_ready(p, phase, missions):
+    """R2's format: the parts (1 to 8; an "any" of 2 to 4, one deep), auto, then, slowAfterDays, slowNeedsYou and
+    autoAfterDays; and the phase's one ready exit."""
+    pid = phase['id']
+    block = phase['ready']
+    require(p.get('version') == 2, f'{pid}: Readiness needs a version 2 story.')
+    shape(block, ('all',), ('auto', 'then', 'slowAfterDays', 'slowNeedsYou', 'autoAfterDays'))
+    parts = block['all']
+    require(isinstance(parts, list) and 1 <= len(parts) <= READY_PARTS_MAX, f'{pid}: Readiness has 1 to {READY_PARTS_MAX} parts.')
+    for part in parts:
+        _check_ready_part(p, phase, part, missions)
+    require(type(block.get('auto', False)) is bool and type(block.get('slowNeedsYou', False)) is bool,
+            f'{pid}: auto and slowNeedsYou are true or false.')
+    for key in ('slowAfterDays', 'autoAfterDays'):
+        require(key not in block or integer(block[key], 1, READY_DAYS), f'{pid}: {key} is 1 to {READY_DAYS} game days.')
+    require('autoAfterDays' not in block or not block.get('auto'), f'{pid}: autoAfterDays is for a phase that waits for an admin (auto off).')
+    if 'then' in block:
+        t = block['then']
+        shape(t, ('on',), ('match',))
+        require(t['on'] in READY_ANCHORS, f'{pid}: Readiness waits for one of: ' + ', '.join(READY_ANCHORS) + '.')
+        m = t.get('match', {})
+        require(match_ok(m), f'{pid}: invalid filter of the moment.')
+        require(t['on'] != 'dm signal' or (set(m) == {'detail'} and word(m['detail'], 80)), f'{pid}: name the DM signal it waits for.')
+        check_moon(t['on'], m, pid)
+    exits = [e for e in phase['exits'] if isinstance(e, dict) and e.get('on') == READY_EXIT]
+    require(len(exits) == 1, f'{pid}: a phase with Readiness has exactly one ready exit ({{"on": "ready", "to": ...}}).')
+
+
+def ready_condition(part):
+    """A participation part as R1's condition."""
+    src = part['participation'] if isinstance(part.get('participation'), dict) else {}
+    return {'test': 'participation', **{k: src[k] for k in ('list', 'where') if k in src},
+            **{k: part[k] for k in ('of', 'percent', 'floor', 'cap') if k in part}}
+
+
+def held_days(state, scope, day):
+    """Game days the run (scope "run") or this visit ("visit") was held, the hold under way included."""
+    total = (state.get('heldDays') or {}).get(scope, 0)
+    held = state.get('held')
+    if held and day is not None and 'atDay' in held:
+        start = held['atDay'] if scope == 'run' or held.get('visit') == state.get('visits') else max(held['atDay'], state['entered'])
+        total += max(0, day - start)
+    return total
+
+
+def running_days(state, since, day):
+    """Game days since the visit ("phase") or the run ("chapter") began, held time not counted."""
+    if day is None:
+        return 0
+    if since == 'chapter':
+        return max(0, day - state.get('began', state['entered']) - held_days(state, 'run', day))
+    return max(0, day - state['entered'] - held_days(state, 'visit', day))
+
+
+def _fill(part):
+    if part.get('met'):
+        return 1.0
+    v, n = part.get('value'), part.get('need')
+    return max(0.0, min(1.0, v / n)) if triggers._num(v) and triggers._num(n) and n > 0 else 0.0
+
+
+def _ready_part(p, phase, state, part, x, missions):
+    label = part.get('label')
+    if 'any' in part:
+        kids = [_ready_part(p, phase, state, child, x, missions) for child in part['any']]
+        best = max(kids, key=_fill)
+        return {'kind': 'any', 'label': label or 'Any of these', 'met': any(k['met'] for k in kids), 'value': best.get('value'),
+                'need': best.get('need'), 'any': kids}
+    kind = _part_kind(part)
+    if kind == 'participation':
+        c = ready_condition(part)
+        r = triggers.counted(c, c.get('of', 'active'), x)
+        out = {'kind': kind, 'label': label or _READY_WORDS[kind], 'of': c.get('of', 'active'), 'percent': c['percent'],
+               'floor': c.get('floor', 1), **({'cap': c['cap']} if 'cap' in c else {})}
+        if r is None:
+            return {**out, 'met': False, 'value': None, 'need': None, 'count': None, 'share': None}
+        s_, d = r
+        need = triggers.share_need(len(d), c['percent'], c.get('floor', 1), c.get('cap')) if d else None
+        aud = x.audience()
+        return {**out, 'met': bool(d) and len(s_) >= need, 'value': len(s_), 'need': need, 'count': len(d),
+                'share': 100 * len(s_) // len(d) if d else 0,
+                'audience': {k: (None if aud[k] is triggers.MISSING else aud[k]) for k in triggers.AUDIENCES}}
+    if kind == 'minDays':
+        since = part.get('since', 'phase')
+        days = running_days(state, since, x.day)
+        return {'kind': kind, 'label': label or ('Days in the chapter' if since == 'chapter' else 'Days in the phase'),
+                'met': days >= part['minDays'], 'value': round(days, 2), 'need': part['minDays'], 'since': since,
+                'held': round(held_days(state, 'run' if since == 'chapter' else 'visit', x.day), 2)}
+    if kind == 'value':
+        v, n = triggers.value_of(part['value'], x), triggers.value_of(part['atLeast'], x)
+        known = triggers._num(v) and triggers._num(n)
+        return {'kind': kind, 'label': label or _READY_WORDS[kind], 'met': known and v >= n,
+                'value': v if known else None, 'need': n if triggers._num(n) else None}
+    if kind == 'test':
+        return {'kind': kind, 'label': label or _READY_WORDS[kind], 'met': triggers.test(part['test'], x) is True,
+                'value': None, 'need': None}
+    if kind == 'missions':
+        ready_ = missions()
+        k = sum(1 for m in part['missions'] if m in ready_)
+        return {'kind': kind, 'label': label or _READY_WORDS[kind], 'met': k == len(part['missions']), 'value': k,
+                'need': len(part['missions'])}
+    q = phase.get('_questIndex', {}).get(part['quest'], {})
+    c = state.get('quests', {}).get(part['quest'], {}).get('story') or {}
+    n = sum(min(r.get('n', 0), quests.goal_of(o, c)) if not r.get('done') else quests.goal_of(o, c)
+            for o in q.get('objectives', ()) for r in [c.get('objectives', {}).get(o['id'], {})] if not o.get('optional'))
+    goal = sum(quests.goal_of(o, c) for o in q.get('objectives', ()) if not o.get('optional'))
+    return {'kind': kind, 'label': label or f'The quest {part["quest"]}', 'met': c.get('status') == 'done',
+            'value': n, 'need': goal, 'quest': part['quest']}
+
+
+def ready_digest(phase):
+    """The phase's Readiness and its way on, as moving a run onto a new version compares them (R2 rule 12)."""
+    return hashlib.sha256(json.dumps([phase.get('ready'), ready_exit(phase)], sort_keys=True).encode()).hexdigest()[:16]
+
+
+def _ready_log(state, day, kind, text, **more):
+    log = state.setdefault('readyLog', [])
+    state['readyLogN'] = state.get('readyLogN', 0) + 1   # (Each entry's own number, kept as the log is trimmed: the timeline's key.)
+    log.append({'day': round(day, 4) if day is not None else None, 'kind': kind, 'text': text, 'phase': state['phase'],
+                'visit': state['visits'], 'n': state['readyLogN'], **more})
+    del log[:-READY_LOG]
+
+
+def part_words(part):
+    """One part's progress in words (the timeline's and the alerts')."""
+    if part['kind'] == 'any':
+        return ' or '.join(part_words(k) for k in part['any'])
+    if part['kind'] == 'participation':
+        if part.get('count') is None:
+            return f'{part["label"]}: not known (no one is known to be online)'
+        return (f'{part["value"]} of {part["count"]} {part["of"]} wolves ({part["share"]}%; {part["percent"]}% and '
+                f'{part["need"] if part["need"] is not None else part["floor"]} needed)')
+    if part['kind'] == 'minDays':
+        return f'{part["value"]:g} of {part["need"]:g} days'
+    if part['kind'] == 'test':
+        return f'{part["label"]}: {"yes" if part["met"] else "not yet"}'
+    return f'{part["label"]}: {part["value"]} of {part["need"]}'
+
+
+def furthest(parts):
+    """The part nearest done of those not met (the slow alert names it)."""
+    left = [x for x in parts if not x['met']]
+    return max(left, key=_fill) if left else None
+
+
+def readiness(p, state, day, elapsed=0, facts=None):
+    """R2: the phase's Readiness measured now (state['ready']); (target, cause) when the run is to move on now, else None.
+    The runner calls it at most once a tick (and a rehearsal after each fact); the `then` moment is taken by
+    `ready_anchor` when its event comes."""
+    phase = phase_of(p, state)
+    block = phase.get('ready')
+    if not block or state.get('outcome'):
+        state.pop('ready', None)
+        return None
+    way = ready_exit(phase)
+    r = state.get('ready')
+    if not r or r.get('phase') != phase['id'] or r.get('visit') != state['visits']:
+        r = {'phase': phase['id'], 'visit': state['visits'], 'met': False, 'metAt': None, 'pushed': None}
+    missions = lambda: {m['id'] for m in mission_snapshot(phase, state) if m['ready']}
+    x = triggers.Ctx(phase, state, {'kind': 'ready', **({'facts': facts} if facts is not None else {})}, '', day, elapsed, missions, None)
+    parts = [_ready_part(p, phase, state, part, x, missions) for part in block['all']]
+    every = all(x_['met'] for x_ in parts)
+    if every and r.get('metAt') is None:
+        r['metAt'] = round(day, 4) if day is not None else 0
+        r['heldAtMet'] = held_days(state, 'visit', day)
+        _ready_log(state, day, 'ready', 'Ready: ' + ', '.join(part_words(x_) for x_ in parts))
+    days_in = running_days(state, 'phase', day)
+    r.update(parts=parts, checkedAt=round(day, 4) if day is not None else None, auto=bool(block.get('auto')), to=way['to'],
+             then=block.get('then'), met=r.get('metAt') is not None or bool(r.get('pushed')), days=round(days_in, 2),
+             heldDays=round(held_days(state, 'visit', day), 2))
+    slow_after = block.get('slowAfterDays')
+    slow = not r['met'] and slow_after is not None and days_in >= slow_after
+    if slow and not r.get('slow'):
+        _ready_log(state, day, 'slow', f'Slow after {days_in:.4g} days: ' + part_words(furthest(parts)))
+    r['slow'] = slow
+    r['slowNeedsYou'] = bool(block.get('slowNeedsYou'))
+    r.pop('waitingFor', None)
+    state['ready'] = r
+    if not r['met']:
+        return None
+    pushed = r.get('pushed') or {}
+    go = block.get('auto') or pushed.get('when') == 'then'
+    cause = 'ready' if block.get('auto') else 'advance'
+    after = block.get('autoAfterDays')
+    if not go and after is not None and r.get('metAt') is not None and day is not None:
+        since_met = day - r['metAt'] - (held_days(state, 'visit', day) - r.get('heldAtMet', 0))
+        if since_met >= after:
+            go, cause = True, 'ready (no admin)'
+    if not go:
+        return None
+    if block.get('then'):
+        r['waitingFor'] = block['then']
+        return None
+    return way['to'], cause
+
+
+def ready_words(then):
+    """A `then` moment in words: "the next day begins", "the next festival", "the DM signal …"."""
+    if not then:
+        return 'once ready'
+    detail = (then.get('match') or {}).get('detail')
+    if then['on'] == 'moon':
+        # (Doc 86, J4: "the next new moon", "the next full moon", or the next turn of the moon.)
+        return f'the next {detail} moon' if isinstance(detail, str) else 'the next turn of the moon'
+    words = {'day begins': 'the next day', 'hour': 'the next hour', 'season begins': 'the next season', 'festival': 'the next festival',
+             'dm signal': 'the direction', 'month begins': 'the next month'}.get(then['on'], 'the next ' + then['on'])
+    return words + (f' ({rules_match_words(detail)})' if detail else '')
+
+
+def rules_match_words(v):
+    return match_words(v)
+
+
+def ready_anchor(phase, state, event):
+    """R2 rule 5: a ready phase waiting for its `then` moment moves on when that event comes."""
+    r = state.get('ready')
+    if not r or not r.get('waitingFor') or r.get('phase') != phase.get('id') or r.get('visit') != state.get('visits'):
+        return None
+    if not matches(r['waitingFor'], event):
+        return None
+    way = ready_exit(phase)
+    if way is None:
+        return None
+    _ready_log(state, event.get('day'), 'taken', f'Moved on to {way["to"]} at {event["kind"]}' + (
+        f' ({event["detail"]})' if event.get('detail') else ''))
+    return way['to']
+
+
+def ready_snapshot(state):
+    """What the console and the audit show of readiness: every part's progress (bounded)."""
+    r = state.get('ready')
+    if not r:
+        return None
+    return {k: r.get(k) for k in ('phase', 'visit', 'met', 'metAt', 'pushed', 'auto', 'to', 'then', 'waitingFor', 'slow',
+                                  'slowNeedsYou', 'parts', 'days', 'heldDays', 'checkedAt')}
+
+
+def counts_audience(p):
+    """Whether a run keeps who it has seen (state['seen']): a version 2 story that counts its audience or has Readiness."""
+    if p.get('version') != 2:
+        return False
+    return any('ready' in ph for ph in p.get('phases', ()) if isinstance(ph, dict)) or triggers.uses_audience(
+        [p.get('triggers', []), [ph.get('triggers', []) for ph in p.get('phases', ()) if isinstance(ph, dict)], p.get('quests', [])])
+
+
+def note_seen(state, event, day):
+    """C2: a wolf of the story seen (the actor of any event) on this game day; arrivals and departures keep who is online
+    when the run tracks it (a rehearsal does)."""
+    actor = event.get('actor')
+    if not actor or actor not in state.get('cohort', ()):
+        return
+    seen = state.setdefault('seen', {})
+    if day is not None and seen.get(actor, -1e18) < day:
+        seen[actor] = day
+    if 'online' in state and event.get('kind') in ('arrival', 'departure'):
+        online = set(state['online'])
+        (online.add if event['kind'] == 'arrival' else online.discard)(actor)
+        state['online'] = sorted(online)
 
 
 def _check_start(p, ids):
@@ -674,7 +1432,7 @@ def _check_tests(p):
 
 
 TOP_REQUIRED = ('format', 'version', 'id', 'title', 'audience', 'start', 'phases', 'tests')
-TOP_OPTIONAL = ('triggers', 'regions', 'scenes', 'quietAfterHours', 'variables', 'quests')
+TOP_OPTIONAL = ('triggers', 'regions', 'scenes', 'quietAfterHours', 'variables', 'quests', 'activeDays', 'prefix')
 VARIABLES_MAX = 64
 
 
@@ -695,17 +1453,28 @@ def _initial_ok(kind, v, regions):
 
 def _check_variable(d, names, regions):
     """One declared variable (doc 85, 3.2): a unique name, a type, a scope, and its first value, a note and a label."""
-    shape(d, ('id', 'type', 'scope'), ('initial', 'note', 'show', 'clock'))
+    shape(d, ('id', 'type', 'scope'), ('initial', 'note', 'show', 'clock', 'talk', 'showOf', 'mirror'))
     require(identifier(d['id']) and d['id'] not in names, 'Give every variable a unique name.')
     require(d['type'] in triggers.VAR_TYPES and d['scope'] in triggers.SCOPES,
-            'A variable has a type (' + ', '.join(triggers.VAR_TYPES) + ') and a scope (story, player, party, world).')
+            'A variable has a type (' + ', '.join(triggers.VAR_TYPES) + ') and a scope (story, player, party, world, realm).')
     require('clock' not in d or (d['type'] == 'timer' and d['clock'] in ('game', 'real')), "A timer variable's clock is game or real.")
     require('note' not in d or word(d['note'], 300), "A variable's note is up to 300 characters.")
     require('show' not in d or (word(d['show'], 60) and d['type'] in ('number', 'switch', 'timer')),
             'A number, switch or timer may be shown, under a label of up to 60 characters.')
     require('initial' not in d or (d['type'] != 'timer' and _initial_ok(d['type'], d['initial'], regions)),
             f'The first value of "{d["id"]}" is not a {d["type"]}' + (' (a timer starts unset).' if d['type'] == 'timer' else '.'))
+    # (Doc 86, N2: a wolf's own value told to the residents they talk to, as player.story.<name> in the dialogue window.)
+    if 'talk' in d:
+        require(type(d['talk']) is bool, 'Told to residents: yes or no.')
+        require(not d['talk'] or (d['scope'] in TALK_VAR_SCOPES and d['type'] in ('number', 'switch', 'text')),
+                'Only a wolf\'s own number, switch or text may be told to residents (player.story.<name>).')
+        require(not d['talk'] or d['type'] != 'text' or 'initial' not in d or TALK_VALUE.fullmatch(d['initial']) is not None,
+                f'A text told to residents holds small letters, digits and _ (up to 40), so a line can test it: "{d["id"]}"\'s first value does not.')
     names.add(d['id'])
+
+
+TALK_VAR_SCOPES = ('player', 'realm')   # (Realm: doc 86's J2, Phase 8.)
+TALK_VARS_MAX = 8
 
 
 def _check_variables(p):
@@ -714,6 +1483,61 @@ def _check_variables(p):
     names, regions = set(), set(region_index(p))
     for d in decls:
         _check_variable(d, names, regions)
+    require(sum(1 for d in decls if d.get('talk')) <= TALK_VARS_MAX, f'Tell residents of up to {TALK_VARS_MAX} variables.')
+    by = {d['id']: d for d in decls}
+    for d in decls:
+        _check_show_of(d, by)
+        _check_mirror(d, by)
+
+
+MIRROR_NAMES = 16
+
+
+def _check_show_of(d, by):
+    """Doc 86, C1d: a shown number read "of" another ("This chapter: 34 / 80"): a declared number the same wolf can read."""
+    if 'showOf' not in d:
+        return
+    other = by.get(d['showOf'])
+    require(d['type'] == 'number' and d.get('show'), f'"{d["id"]}": only a shown number is shown "of" another.')
+    require(other is not None and other['type'] == 'number' and other['id'] != d['id'],
+            f'"{d["id"]}" is shown of a declared number: "{d["showOf"]}" is not one.')
+    require(other['scope'] in ('story', 'world') or other['scope'] == d['scope'],
+            f'"{d["id"]}" is shown of "{other["id"]}", which a wolf reading it cannot read: the story\'s, the world\'s or the same wolf\'s own.')
+
+
+def _check_mirror(d, by):
+    """Doc 86, N3: a wolf's shown number that mirrors a world number, the one their text `key` names (never stored)."""
+    if 'mirror' not in d:
+        return
+    m = d['mirror']
+    require(d['type'] == 'number' and d['scope'] == 'player' and d.get('show') and 'initial' not in d,
+            f'"{d["id"]}": a mirror is a shown number of each wolf (and has no first value of its own).')
+    # (Residents know only what a wolf's values hold: a mirror holds nothing, so it is not told to them.)
+    require(not d.get('talk'), f'"{d["id"]}": a mirror is not told to residents (talk): it holds no value of its own.')
+    shape(m, ('key', 'names'))
+    key = by.get(m['key'])
+    require(key is not None and key['type'] == 'text' and key['scope'] in triggers.OWN and 'mirror' not in key,
+            f'"{d["id"]}" mirrors by a text of each wolf: "{m["key"]}" is not one.')
+    names = m['names']
+    require(isinstance(names, dict) and 1 <= len(names) <= MIRROR_NAMES, f'"{d["id"]}" mirrors 1 to {MIRROR_NAMES} world numbers.')
+    for value, name in names.items():
+        require(word(value, TEXT_MAX_MIRROR) and isinstance(name, str), f'"{d["id"]}": each value of {m["key"]} names a world number.')
+        w = by.get(name)
+        require(w is not None and w['type'] == 'number' and w['scope'] == 'world' and 'mirror' not in w,
+                f'"{d["id"]}" mirrors declared world numbers: "{name}" is not one.')
+
+
+TEXT_MAX_MIRROR = 200
+
+
+def talk_value(d, v):
+    """A wolf's value as the dialogue window's player.story.<name> holds it (doc 86, N2): a number's digits, a switch's yes
+    or no, a text as it is when a line can test it (else None: stored, not told)."""
+    if d['type'] == 'switch':
+        return 'yes' if v else 'no'
+    if d['type'] == 'number':
+        return str(int(v)) if isinstance(v, (int, float)) and not isinstance(v, bool) else None
+    return v if isinstance(v, str) and TALK_VALUE.fullmatch(v) else None
 
 
 def validate(p):
@@ -748,8 +1572,174 @@ def validate(p):
         _check_phase(p, phase, ids)
     _check_start(p, ids)
     _check_graph(p, ids)
+    _check_camps(p)
+    _check_tags(p)
+    _check_foes(p)
+    _check_strangers(p)
     _check_tests(p)
     return p
+
+
+FOE_EVENTS = ('foe downed', 'foe defeated', 'foe fled')
+
+
+def foe_mark(run):
+    """The run's mark on its foe events (`coins`: FNV-1a, 32 bits, of the run's id, the game's foes::runMark, the 8 hex
+    digits of the foe's camp): the runner gives a foe event only to the run whose foe it was, as two runs (of one quest, or
+    two stories) may name a foe alike."""
+    h = 2166136261
+    for c in str(run).encode('utf-8'):
+        h = ((h ^ c) * 16777619) & 0xFFFFFFFF
+    return h
+
+
+def _effect_nodes(p, kinds):
+    """Every effect of the given kinds anywhere in a program (a rehearsal's left out), in order."""
+    out = []
+    def visit(node):
+        if isinstance(node, list):
+            for x in node:
+                visit(x)
+        elif isinstance(node, dict):
+            if node.get('kind') in kinds and isinstance(node.get('kind'), str):
+                out.append(node)
+            for v in node.values():
+                visit(v)
+    visit({k: v for k, v in p.items() if k != 'tests'})
+    return out
+
+
+def _match_sites(p):
+    """Every rule of a program with an event and its filters (triggers, exits, objectives), with its path; a rehearsal's
+    left out."""
+    out = []
+    def visit(node, path):
+        if isinstance(node, list):
+            for i, x in enumerate(node):
+                visit(x, f'{path}[{i}]')
+        elif isinstance(node, dict):
+            if isinstance(node.get('on'), str):
+                out.append((path, node))
+            for k, v in node.items():
+                visit(v, f'{path}.{k}' if path else k)
+    visit({k: v for k, v in p.items() if k != 'tests'}, '')
+    return out
+
+
+def scene_strangers(p):
+    """Doc 86, T3: the strangers cast in a program's scenes, (scene id, role, visitor id), in order."""
+    return [(s.get('id'), role.get('id'), role['visitor']) for s in p.get('scenes', []) or [] if isinstance(s, dict)
+            for role in s.get('cast', []) or [] if isinstance(role, dict) and isinstance(role.get('visitor'), str)]
+
+
+def _check_strangers(p):
+    """Doc 86, T3: a stranger cast in a scene is one the same story brings ("Bring a stranger")."""
+    brought = {e.get('visitor') for e in _effect_nodes(p, ('visitor.add',))}
+    for scene, role, visitor in scene_strangers(p):
+        require(visitor in brought, f'Scene {scene}: the stranger {visitor} ({role}) is one the story brings with "Bring a stranger".')
+
+
+def foes_of(p):
+    """Doc 86, C10: the foes a program brings ({foe id: its foe.add}, the first) and the residents it makes foes (their ids,
+    where given outright): what a foe event's target may name."""
+    added, outlaws = {}, set()
+    for e in _effect_nodes(p, ('foe.add', 'foe.outlaw')):
+        if e['kind'] == 'foe.add' and isinstance(e.get('foe'), str):
+            added.setdefault(e['foe'], e)
+        elif e['kind'] == 'foe.outlaw' and isinstance(e.get('npc'), str):
+            outlaws.add(e['npc'])
+    return added, outlaws
+
+
+def _check_foes(p):
+    """Doc 86, C10: a foe's id names one foe in the whole program (one name, one strength wherever it is brought), and a foe
+    sent away is one the program brings."""
+    seen = {}
+    for e in _effect_nodes(p, ('foe.add',)):
+        if not isinstance(e.get('foe'), str):
+            continue
+        how = (e.get('name'), e.get('strength', 'tough'))
+        require(seen.setdefault(e['foe'], how) == how,
+                f'The foe {e["foe"]} is one foe: bring them with one name and one strength everywhere in the story.')
+    for e in _effect_nodes(p, ('foe.leave',)):
+        require(e.get('foe') in seen, f'"A foe leaves" names a foe the story brings ("Bring a foe"): {e.get("foe")}')
+
+
+def _check_tags(p):
+    """Doc 86, J9: each of the story's own items is given one way (one name, kept or not) and named rightly where it is read:
+    whole, never by how it begins (the game's id has the story's hash before the mark). One the story never gives is a
+    warning (program_warnings): a new version may still read what an earlier one gave."""
+    seen = {}
+    def name(v):
+        if isinstance(v, str) and '^' in v:
+            require(TAGGED_SHORT.fullmatch(v) is not None, f'A story\'s own item is named <item>^<mark> (letter^watch_list): {v}')
+    def visit(node):
+        if isinstance(node, list):
+            for x in node:
+                visit(x)
+            return
+        if not isinstance(node, dict):
+            return
+        if node.get('kind') == 'item.give' and isinstance(node.get('tag'), str) and isinstance(node.get('item'), str):
+            key = node['item'] + '^' + node['tag']
+            how = (node.get('name', ''), bool(node.get('keep')))
+            require(seen.setdefault(key, how) == how, f'The story\'s own item {key} is given with one name, and kept or not, everywhere.')
+        for k, v in node.items():
+            if k == 'item' and isinstance(v, dict) and ('starts' in v or 'in' in v):
+                require(not (isinstance(v.get('starts'), str) and '^' in v['starts']),
+                        f'A story\'s own item is named whole ({v.get("starts")}...: name it as letter^watch_list, or list them with "one of").')
+                for x in v.get('in', []) if isinstance(v.get('in'), list) else []:
+                    name(x)
+            elif k == 'item':
+                name(v)
+            else:
+                visit(v)
+    # (A rehearsal's events and expected effects are the game's facts and orders: they may name the hashed form.)
+    visit({k: v for k, v in p.items() if k != 'tests'})
+    require(len(seen) <= TAGGED_MOST, f'A story gives at most {TAGGED_MOST} kinds of its own items.')
+
+
+def own_items_named(p):
+    """Doc 86, J9: every story's own item a program names in a filter or a condition (item^tag), with the first place it is
+    named: {item^tag: path}. A rehearsal's events are left out."""
+    out = {}
+    def visit(node, path):
+        if isinstance(node, list):
+            for i, x in enumerate(node):
+                visit(x, f'{path}[{i}]')
+        elif isinstance(node, dict):
+            for k, v in node.items():
+                at = f'{path}.{k}' if path else k
+                if k == 'item':
+                    for x in [v] if isinstance(v, str) else v.get('in', []) if isinstance(v, dict) and isinstance(v.get('in'), list) else []:
+                        if isinstance(x, str) and TAGGED_SHORT.fullmatch(x):
+                            out.setdefault(x, at)
+                else:
+                    visit(v, at)
+    visit({k: v for k, v in p.items() if k != 'tests'}, '')
+    return out
+
+
+def camps_of(p):
+    """Doc 86, L2: the camp names a program's spawns give (story.area.spawn and bandits.call, wherever they are)."""
+    out = set()
+    for ph in p.get('phases', []):
+        if not isinstance(ph, dict):
+            continue
+        for e in possible_effects(effective_phase(p, ph)):
+            if isinstance(e, dict) and e.get('kind') in ('story.area.spawn', 'bandits.call') and isinstance(e.get('camp'), str):
+                out.add(e['camp'])
+    return out
+
+
+def _check_camps(p):
+    names = camps_of(p)
+    if not names:
+        return
+    prefix = p.get('prefix')
+    require(prefix, 'A story that names its camps declares its prefix ("prefix": nh, sq, mq, lq, st...): a camp\'s name begins with it.')
+    for name in sorted(names):
+        require(name.startswith(prefix + '_'), f'The camp "{name}" begins with the story\'s prefix and _ ({prefix}_...).')
 
 
 def campaign_scope(p, scene_docs=None):
@@ -832,6 +1822,11 @@ def _problems(p):
         for i, d in enumerate(decls):
             attempt(f'variables[{i}]', {'kind': 'variable', 'index': i, 'id': d.get('id') if isinstance(d, dict) else None},
                     _check_variable, d, taken, names)
+        by = {d['id']: d for d in decls if isinstance(d, dict) and isinstance(d.get('id'), str)}
+        for i, d in enumerate(decls):
+            if isinstance(d, dict) and ('showOf' in d or 'mirror' in d):
+                at = {'kind': 'variable', 'index': i, 'id': d.get('id')}
+                attempt(f'variables[{i}]', at, _check_show_of, d, by) and attempt(f'variables[{i}]', at, _check_mirror, d, by)
 
     # (Doc 85, Phase 6: each quest's problems where it is.)
     qs = p.get('quests', [])
@@ -932,6 +1927,7 @@ def _problems(p):
         sound_phases = sound_phases and len(out) == before
     if 'start' in p:
         attempt('start', program, _check_start, p, ids)
+    attempt('', program, _check_camps, p)   # (Doc 86, L2: the camps' names and the story's prefix.)
     if sound_phases and not any(e['level'] == 'error' for e in out):
         # (Reachability and the paths into a phase need every phase sound: a broken one would only add noise.)
         attempt('phases', {'kind': 'phases'}, _check_graph, p, ids)
@@ -1026,6 +2022,41 @@ def program_warnings(p):
         if (scope, key) not in written:
             out.append({'level': 'warning', 'path': path, 'at': at,
                         'text': f'Counter "{key}" ({scope}) is read but nothing sets it: it stays 0 (a misspelt name?).'})
+    # (Doc 86, J9: an item^tag the program never gives: the hash is this program's, so only what an earlier version of
+    # this story gave could match it.)
+    given = story_items({k: v for k, v in p.items() if k != 'tests'})
+    for item, path in sorted(own_items_named(p).items()):
+        if item not in given:
+            out.append({'level': 'warning', 'path': path, 'at': {'kind': 'program'},
+                        'text': f'Nothing in this story gives {item} ("Give a wolf an item" of {item.split("^")[0]} with the mark '
+                                f'{item.split("^")[1]}): only one an earlier version of the story gave could match it.'})
+    # (Doc 86, T3: a scene played in a phase before any that brings its stranger: the scene fails there.)
+    strangers = {}
+    for scene, role, visitor in scene_strangers(p):
+        strangers.setdefault(scene, []).append(visitor)
+    if strangers:
+        first = {}
+        for i, ph in enumerate(p.get('phases', [])):
+            for e in _effect_nodes(ph, ('visitor.add',)) if isinstance(ph, dict) else ():
+                first.setdefault(e.get('visitor'), i)
+        for e in _effect_nodes({k: v for k, v in p.items() if k not in ('phases', 'tests')}, ('visitor.add',)):
+            first[e.get('visitor')] = -1   # (Brought by a campaign trigger or a quest: in any phase.)
+        for i, ph in enumerate(p.get('phases', [])):
+            for e in _effect_nodes(ph, ('scene.play',)) if isinstance(ph, dict) else ():
+                for visitor in strangers.get(e.get('scene'), ()):
+                    if first.get(visitor, i + 1) > i:
+                        out.append({'level': 'warning', 'path': f'phases[{i}]', 'at': {'kind': 'program'},
+                                    'text': f'Scene {e.get("scene")} casts the stranger {visitor}, whom the story brings only in a later '
+                                            'phase: played here, the scene fails ("a stranger is not here").'})
+    # (Doc 86, C10: a foe event read for a foe the story never brings, nor a resident it makes one, never matches its foes.)
+    added, outlaws = foes_of(p)
+    for path, rule in _match_sites(p):
+        if rule.get('on') in FOE_EVENTS:
+            for target in match_values(rule.get('match', {}).get('target')):
+                if target not in added and target not in outlaws:
+                    out.append({'level': 'warning', 'path': path, 'at': {'kind': 'program'},
+                                'text': f'"{rule["on"]}" is read for {target}, a foe this story never brings ("Bring a foe") '
+                                        'nor a resident it makes one.'})
     if p.get('version') == 2:
         used = variable_uses(p)
         for i, d in enumerate(p.get('variables', [])):
@@ -1050,9 +2081,18 @@ def variable_uses(p):
                     out.setdefault(x[key], []).append((path, at, 'read'))
             for side in ('left', 'right', 'value'):
                 for o in triggers.operands_in(x.get(side)):
-                    for key in reads:
-                        if key in o:
-                            out.setdefault(o[key], []).append((path, at, 'read'))
+                    operand(o, path, at)
+
+    def operand(o, path, at):
+        for key in reads:
+            if key in o:
+                out.setdefault(o[key], []).append((path, at, 'read'))
+        t = o.get('tally')
+        if isinstance(t, dict):
+            # (Doc 86, J11: a tally reads what it adds up, the variable it picks wolves by, and the list it is over.)
+            for name in (t.get('sum'), t.get('where'), t.get('over', {}).get('list') if isinstance(t.get('over'), dict) else None):
+                if isinstance(name, str):
+                    out.setdefault(name, []).append((path, at, 'read'))
 
     for pi, path, rules_ in scopes:
         for ti, t in enumerate(rules_):
@@ -1066,13 +2106,19 @@ def variable_uses(p):
                     for c in [a['if'], *(b['if'] for b in a.get('elif', ()))]:
                         condition(c, *where)
                 if 'var' in a and a['do'] != 'each':
-                    out.setdefault(a['var'], []).append((*where, 'write'))
+                    # (Doc 86, C3a: Rank reads its number and writes the list it ranks into.)
+                    out.setdefault(a['var'], []).append((*where, 'read' if a['do'] == 'rank' else 'write'))
+                if a['do'] == 'rank' and 'into' in a:
+                    out.setdefault(a['into'], []).append((*where, 'write'))
                 if 'list' in a:
                     out.setdefault(a['list'], []).append((*where, 'read'))
-                for o in triggers.operands_in(a.get('value')):
-                    for key in reads:
-                        if key in o:
-                            out.setdefault(o[key], []).append((*where, 'read'))
+                for side in ('value', 'top', 'min'):
+                    for o in triggers.operands_in(a.get(side)):
+                        operand(o, *where)
+                if a['do'] == 'effect' and isinstance(a.get('effect'), dict):
+                    for v in a['effect'].values():
+                        for o in triggers.operands_in(v):
+                            operand(o, *where)
     return out
 
 
@@ -1100,6 +2146,9 @@ def leave_visit(phase, state, target, day, actor, p=None):
     if p is not None and quests.relevant(p):
         quests.leave_visit(p, state, target, day)
     state.pop('previousMissions', None)
+    if 'heldDays' in state:
+        state['heldDays']['visit'] = 0   # (Doc 86, R2: the held days of the visit; the run's are kept.)
+    state.pop('ready', None)
     if phase.get('missions'):
         state['previousMissions'] = mission_snapshot(phase, state)
     state.pop('missions', None)
@@ -1129,11 +2178,10 @@ def phase_of(p, state):
 def matches(condition, event):
     if condition['on'] != event['kind']:
         return False
+    gift = condition['on'] in ('gift', 'gift again')
     for key, expected in condition.get('match', {}).items():
         actual = event.get(key, '')
-        if key == 'item' and condition['on'] in ('gift', 'gift again') and not any(mark in expected for mark in '~@'):
-            actual = re.split('[~@]', actual, 1)[0]
-        if actual != expected:
+        if not match_one(expected, actual if isinstance(actual, str) else '', gift and key == 'item'):
             return False
     return all(
         event.get(field, 0) >= condition[key]
@@ -1148,6 +2196,17 @@ def advance(p, state, event, day, trace=None, elapsed=0):
     if day < state['entered'] or event['kind'] == triggers.SIGNAL or state.get('outcome'):
         return False
     phase = phase_of(p, state)
+    if state.get('castRequests') and quests.CASTER.get() is not None:
+        # (Doc 86, C7: castings asked where nobody could answer them (a command, What if), answered before the next fact.)
+        told = []
+        run = quests.Run(p, phase, state, day, elapsed, told.append)
+        for request in state.pop('castRequests'):
+            run.cast_answer(request, quests.CASTER.get()(request))
+        for fact in told:
+            if dispatch(p, phase, state, fact, day, trace, elapsed):
+                return True
+            if state.get('outcome'):
+                return False
     if event['kind'] != 'clock':
         return dispatch(p, phase, state, event, day, trace, elapsed)
     clock = {'kind': 'clock', 'id': event.get('id')}
@@ -1234,7 +2293,9 @@ def dispatch(p, phase, state, event, day, trace, elapsed, wait=None):
         else:
             target = triggers.fire(phase, state, fact, day, elapsed, ready, matches, emit, trace)
         if story_effects:
-            quests.take_story_effects(p, phase, state, day, elapsed, push)
+            quests.take_story_effects(p, phase, state, day, elapsed, push, fact)
+            if quest_run:
+                quests.keep_up(p, phase, state, day, elapsed, push, fact)
         if budget and trace is not None:
             budget.spend(len(trace) - trace_start)   # (The trace is the reply: it is bounded with the work.)
         if trace is not None and fact.get('cell') and fact.get('x') is not None and fact.get('y') is not None:
@@ -1242,7 +2303,7 @@ def dispatch(p, phase, state, event, day, trace, elapsed, wait=None):
                 firing.update(cell=fact['cell'], x=fact['x'], y=fact['y'])
         if state.get('outcome'):
             return False   # (Version 2's finish: the run has ended; nothing more is tried.)
-        target = target or (None if resuming else exit_for(phase, state, fact, day))
+        target = target or (None if resuming else exit_for(phase, state, fact, day) or ready_anchor(phase, state, fact))
         if target:
             leave_visit(phase, state, target, day, fact.get('actor', ''), p)
             return True
@@ -1252,6 +2313,8 @@ def dispatch(p, phase, state, event, day, trace, elapsed, wait=None):
 def exit_for(phase, state, event, day):
     ready = None
     for index, edge in enumerate(phase['exits']):
+        if edge['on'] == READY_EXIT:
+            continue   # (Doc 86, R2: taken by readiness, never by an event.)
         actor = event.get('actor', '')
         if (edge.get('participant') or 'players' in edge or 'percent' in edge) and actor not in state['cohort']:
             continue
@@ -1338,8 +2401,40 @@ def _check_case(p, case):
             'facts',
             # (Doc 85, Phase 10: the chapters this one starts, by story id, in order.)
             'expectChapters',
+            # (Doc 86, C2 and R1: the audience's counts as given, and the active wolves, instead of those the case's events
+            # make.)
+            'audience',
+            'activeWolves',
+            # (Doc 86, J2: what each wolf holds of the story's realm variables at the start, as an earlier story left it.)
+            'realm',
+            # (Doc 86, C7: who the world would cast into each resident variable, best first: {var: [resident, ...]}.)
+            'cast',
         ),
     )
+    if 'cast' in case:
+        decls = {d['id']: d for d in p.get('variables', []) if isinstance(d, dict)}
+        require(isinstance(case['cast'], dict) and all(
+            isinstance(v, list) and len(v) <= 50 and all(identifier(r) for r in v) for v in case['cast'].values()),
+            'A case\'s casting gives each resident variable the residents who fit, best first: {var: [resident, ...]}.')
+        for name in case['cast']:
+            d = decls.get(name)
+            require(d is not None and d['type'] == 'resident' and d['scope'] == 'story',
+                    f'A case\'s casting names a resident variable of the story: {name}.')
+    require('audience' not in case or (isinstance(case['audience'], dict) and set(case['audience']) <= set(triggers.AUDIENCES)
+                                       and all(integer(v, 0, 1_000_000) for v in case['audience'].values())),
+            'A case\'s audience gives the counts: {"all": n, "active": n, "online": n}.')
+    if 'realm' in case:
+        decls = {d['id']: d for d in p.get('variables', []) if d.get('scope') == 'realm'}
+        given = case['realm']
+        require(isinstance(given, dict) and all(identifier(w) and isinstance(v, dict) for w, v in given.items()),
+                'A case\'s realm values are {wolf: {name: value}}.')
+        for wolf, values in given.items():
+            for name, v in values.items():
+                require(name in decls and decls[name]['type'] != 'timer' and _initial_ok(decls[name]['type'], v, set(region_index(p))),
+                        f'A case\'s realm value names a realm variable the story declares, with a value of its type: {name}.')
+    require('activeWolves' not in case or (isinstance(case['activeWolves'], list) and len(case['activeWolves']) <= quests.AUDIENCE_CAP
+                                           and all(identifier(w) for w in case['activeWolves'])),
+            'The active wolves are a list of wolves.')
     if 'facts' in case:
         check_world_facts(case['facts'])
     require('expectQuests' not in case or (isinstance(case['expectQuests'], dict) and all(
@@ -1356,7 +2451,7 @@ def _check_case(p, case):
             'abandoned or none.')
     require('expectVariables' not in case or (isinstance(case['expectVariables'], dict)
                                               and set(case['expectVariables']) <= set(triggers.SCOPES)),
-            'Expected variables are listed by scope (story, player, party, world).')
+            'Expected variables are listed by scope (story, player, party, world, realm).')
     require(
         word(case['name'], 100)
         and isinstance(case['cohort'], list)
@@ -1378,8 +2473,25 @@ def _check_case(p, case):
     )
 
 
+def _check_step(ev):
+    """Doc 86, R2: a rehearsal's readiness step, {"check": "ready", "met": bool} or {"advance": "now" | "anyway" | "then"}."""
+    if 'check' in ev:
+        shape(ev, ('check', 'met'))
+        require(ev['check'] == 'ready' and type(ev['met']) is bool, 'A check step is {"check": "ready", "met": true or false}.')
+    else:
+        shape(ev, ('advance',))
+        require(ev['advance'] in ('now', 'anyway', 'then'), 'An advance step is "now", "anyway" or "then".')
+
+
+def is_step(ev):
+    return isinstance(ev, dict) and ('check' in ev or 'advance' in ev) and 'kind' not in ev
+
+
 def _check_fact(ev):
-    """One rehearsal fact's shape and values."""
+    """One rehearsal fact's shape and values (or, doc 86, a readiness step)."""
+    if is_step(ev):
+        _check_step(ev)
+        return
     shape(ev, ('id', 'kind', 'day'), (*FIELDS, 'quantity', 'coins', 'elapsedDays', 'x', 'y', 'facts'))
     if 'facts' in ev:
         check_world_facts(ev['facts'])
@@ -1399,11 +2511,19 @@ def _check_fact(ev):
 
 # ----------------------------------------------------------------------------------------- the world's facts (Phase 8)
 
+def _weather_cells(rule):
+    """The places a "weather changed" filter names (doc 86, C12b: each of an "in"; a "begins with" names none, so anywhere)."""
+    m = rule.get('match', {}) if isinstance(rule.get('match'), dict) else {}
+    v = m.get('target') or m.get('cell')
+    return match_values(v)
+
+
 def watch_of(p):
     """What the game is to tell this story (doc 85, 3.4 and Phase 8), worked out from the program and sent with each
     story.phase: the sections of the world's facts its conditions read (and which items, factions, towns, residents,
     places and relations), and the watched events its triggers, exits, missions and quests listen for. {} for a story
     that asks nothing: it costs the game nothing."""
+    p = expand_tags(p)   # (Doc 86, J9: the game counts a story's own item under the id it gave it.)
     conditions, listened, weather_cells, anywhere = [], set(), set(), False
     rules_ = [*p.get('triggers', [])]
     for ph in p.get('phases', []):
@@ -1411,20 +2531,21 @@ def watch_of(p):
         for e in ph.get('exits', []):
             listened.add(e.get('on'))
             if e.get('on') == 'weather changed':
-                cell = e.get('match', {}).get('target') or e.get('match', {}).get('cell')
-                weather_cells.add(cell) if cell else None
-                anywhere = anywhere or not cell
+                cells = _weather_cells(e)
+                weather_cells.update(cells)
+                anywhere = anywhere or not cells
         for m in ph.get('missions', []):
             listened.update(o.get('on') for o in m.get('objectives', []))
+        then = (ph.get('ready') or {}).get('then') if isinstance(ph.get('ready'), dict) else None
+        if isinstance(then, dict):
+            listened.add(then.get('on'))   # (Doc 86, R2: the moment a ready phase waits for.)
     for t in rules_:
         listened.add(t.get('on'))
         conditions += list(triggers.rule_conditions(t))
         if t.get('on') == 'weather changed':
-            cell = t.get('match', {}).get('target') or t.get('match', {}).get('cell')
-            if cell:
-                weather_cells.add(cell)
-            else:
-                anywhere = True
+            cells = _weather_cells(t)
+            weather_cells.update(cells)
+            anywhere = anywhere or not cells
     for q in p.get('quests', []):
         listened.update(o.get('on') for o in q.get('objectives', []))
         listened.update(f.get('on') for f in q.get('fail', []) if isinstance(f, dict))
@@ -1432,11 +2553,14 @@ def watch_of(p):
     # (Doc 85, Phase 10: what the game looks at for "near resident", "purse crossed" and "standing crossed": the residents,
     # the purses and amounts, the factions and numbers the triggers name.)
     near, purses, standings = set(), set(), set()
+    lists = set()   # (Doc 86, J6: the residents lists a count in a region reads; the runner adds their members as it runs.)
     for t in [*rules_, *(e for ph in p.get('phases', []) for e in ph.get('exits', []))]:
         m = t.get('match', {}) if isinstance(t.get('match'), dict) else {}
-        if t.get('on') == 'near resident' and m.get('target'):
+        # (Only exact words are watched: a "begins with" or "one of" filter is refused at approval, and never reaches here.)
+        if t.get('on') == 'near resident' and isinstance(m.get('target'), str) and m['target']:
             near.add(m['target'])
-        elif t.get('on') in ('purse crossed', 'standing crossed') and m.get('target') and re.fullmatch(r'-?[0-9]{1,9}', m.get('detail', '')):
+        elif (t.get('on') in ('purse crossed', 'standing crossed') and isinstance(m.get('target'), str) and m['target']
+              and isinstance(m.get('detail'), str) and re.fullmatch(r'-?[0-9]{1,9}', m['detail'])):
             (purses if t['on'] == 'purse crossed' else standings).add((m['target'], int(m['detail'])))
     for c in conditions:
         kind = c.get('test')
@@ -1450,6 +2574,10 @@ def watch_of(p):
         elif kind.startswith('resident'):
             sections.add('residents')
             residents.add(c['npc'])
+        elif kind == 'count in region' and c.get('who') == 'residents':
+            sections.add('residents')
+            if isinstance(c.get('list'), str):
+                lists.add(c['list'])
         elif kind == 'weather is':
             sections.add('weather')
             if c.get('where', '$actor') == '$actor':
@@ -1463,8 +2591,24 @@ def watch_of(p):
             factions.update([c['faction']] if kind == 'standing' else ())
             towns.update([c['town']] if kind == 'reputation' else ())
     events = sorted(e for e in listened if e in WATCHED_EVENTS)
+    if p.get('version') == 2 and triggers.uses_online([rules_, [ph.get('ready') for ph in p.get('phases', []) if isinstance(ph, dict)],
+                                                       p.get('quests', [])]):
+        sections.add('wolves')   # (Doc 86, C2: who is online now is read from the world's signed-in wolves.)
     if weather_cells or anywhere or 'weather changed' in events:
         sections.add('weather')
+    # (Doc 86, M2: the purses a value reads, reported as the world's facts; SQ5: the wolves where an objective credits those
+    # present.)
+    held = sorted(set(triggers.purses_in([rules_, p.get('quests', []), [ph.get('ready') for ph in p.get('phases', []) if isinstance(ph, dict)]])))
+    if held:
+        sections.add('purses')
+    if any(isinstance(o, dict) and o.get('credit') == 'present' for q in p.get('quests', []) or [] for o in q.get('objectives', [])):
+        sections.add('wolves')
+    # (Doc 86, C7: a casting nearest a wolf other than the fact's own actor reads where that wolf is from the world's facts;
+    # the fact's own actor is where the fact happened.)
+    cast_effects = [a['effect'] for t in rules_ for _, a in triggers.walk(t.get('actions', [])) if a.get('do') == 'effect']
+    cast_effects += [e for ph in p.get('phases', []) for e in ph.get('effects', [])]
+    if any(isinstance(e, dict) and e.get('kind') == 'cast.pick' and e.get('near') not in (None, '', '$actor') for e in cast_effects):
+        sections.add('wolves')
     out = {}
     for key, values in (('facts', sections), ('items', items), ('factions', factions), ('towns', towns), ('residents', residents),
                         ('cells', weather_cells), ('events', events)):
@@ -1480,12 +2624,19 @@ def watch_of(p):
         out['standing'] = [list(x) for x in sorted(standings)]
     if anywhere:
         out['weatherWhereWolves'] = True
+    if held:
+        out['purseFacts'] = held
+    if lists:
+        out['residentLists'] = sorted(lists)   # (The runner's: story_runner.watch_now sends their members as `residents`.)
     return out
-FACT_SECTIONS = ('wolves', 'residents', 'world', 'weather', 'relations')
+FACT_SECTIONS = ('wolves', 'residents', 'world', 'weather', 'relations', 'purses')   # (Doc 86, M2: what purses hold.)
 WOLF_FACTS = {'cell': str, 'x': int, 'y': int, 'indoors': bool, 'town': str, 'party': str, 'partySize': int, 'carries': dict,
-              'coins': int, 'standing': dict, 'reputation': dict, 'downed': bool, 'hurt': bool, 'wanted': bool, 'held': bool}
-RESIDENT_FACTS = {'alive': bool, 'cell': str, 'x': int, 'y': int, 'indoors': bool, 'job': str, 'mood': str, 'mantle': str, 'town': str}
-WORLD_FACTS = {'day': (int, float), 'hour': int, 'minute': int, 'weekday': str, 'season': str, 'period': str, 'dayOfSeason': int, 'year': int}
+              'coins': int, 'standing': dict, 'reputation': dict, 'downed': bool, 'hurt': bool, 'wanted': bool, 'held': bool,
+              'gift': dict}   # (Doc 86, J10: {tier, family}.)
+RESIDENT_FACTS = {'alive': bool, 'cell': str, 'x': int, 'y': int, 'indoors': bool, 'job': str, 'mood': str, 'mantle': str, 'town': str,
+                  'post': str}   # (Doc 86, C13b: the post they hold, by its title.)
+WORLD_FACTS = {'day': (int, float), 'hour': int, 'minute': int, 'weekday': str, 'season': str, 'period': str, 'dayOfSeason': int, 'year': int,
+               'moon': str}
 
 
 def _typed(v, kind):
@@ -1500,7 +2651,7 @@ def check_world_facts(f):
     """The world's facts as a rehearsal states them (and as the game writes them to game.story_facts): sections of wolves,
     residents, the world's clock, the weather by place and the factions' relations ("a>b"). A wolf or resident named with
     null is gone from the world (in a fact that changes them)."""
-    require(isinstance(f, dict) and set(f) <= set(FACT_SECTIONS), 'Facts have wolves, residents, world, weather and relations.')
+    require(isinstance(f, dict) and set(f) <= set(FACT_SECTIONS), 'Facts have wolves, residents, world, weather, relations and purses.')
     for section, fields in (('wolves', WOLF_FACTS), ('residents', RESIDENT_FACTS)):
         entries = f.get(section, {})
         require(isinstance(entries, dict) and len(entries) <= 5000, f'Facts: {section} by id.')
@@ -1508,17 +2659,25 @@ def check_world_facts(f):
             require(identifier(k) and (v is None or (isinstance(v, dict) and set(v) <= set(fields)
                                                      and all(_typed(x, fields[key]) for key, x in v.items()))),
                     f'Facts: {section} "{k}" has unknown or mistyped facts.')
+            if isinstance(v, dict) and 'gift' in v:
+                require(set(v['gift']) <= {'tier', 'family'} and all(isinstance(x, str) for x in v['gift'].values()),
+                        'Facts: a wolf\'s gift is its tier and family, as words.')
             for key in ('carries', 'standing', 'reputation'):
                 if isinstance(v, dict) and key in v:
-                    require(all(identifier(i) and type(n) in (int, float) and type(n) is not bool for i, n in v[key].items()),
-                            f'Facts: {key} are numbers by id.')
+                    # (Doc 86, J9: a story's own item is carried under its own id, letter^ab12cd34.watch_list.)
+                    require(all((item_ok(i) if key == 'carries' else identifier(i)) and type(n) in (int, float) and type(n) is not bool
+                                for i, n in v[key].items()), f'Facts: {key} are numbers by id.')
     world = f.get('world', {})
     require(isinstance(world, dict) and set(world) <= set(WORLD_FACTS) and all(_typed(v, WORLD_FACTS[k]) for k, v in world.items()),
-            'Facts: the world has day, hour, minute, weekday, season, period, dayOfSeason, year.')
+            'Facts: the world has day, hour, minute, weekday, season, period, dayOfSeason, year, moon.')
+    require('moon' not in world or world['moon'] in triggers.CALENDAR['moon'], 'Facts: the moon is new, waxing, full or waning.')
     for section in ('weather', 'relations'):
         entries = f.get(section, {})
         require(isinstance(entries, dict) and all(isinstance(k, str) and (v is None or isinstance(v, str)) for k, v in entries.items()),
                 f'Facts: {section} are words by place (or by "faction>other").')
+    purses = f.get('purses', {})
+    require(isinstance(purses, dict) and all(isinstance(k, str) and (v is None or (type(v) in (int, float) and type(v) is not bool))
+                                             for k, v in purses.items()), 'Facts: purses are pennies by purse (town:<town>, till:job:<id>...).')
 
 
 def merge_facts(base, change):
@@ -1546,24 +2705,80 @@ def review(p, budget=None):
         _rehearsals.release()
 
 
+def case_caster(case):
+    """Doc 86, C7: a rehearsal's casting: the first of the case's residents for the variable who is not left out (None: the
+    case names nobody who fits, 'cast failed')."""
+    given = case.get('cast') or {}
+
+    def pick(request):
+        left_out = set(request.get('notIn', ()))
+        return next((r for r in given.get(request['var'], ()) if r not in left_out), None)
+    return pick
+
+
 def _play_case(p, case, step=None):
     """One rehearsal case, fact by fact (as the runner would take them). `step(fact, state, path, trace, intended)` is
     called after each fact, for the workbench's step-through (doc 85, 4.5)."""
     _check_case(p, case)
+    token = quests.CASTER.set(case_caster(case))
+    try:
+        return _play_checked_case(p, case, step)
+    finally:
+        quests.CASTER.reset(token)
+
+
+def _play_checked_case(p, case, step=None):
     state = begin(p, case['cohort'], 0, case.get('seed'))
     if case.get('rolls'):
         state['rolls'] = list(case['rolls'])
     if case.get('parties'):
         state['parties'] = dict(case['parties'])
+    if case.get('realm'):
+        # (Doc 86, J2: each wolf's realm values as an earlier story kept them; the runner reads them from dm.story_realm_vars.)
+        members = set(case['cohort'])
+        realm = {w: dict(v) for w, v in json.loads(json.dumps(case['realm'])).items() if w in members and v}
+        if realm:
+            state.setdefault('counters', {})['realm'] = realm
     path, intended, last_day, seen = [], [], 0, {}
     visit_credits, trace = [], []
     elapsed = 0
     world = case.get('facts')   # (Doc 85, Phase 8: the world's facts, as a case states them; None: no facts at all.)
+    world = own_items(p, world) if world is not None else None   # (Doc 86, J9: item^tag as the game names it.)
+    counting = counts_audience(p)
+    checks, ready_seen = [], set()
+    if counting:
+        # (Doc 86, C2: a rehearsal keeps who it has seen and who is online, from its own events; a case may say instead.)
+        state['online'] = []
+        if 'audience' in case:
+            state['rehearsalAudience'] = dict(case['audience'])
+        if 'activeWolves' in case:
+            state['rehearsalActive'] = list(case['activeWolves'])
+
+    def measure():
+        # (As the runner measures it after a tick: a move it makes, or one a fact made, is measured again in the new phase.)
+        for _ in range(8):
+            if not counting or state.get('outcome'):
+                return
+            moved = readiness(p, state, last_day, elapsed, world)
+            if state.get('ready', {}).get('met'):
+                ready_seen.add(state['phase'])
+            if not moved:
+                return
+            leave_visit(phase_of(p, state), state, moved[0], last_day, '', p)
+            record_entry(p, state, path, intended, visit_credits)
 
     record_entry(p, state, path, intended, visit_credits)
+    measure()
     if step:
         step(None, state, path, trace, intended)
     for ev in case['events']:
+        if is_step(ev):
+            # (Doc 86, R2: a step that asserts the phase's readiness, or presses Advance as the command would.)
+            _ready_step(p, state, ev, last_day, checks, ready_seen, lambda: record_entry(p, state, path, intended, visit_credits))
+            measure()
+            if step:
+                step(ev, state, path, trace, intended)
+            continue
         _check_fact(ev)
         if ev['id'] in seen:
             require(ev == seen[ev['id']], 'A repeated event ID has different contents.')
@@ -1578,11 +2793,14 @@ def _play_case(p, case, step=None):
         )
         elapsed = ev.get('elapsedDays', elapsed)
         last_day = ev['day']
+        ev = own_items(p, ev)   # (Doc 86, J9: a story's own item, as the author names it, in the game's form.)
         if 'facts' in ev:
             world = merge_facts(world, ev['facts'])
             ev = {k: v for k, v in ev.items() if k != 'facts'}
         if world is not None:
             ev = {**ev, 'facts': world}
+        if counting:
+            note_seen(state, ev, ev['day'])
         dispatch = [ev] if ev['kind'] in ('clock', 'dm signal') else [{'kind': 'clock', **({'facts': world} if world is not None else {})}, ev]
         for fact in dispatch:
             while True:
@@ -1593,6 +2811,9 @@ def _play_case(p, case, step=None):
                     record_entry(p, state, path, intended, visit_credits)
                 if not moved or fact['kind'] != 'clock':
                     break
+        if counting:
+            note_seen(state, ev, ev['day'])   # (And after: a wolf who joined by this event is seen from it, and online.)
+        measure()
         if step:
             step(ev, state, path, trace, intended)
     missions = mission_snapshot(phase_of(p, state), state)
@@ -1613,8 +2834,11 @@ def _play_case(p, case, step=None):
         and state.get('counters', {}) == case.get('expectCounters', state.get('counters', {}))
         and ('expectVariables' not in case or _variables_match(p, state, case['expectVariables']))
         and ('expectOutcome' not in case or (state.get('outcome') or {}).get('outcome') == case['expectOutcome'])
-        and ('expectChapters' not in case or [c['story'] for c in state.get('chapterStarts', [])] == case['expectChapters']),
+        and ('expectChapters' not in case or [c['story'] for c in state.get('chapterStarts', [])] == case['expectChapters'])
+        and all(c['ok'] for c in checks),
         **({'outcome': state.get('outcome'), 'outcomes': state.get('outcomes', {})} if v2 else {}),
+        **({'checks': checks} if checks else {}),
+        **({'ready': ready_snapshot(state), 'readyMet': sorted(ready_seen)} if counting else {}),
         **({'chapters': [{k: c[k] for k in ('story', 'audience', 'when') if k in c} for c in state['chapterStarts']]}
            if state.get('chapterStarts') else {}),
         **({'quests': {qid: {h: c['status'] for h, c in copies.items()} for qid, copies in state.get('quests', {}).items()},
@@ -1627,6 +2851,32 @@ def _play_case(p, case, step=None):
         'expected': case['expect'],
         'effects': intended,
     }
+
+
+def _ready_step(p, state, ev, day, checks, ready_seen, entered):
+    """A rehearsal's readiness step: {"check": "ready", "met": bool}, or {"advance": "now" | "anyway" | "then"}."""
+    _check_step(ev)
+    if 'check' in ev:
+        have = bool((state.get('ready') or {}).get('met'))
+        checks.append({'check': 'ready', 'phase': state['phase'], 'expected': ev['met'], 'met': have, 'ok': have == ev['met']})
+        return
+    phase = phase_of(p, state)
+    way = ready_exit(phase)
+    r = state.get('ready') or {}
+    why = ('This phase has no Advance.' if way is None else
+           'Not ready yet.' if ev['advance'] in ('now', 'then') and not r.get('met') else
+           'It has no moment to wait for.' if ev['advance'] == 'then' and 'then' not in phase.get('ready', {}) else '')
+    checks.append({'advance': ev['advance'], 'phase': state['phase'], 'ok': not why, **({'refused': why} if why else {})})
+    if why:
+        return
+    ready_seen.add(state['phase'])
+    if ev['advance'] == 'then':
+        r['pushed'] = {'by': 'rehearsal', 'when': 'then', 'day': day}
+        r['met'] = True
+        r['waitingFor'] = phase['ready']['then']
+        return
+    leave_visit(phase, state, way['to'], day, '', p)
+    entered()
 
 
 def _quests_match(state, expected):
@@ -1761,6 +3011,9 @@ def _review(p):
             if ('phase', s['id'], t['id']) not in fired
         ],
         'uncovered': [s['id'] for s in p['phases'] if s['id'] not in covered],
+        # (Doc 86, R2: a phase whose Readiness no case made ready or advanced.)
+        **({'uncoveredReady': [s['id'] for s in p['phases'] if 'ready' in s and not any(
+            s['id'] in r.get('readyMet', ()) for r in reports)]} if counts_audience(p) else {}),
         'passed': all(r['passed'] for r in reports),
         'tests': reports,
         'voices': [{'phase': s['id'], 'npc': npc} for s in p['phases'] for npc in s.get('guestVoices', [])],
@@ -2041,15 +3294,21 @@ def migration(old, new, state, land=None, run='', began=None):
         state['counters'] = out
     else:
         state.pop('counters', None)
+    state.pop('realmSeen', None)   # (Doc 86, J2: each wolf's realm values are read afresh for the new version's names.)
     for (sc, n), d in sorted(db.items()):
         if (sc, n) not in da and not any(nn == n for _, nn in da) and not any(x.get('renamed') and x['key'] == n for x in kept):
             if sc == 'world':
                 added.append({'what': 'variable', 'key': n, 'scope': sc, 'why': 'kept by the world: this story reads what the world holds.'})
+            elif sc == 'realm':
+                added.append({'what': 'variable', 'key': n, 'scope': sc, 'why': 'kept for each wolf across stories: this story reads '
+                                                                               'what each wolf holds.'})
             else:
                 added.append({'what': 'variable', 'key': n, 'scope': sc, 'why': 'new: it starts at its first value.'})
     for (sc, n), d in sorted(db.items()):
         if sc == 'world' and (sc, n) in da and da[(sc, n)]['type'] != d['type']:
             warn.append(f'World variable {n} is a {d["type"]} now: a value the world keeps as a {da[(sc, n)]["type"]} is not read by this story.')
+        if sc == 'realm' and (sc, n) in da and da[(sc, n)]['type'] != d['type']:
+            warn.append(f'Realm variable {n} is a {d["type"]} now: a value a wolf keeps as a {da[(sc, n)]["type"]} is not read by this story.')
 
     # ---- timers: kept while their signal still has a listener
     heard_here = _story_signals_heard(landing)
@@ -2221,5 +3480,22 @@ def migration(old, new, state, land=None, run='', began=None):
     if _json(old['audience']) != _json(new['audience']):
         warn.append(f'The audience stays this run\'s {len(cohort)} wolves: the new version\'s audience is for new runs.')
     report['diff']['triggers']['newlyOff'] = sorted(x['key'] for x in added if x['what'] == 'off')
+    # ---- doc 86, R2 rule 12: readiness is measured afresh on the new version; the moment it was met is kept when the phase
+    # and its Readiness are unchanged.
+    r = state.pop('ready', None)
+    if 'ready' in landing:
+        same = land == here and r and r.get('phase') == here and 'ready' in old_phase and \
+            ready_digest(old_phase) == ready_digest(landing)
+        if same and (r.get('metAt') is not None or r.get('pushed')):
+            # (The whole record, parts and all: the console reads it until the runner measures again, after the move is settled.)
+            state['ready'] = {**r, 'met': True, 'parts': r.get('parts') or []}
+            kept.append({'what': 'ready', 'key': land, 'why': f'Ready since day {r.get("metAt")}: its Readiness is unchanged.'})
+        elif r and (r.get('metAt') is not None or r.get('pushed')):
+            reset.append({'what': 'ready', 'key': land, 'why': 'Its Readiness changed: measured afresh (it was ready).'})
+    if not counts_audience(new):
+        for key in ('seen', 'online'):
+            state.pop(key, None)
+    elif not state.get('seen'):
+        state['seen'] = {}   # (Doc 86, C2: Steer.do_migrate fills it from the events' log, as a launch does.)
     state['phase'] = land
     return state, report

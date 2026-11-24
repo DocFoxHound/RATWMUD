@@ -264,6 +264,24 @@
 .camp-head h2 { margin: 2px 0 0; font-size: 19px; }
 .camp-head h2 small, .camp-head > div > small { color: var(--faint); font-size: 12px; font-weight: 400; }
 .camp-controls { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Doc 86, R3: a chapter's readiness: bars per part, the header, Advance beside Hold. */
+.camp-ready { border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; }
+.camp-ready h3 { margin: 0 0 4px; }
+.camp-ready-head { margin: 0 0 6px; font-weight: 600; color: var(--muted); }
+.camp-ready-head.ready { color: var(--ok); }
+.camp-ready-head.waiting { color: var(--amber); }
+.camp-ready-bars, .camp-ready-bars ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.camp-ready-bars ul { padding-left: 14px; margin-top: 6px; }
+.camp-ready-label { display: flex; gap: 8px; align-items: baseline; }
+.camp-ready-tag { color: var(--ok); font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.camp-ready-bar { position: relative; display: block; height: 8px; border-radius: 4px; background: var(--faint); overflow: hidden; margin: 3px 0; min-width: 60px; }
+.camp-ready-bar .fill { position: absolute; inset: 0 auto 0 0; background: var(--blue); }
+.camp-ready-bars .met .camp-ready-bar .fill, .camp-ready-mini.met .camp-ready-bar .fill { background: var(--ok); }
+.camp-ready-bar .mark { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--amber); }
+.camp-ready-mini { display: grid; gap: 2px; min-width: 90px; }
+.camp-chapter-ready { display: block; color: var(--muted); }
+.camp-chapter-ready.met { color: var(--ok); }
+.camp-timeline li.ready span { color: var(--ok); }
 .camp-strip { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; padding: 4px 12px 8px; font-family: var(--mono); font-size: 12.5px; color: var(--muted); }
 .camp-strip .now { color: var(--amber); font-weight: 600; }
 .camp-strip .next { color: var(--faint); }

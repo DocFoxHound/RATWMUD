@@ -1,0 +1,1461 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "nh-purses",
+ "title": "The story purses",
+ "prefix": "coin",
+ "audience": {
+  "kind": "open"
+ },
+ "start": "watch",
+ "quietAfterHours": 0,
+ "variables": [
+  {
+   "id": "coin_ridgemere_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:ridgemere by every story (day cap 135); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_coldwater_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:coldwater by every story (day cap 21); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_larkfield_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:larkfield by every story (day cap 24); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_southmeadow_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:southmeadow by every story (day cap 23); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_fenshore_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:fenshore by every story (day cap 21); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_saltwell_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:saltwell by every story (day cap 22); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_oakhaven_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:oakhaven by every story (day cap 24); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_frosthollow_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:frosthollow by every story (day cap 24); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_till_eleanor_saltcot_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from till:job:rm_eleanor_saltcot by every story (day cap 16); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_till_edric_millton_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from till:job:rm_edric_millton (Edric Millton's cooperage till): medium Q6 (mq-coopers-note), day cap 19."
+  },
+  {
+   "id": "coin_till_rupert_fogton_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from till:job:rm_rupert_fogton (Hollis Physic's till): the Runnel Fever's draught money, day cap 9."
+  },
+  {
+   "id": "coin_ridgemere_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:ridgemere is above its floor: off below 60, on again at 80 (nh-purses only)."
+  },
+  {
+   "id": "coin_coldwater_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:coldwater is above its floor: off below 60, on again at 80 (nh-purses only)."
+  },
+  {
+   "id": "coin_larkfield_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:larkfield is above its floor: off below 60, on again at 80 (nh-purses only)."
+  },
+  {
+   "id": "coin_southmeadow_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:southmeadow is above its floor: off below 60, on again at 80 (nh-purses only)."
+  },
+  {
+   "id": "coin_fenshore_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:fenshore is above its floor: off below 60, on again at 80 (nh-purses only)."
+  },
+  {
+   "id": "coin_saltwell_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:saltwell is above its floor: off below 60, on again at 80 (nh-purses only)."
+  },
+  {
+   "id": "coin_oakhaven_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:oakhaven is above its floor: off below 60, on again at 80 (nh-purses only)."
+  },
+  {
+   "id": "coin_frosthollow_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:frosthollow is above its floor: off below 60, on again at 80 (nh-purses only)."
+  },
+  {
+   "id": "coin_till_eleanor_saltcot_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "till:job:rm_eleanor_saltcot is above its floor: off below 60, on again at 80 (nh-purses only)."
+  },
+  {
+   "id": "coin_till_edric_millton_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "till:job:rm_edric_millton at or above its floor (off below 60, on again at 80)."
+  },
+  {
+   "id": "coin_till_rupert_fogton_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "till:job:rm_rupert_fogton at or above its floor (off below 60, on again at 80)."
+  }
+ ],
+ "phases": [
+  {
+   "id": "watch",
+   "journal": "The realm keeps count of what its stories pay from each purse.",
+   "effects": [],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "new-day",
+     "on": "day begins",
+     "note": "Every story coin counter back to nought at midnight (decisions 3.2.3).",
+     "actions": [
+      {
+       "do": "set",
+       "var": "coin_ridgemere_day",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "coin_coldwater_day",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "coin_larkfield_day",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "coin_southmeadow_day",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "coin_fenshore_day",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "coin_saltwell_day",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "coin_oakhaven_day",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "coin_frosthollow_day",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "coin_till_eleanor_saltcot_day",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "coin_till_edric_millton_day",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "coin_till_rupert_fogton_day",
+       "value": 0
+      }
+     ]
+    },
+    {
+     "id": "thin-ridgemere",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:ridgemere",
+      "item": "down",
+      "detail": "60"
+     },
+     "note": "town:ridgemere fell below 60: no story coin from it until it is back at 80.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "coin_ridgemere_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "ridgemere",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
+      },
+      {
+       "do": "note",
+       "text": "The city's treasury fell below 60 pennies: stories pay in kind from it until it is back at 80."
+      }
+     ]
+    },
+    {
+     "id": "mended-ridgemere",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:ridgemere",
+      "item": "up",
+      "detail": "80"
+     },
+     "note": "town:ridgemere is back at 80: story coin from it again.",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "coin_ridgemere_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "ridgemere",
+        "key": "nh_coin"
+       }
+      },
+      {
+       "do": "note",
+       "text": "The city's treasury is back at 80 pennies: stories pay coin from it again."
+      }
+     ]
+    },
+    {
+     "id": "thin-coldwater",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:coldwater",
+      "item": "down",
+      "detail": "60"
+     },
+     "note": "town:coldwater fell below 60: no story coin from it until it is back at 80.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "coin_coldwater_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "coldwater",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
+      },
+      {
+       "do": "note",
+       "text": "Coldwater's store fell below 60 pennies: stories pay in kind from it until it is back at 80."
+      }
+     ]
+    },
+    {
+     "id": "mended-coldwater",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:coldwater",
+      "item": "up",
+      "detail": "80"
+     },
+     "note": "town:coldwater is back at 80: story coin from it again.",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "coin_coldwater_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "coldwater",
+        "key": "nh_coin"
+       }
+      },
+      {
+       "do": "note",
+       "text": "Coldwater's store is back at 80 pennies: stories pay coin from it again."
+      }
+     ]
+    },
+    {
+     "id": "thin-larkfield",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:larkfield",
+      "item": "down",
+      "detail": "60"
+     },
+     "note": "town:larkfield fell below 60: no story coin from it until it is back at 80.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "coin_larkfield_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "larkfield",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
+      },
+      {
+       "do": "note",
+       "text": "Larkfield's store fell below 60 pennies: stories pay in kind from it until it is back at 80."
+      }
+     ]
+    },
+    {
+     "id": "mended-larkfield",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:larkfield",
+      "item": "up",
+      "detail": "80"
+     },
+     "note": "town:larkfield is back at 80: story coin from it again.",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "coin_larkfield_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "larkfield",
+        "key": "nh_coin"
+       }
+      },
+      {
+       "do": "note",
+       "text": "Larkfield's store is back at 80 pennies: stories pay coin from it again."
+      }
+     ]
+    },
+    {
+     "id": "thin-southmeadow",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:southmeadow",
+      "item": "down",
+      "detail": "60"
+     },
+     "note": "town:southmeadow fell below 60: no story coin from it until it is back at 80.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "coin_southmeadow_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "southmeadow",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
+      },
+      {
+       "do": "note",
+       "text": "Southmeadow's store fell below 60 pennies: stories pay in kind from it until it is back at 80."
+      }
+     ]
+    },
+    {
+     "id": "mended-southmeadow",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:southmeadow",
+      "item": "up",
+      "detail": "80"
+     },
+     "note": "town:southmeadow is back at 80: story coin from it again.",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "coin_southmeadow_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "southmeadow",
+        "key": "nh_coin"
+       }
+      },
+      {
+       "do": "note",
+       "text": "Southmeadow's store is back at 80 pennies: stories pay coin from it again."
+      }
+     ]
+    },
+    {
+     "id": "thin-fenshore",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:fenshore",
+      "item": "down",
+      "detail": "60"
+     },
+     "note": "town:fenshore fell below 60: no story coin from it until it is back at 80.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "coin_fenshore_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "fenshore",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
+      },
+      {
+       "do": "note",
+       "text": "Fenshore's store fell below 60 pennies: stories pay in kind from it until it is back at 80."
+      }
+     ]
+    },
+    {
+     "id": "mended-fenshore",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:fenshore",
+      "item": "up",
+      "detail": "80"
+     },
+     "note": "town:fenshore is back at 80: story coin from it again.",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "coin_fenshore_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "fenshore",
+        "key": "nh_coin"
+       }
+      },
+      {
+       "do": "note",
+       "text": "Fenshore's store is back at 80 pennies: stories pay coin from it again."
+      }
+     ]
+    },
+    {
+     "id": "thin-saltwell",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:saltwell",
+      "item": "down",
+      "detail": "60"
+     },
+     "note": "town:saltwell fell below 60: no story coin from it until it is back at 80.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "coin_saltwell_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "saltwell",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
+      },
+      {
+       "do": "note",
+       "text": "Saltwell's store fell below 60 pennies: stories pay in kind from it until it is back at 80."
+      }
+     ]
+    },
+    {
+     "id": "mended-saltwell",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:saltwell",
+      "item": "up",
+      "detail": "80"
+     },
+     "note": "town:saltwell is back at 80: story coin from it again.",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "coin_saltwell_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "saltwell",
+        "key": "nh_coin"
+       }
+      },
+      {
+       "do": "note",
+       "text": "Saltwell's store is back at 80 pennies: stories pay coin from it again."
+      }
+     ]
+    },
+    {
+     "id": "thin-oakhaven",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:oakhaven",
+      "item": "down",
+      "detail": "60"
+     },
+     "note": "town:oakhaven fell below 60: no story coin from it until it is back at 80.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "coin_oakhaven_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "oakhaven",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
+      },
+      {
+       "do": "note",
+       "text": "Oakhaven's store fell below 60 pennies: stories pay in kind from it until it is back at 80."
+      }
+     ]
+    },
+    {
+     "id": "mended-oakhaven",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:oakhaven",
+      "item": "up",
+      "detail": "80"
+     },
+     "note": "town:oakhaven is back at 80: story coin from it again.",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "coin_oakhaven_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "oakhaven",
+        "key": "nh_coin"
+       }
+      },
+      {
+       "do": "note",
+       "text": "Oakhaven's store is back at 80 pennies: stories pay coin from it again."
+      }
+     ]
+    },
+    {
+     "id": "thin-frosthollow",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:frosthollow",
+      "item": "down",
+      "detail": "60"
+     },
+     "note": "town:frosthollow fell below 60: no story coin from it until it is back at 80.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "coin_frosthollow_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "frosthollow",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
+      },
+      {
+       "do": "note",
+       "text": "Frosthollow's store fell below 60 pennies: stories pay in kind from it until it is back at 80."
+      }
+     ]
+    },
+    {
+     "id": "mended-frosthollow",
+     "on": "purse crossed",
+     "match": {
+      "target": "town:frosthollow",
+      "item": "up",
+      "detail": "80"
+     },
+     "note": "town:frosthollow is back at 80: story coin from it again.",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "coin_frosthollow_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "frosthollow",
+        "key": "nh_coin"
+       }
+      },
+      {
+       "do": "note",
+       "text": "Frosthollow's store is back at 80 pennies: stories pay coin from it again."
+      }
+     ]
+    },
+    {
+     "id": "thin-till-eleanor-saltcot",
+     "on": "purse crossed",
+     "match": {
+      "target": "till:job:rm_eleanor_saltcot",
+      "item": "down",
+      "detail": "60"
+     },
+     "note": "till:job:rm_eleanor_saltcot fell below 60: no story coin from it until it is back at 80.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "coin_till_eleanor_saltcot_ok"
+      },
+      {
+       "do": "note",
+       "text": "The Greatly Bank's till fell below 60 pennies: stories pay in kind from it until it is back at 80."
+      }
+     ]
+    },
+    {
+     "id": "mended-till-eleanor-saltcot",
+     "on": "purse crossed",
+     "match": {
+      "target": "till:job:rm_eleanor_saltcot",
+      "item": "up",
+      "detail": "80"
+     },
+     "note": "till:job:rm_eleanor_saltcot is back at 80: story coin from it again.",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "coin_till_eleanor_saltcot_ok"
+      },
+      {
+       "do": "note",
+       "text": "The Greatly Bank's till is back at 80 pennies: stories pay coin from it again."
+      }
+     ]
+    },
+    {
+     "id": "thin-till-edric-millton",
+     "on": "purse crossed",
+     "match": {
+      "target": "till:job:rm_edric_millton",
+      "item": "down",
+      "detail": "60"
+     },
+     "note": "till:job:rm_edric_millton fell below 60: no story coin from it until it is back at 80.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "coin_till_edric_millton_ok"
+      },
+      {
+       "do": "note",
+       "text": "Edric Millton's cooperage till fell below 60 pennies: stories pay in kind from it until it is back at 80."
+      }
+     ]
+    },
+    {
+     "id": "mended-till-edric-millton",
+     "on": "purse crossed",
+     "match": {
+      "target": "till:job:rm_edric_millton",
+      "item": "up",
+      "detail": "80"
+     },
+     "note": "till:job:rm_edric_millton is back at 80: story coin from it again.",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "coin_till_edric_millton_ok"
+      },
+      {
+       "do": "note",
+       "text": "Edric Millton's cooperage till is back at 80 pennies: stories pay coin from it again."
+      }
+     ]
+    },
+    {
+     "id": "thin-till-rupert-fogton",
+     "on": "purse crossed",
+     "match": {
+      "target": "till:job:rm_rupert_fogton",
+      "item": "down",
+      "detail": "60"
+     },
+     "note": "till:job:rm_rupert_fogton fell below 60: no story coin from it until it is back at 80.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "coin_till_rupert_fogton_ok"
+      },
+      {
+       "do": "note",
+       "text": "Hollis Physic's till fell below 60 pennies: stories pay in kind from it until it is back at 80."
+      }
+     ]
+    },
+    {
+     "id": "mended-till-rupert-fogton",
+     "on": "purse crossed",
+     "match": {
+      "target": "till:job:rm_rupert_fogton",
+      "item": "up",
+      "detail": "80"
+     },
+     "note": "till:job:rm_rupert_fogton is back at 80: story coin from it again.",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "coin_till_rupert_fogton_ok"
+      },
+      {
+       "do": "note",
+       "text": "Hollis Physic's till is back at 80 pennies: stories pay coin from it again."
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "tests": [
+  {
+   "name": "A quiet day: midnight clears the counters, nothing else moves",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 1,
+     "detail": "Marketday",
+     "item": "autumn",
+     "quantity": 12
+    },
+    {
+     "id": "e2",
+     "kind": "purse crossed",
+     "day": 1.2,
+     "target": "town:coldwater",
+     "item": "down",
+     "detail": "100",
+     "quantity": 95
+    },
+    {
+     "id": "e3",
+     "kind": "purse crossed",
+     "day": 1.3,
+     "target": "town:coldwater",
+     "item": "up",
+     "detail": "60",
+     "quantity": 61
+    },
+    {
+     "id": "e4",
+     "kind": "purse crossed",
+     "day": 1.4,
+     "target": "town:greyfen",
+     "item": "down",
+     "detail": "60",
+     "quantity": 59
+    }
+   ],
+   "expect": [
+    "watch"
+   ],
+   "expectTriggers": [
+    "new-day"
+   ],
+   "expectVariables": {
+    "world": {
+     "coin_ridgemere_day": 0,
+     "coin_coldwater_day": 0,
+     "coin_larkfield_day": 0,
+     "coin_southmeadow_day": 0,
+     "coin_fenshore_day": 0,
+     "coin_saltwell_day": 0,
+     "coin_oakhaven_day": 0,
+     "coin_frosthollow_day": 0,
+     "coin_till_eleanor_saltcot_day": 0,
+     "coin_ridgemere_ok": true,
+     "coin_coldwater_ok": true,
+     "coin_larkfield_ok": true,
+     "coin_southmeadow_ok": true,
+     "coin_fenshore_ok": true,
+     "coin_saltwell_ok": true,
+     "coin_oakhaven_ok": true,
+     "coin_frosthollow_ok": true,
+     "coin_till_eleanor_saltcot_ok": true,
+     "coin_till_edric_millton_ok": true,
+     "coin_till_edric_millton_day": 0,
+     "coin_till_rupert_fogton_ok": true,
+     "coin_till_rupert_fogton_day": 0
+    }
+   }
+  },
+  {
+   "name": "Every purse falls below 60: every switch goes off",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "purse crossed",
+     "day": 2.0,
+     "target": "town:ridgemere",
+     "item": "down",
+     "detail": "60",
+     "quantity": 58
+    },
+    {
+     "id": "e2",
+     "kind": "purse crossed",
+     "day": 2.01,
+     "target": "town:coldwater",
+     "item": "down",
+     "detail": "60",
+     "quantity": 58
+    },
+    {
+     "id": "e3",
+     "kind": "purse crossed",
+     "day": 2.02,
+     "target": "town:larkfield",
+     "item": "down",
+     "detail": "60",
+     "quantity": 58
+    },
+    {
+     "id": "e4",
+     "kind": "purse crossed",
+     "day": 2.03,
+     "target": "town:southmeadow",
+     "item": "down",
+     "detail": "60",
+     "quantity": 58
+    },
+    {
+     "id": "e5",
+     "kind": "purse crossed",
+     "day": 2.04,
+     "target": "town:fenshore",
+     "item": "down",
+     "detail": "60",
+     "quantity": 58
+    },
+    {
+     "id": "e6",
+     "kind": "purse crossed",
+     "day": 2.05,
+     "target": "town:saltwell",
+     "item": "down",
+     "detail": "60",
+     "quantity": 58
+    },
+    {
+     "id": "e7",
+     "kind": "purse crossed",
+     "day": 2.06,
+     "target": "town:oakhaven",
+     "item": "down",
+     "detail": "60",
+     "quantity": 58
+    },
+    {
+     "id": "e8",
+     "kind": "purse crossed",
+     "day": 2.07,
+     "target": "town:frosthollow",
+     "item": "down",
+     "detail": "60",
+     "quantity": 58
+    },
+    {
+     "id": "e9",
+     "kind": "purse crossed",
+     "day": 2.08,
+     "target": "till:job:rm_eleanor_saltcot",
+     "item": "down",
+     "detail": "60",
+     "quantity": 58
+    },
+    {
+     "id": "e9_edric_millton",
+     "kind": "purse crossed",
+     "day": 2.0801,
+     "target": "till:job:rm_edric_millton",
+     "item": "down",
+     "detail": "60",
+     "quantity": 58
+    },
+    {
+     "id": "e9_rupert_fogton",
+     "kind": "purse crossed",
+     "day": 2.0802,
+     "target": "till:job:rm_rupert_fogton",
+     "item": "down",
+     "detail": "60",
+     "quantity": 58
+    }
+   ],
+   "expect": [
+    "watch"
+   ],
+   "expectTriggers": [
+    "thin-ridgemere",
+    "thin-coldwater",
+    "thin-larkfield",
+    "thin-southmeadow",
+    "thin-fenshore",
+    "thin-saltwell",
+    "thin-oakhaven",
+    "thin-frosthollow",
+    "thin-till-eleanor-saltcot",
+    "thin-till-edric-millton",
+    "thin-till-rupert-fogton"
+   ],
+   "expectVariables": {
+    "world": {
+     "coin_ridgemere_ok": false,
+     "coin_coldwater_ok": false,
+     "coin_larkfield_ok": false,
+     "coin_southmeadow_ok": false,
+     "coin_fenshore_ok": false,
+     "coin_saltwell_ok": false,
+     "coin_oakhaven_ok": false,
+     "coin_frosthollow_ok": false,
+     "coin_till_eleanor_saltcot_ok": false,
+     "coin_till_edric_millton_ok": false,
+     "coin_till_rupert_fogton_ok": false
+    }
+   }
+  },
+  {
+   "name": "Every purse thin, past 60 again (still thin), then back at 80",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "purse crossed",
+     "day": 3.01,
+     "target": "town:ridgemere",
+     "item": "down",
+     "detail": "60",
+     "quantity": 55
+    },
+    {
+     "id": "e2",
+     "kind": "purse crossed",
+     "day": 3.02,
+     "target": "town:coldwater",
+     "item": "down",
+     "detail": "60",
+     "quantity": 55
+    },
+    {
+     "id": "e3",
+     "kind": "purse crossed",
+     "day": 3.03,
+     "target": "town:larkfield",
+     "item": "down",
+     "detail": "60",
+     "quantity": 55
+    },
+    {
+     "id": "e4",
+     "kind": "purse crossed",
+     "day": 3.04,
+     "target": "town:southmeadow",
+     "item": "down",
+     "detail": "60",
+     "quantity": 55
+    },
+    {
+     "id": "e5",
+     "kind": "purse crossed",
+     "day": 3.05,
+     "target": "town:fenshore",
+     "item": "down",
+     "detail": "60",
+     "quantity": 55
+    },
+    {
+     "id": "e6",
+     "kind": "purse crossed",
+     "day": 3.06,
+     "target": "town:saltwell",
+     "item": "down",
+     "detail": "60",
+     "quantity": 55
+    },
+    {
+     "id": "e7",
+     "kind": "purse crossed",
+     "day": 3.07,
+     "target": "town:oakhaven",
+     "item": "down",
+     "detail": "60",
+     "quantity": 55
+    },
+    {
+     "id": "e8",
+     "kind": "purse crossed",
+     "day": 3.08,
+     "target": "town:frosthollow",
+     "item": "down",
+     "detail": "60",
+     "quantity": 55
+    },
+    {
+     "id": "e9",
+     "kind": "purse crossed",
+     "day": 3.09,
+     "target": "till:job:rm_eleanor_saltcot",
+     "item": "down",
+     "detail": "60",
+     "quantity": 55
+    },
+    {
+     "id": "e9_edric_millton",
+     "kind": "purse crossed",
+     "day": 3.0901,
+     "target": "till:job:rm_edric_millton",
+     "item": "down",
+     "detail": "60",
+     "quantity": 55
+    },
+    {
+     "id": "e9_rupert_fogton",
+     "kind": "purse crossed",
+     "day": 3.0902,
+     "target": "till:job:rm_rupert_fogton",
+     "item": "down",
+     "detail": "60",
+     "quantity": 55
+    },
+    {
+     "id": "e10",
+     "kind": "purse crossed",
+     "day": 4.1,
+     "target": "town:ridgemere",
+     "item": "up",
+     "detail": "60",
+     "quantity": 65
+    },
+    {
+     "id": "e11",
+     "kind": "purse crossed",
+     "day": 4.11,
+     "target": "town:coldwater",
+     "item": "up",
+     "detail": "60",
+     "quantity": 65
+    },
+    {
+     "id": "e12",
+     "kind": "purse crossed",
+     "day": 4.12,
+     "target": "town:larkfield",
+     "item": "up",
+     "detail": "60",
+     "quantity": 65
+    },
+    {
+     "id": "e13",
+     "kind": "purse crossed",
+     "day": 4.13,
+     "target": "town:southmeadow",
+     "item": "up",
+     "detail": "60",
+     "quantity": 65
+    },
+    {
+     "id": "e14",
+     "kind": "purse crossed",
+     "day": 4.14,
+     "target": "town:fenshore",
+     "item": "up",
+     "detail": "60",
+     "quantity": 65
+    },
+    {
+     "id": "e15",
+     "kind": "purse crossed",
+     "day": 4.15,
+     "target": "town:saltwell",
+     "item": "up",
+     "detail": "60",
+     "quantity": 65
+    },
+    {
+     "id": "e16",
+     "kind": "purse crossed",
+     "day": 4.16,
+     "target": "town:oakhaven",
+     "item": "up",
+     "detail": "60",
+     "quantity": 65
+    },
+    {
+     "id": "e17",
+     "kind": "purse crossed",
+     "day": 4.17,
+     "target": "town:frosthollow",
+     "item": "up",
+     "detail": "60",
+     "quantity": 65
+    },
+    {
+     "id": "e18",
+     "kind": "purse crossed",
+     "day": 4.18,
+     "target": "till:job:rm_eleanor_saltcot",
+     "item": "up",
+     "detail": "60",
+     "quantity": 65
+    },
+    {
+     "id": "e18_edric_millton",
+     "kind": "purse crossed",
+     "day": 4.1801,
+     "target": "till:job:rm_edric_millton",
+     "item": "up",
+     "detail": "60",
+     "quantity": 65
+    },
+    {
+     "id": "e18_rupert_fogton",
+     "kind": "purse crossed",
+     "day": 4.1802,
+     "target": "till:job:rm_rupert_fogton",
+     "item": "up",
+     "detail": "60",
+     "quantity": 65
+    },
+    {
+     "id": "e19",
+     "kind": "purse crossed",
+     "day": 5.19,
+     "target": "town:ridgemere",
+     "item": "up",
+     "detail": "80",
+     "quantity": 82
+    },
+    {
+     "id": "e20",
+     "kind": "purse crossed",
+     "day": 5.2,
+     "target": "town:coldwater",
+     "item": "up",
+     "detail": "80",
+     "quantity": 82
+    },
+    {
+     "id": "e21",
+     "kind": "purse crossed",
+     "day": 5.21,
+     "target": "town:larkfield",
+     "item": "up",
+     "detail": "80",
+     "quantity": 82
+    },
+    {
+     "id": "e22",
+     "kind": "purse crossed",
+     "day": 5.22,
+     "target": "town:southmeadow",
+     "item": "up",
+     "detail": "80",
+     "quantity": 82
+    },
+    {
+     "id": "e23",
+     "kind": "purse crossed",
+     "day": 5.23,
+     "target": "town:fenshore",
+     "item": "up",
+     "detail": "80",
+     "quantity": 82
+    },
+    {
+     "id": "e24",
+     "kind": "purse crossed",
+     "day": 5.24,
+     "target": "town:saltwell",
+     "item": "up",
+     "detail": "80",
+     "quantity": 82
+    },
+    {
+     "id": "e25",
+     "kind": "purse crossed",
+     "day": 5.25,
+     "target": "town:oakhaven",
+     "item": "up",
+     "detail": "80",
+     "quantity": 82
+    },
+    {
+     "id": "e26",
+     "kind": "purse crossed",
+     "day": 5.26,
+     "target": "town:frosthollow",
+     "item": "up",
+     "detail": "80",
+     "quantity": 82
+    },
+    {
+     "id": "e27",
+     "kind": "purse crossed",
+     "day": 5.27,
+     "target": "till:job:rm_eleanor_saltcot",
+     "item": "up",
+     "detail": "80",
+     "quantity": 82
+    },
+    {
+     "id": "e27_edric_millton",
+     "kind": "purse crossed",
+     "day": 5.2701,
+     "target": "till:job:rm_edric_millton",
+     "item": "up",
+     "detail": "80",
+     "quantity": 82
+    },
+    {
+     "id": "e27_rupert_fogton",
+     "kind": "purse crossed",
+     "day": 5.2702,
+     "target": "till:job:rm_rupert_fogton",
+     "item": "up",
+     "detail": "80",
+     "quantity": 82
+    },
+    {
+     "id": "e28",
+     "kind": "day begins",
+     "day": 6,
+     "detail": "Restday",
+     "item": "autumn",
+     "quantity": 13
+    }
+   ],
+   "expect": [
+    "watch"
+   ],
+   "expectTriggers": [
+    "thin-ridgemere",
+    "thin-coldwater",
+    "thin-larkfield",
+    "thin-southmeadow",
+    "thin-fenshore",
+    "thin-saltwell",
+    "thin-oakhaven",
+    "thin-frosthollow",
+    "thin-till-eleanor-saltcot",
+    "thin-till-edric-millton",
+    "thin-till-rupert-fogton",
+    "mended-ridgemere",
+    "mended-coldwater",
+    "mended-larkfield",
+    "mended-southmeadow",
+    "mended-fenshore",
+    "mended-saltwell",
+    "mended-oakhaven",
+    "mended-frosthollow",
+    "mended-till-eleanor-saltcot",
+    "mended-till-edric-millton",
+    "mended-till-rupert-fogton",
+    "new-day"
+   ],
+   "expectVariables": {
+    "world": {
+     "coin_ridgemere_ok": true,
+     "coin_coldwater_ok": true,
+     "coin_larkfield_ok": true,
+     "coin_southmeadow_ok": true,
+     "coin_fenshore_ok": true,
+     "coin_saltwell_ok": true,
+     "coin_oakhaven_ok": true,
+     "coin_frosthollow_ok": true,
+     "coin_till_eleanor_saltcot_ok": true,
+     "coin_ridgemere_day": 0,
+     "coin_coldwater_day": 0,
+     "coin_larkfield_day": 0,
+     "coin_southmeadow_day": 0,
+     "coin_fenshore_day": 0,
+     "coin_saltwell_day": 0,
+     "coin_oakhaven_day": 0,
+     "coin_frosthollow_day": 0,
+     "coin_till_eleanor_saltcot_day": 0,
+     "coin_till_edric_millton_ok": true,
+     "coin_till_edric_millton_day": 0,
+     "coin_till_rupert_fogton_ok": true,
+     "coin_till_rupert_fogton_day": 0
+    }
+   }
+  },
+  {
+   "name": "Coldwater alone runs thin; the other purses still pay",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "purse crossed",
+     "day": 7,
+     "target": "town:coldwater",
+     "item": "down",
+     "detail": "60",
+     "quantity": 59
+    },
+    {
+     "id": "e2",
+     "kind": "day begins",
+     "day": 7.5,
+     "detail": "Dawnday",
+     "item": "winter",
+     "quantity": 1
+    }
+   ],
+   "expect": [
+    "watch"
+   ],
+   "expectTriggers": [
+    "thin-coldwater",
+    "new-day"
+   ],
+   "expectVariables": {
+    "world": {
+     "coin_ridgemere_ok": true,
+     "coin_coldwater_ok": false,
+     "coin_larkfield_ok": true,
+     "coin_southmeadow_ok": true,
+     "coin_fenshore_ok": true,
+     "coin_saltwell_ok": true,
+     "coin_oakhaven_ok": true,
+     "coin_frosthollow_ok": true,
+     "coin_till_eleanor_saltcot_ok": true,
+     "coin_till_edric_millton_ok": true,
+     "coin_till_rupert_fogton_ok": true
+    }
+   }
+  }
+ ]
+}

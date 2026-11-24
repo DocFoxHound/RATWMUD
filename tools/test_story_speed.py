@@ -375,5 +375,136 @@ class RealRunner(unittest.TestCase):
         self.assertEqual(self.cursor(run)[2]['counters']['story']['trades'], len(cheese))
 
 
+class CountingSpeed(unittest.TestCase):
+    """Doc 86, Phase 1a: who took part counted over 5,000 wolves with a test of four conditions for each, in the native twin
+    (under 20 ms) and the Python one (under 150 ms); and a phase's Readiness of two such parts measured inside a tick's
+    budget. No database."""
+
+    WOLVES = [f'w{i:04d}' for i in range(5000)]
+    WHERE = {'test': 'all', 'conditions': [
+        {'test': 'compare', 'left': {'var': 'n', 'of': '$each'}, 'op': '>=', 'right': 2},
+        {'test': 'switch', 'var': 'on', 'of': '$each', 'is': True},
+        {'test': 'not', 'condition': {'test': 'in list', 'list': 'did', 'value': 'nobody'}},
+        {'test': 'compare', 'left': {'var': 'n', 'of': '$each'}, 'op': '<', 'right': 9}]}
+
+    def program(self):
+        return {'format': 'ratw-story-program', 'version': 2, 'id': 'crowd', 'title': 'A crowd', 'start': 'a',
+                'audience': {'kind': 'everyone', 'days': 30, 'cap': 5000},
+                'variables': [{'id': 'did', 'type': 'wolves', 'scope': 'story'}, {'id': 'n', 'type': 'number', 'scope': 'player'},
+                              {'id': 'on', 'type': 'switch', 'scope': 'player'}, {'id': 'share', 'type': 'number', 'scope': 'story'}],
+                'phases': [{'id': 'a', 'journal': 'Gather.', 'effects': [], 'exits': [{'on': 'ready', 'to': 'b'}],
+                            'ready': {'all': [{'participation': {'where': self.WHERE}, 'of': 'active', 'percent': 30, 'floor': 3, 'cap': 150},
+                                              {'participation': {'list': 'did'}, 'of': 'active', 'percent': 5, 'floor': 3}]},
+                            'triggers': [{'id': 'count', 'on': 'conversation', 'actions': [
+                                {'do': 'set', 'var': 'share', 'value': {'percent': {'where': self.WHERE}, 'of': 'active'}}]}]},
+                           {'id': 'b', 'journal': 'Done.', 'effects': [], 'exits': []}],
+                'tests': [{'name': 'x', 'cohort': [], 'events': [], 'expect': ['a']}]}
+
+    def state(self, p):
+        s = rules.begin(p, self.WOLVES, 0)
+        s['seen'] = {w: 20 for w in self.WOLVES}
+        s['counters'] = {'story': {'did': self.WOLVES[:400]},
+                         'player': {w: {'n': i % 10, 'on': i % 2 == 0} for i, w in enumerate(self.WOLVES)}}
+        return s
+
+    def fire(self, p, s, native):
+        import story_native
+        from unittest.mock import patch
+        phase = rules.phase_of(p, s)
+        event = {'kind': 'conversation', 'id': 1, 'actor': ''}
+        go = lambda: rules.triggers.fire(phase, s, event, 20, 0, lambda: set(), rules.matches, lambda n, e: None, None)
+        if not native:
+            with patch('story_native.interpreter', return_value=None):
+                start = time.perf_counter()
+                go()
+                return time.perf_counter() - start
+        self.assertTrue(story_native.interpreter(), 'the native twin is built')
+        start = time.perf_counter()
+        go()
+        return time.perf_counter() - start
+
+    def test_five_thousand_wolves_counted_in_both_twins(self):
+        import story_native
+        if not story_native.interpreter():
+            self.skipTest('Build ratw_story first.')
+        p = self.program()
+        rules.validate(p)
+        best = {}
+        for native in (True, False):
+            times = []
+            for _ in range(3):
+                s = self.state(p)
+                times.append(self.fire(p, s, native))
+                self.assertEqual(s['counters']['story']['share'], 40)
+            best[native] = min(times)
+        # (The native time includes sending the run's 5,000 wolves' values across, as the runner does.)
+        self.assertLess(best[True], 0.020 * LOAD, f'native: {best[True] * 1000:.1f} ms')
+        self.assertLess(best[False], 0.150 * LOAD, f'Python: {best[False] * 1000:.1f} ms')
+
+    def test_readiness_of_two_parts_over_five_thousand_inside_the_tick(self):
+        p = self.program()
+        s = self.state(p)
+        start = time.perf_counter()
+        rules.readiness(p, s, 20)
+        took = time.perf_counter() - start
+        self.assertEqual([x['value'] for x in s['ready']['parts']], [2000, 400])
+        self.assertTrue(s['ready']['met'])
+        self.assertLess(took, rules_tick_budget() * LOAD, f'{took * 1000:.1f} ms')
+
+
+class TallySpeed(CountingSpeed):
+    """Doc 86, J11 and C3a: nine tallies over 5,000 wolves (sums, counts, a where, a list) and a Rank of the top 500, in the
+    native twin under 50 ms, both twins agreeing."""
+
+    def program(self):
+        tallies = [{'sum': 'n'}, {}, {'sum': 'n', 'where': 'on', 'is': True}, {'where': 'on', 'is': False}, {'sum': 'n', 'over': {'list': 'did'}},
+                   {'where': 'side', 'is': 'lamp'}, {'sum': 'n', 'where': 'side', 'is': 'stone'}, {'over': {'list': 'did'}, 'where': 'on', 'is': True},
+                   {'sum': 'n', 'where': 'side', 'is': 'none'}]
+        return {'format': 'ratw-story-program', 'version': 2, 'id': 'tally', 'title': 'Counting', 'start': 'a',
+                'audience': {'kind': 'everyone', 'days': 30, 'cap': 5000},
+                'variables': [{'id': 'did', 'type': 'wolves', 'scope': 'story'}, {'id': 'n', 'type': 'number', 'scope': 'player'},
+                              {'id': 'on', 'type': 'switch', 'scope': 'player'}, {'id': 'side', 'type': 'text', 'scope': 'player'},
+                              {'id': 'sums', 'type': 'numbers', 'scope': 'story'}, {'id': 'top', 'type': 'wolves', 'scope': 'story'}],
+                'phases': [{'id': 'a', 'journal': 'Gather.', 'effects': [], 'exits': [], 'triggers': [{'id': 'count', 'on': 'conversation', 'actions': [
+                    *({'do': 'list add', 'var': 'sums', 'value': {'plus': [{'tally': t}, k * 100000]}} for k, t in enumerate(tallies)),
+                    {'do': 'rank', 'var': 'n', 'top': 500, 'into': 'top'}]}]}],
+                'tests': [{'name': 'x', 'cohort': [], 'events': [], 'expect': ['a']}]}
+
+    def state(self, p):
+        s = super().state(p)
+        for i, w in enumerate(self.WOLVES):
+            s['counters']['player'][w]['side'] = 'lamp' if i % 3 == 0 else 'stone'
+        return s
+
+    def test_five_thousand_wolves_counted_in_both_twins(self):
+        import story_native
+        if not story_native.interpreter():
+            self.skipTest('Build ratw_story first.')
+        p = self.program()
+        rules.validate(p)
+        best, after = {}, {}
+        for native in (True, False):
+            times = []
+            for _ in range(3):
+                s = self.state(p)
+                times.append(self.fire(p, s, native))
+            best[native], after[native] = min(times), s['counters']['story']
+        self.assertEqual(after[True], after[False], 'both twins agree')
+        self.assertEqual(after[True]['sums'][1], 100000 + 5000)
+        self.assertEqual(len(after[True]['top']), 500)
+        self.assertLess(best[True], 0.050 * LOAD, f'native: {best[True] * 1000:.1f} ms')
+
+    def test_readiness_of_two_parts_over_five_thousand_inside_the_tick(self):
+        pass   # (The parent's; nothing of readiness here.)
+
+
+LOAD = float(os.environ.get('RATW_SPEED_SLACK', '1'))   # (A loaded machine may give the timing gates room.)
+
+
+def rules_tick_budget():
+    """The time a run may spend measuring its readiness once a game hour: a fifth of its read budget."""
+    return runner.READ_BUDGET / 5
+
+
 if __name__ == '__main__':
     unittest.main()

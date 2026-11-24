@@ -22,8 +22,9 @@ def legacy_validate_effect(effect, pid, regions=None, scenes=None):
     require, integer, word, identifier = rules.require, rules.integer, rules.word, rules.identifier
     kind = effect.get('kind') if isinstance(effect, dict) else None
     require(isinstance(kind, str) and kind in rules.EFFECTS, f'{pid}: unknown effect.')
-    rules.shape(effect, ('kind', *rules.EFFECTS[kind]))
-    for k in rules.EFFECTS[kind]:
+    keys = tuple(k for k in rules.EFFECTS[kind] if k != 'camp')   # (Doc 86, L2: a camp's name came later, optional.)
+    rules.shape(effect, ('kind', *keys))
+    for k in keys:
         v = effect[k]
         if k in ('x', 'y', 'inDays'):
             ok = integer(v, 0, 30 if k == 'inDays' else 4095)
@@ -88,6 +89,9 @@ def verdict(check, effect):
 PHASE6 = (*rules.quests.STORY_EFFECTS, 'character.grant', 'item.give', 'standing.adjust')
 # (Doc 85, Phase 9's world effects: checked by tools/test_story_effects.py, beside the catalogue.)
 PHASE9 = tuple(runner.WORLD_ORDERS) + ('story.tracker',)
+# (Doc 86, Phase 1b's: residents spared, figures, talk memory and rumours (tools/test_story_talk.py); npc.protect's `lasts`.)
+PHASE1B = ('npc.spare', 'npc.unspare', 'figure.set', 'figure.clear', 'npc.protect')
+PHASE8 = ('npc.post',)   # (Doc 86, C14: new, with a post the hand-written checks never had.)
 
 
 class CatalogueShape(unittest.TestCase):
@@ -123,8 +127,11 @@ class CatalogueShape(unittest.TestCase):
         groups = {g['id'] for g in CAT['groups']}
         ids = [e['id'] for e in CAT['events']]
         self.assertEqual(len(ids), len(set(ids)))
-        self.assertEqual(len(rules.EVENTS), 205)   # (160, Phase 6's 11 quest and party events, Phase 8's 24 and Phase 10's 10.)
-        self.assertEqual(set(ids) - set(rules.EVENTS), {triggers.SIGNAL, rules.MISSION_GATE})
+        # (160, Phase 6's 11 quest and party events, Phase 8's 24, Phase 10's 10; doc 86's moon, title given; Phase 4's story notified,
+        # variable changed, month begins, succession; Phase 5's howled and chorus closed.)
+        self.assertEqual(len(rules.EVENTS), 220)   # (Doc 86, Phase 7: foe downed, foe defeated, foe fled; Phase 8: sentence begun, served;
+        # Phase 9: cast chosen, cast failed.)
+        self.assertEqual(set(ids) - set(rules.EVENTS), {triggers.SIGNAL, rules.MISSION_GATE, rules.READY_EXIT})   # (Doc 86: the ready exit.)
         for e in CAT['events']:
             with self.subTest(event=e['id']):
                 self.assertIn(e['group'], groups)
@@ -150,7 +157,9 @@ class CatalogueShape(unittest.TestCase):
         self.assertEqual(set(dos), {'set', 'add', 'emit', 'schedule', 'cancel', 'effect', 'enter', *triggers.FLOW_V2, *triggers.STATE_V2})
         self.assertEqual(len({a['id'] for a in CAT['actions']}), len(CAT['actions']))
         self.assertTrue(all(a.get('nest') for a in CAT['actions'] if a.get('do', a['id']) in ('if', 'each', 'random')))
-        self.assertEqual(len(CAT['effects']), 71)   # (25, Phase 6's 14, Phase 9's 31 and Phase 10's story.start.)
+        self.assertEqual(len(CAT['effects']), 93)   # (Doc 86, Phase 7: foe.add, foe.leave, foe.outlaw; Phase 8: npc.post, npc.sentence;
+        # Phase 9: npc.queue, cast.pick.)   # (25, Phase 6's 14, Phase 9's 31, Phase 10's story.start, doc 86 Phase 1b's 7, Phase 3's 4, Phase 4's 2,
+        # Phase 5's npc.howl and hunt.stage.)
         for item in [*CAT['conditions'], *CAT['actions'], *CAT['effects']]:
             with self.subTest(item=item['id']):
                 self.assertTrue(item['title'] and item['help'])
@@ -169,14 +178,29 @@ class CatalogueShape(unittest.TestCase):
 
     def test_tables_read_from_it(self):
         self.assertEqual(rules.EFFECTS['npc.walk'], ('npc', 'cell', 'x', 'y', 'pace', 'cue'))
-        self.assertEqual(len(rules.MISSION_EVENTS), 63)   # (52, and 11 of Phase 8's new events a wolf does.)
-        self.assertEqual(len(rules.MISSION_MEASURES['quantity']), 15)   # (Phase 8: item picked up, trade done.)
+        self.assertEqual(len(rules.MISSION_EVENTS), 74)   # (Doc 86, Phase 7: foe downed and foe defeated.)   # (52, 11 of Phase 8's new events a wolf does, doc 86's six (L3), title given,
+        # Phase 5's howled and chorus closed.)
+        # (Doc 86, L3: the six events with no wolf, or a wolf only sometimes, are mission evidence; M5: trade done has a cell.)
+        self.assertLessEqual({'camp cleared', 'caravan arrives', 'ship lost', 'ship docks', 'project built', 'festival'}, set(rules.MISSION_EVENTS))
+        trade = next(e for e in CAT['events'] if e['id'] == 'trade done')
+        self.assertEqual(trade['fields']['cell']['type'], 'place')
+        self.assertFalse(trade['tile'])
+        self.assertEqual(len(rules.MISSION_MEASURES['quantity']), 16)   # (Phase 8: item picked up, trade done; doc 86's chorus closed.)
         self.assertEqual(len(rules.MISSION_MEASURES['coins']), 19)   # (Phase 8: trade done.)
         self.assertEqual(len(rules.INJURY_TYPES), 26)
         self.assertLessEqual(set(rules.MISSION_EVENTS), set(rules.EVENTS))
         served = runner.catalogue()
         self.assertEqual(served['catalogue'], CAT)
         self.assertEqual(served['effects'], rules.EFFECTS)
+
+    def test_the_doubts_kinds_are_claims_kinds(self):
+        # (Doc 86, J8: the kinds of claim a story may put to rest are claims.json's, and the game's list is the same.)
+        claims = json.loads((runner.DATA / 'Talk/claims.json').read_text())['kinds']
+        kinds = next(p for p in rules.EFFECT_PARAMS['belief.forget'] if p['key'] == 'claimKind')['values']
+        self.assertLessEqual(set(kinds), set(claims))
+        game = (runner.DATA.parent / 'Core/RatwGameStoryWorld.cpp').read_text()
+        listed = re.search(r'doubtable\(const std::string& kind\)\n\{\n    static const std::set<std::string> kinds\{([^}]*)\}', game)
+        self.assertEqual(set(re.findall(r'"([a-z.]+)"', listed.group(1))), set(kinds))
 
     def test_effect_checks_agree_with_the_hand_written_ones(self):
         rng = random.Random(85)
@@ -188,8 +212,9 @@ class CatalogueShape(unittest.TestCase):
                 'skill': 'craft', 'market': 'grey', 'detail': 'Held the ford.', 'project': 'well', 'title': 'A new well', 'scene': 'oath'}
         compared = 0
         for kind, keys in rules.EFFECTS.items():
-            if kind == 'scene.play' or kind in PHASE6 or kind in PHASE9:
+            if kind == 'scene.play' or kind in PHASE6 or kind in PHASE9 or kind in PHASE1B or kind in PHASE8:
                 continue   # (Needs an embedded scene: both run the same checks after the loop. Phase 6's are new: below.)
+            keys = tuple(k for k in keys if k != 'camp')   # (Doc 86, L2: optional, and the hand-written checks had none.)
             base = {'kind': kind, **{k: good[k] for k in keys}}
             self.assertEqual(verdict(rules.validate_effect, base), 'ok', kind)
             for key in keys:

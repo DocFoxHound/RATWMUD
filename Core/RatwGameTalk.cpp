@@ -730,6 +730,8 @@ talk::Query Game::talkQuery(const std::string& a, const std::string& b, const st
     }
     if (const auto region = q.facts.find("here.region"); region != q.facts.end())
         talkRecall("town:" + region->second, "world.", q.facts);
+    else
+        storyRecall("realm", "world.", q.facts);   // (Doc 86, C8: the realm's, wherever they are.)
     // Figures not in the game yet (decision 8), known where the speaker is from, stands, or serves: by role.
     for (const auto& fig : figures_)
     {
@@ -905,6 +907,11 @@ void Game::talkRemember(const std::vector<talk::Effect>& effects)
 
 void Game::talkRecall(const std::string& owner, const std::string& prefix, talk::Facts& into)
 {
+    // (Doc 86, C8: a story's memories first, so talk's own override them: the realm's under a town's, then the town's,
+    // the resident's or the pair's own.)
+    if (owner.rfind("town:", 0) == 0)
+        storyRecall("realm", prefix, into);
+    storyRecall(owner, prefix, into);
     const double now = world_.calendarDays();
     if (const auto said = talkSaid_.find(owner); said != talkSaid_.end())
     {

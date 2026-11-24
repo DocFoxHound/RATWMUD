@@ -16,6 +16,7 @@ import {QuestGrid} from './QuestGrid';
 import {WolvesMap} from './WolvesMap';
 import {Orders} from './Orders';
 import {ChapterBar} from './Chapters';
+import {Readiness} from './Readiness';
 
 export type ViewTab = 'overview' | 'timeline' | 'triggers' | 'state' | 'missions' | 'quests' | 'wolves' | 'orders' | 'audit';
 const TABS: {id: ViewTab; label: string}[] = [
@@ -79,6 +80,7 @@ export function CampaignView({me, target, row, detail, items, events, names, now
         <section className="camp-body">
             {!detail ? <p className="hint">Reading this story…</p>
                 : tab === 'overview' ? <div className="camp-overview">
+                    {row.ready && <Readiness row={row} detail={detail} names={names} steer={canSteer ? setAsk : undefined} busy={busy} />}
                     <h3>Needs you</h3>
                     {alerts.length ? <ul className="camp-alerts">{alerts.map(a => <li key={a.kind} className={a.needsYou ? 'needs' : ''}>{alertText(a, names)}</li>)}</ul>
                         : <p className="hint">(nothing)</p>}
@@ -112,7 +114,8 @@ export function CampaignView({me, target, row, detail, items, events, names, now
                     <details><summary>The approved program (read only)</summary><pre className="camp-json">{JSON.stringify(detail.program, null, 2)}</pre></details>
                 </div>
                 : tab === 'timeline' ? <Timeline items={items} events={events} names={names} now={now.at} earlier={earlier} onMap={showOnMap}
-                    triggers={[...new Set(items.flatMap(i => (i.type === 'trigger' ? [i.trigger] : [])))]} cohort={state?.cohort ?? []} />
+                    triggers={[...new Set(items.flatMap(i => (i.type === 'trigger' ? [i.trigger] : [])))]} cohort={state?.cohort ?? []}
+                    undoFigure={canDirect ? (history, words) => { if (window.confirm(words + '?')) void act(() => storyProgram(target, 'figure-undo', {history}), 'The figure is put back.'); } : undefined} />
                 : tab === 'triggers' ? <TriggersPanel detail={detail} names={names} canSteer={canSteer} steer={setAsk} busy={busy} counts={firingCounts(items)}
                     target={steerable(row.status) ? target : undefined} />
                 : tab === 'state' ? <StatePanel detail={detail} names={names} now={now} items={items} steer={canSteer ? setAsk : undefined} busy={busy} />

@@ -142,7 +142,7 @@ struct Town
     game::Game g;
     Client ash, bo, cy;
     Town(const std::string& world, const std::string& save, double performQuiet = 120, bool voice = false, double awayBreak = 3 * 86400,
-         const std::string& mind = {}, const std::string& mantles = {}) : g([&] {
+         const std::string& mind = {}, const std::string& mantles = {}, const std::string& talk = {}) : g([&] {
           game::Options o;
           o.hiddenNames = true;
           o.devIdentity = true;
@@ -154,6 +154,7 @@ struct Town
           o.awayBreakSeconds = awayBreak;
           o.dialogueEndpoint = mind;                // (A stand-in NPC Mind, for a test that needs one: "" none.)
           o.mantlesFrom = mantles;                  // (Mantles from a folder, each worn by whom it was written for.)
+          o.talkData = talk;                        // (A talk library of the test's own: "" the voice's, or none.)
 #ifdef RATW_SOURCE_DIR
           if (voice)
               o.voiceData = std::string(RATW_SOURCE_DIR) + "/Data/Voice";   // (The router and the written scenes.)

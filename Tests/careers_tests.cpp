@@ -398,6 +398,41 @@ void griefInTheWorld()
     expect(w.society().mourning("npc_cook") && w.society().mourning("npc_cook")->whom == "npc_keeper",
            "and the society knows whom for");
 }
+// Doc 86, C14 (`npc.post`): the crown's change. A story gives a post to a resident in one step, taken or not: the holder
+// is left without it for the vacancy rules, the new holder leaves the post they had; a succession note, "by the story";
+// the money untouched; never the watch's post.
+void theCrownsChange()
+{
+    AuthoredRoster roster;
+    roster.residents = {
+        person("dagfinn", "Dagfinn", "civilian", "reigning at the Great Palace", 61, {"palace", 3.5, 3.5}, {"throne", 4.5, 4.5}),
+        person("ottilie", "Ottilie", "civilian", "keeping the palace books", 44, {"palace", 5.5, 3.5}, {"study", 2.5, 2.5}),
+        person("sentry", "Brand", "guard", "keeping the palace gate", 35, {"barracks", 3.5, 3.5}, {"gate", 2.5, 2.5})};
+    Society s(Roster::None);
+    s.configure(roster);
+    Fates fates;
+    const auto balanced = s.realBalanced();
+    const auto money = s.account("dagfinn")->cash + s.account("ottilie")->cash;
+    expect(s.jobOf("dagfinn") && s.jobOf("dagfinn")->id == "job:dagfinn" && s.jobOf("ottilie")->id == "job:ottilie", "each in their post");
+    const auto note = s.swapPost("job:dagfinn", "ottilie", fates.world(s), 12.5);
+    expect(note.kind == "succession" && note.actor == "ottilie" && note.target == "dagfinn" &&
+               note.detail == "reigning at the Great Palace: by the story", "a succession note, by the story: " + note.detail);
+    expect(s.jobOf("ottilie") && s.jobOf("ottilie")->id == "job:dagfinn", "Ottilie reigns at the Great Palace");
+    expect(!s.jobOf("dagfinn"), "Dagfinn is left with no post");
+    const auto& posts = s.state().careers.positions;
+    expect(posts.at("job:dagfinn").lastHolder == "dagfinn" && posts.at("job:dagfinn").vacantSince < 0, "the post is held, its last holder Dagfinn");
+    expect(posts.at("job:ottilie").holder.empty() && posts.at("job:ottilie").lastHolder == "ottilie" && posts.at("job:ottilie").vacantSince == 12.5,
+           "and the palace books stand empty since today, for the vacancy rules");
+    expect(s.realBalanced() == balanced && s.account("dagfinn")->cash + s.account("ottilie")->cash == money, "no money moved");
+    expect(s.swapPost("job:dagfinn", "ottilie", fates.world(s), 13).kind == "held" && s.jobOf("ottilie")->id == "job:dagfinn",
+           "a post they hold already: no change (the order sent again)");
+    const auto guard = s.swapPost("job:sentry", "dagfinn", fates.world(s), 13);
+    expect(guard.kind == "refused" && guard.detail == "The watch chooses its own.", "the watch's post is refused");
+    expect(s.swapPost("job:nobody", "dagfinn", fates.world(s), 13).kind == "refused", "no such post");
+    fates.dead.insert("dagfinn");
+    expect(s.swapPost("job:ottilie", "dagfinn", fates.world(s), 13).kind == "refused", "the dead take no post");
+    expect(s.swapPost("job:ottilie", "nobody", fates.world(s), 13).kind == "refused", "nor anyone who is no resident");
+}
 } // namespace
 
 int main()
@@ -415,6 +450,7 @@ int main()
         griefInTheWorld();
         skillFamiliesAndPace();
         children();
+        theCrownsChange();
     }
     catch (const std::exception& error)
     {

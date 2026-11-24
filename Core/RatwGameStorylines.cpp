@@ -493,7 +493,7 @@ Result Game::directSceneResident(const std::string& kind, const std::string& npc
     }
     else
     {
-        order.words = p.string("text");
+        order.words = fillStoryNames(p.string("text"), 200);   // (Doc 86, C1b: the names in a story's words.)
         if (order.words.empty() || json::utf8Prefix(order.words, 200) != order.words ||
             order.words.find_first_of("\r\n") != std::string::npos)
             return {false, "Supply a single spoken line of up to 200 characters.", npc};
@@ -746,6 +746,9 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
     if (!revise && ((!prior && visit != 1) || (prior && prior->sourceRef != std::to_string(int(visit) - 1))))
         return {false, "World story phases arrived out of order.", run};
     storylines::Storyline story = prior ? *prior : storylines::Storyline{};
+    // (Doc 86, N2: a storykeeper story's program, kept as its template: the window's player.quest.<program>/<quest>.)
+    if (const auto program = p.string("program"); !program.empty() && program.size() <= 80)
+        story.templateId = program;
     if (!storylines::readRegions(p["regions"], story.regions))
         return {false, "Invalid world story region.", run};
     // What the story asks the game to tell it (doc 85, Phase 8): the world's facts and the watched events it names.
@@ -906,6 +909,7 @@ void Game::storylinesLoad(const Value& saved)
     journalViews_.clear();
     storyOccupants_.clear();
     refreshStoryWatch();
+    storyTopicsChanged();   // (Doc 86, T6: the story memory is read before the stories; their realm keys open the topic now.)
 }
 
 void Game::storylinesFromEvent(const WorldEvent& e)
@@ -1044,7 +1048,7 @@ void Game::offerChain(const Contract& done)
 namespace
 {
 constexpr std::size_t StoryAudienceMost = 5000, StoryOffersMost = 64, StoryChoicesMost = 64, QuestViewsMost = 64,
-                      TrackersMost = 16;
+                      TrackersMost = 16, TalkMost = 8;
 
 bool plainId(const Value& v)
 {
@@ -1090,6 +1094,75 @@ Result Game::applyStoryCohort(storylines::Storyline& story, const Value& p)
     return {true, "The story's wolves: " + std::to_string(add.size()) + " in, " + std::to_string(remove.size()) + " out.", story.id};
 }
 
+std::string Game::fillStoryNames(const std::string& text, std::size_t limit) const
+{
+    // Names filled in may make a line longer than its limit: it is cut at a word. Words of the story's own over the limit
+    // are never cut (End of slice, doc 86): they come back whole, for the caller's check to refuse as before the fills.
+    std::string out;
+    std::size_t at = 0, literal = 0;
+    while (at < text.size())
+    {
+        const auto open = text.find("{@", at);
+        const auto close = open == std::string::npos ? std::string::npos : text.find('}', open);
+        if (open == std::string::npos || close == std::string::npos || open + 3 >= close || text[open + 3] != ':')
+        {
+            const auto part = text.substr(at, open == std::string::npos ? std::string::npos : open + 2 - at);
+            out += part;
+            literal += part.size();
+            if (open == std::string::npos) break;
+            at = open + 2;
+            continue;
+        }
+        out += text.substr(at, open - at);
+        literal += open - at;
+        const char kind = text[open + 2];
+        const auto id = text.substr(open + 4, close - open - 4);
+        std::string name;
+        if (kind == 'w' || kind == 'r')
+        {
+            const auto* e = world_.entity(id);
+            name = e ? e->name : kind == 'w' ? nameOf(id) : std::string();
+            if (name.empty() && kind == 'r')
+                if (const auto* spec = world_.society().spec(id)) name = spec->name;
+        }
+        else if (kind == 'p')
+        {
+            if (const auto* cell = world_.cell(id)) name = cell->name;
+        }
+        else if (kind == 'i')
+            name = Society::itemName(id);
+        else if (kind == 'f')
+        {
+            if (const auto* f = factions_.find(id)) name = f->name;
+        }
+        else
+        {
+            out += text.substr(open, close + 1 - open);   // (Not a token the engines make: kept as written.)
+            literal += close + 1 - open;
+            at = close + 1;
+            continue;
+        }
+        out += name.empty() ? (kind == 'w' ? std::string("someone") : id) : name;
+        at = close + 1;
+    }
+    if (json::utf8Prefix(out, limit) == out || literal > limit)
+        return out;
+    auto cut = json::utf8Prefix(out, limit);
+    if (const auto space = cut.find_last_of(' '); space != std::string::npos && space > 0 && out[cut.size()] != ' ')
+        cut.resize(space);
+    while (!cut.empty() && (cut.back() == ' ' || cut.back() == ',')) cut.pop_back();
+    return cut;
+}
+
+Value Game::fillQuestWords(const Value& v, const char* key, std::size_t limit) const
+{
+    if (!v.isObject() || !v[key].isString() || v.string(key).find("{@") == std::string::npos)
+        return v;
+    Value out = v;
+    out.set(key, fillStoryNames(v.string(key), limit));
+    return out;
+}
+
 Result Game::applyStoryQuests(storylines::Storyline& story, const Value& p)
 {
     if ((p.has("offers") && (!p["offers"].isArray() || p.array("offers").size() > StoryOffersMost)) ||
@@ -1105,17 +1178,47 @@ Result Game::applyStoryQuests(storylines::Storyline& story, const Value& p)
             return {false, "A story choice needs its name, words and a resident.", story.id};
     for (const auto& [wolf, entry] : p["wolves"].fields())
         if (wolf.empty() || wolf.size() > 80 || !entry.isObject() || entry.array("quests").size() > QuestViewsMost ||
-            entry.array("trackers").size() > TrackersMost)
+            entry.array("trackers").size() > TrackersMost || (entry.has("talk") && (!entry["talk"].isObject() || entry["talk"].size() > TalkMost)))
             return {false, "Invalid quest journal for " + wolf + ".", story.id};
-    if (p.has("offers")) story.offers = p["offers"];
+    if (p.has("offers"))
+    {
+        // (Doc 86, C1b: the names in an offer's words, as the engines left them as tokens.)
+        story.offers = Value::array();
+        for (const auto& o : p.array("offers"))
+            story.offers.push(fillQuestWords(fillQuestWords(fillQuestWords(fillQuestWords(o, "say", 300), "thanks", 300), "summary", 300),
+                                             "during", 300));
+    }
     if (p.has("choices")) story.choices = p["choices"];
+    if (const auto program = p.string("program"); !program.empty() && program.size() <= 80)
+        story.templateId = program;                 // (Doc 86, N2: as story.phase names it, for a run older than that.)
     std::size_t wolves = 0;
     for (const auto& [wolf, entry] : p["wolves"].fields())
     {
         auto kept = Value::object();
-        kept.add("quests", entry["quests"].isArray() ? entry["quests"] : Value::array());
+        auto quests = Value::array();
+        for (const auto& q : entry.array("quests"))
+        {
+            // (Doc 86, C1b: a quest's summary and objectives, filled for this wolf, with names for the tokens.)
+            auto view = fillQuestWords(q, "summary", 300);
+            if (view.isObject() && view["objectives"].isArray())
+            {
+                auto objectives = Value::array();
+                for (const auto& o : view.array("objectives"))
+                    objectives.push(fillQuestWords(o, "label", 180));
+                view.set("objectives", std::move(objectives));
+            }
+            quests.push(std::move(view));
+        }
+        kept.add("quests", std::move(quests));
         kept.add("trackers", entry["trackers"].isArray() ? entry["trackers"] : Value::array());
-        if (!kept.array("quests").size() && !kept.array("trackers").size())
+        // (Doc 86, N2: what the residents this wolf talks to know of the wolf's own values: player.story.<name>.)
+        auto talk = Value::object();
+        for (const auto& [name, v] : entry.object("talk").fields())
+            if (!name.empty() && name.size() <= 80 && v.isString() && v.asString().size() <= 40)
+                talk.add(name, v.asString());
+        if (talk.size())
+            kept.add("talk", std::move(talk));
+        if (!kept.array("quests").size() && !kept.array("trackers").size() && !kept.object("talk").size())
             story.questViews.erase(wolf);
         else
             story.questViews[wolf] = std::move(kept);
@@ -1134,6 +1237,15 @@ bool Game::storyOfferOpen(const storylines::Storyline& s, const Value& offer, co
     if (!s.live() || offer.boolean("full"))
         return false;
     if (offer.string("who") == "participants" && !s.takesPart(wolf))
+        return false;
+    // (Doc 86, C6: an offer whose "Only for wolves who..." reads the wolf's own is for the wolves listed; L5: one taken back
+    // from a wolf is not for them.)
+    const auto listed = [&](const Value& list) {
+        return std::any_of(list.items().begin(), list.items().end(), [&](const Value& w) { return w.asString("") == wolf; });
+    };
+    if (offer["players"].isArray() && !listed(offer["players"]))
+        return false;
+    if (offer["except"].isArray() && listed(offer["except"]))
         return false;
     if (const auto region = offer.string("region"); !region.empty())
     {
@@ -1156,16 +1268,19 @@ bool Game::storyOfferOpen(const storylines::Storyline& s, const Value& offer, co
 
 std::vector<Game::StoryChoice> Game::storyChoicesFor(const std::string& wolf, const std::string& npc) const
 {
-    std::vector<StoryChoice> out;
+    // Doc 86, N1: the hand-ins first, then the offers, then the words while under way (C6), then the story choices, each in
+    // story-run order, so what does not fit the hub (Ask about... takes the rest) is never a hand-in.
+    std::vector<StoryChoice> out, offers, during, choices;
     for (const auto& [id, s] : storylines_.all())
     {
         if (s.source != "storykeeper" || !s.live())
             continue;
         for (const auto& o : s.offers.items())
             if (!npc.empty() && o.string("npc") == npc && storyOfferOpen(s, o, wolf))
-                out.push_back({"offer", id, o.string("quest"), o.string("ask", "Ask about: " + o.string("title"))});
+                offers.push_back({"offer", id, o.string("quest"), o.string("ask", "Ask about: " + o.string("title"))});
         if (const auto f = s.questViews.find(wolf); f != s.questViews.end())
             for (const auto& v : f->second.array("quests"))
+            {
                 if (v.boolean("handIn") && v.string("status") == "ready" && v.string("giver") == npc)
                 {
                     std::string words = "About " + v.string("title") + ": it's done.";
@@ -1174,6 +1289,15 @@ std::vector<Game::StoryChoice> Game::storyChoicesFor(const std::string& wolf, co
                             words = o.string("handIn");
                     out.push_back({"handin", id, v.string("id"), words});
                 }
+                // (Doc 86, C6: the giver's words while the wolf's copy is under way.)
+                if (v.string("status") == "active" && v.string("giver") == npc && !npc.empty())
+                    for (const auto& o : s.offers.items())
+                        if (o.string("quest") == v.string("id") && o.string("npc") == npc && !o.string("during").empty())
+                        {
+                            during.push_back({"during", id, v.string("id"), o.string("duringAsk", "About " + v.string("title") + "...")});
+                            break;
+                        }
+            }
         for (const auto& c : s.choices.items())
         {
             if (c.string("npc") != npc || !s.takesPart(wolf))
@@ -1186,9 +1310,11 @@ std::vector<Game::StoryChoice> Game::storyChoicesFor(const std::string& wolf, co
                 continue;
             if (c.boolean("once") && has(c["picked"]))
                 continue;
-            out.push_back({"choice", id, c.string("id"), c.string("words")});
+            choices.push_back({"choice", id, c.string("id"), c.string("words")});
         }
     }
+    for (auto* list : {&offers, &during, &choices})
+        out.insert(out.end(), list->begin(), list->end());
     return out;
 }
 

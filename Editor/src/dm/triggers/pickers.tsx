@@ -2,12 +2,13 @@
 // and wolves by name, places and tiles on the map, items from the catalogue by category, factions, towns, markets, ships,
 // harvest areas, templates and projects from the world, and the story's own phases, regions, missions, scenes, signals
 // and counters. "Enter an id" stays, for what the world does not list (or a world the refs could not be read from).
-import {useMemo, useState} from 'react';
+import {createContext, useContext, useMemo, useState} from 'react';
 import {MapView} from '../MapView';
 import {surfaceFor} from '../../lib/surface';
-import {allActions, countersOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, REF_KIND, signalsOf, visitorsOf, type CatEvent, type CatItem, type Operand, type Param,
+import {allActions, countersOf, figuresOf, fillsOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, widestFilled, REF_KIND, ownItemsHere, signalsOf, storyItemsOf, tagsOf, talkKeysOf, talkValuesOf, visitorsOf, foesOf, type CatEvent, type CatItem, type Condition, type Operand, type Param,
     type Program, type Slot} from '../../lib/workbench';
 import {useBench} from './context';
+import {ConditionNode} from './TriggerView';
 
 export type Values = Record<string, unknown>;
 interface Option {id: string; name: string; hint?: string; group?: string}
@@ -35,8 +36,9 @@ function EnterId({value, pick, label = 'Enter an id'}: {value: unknown; pick: (v
         <label>{label}<input value={text} onChange={e => setText(e.target.value)} maxLength={80}/></label><button type="submit">Use</button></form>;
 }
 
-/** The options of a reference type, from the world's refs and the story itself. */
-export function useOptions(type: string): Option[] {
+/** The options of a reference type, from the world's refs and the story itself (`own`: an item slot that may name the
+ *  story's own items, doc 86, J9). */
+export function useOptions(type: string, own = false): Option[] {
     const {refs, program} = useBench();
     return useMemo(() => {
         if (type === 'character') return [...(refs?.wolves ?? []).map(w => ({...w, group: 'Wolves'})), ...(refs?.residents ?? []).map(r => ({...r, group: 'Residents'}))];
@@ -46,14 +48,23 @@ export function useOptions(type: string): Option[] {
         if (type === 'mission') return program.phases.flatMap(p => (p.missions ?? []).map(m => ({id: m.id, name: m.title || m.id, group: p.id})));
         // (Phase 6: the story's quests; who pays a coin reward, by town.)
         if (type === 'quest') return (program.quests ?? []).map(q => ({id: q.id, name: q.title || q.id, hint: q.summary}));
-        if (type === 'purse') return Object.entries(purseNames(refs)).map(([id, name]) => ({id, name, group: id.split(':').length > 2 ? 'Town services' : 'Town treasuries'}));
+        if (type === 'purse') return Object.entries(purseNames(refs)).map(([id, name]) => ({id, name, group: id.startsWith('till:') ? 'Tills' : 'Town treasuries'}));
         const kind = REF_KIND[type];
         const list = kind ? (refs?.[kind] as Option[] | undefined) ?? [] : [];
-        if (type === 'item') return (refs?.items ?? []).map(i => ({id: i.id, name: i.name, group: i.category}));
+        // (Doc 86, J9: the story's own items first, as filters and "carries" name them: letter^watch_list.)
+        if (type === 'item') return [...(own ? storyItemsOf(program) : []).map(s => ({id: s.id, name: s.name || `${s.item} (${s.tag})`, group: "The story's own",
+            hint: s.keep ? 'kept after the story' : 'taken back at the end'})), ...(refs?.items ?? []).map(i => ({id: i.id, name: i.name, group: i.category}))];
         if (type === 'resident') return (refs?.residents ?? []).map(r => ({id: r.id, name: r.name, hint: r.work || r.home}));
         if (type === 'place') return (refs?.places ?? []).map(p => ({id: p.id, name: p.name, hint: p.kind + (p.town ? ' · ' + p.town : '')}));
+        // (Doc 86, L1: an animal for a staged hunt, with the ground it lives on.)
+        if (type === 'species') return (refs?.species ?? []).map(a => ({id: a.id, name: a.name, hint: (a.habitats ?? []).join(', ')}));
+        // (Doc 86, C14: a post by its title, with who holds it now; the resident's name where the world gives one.)
+        if (type === 'post') {
+            const named = Object.fromEntries((refs?.residents ?? []).map(r => [r.id, r.name]));
+            return (refs?.posts ?? []).map(p => ({id: p.id, name: p.title, hint: p.holder ? 'held by ' + (named[p.holder] ?? p.holder) : 'standing empty'}));
+        }
         return list;
-    }, [type, refs, program]);
+    }, [type, refs, program, own]);
 }
 
 function TilePicker({value, pick}: {value: {cell?: unknown; x?: unknown; y?: unknown}; pick: (v: Values) => void}) {
@@ -97,17 +108,31 @@ function NumberPicker({param, value, pick, step}: {param?: Param; value: unknown
 }
 
 function TextPicker({param, value, pick}: {param?: Param; value: unknown; pick: (v: string) => void}) {
+    const {program} = useBench();
     const [text, setText] = useState(typeof value === 'string' ? value : '');
     const max = param?.max ?? 400;
+    // (Doc 86, C1b: in a version 2 story, words marked "fills" may hold {name} or {name.of}; checked at their widest.)
+    const fills = !!param?.fills && isV2(program);
+    const vars = fills ? (program.variables ?? []).filter(v => !LIST_TYPES[v.type] && v.type !== 'timer') : [];
+    const used = fills ? fillsOf(text) : [];
+    const widest = fills && used.length ? widestFilled(text, program) : text.length;
     return <form className="wb-enter wb-text" onSubmit={e => { e.preventDefault(); if (text.trim() && text.length <= max) pick(text); }}>
         <label>{param?.label ?? 'Words'}<textarea autoFocus rows={2} maxLength={max} value={text} onChange={e => setText(e.target.value)}/>
-            <small className={text.length > max * 0.9 ? 'warn' : ''}>{text.length} / {max}</small></label>
-        <button type="submit" disabled={!text.trim()}>Use</button></form>;
+            <small className={widest > max * 0.9 ? 'warn' : ''}>{text.length} / {max}{used.length > 0 && ` · up to ${widest} once filled`}</small></label>
+        {fills && vars.length > 0 && <div className="wb-chips"><span>Fill in:</span>{vars.map(v => {
+            const own = v.scope === 'player' || v.scope === 'party' || v.scope === 'realm';
+            const token = '{' + v.id + (own ? '.of' : '') + '}';
+            return <button key={v.id} type="button" title={own ? "the acting (or looped) wolf's own" : undefined} onClick={() => setText(text + token)}>
+                <u>{token}</u></button>;
+        })}</div>}
+        {used.length > 0 && <p className="hint">Filled as it is sent: {used.map(f => <u key={f.name + f.of}>{f.name}{f.of ? '.of' : ''}</u>).reduce<React.ReactNode[]>((a, x, i) => i ? [...a, ', ', x] : [x], [])}
+            {' '}(a wolf, a resident, a place, an item or a faction by name; write {'{{'} and {'}}'} for braces).</p>}
+        <button type="submit" disabled={!text.trim() || widest > max}>Use</button></form>;
 }
 
-function NamePicker({names, value, pick, noun}: {names: string[]; value: unknown; pick: (v: string) => void; noun: string}) {
+function NamePicker({names, value, pick, noun, pattern}: {names: string[]; value: unknown; pick: (v: string) => void; noun: string; pattern?: RegExp}) {
     const [text, setText] = useState('');
-    const ok = /^[A-Za-z0-9_][A-Za-z0-9_.:-]{0,79}$/.test(text);
+    const ok = (pattern ?? /^[A-Za-z0-9_][A-Za-z0-9_.:-]{0,79}$/).test(text);
     return <div className="wb-search-list">
         <div className="wb-options">{names.map(n => <button key={n} type="button" aria-pressed={n === value} onClick={() => pick(n)}><span>{n}</span></button>)}
             {!names.length && <p className="hint">This story has no {noun} yet.</p>}</div>
@@ -119,26 +144,41 @@ function NamePicker({names, value, pick, noun}: {names: string[]; value: unknown
 /** Version 2: a declared variable of the types the slot takes (doc 85, 4.3). */
 function VariablePicker({slot, pick}: {slot: Slot; pick: (v: string) => void}) {
     const {program, cat} = useBench();
-    const types = slot.param?.of;
-    const list = (program.variables ?? []).filter(v => !types || types.includes(v.type));
+    const types = slot.param?.of, scopes = slot.param?.scope;
+    const list = (program.variables ?? []).filter(v => (!types || types.includes(v.type)) && (!scopes || scopes.includes(v.scope)) && !(scopes && v.mirror));
     return <div className="wb-search-list"><div className="wb-options">
         {list.map(v => <button key={v.id} type="button" aria-pressed={v.id === slot.value} onClick={() => pick(v.id)}><span>{v.id}</span>
             <small>{cat.variables?.types[v.type] ?? v.type} · {cat.variables?.scopes[v.scope] ?? v.scope}</small></button>)}
         {!list.length && <p className="hint">No variable of this kind yet ({(types ?? []).join(', ')}): declare one in Variables, on the right.</p>}</div></div>;
 }
 
+/** Doc 86, C1a: what may stand for an id parameter (story_triggers.OPERAND_VARS / OPERAND_FIELDS): a variable of its kind
+ *  (or a text), the event's field that holds one. */
+const OPERAND_VARS: Record<string, string[]> = {wolf: ['wolf'], resident: ['resident'], place: ['place', 'text'], item: ['item', 'text'],
+    faction: ['faction', 'text'], town: ['text', 'region']};
+const OPERAND_FIELDS: Record<string, string[]> = {wolf: ['actor', 'target'], resident: ['target', 'item'], place: ['cell', 'target'], item: ['item'],
+    faction: ['target', 'detail'], town: ['actor', 'target', 'detail']};
+
+/** Doc 86, C6: inside a quest's "Only for wolves who…": an offer is not an event, so the values offered are the story's own and
+ *  the wolf's (the event's actor is the wolf tested); no other event field, no loop value, no share, not who is online. */
+export const OfferValues = createContext(false);
+
 /** Version 2: a value (doc 85, 3.4): a number, on or off, a text, a variable, the event's field, a list's count, a timer's
  *  days, the loop's value, or a variable plus or minus a number. `kind` narrows it: number, switch or text. */
 function OperandPicker({slot, pick}: {slot: Slot; pick: (v: Operand) => void}) {
     const {program} = useBench();
+    const offer = useContext(OfferValues);
     const kind = slot.param?.kind ?? '';
-    const vars = (program.variables ?? []).filter(v => !LIST_TYPES[v.type] && v.type !== 'timer' && (!kind || kindOfType(v.type) === kind));
+    const idKind = slot.param?.idKind && OPERAND_VARS[slot.param.idKind] ? slot.param.idKind : '';
+    const vars = (program.variables ?? []).filter(v => !LIST_TYPES[v.type] && v.type !== 'timer'
+        && (idKind ? OPERAND_VARS[idKind].includes(v.type) && !v.mirror : !kind || kindOfType(v.type) === kind));
     const lists = (program.variables ?? []).filter(v => LIST_TYPES[v.type]);
     const timers = (program.variables ?? []).filter(v => v.type === 'timer');
+    const wolfLists = (program.variables ?? []).filter(v => v.type === 'wolves' && ['story', 'world'].includes(v.scope));
     const [text, setText] = useState(typeof slot.value === 'string' ? slot.value : '');
     const [num, setNum] = useState(typeof slot.value === 'number' ? String(slot.value) : '');
-    const fields = kind === 'number' ? ['quantity', 'coins'] : kind === 'text' ? ['actor', 'target', 'cell', 'item', 'detail'] : kind === 'switch' ? []
-        : ['actor', 'target', 'cell', 'item', 'detail', 'quantity', 'coins'];
+    const fields = (idKind ? OPERAND_FIELDS[idKind] : kind === 'number' ? ['quantity', 'coins'] : kind === 'text' ? ['actor', 'target', 'cell', 'item', 'detail'] : kind === 'switch' ? []
+        : ['actor', 'target', 'cell', 'item', 'detail', 'quantity', 'coins']).filter(f => !offer || f === 'actor');
     const n = Number(num);
     return <div className="wb-operand">
         <p className="hint">Now: {operandWords(slot.value as Operand, {}) || 'nothing'}</p>
@@ -148,11 +188,25 @@ function OperandPicker({slot, pick}: {slot: Slot; pick: (v: Operand) => void}) {
         {(!kind || kind === 'text') && <form className="wb-enter" onSubmit={e => { e.preventDefault(); pick(text); }}>
             <label>A text<input value={text} maxLength={200} onChange={e => setText(e.target.value)}/></label><button type="submit">Use</button></form>}
         {vars.length > 0 && <div className="wb-chips"><span>A variable:</span>{vars.map(v => <button key={v.id} type="button" onClick={() => pick({var: v.id})}>{v.id}</button>)}
-            {vars.some(v => v.scope === 'player' || v.scope === 'party') && <small className="hint">(a wolf's own: the acting wolf's)</small>}</div>}
-        {fields.length > 0 && <div className="wb-chips"><span>The event's:</span>{fields.map(f => <button key={f} type="button" onClick={() => pick({field: f})}>{f}</button>)}</div>}
+            {vars.some(v => v.scope === 'player' || v.scope === 'party' || v.scope === 'realm') && <small className="hint">(a wolf's own: the acting wolf's)</small>}</div>}
+        {fields.length > 0 && <div className="wb-chips"><span>{offer ? 'The wolf:' : "The event's:"}</span>{fields.map(f => <button key={f} type="button" onClick={() => pick({field: f})}>{offer ? 'the one it is offered to' : f}</button>)}</div>}
         {(!kind || kind === 'number') && lists.length > 0 && <div className="wb-chips"><span>How many in:</span>{lists.map(v => <button key={v.id} type="button" onClick={() => pick({count: v.id})}>{v.id}</button>)}</div>}
         {(!kind || kind === 'number') && timers.length > 0 && <div className="wb-chips"><span>Days since:</span>{timers.map(v => <button key={v.id} type="button" onClick={() => pick({since: v.id})}>{v.id}</button>)}</div>}
-        {(!kind || kind === 'text') && <div className="wb-chips"><span>Inside For each:</span><button type="button" onClick={() => pick({each: true})}>the looped value</button></div>}
+        {(!kind || kind === 'text') && !offer && <div className="wb-chips"><span>Inside For each:</span><button type="button" onClick={() => pick({each: true})}>the looped value</button></div>}
+        {(!kind || kind === 'number') && isV2(program) && <div className="wb-chips"><span>The story's wolves (doc 86):</span>
+            {(['all', 'active', 'online'] as const).filter(a => !offer || a !== 'online').map(a => <button key={a} type="button" onClick={() => pick({audience: a})}>how many {a === 'all' ? 'it has' : `are ${a}`}</button>)}
+            {num !== '' && Number.isFinite(n) && <button type="button" onClick={() => pick({max: [n, {times: [{audience: 'active'}, 2]}]})}>{n}, or 2 for each active wolf</button>}</div>}
+        {(!kind || kind === 'number') && isV2(program) && <div className="wb-chips"><span>Over every wolf (doc 86, tally):</span>
+            <button type="button" onClick={() => pick({tally: {}})}>how many wolves the story has</button>
+            {(program.variables ?? []).filter(v => v.type === 'number' && (v.scope === 'player' || v.scope === 'realm') && !v.mirror).map(v =>
+                <button key={v.id} type="button" onClick={() => pick({tally: {sum: v.id}})}>every wolf's {v.id}, added up</button>)}
+            <small className="hint">(only some wolves, or over a list: edited in Source)</small></div>}
+        {(!kind || kind === 'number') && !offer && (program.quests ?? []).some(q => q.credit === 'share') && <div className="wb-chips"><span>In a reward by share:</span>
+            <button type="button" onClick={() => pick({share: true})}>the wolf's share</button></div>}
+        {(!kind || kind === 'number') && wolfLists.length > 0 && <div className="wb-chips"><span>Of the active wolves:</span>
+            {wolfLists.map(v => <span key={v.id}><button type="button" onClick={() => pick({percent: {list: v.id}, of: 'active'})}>the share in {v.id}</button>
+                <button type="button" onClick={() => pick({among: {list: v.id}, of: 'active'})}>how many in {v.id}</button></span>)}
+            <small className="hint">(the share of the wolves who…, how many of the wolves…: a test for each wolf is edited in Source)</small></div>}
         {(!kind || kind === 'number') && vars.some(v => v.type === 'number') && num !== '' && Number.isFinite(n) && <div className="wb-chips"><span>Or a number variable and {n}:</span>
             {vars.filter(v => v.type === 'number').map(v => <span key={v.id}><button type="button" onClick={() => pick({plus: [{var: v.id}, n]})}>{v.id} + {n}</button>
                 <button type="button" onClick={() => pick({minus: [{var: v.id}, n]})}>{v.id} − {n}</button>
@@ -185,12 +239,16 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
     const key = slot.keys[0];
     const one = (v: unknown) => pick({[key]: v});
     const type = slot.type;
-    const options = useOptions(type === 'wolf' ? 'wolf' : type);
+    const options = useOptions(type === 'wolf' ? 'wolf' : type, ownItemsHere(slot));
     let body: React.ReactNode;
     if (type === 'tile') body = <TilePicker value={(slot.value ?? {}) as Values} pick={pick}/>;
     else if (type === 'variable') body = <VariablePicker slot={slot} pick={one}/>;
     else if (type === 'operand') body = <OperandPicker slot={slot} pick={one}/>;
     else if (type === 'trigger') body = <TriggerPicker slot={slot} pick={one}/>;
+    // (Doc 86, R1: a test for each wolf, the wolf as $each; the world's facts are greyed out, it is counted outside an event.)
+    else if (type === 'condition') body = <div className="wb-each-test"><p className="hint">Tested once for each wolf: read a wolf's own values "of the looped wolf".</p>
+        <ConditionNode node={(slot.value as Condition | undefined) ?? {test: 'compare', left: {var: (program.variables ?? []).find(v => v.scope === 'player' && v.type === 'number')?.id ?? 'progress', of: '$each'}, op: '>=', right: 1}}
+            change={c => one(c)} depth={1} phase={null} each/></div>;
     else if (type === 'whose') body = <div className="wb-chips">{(slot.param?.values ?? []).map(v => <button key={v} type="button" aria-pressed={(slot.value ?? '$actor') === v}
         onClick={() => one(v === '$actor' ? undefined : v)}>{slot.param?.words?.[v] ?? v}</button>)}</div>;
     else if (type === 'choice' && slot.param?.values && slot.param.optional) body = <div className="wb-chips"><button type="button" aria-pressed={slot.value === undefined}
@@ -209,8 +267,17 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
     else if (type === 'counter') body = <NamePicker names={[...new Set(countersOf(program).map(c => c.key))]} value={slot.value} pick={one} noun="counter"/>;
     else if (type === 'cue') body = <NamePicker names={cues ?? []} value={slot.value} pick={one} noun="cue"/>;
     else if (type === 'offer') body = <NamePicker names={offersOf(program)} value={slot.value} pick={one} noun="story choice"/>;
+    // (Doc 86, Phase 1b: a talk memory's key and value, small letters, digits and _; a figure of the realm's id.)
+    else if (type === 'talkkey') body = <NamePicker names={talkKeysOf(program)} value={slot.value} pick={v => one(v.toLowerCase())} noun="memory key (nh_stage)"/>;
+    else if (type === 'talkvalue') body = <NamePicker names={talkValuesOf(program)} value={slot.value} pick={v => one(v.toLowerCase())} noun="value (reckoning)"/>;
+    else if (type === 'figure') body = <NamePicker names={figuresOf(program)} value={slot.value} pick={v => one(v.toLowerCase())} noun="figure's id"/>;
+    // (Doc 86, J9: a story's own mark on an item; the item is then letter^<mark> in filters and "carries".)
+    else if (type === 'tag') body = <NamePicker names={tagsOf(program)} value={slot.value} pick={v => one(v.toLowerCase())} noun="story mark (watch_list)" pattern={/^[A-Za-z0-9_]{1,32}$/}/>;
     // (Phase 9: a stranger the story brings, by the id it gives them.)
     else if (type === 'visitor') body = <NamePicker names={visitorsOf(program)} value={slot.value} pick={one} noun="stranger's id"/>;
+    // (Doc 86, C10: a foe the story brings, by the id it gives them; a foe event's target may also be a resident made one.)
+    else if (type === 'foe') body = <NamePicker names={foesOf(program).map(f => f.id)} value={slot.value} pick={v => one(v.toLowerCase())} noun="foe's id"
+        pattern={/^[A-Za-z0-9][A-Za-z0-9_-]{2,39}$/}/>;
     else if (type === 'objective') {
         const q = (program.quests ?? []).find(x => x.id === slot.param?.quest);
         body = q ? <SearchList options={q.objectives.map(o => ({id: o.id, name: o.label, hint: (o.optional ? 'optional' : '') + (o.hidden ? ' hidden' : '')}))}
@@ -232,12 +299,19 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
                 onClick={() => one(v === slot.param?.default ? undefined : v)}>{slot.param?.words?.[v] ?? v}</button>)}</div> : undefined;
         body = <><SearchList options={options} value={slot.value} pick={one} placeholder={'Find ' + (slot.label || type)} extra={extra && here ? <>{extra}{here}</> : extra ?? here}/>
             {!['phase', 'region', 'scene', 'mission', 'quest'].includes(type) && <EnterId value={slot.value} pick={one}
-                label={type === 'purse' ? 'Or a purse: town:<town>, town:<town>:works, till:<id>, chapter:<id>' : undefined}/>}</>;
+                label={type === 'purse' ? 'Or a purse: town:<town>, till:job:<resident>, chapter:<id>' : undefined}/>}</>;
     }
+    // (Doc 86, C1a: a parameter marked operand may be a value worked out as the trigger fires: a variable of its kind, the
+    // event's field, the loop's value, arithmetic.)
+    const valued = !!slot.param?.operand && isV2(program) && type !== 'operand';
     return <div className="wb-picker" role="dialog" aria-label={'Choose ' + (slot.label || type)} onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } }}>
         <header><strong>Choose {slot.label || type}</strong>{clearable && slot.value !== undefined && <button type="button" onClick={() => pick({[key]: undefined})}>Any (no filter)</button>}
             <button type="button" className="wb-close" onClick={close} aria-label="Close">×</button></header>
-        {body}</div>;
+        {valued && slot.value !== null && typeof slot.value === 'object' && <p className="hint">Now a value: {operandWords(slot.value as Operand, {})}</p>}
+        {body}
+        {valued && <details className="wb-or-value"><summary>…or a value</summary>
+            <OperandPicker slot={{...slot, param: {...slot.param!, kind: slot.param!.type === 'int' ? 'number' : 'text',
+                idKind: slot.param!.type === 'int' ? undefined : slot.param!.type}}} pick={one}/></details>}</div>;
 }
 
 /** "Choose an event": the catalogue's events by group, each with its help and what its fields hold (4.3). */

@@ -367,10 +367,12 @@ class RuntimeTests(unittest.TestCase):
             'INSERT INTO game.checkpoints(world_id,schema_version,revision,payload) VALUES (%s,1,1,%s)',
             (self.world, '{"calendarDays":10}'),
         )
+        # (Placed, with a home: doc 86's V1 refuses a resident with no place in the world.)
+        self.conn.execute("INSERT INTO world.areas(world_id,id,kind) VALUES (%s,'fixture-homes','cell')", (self.world,))
         for npc in ('rm111', 'rm112', 'rm113', 'rm119'):
             self.conn.execute(
                 """INSERT INTO live.npcs(world_id,id,name,role,age,voice,appearance,hours_start,hours_end,
-                home_x,home_y,work_x,work_y,evening_x,evening_y) VALUES (%s,%s,%s,'civilian',4,1,'{}',8,12,0,0,0,0,0,0)""",
+                home_area,home_x,home_y,work_x,work_y,evening_x,evening_y) VALUES (%s,%s,%s,'civilian',4,1,'{}',8,12,'fixture-homes',0,0,0,0,0,0)""",
                 (self.world, npc, npc),
             )
         for faction in ('city_watch', 'road_company'):
@@ -474,6 +476,32 @@ class RuntimeTests(unittest.TestCase):
             self.fact('scene response', self.cohort[0], run, quantity=visit, detail='oath.promise.' + outcome)
         self.tick()
         self.assertEqual(self.status()['state']['counters'], {'story': {'submitted': 1, 'timeout': 1}})
+
+    def test_foe_events_go_to_the_run_whose_foe_it_was(self):
+        # (Doc 86, C10, after review: two runs may name a foe alike, so the game marks each foe event with the run whose foe
+        # it was, in `coins`: another run's "captain" moves nothing here.)
+        p = self.examples['foes'] = story_author.request({'op': 'draft', 'blank': True}, {})['program']
+        p['phases'][0]['triggers'] = [
+            {'id': kind.split()[1], 'on': kind, 'match': {'target': 'captain'},
+             'actions': [{'do': 'add', 'key': kind.split()[1], 'scope': 'story', 'value': 1}]}
+            for kind in ('foe downed', 'foe defeated', 'foe fled')
+        ]
+        self.launch('foes')
+        self.answer()
+        mine, other = rules.foe_mark(self.run), rules.foe_mark('another-run')
+        self.assertNotEqual(mine, other)
+        ash = self.cohort[0]
+        self.fact('foe downed', ash, 'captain', coins=other, detail='one of the band')
+        self.fact('foe defeated', ash, 'captain', quantity=1, coins=other, detail='The Grey Captain')
+        self.fact('foe fled', '', 'captain', item='fled', coins=other, detail='The Grey Captain')
+        self.fact('foe defeated', ash, 'captain', quantity=1, detail='The Grey Captain')   # (No mark: no run's.)
+        self.tick()
+        self.assertFalse(self.status()['state'].get('counters', {}).get('story'))
+        self.fact('foe downed', ash, 'captain', coins=mine, detail='one of the band')
+        self.fact('foe defeated', ash, 'captain', quantity=1, coins=mine, detail='The Grey Captain')
+        self.tick()
+        self.assertEqual(self.status()['state']['counters'], {'story': {'downed': 1, 'defeated': 1}})
+        self.assertEqual((rules.foe_mark(''), rules.foe_mark('a')), (0x811c9dc5, 0xe40c292c))   # (FNV-1a's, as the game's.)
 
     def test_scene_participant_is_verified_before_publication(self):
         import story_scenes
@@ -1110,6 +1138,114 @@ class RuntimeTests(unittest.TestCase):
         self.assertFalse(
             self.conn.execute("SELECT has_table_privilege('ratw_game','dm.story_releases','INSERT')").fetchone()[0]
         )
+
+
+class ReadinessShapes(unittest.TestCase):
+    """Doc 86, R2: a phase's Readiness and its ready exit, as story_program checks them."""
+
+    def setUp(self):
+        import story_v2_samples
+        self.p = copy.deepcopy(story_v2_samples.READY)
+
+    def refused(self, words):
+        self.assertRaisesRegex(ValueError, words, rules.validate, self.p)
+
+    def test_the_sample_is_sound(self):
+        rules.validate(self.p)
+        report = rules.review(self.p)
+        self.assertTrue(report['passed'])
+        self.assertEqual((report['uncovered'], report['uncoveredTriggers'], report['uncoveredReady']), ([], [], []))
+
+    def test_two_ready_exits_are_refused(self):
+        self.p['phases'][0]['exits'].append({'on': 'ready', 'to': 'crossed'})
+        self.refused('exactly one ready exit')
+
+    def test_ready_without_its_exit_and_the_exit_without_ready(self):
+        self.p['phases'][0]['exits'] = [{'on': 'dm signal', 'to': 'ford', 'match': {'detail': 'Cross now'}}]
+        self.refused('exactly one ready exit')
+        self.setUp()
+        del self.p['phases'][1]['ready']
+        self.refused('a ready exit needs the phase')
+        self.setUp()
+        self.p['phases'][0]['exits'][0]['match'] = {'detail': 'x'}
+        self.refused('Unexpected fields|unexpected fields')
+
+    def test_a_fact_or_a_wolf_value_in_a_value_part_is_refused(self):
+        self.p['phases'][1]['ready']['all'][0]['value'] = {'field': 'quantity'}
+        self.refused('not a wolf\'s or the event\'s')
+        self.setUp()
+        self.p['phases'][1]['ready']['all'][0]['value'] = {'var': 'hauls', 'of': '$actor'}
+        self.refused('not a wolf\'s or the event\'s')
+        self.setUp()
+        self.p['phases'][0]['ready']['all'][2]['any'][1]['test'] = {'test': 'wolf indoors', 'is': True}
+        self.refused('not the world\'s facts')
+
+    def test_an_actor_reward_behind_a_ready_exit_is_refused(self):
+        self.p['phases'][1]['effects'] = [{'kind': 'deed.award', 'player': '$actor', 'detail': 'Crossed first.'}]
+        self.refused('requires a participating player')
+
+    def test_the_moments_and_bounds(self):
+        self.p['phases'][1]['ready']['then'] = {'on': 'moon', 'match': {'detail': 'new'}}
+        rules.validate(self.p)   # (Doc 86, Phase 2: the moon is a moment now, J4.)
+        self.assertEqual(rules.ready_words(self.p['phases'][1]['ready']['then']), 'the next new moon')
+        self.setUp()
+        self.p['phases'][1]['ready']['then'] = {'on': 'month begins'}
+        rules.validate(self.p)   # (Doc 86, Phase 4: a new month is a moment now, C13a.)
+        self.assertEqual(rules.ready_words(self.p['phases'][1]['ready']['then']), 'the next month')
+        self.setUp()
+        self.p['phases'][1]['ready']['then'] = {'on': 'succession'}
+        self.refused('Readiness waits for one of')
+        self.setUp()
+        self.p['phases'][0]['ready']['auto'] = True
+        self.refused('autoAfterDays is for a phase that waits')
+        self.setUp()
+        self.p['phases'][0]['ready']['all'] = []
+        self.refused('1 to 8 parts')
+        self.setUp()
+        self.p['phases'][0]['ready']['all'][2]['any'] = self.p['phases'][0]['ready']['all'][2]['any'][:1]
+        self.refused('2 to 4 parts')
+        self.setUp()
+        self.p['phases'][0]['ready']['all'][2]['any'][0] = {'any': [{'minDays': 1}, {'minDays': 2}]}
+        self.refused('one deep')
+        self.setUp()
+        self.p['phases'][0]['ready']['all'][2]['any'][0]['missions'] = ['elsewhere']
+        self.refused('missions of this phase')
+        self.setUp()
+        self.p['version'] = 1
+        del self.p['variables']
+        self.assertRaises(ValueError, rules.validate, self.p)
+
+    def test_the_watch_list_asks_for_its_moment(self):
+        self.assertIn('day begins', rules.watch_of(self.p)['events'])
+        self.assertIn('wolves', rules.watch_of(self.p).get('facts', []), 'counting who is online reads the signed-in wolves')
+
+
+class FilterForms(unittest.TestCase):
+    """Doc 86, C12b: a filter may begin with a text or be one of several, in triggers, exits, missions and objectives; a
+    deed's detail ends with "(<deed id>)", so it is matched by how it begins."""
+
+    def test_a_deed_matched_by_how_it_begins(self):
+        exit_ = {'on': 'deed', 'to': 'b', 'match': {'detail': {'starts': 'stood watch at the ford'}}}
+        self.assertTrue(rules.matches(exit_, {'kind': 'deed', 'detail': 'stood watch at the ford (d41)'}))
+        self.assertFalse(rules.matches(exit_, {'kind': 'deed', 'detail': 'kept the ford (d42)'}))
+        self.assertTrue(rules.matches({'on': 'gift', 'match': {'item': {'starts': 'rope'}}}, {'kind': 'gift', 'item': 'rope~fine'}))
+        self.assertFalse(rules.matches({'on': 'gift', 'match': {'item': {'starts': 'rope~f'}}}, {'kind': 'gift', 'item': 'rope'}))
+
+    def test_exits_missions_and_moments_take_them(self):
+        import story_v2_samples as samples
+        p = copy.deepcopy(samples.all_samples()[0])
+        p['phases'][0]['exits'].append({'on': 'deed', 'to': p['phases'][0]['id'], 'match': {'detail': {'starts': 'stood'}, 'cell': {'in': ['a', 'b']}}})
+        rules.validate(p)
+        p['phases'][0]['exits'][-1]['match'] = {'detail': {'starts': 'x', 'in': ['y']}}
+        self.assertRaisesRegex(ValueError, 'invalid event filter', rules.validate, p)
+        self.assertEqual(rules.match_words({'in': ['a', 'b']}), 'one of a, b')
+        self.assertEqual(rules.stand_in_match({'cell': {'in': ['a', 'b']}, 'detail': {'starts': 'x'}, 'item': 'rope'}),
+                         {'cell': 'a', 'detail': 'x', 'item': 'rope'})
+        self.assertEqual(rules.match_values({'in': ['a', 'b']}) + rules.match_values({'starts': 'x'}) + rules.match_values('c'), ['a', 'b', 'c'])
+        weather = {'format': 'ratw-story-program', 'version': 1, 'id': 'w', 'title': 'W', 'start': 'a', 'audience': {'kind': 'players', 'players': ['p']},
+                   'phases': [{'id': 'a', 'journal': 'A.', 'effects': [], 'exits': [{'on': 'weather changed', 'to': 'a', 'match': {'target': {'in': ['x', 'y']}}}]}],
+                   'tests': []}
+        self.assertEqual(rules.watch_of(weather).get('cells'), ['x', 'y'], 'each cell of an "in" is watched for its weather')
 
 
 if __name__ == '__main__':

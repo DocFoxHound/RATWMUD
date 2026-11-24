@@ -1,0 +1,4370 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "lq-blight-and-boar",
+ "title": "Blight and Boar",
+ "prefix": "lq",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "quietAfterHours": 0,
+ "variables": [
+  {
+   "id": "lq_vines",
+   "type": "text",
+   "scope": "world",
+   "initial": "",
+   "note": "Blight and Boar's lasting result: burned, cured or lost (empty: not yet). Written by lq-blight-and-boar; any story may read it."
+  },
+  {
+   "id": "coin_southmeadow_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:southmeadow by every story (day cap 23); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_southmeadow_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:southmeadow is above its floor: off below 60, on again at 80 (nh-purses only)."
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_voice_southmeadow",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Southmeadow's strand of the realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_stage",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The Ninth Howl chapter now running (read only here: the board line of Ch 7)."
+  },
+  {
+   "id": "rows_kept",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "show": "Nights the rows were kept",
+   "note": "+1 a wolf a night kept in the rows, +2 a boar chapter done."
+  },
+  {
+   "id": "goal",
+   "type": "number",
+   "scope": "story",
+   "initial": 8,
+   "show": "Nights the valley needs",
+   "note": "The shared bar: 8, and 2 more for each wolf who helps."
+  },
+  {
+   "id": "helpers",
+   "type": "wolves",
+   "scope": "story",
+   "note": "Every wolf who has kept the rows or finished the boar chapter (each grows the goal by 2)."
+  },
+  {
+   "id": "t_burn",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Weight for burning: 1 a wolf who takes the road, 2 in a party."
+  },
+  {
+   "id": "t_cure",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Weight for the cure: 1 a wolf who takes the road, 2 in a party."
+  },
+  {
+   "id": "cure_hands",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Wolves who finished the cure road: each 5 shift the odds 10 toward a saved vintage."
+  },
+  {
+   "id": "curing",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Cure roads under way: the vine-tender shows her choice while any is."
+  },
+  {
+   "id": "tally_on",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "A road has been taken this season: the reckoning is three game days off."
+  },
+  {
+   "id": "curers",
+   "type": "wolves",
+   "scope": "story",
+   "note": "Cure wolves who finished before the reckoning: paid in wine or grapes once it is known."
+  },
+  {
+   "id": "lq_coin",
+   "type": "number",
+   "scope": "player",
+   "initial": 0,
+   "note": "What this line has paid this wolf in all (at most 35)."
+  },
+  {
+   "id": "lq_thin",
+   "type": "switch",
+   "scope": "player",
+   "initial": false,
+   "note": "This wolf was paid in kind when the purse was thin (N2 will let the thanks read it)."
+  },
+  {
+   "id": "boar_paid",
+   "type": "switch",
+   "scope": "player",
+   "initial": false,
+   "note": "This wolf had the first-time reward of the boar chapter."
+  },
+  {
+   "id": "road",
+   "type": "text",
+   "scope": "player",
+   "initial": "",
+   "note": "The road this wolf took in chapter 3 (burn or cure): one road a wolf, for good."
+  }
+ ],
+ "regions": [
+  {
+   "id": "rows",
+   "cell": "w_ridgemere_9_12",
+   "x1": 86,
+   "y1": 93,
+   "x2": 110,
+   "y2": 117
+  },
+  {
+   "id": "southwood",
+   "cell": "w_ridgemere_5_8",
+   "x1": 84,
+   "y1": 0,
+   "x2": 110,
+   "y2": 24
+  }
+ ],
+ "triggers": [
+  {
+   "id": "lay-offers",
+   "on": "day begins",
+   "note": "Each day: the beekeeper, the swineherd and (while a cure road is under way) the vine-tender have their choices; from Ch 7 the board asks for pickers.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "cty_aster_cornley",
+      "id": "lq_vine_bees",
+      "words": "Which rows do your bees avoid?",
+      "reply": "The south rows, every one. Bees know a sick flower before the vine does. Three weeks they've flown round those rows like there's a ditch in the way.",
+      "once": true
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "cty_brisk_lakemere",
+      "id": "lq_vine_fence",
+      "words": "Your fence is broken outward.",
+      "reply": "Outward, is it? My sows went courting and the wild boar came back with them. I've mended it twice. Every boar in the Sunfields knows the way to our sties now.",
+      "once": false
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "curing"
+      },
+      "op": ">",
+      "right": 0
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_sloe_harvestby",
+        "id": "lq_vine_cure",
+        "words": "The vine hand knows a cure. Let's try it.",
+        "reply": "Oak bark and lime on a sick root, the Oakhaven way? It's a gamble, my apple. Ripe or rotten. Bring him three of bark and two of lime, and I'll hold the rows till he's done.",
+        "once": true
+       }
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "nh_stage"
+      },
+      "op": ">=",
+      "right": 7
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "board.post",
+        "town": "southmeadow",
+        "days": 1,
+        "ifRefused": "skip",
+        "text": "SOUTHMEADOW VINEYARD: hands wanted for the picking. Every grape picked is one the Captain's companies don't eat. Sloe Harvestby."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "lay-offers-now",
+   "on": "quest started",
+   "audience": "participant",
+   "once": "visit",
+   "note": "The first quest taken in a visit lays the line's choices at once, before the next day begins.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "cty_aster_cornley",
+      "id": "lq_vine_bees",
+      "words": "Which rows do your bees avoid?",
+      "reply": "The south rows, every one. Bees know a sick flower before the vine does. Three weeks they've flown round those rows like there's a ditch in the way.",
+      "once": true,
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "cty_brisk_lakemere",
+      "id": "lq_vine_fence",
+      "words": "Your fence is broken outward.",
+      "reply": "Outward, is it? My sows went courting and the wild boar came back with them. I've mended it twice. Every boar in the Sunfields knows the way to our sties now.",
+      "once": false,
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "road-burn",
+   "on": "quest started",
+   "match": {
+    "detail": "vines_burn"
+   },
+   "audience": "participant",
+   "note": "One road a wolf; a party weighs double; the first road taken sets the reckoning three game days off.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road",
+       "of": "$actor"
+      },
+      "op": "!=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "vines_burn",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you are already carrying bark and lime for the cure."
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "burn",
+       "of": "$actor"
+      },
+      {
+       "do": "add",
+       "var": "t_burn",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "party size",
+        "op": ">=",
+        "value": 2
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_burn",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "tally_on",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "tally_on"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-cure",
+   "on": "quest started",
+   "match": {
+    "detail": "vines_cure"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road",
+       "of": "$actor"
+      },
+      "op": "!=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "vines_cure",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you are already carrying firewood for the burning."
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "cure",
+       "of": "$actor"
+      },
+      {
+       "do": "add",
+       "var": "t_cure",
+       "value": 1
+      },
+      {
+       "do": "add",
+       "var": "curing",
+       "value": 1
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_sloe_harvestby",
+        "id": "lq_vine_cure",
+        "words": "The vine hand knows a cure. Let's try it.",
+        "reply": "Oak bark and lime on a sick root, the Oakhaven way? It's a gamble, my apple. Ripe or rotten. Bring him three of bark and two of lime, and I'll hold the rows till he's done.",
+        "once": true,
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "party size",
+        "op": ">=",
+        "value": 2
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_cure",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "tally_on",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "tally_on"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "leaves-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "leaves"
+   },
+   "audience": "participant",
+   "note": "Chapter 2 comes by the journal (no giver: no leak to other wolves).",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "quest.offer",
+      "quest": "boar",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "boar-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "boar"
+   },
+   "audience": "participant",
+   "note": "The party is paid (first time: 6 pennies, a deed, boiled leather; again: the practice), the bar grows by 2.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "party",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "boar_paid",
+        "is": false,
+        "of": "$each"
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_southmeadow_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_southmeadow_day"
+            },
+            "op": "<=",
+            "right": 17
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "lq_coin",
+             "of": "$each"
+            },
+            "op": "<=",
+            "right": 29
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:southmeadow"
+            },
+            "op": ">=",
+            "right": 66
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$each",
+            "coins": {
+             "min": [
+              6,
+              {
+               "div": [
+                {
+                 "purse": "town:southmeadow"
+                },
+                20
+               ]
+              }
+             ]
+            },
+            "purse": "town:southmeadow",
+            "reason": "the Southmeadow stores pay for the boar hunt",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_southmeadow_day",
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:southmeadow"
+               },
+               20
+              ]
+             }
+            ]
+           }
+          },
+          {
+           "do": "add",
+           "var": "lq_coin",
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:southmeadow"
+               },
+               20
+              ]
+             }
+            ]
+           },
+           "of": "$each"
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$each",
+            "item": "bread",
+            "quantity": 2
+           }
+          },
+          {
+           "do": "turn on",
+           "var": "lq_thin",
+           "of": "$each"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$each",
+            "text": "Coin is short in the Southmeadow stores today, so you are paid in kind instead."
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$each",
+          "detail": "hunted the boar out of the Southmeadow vines"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.practice",
+          "player": "$each",
+          "skill": "watch"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$each",
+          "item": "boiled_leather",
+          "quantity": 1
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "boar_paid",
+         "of": "$each"
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.practice",
+          "player": "$each",
+          "skill": "watch"
+         }
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "not",
+        "condition": {
+         "test": "in list",
+         "list": "helpers",
+         "value": {
+          "each": true
+         }
+        }
+       },
+       "then": [
+        {
+         "do": "list add",
+         "var": "helpers",
+         "value": {
+          "each": true
+         }
+        },
+        {
+         "do": "add",
+         "var": "goal",
+         "value": 2
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "phase is",
+        "phase": "reckoning"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "quest.offer",
+          "quest": "vines_burn",
+          "player": "$each"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "quest.offer",
+          "quest": "vines_cure",
+          "player": "$each"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "rows_kept",
+     "value": 2
+    },
+    {
+     "do": "emit",
+     "signal": "bar"
+    }
+   ]
+  },
+  {
+   "id": "night-kept",
+   "on": "hour",
+   "match": {
+    "detail": "1"
+   },
+   "note": "At one in the morning every wolf of the story standing in the rows keeps them a night.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "wolf in region",
+        "region": "rows",
+        "who": "$each"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "rows_kept",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "phase is",
+            "phase": "reckoning"
+           },
+           {
+            "test": "not",
+            "condition": {
+             "test": "in list",
+             "list": "helpers",
+             "value": {
+              "each": true
+             }
+            }
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "vines_burn",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "vines_cure",
+            "player": "$each"
+           }
+          }
+         ]
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "not",
+          "condition": {
+           "test": "in list",
+           "list": "helpers",
+           "value": {
+            "each": true
+           }
+          }
+         },
+         "then": [
+          {
+           "do": "list add",
+           "var": "helpers",
+           "value": {
+            "each": true
+           }
+          },
+          {
+           "do": "add",
+           "var": "goal",
+           "value": 2
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "boar",
+          "objective": "watch",
+          "player": "$each"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "schedule",
+     "signal": "bar",
+     "days": 0.01,
+     "scope": "campaign"
+    }
+   ]
+  },
+  {
+   "id": "fires-lit",
+   "on": "hour",
+   "match": {
+    "detail": "19"
+   },
+   "note": "The burning is lit at seven in the evening: a burn wolf in the rows sees it done.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "wolf in region",
+          "region": "rows",
+          "who": "$each"
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "road",
+           "of": "$each"
+          },
+          "op": "=",
+          "right": "burn"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "vines_burn",
+          "objective": "dusk",
+          "player": "$each"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "bar",
+   "on": "story signal",
+   "signal": "bar",
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "phase is",
+      "phase": "open"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "var": "rows_kept"
+      },
+      "op": ">=",
+      "right": {
+       "var": "goal"
+      }
+     }
+    ]
+   },
+   "note": "The shared bar met: both roads offered to every helper, the reckoning six days off at most (three after the first road).",
+   "actions": [
+    {
+     "do": "each",
+     "over": "list",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "vines_burn",
+        "player": "$each"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "vines_cure",
+        "player": "$each"
+       }
+      }
+     ],
+     "list": "helpers"
+    },
+    {
+     "do": "schedule",
+     "signal": "reckon",
+     "days": 6,
+     "scope": "campaign"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "story.tell",
+      "to": "participants",
+      "text": "The Southmeadow rows have been kept long enough. Now the valley must choose: burn the sick vines, or try the vine hand's cure of bark and lime. Your journal has both roads."
+     }
+    },
+    {
+     "do": "enter",
+     "phase": "reckoning"
+    }
+   ]
+  },
+  {
+   "id": "burn-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "vines_burn"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_southmeadow_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_southmeadow_day"
+        },
+        "op": "<=",
+        "right": 11
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin",
+         "of": "$actor"
+        },
+        "op": "<=",
+        "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:southmeadow"
+        },
+        "op": ">=",
+        "right": 72
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:southmeadow"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:southmeadow",
+        "reason": "the Southmeadow stores pay for the burning",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_southmeadow_day",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:southmeadow"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:southmeadow"
+           },
+           20
+          ]
+         }
+        ]
+       },
+       "of": "$actor"
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin",
+       "of": "$actor"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Coin is short in the Southmeadow stores today, so you are paid in kind instead."
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 16
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_southmeadow",
+     "value": 16
+    }
+   ]
+  },
+  {
+   "id": "cure-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "vines_cure"
+   },
+   "audience": "participant",
+   "note": "Wine if the cure took, grapes if it did not (or the rows were burned first); before the reckoning the wolf waits on the list.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_southmeadow_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_southmeadow_day"
+        },
+        "op": "<=",
+        "right": 11
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin",
+         "of": "$actor"
+        },
+        "op": "<=",
+        "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:southmeadow"
+        },
+        "op": ">=",
+        "right": 72
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:southmeadow"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:southmeadow",
+        "reason": "the Southmeadow stores pay for the cure",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_southmeadow_day",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:southmeadow"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:southmeadow"
+           },
+           20
+          ]
+         }
+        ]
+       },
+       "of": "$actor"
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin",
+       "of": "$actor"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Coin is short in the Southmeadow stores today, so you are paid in kind instead."
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "cure_hands",
+     "value": 1
+    },
+    {
+     "do": "subtract",
+     "var": "curing",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "curing",
+     "min": 0,
+     "max": 5000
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "phase is",
+      "phase": "after_cured"
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "wine",
+        "quantity": 2
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "saved the Southmeadow vines with bark and ash"
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 16
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_southmeadow",
+       "value": 16
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "after_lost"
+         },
+         {
+          "test": "phase is",
+          "phase": "after_burned"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "grapes",
+          "quantity": 2
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "fought the blight in the Southmeadow vines and lost"
+         }
+        },
+        {
+         "do": "add",
+         "var": "nh_realm",
+         "value": 8
+        },
+        {
+         "do": "add",
+         "var": "nh_voice_southmeadow",
+         "value": 8
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "list add",
+       "var": "curers",
+       "value": {
+        "field": "actor"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "reckon",
+   "on": "story signal",
+   "signal": "reckon",
+   "if": {
+    "test": "phase is",
+    "phase": "reckoning"
+   },
+   "note": "The most weight wins; a tie or nobody goes to burning (the default). The cure is a gamble: 60 in 100, 10 better for each 5 who finished it.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "t_cure"
+      },
+      "op": ">",
+      "right": {
+       "var": "t_burn"
+      }
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "cure_hands"
+        },
+        "op": ">=",
+        "right": 15
+       },
+       "then": [
+        {
+         "do": "random",
+         "choices": [
+          {
+           "weight": 90,
+           "actions": [
+            {
+             "do": "emit",
+             "signal": "res_cured"
+            }
+           ]
+          },
+          {
+           "weight": 10,
+           "actions": [
+            {
+             "do": "emit",
+             "signal": "res_lost"
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "cure_hands"
+          },
+          "op": ">=",
+          "right": 10
+         },
+         "then": [
+          {
+           "do": "random",
+           "choices": [
+            {
+             "weight": 80,
+             "actions": [
+              {
+               "do": "emit",
+               "signal": "res_cured"
+              }
+             ]
+            },
+            {
+             "weight": 20,
+             "actions": [
+              {
+               "do": "emit",
+               "signal": "res_lost"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "cure_hands"
+          },
+          "op": ">=",
+          "right": 5
+         },
+         "then": [
+          {
+           "do": "random",
+           "choices": [
+            {
+             "weight": 70,
+             "actions": [
+              {
+               "do": "emit",
+               "signal": "res_cured"
+              }
+             ]
+            },
+            {
+             "weight": 30,
+             "actions": [
+              {
+               "do": "emit",
+               "signal": "res_lost"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "random",
+         "choices": [
+          {
+           "weight": 60,
+           "actions": [
+            {
+             "do": "emit",
+             "signal": "res_cured"
+            }
+           ]
+          },
+          {
+           "weight": 40,
+           "actions": [
+            {
+             "do": "emit",
+             "signal": "res_lost"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "emit",
+       "signal": "res_burned"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "res-burned",
+   "on": "story signal",
+   "signal": "res_burned",
+   "actions": [
+    {
+     "do": "set",
+     "var": "lq_vines",
+     "value": "burned"
+    },
+    {
+     "do": "each",
+     "over": "list",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$each",
+        "item": "grapes",
+        "quantity": 2
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$each",
+        "detail": "fought the blight in the Southmeadow vines and lost"
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 8
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_southmeadow",
+       "value": 8
+      }
+     ],
+     "list": "curers"
+    },
+    {
+     "do": "list clear",
+     "var": "curers"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "story.tell",
+      "to": "participants",
+      "text": "Smoke over Southmeadow: the sick south rows are burned."
+     }
+    },
+    {
+     "do": "enter",
+     "phase": "after_burned"
+    }
+   ]
+  },
+  {
+   "id": "res-cured",
+   "on": "story signal",
+   "signal": "res_cured",
+   "actions": [
+    {
+     "do": "set",
+     "var": "lq_vines",
+     "value": "cured"
+    },
+    {
+     "do": "each",
+     "over": "list",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$each",
+        "item": "wine",
+        "quantity": 2
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$each",
+        "detail": "saved the Southmeadow vines with bark and ash"
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 16
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_southmeadow",
+       "value": 16
+      }
+     ],
+     "list": "curers"
+    },
+    {
+     "do": "list clear",
+     "var": "curers"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "story.tell",
+      "to": "participants",
+      "text": "The vine hand's cure has taken: green leaves on the Southmeadow rows."
+     }
+    },
+    {
+     "do": "enter",
+     "phase": "after_cured"
+    }
+   ]
+  },
+  {
+   "id": "res-lost",
+   "on": "story signal",
+   "signal": "res_lost",
+   "actions": [
+    {
+     "do": "set",
+     "var": "lq_vines",
+     "value": "lost"
+    },
+    {
+     "do": "each",
+     "over": "list",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$each",
+        "item": "grapes",
+        "quantity": 2
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$each",
+        "detail": "fought the blight in the Southmeadow vines and lost"
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 8
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_southmeadow",
+       "value": 8
+      }
+     ],
+     "list": "curers"
+    },
+    {
+     "do": "list clear",
+     "var": "curers"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "story.tell",
+      "to": "participants",
+      "text": "The cure did not take. The blight is past the Southmeadow rows this year."
+     }
+    },
+    {
+     "do": "enter",
+     "phase": "after_lost"
+    }
+   ]
+  },
+  {
+   "id": "new-season",
+   "on": "season begins",
+   "note": "A new season: the blight and the boar come back, and the valley needs its rows kept again.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "phase is",
+        "phase": "after_burned"
+       },
+       {
+        "test": "phase is",
+        "phase": "after_cured"
+       },
+       {
+        "test": "phase is",
+        "phase": "after_lost"
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "phase is",
+        "phase": "after_burned"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "harvest.override",
+          "area": "fruit",
+          "word": "good",
+          "days": 60,
+          "words": "the burned rows came back clean",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "set",
+       "var": "rows_kept",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "goal",
+       "value": 8
+      },
+      {
+       "do": "list clear",
+       "var": "helpers"
+      },
+      {
+       "do": "set",
+       "var": "t_burn",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "t_cure",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "cure_hands",
+       "value": 0
+      },
+      {
+       "do": "turn off",
+       "var": "tally_on"
+      },
+      {
+       "do": "list clear",
+       "var": "curers"
+      },
+      {
+       "do": "enter",
+       "phase": "open"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "boar-staged",
+   "on": "quest started",
+   "audience": "participant",
+   "match": {
+    "detail": "boar"
+   },
+   "note": "L1: two boar wait in the rows for the next hunt there (they lapse after six hours).",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "hunt.stage",
+      "region": "rows",
+      "species": "boar",
+      "count": 2,
+      "minutes": 360
+     }
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "Black leaves curl on the south rows of the Southmeadow vineyard, and wild boar root in them by night.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_sloe_harvestby",
+     "text": "Harvest to you. Mind where you tread in the south rows. The leaves are blighted and the ground's all boar-dug."
+    },
+    {
+     "kind": "npc.line",
+     "npc": "tn_oh_harl_oakbough",
+     "text": "Down from the Southwood, along the stream, under the old fence. I was lost three days in that wood once. I know its paths better than I'd like. Good harvest if you find the gap."
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_vineyard_south_press_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_bees_south_hives_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_pigs_south_sties_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_vines",
+     "value": "blight",
+     "days": 365
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "reckoning",
+   "journal": "The rows have been kept. Now Southmeadow must choose: burn the sick vines, or try the vine hand's old cure of bark and lime.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_sloe_harvestby",
+     "text": "Burn them, or try the vine hand's cure, my apple? I can't choose for the whole valley. Say which, and put your back into it."
+    },
+    {
+     "kind": "npc.line",
+     "npc": "tn_oh_harl_oakbough",
+     "text": "Where I was raised they paint a sick root with oak bark and lime, and pray to the Bright One it takes. Three of bark and two of lime, and I'll do the painting."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_vines",
+     "value": "reckoning",
+     "days": 365
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "after_burned",
+   "journal": "The south rows of Southmeadow were burned for the blight. No wine from them this year, but the ground is clean.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_sloe_harvestby",
+     "text": "Ash where the south rows stood. No wine from them this year, but clean ground. Ripe days next year, Bright One willing."
+    },
+    {
+     "kind": "harvest.override",
+     "area": "fruit",
+     "word": "poor",
+     "days": 30,
+     "words": "the south rows burned for the blight",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "board.post",
+     "town": "southmeadow",
+     "text": "SOUTHMEADOW VINEYARD: the blighted south rows are burned. No wine from them this year, but the ground is clean. Our thanks to every wolf who carried firewood. Sloe Harvestby.",
+     "days": 28,
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_vines",
+     "value": "burned",
+     "days": 365
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "after_cured",
+   "journal": "The vine hand's cure took. Southmeadow's south rows are green again.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_sloe_harvestby",
+     "text": "Ripe days, my apple, ripe days. Green leaves on every row, and a bark poultice on every root."
+    },
+    {
+     "kind": "harvest.override",
+     "area": "fruit",
+     "word": "good",
+     "days": 30,
+     "words": "Southmeadow's vines saved",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "board.post",
+     "town": "southmeadow",
+     "text": "SOUTHMEADOW VINEYARD: the bark-and-ash cure has taken, and there are green leaves on every row. Our thanks to every wolf who carried bark and lime. Sloe Harvestby.",
+     "days": 28,
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_vines",
+     "value": "cured",
+     "days": 365
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "after_lost",
+   "journal": "The cure did not take. The blight is past the Southmeadow rows this year.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_sloe_harvestby",
+     "text": "We tried the old cure and the blight walked past it. Blight take it. I'll not forget who carried the bark, mind."
+    },
+    {
+     "kind": "harvest.override",
+     "area": "fruit",
+     "word": "poor",
+     "days": 60,
+     "words": "the blight past the Southmeadow rows",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "board.post",
+     "town": "southmeadow",
+     "text": "SOUTHMEADOW VINEYARD: the cure did not take, and the south rows are lost this year. Our thanks all the same to every wolf who carried bark and lime. Sloe Harvestby.",
+     "days": 28,
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_vines",
+     "value": "lost",
+     "days": 365
+    }
+   ],
+   "exits": []
+  }
+ ],
+ "quests": [
+  {
+   "id": "leaves",
+   "title": "Black Leaves",
+   "summary": "Black leaves curl on the south vine rows at Southmeadow, and boar dig in them by night. Walk the rows, ask the beekeeper, and bring the vine-tender wood ash.",
+   "giver": "cty_sloe_harvestby",
+   "board": "southmeadow",
+   "scope": "player",
+   "repeat": "once",
+   "join": {
+    "cap": 40
+   },
+   "offer": {
+    "ask": "Your vines look sick.",
+    "say": "#greet#, #address#. Not a good harvest, not this year. Black leaves on the south rows, curling like burnt paper, and boar in at night eating what's left. Blight take it. Walk the rows, ask the beekeeper which rows her bees won't touch, and bring me wood ash.",
+    "accept": "I'll walk the rows.",
+    "decline": "Not today.",
+    "handIn": "The bees shun the south rows.",
+    "thanks": "#thanks#. The south rows, then, and spreading north. #oath#, I've coin put by for a row of my own, and it's dying before I can buy it. The boar first. Hunt them out of my rows."
+   },
+   "objectives": [
+    {
+     "id": "walk",
+     "label": "Walk the south vine rows round the Southmeadow press.",
+     "on": "region entered",
+     "match": {
+      "target": "rows"
+     }
+    },
+    {
+     "id": "bees",
+     "label": "Ask the beekeeper at the Sunfields Bee Garth which rows her bees avoid.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "cty_aster_cornley",
+      "detail": "lq_vine_bees"
+     }
+    },
+    {
+     "id": "ash",
+     "label": "Bring the vine-tender two of wood ash for the roots.",
+     "on": "gift",
+     "match": {
+      "target": "cty_sloe_harvestby",
+      "item": "wood_ash"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "found the blight in the Southmeadow vines"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    }
+   ]
+  },
+  {
+   "id": "boar",
+   "title": "The Boar in the Rows",
+   "summary": "Hunt the boar out of the Southmeadow rows, and find where they get in.",
+   "scope": "party",
+   "repeat": "weekly",
+   "join": {
+    "cap": 40
+   },
+   "objectives": [
+    {
+     "id": "hunt",
+     "label": "Hunt the boar in the rows (two will do).",
+     "on": "hunted",
+     "match": {
+      "target": "boar"
+     },
+     "goal": 2,
+     "where": {
+      "cells": [
+       "w_ridgemere_9_12"
+      ]
+     }
+    },
+    {
+     "id": "track",
+     "label": "Ask the vine hand at the Press House where the boar come from.",
+     "on": "conversation",
+     "match": {
+      "target": "tn_oh_harl_oakbough"
+     }
+    },
+    {
+     "id": "fence",
+     "label": "Find the broken fence by the Southwood sties.",
+     "on": "region entered",
+     "match": {
+      "target": "southwood"
+     },
+     "after": [
+      "track"
+     ]
+    },
+    {
+     "id": "brisk",
+     "label": "Tell the swineherd at Southwood her fence is broken outward.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "cty_brisk_lakemere",
+      "detail": "lq_vine_fence"
+     },
+     "after": [
+      "fence"
+     ]
+    },
+    {
+     "id": "watch",
+     "label": "Keep the vine rows one night: be among them in the small hours.",
+     "on": "story signal",
+     "signal": "kept_night"
+    }
+   ]
+  },
+  {
+   "id": "vines_burn",
+   "title": "Burn the Sick Rows",
+   "summary": "Burn the sick south rows before the blight spreads. No wine from them this year.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "open",
+    "reckoning"
+   ],
+   "objectives": [
+    {
+     "id": "firewood",
+     "label": "Bring the vine-tender four of firewood for the burning.",
+     "on": "gift",
+     "match": {
+      "target": "cty_sloe_harvestby",
+      "item": "firewood"
+     },
+     "goal": 4,
+     "measure": "quantity"
+    },
+    {
+     "id": "dusk",
+     "label": "Be in the south rows at dusk, when the fires are lit.",
+     "on": "story signal",
+     "signal": "fires_lit"
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "burned the blighted Southmeadow rows to save the next vintage"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "craft"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "grapes",
+     "quantity": 3
+    }
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "leaves",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "boar",
+      "status": "done"
+     }
+    ]
+   }
+  },
+  {
+   "id": "vines_cure",
+   "title": "Bark and Ash",
+   "summary": "Gather oak bark and lime for the vine hand's old Oakhaven cure. It may save the rows, or not.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "open",
+    "reckoning"
+   ],
+   "objectives": [
+    {
+     "id": "choice",
+     "label": "Tell the vine-tender you'll try the vine hand's cure.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "cty_sloe_harvestby",
+      "detail": "lq_vine_cure"
+     }
+    },
+    {
+     "id": "forage",
+     "label": "Strip three of oak bark in the woods.",
+     "on": "forage",
+     "match": {
+      "item": "oak_bark"
+     },
+     "goal": 3,
+     "measure": "quantity"
+    },
+    {
+     "id": "bark",
+     "label": "Give the vine hand three of oak bark.",
+     "on": "gift",
+     "match": {
+      "target": "tn_oh_harl_oakbough",
+      "item": "oak_bark"
+     },
+     "goal": 3,
+     "measure": "quantity",
+     "after": [
+      "choice"
+     ]
+    },
+    {
+     "id": "lime",
+     "label": "Give the vine hand two of lime.",
+     "on": "gift",
+     "match": {
+      "target": "tn_oh_harl_oakbough",
+      "item": "lime"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "after": [
+      "choice"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "craft"
+    }
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "leaves",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "boar",
+      "status": "done"
+     }
+    ]
+   }
+  }
+ ],
+ "tests": [
+  {
+   "name": "One wolf keeps the rows, burns them (the default), and the season brings the blight back",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.1,
+     "detail": "Dawnday",
+     "item": "autumn",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 0.111,
+     "actor": "wolf-ash",
+     "target": "rows",
+     "cell": "w_ridgemere_9_12",
+     "detail": "run"
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 0.112,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_aster_cornley",
+     "detail": "lq_vine_bees"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 0.113,
+     "actor": "wolf-ash",
+     "target": "cty_sloe_harvestby",
+     "item": "wood_ash",
+     "quantity": 2,
+     "cell": "w_ridgemere_9_12"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.114,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 0.115,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "boar"
+    },
+    {
+     "id": "e7h1",
+     "kind": "hunted",
+     "day": 0.1152,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e7h2",
+     "kind": "hunted",
+     "day": 0.1154,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e8",
+     "kind": "conversation",
+     "day": 0.116,
+     "actor": "wolf-ash",
+     "target": "tn_oh_harl_oakbough",
+     "cell": "w_ridgemere_8_13"
+    },
+    {
+     "id": "e9",
+     "kind": "region entered",
+     "day": 0.117,
+     "actor": "wolf-ash",
+     "target": "southwood",
+     "cell": "w_ridgemere_5_8",
+     "detail": "run"
+    },
+    {
+     "id": "e10",
+     "kind": "dialogue choice",
+     "day": 0.118,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_brisk_lakemere",
+     "detail": "lq_vine_fence"
+    },
+    {
+     "id": "e11",
+     "kind": "hour",
+     "day": 1.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "hour",
+     "day": 2.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e13",
+     "kind": "hour",
+     "day": 3.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e14",
+     "kind": "hour",
+     "day": 4.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e15",
+     "kind": "hour",
+     "day": 5.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e16",
+     "kind": "hour",
+     "day": 6.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e17",
+     "kind": "hour",
+     "day": 7.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "hour",
+     "day": 8.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e19",
+     "kind": "hour",
+     "day": 8.06,
+     "detail": "2",
+     "quantity": 2
+    },
+    {
+     "id": "e20",
+     "kind": "quest accepted",
+     "day": 8.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "vines_burn"
+    },
+    {
+     "id": "e21",
+     "kind": "gift",
+     "day": 8.11,
+     "actor": "wolf-ash",
+     "target": "cty_sloe_harvestby",
+     "item": "firewood",
+     "quantity": 4,
+     "cell": "w_ridgemere_9_12"
+    },
+    {
+     "id": "e22",
+     "kind": "hour",
+     "day": 8.4,
+     "detail": "19",
+     "quantity": 19,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e23",
+     "kind": "day begins",
+     "day": 11.3,
+     "detail": "Stoneday",
+     "item": "autumn",
+     "quantity": 12
+    },
+    {
+     "id": "e24",
+     "kind": "season begins",
+     "day": 12.1,
+     "detail": "winter"
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_burned",
+    "open"
+   ],
+   "expectQuests": {
+    "leaves": {
+     "wolf-ash": "done"
+    },
+    "boar": {
+     "party:wolf-ash": "done"
+    },
+    "vines_burn": {
+     "wolf-ash": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_vines": "burned",
+     "coin_southmeadow_day": 18,
+     "nh_realm": 16,
+     "nh_voice_southmeadow": 16
+    },
+    "player": {
+     "wolf-ash": {
+      "lq_coin": 18,
+      "boar_paid": true
+     }
+    },
+    "story": {
+     "rows_kept": 0,
+     "goal": 8,
+     "tally_on": false
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:southmeadow": 2000
+    }
+   }
+  },
+  {
+   "name": "One wolf carries bark and lime, and the cure takes",
+   "cohort": [],
+   "rolls": [
+    10
+   ],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.1,
+     "detail": "Dawnday",
+     "item": "autumn",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 0.111,
+     "actor": "wolf-ash",
+     "target": "rows",
+     "cell": "w_ridgemere_9_12",
+     "detail": "run"
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 0.112,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_aster_cornley",
+     "detail": "lq_vine_bees"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 0.113,
+     "actor": "wolf-ash",
+     "target": "cty_sloe_harvestby",
+     "item": "wood_ash",
+     "quantity": 2,
+     "cell": "w_ridgemere_9_12"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.114,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 0.115,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "boar"
+    },
+    {
+     "id": "e7h1",
+     "kind": "hunted",
+     "day": 0.1152,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e7h2",
+     "kind": "hunted",
+     "day": 0.1154,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e8",
+     "kind": "conversation",
+     "day": 0.116,
+     "actor": "wolf-ash",
+     "target": "tn_oh_harl_oakbough",
+     "cell": "w_ridgemere_8_13"
+    },
+    {
+     "id": "e9",
+     "kind": "region entered",
+     "day": 0.117,
+     "actor": "wolf-ash",
+     "target": "southwood",
+     "cell": "w_ridgemere_5_8",
+     "detail": "run"
+    },
+    {
+     "id": "e10",
+     "kind": "dialogue choice",
+     "day": 0.118,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_brisk_lakemere",
+     "detail": "lq_vine_fence"
+    },
+    {
+     "id": "e11",
+     "kind": "hour",
+     "day": 1.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "hour",
+     "day": 2.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e13",
+     "kind": "hour",
+     "day": 3.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e14",
+     "kind": "hour",
+     "day": 4.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e15",
+     "kind": "hour",
+     "day": 5.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e16",
+     "kind": "hour",
+     "day": 6.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e17",
+     "kind": "hour",
+     "day": 7.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "hour",
+     "day": 8.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e19",
+     "kind": "hour",
+     "day": 8.06,
+     "detail": "2",
+     "quantity": 2
+    },
+    {
+     "id": "e20",
+     "kind": "quest accepted",
+     "day": 8.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "vines_cure"
+    },
+    {
+     "id": "e21",
+     "kind": "dialogue choice",
+     "day": 8.11,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "lq_vine_cure"
+    },
+    {
+     "id": "e22",
+     "kind": "forage",
+     "day": 8.12,
+     "actor": "wolf-ash",
+     "item": "oak_bark",
+     "quantity": 3,
+     "cell": "w_ridgemere_5_8",
+     "detail": "woodland"
+    },
+    {
+     "id": "e23",
+     "kind": "gift",
+     "day": 8.129999999999999,
+     "actor": "wolf-ash",
+     "target": "tn_oh_harl_oakbough",
+     "item": "oak_bark",
+     "quantity": 3,
+     "cell": "w_ridgemere_8_13"
+    },
+    {
+     "id": "e24",
+     "kind": "gift",
+     "day": 8.139999999999999,
+     "actor": "wolf-ash",
+     "target": "tn_oh_harl_oakbough",
+     "item": "lime",
+     "quantity": 2,
+     "cell": "w_ridgemere_8_13"
+    },
+    {
+     "id": "e25",
+     "kind": "day begins",
+     "day": 11.3,
+     "detail": "Stoneday",
+     "item": "autumn",
+     "quantity": 12
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_cured"
+   ],
+   "expectQuests": {
+    "vines_cure": {
+     "wolf-ash": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_vines": "cured",
+     "nh_realm": 16
+    },
+    "story": {
+     "curers": [],
+     "cure_hands": 1,
+     "curing": 0
+    },
+    "player": {
+     "wolf-ash": {
+      "lq_coin": 18
+     }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:southmeadow": 2000
+    }
+   }
+  },
+  {
+   "name": "Two wolves try the cure and it fails; the one who finishes late is still paid",
+   "cohort": [],
+   "rolls": [
+    90
+   ],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.1,
+     "detail": "Dawnday",
+     "item": "autumn",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 0.111,
+     "actor": "wolf-ash",
+     "target": "rows",
+     "cell": "w_ridgemere_9_12",
+     "detail": "run"
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 0.112,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_aster_cornley",
+     "detail": "lq_vine_bees"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 0.113,
+     "actor": "wolf-ash",
+     "target": "cty_sloe_harvestby",
+     "item": "wood_ash",
+     "quantity": 2,
+     "cell": "w_ridgemere_9_12"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.114,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 0.115,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "boar"
+    },
+    {
+     "id": "e7h1",
+     "kind": "hunted",
+     "day": 0.1152,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e7h2",
+     "kind": "hunted",
+     "day": 0.1154,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e8",
+     "kind": "conversation",
+     "day": 0.116,
+     "actor": "wolf-ash",
+     "target": "tn_oh_harl_oakbough",
+     "cell": "w_ridgemere_8_13"
+    },
+    {
+     "id": "e9",
+     "kind": "region entered",
+     "day": 0.117,
+     "actor": "wolf-ash",
+     "target": "southwood",
+     "cell": "w_ridgemere_5_8",
+     "detail": "run"
+    },
+    {
+     "id": "e10",
+     "kind": "dialogue choice",
+     "day": 0.118,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_brisk_lakemere",
+     "detail": "lq_vine_fence"
+    },
+    {
+     "id": "e11",
+     "kind": "quest accepted",
+     "day": 0.12000000000000001,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e12",
+     "kind": "region entered",
+     "day": 0.12100000000000001,
+     "actor": "wolf-birch",
+     "target": "rows",
+     "cell": "w_ridgemere_9_12",
+     "detail": "run"
+    },
+    {
+     "id": "e13",
+     "kind": "dialogue choice",
+     "day": 0.12200000000000001,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_aster_cornley",
+     "detail": "lq_vine_bees"
+    },
+    {
+     "id": "e14",
+     "kind": "gift",
+     "day": 0.12300000000000001,
+     "actor": "wolf-birch",
+     "target": "cty_sloe_harvestby",
+     "item": "wood_ash",
+     "quantity": 2,
+     "cell": "w_ridgemere_9_12"
+    },
+    {
+     "id": "e15",
+     "kind": "quest handed in",
+     "day": 0.12400000000000001,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e16",
+     "kind": "quest accepted",
+     "day": 0.125,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "boar"
+    },
+    {
+     "id": "e17",
+     "kind": "conversation",
+     "day": 0.126,
+     "actor": "wolf-birch",
+     "target": "tn_oh_harl_oakbough",
+     "cell": "w_ridgemere_8_13"
+    },
+    {
+     "id": "e18",
+     "kind": "region entered",
+     "day": 0.127,
+     "actor": "wolf-birch",
+     "target": "southwood",
+     "cell": "w_ridgemere_5_8",
+     "detail": "run"
+    },
+    {
+     "id": "e19",
+     "kind": "dialogue choice",
+     "day": 0.128,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_brisk_lakemere",
+     "detail": "lq_vine_fence"
+    },
+    {
+     "id": "e20",
+     "kind": "hour",
+     "day": 1.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e21",
+     "kind": "hour",
+     "day": 2.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e22",
+     "kind": "hour",
+     "day": 3.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e23",
+     "kind": "hour",
+     "day": 4.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e24",
+     "kind": "hour",
+     "day": 5.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e25",
+     "kind": "hour",
+     "day": 6.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e26",
+     "kind": "hour",
+     "day": 7.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e27",
+     "kind": "hour",
+     "day": 8.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e28",
+     "kind": "hour",
+     "day": 8.06,
+     "detail": "2",
+     "quantity": 2
+    },
+    {
+     "id": "e29",
+     "kind": "quest accepted",
+     "day": 8.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "vines_cure"
+    },
+    {
+     "id": "e30",
+     "kind": "dialogue choice",
+     "day": 8.100999999999999,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "lq_vine_cure"
+    },
+    {
+     "id": "e31",
+     "kind": "quest accepted",
+     "day": 8.102,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "vines_cure"
+    },
+    {
+     "id": "e32",
+     "kind": "dialogue choice",
+     "day": 8.103,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "lq_vine_cure"
+    },
+    {
+     "id": "e33",
+     "kind": "forage",
+     "day": 8.12,
+     "actor": "wolf-ash",
+     "item": "oak_bark",
+     "quantity": 3,
+     "cell": "w_ridgemere_5_8",
+     "detail": "woodland"
+    },
+    {
+     "id": "e34",
+     "kind": "gift",
+     "day": 8.129999999999999,
+     "actor": "wolf-ash",
+     "target": "tn_oh_harl_oakbough",
+     "item": "oak_bark",
+     "quantity": 3,
+     "cell": "w_ridgemere_8_13"
+    },
+    {
+     "id": "e35",
+     "kind": "gift",
+     "day": 8.139999999999999,
+     "actor": "wolf-ash",
+     "target": "tn_oh_harl_oakbough",
+     "item": "lime",
+     "quantity": 2,
+     "cell": "w_ridgemere_8_13"
+    },
+    {
+     "id": "e36",
+     "kind": "day begins",
+     "day": 11.3,
+     "detail": "Stoneday",
+     "item": "autumn",
+     "quantity": 12
+    },
+    {
+     "id": "e37",
+     "kind": "forage",
+     "day": 11.399999999999999,
+     "actor": "wolf-birch",
+     "item": "oak_bark",
+     "quantity": 3,
+     "cell": "w_ridgemere_5_8",
+     "detail": "woodland"
+    },
+    {
+     "id": "e38",
+     "kind": "gift",
+     "day": 11.41,
+     "actor": "wolf-birch",
+     "target": "tn_oh_harl_oakbough",
+     "item": "oak_bark",
+     "quantity": 3,
+     "cell": "w_ridgemere_8_13"
+    },
+    {
+     "id": "e39",
+     "kind": "gift",
+     "day": 11.42,
+     "actor": "wolf-birch",
+     "target": "tn_oh_harl_oakbough",
+     "item": "lime",
+     "quantity": 2,
+     "cell": "w_ridgemere_8_13"
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_lost"
+   ],
+   "expectQuests": {
+    "vines_cure": {
+     "wolf-ash": "done",
+     "wolf-birch": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_vines": "lost",
+     "nh_realm": 16
+    },
+    "story": {
+     "t_cure": 2,
+     "cure_hands": 2
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:southmeadow": 2000
+    }
+   }
+  },
+  {
+   "name": "Nobody takes a road: the reckoning burns the rows (the default)",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.1,
+     "detail": "Dawnday",
+     "item": "autumn",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 0.111,
+     "actor": "wolf-ash",
+     "target": "rows",
+     "cell": "w_ridgemere_9_12",
+     "detail": "run"
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 0.112,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_aster_cornley",
+     "detail": "lq_vine_bees"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 0.113,
+     "actor": "wolf-ash",
+     "target": "cty_sloe_harvestby",
+     "item": "wood_ash",
+     "quantity": 2,
+     "cell": "w_ridgemere_9_12"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.114,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 0.115,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "boar"
+    },
+    {
+     "id": "e7h1",
+     "kind": "hunted",
+     "day": 0.1152,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e7h2",
+     "kind": "hunted",
+     "day": 0.1154,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e8",
+     "kind": "conversation",
+     "day": 0.116,
+     "actor": "wolf-ash",
+     "target": "tn_oh_harl_oakbough",
+     "cell": "w_ridgemere_8_13"
+    },
+    {
+     "id": "e9",
+     "kind": "region entered",
+     "day": 0.117,
+     "actor": "wolf-ash",
+     "target": "southwood",
+     "cell": "w_ridgemere_5_8",
+     "detail": "run"
+    },
+    {
+     "id": "e10",
+     "kind": "dialogue choice",
+     "day": 0.118,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_brisk_lakemere",
+     "detail": "lq_vine_fence"
+    },
+    {
+     "id": "e11",
+     "kind": "hour",
+     "day": 1.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "hour",
+     "day": 2.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e13",
+     "kind": "hour",
+     "day": 3.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e14",
+     "kind": "hour",
+     "day": 4.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e15",
+     "kind": "hour",
+     "day": 5.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e16",
+     "kind": "hour",
+     "day": 6.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e17",
+     "kind": "hour",
+     "day": 7.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "hour",
+     "day": 8.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e19",
+     "kind": "hour",
+     "day": 8.06,
+     "detail": "2",
+     "quantity": 2
+    },
+    {
+     "id": "e20",
+     "kind": "day begins",
+     "day": 14.3,
+     "detail": "Restday",
+     "item": "autumn",
+     "quantity": 15
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_burned"
+   ],
+   "expectQuests": {
+    "vines_burn": {
+     "wolf-ash": "none"
+    },
+    "vines_cure": {
+     "wolf-ash": "none"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_vines": "burned"
+    },
+    "story": {
+     "t_burn": 0,
+     "t_cure": 0
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:southmeadow": 2000
+    }
+   }
+  },
+  {
+   "name": "A tie goes to burning, and a wolf may take only one road",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.1,
+     "detail": "Dawnday",
+     "item": "autumn",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 0.111,
+     "actor": "wolf-ash",
+     "target": "rows",
+     "cell": "w_ridgemere_9_12",
+     "detail": "run"
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 0.112,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_aster_cornley",
+     "detail": "lq_vine_bees"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 0.113,
+     "actor": "wolf-ash",
+     "target": "cty_sloe_harvestby",
+     "item": "wood_ash",
+     "quantity": 2,
+     "cell": "w_ridgemere_9_12"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.114,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 0.115,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "boar"
+    },
+    {
+     "id": "e7h1",
+     "kind": "hunted",
+     "day": 0.1152,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e7h2",
+     "kind": "hunted",
+     "day": 0.1154,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e8",
+     "kind": "conversation",
+     "day": 0.116,
+     "actor": "wolf-ash",
+     "target": "tn_oh_harl_oakbough",
+     "cell": "w_ridgemere_8_13"
+    },
+    {
+     "id": "e9",
+     "kind": "region entered",
+     "day": 0.117,
+     "actor": "wolf-ash",
+     "target": "southwood",
+     "cell": "w_ridgemere_5_8",
+     "detail": "run"
+    },
+    {
+     "id": "e10",
+     "kind": "dialogue choice",
+     "day": 0.118,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_brisk_lakemere",
+     "detail": "lq_vine_fence"
+    },
+    {
+     "id": "e11",
+     "kind": "quest accepted",
+     "day": 0.12000000000000001,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e12",
+     "kind": "region entered",
+     "day": 0.12100000000000001,
+     "actor": "wolf-birch",
+     "target": "rows",
+     "cell": "w_ridgemere_9_12",
+     "detail": "run"
+    },
+    {
+     "id": "e13",
+     "kind": "dialogue choice",
+     "day": 0.12200000000000001,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_aster_cornley",
+     "detail": "lq_vine_bees"
+    },
+    {
+     "id": "e14",
+     "kind": "gift",
+     "day": 0.12300000000000001,
+     "actor": "wolf-birch",
+     "target": "cty_sloe_harvestby",
+     "item": "wood_ash",
+     "quantity": 2,
+     "cell": "w_ridgemere_9_12"
+    },
+    {
+     "id": "e15",
+     "kind": "quest handed in",
+     "day": 0.12400000000000001,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e16",
+     "kind": "quest accepted",
+     "day": 0.125,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "boar"
+    },
+    {
+     "id": "e17",
+     "kind": "conversation",
+     "day": 0.126,
+     "actor": "wolf-birch",
+     "target": "tn_oh_harl_oakbough",
+     "cell": "w_ridgemere_8_13"
+    },
+    {
+     "id": "e18",
+     "kind": "region entered",
+     "day": 0.127,
+     "actor": "wolf-birch",
+     "target": "southwood",
+     "cell": "w_ridgemere_5_8",
+     "detail": "run"
+    },
+    {
+     "id": "e19",
+     "kind": "dialogue choice",
+     "day": 0.128,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_brisk_lakemere",
+     "detail": "lq_vine_fence"
+    },
+    {
+     "id": "e20",
+     "kind": "hour",
+     "day": 1.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e21",
+     "kind": "hour",
+     "day": 2.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e22",
+     "kind": "hour",
+     "day": 3.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e23",
+     "kind": "hour",
+     "day": 4.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e24",
+     "kind": "hour",
+     "day": 5.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e25",
+     "kind": "hour",
+     "day": 6.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e26",
+     "kind": "hour",
+     "day": 7.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e27",
+     "kind": "hour",
+     "day": 8.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    },
+    {
+     "id": "e28",
+     "kind": "hour",
+     "day": 8.06,
+     "detail": "2",
+     "quantity": 2
+    },
+    {
+     "id": "e29",
+     "kind": "quest accepted",
+     "day": 8.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "vines_burn"
+    },
+    {
+     "id": "e30",
+     "kind": "quest accepted",
+     "day": 8.11,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "vines_cure"
+    },
+    {
+     "id": "e31",
+     "kind": "quest accepted",
+     "day": 8.12,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "vines_burn"
+    },
+    {
+     "id": "e32",
+     "kind": "day begins",
+     "day": 11.3,
+     "detail": "Stoneday",
+     "item": "autumn",
+     "quantity": 12
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_burned"
+   ],
+   "expectQuests": {
+    "vines_burn": {
+     "wolf-ash": "active",
+     "wolf-birch": "failed"
+    },
+    "vines_cure": {
+     "wolf-birch": "active"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_vines": "burned"
+    },
+    "story": {
+     "t_burn": 1,
+     "t_cure": 1
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:southmeadow": 2000
+    }
+   }
+  },
+  {
+   "name": "A party of four hunts the boar: the Southmeadow store's day cap pays the fourth in bread",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "rows",
+     "cell": "w_ridgemere_9_12",
+     "detail": "run"
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 0.12,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_aster_cornley",
+     "detail": "lq_vine_bees"
+    },
+    {
+     "id": "e4",
+     "kind": "gift",
+     "day": 0.13,
+     "actor": "wolf-ash",
+     "target": "cty_sloe_harvestby",
+     "item": "wood_ash",
+     "quantity": 1,
+     "cell": "w_ridgemere_9_12"
+    },
+    {
+     "id": "e5",
+     "kind": "gift again",
+     "day": 0.14,
+     "actor": "wolf-ash",
+     "target": "cty_sloe_harvestby",
+     "item": "wood_ash",
+     "quantity": 1,
+     "cell": "w_ridgemere_9_12"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.15,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_sloe_harvestby",
+     "detail": "leaves"
+    },
+    {
+     "id": "e7",
+     "kind": "party joined",
+     "day": 0.16,
+     "actor": "wolf-ash",
+     "target": "p1"
+    },
+    {
+     "id": "e8",
+     "kind": "party joined",
+     "day": 0.16,
+     "actor": "wolf-birch",
+     "target": "p1"
+    },
+    {
+     "id": "e9",
+     "kind": "party joined",
+     "day": 0.16,
+     "actor": "wolf-cedar",
+     "target": "p1"
+    },
+    {
+     "id": "e10",
+     "kind": "party joined",
+     "day": 0.16,
+     "actor": "wolf-dunn",
+     "target": "p1"
+    },
+    {
+     "id": "e11",
+     "kind": "quest accepted",
+     "day": 0.17,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "boar"
+    },
+    {
+     "id": "e11h1",
+     "kind": "hunted",
+     "day": 0.1702,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e12",
+     "kind": "conversation",
+     "day": 0.18,
+     "actor": "wolf-birch",
+     "target": "tn_oh_harl_oakbough",
+     "cell": "w_ridgemere_8_13"
+    },
+    {
+     "id": "e13",
+     "kind": "region entered",
+     "day": 0.19,
+     "actor": "wolf-cedar",
+     "target": "southwood",
+     "cell": "w_ridgemere_5_8",
+     "detail": "run"
+    },
+    {
+     "id": "e14",
+     "kind": "dialogue choice",
+     "day": 0.2,
+     "actor": "wolf-dunn",
+     "target": "run",
+     "item": "cty_brisk_lakemere",
+     "detail": "lq_vine_fence"
+    },
+    {
+     "id": "e15",
+     "kind": "hunted",
+     "day": 0.3,
+     "actor": "wolf-birch",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 2
+    },
+    {
+     "id": "e16",
+     "kind": "hour",
+     "day": 1.04,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-cedar": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       },
+       "wolf-dunn": {
+        "cell": "w_ridgemere_9_12",
+        "x": 100,
+        "y": 100
+       }
+      }
+     }
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "boar": {
+     "party:p1": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "coin_southmeadow_day": 18
+    },
+    "player": {
+     "wolf-ash": {
+      "lq_coin": 6,
+      "lq_thin": false
+     },
+     "wolf-dunn": {
+      "lq_coin": 0,
+      "lq_thin": true
+     }
+    },
+    "story": {
+     "rows_kept": 6,
+     "goal": 16
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:southmeadow": 2000
+    }
+   }
+  }
+ ]
+}

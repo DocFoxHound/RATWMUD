@@ -449,7 +449,7 @@ Result World::completeContract(const std::string& contractId, const std::string&
         {
             if (c.kind == "bounty")
                 for (auto& camp : roads_.camps)
-                    if (camp.id == c.target)
+                    if (camp.id == c.target && !storyFoeCamp(camp.id))   // (A story's foe is never cleared so.)
                         camp.active = false;
             settleContract(c, "done", by);
             return {true, "Done: " + c.detail + ".", c.id};
@@ -612,6 +612,35 @@ void World::forgetClaim(const std::string& claim)
 {
     for (auto& [holder, mine] : beliefs_)
         mine.erase(std::remove_if(mine.begin(), mine.end(), [&](const Belief& b) { return b.claim == claim; }), mine.end());
+}
+
+int World::doubt(const std::string& subject, const std::string& kind, const std::string& town, int share)
+{
+    const double keep = 1.0 - std::clamp(share, 0, 100) / 100.0;
+    int touched = 0;
+    for (auto it = beliefs_.begin(); it != beliefs_.end();)
+    {
+        auto& [holder, mine] = *it;
+        if (!town.empty())
+        {
+            // (A holder of the town: a resident by their home, anyone else by where they are.)
+            const auto* life = society().resident(holder);
+            const auto* e = entity(holder);
+            const auto cell = life && !life->homeCell.empty() ? life->homeCell : e ? e->cellId : std::string();
+            if (cell.empty() || townIdOf(cell) != town)
+            {
+                ++it;
+                continue;
+            }
+        }
+        for (auto& b : mine)
+            if (b.subject == subject && b.kind == kind)
+                b.confidence *= keep, ++touched;
+        mine.erase(std::remove_if(mine.begin(), mine.end(), [&](const Belief& b) { return b.subject == subject && b.kind == kind && b.confidence <= .05; }),
+                   mine.end());
+        ++it;
+    }
+    return touched;
 }
 
 const std::vector<Belief>* World::beliefsOf(const std::string& holder) const
@@ -1003,8 +1032,8 @@ void World::caravanEntered(Caravan& c, const Entity& wagon)
     for (auto& camp : roads_.camps)
     {
         // A camp that has just robbed someone lies low with its loot for a couple of days.
-        if (!camp.active || camp.cell != cellId || calendarDays_ - camp.lastRaid < 2)
-            continue;
+        if (!camp.active || camp.cell != cellId || calendarDays_ - camp.lastRaid < 2 || storyFoeCamp(camp.id))
+            continue;                               // (Doc 86, C10: a story's foe robs no wagon.)
         // Hungrier and stronger bandits are bolder; guards, and the carters' own caution, keep them off. Escorts
         // count only if they are there.
         int guards = c.guards;
@@ -1425,8 +1454,8 @@ void World::roadsDaily()
     // Bandits: hunger grows; starving camps dwindle and scatter; where a road has none, some gather now and then.
     for (auto& camp : roads_.camps)
     {
-        if (!camp.active)
-            continue;
+        if (!camp.active || storyFoeCamp(camp.id))
+            continue;                               // (Doc 86, C10: a story's foe never hungers, scatters or is capped.)
         camp.hunger = std::min(100.0, camp.hunger + 8);
         if (camp.hunger >= 100)
             camp.strength -= .5;
@@ -1441,7 +1470,8 @@ void World::roadsDaily()
     // camp's strength is capped by the world's rule: D14.)
     const double strongest = std::clamp(double(society_.rule("campStrengthMost")), 2.0, 20.0);
     for (auto& camp : roads_.camps)
-        camp.strength = std::min(camp.strength, strongest);
+        if (!storyFoeCamp(camp.id))
+            camp.strength = std::min(camp.strength, strongest);
     if (today % 7 == 0)
         for (std::size_t r = 0; r < roadRoutes_.size(); ++r)
         {
@@ -1450,7 +1480,7 @@ void World::roadsDaily()
                 if (!marketIndex_.count(cellId))
                     wild.push_back(cellId);
             const bool held = std::any_of(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& b) {
-                return b.active && std::find(wild.begin(), wild.end(), b.cell) != wild.end();
+                return b.active && !storyFoeCamp(b.id) && std::find(wild.begin(), wild.end(), b.cell) != wild.end();
             });
             const auto* farTown = roadMarketOf(roadRoutes_[r].back());
             const std::string far = farTown ? farTown->id : std::string();
@@ -1458,7 +1488,7 @@ void World::roadsDaily()
                 continue;
             const auto& cellId = wild[roll(far + std::to_string(r), today) % wild.size()];
             if (std::any_of(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& b) { return b.cell == cellId && b.active; }))
-                continue;
+                continue;                           // (A story's foe there too: none gathers beside it, and it is never erased.)
             if (!campMayGather(cellId))
                 continue;                           // (No camp gathers within two cells of a watch post: doc 57.)
             roads_.camps.erase(std::remove_if(roads_.camps.begin(), roads_.camps.end(),
@@ -1475,6 +1505,8 @@ void World::roadsDaily()
             continue;
         auto camp = std::find_if(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& b) { return b.id == k.target; });
         const auto* town = roadMarket(k.town);
+        if (camp != roads_.camps.end() && storyFoeCamp(camp->id))
+            continue;                               // (Doc 86, C10: the Watch never goes out after a story's foe.)
         if (camp == roads_.camps.end() || !camp->active)
         {
             settleContract(k, k.status == "taken" ? "expired" : "done", std::string());
@@ -1544,10 +1576,15 @@ void World::roadsDaily()
 BanditCamp* World::campOf(const std::string& banditId)
 {
     const auto f = folk_.find(banditId);
-    if (f == folk_.end() || f->second.kind != "bandit")
+    // (Doc 86, C10: a story's foe and its band are a camp's too; so is a resident made a foe, while they are one.)
+    std::string of = f != folk_.end() && (f->second.kind == "bandit" || f->second.kind == "foe") ? f->second.of : std::string();
+    if (of.empty() && f == folk_.end() && !storyFoes_.empty())
+        if (const auto* foe = storyFoeOf(banditId))
+            of = foe->spec.camp;
+    if (of.empty())
         return nullptr;
     for (auto& camp : roads_.camps)
-        if (camp.id == f->second.of)
+        if (camp.id == of)
             return &camp;
     return nullptr;
 }
@@ -1573,8 +1610,51 @@ void World::endEncounter(const std::string& camp, double spareFor)
             ++it;
 }
 
-Result World::callBandits(const std::string& near, int count)
+// Doc 86, L2: a story camp's name (camp: "nh_alder_mere", the camp camp_story_nh_alder_mere). A name the story gives is
+// lower-case letters, digits and _, 3 to 30.
+static bool storyCampName(const std::string& name)
 {
+    return name.size() >= 3 && name.size() <= 30 &&
+           std::all_of(name.begin(), name.end(), [](char c) { return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_'; });
+}
+
+// A named story camp: while it stands, a second spawn joins it (its strength grows, and it moves to the new ground while
+// none of its bandits stand in person); once it is cleared, the name is used again for a new camp of that id.
+Result World::namedStoryCamp(const std::string& name, const std::string& cellId, Vec2 at, int count, const std::string& near)
+{
+    const std::string id = "camp_story_" + name;
+    auto found = std::find_if(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& c) { return c.id == id; });
+    const bool standing = found != roads_.camps.end() && found->active && found->strength >= .5;
+    if (found == roads_.camps.end())
+    {
+        roads_.camps.push_back(BanditCamp{id, cellId, 3.0 * count, 50, -100, true});
+        found = roads_.camps.end() - 1;
+    }
+    else if (standing)
+    {
+        const bool inPerson = std::any_of(folk_.begin(), folk_.end(), [&](const auto& f) { return f.second.kind == "bandit" && f.second.of == id; });
+        found->strength = std::min(20.0, found->strength + 3.0 * count);
+        if (!inPerson)
+        {
+            found->cell = cellId;
+            found->x = at.x;
+            found->y = at.y;
+        }
+        recordEvent({"bandits called", "dungeon master", near.empty() ? id : near, found->cell, 0, 0, {}, count, 0, id, int(found->x), int(found->y)});
+        return {true, "More bandits join the camp.", id};
+    }
+    else
+        *found = BanditCamp{id, cellId, 3.0 * count, 50, -100, true};
+    found->x = at.x;
+    found->y = at.y;
+    recordEvent({"bandits called", "dungeon master", near.empty() ? id : near, cellId, 0, 0, {}, count, 0, id, int(at.x), int(at.y)});
+    return {true, "A bandit camp gathers.", id};
+}
+
+Result World::callBandits(const std::string& near, int count, const std::string& name)
+{
+    if (!name.empty() && !storyCampName(name))
+        return {false, "A camp's name is 3 to 30 small letters, digits and _.", near};
     const auto* e = entity(near);
     if (!e || e->dead)
         return {false, "No such character.", near};
@@ -1592,6 +1672,13 @@ Result World::callBandits(const std::string& near, int count)
         }
     if (spot.x < 0)
         return {false, "There is no open ground near them for a camp.", near};
+    if (!name.empty())
+    {
+        auto r = namedStoryCamp(name, e->cellId, spot, count, near);
+        if (r.ok)
+            r.message = std::to_string(count) + (count == 1 ? " bandit gathers" : " bandits gather") + " a few strides from " + e->name + ".";
+        return r;
+    }
     int n = 0;
     for (const auto& c : roads_.camps)
         n += c.id.rfind("camp_dm_", 0) == 0;
@@ -1605,8 +1692,10 @@ Result World::callBandits(const std::string& near, int count)
 }
 
 // A scene's authored camp has an exact footprint, even when it first appears after a reload.
-Result World::storyBandits(const std::string& cellId, int x1, int y1, int x2, int y2, int count)
+Result World::storyBandits(const std::string& cellId, int x1, int y1, int x2, int y2, int count, const std::string& name)
 {
+    if (!name.empty() && !storyCampName(name))
+        return {false, "A camp's name is 3 to 30 small letters, digits and _.", cellId};
     if (!ensureLoaded(cellId).ok)
         return {false, "The camp's cell is unavailable.", cellId};
     const auto* c = cell(cellId);
@@ -1618,6 +1707,8 @@ Result World::storyBandits(const std::string& cellId, int x1, int y1, int x2, in
             const Vec2 at{x + .5, y + .5};
             if (!standable(cellId, at) || nearPortal(cellId, at, 1))
                 continue;
+            if (!name.empty())
+                return namedStoryCamp(name, cellId, at, count, {});
             const auto index = roads_.camps.size() + 1;
             std::string id = "camp_story_" + std::to_string(index);
             std::size_t next = index;
@@ -1637,13 +1728,13 @@ bool World::hostile(const std::string& id) const
 {
     const auto f = folk_.find(id);
     const auto* e = entity(id);
-    return f != folk_.end() && f->second.kind == "bandit" && e && !e->dead && e->downedLeft <= 0;
+    return f != folk_.end() && (f->second.kind == "bandit" || f->second.kind == "foe") && e && !e->dead && e->downedLeft <= 0;
 }
 
 std::int64_t World::banditDemand(const std::string& player) const
 {
     for (const auto& e : encounters_)
-        if (e.player == player && !e.creeping)       // (Creeping up, they haven't asked yet.)
+        if (e.player == player && !e.creeping && !storyFoeCamp(e.camp))   // (Creeping up, they haven't asked yet; a foe never asks.)
             return std::max<std::int64_t>(e.demand, e.fighting ? 1 : 0);
     return 0;
 }
@@ -1662,6 +1753,8 @@ std::vector<std::pair<std::string, std::string>> World::takeNotices(bool* moved,
 
 void World::tendCamp(BanditCamp& camp, const std::set<std::string>& stage)
 {
+    if (storyFoeCamp(camp.id))
+        return;                                     // (Doc 86, C10: a story's foe is in person while it lasts: tendStoryFoes.)
     std::vector<std::string> mine;
     for (const auto& [id, f] : folk_)
         if (f.kind == "bandit" && f.of == camp.id)
@@ -2068,7 +2161,7 @@ Result World::payBandits(const std::string& player, const std::string& bandit)
     if (!p || p->npc || p->dead)
         return {false, "No such character.", {}};
     auto* enc = encounterWith(player);
-    if (!camp || !enc || enc->camp != camp->id)
+    if (!camp || !enc || enc->camp != camp->id || storyFoeCamp(camp->id))   // (Doc 86, C10: a story's foe is not paid off.)
         return {false, "Nobody is asking you for anything.", bandit};
     const auto* purse = society_.account(player);
     const std::int64_t cash = purse ? purse->cash : 0;

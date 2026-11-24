@@ -69,3 +69,41 @@ class SceneAuthorTests(unittest.TestCase):
         effect['scene'] = 'missing'
         with self.assertRaisesRegex(ValueError, 'embedded scene'):
             rules.validate(p)
+
+
+class StrangersInScenes(unittest.TestCase):
+    """Doc 86, T3: a scene's cast may name a stranger the same story brings (visitor.add), beside residents and selectors."""
+
+    def setUp(self):
+        self.scene = copy.deepcopy(scenes.examples()['greyfen-oath'])
+
+    def test_the_cast_form(self):
+        role = self.scene['cast'][0]
+        stranger = {'id': role['id'], 'visitor': 'grey-captain'}
+        self.scene['cast'][0] = stranger
+        scenes.validate(self.scene)
+        for bad, words in [({**stranger, 'npc': 'rm111'}, 'a resident, a cast selector or a stranger'),
+                           ({'id': role['id']}, 'a resident, a cast selector or a stranger'),
+                           ({**stranger, 'visitor': 'GC'}, "stranger's id")]:
+            with self.subTest(bad=bad):
+                self.scene['cast'][0] = bad
+                self.assertRaisesRegex(ValueError, words, scenes.validate, self.scene)
+
+    def test_the_stranger_is_one_the_story_brings(self):
+        self.scene['cast'][0] = {'id': self.scene['cast'][0]['id'], 'visitor': 'grey-captain'}
+        p = scenes.wrap(self.scene, 'player-ash')
+        with self.assertRaisesRegex(ValueError, 'the stranger grey-captain .* is one the story brings'):
+            rules.validate(p)
+        bring = {'kind': 'visitor.add', 'visitor': 'grey-captain', 'name': 'The Grey Captain', 'cell': 'grey', 'x': 3, 'y': 3, 'minutes': 60}
+        playing = next(ph for ph in p['phases'] if any(e.get('kind') == 'scene.play' for e in ph['effects']))
+        playing['effects'].insert(0, bring)
+        rules.validate(p)
+        self.assertFalse([w for w in rules.program_warnings(p) if 'later phase' in w['text']])
+        # (Brought only in a later phase than the one the scene plays in: a warning, the scene fails there.)
+        playing['effects'].remove(bring)
+        complete = next(ph for ph in p['phases'] if ph['id'] == 'complete')
+        complete['effects'].append(bring)
+        rules.validate(p)
+        warned = [w for w in rules.program_warnings(p) if 'later phase' in w['text']]
+        self.assertEqual(len(warned), 1, warned)
+        self.assertIn('grey-captain', warned[0]['text'])

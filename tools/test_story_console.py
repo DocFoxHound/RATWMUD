@@ -31,6 +31,78 @@ def admin(dbname):
                            user=s.get('POSTGRES_USER', 'postgres'), password=s.get('POSTGRES_PASSWORD', ''), connect_timeout=3)
 
 
+# ----- Doc 86, Phase 1a: a chapter paced by readiness (R2), for the runner's, steering's, explain's, the campaigns' and the
+# console's tests (tools/test_story_v2_runner.py and the others), on the throwaway database.
+MUSTER = [f'player-m{i:02d}' for i in range(16)]
+
+
+def ready_program(auto=False, then=None, slow=None, after=None, minimum=2, story_id='v2-ready', ending=None):
+    """A chapter of 16 wolves: it is ready when 35% of the active ones (at least 3) brought rope, and `minimum` days have
+    passed in the phase."""
+    block = {'all': [{'participation': {'list': 'did'}, 'of': 'active', 'percent': 35, 'floor': 3, 'cap': 150,
+                      'label': 'Wolves who brought rope'},
+                     {'minDays': minimum, 'label': 'Days of the muster'}], 'auto': auto}
+    for key, value in (('then', then), ('slowAfterDays', slow), ('autoAfterDays', after)):
+        if value is not None:
+            block[key] = value
+    return {
+        'format': 'ratw-story-program', 'version': 2, 'id': story_id, 'title': 'The muster ' + story_id,
+        'audience': {'kind': 'players', 'players': MUSTER}, 'start': 'work',
+        'variables': [{'id': 'did', 'type': 'wolves', 'scope': 'story'}],
+        'phases': [{'id': 'work', 'journal': 'Bring rope to the muster.', 'effects': [], 'ready': block,
+                    'exits': [{'on': 'ready', 'to': 'done'}], 'triggers': [
+                        {'id': 'rope', 'on': 'gift', 'audience': 'participant', 'actions': [
+                            {'do': 'list add', 'var': 'did', 'value': {'field': 'actor'}}]}]},
+                   {'id': 'done', 'journal': 'The muster is done.', 'effects': [*(ending or [])], 'exits': []}],
+        'tests': [{'name': 'Ready, then Advance', 'cohort': MUSTER, 'events': [
+            *({'id': f'a{i}', 'kind': 'arrival', 'day': 0.1, 'actor': w} for i, w in enumerate(MUSTER[:4])),
+            *({'id': f'g{i}', 'kind': 'gift', 'day': 0.5, 'actor': w, 'item': 'rope'} for i, w in enumerate(MUSTER[:4])),
+            {'id': 'c', 'kind': 'clock', 'day': max(minimum, 0) + 0.5},
+            *([{'id': 'c2', 'kind': 'clock', 'day': minimum + after + 0.7}] if after else []),
+            *([{'advance': 'now'}] if not auto and not after else []),
+            *([{'id': 'd', 'kind': then['on'], 'day': minimum + (after or 0) + 1, 'detail': 'Restday'}] if then else []),
+        ], 'expect': ['work', 'done']}],
+    }
+
+
+class ReadyFixture:
+    """The muster's wolves in the throwaway world, and its runs."""
+
+    def add_wolves(self):
+        self.rewrite('SELECT 1')
+        self.conn.execute('RESET ROLE')
+        for w in MUSTER:
+            self.conn.execute('INSERT INTO game.characters(world_id,key,position,data) VALUES (%s,%s,1,%s::jsonb) ON CONFLICT DO NOTHING',
+                              (self.world, w, json.dumps({'name': 'Wolf ' + w[-2:]})))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+
+    def ready_launch(self, program, active=10, day=1):
+        self.add_wolves()
+        self.day(day)
+        for w in MUSTER[:active]:
+            self.fact('arrival', w, day=day)
+        self.examples = {**self.examples, program['id']: program}
+        self.launch(program['id'])
+        self.answer()
+        return self.run_id
+
+    def gifts(self, wolves, day):
+        for w in wolves:
+            self.fact('gift', w, 'rm111', day=day, item='rope', quantity=1)
+
+    def ready(self):
+        return self.state().get('ready') or {}
+
+    def alert_kinds(self):
+        return [a['kind'] for a in self.row()['alerts']]
+
+    def day(self, n):
+        self.rewrite(f"UPDATE game.checkpoints SET payload='{{\"calendarDays\":{n}}}' WHERE world_id='{self.world}'")
+
+    def state(self):
+        return runner.status(self.conn, self.world, self.run_id)['state']
+
+
 @unittest.skipUnless(database_available(), 'local PostgreSQL required')
 class ConsoleReads(unittest.TestCase):
     @classmethod
@@ -46,9 +118,11 @@ class ConsoleReads(unittest.TestCase):
             owner.execute('INSERT INTO world.worlds(id,name) VALUES (%s,%s)', (cls.world, 'Test world'))
             owner.execute('INSERT INTO game.checkpoints(world_id,schema_version,revision,payload) VALUES (%s,1,1,%s)',
                           (cls.world, '{"calendarDays":10}'))
+            # (Placed, with a home: doc 86's V1 refuses a resident with no place in the world.)
+            owner.execute("INSERT INTO world.areas(world_id,id,kind) VALUES (%s,'fixture-homes','cell')", (cls.world,))
             for npc, name in RESIDENTS.items():
                 owner.execute("""INSERT INTO live.npcs(world_id,id,name,role,age,voice,appearance,hours_start,hours_end,
-                    home_x,home_y,work_x,work_y,evening_x,evening_y) VALUES (%s,%s,%s,'civilian',4,1,'{}',8,12,0,0,0,0,0,0)""",
+                    home_area,home_x,home_y,work_x,work_y,evening_x,evening_y) VALUES (%s,%s,%s,'civilian',4,1,'{}',8,12,'fixture-homes',0,0,0,0,0,0)""",
                               (cls.world, npc, name))
             for wolf, name in WOLVES.items():
                 owner.execute('INSERT INTO game.characters(world_id,key,position,data) VALUES (%s,%s,1,%s::jsonb)',
@@ -304,6 +378,99 @@ class ConsoleRoute(unittest.TestCase):
         for op in ('status', 'timeline'):
             status, data = self.call('/api/story-program', {'op': op, 'target': 'dev', 'run': self.run_id}, viewer)
             self.assertEqual(status, 403, data)
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL required')
+class ReadinessInTheConsole(ReadyFixture, unittest.TestCase):
+    """Doc 86, R3's server side: the overview and the run's detail carry its readiness; Advance through the route's
+    command lands in the audit."""
+    setUpClass = classmethod(ConsoleReads.setUpClass.__func__)
+    tearDownClass = classmethod(ConsoleReads.tearDownClass.__func__)
+    setUp = ConsoleReads.setUp
+    fact, launch, answer, tick, rewrite, row = (ConsoleReads.fact, ConsoleReads.launch, ConsoleReads.answer, ConsoleReads.tick,
+                                                ConsoleReads.rewrite, ConsoleReads.row)
+
+    def test_overview_and_detail_carry_ready_and_advance_is_audited(self):
+        self.ready_launch(ready_program(slow=6))
+        self.gifts(MUSTER[:4], 1)
+        self.day(3.1)
+        self.tick()
+        row = self.row()
+        self.assertEqual((row['ready']['met'], row['ready']['to'], row['ready']['activeDays']), (True, 'done', 18))
+        self.assertEqual([p['kind'] for p in row['ready']['parts']], ['participation', 'minDays'])
+        self.assertEqual(row['ready']['parts'][0]['audience'], {'all': 16, 'active': 10, 'online': None})
+        one = runner.status(self.conn, self.world, self.run_id)
+        self.assertEqual(one['ready']['metAt'], 3.1)
+        self.assertEqual([e['kind'] for e in one['readyLog']], ['ready'])
+        self.assertEqual(one['controls']['ready'], {'to': 'done', 'auto': False, 'then': None, 'thenWords': None, 'met': True})
+        sent = runner.command(self.conn, self.world, 'martin', {
+            'run': self.run_id, 'kind': 'advance', 'payload': {'when': 'now'}, 'reason': 'ready, and the admin agrees',
+            'key': secrets.token_hex(8), 'visit': one['visit'], 'digest': one['digest']})
+        self.tick()
+        self.assertEqual(self.conn.execute('SELECT status FROM dm.story_commands WHERE id=%s', (sent['id'],)).fetchone()[0], 'done')
+        audit = self.conn.execute("SELECT detail FROM dm.audit WHERE action='story.advance'").fetchone()[0]
+        self.assertIn('Advanced to done now (ready)', audit)
+        self.assertIn('ready, and the admin agrees', audit)
+
+
+class DirectedResidents(unittest.TestCase):
+    """The console's map marks the residents a run directs (doc 86's campaign check: a chapter protecting its cast with
+    npc.protect {"each": true} inside a For each made every status read of the run fail, "Malformed request")."""
+
+    def test_a_resident_given_by_an_operand_is_left_out_and_the_named_ones_kept(self):
+        program = ({
+            'format': 'ratw-story-program', 'version': 2, 'id': 'directed', 'title': 'Directed', 'audience': {'kind': 'open'},
+            'start': 'a', 'variables': [{'id': 'cast', 'type': 'residents', 'scope': 'story', 'initial': ['npc-1', 'npc-2']}],
+            'phases': [{'id': 'a', 'journal': 'A.', 'effects': [{'kind': 'npc.hold', 'npc': 'npc-3'}], 'exits': [],
+                        'triggers': [{'id': 't', 'on': 'clock', 'afterDays': 0.01, 'once': 'visit', 'actions': [
+                            {'do': 'each', 'over': 'list', 'list': 'cast', 'actions': [
+                                {'do': 'effect', 'effect': {'kind': 'npc.protect', 'npc': {'each': True}}}]}]}]}]})
+        self.assertEqual(runner.directed(program), ['npc-3'])
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL required')
+class HousePursesRoute(unittest.TestCase):
+    """Doc 86, M3 (review of Phase 9): the world switch for House purses through POST /api/story-program: read by a Dungeon
+    Master, turned on and off by the owner (or the studio's admin) alone, audited, and sent to the game as an order
+    dm.actions takes (story.house_purses: its kinds have no hyphen)."""
+
+    @classmethod
+    def setUpClass(cls):
+        ConsoleRoute.setUpClass.__func__(cls)
+        with admin(cls.name) as owner:
+            owner.execute('SET ROLE ratw_dm')
+            D.create_account(owner, 'camp-owner', 'owner', 'a long owner password')
+            D.create_account(owner, 'camp-admin', 'admin', 'a long admin password')
+            owner.execute('RESET ROLE')
+            owner.execute("INSERT INTO live.factions(world_id,id,name) VALUES (%s,'house_greatly','House Greatly'),(%s,'council','The Council')",
+                          (cls.world, cls.world))
+
+    tearDownClass = classmethod(ConsoleRoute.tearDownClass.__func__)
+    call, token = ConsoleRoute.call, ConsoleRoute.token
+
+    def test_the_owner_turns_house_purses_on_and_off(self):
+        dm = self.token('camp-dm', 'a long dm password')
+        status, state = self.call('/api/story-program', {'op': 'house-purses-state', 'target': 'dev'}, dm)
+        self.assertEqual(status, 200, state)
+        self.assertEqual((state['on'], state['houses']), (False, [{'id': 'house_greatly', 'name': 'House Greatly', 'purse': None}]))
+        status, refused = self.call('/api/story-program', {'op': 'house-purses', 'target': 'dev', 'on': True, 'reason': 'the check passed'}, dm)
+        self.assertEqual(status, 403, refused)
+        owner = self.token('camp-owner', 'a long owner password')
+        status, bad = self.call('/api/story-program', {'op': 'house-purses', 'target': 'dev', 'on': 'yes', 'reason': 'the check passed'}, owner)
+        self.assertEqual(status, 422, bad)
+        status, out = self.call('/api/story-program', {'op': 'house-purses', 'target': 'dev', 'on': True, 'reason': 'the check passed'}, owner)
+        self.assertEqual(status, 200, out)
+        self.assertEqual((out['on'], out['houses'], out['saved']), (True, ['house_greatly'], False))
+        with admin(self.name) as conn:
+            order = conn.execute('SELECT kind,target_id,requested_by FROM dm.actions WHERE id=%s', (out['receipt'],)).fetchone()
+            self.assertEqual(order, ('story.house_purses', 'on', 'camp-owner'))
+            audit = conn.execute("SELECT target,detail,who FROM dm.audit WHERE action='story.house-purses'").fetchall()
+            self.assertEqual(audit, [('on', 'House purses on. Reason: "the check passed"', 'camp-owner')])
+        admin_ = self.token('camp-admin', 'a long admin password')
+        status, out = self.call('/api/story-program', {'op': 'house-purses', 'target': 'dev', 'on': False, 'reason': 'not yet after all'}, admin_)
+        self.assertEqual(status, 200, out)
+        status, state = self.call('/api/story-program', {'op': 'house-purses-state', 'target': 'dev'}, dm)
+        self.assertEqual([a['on'] for a in state['audit']], [False, True], 'newest first')
 
 
 if __name__ == '__main__':

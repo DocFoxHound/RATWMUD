@@ -1,0 +1,5253 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "nh-pack.small.south",
+ "title": "Errands of the south",
+ "prefix": "sq",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "quietAfterHours": 0,
+ "variables": [
+  {
+   "id": "nh_stage",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The Ninth Howl chapter running (campaign 4.1); read only here, for Fallow's names in Ch 4-6."
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The realm's voice; every small deed here adds (campaign 4.1)."
+  },
+  {
+   "id": "nh_threat",
+   "type": "number",
+   "scope": "world",
+   "initial": 30,
+   "note": "The Grey Captain's grip on the roads; the hives' bounty lowers it."
+  },
+  {
+   "id": "nh_names",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The Book of Names; written only while nh_stage is 4 to 6."
+  },
+  {
+   "id": "nh_voice_larkfield",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Larkfield's strand of the realm's voice."
+  },
+  {
+   "id": "nh_voice_southmeadow",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Southmeadow's strand of the realm's voice."
+  },
+  {
+   "id": "nh_voice_fenshore",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Fenshore's strand of the realm's voice."
+  },
+  {
+   "id": "nh_voice_saltwell",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Saltwell's strand of the realm's voice."
+  },
+  {
+   "id": "coin_larkfield_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from this purse by every story (nh-purses resets it)."
+  },
+  {
+   "id": "coin_southmeadow_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from this purse by every story (nh-purses resets it)."
+  },
+  {
+   "id": "coin_fenshore_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from this purse by every story (nh-purses resets it)."
+  },
+  {
+   "id": "coin_saltwell_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from this purse by every story (nh-purses resets it)."
+  },
+  {
+   "id": "coin_larkfield_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "The purse is above its floor (nh-purses only; read here)."
+  },
+  {
+   "id": "coin_southmeadow_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "The purse is above its floor (nh-purses only; read here)."
+  },
+  {
+   "id": "coin_fenshore_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "The purse is above its floor (nh-purses only; read here)."
+  },
+  {
+   "id": "coin_saltwell_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "The purse is above its floor (nh-purses only; read here)."
+  },
+  {
+   "id": "sq_done",
+   "type": "number",
+   "scope": "player",
+   "show": "Errands for the south",
+   "note": "Small errands this wolf has done in the south."
+  },
+  {
+   "id": "sq_salt_given",
+   "type": "timer",
+   "scope": "player",
+   "note": "When the warrener last handed this wolf the two measures of salt: once a game day, so putting the errand aside and taking it again mints no more salt (cleared when the salt is delivered)."
+  },
+  {
+   "id": "sq_garlands",
+   "type": "number",
+   "scope": "story",
+   "show": "Garlands on the rope",
+   "note": "Bunches on the Southmeadow rope this festival."
+  },
+  {
+   "id": "sq_garland_goal",
+   "type": "number",
+   "scope": "story",
+   "initial": 6,
+   "note": "Bunches the rope needs: 6, and one more for each helper."
+  },
+  {
+   "id": "sq_garland_full",
+   "type": "switch",
+   "scope": "story",
+   "note": "The rope reached round the square this festival."
+  },
+  {
+   "id": "sq_helpers",
+   "type": "wolves",
+   "scope": "story",
+   "note": "Wolves who put green on the rope this festival."
+  },
+  {
+   "id": "sq_wagon_waiters",
+   "type": "wolves",
+   "scope": "story",
+   "note": "Wolves waiting at the Saltwell well for a caravan."
+  }
+ ],
+ "regions": [
+  {
+   "id": "sq_mirebridge_crossroads",
+   "cell": "w_ridgemere_5_11",
+   "x1": 183,
+   "y1": 47,
+   "x2": 193,
+   "y2": 57
+  },
+  {
+   "id": "sq_saltwell_well",
+   "cell": "w_ridgemere_12_11",
+   "x1": 210,
+   "y1": 106,
+   "x2": 230,
+   "y2": 126
+  },
+  {
+   "id": "sq_southmeadow_square",
+   "cell": "w_ridgemere_8_13",
+   "x1": 86,
+   "y1": 6,
+   "x2": 114,
+   "y2": 34
+  }
+ ],
+ "triggers": [
+  {
+   "id": "sq-festival-days",
+   "on": "day begins",
+   "note": "Days 40 to 46 of each season are Southmeadow's festival week (quests-small 1.6); the garland rope starts bare.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "phase is",
+        "phase": "open"
+       },
+       {
+        "test": "field",
+        "field": "quantity",
+        "op": ">=",
+        "value": 40
+       },
+       {
+        "test": "field",
+        "field": "quantity",
+        "op": "<=",
+        "value": 46
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "sq_garlands",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "sq_garland_goal",
+       "value": 6
+      },
+      {
+       "do": "turn off",
+       "var": "sq_garland_full"
+      },
+      {
+       "do": "list clear",
+       "var": "sq_helpers"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.tracker",
+        "shown": true,
+        "var": "sq_garlands"
+       }
+      },
+      {
+       "do": "enter",
+       "phase": "festival"
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "festival"
+         },
+         {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "field",
+            "field": "quantity",
+            "op": "<",
+            "value": 40
+           },
+           {
+            "test": "field",
+            "field": "quantity",
+            "op": ">",
+            "value": 46
+           }
+          ]
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.tracker",
+          "shown": false,
+          "var": "sq_garlands"
+         }
+        },
+        {
+         "do": "enter",
+         "phase": "open"
+        }
+       ]
+      },
+      {
+       "if": {
+        "test": "phase is",
+        "phase": "open"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.tracker",
+          "shown": false,
+          "var": "sq_garlands"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sq-feed-larkfield",
+   "on": "quest completed",
+   "audience": "participant",
+   "note": "A small deed for Larkfield: +3 to the realm's voice and the town's strand (distance weight).",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-plumtree-badger"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-swill-for-southwood"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-linen-for-the-press"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-mill-race"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 3
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_larkfield",
+     "value": 3
+    },
+    {
+     "do": "add",
+     "var": "sq_done",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "id": "sq-feed-southmeadow",
+   "on": "quest completed",
+   "audience": "participant",
+   "note": "A small deed for Southmeadow: +4 to the realm's voice and the town's strand (distance weight).",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-smoke-for-the-hives"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-hare-in-the-seed-rows"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-festival-garlands"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 4
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_southmeadow",
+     "value": 4
+    },
+    {
+     "do": "add",
+     "var": "sq_done",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "id": "sq-feed-fenshore",
+   "on": "quest completed",
+   "audience": "participant",
+   "note": "A small deed for Fenshore: +4 to the realm's voice and the town's strand (distance weight).",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-twine-for-the-nets"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-fenside-pans"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-mirebridge-clay"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-boardwalk-plank"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 4
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_fenshore",
+     "value": 4
+    },
+    {
+     "do": "add",
+     "var": "sq_done",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "id": "sq-feed-saltwell",
+   "on": "quest completed",
+   "audience": "participant",
+   "note": "A small deed for Saltwell: +4 to the realm's voice and the town's strand (distance weight).",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-salt-for-the-road"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-ochre-rabbits"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-caravan-welcome"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 4
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_saltwell",
+     "value": 4
+    },
+    {
+     "do": "add",
+     "var": "sq_done",
+     "value": 1
+    }
+   ]
+  },
+  {
+   "id": "sq-pay-larkfield-3",
+   "on": "quest completed",
+   "audience": "participant",
+   "note": "3 pennies from town:larkfield while its floor switch is on and today's story coin stays within 24 (decisions 3.2); otherwise two loaves.",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-plumtree-badger"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-linen-for-the-press"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-mill-race"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_larkfield_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_larkfield_day"
+        },
+        "op": "<=",
+        "right": 21
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:larkfield"
+        },
+        "op": ">=",
+        "right": 63
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          3,
+          {
+           "div": [
+            {
+             "purse": "town:larkfield"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:larkfield",
+        "reason": "Larkfield pays for an errand well done",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_larkfield_day",
+       "value": {
+        "min": [
+         3,
+         {
+          "div": [
+           {
+            "purse": "town:larkfield"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Larkfield's purse is thin today, so the errand is paid in bread.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sq-pay-larkfield-2",
+   "on": "quest completed",
+   "audience": "participant",
+   "note": "2 pennies from town:larkfield while its floor switch is on and today's story coin stays within 24 (decisions 3.2); otherwise two loaves.",
+   "if": {
+    "test": "field",
+    "field": "detail",
+    "op": "=",
+    "value": "sq-swill-for-southwood"
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_larkfield_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_larkfield_day"
+        },
+        "op": "<=",
+        "right": 22
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:larkfield"
+        },
+        "op": ">=",
+        "right": 62
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          2,
+          {
+           "div": [
+            {
+             "purse": "town:larkfield"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:larkfield",
+        "reason": "Larkfield pays for an errand well done",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_larkfield_day",
+       "value": {
+        "min": [
+         2,
+         {
+          "div": [
+           {
+            "purse": "town:larkfield"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Larkfield's purse is thin today, so the errand is paid in bread.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sq-pay-southmeadow-3",
+   "on": "quest completed",
+   "audience": "participant",
+   "note": "3 pennies from town:southmeadow while its floor switch is on and today's story coin stays within 23 (decisions 3.2); otherwise two loaves.",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-smoke-for-the-hives"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-hare-in-the-seed-rows"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-festival-garlands"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_southmeadow_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_southmeadow_day"
+        },
+        "op": "<=",
+        "right": 20
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:southmeadow"
+        },
+        "op": ">=",
+        "right": 63
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          3,
+          {
+           "div": [
+            {
+             "purse": "town:southmeadow"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:southmeadow",
+        "reason": "Southmeadow pays for an errand well done",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_southmeadow_day",
+       "value": {
+        "min": [
+         3,
+         {
+          "div": [
+           {
+            "purse": "town:southmeadow"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Southmeadow's purse is thin today, so the errand is paid in bread.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sq-pay-fenshore-3",
+   "on": "quest completed",
+   "audience": "participant",
+   "note": "3 pennies from town:fenshore while its floor switch is on and today's story coin stays within 21 (decisions 3.2); otherwise two loaves.",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-twine-for-the-nets"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-fenside-pans"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-mirebridge-clay"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-boardwalk-plank"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_fenshore_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_fenshore_day"
+        },
+        "op": "<=",
+        "right": 18
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:fenshore"
+        },
+        "op": ">=",
+        "right": 63
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          3,
+          {
+           "div": [
+            {
+             "purse": "town:fenshore"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:fenshore",
+        "reason": "Fenshore pays for an errand well done",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_fenshore_day",
+       "value": {
+        "min": [
+         3,
+         {
+          "div": [
+           {
+            "purse": "town:fenshore"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Fenshore's purse is thin today, so the errand is paid in bread.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sq-pay-saltwell-3",
+   "on": "quest completed",
+   "audience": "participant",
+   "note": "3 pennies from town:saltwell while its floor switch is on and today's story coin stays within 22 (decisions 3.2); otherwise two loaves.",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-salt-for-the-road"
+     },
+     {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-ochre-rabbits"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_saltwell_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_saltwell_day"
+        },
+        "op": "<=",
+        "right": 19
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:saltwell"
+        },
+        "op": ">=",
+        "right": 63
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          3,
+          {
+           "div": [
+            {
+             "purse": "town:saltwell"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:saltwell",
+        "reason": "Saltwell pays for an errand well done",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_saltwell_day",
+       "value": {
+        "min": [
+         3,
+         {
+          "div": [
+           {
+            "purse": "town:saltwell"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Saltwell's purse is thin today, so the errand is paid in bread.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sq-pay-saltwell-2",
+   "on": "quest completed",
+   "audience": "participant",
+   "note": "2 pennies from town:saltwell while its floor switch is on and today's story coin stays within 22 (decisions 3.2); otherwise two loaves.",
+   "if": {
+    "test": "field",
+    "field": "detail",
+    "op": "=",
+    "value": "sq-caravan-welcome"
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_saltwell_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_saltwell_day"
+        },
+        "op": "<=",
+        "right": 20
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:saltwell"
+        },
+        "op": ">=",
+        "right": 62
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          2,
+          {
+           "div": [
+            {
+             "purse": "town:saltwell"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:saltwell",
+        "reason": "Saltwell pays for an errand well done",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_saltwell_day",
+       "value": {
+        "min": [
+         2,
+         {
+          "div": [
+           {
+            "purse": "town:saltwell"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Saltwell's purse is thin today, so the errand is paid in bread.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-plumtree-badger",
+   "on": "quest completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-plumtree-badger"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "dug the badger out from under the Plumtree apple store",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-swill-for-southwood",
+   "on": "quest completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-swill-for-southwood"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "carried swill out to the Southwood pig yard",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-linen-for-the-press",
+   "on": "quest completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-linen-for-the-press"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "brought linen for the Larkfield paper vats",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-mill-race",
+   "on": "quest completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-mill-race"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "cleared the reeds from the Longmead mill race",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-smoke-for-the-hives",
+   "on": "quest completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-smoke-for-the-hives"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "brought smoker herbs for the Larkholm skeps",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-hare-in-the-seed-rows",
+   "on": "quest completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-hare-in-the-seed-rows"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "kept the hares off the Larkholm seed rows",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-hare-in-the-seed-rows-wager",
+   "on": "objective completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-hare-in-the-seed-rows",
+    "item": "wager"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "won the Larkholm miller's wager over the hares",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-festival-garlands",
+   "on": "quest completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-festival-garlands"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "hung garlands on the Southmeadow square for the festival",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-twine-for-the-nets",
+   "on": "quest completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-twine-for-the-nets"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "brought twine to mend the Dune warren's purse-nets",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-fenside-pans",
+   "on": "quest completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-fenside-pans"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "fired the Fenside salt pans",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-mirebridge-clay",
+   "on": "quest completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-mirebridge-clay"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "dug grey clay at the Mirebridge pits for the Fenshore kilns",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-mirebridge-clay-crossroads",
+   "on": "objective completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-mirebridge-clay",
+    "item": "crossroads"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "stood at the Mirebridge crossroads where the village was",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-boardwalk-plank",
+   "on": "quest completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-boardwalk-plank"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "mended the Fenshore boardwalk by the Heron",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-boardwalk-plank-hop",
+   "on": "objective completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-boardwalk-plank",
+    "item": "hop"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "blinked across the gap in the Fenshore boardwalk with a Gift",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-salt-for-the-road",
+   "on": "quest completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-salt-for-the-road"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "carried Saltpan salt across the white to the Saltwell stores",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-ochre-rabbits",
+   "on": "quest completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-ochre-rabbits"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "kept the rabbits off the Ochre vines",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-caravan-welcome",
+   "on": "quest completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-caravan-welcome"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "welcomed a caravan in at the Saltwell well",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-deed-caravan-welcome-dowse",
+   "on": "objective completed",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-caravan-welcome",
+    "item": "dowse"
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "deed.award",
+      "player": "$actor",
+      "detail": "dowsed the old wells of Saltwell",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "sq-hives-bounty",
+   "on": "objective completed",
+   "audience": "participant",
+   "match": {
+    "detail": "sq-smoke-for-the-hives",
+    "item": "bounty"
+   },
+   "note": "A bandit of the Sunfields camp down: nh_threat -1 (packs only lower it).",
+   "actions": [
+    {
+     "do": "subtract",
+     "var": "nh_threat",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "nh_threat",
+     "min": 0,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "sq-pans-names-offer",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "sq-fenside-pans"
+   },
+   "note": "While the Book of Names is open (Ch 4-6), the peat cutter has the drowned village's names for the wolf.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "nh_stage"
+        },
+        "op": ">=",
+        "right": 4
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "nh_stage"
+        },
+        "op": "<=",
+        "right": 6
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_oh_briar_greenshaw",
+        "id": "sq-fallow-names",
+        "words": "Whose names did the water take?",
+        "reply": "The salt workers at Fenside say them over the pans every Restday: the ferry wolf, the trapper by the causeway, the pup who rang the bell. Carry them to whoever keeps the Book of Names. Somebody ought to.",
+        "player": "$actor",
+        "once": true
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sq-pans-names-heard",
+   "on": "dialogue choice",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "detail": "sq-fallow-names"
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "nh_stage"
+        },
+        "op": ">=",
+        "right": 4
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "nh_stage"
+        },
+        "op": "<=",
+        "right": 6
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "add",
+       "var": "nh_names",
+       "value": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sq-salt-handed",
+   "on": "quest accepted",
+   "audience": "participant",
+   "match": {
+    "detail": "sq-salt-for-the-road"
+   },
+   "note": "The warrener hands over two measures of salt, once a game day a wolf, or again once the last two reached the stores.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "compare",
+       "left": {
+        "since": "sq_salt_given"
+       },
+       "op": "<",
+       "right": 1
+      }
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "salt",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "start timer",
+       "var": "sq_salt_given"
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "You had today's salt from the warrener already. Carry two measures to the Saltwell storekeeper, the ones you were given or your own."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sq-salt-delivered",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "sq-salt-for-the-road"
+   },
+   "note": "The salt reached the stores: tomorrow's errand comes with salt again.",
+   "actions": [
+    {
+     "do": "stop timer",
+     "var": "sq_salt_given"
+    }
+   ]
+  },
+  {
+   "id": "sq-wagons-wait",
+   "on": "quest accepted",
+   "audience": "participant",
+   "match": {
+    "detail": "sq-caravan-welcome"
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "in list",
+       "list": "sq_wagon_waiters",
+       "value": {
+        "field": "actor"
+       }
+      }
+     },
+     "then": [
+      {
+       "do": "list add",
+       "var": "sq_wagon_waiters",
+       "value": {
+        "field": "actor"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sq-wagons-met",
+   "on": "objective completed",
+   "audience": "participant",
+   "match": {
+    "detail": "sq-caravan-welcome",
+    "item": "welcome"
+   },
+   "actions": [
+    {
+     "do": "list remove",
+     "var": "sq_wagon_waiters",
+     "value": {
+      "field": "actor"
+     }
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "Larkfield, Southmeadow, Fenshore and Saltwell have errands going: ask their folk, or read the town boards.",
+   "effects": [
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_grain_lark_granary_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_grain_lark_mill_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_warren_dunes_rabbitry_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_warren_waste_rabbitry_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_vineyard_ochre_press_door_a",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "southmeadow",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "saltwell",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "sq-wagons-arrive",
+     "on": "caravan arrives",
+     "match": {
+      "target": "saltwell"
+     },
+     "note": "A wagon reaches the Saltwell market: every waiting wolf standing at the well has met it.",
+     "actions": [
+      {
+       "do": "each",
+       "over": "list",
+       "list": "sq_wagon_waiters",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "quest is",
+            "quest": "sq-caravan-welcome",
+            "of": "$each",
+            "status": "active"
+           },
+           {
+            "test": "wolf in region",
+            "who": "$each",
+            "region": "sq_saltwell_well"
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "sq-caravan-welcome",
+            "objective": "welcome",
+            "player": "$each"
+           }
+          }
+         ]
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "not",
+          "condition": {
+           "test": "quest is",
+           "quest": "sq-caravan-welcome",
+           "of": "$each",
+           "status": "active"
+          }
+         },
+         "then": [
+          {
+           "do": "list remove",
+           "var": "sq_wagon_waiters",
+           "value": {
+            "each": true
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "sq-cart-arrives",
+     "on": "cart arrives",
+     "match": {
+      "target": "saltwell"
+     },
+     "note": "A farm cart reaches the Saltwell market (most mornings): every waiting wolf standing at the well has met it.",
+     "actions": [
+      {
+       "do": "each",
+       "over": "list",
+       "list": "sq_wagon_waiters",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "quest is",
+            "quest": "sq-caravan-welcome",
+            "of": "$each",
+            "status": "active"
+           },
+           {
+            "test": "wolf in region",
+            "who": "$each",
+            "region": "sq_saltwell_well"
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "sq-caravan-welcome",
+            "objective": "welcome",
+            "player": "$each"
+           }
+          }
+         ]
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "not",
+          "condition": {
+           "test": "quest is",
+           "quest": "sq-caravan-welcome",
+           "of": "$each",
+           "status": "active"
+          }
+         },
+         "then": [
+          {
+           "do": "list remove",
+           "var": "sq_wagon_waiters",
+           "value": {
+            "each": true
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "sq-caravan-meal",
+     "on": "shared meal",
+     "audience": "participant",
+     "match": {
+      "cell": "cn_saltwell_inn"
+     },
+     "note": "A meal shared at the Oasis Inn, after the wagons were met.",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "sq-caravan-welcome",
+        "of": "$actor",
+        "status": "active"
+       },
+       {
+        "test": "objective is",
+        "quest": "sq-caravan-welcome",
+        "objective": "welcome",
+        "of": "$actor",
+        "status": "done"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "sq-caravan-welcome",
+        "objective": "bread",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "sq-caravan-bowl",
+     "on": "trade done",
+     "audience": "participant",
+     "match": {
+      "cell": "cn_saltwell_inn",
+      "detail": "bought"
+     },
+     "note": "A bowl or a cup bought at the Oasis Inn, after the wagons were met.",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "sq-caravan-welcome",
+        "of": "$actor",
+        "status": "active"
+       },
+       {
+        "test": "objective is",
+        "quest": "sq-caravan-welcome",
+        "objective": "welcome",
+        "of": "$actor",
+        "status": "done"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "sq-caravan-welcome",
+        "objective": "bread",
+        "player": "$actor"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "festival",
+   "journal": "It is festival week in the south, and Southmeadow is dressing its square.",
+   "effects": [],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "sq-garland-gift",
+     "on": "gift",
+     "audience": "participant",
+     "match": {
+      "target": "cty_briar_sedgebridge"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "quest is",
+          "quest": "sq-festival-garlands",
+          "of": "$actor",
+          "status": "active"
+         },
+         {
+          "test": "quest is",
+          "quest": "sq-festival-garlands",
+          "of": "$actor",
+          "status": "ready"
+         }
+        ]
+       },
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "field",
+          "field": "item",
+          "op": "=",
+          "value": "herbs"
+         },
+         {
+          "test": "field",
+          "field": "item",
+          "op": "=",
+          "value": "lavender"
+         },
+         {
+          "test": "field",
+          "field": "item",
+          "op": "=",
+          "value": "chamomile"
+         },
+         {
+          "test": "field",
+          "field": "item",
+          "op": "=",
+          "value": "rose_petals"
+         }
+        ]
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "emit",
+       "signal": "sq-garland-tie"
+      }
+     ],
+     "note": "A trigger on gift also hears gift again: every bunch given, the first of the day or not."
+    },
+    {
+     "id": "sq-garland-tie",
+     "on": "story signal",
+     "signal": "sq-garland-tie",
+     "audience": "participant",
+     "note": "Each bunch goes on the rope; the rope's length grows by one for each new helper (6 + helpers).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "field",
+          "field": "item",
+          "op": "=",
+          "value": "lavender"
+         },
+         {
+          "test": "field",
+          "field": "item",
+          "op": "=",
+          "value": "chamomile"
+         },
+         {
+          "test": "field",
+          "field": "item",
+          "op": "=",
+          "value": "rose_petals"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "sq-festival-garlands",
+          "objective": "flowers",
+          "player": "$actor"
+         }
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "sq_garlands",
+       "value": {
+        "field": "quantity"
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "not",
+        "condition": {
+         "test": "in list",
+         "list": "sq_helpers",
+         "value": {
+          "field": "actor"
+         }
+        }
+       },
+       "then": [
+        {
+         "do": "list add",
+         "var": "sq_helpers",
+         "value": {
+          "field": "actor"
+         }
+        },
+        {
+         "do": "set",
+         "var": "sq_garland_goal",
+         "value": {
+          "max": [
+           6,
+           {
+            "times": [
+             {
+              "audience": "active"
+             },
+             2
+            ]
+           }
+          ]
+         }
+        }
+       ]
+      },
+      {
+       "do": "set",
+       "var": "sq_garland_goal",
+       "value": {
+        "max": [
+         6,
+         {
+          "times": [
+           {
+            "audience": "active"
+           },
+           2
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "sq_garland_full",
+          "is": false
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "sq_garlands"
+          },
+          "op": ">=",
+          "right": {
+           "var": "sq_garland_goal"
+          }
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "sq_garland_full"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "board.post",
+          "town": "southmeadow",
+          "days": 7,
+          "text": "The garland rope reaches right round the square. Southmeadow is ready for the festival. From the Larkholm farmhands.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.tell",
+          "to": "region",
+          "region": "sq_southmeadow_square",
+          "text": "The garland rope reaches right round the Southmeadow square, green and sweet with the season.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "nh_voice_southmeadow",
+         "value": 4
+        },
+        {
+         "do": "add",
+         "var": "nh_realm",
+         "value": 4
+        },
+        {
+         "do": "each",
+         "over": "list",
+         "list": "sq_helpers",
+         "actions": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.greet",
+            "npc": "cty_briar_sedgebridge",
+            "player": "$each",
+            "days": 7,
+            "text": "The rope's round the square, every bunch of it, and not one of them city-bought. #thanks#, #address#."
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "sq-garland-contest",
+     "on": "festival entered",
+     "audience": "participant",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "quest is",
+          "quest": "sq-festival-garlands",
+          "of": "$actor",
+          "status": "active"
+         },
+         {
+          "test": "quest is",
+          "quest": "sq-festival-garlands",
+          "of": "$actor",
+          "status": "ready"
+         }
+        ]
+       },
+       {
+        "test": "wolf in town",
+        "town": "southmeadow"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "sq-festival-garlands",
+        "objective": "enter",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "sq-garland-collar",
+     "on": "quest completed",
+     "audience": "participant",
+     "once": "member",
+     "match": {
+      "detail": "sq-festival-garlands"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "objective is",
+        "quest": "sq-festival-garlands",
+        "objective": "flowers",
+        "status": "done"
+       },
+       {
+        "test": "objective is",
+        "quest": "sq-festival-garlands",
+        "objective": "enter",
+        "status": "done"
+       }
+      ]
+     },
+     "note": "The bonus, once a wolf: flowers on the rope and a contest entered.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "ribbon_collar",
+        "quantity": 1,
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    },
+    {
+     "id": "sq-wagons-arrive",
+     "on": "caravan arrives",
+     "match": {
+      "target": "saltwell"
+     },
+     "note": "A wagon reaches the Saltwell market: every waiting wolf standing at the well has met it.",
+     "actions": [
+      {
+       "do": "each",
+       "over": "list",
+       "list": "sq_wagon_waiters",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "quest is",
+            "quest": "sq-caravan-welcome",
+            "of": "$each",
+            "status": "active"
+           },
+           {
+            "test": "wolf in region",
+            "who": "$each",
+            "region": "sq_saltwell_well"
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "sq-caravan-welcome",
+            "objective": "welcome",
+            "player": "$each"
+           }
+          }
+         ]
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "not",
+          "condition": {
+           "test": "quest is",
+           "quest": "sq-caravan-welcome",
+           "of": "$each",
+           "status": "active"
+          }
+         },
+         "then": [
+          {
+           "do": "list remove",
+           "var": "sq_wagon_waiters",
+           "value": {
+            "each": true
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "sq-cart-arrives",
+     "on": "cart arrives",
+     "match": {
+      "target": "saltwell"
+     },
+     "note": "A farm cart reaches the Saltwell market (most mornings): every waiting wolf standing at the well has met it.",
+     "actions": [
+      {
+       "do": "each",
+       "over": "list",
+       "list": "sq_wagon_waiters",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "quest is",
+            "quest": "sq-caravan-welcome",
+            "of": "$each",
+            "status": "active"
+           },
+           {
+            "test": "wolf in region",
+            "who": "$each",
+            "region": "sq_saltwell_well"
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "sq-caravan-welcome",
+            "objective": "welcome",
+            "player": "$each"
+           }
+          }
+         ]
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "not",
+          "condition": {
+           "test": "quest is",
+           "quest": "sq-caravan-welcome",
+           "of": "$each",
+           "status": "active"
+          }
+         },
+         "then": [
+          {
+           "do": "list remove",
+           "var": "sq_wagon_waiters",
+           "value": {
+            "each": true
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "sq-caravan-meal",
+     "on": "shared meal",
+     "audience": "participant",
+     "match": {
+      "cell": "cn_saltwell_inn"
+     },
+     "note": "A meal shared at the Oasis Inn, after the wagons were met.",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "sq-caravan-welcome",
+        "of": "$actor",
+        "status": "active"
+       },
+       {
+        "test": "objective is",
+        "quest": "sq-caravan-welcome",
+        "objective": "welcome",
+        "of": "$actor",
+        "status": "done"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "sq-caravan-welcome",
+        "objective": "bread",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "sq-caravan-bowl",
+     "on": "trade done",
+     "audience": "participant",
+     "match": {
+      "cell": "cn_saltwell_inn",
+      "detail": "bought"
+     },
+     "note": "A bowl or a cup bought at the Oasis Inn, after the wagons were met.",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "sq-caravan-welcome",
+        "of": "$actor",
+        "status": "active"
+       },
+       {
+        "test": "objective is",
+        "quest": "sq-caravan-welcome",
+        "objective": "welcome",
+        "of": "$actor",
+        "status": "done"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "sq-caravan-welcome",
+        "objective": "bread",
+        "player": "$actor"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "quests": [
+  {
+   "id": "sq-plumtree-badger",
+   "title": "The Badger Under the Apple Store",
+   "summary": "A badger has dug in under the Plumtree apple store. The orchard keeper can't leave her store, and a Looms hand asks for her: bring it down.",
+   "giver": "tn_mb_vale_miremore",
+   "board": "larkfield",
+   "repeat": "weekly",
+   "join": {
+    "cap": 3
+   },
+   "offer": {
+    "ask": "Who wants a badger seen to?",
+    "say": "#greet#. A badger's dug in under the Plumtree apple store, and the orchard keeper's short-weighed every night. She can't leave her store, so she asked us at the Looms. It'll run, mind, but corner it and it bites. Follow your nose from the hedges. Bring it down and she'll pay full weight.",
+    "accept": "One badger, gone.",
+    "decline": "Not this week.",
+    "handIn": "Plumtree's badger is dealt with.",
+    "thanks": "#thanks#. Full weight, as she promised, and dried apples on top, sent down with the cart. You'll not get a bargain like that in the city, eh? Scales and silver, I'd not have gone into that wood."
+   },
+   "objectives": [
+    {
+     "id": "badger",
+     "label": "Bring down the badger by the Plumtree apple store.",
+     "on": "hunted",
+     "match": {
+      "target": "badger",
+      "cell": "w_ridgemere_7_10"
+     }
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "dried_apples",
+     "quantity": 2
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_last",
+     "value": "badger",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "scope": "player"
+  },
+  {
+   "id": "sq-swill-for-southwood",
+   "title": "Swill for Southwood",
+   "summary": "Carry meal and oats from Larkfield Stores to the bakehouse, for the Southwood swill cart.",
+   "giver": "tn_lf_rowan_chalkley",
+   "board": "larkfield",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Is that the swill cart?",
+    "say": "#greet#. Southwood's pigs eat more than the whole of Larkfield, and the granary's short this month. The swill cart goes out from here at dusk: two of meal and two of oats from the stores, brought to me, and they go out to the yard with it.",
+    "accept": "Meal and oats, coming.",
+    "decline": "Not today.",
+    "handIn": "Meal and oats for the swill cart.",
+    "thanks": "#thanks#. That's the swill cart full. The swineherd keeps a tally of who feeds his pigs, #address#, and you're on the good side of it now."
+   },
+   "objectives": [
+    {
+     "id": "meal",
+     "label": "Bring the bakehouse hand two of meal from Larkfield Stores, for the swill cart.",
+     "on": "gift",
+     "match": {
+      "target": "tn_lf_rowan_chalkley",
+      "item": "meal"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    },
+    {
+     "id": "oats",
+     "label": "Bring her two of oats.",
+     "on": "gift",
+     "match": {
+      "target": "tn_lf_rowan_chalkley",
+      "item": "oats"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_last",
+     "value": "swill",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "scope": "player"
+  },
+  {
+   "id": "sq-linen-for-the-press",
+   "title": "Old Linen for the Paper Vats",
+   "summary": "The Larkfield Print House makes its paper from old linen, and the vats are low.",
+   "giver": "tn_cw_fern_mistshore",
+   "board": "larkfield",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "What goes in those vats?",
+    "say": "#greet#. Old linen, beaten to pulp. Good paper's made from linen, and the vats are low. Two lengths of linen cloth will do; the stores keep a bolt or two. I've carted to Ridgemere for it once this week, and I'll not do it twice. The press pays full weight.",
+    "accept": "Two lengths of linen.",
+    "decline": "Not today.",
+    "handIn": "Linen for your vats.",
+    "thanks": "#thanks#. Into the vat it goes. Every sheet the press runs starts as somebody's old shirt, eh? Take a couple of sheets yourself; you'll find a use for them. Fair price to you."
+   },
+   "objectives": [
+    {
+     "id": "linen",
+     "label": "Bring the vat hand two lengths of linen cloth.",
+     "on": "gift",
+     "match": {
+      "target": "tn_cw_fern_mistshore",
+      "item": "linen_cloth"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "paper",
+     "quantity": 2
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "craft"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_last",
+     "value": "linen",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "scope": "player"
+  },
+  {
+   "id": "sq-mill-race",
+   "title": "Reeds in the Mill Race",
+   "summary": "The Longmead mill race is choking on reeds, and the baker's flour comes short. Pull four bundles from the bank by the mill and bring them to the Larkfield Bakehouse.",
+   "giver": "tn_sm_eskar_cornley",
+   "board": "larkfield",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Is your flour coming short?",
+    "say": "#greet#. The Longmead mill race is choking on reeds again, the wheel's turning light, and my flour comes short-weighed. Pull four bundles from the bank by the mill and bring them here, eh? The miller can't leave his stones, and I can't leave my oven.",
+    "accept": "Four bundles of reeds.",
+    "decline": "Not today.",
+    "handIn": "The mill race is clear.",
+    "thanks": "#thanks#. Full weight on the wheel again, the miller says. Take some of his flour, ground fine and top-weight. Scales and silver, my loaves will rise like they mean it."
+   },
+   "objectives": [
+    {
+     "id": "reeds",
+     "label": "Pull four bundles of reeds from the bank by Longmead Mill.",
+     "on": "forage",
+     "match": {
+      "item": "reeds",
+      "cell": "w_ridgemere_6_9"
+     },
+     "goal": 4,
+     "measure": "quantity"
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "flour",
+     "quantity": 2
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_last",
+     "value": "race",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "scope": "player"
+  },
+  {
+   "id": "sq-smoke-for-the-hives",
+   "title": "Smoke for the Hives",
+   "summary": "Bees go gentle in smoke. Bring herbs for the Larkholm smoker, and mind the camp up the Sunfields road.",
+   "giver": "tn_sm_hob_meadowfield",
+   "board": "southmeadow",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Are those skeps yours?",
+    "say": "#greet#. Larkholm keeps a row of skeps by the granary wall, and I mind them. Bees go gentle in smoke, and my smoker's empty. Three bunches of herbs to burn; wormwood's best, if the season's given any. And mind the Sunfields road. There's wolves camped up there who aren't after honey.",
+    "accept": "Herbs for your smoker.",
+    "decline": "Not today.",
+    "handIn": "Herbs to burn, as asked.",
+    "thanks": "#thanks#. Here's honey off the Larkholm skeps, ripe as it gets. I walked to Ridgemere once and back on a comb like this. Mind the bees on your way out; they don't know you yet."
+   },
+   "objectives": [
+    {
+     "id": "herbs",
+     "label": "Bring the Larkholm farmhand three bunches of herbs for his smoker.",
+     "on": "gift",
+     "match": {
+      "target": "tn_sm_hob_meadowfield",
+      "item": "herbs"
+     },
+     "goal": 3,
+     "measure": "quantity"
+    },
+    {
+     "id": "wormwood",
+     "label": "Wormwood burns best: bring two bunches, if the summer or autumn grass has any.",
+     "on": "gift",
+     "match": {
+      "target": "tn_sm_hob_meadowfield",
+      "item": "wormwood"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "optional": true
+    },
+    {
+     "id": "bounty",
+     "label": "Bring down a bandit of the camp up the Sunfields road.",
+     "on": "bandit falls",
+     "match": {
+      "cell": "w_ridgemere_7_12"
+     },
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "honey",
+     "quantity": 1
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "craft"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "southmeadow",
+     "key": "sq_last",
+     "value": "hives",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "southmeadow",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "honey_cake",
+     "quantity": 1
+    }
+   ],
+   "scope": "player"
+  },
+  {
+   "id": "sq-hare-in-the-seed-rows",
+   "title": "The Miller's Wager",
+   "summary": "Hares are eating Larkholm's young wheat. One hare earns pay; two win the miller's wager.",
+   "giver": "cty_emrys_stillshore",
+   "board": "southmeadow",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Something's eaten your rows.",
+    "say": "#greet#. Hares in my seed rows, eating the young wheat to stubble. One hare, and I'll pay. Two, and you've won a wager: two of flour says you can't. They go like a windfall rolling downhill.",
+    "accept": "You're on.",
+    "decline": "I'll not take your bet today.",
+    "handIn": "Your rows are clear.",
+    "thanks": "#thanks#. Sheaf and sickle, that's a hare fewer in my rows. If it's my flour you've won, don't tell the granary; they think I'm careful. I know a tale about a great House that'd curl your ears, but a wager's one thing and a tale's another."
+   },
+   "objectives": [
+    {
+     "id": "hare",
+     "label": "Bring down a hare in the Larkholm fields.",
+     "on": "hunted",
+     "match": {
+      "target": "hare",
+      "cell": "w_ridgemere_9_11"
+     }
+    },
+    {
+     "id": "wager",
+     "label": "Take a second hare there and win the miller's wager.",
+     "on": "hunted",
+     "match": {
+      "target": "hare",
+      "cell": "w_ridgemere_9_11"
+     },
+     "after": [
+      "hare"
+     ],
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "southmeadow",
+     "key": "sq_last",
+     "value": "hare",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "southmeadow",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "flour",
+     "quantity": 2
+    }
+   ],
+   "scope": "player"
+  },
+  {
+   "id": "sq-festival-garlands",
+   "title": "Garlands for the Square",
+   "summary": "Southmeadow dresses its square for the festival, and every wolf's green goes on one rope.",
+   "giver": "cty_briar_sedgebridge",
+   "board": "southmeadow",
+   "repeat": "weekly",
+   "lifetime": "phase",
+   "phases": [
+    "festival"
+   ],
+   "offer": {
+    "ask": "Is the square being dressed?",
+    "say": "#greet#. The festival's on us and Southmeadow's square is as bare as a stubble field. Bring me green things for the garlands: herbs, and any flowers the season's left. I take them in when I come off the pits. Every wolf's bunch goes on one rope.",
+    "accept": "Green for the rope.",
+    "decline": "Not this festival.",
+    "handIn": "Green things for your garland.",
+    "thanks": "#thanks#. On the rope it goes, tonight. My mother strung that rope, and hers before her. I'd not have taken green from a stranger's paw once. I'll take yours."
+   },
+   "objectives": [
+    {
+     "id": "green",
+     "label": "Bring the clay digger two bunches of herbs for the garland rope.",
+     "on": "gift",
+     "match": {
+      "target": "cty_briar_sedgebridge",
+      "item": "herbs"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    },
+    {
+     "id": "flowers",
+     "label": "Any flowers the season has left: lavender, chamomile or rose petals.",
+     "on": "story signal",
+     "signal": "sq-garland-flowers",
+     "optional": true
+    },
+    {
+     "id": "enter",
+     "label": "Enter a contest at the Southmeadow festival, on festival day.",
+     "on": "story signal",
+     "signal": "sq-garland-contest",
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "craft"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_last",
+     "value": "garland",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "southmeadow",
+     "key": "sq_last",
+     "value": "garland",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "southmeadow",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "scope": "player"
+  },
+  {
+   "id": "sq-twine-for-the-nets",
+   "title": "Twine for the Purse-Nets",
+   "summary": "The Dune warrener's purse-nets are worn through. Bring him cord to knit new ones.",
+   "giver": "cty_leif_rainley",
+   "board": "fenshore",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "fail": [
+    {
+     "on": "death",
+     "match": {
+      "actor": "cty_leif_rainley"
+     }
+    }
+   ],
+   "offer": {
+    "ask": "What are those little nets for?",
+    "say": "#greet#. Purse-nets, for the burrow mouths. A rabbit bolts into one and it draws shut. Mine are worn through, and a worn net is a rabbit's best friend, as my father said. Two lengths of cord and I'll knit new ones. Straw for the hutches too, if you've any.",
+    "accept": "Two lengths of cord.",
+    "decline": "Not today.",
+    "handIn": "Cord for your nets.",
+    "thanks": "#thanks#. A mended net catches what a new one only promises, they say. Take a smoked one for the road. And mind the soft ground by the burrows; it's riddled."
+   },
+   "objectives": [
+    {
+     "id": "cord",
+     "label": "Bring the warrener two lengths of cord.",
+     "on": "gift",
+     "match": {
+      "target": "cty_leif_rainley",
+      "item": "cord"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    },
+    {
+     "id": "straw",
+     "label": "Straw for the hutches, if you have it.",
+     "on": "gift",
+     "match": {
+      "target": "cty_leif_rainley",
+      "item": "straw"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "smoked_rabbit",
+     "quantity": 1
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "craft"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_last",
+     "value": "nets",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "scope": "player"
+  },
+  {
+   "id": "sq-fenside-pans",
+   "title": "Fire Under the Pans",
+   "summary": "The Fenside salt pans boil on firewood, and the fen has none worth burning. The peat cutter who supplies them takes wood over with her peat.",
+   "giver": "tn_oh_briar_greenshaw",
+   "board": "fenshore",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Are the pans boiling?",
+    "say": "#greet#. The Fenside pans boil on firewood, and the fen's got none worth burning. Four armfuls from the dry ground, brought to me at the cutting, and I'll take them over with my peat. Peat too, if you've the back for it. Cut your own, it's all round you.",
+    "accept": "Four armfuls of wood.",
+    "decline": "Not today.",
+    "handIn": "Wood for the pans.",
+    "thanks": "#thanks#. The salt will come up white as a wedding cloth. Take a measure of it, from the pans. If you see lights out on the fen, don't follow them. They're only the marsh, the old ones say."
+   },
+   "objectives": [
+    {
+     "id": "wood",
+     "label": "Bring the peat cutter four armfuls of firewood from the dry ground, for the Fenside pans.",
+     "on": "gift",
+     "match": {
+      "target": "tn_oh_briar_greenshaw",
+      "item": "firewood"
+     },
+     "goal": 4,
+     "measure": "quantity"
+    },
+    {
+     "id": "peat",
+     "label": "Peat, if you have the back for it.",
+     "on": "gift",
+     "match": {
+      "target": "tn_oh_briar_greenshaw",
+      "item": "peat"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "salt",
+     "quantity": 1
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_last",
+     "value": "pans",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "scope": "player"
+  },
+  {
+   "id": "sq-mirebridge-clay",
+   "title": "Grey Clay from the Mirebridge Pits",
+   "summary": "The Fenshore Kilns want more clay than one digger can dig. Dig four lumps at the Mirebridge pits.",
+   "giver": "cty_lichen_reedford",
+   "board": "fenshore",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Is that all yours to dig?",
+    "say": "#greet#. The kilns want twice the clay the old potter did, and I'm one wolf with one spade. Dig me four lumps here at the pits, and I'll cart them in with mine. Four. I'll count them. Don't stand long at the old crossroads on the way. That's where the village was.",
+    "accept": "Four lumps of clay.",
+    "decline": "Not today.",
+    "handIn": "Four lumps, counted.",
+    "thanks": "#thanks#. Four, and good grey ones. I counted. Most wolves bring three and call it four. Take a pot from the kilns' last firing; it leans, but it holds."
+   },
+   "objectives": [
+    {
+     "id": "dig",
+     "label": "Dig four lumps of clay at the Mirebridge pits.",
+     "on": "forage",
+     "match": {
+      "item": "clay",
+      "cell": "w_ridgemere_4_12"
+     },
+     "goal": 4,
+     "measure": "quantity"
+    },
+    {
+     "id": "bring",
+     "label": "Give the four lumps to the clay digger.",
+     "on": "gift",
+     "match": {
+      "target": "cty_lichen_reedford",
+      "item": "clay"
+     },
+     "goal": 4,
+     "measure": "quantity",
+     "after": [
+      "dig"
+     ]
+    },
+    {
+     "id": "crossroads",
+     "label": "Stand a moment at the Mirebridge crossroads, where the village was.",
+     "on": "region entered",
+     "match": {
+      "target": "sq_mirebridge_crossroads"
+     },
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "clay_pot",
+     "quantity": 1
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_last",
+     "value": "clay",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "scope": "player"
+  },
+  {
+   "id": "sq-boardwalk-plank",
+   "title": "A Plank Gone by the Heron",
+   "summary": "A plank has gone on the Fenshore boardwalk by the Heron. Bring planks and nails for the Heron's pot hand, who mends it.",
+   "giver": "tn_oh_ludo_ashwood",
+   "board": "fenshore",
+   "repeat": "daily",
+   "join": {
+    "cap": 3
+   },
+   "offer": {
+    "ask": "Is that a gap in the boardwalk?",
+    "say": "#greet#. There's a plank gone on the boardwalk by the Heron, and the next wolf through will be wet to the knee, no? Two planks and a paw of nails, and I'll do the hammering when the taproom's quiet. I don't hurry, mind, but what I mend stays mended.",
+    "accept": "Planks and nails.",
+    "decline": "Not today.",
+    "handIn": "Planks and nails for the boardwalk.",
+    "thanks": "#thanks#. Dry feet for the next one through, fen-sure, and that's the best thanks the fen gives. I know a tale about a great House that'd sink a boardwalk, but I'll keep it. Some planks hold better nailed down."
+   },
+   "objectives": [
+    {
+     "id": "planks",
+     "label": "Bring the Heron's pot hand two planks.",
+     "on": "gift",
+     "match": {
+      "target": "tn_oh_ludo_ashwood",
+      "item": "planks"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    },
+    {
+     "id": "nails",
+     "label": "Bring him a paw of nails: four will do.",
+     "on": "gift",
+     "match": {
+      "target": "tn_oh_ludo_ashwood",
+      "item": "nails"
+     },
+     "goal": 4,
+     "measure": "quantity"
+    },
+    {
+     "id": "hop",
+     "label": "If you carry the Shortcut Gift, blink across the gap before it is mended.",
+     "on": "gift used",
+     "match": {
+      "detail": "shortcut",
+      "cell": "w_ridgemere_3_13"
+     },
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "craft"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_last",
+     "value": "plank",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "scope": "player"
+  },
+  {
+   "id": "sq-salt-for-the-road",
+   "title": "Salt for the Stores",
+   "summary": "Carry two measures of the Saltpan's salt across the white to the Saltwell storekeeper.",
+   "giver": "cty_winifred_fogridge",
+   "board": "saltwell",
+   "repeat": "daily",
+   "join": {
+    "cap": 3
+   },
+   "offer": {
+    "ask": "Is the Saltwell store out of salt?",
+    "say": "#greet#. The salt is raked at the pan, but the stores are empty, and no carter will go into the white while the sun is high. Without salt I cannot cure a single pelt. Carry these two measures to the storekeeper for me. A favour carried is a favour owed, and I keep count.",
+    "accept": "Two measures, to the stores.",
+    "decline": "Not in this heat.",
+    "handIn": "Your salt is at the stores.",
+    "thanks": "#thanks#. You walked it in the heat and did not complain. My mother kept this warren, and hers before her, and none of them had a wolf like you to call on. That is one in my tally, #address#. The well remembers who drew from it."
+   },
+   "objectives": [
+    {
+     "id": "salt",
+     "label": "Carry the two measures of salt to the Saltwell storekeeper.",
+     "on": "gift",
+     "match": {
+      "target": "tn_fh_thistle_stonepick",
+      "item": "salt"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    },
+    {
+     "id": "lighten",
+     "label": "If you carry the Lighten Load Gift, use it on the road.",
+     "on": "gift used",
+     "match": {
+      "detail": "lighten_load"
+     },
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "saltwell",
+     "key": "sq_last",
+     "value": "salt",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "saltwell",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "waterskin",
+     "quantity": 1
+    }
+   ],
+   "scope": "player"
+  },
+  {
+   "id": "sq-ochre-rabbits",
+   "title": "Rabbits in the Vines",
+   "summary": "Rabbits strip the young vines at Ochre to the stalk. Bring down two in the vineyard.",
+   "giver": "cty_senna_applegarth",
+   "board": "saltwell",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Your vines look bitten.",
+    "say": "#greet#. The rabbits come in from the scrub and strip my young vines to the stalk. Bring down two of them, and the rest will learn. Do this, and you are welcome at my table, by bread and salt.",
+    "accept": "Two rabbits.",
+    "decline": "Not today.",
+    "handIn": "Your vines are safe.",
+    "thanks": "#thanks#. Sit, take grapes; they are sweet this year. A stranger who hunts like a wolf of the wadi. I did not think I would see it. Perhaps not everything that comes up the road is brackish."
+   },
+   "objectives": [
+    {
+     "id": "rabbits",
+     "label": "Bring down two rabbits in the Ochre vines.",
+     "on": "hunted",
+     "match": {
+      "target": "rabbit",
+      "cell": "w_ridgemere_9_10"
+     },
+     "goal": 2
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "grapes",
+     "quantity": 2
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "saltwell",
+     "key": "sq_last",
+     "value": "rabbits",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "saltwell",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "scope": "player"
+  },
+  {
+   "id": "sq-caravan-welcome",
+   "title": "Water and a Word",
+   "summary": "When a cart or a wagon comes in off the sand, someone must meet it at the Saltwell well, then break bread at the Oasis Inn.",
+   "giver": "tn_lf_moss_downridge",
+   "board": "saltwell",
+   "repeat": "daily",
+   "join": {
+    "cap": 6
+   },
+   "fail": [
+    {
+     "afterDays": 2
+    }
+   ],
+   "offer": {
+    "ask": "Who meets the wagons when they come in?",
+    "say": "#greet#. When a cart or a wagon comes in off the sand, someone must meet it at the well with water and a word. The innkeeper cannot leave the fire. The farm cart comes in early, most mornings. Be at the well when it does, then come inside and break bread. That is how Saltwell says welcome.",
+    "accept": "I'll meet the cart.",
+    "decline": "I can't wait today.",
+    "handIn": "They were met, and I broke bread inside.",
+    "thanks": "#thanks#. They will tell it on the road: at Saltwell, someone met us. Every wagon comes home at last, and this one came home to you. I dream of a farm, you know, somewhere green. But I would miss this."
+   },
+   "objectives": [
+    {
+     "id": "welcome",
+     "label": "Be at the well on the Saltwell square when a cart or a wagon comes in (the farm cart comes early, most mornings).",
+     "on": "story signal",
+     "signal": "sq-caravan-met"
+    },
+    {
+     "id": "bread",
+     "label": "Break bread at the Oasis Inn: buy a bowl or a cup there, or eat beside someone who is eating.",
+     "on": "story signal",
+     "signal": "sq-caravan-bread",
+     "after": [
+      "welcome"
+     ]
+    },
+    {
+     "id": "dowse",
+     "label": "If you carry the Dowse Gift, find where the old wells of Saltwell ran.",
+     "on": "gift used",
+     "match": {
+      "detail": "dowse",
+      "cell": "w_ridgemere_12_11"
+     },
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "caravan",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "saltwell",
+     "key": "sq_last",
+     "value": "caravan",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "saltwell",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "scope": "player"
+  }
+ ],
+ "tests": [
+  {
+   "name": "Larkfield: badger, swill, linen and reeds, each paid from the town store",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_mb_vale_miremore",
+     "detail": "sq-plumtree-badger"
+    },
+    {
+     "id": "e2",
+     "kind": "hunted",
+     "day": 1.02,
+     "actor": "ash",
+     "target": "hare",
+     "cell": "w_ridgemere_7_10",
+     "detail": "a clean kill",
+     "quantity": 2
+    },
+    {
+     "id": "e3",
+     "kind": "hunted",
+     "day": 1.03,
+     "actor": "ash",
+     "target": "badger",
+     "cell": "w_ridgemere_5_8",
+     "detail": "a good kill",
+     "quantity": 3
+    },
+    {
+     "id": "e4",
+     "kind": "hunted",
+     "day": 1.04,
+     "actor": "ash",
+     "target": "badger",
+     "cell": "w_ridgemere_7_10",
+     "detail": "a good kill",
+     "quantity": 3
+    },
+    {
+     "id": "e5",
+     "kind": "quest handed in",
+     "day": 1.05,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_mb_vale_miremore",
+     "detail": "sq-plumtree-badger"
+    },
+    {
+     "id": "e6",
+     "kind": "quest accepted",
+     "day": 1.06,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_lf_rowan_chalkley",
+     "detail": "sq-swill-for-southwood"
+    },
+    {
+     "id": "e7",
+     "kind": "gift",
+     "day": 1.07,
+     "actor": "ash",
+     "target": "tn_lf_rowan_chalkley",
+     "item": "oats",
+     "quantity": 2,
+     "cell": "cn_larkfield_bakehouse"
+    },
+    {
+     "id": "e8",
+     "kind": "gift again",
+     "day": 1.08,
+     "actor": "ash",
+     "target": "tn_lf_rowan_chalkley",
+     "item": "meal",
+     "quantity": 1
+    },
+    {
+     "id": "e9",
+     "kind": "gift again",
+     "day": 1.09,
+     "actor": "ash",
+     "target": "tn_sm_eskar_cornley",
+     "item": "meal",
+     "quantity": 1
+    },
+    {
+     "id": "e10",
+     "kind": "gift again",
+     "day": 1.1,
+     "actor": "ash",
+     "target": "tn_lf_rowan_chalkley",
+     "item": "meal",
+     "quantity": 1
+    },
+    {
+     "id": "e11",
+     "kind": "quest handed in",
+     "day": 1.11,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_lf_rowan_chalkley",
+     "detail": "sq-swill-for-southwood"
+    },
+    {
+     "id": "e12",
+     "kind": "quest accepted",
+     "day": 1.12,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_cw_fern_mistshore",
+     "detail": "sq-linen-for-the-press"
+    },
+    {
+     "id": "e13",
+     "kind": "gift",
+     "day": 1.13,
+     "actor": "ash",
+     "target": "tn_cw_fern_mistshore",
+     "item": "linen_cloth",
+     "quantity": 2
+    },
+    {
+     "id": "e14",
+     "kind": "quest handed in",
+     "day": 1.14,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_cw_fern_mistshore",
+     "detail": "sq-linen-for-the-press"
+    },
+    {
+     "id": "e15",
+     "kind": "quest accepted",
+     "day": 1.15,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_sm_eskar_cornley",
+     "detail": "sq-mill-race"
+    },
+    {
+     "id": "e16",
+     "kind": "forage",
+     "day": 1.16,
+     "actor": "ash",
+     "item": "reeds",
+     "cell": "w_ridgemere_6_9",
+     "detail": "reed bed",
+     "quantity": 2
+    },
+    {
+     "id": "e17",
+     "kind": "forage",
+     "day": 1.17,
+     "actor": "ash",
+     "item": "reeds",
+     "cell": "w_ridgemere_7_10",
+     "detail": "reed bed",
+     "quantity": 3
+    },
+    {
+     "id": "e18",
+     "kind": "forage",
+     "day": 1.18,
+     "actor": "ash",
+     "item": "reeds",
+     "cell": "w_ridgemere_6_9",
+     "detail": "reed bed",
+     "quantity": 2
+    },
+    {
+     "id": "e19",
+     "kind": "quest handed in",
+     "day": 1.19,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_sm_eskar_cornley",
+     "detail": "sq-mill-race"
+    },
+    {
+     "id": "e20",
+     "kind": "quest accepted",
+     "day": 2.19,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_mb_vale_miremore",
+     "detail": "sq-plumtree-badger"
+    },
+    {
+     "id": "e21",
+     "kind": "quest accepted",
+     "day": 2.2,
+     "actor": "birch",
+     "target": "run",
+     "item": "tn_lf_rowan_chalkley",
+     "detail": "sq-swill-for-southwood"
+    },
+    {
+     "id": "e22",
+     "kind": "gift",
+     "day": 2.21,
+     "actor": "birch",
+     "target": "tn_lf_rowan_chalkley",
+     "item": "oats",
+     "quantity": 1,
+     "cell": "cn_larkfield_bakehouse"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-plumtree-badger": {
+     "ash": "done"
+    },
+    "sq-swill-for-southwood": {
+     "ash": "done",
+     "birch": "active"
+    },
+    "sq-linen-for-the-press": {
+     "ash": "done"
+    },
+    "sq-mill-race": {
+     "ash": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "coin_larkfield_day": 11,
+     "nh_realm": 12,
+     "nh_voice_larkfield": 12
+    },
+    "player": {
+     "ash": {
+      "sq_done": 4
+     }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:larkfield": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
+    }
+   }
+  },
+  {
+   "name": "Southmeadow: the hives with a bandit down; the miller's wager won once",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_sm_hob_meadowfield",
+     "detail": "sq-smoke-for-the-hives"
+    },
+    {
+     "id": "e2",
+     "kind": "gift",
+     "day": 1.02,
+     "actor": "ash",
+     "target": "tn_sm_hob_meadowfield",
+     "item": "herbs",
+     "quantity": 3
+    },
+    {
+     "id": "e3",
+     "kind": "gift again",
+     "day": 1.03,
+     "actor": "ash",
+     "target": "tn_sm_hob_meadowfield",
+     "item": "wormwood",
+     "quantity": 2
+    },
+    {
+     "id": "e4",
+     "kind": "bandit falls",
+     "day": 1.04,
+     "actor": "ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_7_12",
+     "detail": "a grey-cloaked raider"
+    },
+    {
+     "id": "e5",
+     "kind": "quest handed in",
+     "day": 1.05,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_sm_hob_meadowfield",
+     "detail": "sq-smoke-for-the-hives"
+    },
+    {
+     "id": "e6",
+     "kind": "quest accepted",
+     "day": 1.06,
+     "actor": "ash",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e7",
+     "kind": "hunted",
+     "day": 1.07,
+     "actor": "ash",
+     "target": "hare",
+     "cell": "w_ridgemere_9_11",
+     "detail": "a clean kill",
+     "quantity": 2
+    },
+    {
+     "id": "e8",
+     "kind": "hunted",
+     "day": 1.08,
+     "actor": "ash",
+     "target": "hare",
+     "cell": "w_ridgemere_9_11",
+     "detail": "a rough kill",
+     "quantity": 2
+    },
+    {
+     "id": "e9",
+     "kind": "quest handed in",
+     "day": 1.09,
+     "actor": "ash",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e10",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "birch",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e11",
+     "kind": "hunted",
+     "day": 1.11,
+     "actor": "birch",
+     "target": "hare",
+     "cell": "w_ridgemere_9_11",
+     "detail": "a clean kill",
+     "quantity": 2
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 1.12,
+     "actor": "birch",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 1.13,
+     "actor": "birch",
+     "target": "run",
+     "item": "tn_sm_hob_meadowfield",
+     "detail": "sq-smoke-for-the-hives"
+    },
+    {
+     "id": "e14",
+     "kind": "gift",
+     "day": 1.14,
+     "actor": "birch",
+     "target": "tn_sm_hob_meadowfield",
+     "item": "herbs",
+     "quantity": 3
+    },
+    {
+     "id": "e15",
+     "kind": "quest handed in",
+     "day": 1.15,
+     "actor": "birch",
+     "target": "run",
+     "item": "tn_sm_hob_meadowfield",
+     "detail": "sq-smoke-for-the-hives"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-smoke-for-the-hives": {
+     "ash": "done",
+     "birch": "done"
+    },
+    "sq-hare-in-the-seed-rows": {
+     "ash": "done",
+     "birch": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "coin_southmeadow_day": 12,
+     "nh_realm": 16,
+     "nh_voice_southmeadow": 16,
+     "nh_threat": 29
+    },
+    "player": {
+     "ash": {
+      "sq_done": 2
+     },
+     "birch": {
+      "sq_done": 2
+     }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:larkfield": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
+    }
+   }
+  },
+  {
+   "name": "Southmeadow's day cap reached: the eighth errand is paid in bread",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "wolf1",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e2",
+     "kind": "hunted",
+     "day": 1.02,
+     "actor": "wolf1",
+     "target": "hare",
+     "cell": "w_ridgemere_9_11",
+     "detail": "a good kill",
+     "quantity": 2
+    },
+    {
+     "id": "e3",
+     "kind": "quest handed in",
+     "day": 1.03,
+     "actor": "wolf1",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e4",
+     "kind": "quest accepted",
+     "day": 1.04,
+     "actor": "wolf2",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e5",
+     "kind": "hunted",
+     "day": 1.05,
+     "actor": "wolf2",
+     "target": "hare",
+     "cell": "w_ridgemere_9_11",
+     "detail": "a good kill",
+     "quantity": 2
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 1.06,
+     "actor": "wolf2",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 1.07,
+     "actor": "wolf3",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e8",
+     "kind": "hunted",
+     "day": 1.08,
+     "actor": "wolf3",
+     "target": "hare",
+     "cell": "w_ridgemere_9_11",
+     "detail": "a good kill",
+     "quantity": 2
+    },
+    {
+     "id": "e9",
+     "kind": "quest handed in",
+     "day": 1.09,
+     "actor": "wolf3",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e10",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf4",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e11",
+     "kind": "hunted",
+     "day": 1.11,
+     "actor": "wolf4",
+     "target": "hare",
+     "cell": "w_ridgemere_9_11",
+     "detail": "a good kill",
+     "quantity": 2
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 1.12,
+     "actor": "wolf4",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 1.13,
+     "actor": "wolf5",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e14",
+     "kind": "hunted",
+     "day": 1.14,
+     "actor": "wolf5",
+     "target": "hare",
+     "cell": "w_ridgemere_9_11",
+     "detail": "a good kill",
+     "quantity": 2
+    },
+    {
+     "id": "e15",
+     "kind": "quest handed in",
+     "day": 1.15,
+     "actor": "wolf5",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e16",
+     "kind": "quest accepted",
+     "day": 1.16,
+     "actor": "wolf6",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e17",
+     "kind": "hunted",
+     "day": 1.17,
+     "actor": "wolf6",
+     "target": "hare",
+     "cell": "w_ridgemere_9_11",
+     "detail": "a good kill",
+     "quantity": 2
+    },
+    {
+     "id": "e18",
+     "kind": "quest handed in",
+     "day": 1.18,
+     "actor": "wolf6",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e19",
+     "kind": "quest accepted",
+     "day": 1.19,
+     "actor": "wolf7",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e20",
+     "kind": "hunted",
+     "day": 1.2,
+     "actor": "wolf7",
+     "target": "hare",
+     "cell": "w_ridgemere_9_11",
+     "detail": "a good kill",
+     "quantity": 2
+    },
+    {
+     "id": "e21",
+     "kind": "quest handed in",
+     "day": 1.21,
+     "actor": "wolf7",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e22",
+     "kind": "quest accepted",
+     "day": 1.22,
+     "actor": "wolf8",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    },
+    {
+     "id": "e23",
+     "kind": "hunted",
+     "day": 1.23,
+     "actor": "wolf8",
+     "target": "hare",
+     "cell": "w_ridgemere_9_11",
+     "detail": "a good kill",
+     "quantity": 2
+    },
+    {
+     "id": "e24",
+     "kind": "quest handed in",
+     "day": 1.24,
+     "actor": "wolf8",
+     "target": "run",
+     "item": "cty_emrys_stillshore",
+     "detail": "sq-hare-in-the-seed-rows"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-hare-in-the-seed-rows": {
+     "wolf1": "done",
+     "wolf2": "done",
+     "wolf3": "done",
+     "wolf4": "done",
+     "wolf5": "done",
+     "wolf6": "done",
+     "wolf7": "done",
+     "wolf8": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "coin_southmeadow_day": 21,
+     "nh_realm": 32,
+     "nh_voice_southmeadow": 32
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:larkfield": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
+    }
+   }
+  },
+  {
+   "name": "Festival week: the rope round the square, a contest, the collar, the wagons met; the week ends",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 1.0,
+     "actor": "",
+     "detail": "Marketday",
+     "item": "summer",
+     "quantity": 39
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "ash",
+     "target": "run",
+     "item": "cty_briar_sedgebridge",
+     "detail": "sq-festival-garlands"
+    },
+    {
+     "id": "e3",
+     "kind": "day begins",
+     "day": 2.01,
+     "actor": "",
+     "detail": "Dawnday",
+     "item": "summer",
+     "quantity": 40
+    },
+    {
+     "id": "e4",
+     "kind": "quest accepted",
+     "day": 2.02,
+     "actor": "ash",
+     "target": "run",
+     "item": "cty_briar_sedgebridge",
+     "detail": "sq-festival-garlands"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 2.03,
+     "actor": "ash",
+     "target": "cty_briar_sedgebridge",
+     "item": "herbs",
+     "quantity": 2,
+     "cell": "w_ridgemere_6_13"
+    },
+    {
+     "id": "e6",
+     "kind": "gift again",
+     "day": 2.04,
+     "actor": "ash",
+     "target": "cty_briar_sedgebridge",
+     "item": "lavender",
+     "quantity": 1
+    },
+    {
+     "id": "e7",
+     "kind": "festival entered",
+     "day": 2.05,
+     "actor": "ash",
+     "cell": "w_ridgemere_8_13",
+     "item": "race",
+     "detail": "Midsummer",
+     "coins": 2
+    },
+    {
+     "id": "e8",
+     "kind": "gift again",
+     "day": 2.06,
+     "actor": "ash",
+     "target": "cty_briar_sedgebridge",
+     "item": "herbs",
+     "quantity": 4
+    },
+    {
+     "id": "e9",
+     "kind": "quest handed in",
+     "day": 2.07,
+     "actor": "ash",
+     "target": "run",
+     "item": "cty_briar_sedgebridge",
+     "detail": "sq-festival-garlands"
+    },
+    {
+     "id": "e10",
+     "kind": "quest accepted",
+     "day": 2.08,
+     "actor": "birch",
+     "target": "run",
+     "item": "cty_briar_sedgebridge",
+     "detail": "sq-festival-garlands"
+    },
+    {
+     "id": "e11",
+     "kind": "gift",
+     "day": 2.09,
+     "actor": "birch",
+     "target": "cty_briar_sedgebridge",
+     "item": "herbs",
+     "quantity": 1,
+     "cell": "w_ridgemere_6_13"
+    },
+    {
+     "id": "e12",
+     "kind": "gift again",
+     "day": 2.1,
+     "actor": "birch",
+     "target": "cty_briar_sedgebridge",
+     "item": "bread",
+     "quantity": 1
+    },
+    {
+     "id": "e12b",
+     "kind": "quest accepted",
+     "day": 2.106,
+     "actor": "elm",
+     "target": "run",
+     "item": "tn_lf_moss_downridge",
+     "detail": "sq-caravan-welcome"
+    },
+    {
+     "id": "e13",
+     "kind": "caravan arrives",
+     "day": 2.11,
+     "actor": "cv9",
+     "target": "saltwell",
+     "cell": "w_ridgemere_12_11",
+     "item": "dep3",
+     "detail": "from fenshore",
+     "quantity": 2
+    },
+    {
+     "id": "e13a",
+     "kind": "trade done",
+     "day": 2.111,
+     "actor": "elm",
+     "target": "tn_mb_oriel_marshditch",
+     "cell": "cn_saltwell_inn",
+     "item": "cider",
+     "detail": "bought",
+     "quantity": 1,
+     "coins": 1
+    },
+    {
+     "id": "e13b",
+     "kind": "quest handed in",
+     "day": 2.112,
+     "actor": "elm",
+     "target": "run",
+     "item": "tn_lf_moss_downridge",
+     "detail": "sq-caravan-welcome"
+    },
+    {
+     "id": "e12a",
+     "kind": "quest accepted",
+     "day": 2.113,
+     "actor": "cedar",
+     "target": "run",
+     "item": "tn_lf_moss_downridge",
+     "detail": "sq-caravan-welcome"
+    },
+    {
+     "id": "e14",
+     "kind": "day begins",
+     "day": 3.11,
+     "actor": "",
+     "detail": "Thawday",
+     "item": "summer",
+     "quantity": 41
+    },
+    {
+     "id": "e14a",
+     "kind": "cart arrives",
+     "day": 3.27,
+     "actor": "cv20",
+     "target": "saltwell",
+     "cell": "w_ridgemere_12_11",
+     "item": "rabbit_warren_2",
+     "detail": "from rabbit_warren_2",
+     "quantity": 2
+    },
+    {
+     "id": "e14b",
+     "kind": "shared meal",
+     "day": 3.3,
+     "actor": "cedar",
+     "target": "tn_mb_oriel_marshditch",
+     "cell": "cn_saltwell_inn"
+    },
+    {
+     "id": "e14c",
+     "kind": "quest handed in",
+     "day": 3.31,
+     "actor": "cedar",
+     "target": "run",
+     "item": "tn_lf_moss_downridge",
+     "detail": "sq-caravan-welcome"
+    },
+    {
+     "id": "e15",
+     "kind": "day begins",
+     "day": 9.11,
+     "actor": "",
+     "detail": "Marketday",
+     "item": "summer",
+     "quantity": 47
+    },
+    {
+     "id": "e16",
+     "kind": "day begins",
+     "day": 10.11,
+     "actor": "",
+     "detail": "Restday",
+     "item": "summer",
+     "quantity": 48
+    }
+   ],
+   "expect": [
+    "open",
+    "festival",
+    "open"
+   ],
+   "facts": {
+    "wolves": {
+     "ash": {
+      "town": "southmeadow",
+      "cell": "w_ridgemere_8_13",
+      "x": 100,
+      "y": 20
+     },
+     "birch": {
+      "town": "southmeadow",
+      "cell": "w_ridgemere_8_13",
+      "x": 101,
+      "y": 21
+     },
+     "cedar": {
+      "town": "saltwell",
+      "cell": "w_ridgemere_12_11",
+      "x": 221,
+      "y": 116
+     },
+     "elm": {
+      "town": "saltwell",
+      "cell": "w_ridgemere_12_11",
+      "x": 219,
+      "y": 114
+     }
+    },
+    "purses": {
+     "town:fenshore": 2000,
+     "town:larkfield": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
+    }
+   },
+   "expectQuests": {
+    "sq-festival-garlands": {
+     "ash": "done",
+     "birch": "expired"
+    },
+    "sq-caravan-welcome": {
+     "cedar": "done",
+     "elm": "done"
+    }
+   },
+   "expectVariables": {
+    "story": {
+     "sq_garlands": 8,
+     "sq_garland_goal": 6,
+     "sq_garland_full": true,
+     "sq_helpers": [
+      "ash",
+      "birch"
+     ]
+    },
+    "world": {
+     "coin_southmeadow_day": 3,
+     "nh_realm": 16,
+     "nh_voice_southmeadow": 8,
+     "coin_saltwell_day": 4
+    },
+    "player": {
+     "ash": {
+      "sq_done": 1
+     }
+    }
+   }
+  },
+  {
+   "name": "Fenshore: nets, pans, clay, the plank; the warrener dies with a copy under way",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "ash",
+     "target": "run",
+     "item": "cty_leif_rainley",
+     "detail": "sq-twine-for-the-nets"
+    },
+    {
+     "id": "e2",
+     "kind": "gift",
+     "day": 1.02,
+     "actor": "ash",
+     "target": "cty_leif_rainley",
+     "item": "cord",
+     "quantity": 2
+    },
+    {
+     "id": "e3",
+     "kind": "gift again",
+     "day": 1.03,
+     "actor": "ash",
+     "target": "cty_leif_rainley",
+     "item": "straw",
+     "quantity": 2
+    },
+    {
+     "id": "e4",
+     "kind": "quest handed in",
+     "day": 1.04,
+     "actor": "ash",
+     "target": "run",
+     "item": "cty_leif_rainley",
+     "detail": "sq-twine-for-the-nets"
+    },
+    {
+     "id": "e5",
+     "kind": "quest accepted",
+     "day": 1.05,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_oh_briar_greenshaw",
+     "detail": "sq-fenside-pans"
+    },
+    {
+     "id": "e6",
+     "kind": "gift",
+     "day": 1.06,
+     "actor": "ash",
+     "target": "tn_oh_briar_greenshaw",
+     "item": "firewood",
+     "quantity": 4,
+     "cell": "w_ridgemere_3_14"
+    },
+    {
+     "id": "e7",
+     "kind": "gift again",
+     "day": 1.07,
+     "actor": "ash",
+     "target": "tn_oh_briar_greenshaw",
+     "item": "peat",
+     "quantity": 1
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.08,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_oh_briar_greenshaw",
+     "detail": "sq-fenside-pans"
+    },
+    {
+     "id": "e9",
+     "kind": "dialogue choice",
+     "day": 1.09,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_oh_briar_greenshaw",
+     "detail": "sq-fallow-names"
+    },
+    {
+     "id": "e10",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "ash",
+     "target": "run",
+     "item": "cty_lichen_reedford",
+     "detail": "sq-mirebridge-clay"
+    },
+    {
+     "id": "e11",
+     "kind": "gift",
+     "day": 1.11,
+     "actor": "ash",
+     "target": "cty_lichen_reedford",
+     "item": "clay",
+     "quantity": 2
+    },
+    {
+     "id": "e12",
+     "kind": "forage",
+     "day": 1.12,
+     "actor": "ash",
+     "item": "clay",
+     "cell": "w_ridgemere_4_12",
+     "detail": "mud",
+     "quantity": 4
+    },
+    {
+     "id": "e13",
+     "kind": "region entered",
+     "day": 1.13,
+     "actor": "ash",
+     "target": "sq_mirebridge_crossroads",
+     "cell": "w_ridgemere_5_11",
+     "detail": "run",
+     "x": 188,
+     "y": 52
+    },
+    {
+     "id": "e14",
+     "kind": "gift again",
+     "day": 1.14,
+     "actor": "ash",
+     "target": "cty_lichen_reedford",
+     "item": "clay",
+     "quantity": 4
+    },
+    {
+     "id": "e15",
+     "kind": "quest handed in",
+     "day": 1.15,
+     "actor": "ash",
+     "target": "run",
+     "item": "cty_lichen_reedford",
+     "detail": "sq-mirebridge-clay"
+    },
+    {
+     "id": "e16",
+     "kind": "quest accepted",
+     "day": 1.16,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_oh_ludo_ashwood",
+     "detail": "sq-boardwalk-plank"
+    },
+    {
+     "id": "e17",
+     "kind": "gift",
+     "day": 1.17,
+     "actor": "ash",
+     "target": "tn_oh_ludo_ashwood",
+     "item": "planks",
+     "quantity": 2,
+     "cell": "cn_fenshore_alehouse"
+    },
+    {
+     "id": "e18",
+     "kind": "gift again",
+     "day": 1.18,
+     "actor": "ash",
+     "target": "tn_oh_ludo_ashwood",
+     "item": "nails",
+     "quantity": 4
+    },
+    {
+     "id": "e19",
+     "kind": "gift used",
+     "day": 1.19,
+     "actor": "ash",
+     "cell": "w_ridgemere_3_13",
+     "item": "blinker",
+     "detail": "shortcut"
+    },
+    {
+     "id": "e20",
+     "kind": "quest handed in",
+     "day": 1.2,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_oh_ludo_ashwood",
+     "detail": "sq-boardwalk-plank"
+    },
+    {
+     "id": "e21",
+     "kind": "quest accepted",
+     "day": 1.21,
+     "actor": "birch",
+     "target": "run",
+     "item": "cty_leif_rainley",
+     "detail": "sq-twine-for-the-nets"
+    },
+    {
+     "id": "e22",
+     "kind": "gift",
+     "day": 1.22,
+     "actor": "birch",
+     "target": "cty_leif_rainley",
+     "item": "cord",
+     "quantity": 1
+    },
+    {
+     "id": "e23",
+     "kind": "death",
+     "day": 1.72,
+     "actor": "cty_leif_rainley",
+     "cell": "w_ridgemere_3_14"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-twine-for-the-nets": {
+     "ash": "done",
+     "birch": "failed"
+    },
+    "sq-fenside-pans": {
+     "ash": "done"
+    },
+    "sq-mirebridge-clay": {
+     "ash": "done"
+    },
+    "sq-boardwalk-plank": {
+     "ash": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "coin_fenshore_day": 12,
+     "nh_realm": 16,
+     "nh_voice_fenshore": 16,
+     "nh_names": 0
+    },
+    "player": {
+     "ash": {
+      "sq_done": 4
+     }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:larkfield": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
+    }
+   }
+  },
+  {
+   "name": "Saltwell: salt, rabbits, a cart and a caravan met; one wolf away runs out of time",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "ash",
+     "target": "run",
+     "item": "cty_winifred_fogridge",
+     "detail": "sq-salt-for-the-road"
+    },
+    {
+     "id": "e1a",
+     "kind": "quest abandoned",
+     "day": 1.011,
+     "actor": "ash",
+     "target": "run",
+     "detail": "sq-salt-for-the-road"
+    },
+    {
+     "id": "e1b",
+     "kind": "quest accepted",
+     "day": 1.012,
+     "actor": "ash",
+     "target": "run",
+     "item": "cty_winifred_fogridge",
+     "detail": "sq-salt-for-the-road"
+    },
+    {
+     "id": "e2",
+     "kind": "gift used",
+     "day": 1.02,
+     "actor": "ash",
+     "cell": "w_ridgemere_13_12",
+     "item": "gravity",
+     "detail": "lighten_load"
+    },
+    {
+     "id": "e3",
+     "kind": "gift",
+     "day": 1.03,
+     "actor": "ash",
+     "target": "tn_fh_thistle_stonepick",
+     "item": "salt",
+     "quantity": 2
+    },
+    {
+     "id": "e4",
+     "kind": "quest handed in",
+     "day": 1.04,
+     "actor": "ash",
+     "target": "run",
+     "item": "cty_winifred_fogridge",
+     "detail": "sq-salt-for-the-road"
+    },
+    {
+     "id": "e5",
+     "kind": "quest accepted",
+     "day": 1.05,
+     "actor": "ash",
+     "target": "run",
+     "item": "cty_senna_applegarth",
+     "detail": "sq-ochre-rabbits"
+    },
+    {
+     "id": "e6",
+     "kind": "hunted",
+     "day": 1.06,
+     "actor": "ash",
+     "target": "rabbit",
+     "cell": "w_ridgemere_9_10",
+     "detail": "a clean kill",
+     "quantity": 2
+    },
+    {
+     "id": "e7",
+     "kind": "hunted",
+     "day": 1.07,
+     "actor": "ash",
+     "target": "rabbit",
+     "cell": "w_ridgemere_9_10",
+     "detail": "a good kill",
+     "quantity": 2
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.08,
+     "actor": "ash",
+     "target": "run",
+     "item": "cty_senna_applegarth",
+     "detail": "sq-ochre-rabbits"
+    },
+    {
+     "id": "e9",
+     "kind": "quest accepted",
+     "day": 1.09,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_lf_moss_downridge",
+     "detail": "sq-caravan-welcome"
+    },
+    {
+     "id": "e10",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "birch",
+     "target": "run",
+     "item": "tn_lf_moss_downridge",
+     "detail": "sq-caravan-welcome"
+    },
+    {
+     "id": "e11",
+     "kind": "quest accepted",
+     "day": 1.11,
+     "actor": "cedar",
+     "target": "run",
+     "item": "tn_lf_moss_downridge",
+     "detail": "sq-caravan-welcome"
+    },
+    {
+     "id": "e12",
+     "kind": "quest abandoned",
+     "day": 1.12,
+     "actor": "cedar",
+     "target": "run",
+     "detail": "sq-caravan-welcome"
+    },
+    {
+     "id": "e13",
+     "kind": "shared meal",
+     "day": 1.13,
+     "actor": "ash",
+     "target": "tn_lf_moss_downridge",
+     "cell": "cn_saltwell_inn"
+    },
+    {
+     "id": "e14",
+     "kind": "cart arrives",
+     "day": 1.14,
+     "actor": "cv12",
+     "target": "saltwell",
+     "cell": "w_ridgemere_12_11",
+     "item": "rabbit_warren_2",
+     "detail": "from rabbit_warren_2",
+     "quantity": 3
+    },
+    {
+     "id": "e15a",
+     "kind": "trade done",
+     "day": 1.145,
+     "actor": "ash",
+     "target": "tn_mb_oriel_marshditch",
+     "cell": "cn_saltwell_inn",
+     "item": "porridge",
+     "detail": "sold",
+     "quantity": 1,
+     "coins": 1
+    },
+    {
+     "id": "e15b",
+     "kind": "shared meal",
+     "day": 1.146,
+     "actor": "ash",
+     "target": "tn_lf_moss_downridge",
+     "cell": "cn_saltwell_cottage_2"
+    },
+    {
+     "id": "e15",
+     "kind": "trade done",
+     "day": 1.15,
+     "actor": "ash",
+     "target": "tn_mb_oriel_marshditch",
+     "cell": "cn_saltwell_inn",
+     "item": "porridge",
+     "detail": "bought",
+     "quantity": 1,
+     "coins": 1
+    },
+    {
+     "id": "e16",
+     "kind": "gift used",
+     "day": 1.16,
+     "actor": "ash",
+     "cell": "w_ridgemere_12_11",
+     "item": "water",
+     "detail": "dowse"
+    },
+    {
+     "id": "e17",
+     "kind": "quest handed in",
+     "day": 1.17,
+     "actor": "ash",
+     "target": "run",
+     "item": "tn_lf_moss_downridge",
+     "detail": "sq-caravan-welcome"
+    },
+    {
+     "id": "e18a",
+     "kind": "quest accepted",
+     "day": 3.0,
+     "actor": "dune",
+     "target": "run",
+     "item": "tn_lf_moss_downridge",
+     "detail": "sq-caravan-welcome"
+    },
+    {
+     "id": "e18",
+     "kind": "clock",
+     "day": 3.67,
+     "actor": ""
+    },
+    {
+     "id": "e19",
+     "kind": "caravan arrives",
+     "day": 3.68,
+     "actor": "cv13",
+     "target": "saltwell",
+     "cell": "w_ridgemere_12_11",
+     "item": "dep8",
+     "detail": "from southmeadow",
+     "quantity": 2
+    },
+    {
+     "id": "e20",
+     "kind": "shared meal",
+     "day": 3.7,
+     "actor": "dune",
+     "target": "tn_mb_oriel_marshditch",
+     "cell": "cn_saltwell_inn"
+    },
+    {
+     "id": "e21",
+     "kind": "quest handed in",
+     "day": 3.71,
+     "actor": "dune",
+     "target": "run",
+     "item": "tn_lf_moss_downridge",
+     "detail": "sq-caravan-welcome"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "wolves": {
+     "ash": {
+      "town": "saltwell",
+      "cell": "w_ridgemere_12_11",
+      "x": 220,
+      "y": 115
+     },
+     "birch": {
+      "town": "saltwell",
+      "cell": "w_ridgemere_12_11",
+      "x": 40,
+      "y": 40
+     },
+     "dune": {
+      "town": "saltwell",
+      "cell": "w_ridgemere_12_11",
+      "x": 218,
+      "y": 112
+     }
+    },
+    "purses": {
+     "town:fenshore": 2000,
+     "town:larkfield": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
+    }
+   },
+   "expectQuests": {
+    "sq-salt-for-the-road": {
+     "ash": "done"
+    },
+    "sq-ochre-rabbits": {
+     "ash": "done"
+    },
+    "sq-caravan-welcome": {
+     "ash": "done",
+     "birch": "failed",
+     "cedar": "abandoned",
+     "dune": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "coin_saltwell_day": 10,
+     "nh_realm": 16,
+     "nh_voice_saltwell": 16
+    },
+    "story": {
+     "sq_wagon_waiters": []
+    },
+    "player": {
+     "ash": {
+      "sq_done": 3
+     }
+    }
+   }
+  }
+ ]
+}

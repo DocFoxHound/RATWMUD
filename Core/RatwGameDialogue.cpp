@@ -681,7 +681,7 @@ void Game::dialogueRoleFacts(const std::string& playerId, const std::string& npc
     f["here.witnessed"] = std::to_string(witnessed);
     int camps = 0;
     for (const auto& camp : world_.roads().camps)
-        camps += camp.active;
+        camps += camp.active && !World::storyFoeCamp(camp.id);   // (A story's foe is no bandit camp: doc 86, C10.)
     f["here.camps"] = std::to_string(camps);
     {
         const auto* market = world_.roadMarketOf(npc->cellId);
@@ -1108,7 +1108,9 @@ void Game::dialogueOpen(Connection* c, const std::string& npcId, const std::stri
     }
     if (npc->transient)
     {
-        refuse("busy", world_.hostile(npcId) ? "They want your purse, not your conversation." : npc->name + " has nothing to say to you just now.");
+        refuse("busy", world_.storyFoeOf(npcId) ? "They want a fight, not your conversation."
+                       : world_.hostile(npcId) ? "They want your purse, not your conversation."
+                                               : npc->name + " has nothing to say to you just now.");
         return;
     }
     if (npc->cellId != player->cellId ||
@@ -1230,10 +1232,41 @@ void Game::dialogueOpen(Connection* c, const std::string& npcId, const std::stri
         return;
     if (!kept.asleepAtOpen)
     {
-        const auto line = worldStoryLine(npcId, playerId);
+        // Doc 86, C5: a story's greeting for this wolf, once, in the resident's own voice, instead of the usual one (the
+        // talk window's opening line only: another entry's line, a fine's or an introduction's answer, is its own, and the
+        // greeting waits for Talk); and T5: the story's line for its wolves through the resident's voice too (#symbols#
+        // fill in their dialect).
+        const auto voiced = [&](const std::string& words) {
+            if (auto said = inVoice(npcId, playerId, words, q.facts); !said.empty())
+                return said;
+            // (Not said in their voice: a fact it reads is not known here, a title known only in another town. Its
+            // #symbols# are left out, never shown as written.)
+            std::string out;
+            for (std::size_t at = 0; at < words.size();)
+            {
+                const auto close = words[at] == '#' ? words.find('#', at + 1) : std::string::npos;
+                if (close != std::string::npos && words.find_first_of(" \t", at) > close)
+                {
+                    at = close + 1;
+                    continue;
+                }
+                if (!(words[at] == ' ' && (out.empty() || out.back() == ' ')))
+                    out += words[at];
+                ++at;
+            }
+            while (!out.empty() && out.back() == ' ') out.pop_back();
+            return out;
+        };
+        const auto greet = base == "talk" ? takeStoryGreet(npcId, playerId) : std::string();
+        auto line = worldStoryLine(npcId, playerId);
         if (!line.empty())
+            line = voiced(line);
+        if (!greet.empty())
+            kept.line = voiced(greet);
+        if (!line.empty())
+            kept.line += (kept.line.empty() ? "" : " ") + line;
+        if (!greet.empty() || !line.empty())
         {
-            kept.line += " " + line;
             if (!kept.history.empty()) kept.history.back().second = kept.line;
             dialogueSend(c, kept);
         }

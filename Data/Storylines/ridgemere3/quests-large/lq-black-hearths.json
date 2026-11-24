@@ -1,0 +1,8176 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "lq-black-hearths",
+ "title": "The Black Hearths",
+ "prefix": "lq",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "quietAfterHours": 0,
+ "variables": [
+  {
+   "id": "sacks_back",
+   "type": "number",
+   "scope": "story",
+   "show": "Sacks taken back",
+   "note": "The shared goal: one for each pack that takes a marked sack back from the thieves (large 12a)."
+  },
+  {
+   "id": "sack_goal",
+   "type": "number",
+   "scope": "story",
+   "initial": 4,
+   "note": "Four, and one more for every three wolves who take a sack back (large 1.3)."
+  },
+  {
+   "id": "helpers",
+   "type": "wolves",
+   "scope": "story",
+   "note": "Wolves who have taken a sack back this visit."
+  },
+  {
+   "id": "third",
+   "type": "number",
+   "scope": "story",
+   "note": "New helpers since the goal last grew."
+  },
+  {
+   "id": "t_contract",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for a price by the sack (1 a wolf, 2 after a pack)."
+  },
+  {
+   "id": "t_home",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for selling on the Frosthollow square."
+  },
+  {
+   "id": "t_green",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for the Greenholt wagons."
+  },
+  {
+   "id": "reckon_set",
+   "type": "switch",
+   "scope": "story",
+   "note": "The 3-day tally has begun."
+  },
+  {
+   "id": "kept",
+   "type": "switch",
+   "scope": "story",
+   "note": "A wolf took a chapter this season (the hearths are being kept)."
+  },
+  {
+   "id": "spawned_tarn_yard",
+   "type": "switch",
+   "scope": "story",
+   "note": "A story band stands at the drying fire (decisions 4.1)."
+  },
+  {
+   "id": "spawned_tarn_yard_b",
+   "type": "switch",
+   "scope": "story",
+   "note": "A story band stands in the pines east of the tarn."
+  },
+  {
+   "id": "lq_coin",
+   "type": "number",
+   "scope": "player",
+   "note": "Coin this line has paid the wolf, ever (35 at most)."
+  },
+  {
+   "id": "lq_thin",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf was paid in kind (a thin purse)."
+  },
+  {
+   "id": "road",
+   "type": "text",
+   "scope": "player",
+   "note": "The road the wolf took in chapter 3 (one only)."
+  },
+  {
+   "id": "pack2",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf broke the band with a pack of two or more (a heavier vote)."
+  },
+  {
+   "id": "paid_tarn",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf has broken the band once (its first reward given)."
+  },
+  {
+   "id": "on_ch1",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf is on Wet Coal (for the floor by daylight)."
+  },
+  {
+   "id": "threat_day",
+   "type": "number",
+   "scope": "story",
+   "note": "Story camps that have lowered nh_threat today (3 at most a day; set to 0 at day begins)."
+  },
+  {
+   "id": "lq_hearths",
+   "type": "text",
+   "scope": "world",
+   "note": "The Black Hearths: undersold, contract, home or greenholt."
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "note": "The realm's voice; a road done adds 12."
+  },
+  {
+   "id": "nh_voice_frosthollow",
+   "type": "number",
+   "scope": "world",
+   "note": "Frosthollow's strand; a road done adds 12 (the Greenholt road 3)."
+  },
+  {
+   "id": "nh_voice_larkfield",
+   "type": "number",
+   "scope": "world",
+   "note": "Larkfield's strand; the Greenholt road adds 3."
+  },
+  {
+   "id": "nh_threat",
+   "type": "number",
+   "scope": "world",
+   "note": "The roads' threat; each tarn camp cleared takes 1, the band broken 3 (never below 0).",
+   "initial": 30
+  },
+  {
+   "id": "coin_frosthollow_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:frosthollow; nh-purses owns it (sets it to 0 each day). This story only reads and adds."
+  },
+  {
+   "id": "coin_frosthollow_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:frosthollow above its floor (nh-purses turns it off below 60, on at 80). Read only here."
+  }
+ ],
+ "regions": [
+  {
+   "id": "east_floor",
+   "cell": "w_ridgemere_10_3",
+   "x1": 156,
+   "y1": 196,
+   "x2": 175,
+   "y2": 215
+  },
+  {
+   "id": "tarn_yard",
+   "cell": "w_ridgemere_10_2",
+   "x1": 88,
+   "y1": 176,
+   "x2": 107,
+   "y2": 195
+  },
+  {
+   "id": "tarn_yard_b",
+   "cell": "w_ridgemere_10_2",
+   "x1": 132,
+   "y1": 152,
+   "x2": 151,
+   "y2": 171
+  },
+  {
+   "id": "fh_square",
+   "cell": "w_ridgemere_9_3",
+   "x1": 0,
+   "y1": 18,
+   "x2": 14,
+   "y2": 38
+  },
+  {
+   "id": "greenholt_yard",
+   "cell": "w_ridgemere_4_8",
+   "x1": 228,
+   "y1": 68,
+   "x2": 247,
+   "y2": 87
+  }
+ ],
+ "quests": [
+  {
+   "id": "undersold",
+   "title": "Wet Coal",
+   "giver": "cty_marl_craghearth",
+   "board": "frosthollow",
+   "repeat": "once",
+   "join": {
+    "cap": 40
+   },
+   "summary": "The Upper hearths' charcoal sells at half in the city, called wet. Follow it down and find out why.",
+   "offer": {
+    "ask": "Your charcoal's not selling?",
+    "say": "#greet#, #address#. It sells. At half. The city store says our sacks come in wet. They leave here dry, I'd stake the hearth on it. Ask our carter what they paid, look over the east floor by daylight, ask the young collier what she found at dawn, then go down and see the store yourself.",
+    "accept": "I'll find out where the dry sacks go.",
+    "decline": "Not today.",
+    "handIn": "Your char is sold twice and dried once.",
+    "thanks": "#thanks#. Wetted at night, dried by somebody else, sold at the yard door for half. A riddle with a band of thieves at the bottom of it. Find their fire. It won't be far from water."
+   },
+   "objectives": [
+    {
+     "id": "carter",
+     "label": "Ask the carter what the city store paid.",
+     "on": "conversation",
+     "match": {
+      "target": "cty_ebba_coalgate"
+     }
+    },
+    {
+     "id": "floor",
+     "label": "Look over the east burning floor by daylight.",
+     "on": "story signal",
+     "signal": "floor_seen"
+    },
+    {
+     "id": "collier",
+     "label": "Ask the young collier what she found at dawn.",
+     "on": "conversation",
+     "match": {
+      "target": "cty_iris_fernhaven"
+     }
+    },
+    {
+     "id": "store",
+     "label": "Go down to the Timberland Charcoal Store in Ridgemere.",
+     "on": "enter place",
+     "match": {
+      "target": "rm_the_charcoal_store"
+     }
+    },
+    {
+     "id": "hand",
+     "label": "Ask the store hand where his cheap sacks come from.",
+     "on": "conversation",
+     "match": {
+      "target": "rm_arne_ashton"
+     },
+     "after": [
+      "store"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "followed the Upper hearths' charcoal down to the city"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "charcoal",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "id": "tarnfire",
+   "title": "The Fire Below the Tarn",
+   "scope": "party",
+   "repeat": "weekly",
+   "join": {
+    "cap": 12
+   },
+   "summary": "Find where the stolen char is dried, below Kestrel Tarn, break the thieves and take back a marked sack.",
+   "objectives": [
+    {
+     "id": "count",
+     "label": "Ask the collier who counts everything how much waste went missing.",
+     "on": "conversation",
+     "match": {
+      "target": "cty_stone_acorndell"
+     }
+    },
+    {
+     "id": "quarry",
+     "label": "Ask the lime burner what passed on the quarry road.",
+     "on": "conversation",
+     "match": {
+      "target": "cty_leif_driphand"
+     },
+     "optional": true
+    },
+    {
+     "id": "fire",
+     "label": "Find the thieves' drying fire below Kestrel Tarn after dark.",
+     "on": "story signal",
+     "signal": "fire_found"
+    },
+    {
+     "id": "thieves",
+     "label": "Bring down the charcoal thieves.",
+     "on": "bandit falls",
+     "match": {
+      "cell": "w_ridgemere_10_2",
+      "target": {
+       "in": [
+        "camp_story_lq_tarn_yard",
+        "camp_story_lq_tarn_yard_b"
+       ]
+      }
+     },
+     "goal": 3,
+     "after": [
+      "fire"
+     ]
+    },
+    {
+     "id": "sack",
+     "label": "Take back a sack with the Upper hearths' mark on it.",
+     "on": "item picked up",
+     "match": {
+      "item": "sack",
+      "cell": "w_ridgemere_10_2"
+     },
+     "after": [
+      "thieves"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    }
+   ]
+  },
+  {
+   "id": "hearth_contract",
+   "title": "A Price by the Sack",
+   "phases": [
+    "reckoning",
+    "after_contract",
+    "after_home",
+    "after_greenholt"
+   ],
+   "repeat": "once",
+   "summary": "Win the Upper hearths a price by the sack from the city store.",
+   "objectives": [
+    {
+     "id": "choice",
+     "label": "Tell the collier: sell to the city store, at a price by the sack.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "cty_marl_craghearth",
+      "detail": "lq_bh_contract"
+     }
+    },
+    {
+     "id": "dry",
+     "label": "Give the store hand two sacks of charcoal, to show him what dry looks like.",
+     "on": "gift",
+     "match": {
+      "target": "rm_arne_ashton",
+      "item": "charcoal"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "after": [
+      "choice"
+     ]
+    },
+    {
+     "id": "carter",
+     "label": "Tell the carter she drives on Marketday.",
+     "on": "conversation",
+     "match": {
+      "target": "cty_ebba_coalgate"
+     },
+     "after": [
+      "choice"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "won the Upper hearths a price by the sack in the city"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "hobnail_boots",
+     "quantity": 1
+    }
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "undersold",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "tarnfire",
+      "status": "done"
+     }
+    ]
+   }
+  },
+  {
+   "id": "hearth_home",
+   "title": "Frosthollow Burns Its Own",
+   "phases": [
+    "reckoning",
+    "after_contract",
+    "after_home",
+    "after_greenholt"
+   ],
+   "repeat": "once",
+   "summary": "Help Frosthollow sell its own charcoal on its own square.",
+   "objectives": [
+    {
+     "id": "choice",
+     "label": "Tell the collier: sell it here, on our own square.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "cty_marl_craghearth",
+      "detail": "lq_bh_home"
+     }
+    },
+    {
+     "id": "stall",
+     "label": "Give the collier two sacks of charcoal for the stall.",
+     "on": "gift",
+     "match": {
+      "target": "cty_marl_craghearth",
+      "item": "charcoal"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "after": [
+      "choice"
+     ]
+    },
+    {
+     "id": "market",
+     "label": "Stand the Frosthollow square with the colliers on a Marketday.",
+     "on": "story signal",
+     "signal": "market_stood",
+     "after": [
+      "choice"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "sold Frosthollow's charcoal on its own square"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "hobnail_boots",
+     "quantity": 1
+    }
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "undersold",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "tarnfire",
+      "status": "done"
+     }
+    ]
+   }
+  },
+  {
+   "id": "hearth_greenholt",
+   "title": "The Greenholt Wagons",
+   "phases": [
+    "reckoning",
+    "after_contract",
+    "after_home",
+    "after_greenholt"
+   ],
+   "repeat": "once",
+   "summary": "Carry the Upper hearths' charcoal to the Greenholt hearths, to sell with theirs.",
+   "objectives": [
+    {
+     "id": "choice",
+     "label": "Tell the collier: let the Greenholt hearths sell it with theirs.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "cty_marl_craghearth",
+      "detail": "lq_bh_greenholt"
+     }
+    },
+    {
+     "id": "carry",
+     "label": "Carry charcoal to the Greenholt hearths in the Rainwood.",
+     "on": "story signal",
+     "signal": "greenholt_carried",
+     "after": [
+      "choice"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "carried the Upper hearths' charcoal to the Greenholt wagons"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "hobnail_boots",
+     "quantity": 1
+    }
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "undersold",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "tarnfire",
+      "status": "done"
+     }
+    ]
+   }
+  }
+ ],
+ "triggers": [
+  {
+   "id": "undersold-start",
+   "on": "quest started",
+   "audience": "participant",
+   "match": {
+    "detail": "undersold"
+   },
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "on_ch1"
+    }
+   ]
+  },
+  {
+   "id": "undersold-done",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "undersold"
+   },
+   "note": "Chapter 2 by journal (no giver: large 1.1).",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "on_ch1"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "quest.offer",
+      "quest": "tarnfire",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "floor-seen",
+   "on": "region entered",
+   "audience": "participant",
+   "match": {
+    "target": "east_floor"
+   },
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "hour between",
+      "from": 6,
+      "to": 18
+     },
+     {
+      "test": "switch",
+      "var": "on_ch1",
+      "is": true
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "undersold",
+      "objective": "floor",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "journal.note",
+      "player": "$actor",
+      "text": "Clamps opened from the side, the crust wet through, and the raked-out char gone.",
+      "ifRefused": "skip"
+     }
+    }
+   ]
+  },
+  {
+   "id": "fire-tarn_yard",
+   "on": "region entered",
+   "audience": "participant",
+   "match": {
+    "target": "tarn_yard"
+   },
+   "if": {
+    "test": "hour between",
+    "from": 20,
+    "to": 4
+   },
+   "note": "After dark at the drying fire: the band rises where the wolves stand, or in the other yard if a band stands here.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "tarnfire",
+      "objective": "fire",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "spawned_tarn_yard",
+      "is": false
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "spawned_tarn_yard"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "count in region",
+        "region": "tarn_yard",
+        "op": ">=",
+        "value": 5
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "tarn_yard",
+          "count": 6,
+          "ifRefused": "skip",
+          "camp": "lq_tarn_yard"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "count in region",
+          "region": "tarn_yard",
+          "op": ">=",
+          "value": 3
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "tarn_yard",
+            "count": 4,
+            "ifRefused": "skip",
+            "camp": "lq_tarn_yard"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "count in region",
+          "region": "tarn_yard",
+          "op": ">=",
+          "value": 2
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "tarn_yard",
+            "count": 3,
+            "ifRefused": "skip",
+            "camp": "lq_tarn_yard"
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "tarn_yard",
+          "count": 2,
+          "ifRefused": "skip",
+          "camp": "lq_tarn_yard"
+         }
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "switch",
+        "var": "spawned_tarn_yard_b",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "spawned_tarn_yard_b"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "count in region",
+          "region": "tarn_yard_b",
+          "op": ">=",
+          "value": 5
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "tarn_yard_b",
+            "count": 6,
+            "ifRefused": "skip",
+            "camp": "lq_tarn_yard_b"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "count in region",
+            "region": "tarn_yard_b",
+            "op": ">=",
+            "value": 3
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "tarn_yard_b",
+              "count": 4,
+              "ifRefused": "skip",
+              "camp": "lq_tarn_yard_b"
+             }
+            }
+           ]
+          },
+          {
+           "if": {
+            "test": "count in region",
+            "region": "tarn_yard_b",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "tarn_yard_b",
+              "count": 3,
+              "ifRefused": "skip",
+              "camp": "lq_tarn_yard_b"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "tarn_yard_b",
+            "count": 2,
+            "ifRefused": "skip",
+            "camp": "lq_tarn_yard_b"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "fire-tarn_yard_b",
+   "on": "region entered",
+   "audience": "participant",
+   "match": {
+    "target": "tarn_yard_b"
+   },
+   "if": {
+    "test": "hour between",
+    "from": 20,
+    "to": 4
+   },
+   "note": "After dark at the drying fire: the band rises where the wolves stand, or in the other yard if a band stands here.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "tarnfire",
+      "objective": "fire",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "spawned_tarn_yard_b",
+      "is": false
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "spawned_tarn_yard_b"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "count in region",
+        "region": "tarn_yard_b",
+        "op": ">=",
+        "value": 5
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "tarn_yard_b",
+          "count": 6,
+          "ifRefused": "skip",
+          "camp": "lq_tarn_yard_b"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "count in region",
+          "region": "tarn_yard_b",
+          "op": ">=",
+          "value": 3
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "tarn_yard_b",
+            "count": 4,
+            "ifRefused": "skip",
+            "camp": "lq_tarn_yard_b"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "count in region",
+          "region": "tarn_yard_b",
+          "op": ">=",
+          "value": 2
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "tarn_yard_b",
+            "count": 3,
+            "ifRefused": "skip",
+            "camp": "lq_tarn_yard_b"
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "tarn_yard_b",
+          "count": 2,
+          "ifRefused": "skip",
+          "camp": "lq_tarn_yard_b"
+         }
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "switch",
+        "var": "spawned_tarn_yard",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "spawned_tarn_yard"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "count in region",
+          "region": "tarn_yard",
+          "op": ">=",
+          "value": 5
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "tarn_yard",
+            "count": 6,
+            "ifRefused": "skip",
+            "camp": "lq_tarn_yard"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "count in region",
+            "region": "tarn_yard",
+            "op": ">=",
+            "value": 3
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "tarn_yard",
+              "count": 4,
+              "ifRefused": "skip",
+              "camp": "lq_tarn_yard"
+             }
+            }
+           ]
+          },
+          {
+           "if": {
+            "test": "count in region",
+            "region": "tarn_yard",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "tarn_yard",
+              "count": 3,
+              "ifRefused": "skip",
+              "camp": "lq_tarn_yard"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "tarn_yard",
+            "count": 2,
+            "ifRefused": "skip",
+            "camp": "lq_tarn_yard"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "camp-cleared",
+   "on": "camp cleared",
+   "match": {
+    "cell": "w_ridgemere_10_2",
+    "target": {
+     "in": [
+      "camp_story_lq_tarn_yard",
+      "camp_story_lq_tarn_yard_b"
+     ]
+    }
+   },
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "spawned_tarn_yard",
+      "is": true
+     },
+     {
+      "test": "switch",
+      "var": "spawned_tarn_yard_b",
+      "is": true
+     }
+    ]
+   },
+   "note": "A story band broken (cell and switch: decisions 4.1); a marked sack is left by the fire. Broken by a wolf outside both yards (the fight moved), or by the watch: both switches off and the sack by the first fire, so neither yard stays stuck.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "wolf in region",
+      "region": "tarn_yard_b"
+     },
+     "then": [
+      {
+       "do": "turn off",
+       "var": "spawned_tarn_yard_b"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.place",
+        "item": "sack",
+        "quantity": 1,
+        "cell": "w_ridgemere_10_2",
+        "x": 141,
+        "y": 161,
+        "ifRefused": "skip"
+       }
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "wolf in region",
+        "region": "tarn_yard"
+       },
+       "then": [
+        {
+         "do": "turn off",
+         "var": "spawned_tarn_yard"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "sack",
+          "quantity": 1,
+          "cell": "w_ridgemere_10_2",
+          "x": 97,
+          "y": 185,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "turn off",
+       "var": "spawned_tarn_yard"
+      },
+      {
+       "do": "turn off",
+       "var": "spawned_tarn_yard_b"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.place",
+        "item": "sack",
+        "quantity": 1,
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "threat_day"
+      },
+      "op": "<",
+      "right": 3
+     },
+     "then": [
+      {
+       "do": "subtract",
+       "var": "nh_threat",
+       "value": 1
+      },
+      {
+       "do": "clamp",
+       "var": "nh_threat",
+       "min": 0,
+       "max": 100
+      },
+      {
+       "do": "add",
+       "var": "threat_day",
+       "value": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "camp-scattered",
+   "on": "bandits scattered",
+   "match": {
+    "cell": "w_ridgemere_10_2"
+   },
+   "note": "A band nobody came to fight starves out after a few weeks: the switches go off, so the fire can be found again in any phase.",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "spawned_tarn_yard"
+    },
+    {
+     "do": "turn off",
+     "var": "spawned_tarn_yard_b"
+    }
+   ]
+  },
+  {
+   "id": "sack-back",
+   "on": "objective completed",
+   "match": {
+    "detail": "tarnfire",
+    "item": "sack"
+   },
+   "if": {
+    "test": "phase is",
+    "phase": "open"
+   },
+   "note": "The shared goal: a marked sack back from each pack; every third new helper grows it by one.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "in list",
+       "list": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      }
+     },
+     "then": [
+      {
+       "do": "list add",
+       "var": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      },
+      {
+       "do": "add",
+       "var": "third",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "third"
+        },
+        "op": ">=",
+        "right": 3
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "third",
+         "value": 0
+        },
+        {
+         "do": "add",
+         "var": "sack_goal",
+         "value": 1
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "sacks_back",
+     "value": 1
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "sacks_back"
+      },
+      "op": ">=",
+      "right": {
+       "var": "sack_goal"
+      }
+     },
+     "then": [
+      {
+       "do": "schedule",
+       "signal": "band_broken",
+       "days": 0.0006944444444444445
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "tarnfire-done",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "tarnfire"
+   },
+   "note": "Each of the pack: the first-time rewards and 6 from the Frosthollow stores (decisions 3.2), the roads by journal.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "party size",
+      "op": ">=",
+      "value": 2
+     },
+     "then": [
+      {
+       "do": "each",
+       "over": "party",
+       "actions": [
+        {
+         "do": "turn on",
+         "var": "pack2",
+         "of": "$each"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "each",
+     "over": "party",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "paid_tarn",
+        "is": false,
+        "of": "$each"
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "paid_tarn",
+         "of": "$each"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$each",
+          "detail": "broke the charcoal thieves at their fire below Kestrel Tarn",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$each",
+          "item": "wool_scarf",
+          "quantity": 1,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_frosthollow_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_frosthollow_day"
+            },
+            "op": "<=",
+            "right": 18
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "lq_coin",
+             "of": "$each"
+            },
+            "op": "<=",
+            "right": 29
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:frosthollow"
+            },
+            "op": ">=",
+            "right": 66
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$each",
+            "coins": {
+             "min": [
+              6,
+              {
+               "div": [
+                {
+                 "purse": "town:frosthollow"
+                },
+                20
+               ]
+              }
+             ]
+            },
+            "purse": "town:frosthollow",
+            "reason": "the Upper hearths thank you for the sacks",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_frosthollow_day",
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:frosthollow"
+               },
+               20
+              ]
+             }
+            ]
+           }
+          },
+          {
+           "do": "add",
+           "var": "lq_coin",
+           "of": "$each",
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:frosthollow"
+               },
+               20
+              ]
+             }
+            ]
+           }
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$each",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "turn on",
+           "var": "lq_thin",
+           "of": "$each"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "talk.remember",
+            "scope": "realm",
+            "key": "lq_hearths_thin",
+            "value": "yes",
+            "days": 1
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$each",
+            "text": "The Frosthollow stores are thin this week, so the thanks comes as bread instead of coin.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "hearth_contract",
+        "player": "$each"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "hearth_home",
+        "player": "$each"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "hearth_greenholt",
+        "player": "$each"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-start",
+   "on": "quest started",
+   "audience": "participant",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "compare",
+      "left": {
+       "field": "detail"
+      },
+      "op": "=",
+      "right": "hearth_contract"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "field": "detail"
+      },
+      "op": "=",
+      "right": "hearth_home"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "field": "detail"
+      },
+      "op": "=",
+      "right": "hearth_greenholt"
+     }
+    ]
+   },
+   "note": "One road a wolf. The first: its weight on the tally; the first of all starts the 3-day reckoning.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "hearth_contract"
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "road",
+         "value": "hearth_contract"
+        },
+        {
+         "do": "add",
+         "var": "t_contract",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "pack2",
+          "is": true
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "t_contract",
+           "value": 1
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "hearth_home"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "road",
+           "value": "hearth_home"
+          },
+          {
+           "do": "add",
+           "var": "t_home",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "switch",
+            "var": "pack2",
+            "is": true
+           },
+           "then": [
+            {
+             "do": "add",
+             "var": "t_home",
+             "value": 1
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "set",
+         "var": "road",
+         "value": "hearth_greenholt"
+        },
+        {
+         "do": "add",
+         "var": "t_green",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "pack2",
+          "is": true
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "t_green",
+           "value": 1
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "reckoning"
+         },
+         {
+          "test": "switch",
+          "var": "reckon_set",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "reckon_set"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "road"
+        },
+        "op": "!=",
+        "right": {
+         "field": "detail"
+        }
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "hearth_contract"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.fail",
+            "quest": "hearth_contract",
+            "player": "$actor"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "compare",
+            "left": {
+             "field": "detail"
+            },
+            "op": "=",
+            "right": "hearth_home"
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "quest.fail",
+              "quest": "hearth_home",
+              "player": "$actor"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.fail",
+            "quest": "hearth_greenholt",
+            "player": "$actor"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Another road taken: you have already said how the hearths' charcoal is sold.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "market-day",
+   "on": "region entered",
+   "audience": "participant",
+   "match": {
+    "target": "fh_square"
+   },
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "calendar is",
+      "what": "weekday",
+      "value": "Marketday"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": "hearth_home"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "hearth_home",
+      "objective": "market",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "greenholt-carry",
+   "on": "region entered",
+   "audience": "participant",
+   "match": {
+    "target": "greenholt_yard"
+   },
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "carries",
+      "item": "charcoal",
+      "op": ">=",
+      "value": 1
+     },
+     {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": "hearth_greenholt"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "hearth_greenholt",
+      "objective": "carry",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "hearth_contract-done",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "hearth_contract"
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_frosthollow_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_frosthollow_day"
+        },
+        "op": "<=",
+        "right": 12
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:frosthollow"
+        },
+        "op": ">=",
+        "right": 72
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:frosthollow"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:frosthollow",
+        "reason": "the Upper hearths thank you",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_frosthollow_day",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:frosthollow"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:frosthollow"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "realm",
+        "key": "lq_hearths_thin",
+        "value": "yes",
+        "days": 1
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The Frosthollow stores are thin this week, so the thanks comes as bread instead of coin.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 12
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_frosthollow",
+     "value": 12
+    }
+   ]
+  },
+  {
+   "id": "hearth_home-done",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "hearth_home"
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_frosthollow_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_frosthollow_day"
+        },
+        "op": "<=",
+        "right": 12
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:frosthollow"
+        },
+        "op": ">=",
+        "right": 72
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:frosthollow"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:frosthollow",
+        "reason": "the Upper hearths thank you",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_frosthollow_day",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:frosthollow"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:frosthollow"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "realm",
+        "key": "lq_hearths_thin",
+        "value": "yes",
+        "days": 1
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The Frosthollow stores are thin this week, so the thanks comes as bread instead of coin.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 12
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_frosthollow",
+     "value": 12
+    }
+   ]
+  },
+  {
+   "id": "hearth_greenholt-done",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "hearth_greenholt"
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_frosthollow_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_frosthollow_day"
+        },
+        "op": "<=",
+        "right": 12
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:frosthollow"
+        },
+        "op": ">=",
+        "right": 72
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:frosthollow"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:frosthollow",
+        "reason": "the Upper hearths thank you",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_frosthollow_day",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:frosthollow"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:frosthollow"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "realm",
+        "key": "lq_hearths_thin",
+        "value": "yes",
+        "days": 1
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The Frosthollow stores are thin this week, so the thanks comes as bread instead of coin.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 12
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_frosthollow",
+     "value": 3
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_larkfield",
+     "value": 3
+    }
+   ]
+  },
+  {
+   "id": "emberday",
+   "on": "day begins",
+   "match": {
+    "detail": "Emberday"
+   },
+   "if": {
+    "test": "phase is",
+    "phase": "open"
+   },
+   "note": "Before the reckoning the band comes back each week, whether or not its last fire was found.",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "spawned_tarn_yard"
+    },
+    {
+     "do": "turn off",
+     "var": "spawned_tarn_yard_b"
+    }
+   ]
+  },
+  {
+   "id": "day-sweep",
+   "on": "day begins",
+   "note": "The fire again each week to those who broke it, and the roads to those who have none.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "paid_tarn",
+        "is": true,
+        "of": "$each"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "quest.offer",
+          "quest": "tarnfire",
+          "player": "$each"
+         }
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "road",
+           "of": "$each"
+          },
+          "op": "=",
+          "right": ""
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "hearth_contract",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "hearth_home",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "hearth_greenholt",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "set",
+     "var": "threat_day",
+     "value": 0
+    }
+   ]
+  },
+  {
+   "id": "season",
+   "on": "season begins",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "phase is",
+      "phase": "after_contract"
+     },
+     {
+      "test": "phase is",
+      "phase": "after_home"
+     },
+     {
+      "test": "phase is",
+      "phase": "after_greenholt"
+     }
+    ]
+   },
+   "note": "A new season: the thieves try the clamps again (large 1.1), at the cost of a fresh shared goal.",
+   "actions": [
+    {
+     "do": "enter",
+     "phase": "open"
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "The Upper hearths' charcoal sells at half in the city, called wet. Somebody damps the clamps by night.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_marl_craghearth",
+     "text": "What burns twice and is paid for once? Our charcoal, this season. Mind the east floor if you're up there at night."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_hearths",
+     "value": "undersold",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "open-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "Each visit: a fresh shared goal; a season's return gives the hearths 14 days before the band counts as back.",
+     "actions": [
+      {
+       "do": "set",
+       "var": "sacks_back",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "sack_goal",
+       "value": 4
+      },
+      {
+       "do": "list clear",
+       "var": "helpers"
+      },
+      {
+       "do": "set",
+       "var": "third",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "t_contract",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "t_home",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "t_green",
+       "value": 0
+      },
+      {
+       "do": "turn off",
+       "var": "reckon_set"
+      },
+      {
+       "do": "turn off",
+       "var": "kept"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "lq_hearths"
+        },
+        "op": "=",
+        "right": ""
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "lq_hearths",
+         "value": "undersold"
+        }
+       ],
+       "else": [
+        {
+         "do": "schedule",
+         "signal": "band_back",
+         "days": 14
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "nh_threat"
+        },
+        "op": ">",
+        "right": 40
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "board.post",
+          "town": "frosthollow",
+          "days": 28,
+          "text": "Carters go two together on the pass road this season.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "keeping",
+     "on": "quest started",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "undersold"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "tarnfire"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "kept"
+      }
+     ]
+    },
+    {
+     "id": "band-back",
+     "on": "story signal",
+     "signal": "band_back",
+     "if": {
+      "test": "switch",
+      "var": "kept",
+      "is": false
+     },
+     "note": "Nobody came to the hearths in 14 days: the band is back, and the town hears it.",
+     "actions": [
+      {
+       "do": "set",
+       "var": "lq_hearths",
+       "value": "undersold"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "board.post",
+        "town": "frosthollow",
+        "days": 28,
+        "text": "THE UPPER HEARTHS: the east clamps are opened by night again. The colliers ask for wolves who don't mind the dark.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "id": "to-reckoning",
+     "on": "story signal",
+     "signal": "band_broken",
+     "note": "A game minute after the last sack, so the pack's own chapter is settled first.",
+     "actions": [
+      {
+       "do": "enter",
+       "phase": "reckoning"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "reckoning",
+   "journal": "The charcoal thieves are broken below Kestrel Tarn. Frosthollow must say how its charcoal is sold.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_marl_craghearth",
+     "text": "What has three roads and one cart? Our charcoal, now the thieves are gone. Come and tell me which road, and I'll stand by it."
+    },
+    {
+     "kind": "board.post",
+     "town": "frosthollow",
+     "days": 7,
+     "ifRefused": "skip",
+     "text": "THE UPPER HEARTHS: the charcoal thieves are broken below Kestrel Tarn. Now we say how our charcoal is sold. Ask the collier at the hearths."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_hearths",
+     "value": "undersold",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "reckoning-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "A game minute in: the band broken (threat down 3), the collier's choices, the roads to every wolf who broke it, and the default in 7 days if nobody chooses.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_marl_craghearth",
+        "id": "lq_bh_contract",
+        "words": "Sell to the city store, at a price by the sack.",
+        "reply": "A contract, paid when the cart unloads. Take the store hand two sacks to show him what dry looks like, and tell our carter she drives on Marketday."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_marl_craghearth",
+        "id": "lq_bh_home",
+        "words": "Sell it here, on our own square.",
+        "reply": "No yard door and no middle wolf. Bring me two sacks for the stall, and stand the square with us on Marketday."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_marl_craghearth",
+        "id": "lq_bh_greenholt",
+        "words": "Let the Greenholt hearths sell it with theirs.",
+        "reply": "Under their name, on their wagons. Safer roads and smaller coin. Carry them the first sacks, so they know we mean it."
+       }
+      },
+      {
+       "do": "subtract",
+       "var": "nh_threat",
+       "value": 3
+      },
+      {
+       "do": "clamp",
+       "var": "nh_threat",
+       "min": 0,
+       "max": 100
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "paid_tarn",
+            "is": true,
+            "of": "$each"
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "road",
+             "of": "$each"
+            },
+            "op": "=",
+            "right": ""
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "hearth_contract",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "hearth_home",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "hearth_greenholt",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "schedule",
+       "signal": "reckon",
+       "days": 7
+      }
+     ]
+    },
+    {
+     "id": "reckon",
+     "on": "story signal",
+     "signal": "reckon",
+     "note": "The reckoning (large 1.2): the heaviest road wins; a tie, or nobody, takes the price by the sack.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "t_home"
+          },
+          "op": ">",
+          "right": {
+           "var": "t_contract"
+          }
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "t_home"
+          },
+          "op": ">",
+          "right": {
+           "var": "t_green"
+          }
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "lq_hearths",
+         "value": "home"
+        },
+        {
+         "do": "enter",
+         "phase": "after_home"
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "t_green"
+            },
+            "op": ">",
+            "right": {
+             "var": "t_contract"
+            }
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "t_green"
+            },
+            "op": ">",
+            "right": {
+             "var": "t_home"
+            }
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "lq_hearths",
+           "value": "greenholt"
+          },
+          {
+           "do": "enter",
+           "phase": "after_greenholt"
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "set",
+         "var": "lq_hearths",
+         "value": "contract"
+        },
+        {
+         "do": "enter",
+         "phase": "after_contract"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_contract",
+   "journal": "The city store pays the Upper hearths by the sack.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_marl_craghearth",
+     "text": "A price by the sack, paid when the cart unloads. I'll still count it twice, with my back to the wall."
+    },
+    {
+     "kind": "times.nudge",
+     "market": "frosthollow",
+     "points": 15,
+     "days": 28,
+     "words": "the city store pays the Upper hearths by the sack",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "board.post",
+     "town": "frosthollow",
+     "days": 28,
+     "ifRefused": "skip",
+     "text": "THE UPPER HEARTHS: a price by the sack from the Timberland Charcoal Store, paid when the cart unloads. The carter drives on Marketday."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_hearths",
+     "value": "contract",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "after_contract-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "A game minute in: the collier's three road choices in his window for this visit.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_marl_craghearth",
+        "id": "lq_bh_contract",
+        "words": "Sell to the city store, at a price by the sack.",
+        "reply": "A contract, paid when the cart unloads. Take the store hand two sacks to show him what dry looks like, and tell our carter she drives on Marketday."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_marl_craghearth",
+        "id": "lq_bh_home",
+        "words": "Sell it here, on our own square.",
+        "reply": "No yard door and no middle wolf. Bring me two sacks for the stall, and stand the square with us on Marketday."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_marl_craghearth",
+        "id": "lq_bh_greenholt",
+        "words": "Let the Greenholt hearths sell it with theirs.",
+        "reply": "Under their name, on their wagons. Safer roads and smaller coin. Carry them the first sacks, so they know we mean it."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_home",
+   "journal": "Frosthollow sells its own charcoal on its own square.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_marl_craghearth",
+     "text": "Frosthollow buys Frosthollow's charcoal now. The city can climb up and pay, like everybody else."
+    },
+    {
+     "kind": "times.nudge",
+     "market": "frosthollow",
+     "points": 10,
+     "days": 28,
+     "words": "Frosthollow charcoal sold at home",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "times.nudge",
+     "market": "ridgemere",
+     "points": 10,
+     "days": 14,
+     "words": "charcoal dear in the city",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "board.post",
+     "town": "frosthollow",
+     "days": 28,
+     "ifRefused": "skip",
+     "text": "CHARCOAL on the square, Marketday, from the Upper hearths. Dry, and full sacks."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_hearths",
+     "value": "home",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "after_home-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "A game minute in: the collier's three road choices in his window for this visit.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_marl_craghearth",
+        "id": "lq_bh_contract",
+        "words": "Sell to the city store, at a price by the sack.",
+        "reply": "A contract, paid when the cart unloads. Take the store hand two sacks to show him what dry looks like, and tell our carter she drives on Marketday."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_marl_craghearth",
+        "id": "lq_bh_home",
+        "words": "Sell it here, on our own square.",
+        "reply": "No yard door and no middle wolf. Bring me two sacks for the stall, and stand the square with us on Marketday."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_marl_craghearth",
+        "id": "lq_bh_greenholt",
+        "words": "Let the Greenholt hearths sell it with theirs.",
+        "reply": "Under their name, on their wagons. Safer roads and smaller coin. Carry them the first sacks, so they know we mean it."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_greenholt",
+   "journal": "The Greenholt wagons carry the Upper hearths' charcoal with their own.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_marl_craghearth",
+     "text": "Greenholt's wagons, Greenholt's name on the sacks. Steady money. I'd still rather the sacks said ours."
+    },
+    {
+     "kind": "times.nudge",
+     "market": "larkfield",
+     "points": 10,
+     "days": 28,
+     "words": "Greenholt and Upper hearths charcoal sold together",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "board.post",
+     "town": "frosthollow",
+     "days": 28,
+     "ifRefused": "skip",
+     "text": "THE UPPER HEARTHS: our charcoal goes down on the Greenholt wagons, sold with theirs. Safer roads, and thanks to every wolf who carried a sack."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_hearths",
+     "value": "greenholt",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "after_greenholt-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "A game minute in: the collier's three road choices in his window for this visit.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_marl_craghearth",
+        "id": "lq_bh_contract",
+        "words": "Sell to the city store, at a price by the sack.",
+        "reply": "A contract, paid when the cart unloads. Take the store hand two sacks to show him what dry looks like, and tell our carter she drives on Marketday."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_marl_craghearth",
+        "id": "lq_bh_home",
+        "words": "Sell it here, on our own square.",
+        "reply": "No yard door and no middle wolf. Bring me two sacks for the stall, and stand the square with us on Marketday."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_marl_craghearth",
+        "id": "lq_bh_greenholt",
+        "words": "Let the Greenholt hearths sell it with theirs.",
+        "reply": "Under their name, on their wagons. Safer roads and smaller coin. Carry them the first sacks, so they know we mean it."
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "tests": [
+  {
+   "name": "A pack and three wolves break the band; a price by the sack wins; the band is back next season",
+   "cohort": [],
+   "parties": {
+    "wolf-ash": "p1",
+    "wolf-birch": "p1"
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 0.102,
+     "actor": "wolf-ash",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 0.104,
+     "actor": "wolf-ash",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 0.106,
+     "actor": "wolf-ash",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e5",
+     "kind": "enter place",
+     "day": 0.108,
+     "actor": "wolf-ash",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "conversation",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 0.112,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 0.12,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e9",
+     "kind": "conversation",
+     "day": 0.122,
+     "actor": "wolf-cedar",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e10",
+     "kind": "region entered",
+     "day": 0.124,
+     "actor": "wolf-cedar",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e11",
+     "kind": "conversation",
+     "day": 0.126,
+     "actor": "wolf-cedar",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e12",
+     "kind": "enter place",
+     "day": 0.128,
+     "actor": "wolf-cedar",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 0.13,
+     "actor": "wolf-cedar",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e14",
+     "kind": "quest handed in",
+     "day": 0.132,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e15",
+     "kind": "quest accepted",
+     "day": 0.14,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e16",
+     "kind": "conversation",
+     "day": 0.142,
+     "actor": "wolf-dun",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 0.144,
+     "actor": "wolf-dun",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "conversation",
+     "day": 0.146,
+     "actor": "wolf-dun",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e19",
+     "kind": "enter place",
+     "day": 0.148,
+     "actor": "wolf-dun",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e20",
+     "kind": "conversation",
+     "day": 0.15,
+     "actor": "wolf-dun",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e21",
+     "kind": "quest handed in",
+     "day": 0.152,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e22",
+     "kind": "quest accepted",
+     "day": 0.16,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e23",
+     "kind": "conversation",
+     "day": 0.162,
+     "actor": "wolf-elm",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e24",
+     "kind": "region entered",
+     "day": 0.164,
+     "actor": "wolf-elm",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e25",
+     "kind": "conversation",
+     "day": 0.166,
+     "actor": "wolf-elm",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e26",
+     "kind": "enter place",
+     "day": 0.168,
+     "actor": "wolf-elm",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e27",
+     "kind": "conversation",
+     "day": 0.17,
+     "actor": "wolf-elm",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e28",
+     "kind": "quest handed in",
+     "day": 0.172,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e29",
+     "kind": "quest accepted",
+     "day": 0.18,
+     "actor": "wolf-fir",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e30",
+     "kind": "conversation",
+     "day": 0.182,
+     "actor": "wolf-fir",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e31",
+     "kind": "region entered",
+     "day": 0.184,
+     "actor": "wolf-fir",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e32",
+     "kind": "conversation",
+     "day": 0.186,
+     "actor": "wolf-fir",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e33",
+     "kind": "enter place",
+     "day": 0.188,
+     "actor": "wolf-fir",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e34",
+     "kind": "conversation",
+     "day": 0.19,
+     "actor": "wolf-fir",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e35",
+     "kind": "quest handed in",
+     "day": 0.192,
+     "actor": "wolf-fir",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e36",
+     "kind": "conversation",
+     "day": 0.195,
+     "actor": "cty_leif_driphand",
+     "target": "wolf-ash",
+     "cell": "w_ridgemere_6_3"
+    },
+    {
+     "id": "e37",
+     "kind": "quest accepted",
+     "day": 0.2,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e38",
+     "kind": "conversation",
+     "day": 0.202,
+     "actor": "wolf-ash",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e39",
+     "kind": "region entered",
+     "day": 0.204,
+     "actor": "wolf-ash",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 2,
+        "carries": {},
+        "coins": 10
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 2,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e40",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e41",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e42",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e43",
+     "kind": "camp cleared",
+     "day": 0.208,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e44",
+     "kind": "item picked up",
+     "day": 0.21,
+     "actor": "wolf-ash",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e45",
+     "kind": "conversation",
+     "day": 0.215,
+     "actor": "wolf-ash",
+     "target": "cty_leif_driphand",
+     "cell": "w_ridgemere_6_3"
+    },
+    {
+     "id": "e46",
+     "kind": "quest accepted",
+     "day": 0.22,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e47",
+     "kind": "conversation",
+     "day": 0.222,
+     "actor": "wolf-cedar",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e48",
+     "kind": "region entered",
+     "day": 0.224,
+     "actor": "wolf-cedar",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e49",
+     "kind": "bandit falls",
+     "day": 0.226,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e50",
+     "kind": "bandit falls",
+     "day": 0.226,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e51",
+     "kind": "bandit falls",
+     "day": 0.226,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e52",
+     "kind": "camp cleared",
+     "day": 0.228,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e53",
+     "kind": "item picked up",
+     "day": 0.23,
+     "actor": "wolf-cedar",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e54",
+     "kind": "quest accepted",
+     "day": 0.24,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e55",
+     "kind": "conversation",
+     "day": 0.242,
+     "actor": "wolf-dun",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e56",
+     "kind": "region entered",
+     "day": 0.244,
+     "actor": "wolf-dun",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-dun": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e57",
+     "kind": "bandit falls",
+     "day": 0.246,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e58",
+     "kind": "bandit falls",
+     "day": 0.246,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e59",
+     "kind": "bandit falls",
+     "day": 0.246,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e60",
+     "kind": "camp cleared",
+     "day": 0.248,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e61",
+     "kind": "item picked up",
+     "day": 0.25,
+     "actor": "wolf-dun",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e62",
+     "kind": "day begins",
+     "day": 0.3,
+     "detail": "Emberday",
+     "item": "spring",
+     "quantity": 5
+    },
+    {
+     "id": "e63",
+     "kind": "quest accepted",
+     "day": 0.32,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e64",
+     "kind": "conversation",
+     "day": 0.322,
+     "actor": "wolf-elm",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e65",
+     "kind": "region entered",
+     "day": 0.324,
+     "actor": "wolf-elm",
+     "target": "tarn_yard_b",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-elm": {
+        "cell": "w_ridgemere_10_2",
+        "x": 141,
+        "y": 161,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e66",
+     "kind": "bandit falls",
+     "day": 0.326,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e67",
+     "kind": "bandit falls",
+     "day": 0.326,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e68",
+     "kind": "bandit falls",
+     "day": 0.326,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e69",
+     "kind": "camp cleared",
+     "day": 0.328,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e70",
+     "kind": "item picked up",
+     "day": 0.33,
+     "actor": "wolf-elm",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e71",
+     "kind": "quest accepted",
+     "day": 0.335,
+     "actor": "wolf-fir",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e72",
+     "kind": "conversation",
+     "day": 0.337,
+     "actor": "wolf-fir",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e73",
+     "kind": "region entered",
+     "day": 0.339,
+     "actor": "wolf-fir",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-fir": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e74",
+     "kind": "bandit falls",
+     "day": 0.341,
+     "actor": "wolf-fir",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e75",
+     "kind": "bandit falls",
+     "day": 0.341,
+     "actor": "wolf-fir",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e76",
+     "kind": "bandit falls",
+     "day": 0.341,
+     "actor": "wolf-fir",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e77",
+     "kind": "camp cleared",
+     "day": 0.343,
+     "actor": "wolf-fir",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e78",
+     "kind": "item picked up",
+     "day": 0.345,
+     "actor": "wolf-fir",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e79",
+     "kind": "arrival",
+     "day": 0.348,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e80",
+     "kind": "quest accepted",
+     "day": 0.35,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "hearth_contract"
+    },
+    {
+     "id": "e81",
+     "kind": "quest accepted",
+     "day": 0.36,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "hearth_home"
+    },
+    {
+     "id": "e82",
+     "kind": "quest accepted",
+     "day": 0.37,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "",
+     "detail": "hearth_greenholt"
+    },
+    {
+     "id": "e83",
+     "kind": "quest accepted",
+     "day": 0.38,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "",
+     "detail": "hearth_contract"
+    },
+    {
+     "id": "e84",
+     "kind": "quest accepted",
+     "day": 0.39,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "hearth_home"
+    },
+    {
+     "id": "e85",
+     "kind": "dialogue choice",
+     "day": 0.4,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "lq_bh_contract"
+    },
+    {
+     "id": "e86",
+     "kind": "gift",
+     "day": 0.41,
+     "actor": "wolf-ash",
+     "target": "rm_arne_ashton",
+     "item": "charcoal",
+     "quantity": 2
+    },
+    {
+     "id": "e87",
+     "kind": "conversation",
+     "day": 0.42,
+     "actor": "wolf-ash",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e88",
+     "kind": "dialogue choice",
+     "day": 0.43,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "lq_bh_home"
+    },
+    {
+     "id": "e89",
+     "kind": "gift",
+     "day": 0.44,
+     "actor": "wolf-cedar",
+     "target": "cty_marl_craghearth",
+     "item": "charcoal",
+     "quantity": 2
+    },
+    {
+     "id": "e90",
+     "kind": "region entered",
+     "day": 0.45,
+     "actor": "wolf-cedar",
+     "target": "fh_square",
+     "cell": "w_ridgemere_9_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "weekday": "Marketday",
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e91",
+     "kind": "dialogue choice",
+     "day": 0.46,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "lq_bh_greenholt"
+    },
+    {
+     "id": "e92",
+     "kind": "region entered",
+     "day": 0.47,
+     "actor": "wolf-dun",
+     "target": "greenholt_yard",
+     "cell": "w_ridgemere_4_8",
+     "detail": "run",
+     "facts": {
+      "wolves": {
+       "wolf-dun": {
+        "cell": "w_ridgemere_4_8",
+        "x": 236,
+        "y": 77,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {
+         "charcoal": 2
+        },
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e93",
+     "kind": "day begins",
+     "day": 1.0,
+     "detail": "Marketday",
+     "item": "spring",
+     "quantity": 6
+    },
+    {
+     "id": "e94",
+     "kind": "hour",
+     "day": 3.5,
+     "detail": "9",
+     "quantity": 9
+    },
+    {
+     "id": "e95",
+     "kind": "arrival",
+     "day": 3.6,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e96",
+     "kind": "season begins",
+     "day": 4.0,
+     "detail": "summer"
+    },
+    {
+     "id": "e97",
+     "kind": "arrival",
+     "day": 4.1,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e98",
+     "kind": "hour",
+     "day": 18.2,
+     "detail": "9",
+     "quantity": 9
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_contract",
+    "open"
+   ],
+   "expectQuests": {
+    "undersold": {
+     "wolf-ash": "done",
+     "wolf-cedar": "done",
+     "wolf-dun": "done",
+     "wolf-elm": "done"
+    },
+    "tarnfire": {
+     "party:p1": "done",
+     "party:wolf-cedar": "done",
+     "party:wolf-dun": "done",
+     "party:wolf-elm": "done"
+    },
+    "hearth_contract": {
+     "wolf-ash": "done",
+     "wolf-elm": "active"
+    },
+    "hearth_home": {
+     "wolf-cedar": "done",
+     "wolf-ash": "failed"
+    },
+    "hearth_greenholt": {
+     "wolf-dun": "done"
+    }
+   },
+   "expectVariables": {
+    "story": {
+     "sacks_back": 0,
+     "sack_goal": 4
+    },
+    "player": {
+     "wolf-ash": {
+      "road": "hearth_contract",
+      "lq_coin": 6,
+      "pack2": true
+     },
+     "wolf-birch": {
+      "lq_coin": 6
+     },
+     "wolf-elm": {
+      "lq_thin": true
+     }
+    },
+    "world": {
+     "lq_hearths": "undersold",
+     "nh_realm": 36,
+     "nh_voice_frosthollow": 27,
+     "nh_voice_larkfield": 3,
+     "nh_threat": 22,
+     "coin_frosthollow_day": 24
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:frosthollow": 2000
+    }
+   }
+  },
+  {
+   "name": "Frosthollow sells its own on the square; next season the hearths are kept",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 0.102,
+     "actor": "wolf-ash",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 0.104,
+     "actor": "wolf-ash",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 0.106,
+     "actor": "wolf-ash",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e5",
+     "kind": "enter place",
+     "day": 0.108,
+     "actor": "wolf-ash",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "conversation",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 0.112,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 0.115,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e9",
+     "kind": "conversation",
+     "day": 0.117,
+     "actor": "wolf-birch",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e10",
+     "kind": "region entered",
+     "day": 0.119,
+     "actor": "wolf-birch",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e11",
+     "kind": "conversation",
+     "day": 0.121,
+     "actor": "wolf-birch",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e12",
+     "kind": "enter place",
+     "day": 0.123,
+     "actor": "wolf-birch",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 0.125,
+     "actor": "wolf-birch",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e14",
+     "kind": "quest handed in",
+     "day": 0.127,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e15",
+     "kind": "quest accepted",
+     "day": 0.13,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e16",
+     "kind": "conversation",
+     "day": 0.132,
+     "actor": "wolf-cedar",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 0.134,
+     "actor": "wolf-cedar",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "conversation",
+     "day": 0.136,
+     "actor": "wolf-cedar",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e19",
+     "kind": "enter place",
+     "day": 0.138,
+     "actor": "wolf-cedar",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e20",
+     "kind": "conversation",
+     "day": 0.14,
+     "actor": "wolf-cedar",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e21",
+     "kind": "quest handed in",
+     "day": 0.142,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e22",
+     "kind": "quest accepted",
+     "day": 0.145,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e23",
+     "kind": "conversation",
+     "day": 0.147,
+     "actor": "wolf-dun",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e24",
+     "kind": "region entered",
+     "day": 0.149,
+     "actor": "wolf-dun",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e25",
+     "kind": "conversation",
+     "day": 0.151,
+     "actor": "wolf-dun",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e26",
+     "kind": "enter place",
+     "day": 0.153,
+     "actor": "wolf-dun",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e27",
+     "kind": "conversation",
+     "day": 0.155,
+     "actor": "wolf-dun",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e28",
+     "kind": "quest handed in",
+     "day": 0.157,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e29",
+     "kind": "quest accepted",
+     "day": 0.16,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e30",
+     "kind": "conversation",
+     "day": 0.162,
+     "actor": "wolf-elm",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e31",
+     "kind": "region entered",
+     "day": 0.164,
+     "actor": "wolf-elm",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e32",
+     "kind": "conversation",
+     "day": 0.166,
+     "actor": "wolf-elm",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e33",
+     "kind": "enter place",
+     "day": 0.168,
+     "actor": "wolf-elm",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e34",
+     "kind": "conversation",
+     "day": 0.17,
+     "actor": "wolf-elm",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e35",
+     "kind": "quest handed in",
+     "day": 0.172,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e36",
+     "kind": "quest accepted",
+     "day": 0.2,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e37",
+     "kind": "conversation",
+     "day": 0.202,
+     "actor": "wolf-ash",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e38",
+     "kind": "region entered",
+     "day": 0.204,
+     "actor": "wolf-ash",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e39",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e40",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e41",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e42",
+     "kind": "camp cleared",
+     "day": 0.208,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e43",
+     "kind": "item picked up",
+     "day": 0.21,
+     "actor": "wolf-ash",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e44",
+     "kind": "quest accepted",
+     "day": 0.215,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e45",
+     "kind": "conversation",
+     "day": 0.217,
+     "actor": "wolf-birch",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e46",
+     "kind": "region entered",
+     "day": 0.219,
+     "actor": "wolf-birch",
+     "target": "tarn_yard_b",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_10_2",
+        "x": 141,
+        "y": 161,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e47",
+     "kind": "bandit falls",
+     "day": 0.221,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e48",
+     "kind": "bandit falls",
+     "day": 0.221,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e49",
+     "kind": "bandit falls",
+     "day": 0.221,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e50",
+     "kind": "camp cleared",
+     "day": 0.223,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e51",
+     "kind": "item picked up",
+     "day": 0.225,
+     "actor": "wolf-birch",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e52",
+     "kind": "quest accepted",
+     "day": 0.23,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e53",
+     "kind": "conversation",
+     "day": 0.232,
+     "actor": "wolf-cedar",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e54",
+     "kind": "region entered",
+     "day": 0.234,
+     "actor": "wolf-cedar",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e55",
+     "kind": "bandit falls",
+     "day": 0.236,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e56",
+     "kind": "bandit falls",
+     "day": 0.236,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e57",
+     "kind": "bandit falls",
+     "day": 0.236,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e58",
+     "kind": "camp cleared",
+     "day": 0.238,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e59",
+     "kind": "item picked up",
+     "day": 0.24,
+     "actor": "wolf-cedar",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e60",
+     "kind": "quest accepted",
+     "day": 0.245,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e61",
+     "kind": "conversation",
+     "day": 0.247,
+     "actor": "wolf-dun",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e62",
+     "kind": "region entered",
+     "day": 0.249,
+     "actor": "wolf-dun",
+     "target": "tarn_yard_b",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-dun": {
+        "cell": "w_ridgemere_10_2",
+        "x": 141,
+        "y": 161,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e63",
+     "kind": "bandit falls",
+     "day": 0.251,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e64",
+     "kind": "bandit falls",
+     "day": 0.251,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e65",
+     "kind": "bandit falls",
+     "day": 0.251,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e66",
+     "kind": "camp cleared",
+     "day": 0.253,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e67",
+     "kind": "item picked up",
+     "day": 0.255,
+     "actor": "wolf-dun",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e68",
+     "kind": "quest accepted",
+     "day": 0.26,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e69",
+     "kind": "conversation",
+     "day": 0.262,
+     "actor": "wolf-elm",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e70",
+     "kind": "region entered",
+     "day": 0.264,
+     "actor": "wolf-elm",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-elm": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e71",
+     "kind": "bandit falls",
+     "day": 0.266,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e72",
+     "kind": "bandit falls",
+     "day": 0.266,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e73",
+     "kind": "bandit falls",
+     "day": 0.266,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e74",
+     "kind": "camp cleared",
+     "day": 0.268,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e75",
+     "kind": "item picked up",
+     "day": 0.27,
+     "actor": "wolf-elm",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e76",
+     "kind": "arrival",
+     "day": 0.3,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e77",
+     "kind": "quest accepted",
+     "day": 0.31,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "hearth_home"
+    },
+    {
+     "id": "e78",
+     "kind": "quest accepted",
+     "day": 0.32,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "hearth_home"
+    },
+    {
+     "id": "e79",
+     "kind": "quest accepted",
+     "day": 0.33,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "hearth_greenholt"
+    },
+    {
+     "id": "e80",
+     "kind": "hour",
+     "day": 3.5,
+     "detail": "9",
+     "quantity": 9
+    },
+    {
+     "id": "e81",
+     "kind": "arrival",
+     "day": 3.6,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e82",
+     "kind": "season begins",
+     "day": 4.0,
+     "detail": "summer"
+    },
+    {
+     "id": "e83",
+     "kind": "arrival",
+     "day": 4.1,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e84",
+     "kind": "quest accepted",
+     "day": 4.2,
+     "actor": "wolf-fir",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e85",
+     "kind": "hour",
+     "day": 18.2,
+     "detail": "9",
+     "quantity": 9
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_home",
+    "open"
+   ],
+   "expectVariables": {
+    "story": {
+     "kept": true
+    },
+    "world": {
+     "lq_hearths": "home"
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:frosthollow": 2000
+    }
+   }
+  },
+  {
+   "name": "The Greenholt wagons win two to one",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 0.102,
+     "actor": "wolf-ash",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 0.104,
+     "actor": "wolf-ash",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 0.106,
+     "actor": "wolf-ash",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e5",
+     "kind": "enter place",
+     "day": 0.108,
+     "actor": "wolf-ash",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "conversation",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 0.112,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 0.115,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e9",
+     "kind": "conversation",
+     "day": 0.117,
+     "actor": "wolf-birch",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e10",
+     "kind": "region entered",
+     "day": 0.119,
+     "actor": "wolf-birch",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e11",
+     "kind": "conversation",
+     "day": 0.121,
+     "actor": "wolf-birch",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e12",
+     "kind": "enter place",
+     "day": 0.123,
+     "actor": "wolf-birch",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 0.125,
+     "actor": "wolf-birch",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e14",
+     "kind": "quest handed in",
+     "day": 0.127,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e15",
+     "kind": "quest accepted",
+     "day": 0.13,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e16",
+     "kind": "conversation",
+     "day": 0.132,
+     "actor": "wolf-cedar",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 0.134,
+     "actor": "wolf-cedar",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "conversation",
+     "day": 0.136,
+     "actor": "wolf-cedar",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e19",
+     "kind": "enter place",
+     "day": 0.138,
+     "actor": "wolf-cedar",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e20",
+     "kind": "conversation",
+     "day": 0.14,
+     "actor": "wolf-cedar",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e21",
+     "kind": "quest handed in",
+     "day": 0.142,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e22",
+     "kind": "quest accepted",
+     "day": 0.145,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e23",
+     "kind": "conversation",
+     "day": 0.147,
+     "actor": "wolf-dun",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e24",
+     "kind": "region entered",
+     "day": 0.149,
+     "actor": "wolf-dun",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e25",
+     "kind": "conversation",
+     "day": 0.151,
+     "actor": "wolf-dun",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e26",
+     "kind": "enter place",
+     "day": 0.153,
+     "actor": "wolf-dun",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e27",
+     "kind": "conversation",
+     "day": 0.155,
+     "actor": "wolf-dun",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e28",
+     "kind": "quest handed in",
+     "day": 0.157,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e29",
+     "kind": "quest accepted",
+     "day": 0.16,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e30",
+     "kind": "conversation",
+     "day": 0.162,
+     "actor": "wolf-elm",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e31",
+     "kind": "region entered",
+     "day": 0.164,
+     "actor": "wolf-elm",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e32",
+     "kind": "conversation",
+     "day": 0.166,
+     "actor": "wolf-elm",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e33",
+     "kind": "enter place",
+     "day": 0.168,
+     "actor": "wolf-elm",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e34",
+     "kind": "conversation",
+     "day": 0.17,
+     "actor": "wolf-elm",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e35",
+     "kind": "quest handed in",
+     "day": 0.172,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e36",
+     "kind": "quest accepted",
+     "day": 0.2,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e37",
+     "kind": "conversation",
+     "day": 0.202,
+     "actor": "wolf-ash",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e38",
+     "kind": "region entered",
+     "day": 0.204,
+     "actor": "wolf-ash",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e39",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e40",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e41",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e42",
+     "kind": "camp cleared",
+     "day": 0.208,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e43",
+     "kind": "item picked up",
+     "day": 0.21,
+     "actor": "wolf-ash",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e44",
+     "kind": "quest accepted",
+     "day": 0.215,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e45",
+     "kind": "conversation",
+     "day": 0.217,
+     "actor": "wolf-birch",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e46",
+     "kind": "region entered",
+     "day": 0.219,
+     "actor": "wolf-birch",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e47",
+     "kind": "bandit falls",
+     "day": 0.221,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e48",
+     "kind": "bandit falls",
+     "day": 0.221,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e49",
+     "kind": "bandit falls",
+     "day": 0.221,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e50",
+     "kind": "camp cleared",
+     "day": 0.223,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e51",
+     "kind": "item picked up",
+     "day": 0.225,
+     "actor": "wolf-birch",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e52",
+     "kind": "quest accepted",
+     "day": 0.23,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e53",
+     "kind": "conversation",
+     "day": 0.232,
+     "actor": "wolf-cedar",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e54",
+     "kind": "region entered",
+     "day": 0.234,
+     "actor": "wolf-cedar",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e55",
+     "kind": "bandit falls",
+     "day": 0.236,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e56",
+     "kind": "bandit falls",
+     "day": 0.236,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e57",
+     "kind": "bandit falls",
+     "day": 0.236,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e58",
+     "kind": "camp cleared",
+     "day": 0.238,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e59",
+     "kind": "item picked up",
+     "day": 0.24,
+     "actor": "wolf-cedar",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e60",
+     "kind": "quest accepted",
+     "day": 0.245,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e61",
+     "kind": "conversation",
+     "day": 0.247,
+     "actor": "wolf-dun",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e62",
+     "kind": "region entered",
+     "day": 0.249,
+     "actor": "wolf-dun",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-dun": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e63",
+     "kind": "bandit falls",
+     "day": 0.251,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e64",
+     "kind": "bandit falls",
+     "day": 0.251,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e65",
+     "kind": "bandit falls",
+     "day": 0.251,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e66",
+     "kind": "camp cleared",
+     "day": 0.253,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e67",
+     "kind": "item picked up",
+     "day": 0.255,
+     "actor": "wolf-dun",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e68",
+     "kind": "quest accepted",
+     "day": 0.26,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e69",
+     "kind": "conversation",
+     "day": 0.262,
+     "actor": "wolf-elm",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e70",
+     "kind": "region entered",
+     "day": 0.264,
+     "actor": "wolf-elm",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-elm": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e71",
+     "kind": "bandit falls",
+     "day": 0.266,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e72",
+     "kind": "bandit falls",
+     "day": 0.266,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e73",
+     "kind": "bandit falls",
+     "day": 0.266,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e74",
+     "kind": "camp cleared",
+     "day": 0.268,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e75",
+     "kind": "item picked up",
+     "day": 0.27,
+     "actor": "wolf-elm",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e76",
+     "kind": "arrival",
+     "day": 0.3,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e77",
+     "kind": "quest accepted",
+     "day": 0.31,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "hearth_greenholt"
+    },
+    {
+     "id": "e78",
+     "kind": "quest accepted",
+     "day": 0.32,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "hearth_greenholt"
+    },
+    {
+     "id": "e79",
+     "kind": "quest accepted",
+     "day": 0.33,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "hearth_contract"
+    },
+    {
+     "id": "e80",
+     "kind": "hour",
+     "day": 3.5,
+     "detail": "9",
+     "quantity": 9
+    },
+    {
+     "id": "e81",
+     "kind": "arrival",
+     "day": 3.6,
+     "actor": "wolf-ash"
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_greenholt"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_hearths": "greenholt"
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:frosthollow": 2000
+    }
+   }
+  },
+  {
+   "name": "A tie between the square and the wagons takes the price by the sack",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 0.102,
+     "actor": "wolf-ash",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 0.104,
+     "actor": "wolf-ash",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 0.106,
+     "actor": "wolf-ash",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e5",
+     "kind": "enter place",
+     "day": 0.108,
+     "actor": "wolf-ash",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "conversation",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 0.112,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 0.115,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e9",
+     "kind": "conversation",
+     "day": 0.117,
+     "actor": "wolf-birch",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e10",
+     "kind": "region entered",
+     "day": 0.119,
+     "actor": "wolf-birch",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e11",
+     "kind": "conversation",
+     "day": 0.121,
+     "actor": "wolf-birch",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e12",
+     "kind": "enter place",
+     "day": 0.123,
+     "actor": "wolf-birch",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 0.125,
+     "actor": "wolf-birch",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e14",
+     "kind": "quest handed in",
+     "day": 0.127,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e15",
+     "kind": "quest accepted",
+     "day": 0.13,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e16",
+     "kind": "conversation",
+     "day": 0.132,
+     "actor": "wolf-cedar",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 0.134,
+     "actor": "wolf-cedar",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "conversation",
+     "day": 0.136,
+     "actor": "wolf-cedar",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e19",
+     "kind": "enter place",
+     "day": 0.138,
+     "actor": "wolf-cedar",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e20",
+     "kind": "conversation",
+     "day": 0.14,
+     "actor": "wolf-cedar",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e21",
+     "kind": "quest handed in",
+     "day": 0.142,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e22",
+     "kind": "quest accepted",
+     "day": 0.145,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e23",
+     "kind": "conversation",
+     "day": 0.147,
+     "actor": "wolf-dun",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e24",
+     "kind": "region entered",
+     "day": 0.149,
+     "actor": "wolf-dun",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e25",
+     "kind": "conversation",
+     "day": 0.151,
+     "actor": "wolf-dun",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e26",
+     "kind": "enter place",
+     "day": 0.153,
+     "actor": "wolf-dun",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e27",
+     "kind": "conversation",
+     "day": 0.155,
+     "actor": "wolf-dun",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e28",
+     "kind": "quest handed in",
+     "day": 0.157,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e29",
+     "kind": "quest accepted",
+     "day": 0.16,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e30",
+     "kind": "conversation",
+     "day": 0.162,
+     "actor": "wolf-elm",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e31",
+     "kind": "region entered",
+     "day": 0.164,
+     "actor": "wolf-elm",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e32",
+     "kind": "conversation",
+     "day": 0.166,
+     "actor": "wolf-elm",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e33",
+     "kind": "enter place",
+     "day": 0.168,
+     "actor": "wolf-elm",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e34",
+     "kind": "conversation",
+     "day": 0.17,
+     "actor": "wolf-elm",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e35",
+     "kind": "quest handed in",
+     "day": 0.172,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e36",
+     "kind": "quest accepted",
+     "day": 0.2,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e37",
+     "kind": "conversation",
+     "day": 0.202,
+     "actor": "wolf-ash",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e38",
+     "kind": "region entered",
+     "day": 0.204,
+     "actor": "wolf-ash",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e39",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e40",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e41",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e42",
+     "kind": "camp cleared",
+     "day": 0.208,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e43",
+     "kind": "item picked up",
+     "day": 0.21,
+     "actor": "wolf-ash",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e44",
+     "kind": "quest accepted",
+     "day": 0.215,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e45",
+     "kind": "conversation",
+     "day": 0.217,
+     "actor": "wolf-birch",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e46",
+     "kind": "region entered",
+     "day": 0.219,
+     "actor": "wolf-birch",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e47",
+     "kind": "bandit falls",
+     "day": 0.221,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e48",
+     "kind": "bandit falls",
+     "day": 0.221,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e49",
+     "kind": "bandit falls",
+     "day": 0.221,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e50",
+     "kind": "camp cleared",
+     "day": 0.223,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e51",
+     "kind": "item picked up",
+     "day": 0.225,
+     "actor": "wolf-birch",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e52",
+     "kind": "quest accepted",
+     "day": 0.23,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e53",
+     "kind": "conversation",
+     "day": 0.232,
+     "actor": "wolf-cedar",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e54",
+     "kind": "region entered",
+     "day": 0.234,
+     "actor": "wolf-cedar",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e55",
+     "kind": "bandit falls",
+     "day": 0.236,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e56",
+     "kind": "bandit falls",
+     "day": 0.236,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e57",
+     "kind": "bandit falls",
+     "day": 0.236,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e58",
+     "kind": "camp cleared",
+     "day": 0.238,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e59",
+     "kind": "item picked up",
+     "day": 0.24,
+     "actor": "wolf-cedar",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e60",
+     "kind": "quest accepted",
+     "day": 0.245,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e61",
+     "kind": "conversation",
+     "day": 0.247,
+     "actor": "wolf-dun",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e62",
+     "kind": "region entered",
+     "day": 0.249,
+     "actor": "wolf-dun",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-dun": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e63",
+     "kind": "bandit falls",
+     "day": 0.251,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e64",
+     "kind": "bandit falls",
+     "day": 0.251,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e65",
+     "kind": "bandit falls",
+     "day": 0.251,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e66",
+     "kind": "camp cleared",
+     "day": 0.253,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e67",
+     "kind": "item picked up",
+     "day": 0.255,
+     "actor": "wolf-dun",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e68",
+     "kind": "quest accepted",
+     "day": 0.26,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e69",
+     "kind": "conversation",
+     "day": 0.262,
+     "actor": "wolf-elm",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e70",
+     "kind": "region entered",
+     "day": 0.264,
+     "actor": "wolf-elm",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-elm": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e71",
+     "kind": "bandit falls",
+     "day": 0.266,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e72",
+     "kind": "bandit falls",
+     "day": 0.266,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e73",
+     "kind": "bandit falls",
+     "day": 0.266,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e74",
+     "kind": "camp cleared",
+     "day": 0.268,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e75",
+     "kind": "item picked up",
+     "day": 0.27,
+     "actor": "wolf-elm",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e76",
+     "kind": "arrival",
+     "day": 0.3,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e77",
+     "kind": "quest accepted",
+     "day": 0.31,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "hearth_home"
+    },
+    {
+     "id": "e78",
+     "kind": "quest accepted",
+     "day": 0.32,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "hearth_greenholt"
+    },
+    {
+     "id": "e79",
+     "kind": "hour",
+     "day": 3.5,
+     "detail": "9",
+     "quantity": 9
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_contract"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_hearths": "contract"
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:frosthollow": 2000
+    }
+   }
+  },
+  {
+   "name": "Nobody takes a road: after 7 days the price by the sack by default; an unfought band starves out",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 0.102,
+     "actor": "wolf-ash",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 0.104,
+     "actor": "wolf-ash",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 0.106,
+     "actor": "wolf-ash",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e5",
+     "kind": "enter place",
+     "day": 0.108,
+     "actor": "wolf-ash",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "conversation",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 0.112,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 0.115,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e9",
+     "kind": "conversation",
+     "day": 0.117,
+     "actor": "wolf-birch",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e10",
+     "kind": "region entered",
+     "day": 0.119,
+     "actor": "wolf-birch",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e11",
+     "kind": "conversation",
+     "day": 0.121,
+     "actor": "wolf-birch",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e12",
+     "kind": "enter place",
+     "day": 0.123,
+     "actor": "wolf-birch",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 0.125,
+     "actor": "wolf-birch",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e14",
+     "kind": "quest handed in",
+     "day": 0.127,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e15",
+     "kind": "quest accepted",
+     "day": 0.13,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e16",
+     "kind": "conversation",
+     "day": 0.132,
+     "actor": "wolf-cedar",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 0.134,
+     "actor": "wolf-cedar",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "conversation",
+     "day": 0.136,
+     "actor": "wolf-cedar",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e19",
+     "kind": "enter place",
+     "day": 0.138,
+     "actor": "wolf-cedar",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e20",
+     "kind": "conversation",
+     "day": 0.14,
+     "actor": "wolf-cedar",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e21",
+     "kind": "quest handed in",
+     "day": 0.142,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e22",
+     "kind": "quest accepted",
+     "day": 0.145,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e23",
+     "kind": "conversation",
+     "day": 0.147,
+     "actor": "wolf-dun",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e24",
+     "kind": "region entered",
+     "day": 0.149,
+     "actor": "wolf-dun",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e25",
+     "kind": "conversation",
+     "day": 0.151,
+     "actor": "wolf-dun",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e26",
+     "kind": "enter place",
+     "day": 0.153,
+     "actor": "wolf-dun",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e27",
+     "kind": "conversation",
+     "day": 0.155,
+     "actor": "wolf-dun",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e28",
+     "kind": "quest handed in",
+     "day": 0.157,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e29",
+     "kind": "quest accepted",
+     "day": 0.16,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e30",
+     "kind": "conversation",
+     "day": 0.162,
+     "actor": "wolf-elm",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e31",
+     "kind": "region entered",
+     "day": 0.164,
+     "actor": "wolf-elm",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e32",
+     "kind": "conversation",
+     "day": 0.166,
+     "actor": "wolf-elm",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e33",
+     "kind": "enter place",
+     "day": 0.168,
+     "actor": "wolf-elm",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e34",
+     "kind": "conversation",
+     "day": 0.17,
+     "actor": "wolf-elm",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e35",
+     "kind": "quest handed in",
+     "day": 0.172,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e36",
+     "kind": "quest accepted",
+     "day": 0.2,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e37",
+     "kind": "conversation",
+     "day": 0.202,
+     "actor": "wolf-ash",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e38",
+     "kind": "region entered",
+     "day": 0.204,
+     "actor": "wolf-ash",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e39",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e40",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e41",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e42",
+     "kind": "camp cleared",
+     "day": 0.208,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e43",
+     "kind": "item picked up",
+     "day": 0.21,
+     "actor": "wolf-ash",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e44",
+     "kind": "quest accepted",
+     "day": 0.215,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e45",
+     "kind": "conversation",
+     "day": 0.217,
+     "actor": "wolf-birch",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e46",
+     "kind": "region entered",
+     "day": 0.219,
+     "actor": "wolf-birch",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e47",
+     "kind": "bandit falls",
+     "day": 0.221,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e48",
+     "kind": "bandit falls",
+     "day": 0.221,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e49",
+     "kind": "bandit falls",
+     "day": 0.221,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e50",
+     "kind": "camp cleared",
+     "day": 0.223,
+     "actor": "wolf-birch",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e51",
+     "kind": "item picked up",
+     "day": 0.225,
+     "actor": "wolf-birch",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e52",
+     "kind": "quest accepted",
+     "day": 0.23,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e53",
+     "kind": "conversation",
+     "day": 0.232,
+     "actor": "wolf-cedar",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e54",
+     "kind": "region entered",
+     "day": 0.234,
+     "actor": "wolf-cedar",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e55",
+     "kind": "bandit falls",
+     "day": 0.236,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e56",
+     "kind": "bandit falls",
+     "day": 0.236,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e57",
+     "kind": "bandit falls",
+     "day": 0.236,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e58",
+     "kind": "camp cleared",
+     "day": 0.238,
+     "actor": "wolf-cedar",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e59",
+     "kind": "item picked up",
+     "day": 0.24,
+     "actor": "wolf-cedar",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e60",
+     "kind": "quest accepted",
+     "day": 0.245,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e61",
+     "kind": "conversation",
+     "day": 0.247,
+     "actor": "wolf-dun",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e62",
+     "kind": "region entered",
+     "day": 0.249,
+     "actor": "wolf-dun",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-dun": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e63",
+     "kind": "bandit falls",
+     "day": 0.251,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e64",
+     "kind": "bandit falls",
+     "day": 0.251,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e65",
+     "kind": "bandit falls",
+     "day": 0.251,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e66",
+     "kind": "camp cleared",
+     "day": 0.253,
+     "actor": "wolf-dun",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e67",
+     "kind": "item picked up",
+     "day": 0.255,
+     "actor": "wolf-dun",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e68",
+     "kind": "quest accepted",
+     "day": 0.26,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e69",
+     "kind": "conversation",
+     "day": 0.262,
+     "actor": "wolf-elm",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e70",
+     "kind": "region entered",
+     "day": 0.264,
+     "actor": "wolf-elm",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-elm": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e71",
+     "kind": "bandit falls",
+     "day": 0.266,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e72",
+     "kind": "bandit falls",
+     "day": 0.266,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e73",
+     "kind": "bandit falls",
+     "day": 0.266,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e74",
+     "kind": "camp cleared",
+     "day": 0.268,
+     "actor": "wolf-elm",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e75",
+     "kind": "item picked up",
+     "day": 0.27,
+     "actor": "wolf-elm",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e76",
+     "kind": "arrival",
+     "day": 0.3,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e77",
+     "kind": "arrival",
+     "day": 0.31,
+     "actor": "wolf-birch"
+    },
+    {
+     "id": "e78",
+     "kind": "region entered",
+     "day": 0.4,
+     "actor": "wolf-ash",
+     "target": "tarn_yard_b",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_10_2",
+        "x": 141,
+        "y": 161,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e79",
+     "kind": "bandits scattered",
+     "day": 6.0,
+     "actor": "camp_story_70",
+     "cell": "w_ridgemere_10_2",
+     "detail": "starved out"
+    },
+    {
+     "id": "e80",
+     "kind": "hour",
+     "day": 7.5,
+     "detail": "9",
+     "quantity": 9
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_contract"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_hearths": "contract"
+    },
+    "story": {
+     "spawned_tarn_yard_b": false
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:frosthollow": 2000
+    }
+   }
+  },
+  {
+   "name": "One wolf breaks the band four weeks running, then wins the price by the sack, paid in full",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 0.102,
+     "actor": "wolf-ash",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 0.104,
+     "actor": "wolf-ash",
+     "target": "east_floor",
+     "cell": "w_ridgemere_10_3",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 0.106,
+     "actor": "wolf-ash",
+     "target": "cty_iris_fernhaven",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e5",
+     "kind": "enter place",
+     "day": 0.108,
+     "actor": "wolf-ash",
+     "target": "rm_the_charcoal_store",
+     "cell": "rm_the_charcoal_store",
+     "detail": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "conversation",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "rm_arne_ashton",
+     "cell": "rm_the_charcoal_store"
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 0.112,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "undersold"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 0.2,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e9",
+     "kind": "conversation",
+     "day": 0.202,
+     "actor": "wolf-ash",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e10",
+     "kind": "region entered",
+     "day": 0.204,
+     "actor": "wolf-ash",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e11",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e12",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e13",
+     "kind": "bandit falls",
+     "day": 0.206,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e14",
+     "kind": "camp cleared",
+     "day": 0.208,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e15",
+     "kind": "item picked up",
+     "day": 0.21,
+     "actor": "wolf-ash",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e16",
+     "kind": "day begins",
+     "day": 7.5,
+     "detail": "Dawnday",
+     "item": "spring",
+     "quantity": 7
+    },
+    {
+     "id": "e17",
+     "kind": "quest accepted",
+     "day": 7.6,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e18",
+     "kind": "conversation",
+     "day": 7.602,
+     "actor": "wolf-ash",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e19",
+     "kind": "region entered",
+     "day": 7.604,
+     "actor": "wolf-ash",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e20",
+     "kind": "bandit falls",
+     "day": 7.606,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e21",
+     "kind": "bandit falls",
+     "day": 7.606,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e22",
+     "kind": "bandit falls",
+     "day": 7.606,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e23",
+     "kind": "camp cleared",
+     "day": 7.608,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e24",
+     "kind": "item picked up",
+     "day": 7.61,
+     "actor": "wolf-ash",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e25",
+     "kind": "day begins",
+     "day": 15.0,
+     "detail": "Dawnday",
+     "item": "spring",
+     "quantity": 15
+    },
+    {
+     "id": "e26",
+     "kind": "quest accepted",
+     "day": 15.1,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e27",
+     "kind": "conversation",
+     "day": 15.102,
+     "actor": "wolf-ash",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e28",
+     "kind": "region entered",
+     "day": 15.104,
+     "actor": "wolf-ash",
+     "target": "tarn_yard_b",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_10_2",
+        "x": 141,
+        "y": 161,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e29",
+     "kind": "bandit falls",
+     "day": 15.106,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e30",
+     "kind": "bandit falls",
+     "day": 15.106,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e31",
+     "kind": "bandit falls",
+     "day": 15.106,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e32",
+     "kind": "camp cleared",
+     "day": 15.108,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e33",
+     "kind": "item picked up",
+     "day": 15.11,
+     "actor": "wolf-ash",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e34",
+     "kind": "day begins",
+     "day": 22.5,
+     "detail": "Dawnday",
+     "item": "spring",
+     "quantity": 22
+    },
+    {
+     "id": "e35",
+     "kind": "quest accepted",
+     "day": 22.6,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "tarnfire"
+    },
+    {
+     "id": "e36",
+     "kind": "conversation",
+     "day": 22.602,
+     "actor": "wolf-ash",
+     "target": "cty_stone_acorndell",
+     "cell": "w_ridgemere_10_3"
+    },
+    {
+     "id": "e37",
+     "kind": "region entered",
+     "day": 22.604,
+     "actor": "wolf-ash",
+     "target": "tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 22
+      },
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_10_2",
+        "x": 97,
+        "y": 185,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      }
+     }
+    },
+    {
+     "id": "e38",
+     "kind": "bandit falls",
+     "day": 22.606,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e39",
+     "kind": "bandit falls",
+     "day": 22.606,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e40",
+     "kind": "bandit falls",
+     "day": 22.606,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "a charcoal thief"
+    },
+    {
+     "id": "e41",
+     "kind": "camp cleared",
+     "day": 22.608,
+     "actor": "wolf-ash",
+     "target": "camp_story_lq_tarn_yard",
+     "cell": "w_ridgemere_10_2",
+     "detail": "by the pack"
+    },
+    {
+     "id": "e42",
+     "kind": "item picked up",
+     "day": 22.61,
+     "actor": "wolf-ash",
+     "item": "sack",
+     "cell": "w_ridgemere_10_2",
+     "quantity": 1
+    },
+    {
+     "id": "e43",
+     "kind": "arrival",
+     "day": 22.7,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e44",
+     "kind": "quest accepted",
+     "day": 22.8,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "hearth_contract"
+    },
+    {
+     "id": "e45",
+     "kind": "dialogue choice",
+     "day": 22.81,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "cty_marl_craghearth",
+     "detail": "lq_bh_contract"
+    },
+    {
+     "id": "e46",
+     "kind": "gift",
+     "day": 22.82,
+     "actor": "wolf-ash",
+     "target": "rm_arne_ashton",
+     "item": "charcoal",
+     "quantity": 2
+    },
+    {
+     "id": "e47",
+     "kind": "conversation",
+     "day": 22.83,
+     "actor": "wolf-ash",
+     "target": "cty_ebba_coalgate",
+     "cell": "w_ridgemere_9_3"
+    },
+    {
+     "id": "e48",
+     "kind": "hour",
+     "day": 26.0,
+     "detail": "9",
+     "quantity": 9
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_contract"
+   ],
+   "expectQuests": {
+    "tarnfire": {
+     "party:wolf-ash": "done"
+    },
+    "hearth_contract": {
+     "wolf-ash": "done"
+    }
+   },
+   "expectVariables": {
+    "story": {
+     "sacks_back": 4,
+     "sack_goal": 4,
+     "t_contract": 1
+    },
+    "player": {
+     "wolf-ash": {
+      "lq_coin": 18,
+      "road": "hearth_contract"
+     }
+    },
+    "world": {
+     "lq_hearths": "contract",
+     "coin_frosthollow_day": 18,
+     "nh_voice_frosthollow": 12
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:frosthollow": 2000
+    }
+   }
+  }
+ ]
+}

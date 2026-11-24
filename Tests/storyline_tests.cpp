@@ -14,6 +14,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -353,6 +354,72 @@ void scenePanels()
                "several speakers: several panels, oldest first and the newest last");
         t.place(t.ash, 1, 8.5, 12.5);
         expect(t.g.cinematicView(ash).isNull(), "outside the square the scene's panels are not shown");
+    }
+    fs::remove_all(root);
+    fs::remove(file);
+}
+
+// Doc 86, T3: a stranger the story brought, cast in a scene, speaks in their own panel with the face they were given
+// (their look-alike's); a stranger it never brought (or sent away) fails the scene: "a stranger is not here".
+void strangerInAScene()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-scene-stranger-" + std::to_string(::getpid()));
+    const auto file = root.string() + ".json";
+    {
+        Town t(writeStrip(root), file);
+        t.enter(t.ash, 1, "ash", "Ash", 1, 8.5);
+        const auto ash = t.ash.entityId;
+        t.place(t.ash, 1, 8.5, 8.5);
+        auto& w = t.g.world();
+        std::vector<WorldEvent> seen;
+        w.setEventWatcher([&](const WorldEvent& e) { seen.push_back(e); });
+        const auto run = "world-parley";
+        expect(t.g.applyDmAct({"1", "story.phase", run, "dm", R"({"title":"The parley","phase":"parley","journal":"Under the white flag.","visit":1})"}).ok,
+               "the parley opens");
+        const auto brought = t.g.applyDmAct({"2", "visitor.add", "grey-captain", "dm",
+            R"({"name":"The Grey Captain","like":"u2","cell":")" + cellId(1) + R"(","x":10,"y":8,"minutes":60,"run":"world-parley","visit":1})"});
+        expect(brought.ok, "the Grey Captain is brought, looking like u2: " + brought.message);
+        const auto scene = [&](const std::string& visitor, const std::string& cue) {
+            auto payload = parsed(R"({"visit":1,"player":"world","scene":{"format":"ratw-scene","version":1,"id":"parley",
+                "title":"The parley","visibility":"public","lockMovement":false,"cast":[{"id":"captain","visitor":"VISITOR"},{"id":"desmond","npc":"u1"}],
+                "start":"terms","beats":[{"id":"terms","type":"line","speaker":"captain","text":"Give us the Pass and no one hangs.","seconds":600}]}})");
+            auto doc = payload["scene"];
+            auto cast = json::Value::array();
+            auto role = json::Value::object();
+            role.add("id", "captain");
+            role.add("visitor", visitor);
+            cast.push(role);
+            cast.push(doc.array("cast")[1]);
+            doc.set("cast", cast);
+            auto area = json::Value::object();
+            area.add("cell", cellId(1)); area.add("x1", 6); area.add("y1", 6); area.add("x2", 12); area.add("y2", 10);
+            doc.set("area", area);
+            payload.set("scene", doc);
+            payload.set("cue", cue);
+            return t.g.applyDmAct({"3", "story.scene", run, "dm", json::dump(payload)});
+        };
+        auto started = scene("grey-captain", "terms");
+        expect(started.ok, "the scene starts: " + started.message);
+        const auto lines = t.g.cinematicView(ash).array("lines");
+        const auto* captain = w.entity("grey-captain");
+        expect(lines.size() == 1 && lines[0].string("speakerId") == "grey-captain" && lines[0].string("name") == "The Grey Captain" &&
+                   lines[0].has("appearance") && lines[0]["appearance"].number("baseColor") == w.entity("u2")->appearance->baseColor &&
+                   captain && captain->appearance->baseColor == w.entity("u2")->appearance->baseColor &&
+                   lines[0].string("text") == "Give us the Pass and no one hangs.",
+               "the stranger speaks in their own panel, with the face of the one they look like");
+        // (One the story never brought, or the same stranger sent away: the scene fails.)
+        seen.clear();
+        started = scene("hakon", "turn");
+        t.run(1);
+        const auto failed = std::find_if(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "scene failed"; });
+        expect(failed != seen.end() && failed->detail == "turn" && failed->item == "a stranger is not here",
+               "a stranger the story never brought: the scene fails, \"a stranger is not here\"");
+        expect(t.g.applyDmAct({"4", "visitor.leave", "grey-captain", "dm", R"({"run":"world-parley","visit":1})"}).ok, "the Captain sent away");
+        seen.clear();
+        scene("grey-captain", "again");
+        t.run(1);
+        expect(std::any_of(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "scene failed" && e.item == "a stranger is not here"; }),
+               "sent away, he is not here either");
     }
     fs::remove_all(root);
     fs::remove(file);
@@ -1101,6 +1168,75 @@ void storyQuestsInTheGame()
     fs::remove(save);
 }
 
+// Doc 86, J3: a story's closure quest done by a wolf counts as a finished Story: one receipt a quest (the Quickening's
+// closedStories rises by one), a fifth from one story's program id pays nothing and says so (the order still applied), and
+// another story pays again.
+void storyClosures()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-closures-" + std::to_string(::getpid()));
+    const auto save = (fs::temp_directory_path() / ("ratw-closures-" + std::to_string(::getpid()) + ".json")).string();
+    fs::remove(save);
+    {
+        Town t(writeStrip(root), save);
+        t.enter(t.ash, 1, "ash", "Ash", 0, 12.5);
+        const auto wolf = t.ash.entityId;
+        int n = 0;
+        const auto close = [&](const std::string& story, const std::string& quest, const std::string& kind = "line", const std::string& to = "") {
+            auto p = json::Value::object();
+            p.add("run", "world-" + story);
+            p.add("story", story);
+            p.add("quest", quest);
+            p.add("kind", kind);
+            p.add("title", "The " + quest);
+            return t.g.applyDmAct({std::to_string(++n), "story.closure", to.empty() ? wolf : to, "dm", json::dump(p)});
+        };
+        const auto receipts = [&](const std::string& prefix) {
+            int found = 0;
+            for (const auto i : t.g.ledger().receiptsOf(wolf))
+                if (t.g.ledger().entries[i].reason == "story_closure" && t.g.ledger().entries[i].session.rfind(prefix, 0) == 0)
+                    ++found;
+            return found;
+        };
+        const auto closed = [&] {
+            // (As Game::measuresOf counts closedStories: the distinct sessions of the wolf's story_closure receipts.)
+            std::set<std::string> sessions;
+            for (const auto i : t.g.ledger().receiptsOf(wolf))
+                if (t.g.ledger().entries[i].reason == "story_closure")
+                    sessions.insert(t.g.ledger().entries[i].session);
+            return int(sessions.size());
+        };
+        const int before = closed();
+        auto r = close("lq-black-hearths", "road-a");
+        expect(r.ok && r.message.find("A finished Story") == 0 && r.message.find("(3 social)") != std::string::npos, "a line's last chapter: " + r.message);
+        expect(closed() == before + 1 && receipts("quest:lq-black-hearths/") == 1, "closedStories rises by one");
+        r = close("lq-black-hearths", "road-a");
+        expect(r.ok && r.message.find("Counted already") == 0 && receipts("quest:lq-black-hearths/") == 1 && closed() == before + 1,
+               "the same quest again (a new version, another run) counts once: " + r.message);
+        for (const auto* q : {"road-b", "road-c", "side-d"})
+            expect(close("lq-black-hearths", q, q[0] == 's' ? "side" : "line").ok, std::string("closure ") + q);
+        expect(closed() == before + 4 && receipts("quest:lq-black-hearths/") == 4, "four from one story");
+        r = close("lq-black-hearths", "road-e");
+        expect(r.ok && r.message == "Not counted: already 4 from this story.", "a fifth is applied and pays nothing: " + r.message);
+        expect(closed() == before + 4 && receipts("quest:lq-black-hearths/") == 4, "and closedStories stays");
+        r = close("lq-clipped-silver", "last");
+        expect(r.ok && closed() == before + 5, "another story pays again: " + r.message);
+        expect(!close("lq-clipped-silver", "other", "whatever").ok, "a closure is a line's or a side story's");
+        expect(!close("lq-clipped-silver", "other", "line", "u1").ok, "a wolf's, never a resident's");
+        expect(!close("", "other").ok, "it names its story");
+        t.g.save();
+    }
+    {
+        Town t(writeStrip(root), save);
+        int found = 0;
+        for (const auto& e : t.g.ledger().entries)
+            if (e.reason == "story_closure" && e.session.rfind("quest:", 0) == 0)
+                ++found;
+        expect(found == 5, "the receipts are kept through a restart: " + std::to_string(found));
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
+
 } // namespace
 
 int main()
@@ -1119,6 +1255,7 @@ int main()
         storyAlertsInTheDevConsole();
         inTheGame();
         sources();
+        storyClosures();
     }
     catch (const std::exception& error)
     {

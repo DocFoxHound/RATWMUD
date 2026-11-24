@@ -2,17 +2,18 @@
 // orders with their receipts, and the admin's commands (Phase 2), newest first, with who, where and when; [Show] opens the
 // world event behind a firing.
 import {useState} from 'react';
-import {ago, beforeAfter, causeText, changeText, commandLine, filterTimeline, nameOf, versionLine, type TimelineFilter, type TimelineItem, type WorldEvent} from '../../lib/campaigns';
+import {ago, beforeAfter, causeText, changeText, commandLine, figureUndoText, filterTimeline, nameOf, versionLine, type TimelineFilter, type TimelineItem, type WorldEvent} from '../../lib/campaigns';
 
 type Place = {cell: string; x: number; y: number};
+const READY_WORDS: Record<string, string> = {ready: 'ready', slow: 'slow', pushed: 'pushed', advanced: 'advanced', taken: 'moved on by itself'};
 const FILTERS: {id: TimelineFilter; label: string}[] = [{id: 'all', label: 'All'}, {id: 'phase', label: 'Phases'}, {id: 'trigger', label: 'Triggers'},
     {id: 'order', label: 'Orders'}, {id: 'command', label: 'Admin'}];
 const when = (i: TimelineItem, now: string) => <span className="camp-when">{'day' in i && typeof i.day === 'number' ? `day ${i.day.toFixed(1)} · ` : ''}{i.at ? `${new Date(i.at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})} · ${ago(i.at, now)}` : ''}</span>;
 const placeText = (p: {cell?: string; x?: number | null; y?: number | null}, names: Record<string, string>) =>
     p.cell ? `${nameOf(names, p.cell)}${p.x != null && p.y != null ? ` (${p.x}, ${p.y})` : ''}` : '';
 
-export function TimelineRow({item: i, names, events, now, onMap}: {item: TimelineItem; names: Record<string, string>; events: Record<string, WorldEvent>; now: string;
-    onMap?: (p: Place) => void}) {
+export function TimelineRow({item: i, names, events, now, onMap, undoFigure}: {item: TimelineItem; names: Record<string, string>; events: Record<string, WorldEvent>; now: string;
+    onMap?: (p: Place) => void; undoFigure?: (history: number, words: string) => void}) {
     const [open, setOpen] = useState(false);
     if (i.type === 'phase') return <li className="phase">{when(i, now)}<span>▶ entered <b>{i.phase}</b> (visit {i.visit}) ← {causeText(i.cause, names)}</span>
         {!!i.missions?.length && <small>{i.missions.map(m => `${m.title}: ${m.ready ? 'done' : `${m.completed} / ${m.required}`}`).join(' · ')}</small>}</li>;
@@ -30,7 +31,10 @@ export function TimelineRow({item: i, names, events, now, onMap}: {item: Timelin
         <span>→ order #{i.id} <b>{i.kind}</b>{i.target && !i.target.startsWith('world-') ? ' → ' + nameOf(names, i.target) : ''} · <span className={`camp-order ${i.status}`}>{i.status}</span>
             {i.doneAt && i.status !== 'queued' ? ` ${new Date(i.doneAt).toLocaleTimeString()}` : ''}</span>
         {i.result && <small>{i.result}</small>}</li>;
-    const event = i.event != null ? events[String(i.event)] : undefined;
+    // (Doc 86, R3: readiness met, slow, pushed, advanced and taken.)
+    if (i.type === 'ready') return <li className={`ready ${i.readyKind}`}>{when(i, now)}
+        <span>✓ {READY_WORDS[i.readyKind] ?? i.readyKind} in <b>{i.phase}</b> (visit {i.visit})</span><small>{i.text}</small></li>;
+    const event =i.event != null ? events[String(i.event)] : undefined;
     const place = i.cell ? {cell: i.cell, x: i.x ?? 0, y: i.y ?? 0} : event?.cell ? {cell: event.cell, x: event.x ?? 0, y: event.y ?? 0} : null;
     return <li className="trigger">{when(i, now)}
         <span>⚑ <b>{i.trigger}</b> {i.scope === 'campaign' ? '(campaign) ' : ''}in {i.phase}{i.actor ? ` · ${nameOf(names, i.actor)}` : ''}
@@ -38,7 +42,8 @@ export function TimelineRow({item: i, names, events, now, onMap}: {item: Timelin
         <small>{i.byHand ? `by hand (${(i.by ?? '').split('#')[0]}${i.checked === false ? ', unchecked' : ''}) · ` : i.command ? `from ${(i.by ?? '').split('#')[0]}'s command · ` : ''}
             {i.via === 'wait' ? 'after its wait · ' : i.via === 'run' ? 'run by another trigger · ' : ''}{i.actions.join(' → ')}{i.changes?.length ? ' · ' + i.changes.map(c => changeText(c, names)).join(' ; ') : ''}
             {i.notes?.length ? <> · <span className="camp-note">✎ {i.notes.join(' · ')}</span></> : null}{event && <> · event #{event.id} <button className="link-button" onClick={() => setOpen(o => !o)}>{open ? 'Hide' : 'Show'}</button></>}
-            {place && onMap && <> · <button className="link-button" onClick={() => onMap(place)}>On the map</button></>}</small>
+            {place && onMap && <> · <button className="link-button" onClick={() => onMap(place)}>On the map</button></>}
+            {i.figure && undoFigure && <> · <button className="link-button" title={figureUndoText(i.figure)} onClick={() => undoFigure(i.id, figureUndoText(i.figure!))}>Undo this figure…</button></>}</small>
         {open && event && <dl className="camp-event">
             <dt>kind</dt><dd>{event.kind}</dd>
             {event.actor && <><dt>actor</dt><dd>{nameOf(names, event.actor)}</dd></>}
@@ -46,14 +51,15 @@ export function TimelineRow({item: i, names, events, now, onMap}: {item: Timelin
             {event.cell && <><dt>where</dt><dd>{placeText(event, names)}</dd></>}
             {event.item && <><dt>item</dt><dd>{event.item}</dd></>}
             {!!event.quantity && <><dt>quantity</dt><dd>{event.quantity}</dd></>}
-            {!!event.coins && <><dt>coins</dt><dd>{event.coins}</dd></>}
+            {!!event.coins && !event.kind.startsWith('foe ') && <><dt>coins</dt><dd>{event.coins}</dd></>}
             {event.detail && <><dt>detail</dt><dd>{event.detail}</dd></>}
             <dt>when</dt><dd>day {event.day.toFixed(2)} · {new Date(event.at).toLocaleString()}</dd>
         </dl>}</li>;
 }
 
-export function Timeline({items, events, names, now, earlier, onMap, triggers, cohort}: {items: TimelineItem[]; events: Record<string, WorldEvent>;
-    names: Record<string, string>; now: string; earlier?: () => void; onMap: (p: Place) => void; triggers: string[]; cohort: string[]}) {
+export function Timeline({items, events, names, now, earlier, onMap, triggers, cohort, undoFigure}: {items: TimelineItem[]; events: Record<string, WorldEvent>;
+    names: Record<string, string>; now: string; earlier?: () => void; onMap: (p: Place) => void; triggers: string[]; cohort: string[];
+    undoFigure?: (history: number, words: string) => void}) {
     const [kind, setKind] = useState<TimelineFilter>('all'), [wolf, setWolf] = useState(''), [trigger, setTrigger] = useState('');
     const shown = filterTimeline(items, kind, wolf, trigger);
     return <div className="camp-timeline-tab">
@@ -64,7 +70,7 @@ export function Timeline({items, events, names, now, earlier, onMap, triggers, c
             <label>trigger <select value={trigger} onChange={e => setTrigger(e.target.value)}><option value="">any</option>
                 {triggers.sort().map(t => <option key={t}>{t}</option>)}</select></label>
         </div>
-        {shown.length ? <ol className="camp-timeline">{shown.map(i => <TimelineRow key={i.key} item={i} names={names} events={events} now={now} onMap={onMap} />)}</ol>
+        {shown.length ? <ol className="camp-timeline">{shown.map(i => <TimelineRow key={i.key} item={i} names={names} events={events} now={now} onMap={onMap} undoFigure={undoFigure} />)}</ol>
             : <p className="hint">Nothing {items.length ? 'matches' : 'has happened yet'}.</p>}
         {earlier && <button onClick={earlier}>Earlier…</button>}
     </div>;

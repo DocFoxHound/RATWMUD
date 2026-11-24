@@ -59,6 +59,7 @@ Book makeToday()
     add("newcomer", true, false, {{"", s(1.8)}});
     add("life", true, false, {{"death", s(2.3)}, {"", s(1.7, 21)}});
     add("festival", true, false, {{"today", s(2.0)}, {"soon", s(1.9)}});
+    add("story", true, false, {{"", s(2.2)}});   // (Doc 86, T6: a live story's realm keys; never in a town without one.)
     add("player", false, false, {{"", s(1.6, -1, 7, .5)}});
     add("accent", false, true, {{"", s(1.3, -1, 9, .6, .3)}});   // + .3 for a broad accent.
     add("family", false, true, {{"", s(1.4, -1, 1)}});

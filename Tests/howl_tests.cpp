@@ -4,6 +4,7 @@
 // scene they share; and not in a fight, or with something in the mouth.
 #include "RatwGame.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -312,6 +313,100 @@ void blockedHearsNothing()
     howl(w, w.ada);
     expect(!w.cy.last("howl") && w.bo.last("howl"), "Cy, who blocked Ada, hears nothing of her howl; Bo does");
 }
+// Doc 86, J5: a resident a story asks to howl opens a chorus a wolf joins; the story hears "howled" for each and "chorus
+// closed" once, with how many howled (the resident too), only while it listens; the howl's rest holds for the resident;
+// one dead, down or in a fight is refused; the one who howled never turns to their own howl.
+std::string residentNear(World3& w, const std::string& place, double x, double y, const std::string& besides = {})
+{
+    auto& world = w.g.world();
+    for (const auto& [id, e] : world.entities())
+        if (e.npc && !e.dead && !e.transient && id != besides && world.society().resident(id) && world.teleport(id, place, x, y).ok)
+            return id;
+    expect(false, "a resident to howl");
+    return {};
+}
+
+int count(const std::vector<WorldEvent>& seen, const std::string& kind)
+{
+    int n = 0;
+    for (const auto& e : seen)
+        n += e.kind == kind;
+    return n;
+}
+
+void aResidentHowls()
+{
+    World3 w(options());
+    const auto place = outdoors(w);
+    auto& world = w.g.world();
+    const auto npc = residentNear(w, place, 9.5, 12.5);
+    std::vector<WorldEvent> seen;
+    world.setEventWatcher([&](const WorldEvent& e) { seen.push_back(e); });
+    int n = 100;
+    const auto order = [&](const std::string& kind, const std::string& target) {
+        return w.g.applyDmAct({std::to_string(++n), kind, target, "dm", "{}"});
+    };
+    // No story listens: the howl is heard as any howl, and no story event is written.
+    auto r = order("npc.howl", npc);
+    expect(r.ok, "the resident howls: " + r.message);
+    const auto* heard = w.bo.last("howl");
+    expect(heard && heard->number("wolves") == 1, "Bo hears the resident's howl as any howl");
+    howl(w, w.ada);
+    expect(w.ada.said("You join the howl."), "Ada joins the resident's howl");
+    expect(w.bo.last("howl")->number("wolves") == 2, "one chorus of two");
+    w.tick(13.0);
+    expect(count(seen, "howled") == 0 && count(seen, "chorus closed") == 0, "no story listens: no howled, no chorus closed");
+    // The howl's rest holds for the resident; a story's order for one howled a moment ago is refused.
+    r = order("npc.howl", npc);
+    expect(!r.ok && r.message.find("a moment ago") != std::string::npos, "the resident's voice rests: " + r.message);
+    expect(!order("npc.howl", "nobody_at_all").ok, "no such resident");
+
+    // A story listens: a second resident howls, Bo and Cy join; howled three times, then one chorus of three.
+    world.setWatchedEvents({"howled", "chorus closed"});
+    const auto other = residentNear(w, place, 30.5, 12.5, npc);
+    world.teleport(w.cyId, place, 29.5, 12.5);
+    w.tick(.3);
+    seen.clear();
+    r = order("npc.howl", other);
+    expect(r.ok, "the second resident howls: " + r.message);
+    howl(w, w.bo);
+    howl(w, w.cy);
+    expect(count(seen, "howled") == 3, "howled for the resident and each wolf");
+    const auto first = *std::find_if(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "howled"; });
+    expect(first.actor == other && !first.item.empty() && first.detail.rfind("howl-", 0) == 0 && first.x >= 0 && first.cell == place,
+           "the resident's howled: who, where (the town or wild), the chorus, the tile: " + first.item + " " + first.detail);
+    for (const auto& e : seen)
+        if (e.kind == "howled")
+            expect(e.detail == first.detail, "all three in one chorus");
+    w.tick(22.0);                                   // (Twenty seconds at most, however many join.)
+    expect(count(seen, "chorus closed") == 1, "the chorus closes once");
+    const auto closed = *std::find_if(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "chorus closed"; });
+    expect(closed.actor == other && closed.quantity == 3 && closed.detail == first.detail && closed.item == first.item,
+           "begun by the resident, three howled in it: " + std::to_string(closed.quantity));
+    // Refused for a resident dead, down, away (offstage) or in a fight.
+    world.setDead(npc, true);
+    r = order("npc.howl", npc);
+    expect(!r.ok && r.message.find("died") != std::string::npos, "a dead resident does not howl: " + r.message);
+    world.setDead(npc, false);
+    world.entity(npc)->downedLeft = 30;
+    r = order("npc.howl", npc);
+    expect(!r.ok && r.message.find("is down") != std::string::npos, "a resident down does not howl: " + r.message);
+    world.entity(npc)->downedLeft = 0;
+    std::string third;                              // (One who has not howled, so the rest does not answer first.)
+    for (const auto& [id, e] : world.entities())
+        if (third.empty() && e.npc && !e.dead && !e.transient && id != npc && id != other && world.society().resident(id))
+            third = id;
+    expect(!third.empty(), "a third resident");
+    world.entity(third)->offstage = true;
+    r = order("npc.howl", third);
+    expect(!r.ok && r.message.find("nowhere to howl from") != std::string::npos, "a resident away does not howl: " + r.message);
+    world.entity(third)->offstage = false;
+    expect(world.teleport(w.adaId, place, 10.5, 12.5).ok && world.teleport(npc, place, 11.5, 12.5).ok, "Ada beside the resident");
+    const auto fight = world.attack(w.adaId, npc, "yield");
+    expect(fight.ok && world.inBattle(npc), "Ada falls on the resident: " + fight.message);
+    r = order("npc.howl", npc);
+    expect(!r.ok && r.message.find("in a fight") != std::string::npos, "a resident in a fight does not howl: " + r.message);
+}
 } // namespace
 
 int main()
@@ -321,6 +416,7 @@ int main()
         heardFarOff();
         aChorus();
         blockedHearsNothing();
+        aResidentHowls();
     }
     catch (const std::exception& e)
     {

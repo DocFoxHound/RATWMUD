@@ -1,4 +1,5 @@
 #include "RatwGame.h"
+#include "RatwItems.h"
 #include "RatwStoryRegion.h"
 #include "RatwNames.h"
 
@@ -41,7 +42,8 @@ Result Game::applyStoryArea(const std::string& kind, const std::string& run, con
 
     if (kind == "story.area_spawn")
     {
-        const auto result = world_.storyBandits(area->cell, area->x1, area->y1, area->x2, area->y2, countField(payload, "count", 6));
+        const auto result = world_.storyBandits(area->cell, area->x1, area->y1, area->x2, area->y2, countField(payload, "count", 6),
+                                                payload.string("camp"));   // (Doc 86, L2: a camp the story names.)
         if (result.ok)
             record(Roads);
         return result;
@@ -109,15 +111,22 @@ Result Game::applyStoryReward(const std::string& kind, const std::string& wolf, 
         const int quantity = countField(payload, "quantity", 20);
         if (!quantity || !itemValid(good))
             return {false, "Give a known item, 1 to 20 of it.", wolf};
+        std::string name;
+        if (items::storyTagged(good))   // (Doc 86, J9: a story's own item, named, and taken back when the run ends unless kept.)
+            if (auto refused = storyItemGiven(wolf, good, payload, name); !refused.ok)
+                return refused;
         if (!world_.society().canCreate(wolf, good, quantity))
         {
-            tellActedOn(wolf, "You have no room to carry " + std::to_string(quantity) + " " + Society::itemName(good) + ".");
+            // (A story's own item is named only once it is given: a refused one leaves no name behind.)
+            tellActedOn(wolf, "You have no room to carry " + items::counted(name.empty() ? Society::itemName(good) : name, quantity, items::storyTagged(good)) + ".");
             return {false, "Their pack is full.", wolf};
         }
         world_.society().create(wolf, good, quantity, "dm grant: story reward");
+        if (items::storyTagged(good))
+            storyItemHeld(good, payload, name);
         recordCharacters(Economy, {wolf});
-        tellActedOn(wolf, "You receive " + std::to_string(quantity) + " " + Society::itemName(good) + ".");
-        return {true, "Gave " + std::to_string(quantity) + " " + Society::itemName(good) + ".", wolf};
+        tellActedOn(wolf, "You receive " + items::counted(Society::itemName(good), quantity, items::storyTagged(good)) + ".");
+        return {true, "Gave " + items::counted(Society::itemName(good), quantity, items::storyTagged(good)) + ".", wolf};
     }
     const auto factionId = payload.string("faction");
     const auto& points = payload["points"];
@@ -148,7 +157,7 @@ Result Game::applyStoryTell(const std::string& run, const json::Value& payload)
     if (!visit || !release || release->kind != "world" || release->source != "storykeeper" || !release->live() ||
         release->sourceRef != std::to_string(visit))
         return {false, "This story visit is no longer active.", run};
-    const auto text = payload.string("text"), to = payload.string("to");
+    const auto text = fillStoryNames(payload.string("text"), 300), to = payload.string("to");   // (Doc 86, C1b: names for tokens.)
     if (text.empty() || json::utf8Prefix(text, 300) != text || text.find_first_of("\r\n") != std::string::npos)
         return {false, "A story message is one line of up to 300 characters.", run};
     std::optional<story::Region> area;

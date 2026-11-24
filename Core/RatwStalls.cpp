@@ -273,6 +273,8 @@ bool Game::stallCommand(Connection* c, const json::Value& j, Result& result)
         const auto price = std::int64_t(j.number("price", 0));
         if (const auto most = PriceMost; price < 1 || price > most)
             return result = {false, "A price from 1p to " + std::to_string(most) + "p.", {}}, true;
+        if (items::storyTagged(item))
+            return result = {false, "That belongs to a story.", {}}, true;   // (Doc 86, J9: never laid on a stall.)
         if (!items::good(items::baseOf(item)) || spareOf(me, item) < quantity)
             return result = {false, "You haven't that to sell (what you wear, and what is lent to you, stays off the stall).", {}}, true;
         const auto* a = society.account(account(st));

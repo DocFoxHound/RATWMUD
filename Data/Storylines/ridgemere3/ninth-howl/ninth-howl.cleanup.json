@@ -1,0 +1,537 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "ninth-howl.cleanup",
+ "title": "The Ninth Howl put away",
+ "prefix": "nh",
+ "audience": {
+  "kind": "open"
+ },
+ "start": "undo-cast",
+ "quietAfterHours": 0,
+ "phases": [
+  {
+   "id": "undo-cast",
+   "journal": "The Ninth Howl is put away.",
+   "effects": [
+    {
+     "kind": "npc.unprotect",
+     "npc": "rmx_dagfinn_thornham",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "rm_ottilie_harrowgate",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "rm_oda_harrowgate",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "rmx_brenna_abbot",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "rm_gerrit_mudhand",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "rm_bettany_nailley",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "rm_rosalind_greatly",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "rm_oskar_gullworth",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "rm_ambrose_greatly",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "rm_gorm_plankgate",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "rmx_cressida_cotton",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": [
+    {
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "to": "undo-keepers"
+    }
+   ]
+  },
+  {
+   "id": "undo-keepers",
+   "journal": "The Ninth Howl is put away.",
+   "effects": [
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_cw_fallow_lakewick",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_mb_aspen_marshholm",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_sm_iris_meadowfield",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_mb_roan_pikewater",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_fh_thistle_stonepick",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "cty_ulla_rusthand",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "cty_ulric_stonevein",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_mb_skye_eelbank",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "rmx_corra_coldridge",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_cw_myrtle_stillford",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": [
+    {
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "to": "undo-fallbacks"
+    }
+   ]
+  },
+  {
+   "id": "undo-fallbacks",
+   "journal": "The Ninth Howl is put away.",
+   "effects": [
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_sm_dun_harvestley",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_sm_rusk_plummeadow",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "cty_jory_corncroft",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "cty_lavinia_mudworth",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_oh_cairn_oakhaven",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_fh_aster_coldfell",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_mb_tamsin_eelbank",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_cw_kell_greyton",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_cw_willa_coldwick",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_cw_harrow_reedford",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": [
+    {
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "to": "undo-last"
+    }
+   ]
+  },
+  {
+   "id": "undo-last",
+   "journal": "The Ninth Howl is put away: its watch over the realm ends.",
+   "effects": [
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_sm_moss_blossomwell",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "rm_solveig_tarwell",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_cw_tansy_reedmere",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_cw_gorse_reedmere",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "tn_mb_bramble_bogditch",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "rm_halvard_mossgrave",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "rmx_ingrid_kendrick",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "rmx_piet_lumley",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "npc.unprotect",
+     "npc": "cty_fenwick_plankworth",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": []
+  }
+ ],
+ "tests": [
+  {
+   "name": "Every protected resident of the campaign is let go, a minute a group",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "hour",
+     "day": 0.01,
+     "detail": "1",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "hour",
+     "day": 0.02,
+     "detail": "2",
+     "quantity": 2
+    },
+    {
+     "id": "e3",
+     "kind": "hour",
+     "day": 0.03,
+     "detail": "3",
+     "quantity": 3
+    }
+   ],
+   "expect": [
+    "undo-cast",
+    "undo-keepers",
+    "undo-fallbacks",
+    "undo-last"
+   ],
+   "expectEffects": [
+    {
+     "phase": "undo-cast",
+     "kind": "npc.unprotect",
+     "npc": "rmx_dagfinn_thornham",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-cast",
+     "kind": "npc.unprotect",
+     "npc": "rm_ottilie_harrowgate",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-cast",
+     "kind": "npc.unprotect",
+     "npc": "rm_oda_harrowgate",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-cast",
+     "kind": "npc.unprotect",
+     "npc": "rmx_brenna_abbot",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-cast",
+     "kind": "npc.unprotect",
+     "npc": "rm_gerrit_mudhand",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-cast",
+     "kind": "npc.unprotect",
+     "npc": "rm_bettany_nailley",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-cast",
+     "kind": "npc.unprotect",
+     "npc": "rm_rosalind_greatly",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-cast",
+     "kind": "npc.unprotect",
+     "npc": "rm_oskar_gullworth",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-cast",
+     "kind": "npc.unprotect",
+     "npc": "rm_ambrose_greatly",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-cast",
+     "kind": "npc.unprotect",
+     "npc": "rm_gorm_plankgate",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-cast",
+     "kind": "npc.unprotect",
+     "npc": "rmx_cressida_cotton",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-keepers",
+     "kind": "npc.unprotect",
+     "npc": "tn_cw_fallow_lakewick",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-keepers",
+     "kind": "npc.unprotect",
+     "npc": "tn_mb_aspen_marshholm",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-keepers",
+     "kind": "npc.unprotect",
+     "npc": "tn_sm_iris_meadowfield",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-keepers",
+     "kind": "npc.unprotect",
+     "npc": "tn_mb_roan_pikewater",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-keepers",
+     "kind": "npc.unprotect",
+     "npc": "tn_fh_thistle_stonepick",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-keepers",
+     "kind": "npc.unprotect",
+     "npc": "cty_ulla_rusthand",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-keepers",
+     "kind": "npc.unprotect",
+     "npc": "cty_ulric_stonevein",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-keepers",
+     "kind": "npc.unprotect",
+     "npc": "tn_mb_skye_eelbank",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-keepers",
+     "kind": "npc.unprotect",
+     "npc": "rmx_corra_coldridge",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-keepers",
+     "kind": "npc.unprotect",
+     "npc": "tn_cw_myrtle_stillford",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-fallbacks",
+     "kind": "npc.unprotect",
+     "npc": "tn_sm_dun_harvestley",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-fallbacks",
+     "kind": "npc.unprotect",
+     "npc": "tn_sm_rusk_plummeadow",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-fallbacks",
+     "kind": "npc.unprotect",
+     "npc": "cty_jory_corncroft",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-fallbacks",
+     "kind": "npc.unprotect",
+     "npc": "cty_lavinia_mudworth",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-fallbacks",
+     "kind": "npc.unprotect",
+     "npc": "tn_oh_cairn_oakhaven",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-fallbacks",
+     "kind": "npc.unprotect",
+     "npc": "tn_fh_aster_coldfell",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-fallbacks",
+     "kind": "npc.unprotect",
+     "npc": "tn_mb_tamsin_eelbank",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-fallbacks",
+     "kind": "npc.unprotect",
+     "npc": "tn_cw_kell_greyton",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-fallbacks",
+     "kind": "npc.unprotect",
+     "npc": "tn_cw_willa_coldwick",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-fallbacks",
+     "kind": "npc.unprotect",
+     "npc": "tn_cw_harrow_reedford",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-last",
+     "kind": "npc.unprotect",
+     "npc": "tn_sm_moss_blossomwell",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-last",
+     "kind": "npc.unprotect",
+     "npc": "rm_solveig_tarwell",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-last",
+     "kind": "npc.unprotect",
+     "npc": "tn_cw_tansy_reedmere",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-last",
+     "kind": "npc.unprotect",
+     "npc": "tn_cw_gorse_reedmere",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-last",
+     "kind": "npc.unprotect",
+     "npc": "tn_mb_bramble_bogditch",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-last",
+     "kind": "npc.unprotect",
+     "npc": "rm_halvard_mossgrave",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-last",
+     "kind": "npc.unprotect",
+     "npc": "rmx_ingrid_kendrick",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-last",
+     "kind": "npc.unprotect",
+     "npc": "rmx_piet_lumley",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "undo-last",
+     "kind": "npc.unprotect",
+     "npc": "cty_fenwick_plankworth",
+     "ifRefused": "skip"
+    }
+   ]
+  }
+ ]
+}

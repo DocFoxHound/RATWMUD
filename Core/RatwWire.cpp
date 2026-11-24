@@ -355,6 +355,24 @@ Value persistEntity(const Entity& e, double time)
             lore.push(id);
         o.add("lore", lore);
     }
+    if (!e.titles.empty())
+    {
+        auto titles = Value::array();              // Titles stories named it by (doc 86, C4).
+        for (const auto& t : e.titles)
+        {
+            auto j = Value::object();
+            j.add("title", t.title);
+            j.add("known", t.known);
+            j.add("by", t.by);
+            j.add("run", t.run);
+            j.add("since", t.since);
+            j.add("until", t.until);
+            titles.push(j);
+        }
+        o.add("titles", titles);
+    }
+    if (e.titlesHidden)
+        o.add("titlesHidden", true);
     if (!e.bestiary.empty())
     {
         auto b = Value::object();
@@ -599,6 +617,11 @@ Entity readEntity(const Value& o)
     for (const auto& id : o.array("lore"))
         if (id.isString() && e.lore.size() < 500)
             e.lore.push_back(json::utf8Prefix(id.asString(), 64));
+    for (const auto& t : o.array("titles"))
+        if (t.isObject() && !t.string("title").empty() && e.titles.size() < 8)
+            e.titles.push_back({json::utf8Prefix(t.string("title"), 60), json::utf8Prefix(t.string("known", "realm"), 80),
+                                json::utf8Prefix(t.string("by"), 80), json::utf8Prefix(t.string("run"), 80), t.number("since"), t.number("until", -1)});
+    e.titlesHidden = !e.npc && o.boolean("titlesHidden");
     for (const auto& [species, seen] : o.object("bestiary").fields())
         if (seen.isArray() && seen.items().size() == 2 && e.bestiary.size() < 200)
             e.bestiary[json::utf8Prefix(species, 64)] = {seen.items()[0].asNumber(), int(seen.items()[1].asNumber())};
@@ -1044,6 +1067,18 @@ Value society(const SocietyState& s)
     for (const auto& [dead, day] : s.careers.birthsOwed)
         owed.add(dead, day);
     careers.add("birthsOwed", owed);
+    if (!s.careers.queued.empty())   // (Doc 86, J7: the unplaced a story put first in line, by town.)
+    {
+        auto queued = Value::object();
+        for (const auto& [town, who] : s.careers.queued)
+        {
+            auto list = Value::array();
+            for (const auto& id : who)
+                list.push(id);
+            queued.add(town, list);
+        }
+        careers.add("queued", queued);
+    }
     // The mantle ledger (doc 84 §12, §17.8): who wears or wore which mantle, only while there is one (an older save
     // reads as none).
     if (!s.careers.mantles.empty())
@@ -1481,6 +1516,9 @@ CareerState readCareers(const Value& o)
         if (v.isNumber()) c.births[key] = std::clamp(int(v.asNumber()), 0, 3);
     for (const auto& [dead, v] : o.object("birthsOwed").fields())
         if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() < 1e9) c.birthsOwed[dead] = v.asNumber();
+    for (const auto& [town, list] : o.object("queued").fields())
+        for (const auto& id : list.items())
+            if (id.isString() && !id.asString().empty() && c.queued[town].size() < 64) c.queued[town].push_back(id.asString());
     for (const auto& [wearer, a] : o.object("mantles").fields())
     {
         if (!a.isObject() || a.string("mantle").empty())

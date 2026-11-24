@@ -263,6 +263,9 @@ struct CareerState
     std::map<std::string, double> birthsOwed;
     std::int64_t day = -1;                            // The last day careers were tended.
     std::map<std::string, MantleBinding> mantles;     // The mantle ledger (doc 84 §12), by wearer.
+    // Doc 86, J7 (`npc.queue`): unplaced residents a story put first in line for the next post that falls vacant in a
+    // town (town -> residents, first first). Taken at the vacancy's Country step, before the city's wolves; lasting.
+    std::map<std::string, std::vector<std::string>> queued;
 };
 // A resident the world should gain: a child, in place of one who died, or an unplaced NPC of the world's own list come in
 // from the Country for a post nobody in the city can fill (the user, 2026-11-01: "I never said to simulate new NPCs or
@@ -753,6 +756,14 @@ class Society
     // the watch). "refused" notes, or what changed.
     CareerNote appoint(const std::string& positionId, const std::string& resident, const CareerWorld& world, double day);
     CareerNote apprenticeTo(const std::string& positionId, const std::string& youth, const CareerWorld& world, double day);
+    // Doc 86, C14 (`npc.post`): a post given to a resident by a story, in one step, taken or not: whoever held it is left
+    // without it (lastHolder, vacant since `day`, for the vacancy rules), the resident leaves any post they held; never the
+    // watch's. A "succession" note (how: "by the story"), "held" (they hold it already: no change), or "refused". Lasting.
+    CareerNote swapPost(const std::string& positionId, const std::string& resident, const CareerWorld& world, double day);
+    // Doc 86, J7 (`npc.queue`): an unplaced resident put first in line for the next post that falls vacant in `town` (by the
+    // careers' rules: never a vacancy made). "queued", "held" (in line there already) or "refused" (not unplaced, too young
+    // or old to work, or in line elsewhere: moved). Lasting, in CareerState::queued.
+    CareerNote queueResident(const std::string& resident, const std::string& town);
     void addPlayer(const std::string& id);
     const EconomyAccount* account(const std::string& id) const;
     std::int64_t cash(const std::string& id) const     // An account's money (0 for none).
@@ -995,6 +1006,8 @@ class Society
     // Goods taken out of the world (doc 85, Phase 9: a story's item.take): `quantity` of the item, any kind of it (the
     // plainest first), or nothing when the account holds fewer. Never money.
     bool destroy(const std::string& account, const std::string& item, int quantity, const std::string& reason);
+    // Doc 86, J9: every unit of these items (a story's own) out of every account there is; how many came out of each.
+    std::map<std::string, int> takeAll(const std::set<std::string>& items, const std::string& reason);
     bool merchant(const std::string& id) const;
     // A smith: a merchant whose trade is the forge (its work says "smith" or "forge"; the demo's Ash). A smith deals in
     // swords.
@@ -1766,7 +1779,8 @@ class Society
     std::string cityWolfFor(const Position& p, const CareerWorld& world, int classStep) const;
     // An arrival from the Country for an empty post, of its class (classStep 0) or the next (1), with a home found for
     // it; false if none fits or there is nowhere for it to stay.
-    bool arrivalFor(const Position& p, const PositionState& ps, const CareerWorld& world, int classStep, ResidentRequest& out) const;
+    bool arrivalFor(const Position& p, const PositionState& ps, const CareerWorld& world, int classStep, ResidentRequest& out,
+                    const std::string& only = {}) const;
     void buildPositions();
     void indexCareers() const;
   public:

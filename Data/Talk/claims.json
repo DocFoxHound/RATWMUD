@@ -1,5 +1,5 @@
 {
-  "about": "Claims and who says them (Docs/Design/84 §7.7, Phase 1). A belief (struct Belief, Core/RatwRoads.h) carries a kind from this file, the one it is about (subject: #x.*#), a second party where there is one (object, the victim: #y.*#) and a place (a cell: #place.words#, World::placeWords). Each kind is said from up to five points of view: `they` (told of others), `victim` (the object telling it), `to_victim` (told to the object), `self` (the subject speaking of it) and `kin`. A point of view is a list of wordings, the first that can be filled is said; a claim with no wording that can be filled is never spoken. `family` is the old topic.claim_kind the lines answer in kind (facts.json); `topic` is the ambient topic it is talked of under (gossip unless it says); `topic_kind` sets topic.kind for that topic's lines; `grave` 0-3 is how heavy it is. `text` maps the free words older saves and the Watch still use onto a kind (`exact` or `starts`), tried in this file's order. #claim.charge# is the charge a warrant names; #claim.text# the free words themselves, the last resort for a kind about people.",
+  "about": "Claims and who says them (Docs/Design/84 §7.7, Phase 1). A belief (struct Belief, Core/RatwRoads.h) carries a kind from this file, the one it is about (subject: #x.*#), a second party where there is one (object, the victim: #y.*#) and a place (a cell: #place.words#, World::placeWords). Each kind is said from up to five points of view: `they` (told of others), `victim` (the object telling it), `to_victim` (told to the object), `self` (the subject speaking of it) and `kin`. A point of view is a list of wordings, the first that can be filled is said; a claim with no wording that can be filled is never spoken. `family` is the old topic.claim_kind the lines answer in kind (facts.json); `topic` is the ambient topic it is talked of under (gossip unless it says); `topic_kind` sets topic.kind for that topic's lines; `grave` 0-3 is how heavy it is. `text` maps the free words older saves and the Watch still use onto a kind (`exact` or `starts`), tried in this file's order. #claim.charge# is the charge a warrant names; #claim.text# the free words themselves, the last resort for a kind about people. Doc 86 (T7): story.rumour is a story's rumour (belief.plant), its words the phrase the story gave; story.cleared its counter-claim, believed as never <phrase>, so it is told <Name> never took the silver, and never merges with the rumour it answers.",
   "kinds": {
     "death": {
       "family": "death", "grave": 3,
@@ -93,6 +93,16 @@
       "family": "bandit", "grave": 2, "topic": "bandits", "topic_kind": "camp",
       "they": ["robbers have been stopping travellers #place.words#"],
       "text": {"starts": ["robs travellers"]}
+    },
+    "story.rumour": {
+      "family": "other", "grave": 1,
+      "they": ["#x.name# #claim.text#"],
+      "text": {"starts": []}
+    },
+    "story.cleared": {
+      "family": "other", "grave": 0,
+      "they": ["#x.name# #claim.text#"],
+      "text": {"starts": []}
     }
   }
 }

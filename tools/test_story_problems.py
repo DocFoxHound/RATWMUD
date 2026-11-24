@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 import story_library
 import story_program as rules
+import story_v2_samples
 import story_runner as runner
 
 EXAMPLES = runner.catalogue()['examples']
@@ -152,5 +153,209 @@ def mutate(p, rng, junk):
             del node[i]
 
 
+class ParticipationProblems(unittest.TestCase):
+    """Doc 86, R1's checks: what a test for each wolf may not hold, and the floor above the cap."""
+
+    def refused(self, condition, words):
+        p = copy.deepcopy(story_v2_samples.READY)
+        p['phases'][0]['triggers'][1]['if'] = condition
+        found = [x for x in rules.problems(p) if x['level'] == 'error']
+        self.assertTrue(any(words in x['text'] for x in found), found)
+        self.assertRaisesRegex(ValueError, words, rules.validate, p)
+
+    def test_a_fact_condition_inside_where_is_refused(self):
+        self.refused({'test': 'participation', 'where': {'test': 'wolf indoors', 'who': '$each', 'is': True}, 'percent': 10},
+                     "not the world's facts")
+
+    def test_a_numbers_list_is_refused(self):
+        p = copy.deepcopy(story_v2_samples.READY)
+        p['variables'].append({'id': 'tally', 'type': 'numbers', 'scope': 'story'})
+        p['phases'][0]['triggers'][1]['if'] = {'test': 'participation', 'list': 'tally', 'percent': 10}
+        self.assertRaisesRegex(ValueError, 'list of wolves', rules.validate, p)
+
+    def test_floor_above_cap_is_refused(self):
+        self.refused({'test': 'participation', 'list': 'did', 'percent': 10, 'floor': 9, 'cap': 3}, 'The floor is above the cap')
+
+    def test_a_wolf_value_read_without_each_is_refused(self):
+        self.refused({'test': 'participation', 'where': {'test': 'compare', 'left': {'var': 'hauls'}, 'op': '>', 'right': 1},
+                      'percent': 10}, '"hauls" of each wolf')
+
+
+class ValuesProblems(unittest.TestCase):
+    """Doc 86, Phase 2: what the Problems list says of values in effects, fills, filters and camps (no database)."""
+
+    def test_a_wolf_variable_in_a_resident_parameter(self):
+        import test_story_v2 as v2
+        p = v2._values_program([{'do': 'effect', 'effect': {'kind': 'npc.walk', 'npc': {'var': 'finder'}, 'cell': 'grey', 'x': 3, 'y': 4,
+                                                             'pace': 'walk', 'cue': 'c'}}])
+        found = structural(rules.problems(p))
+        self.assertTrue(found and found[0]['path'] == 'phases[0].triggers[0].actions[0]' and 'needs a resident' in found[0]['text'], found)
+
+    def test_the_sample_has_none(self):
+        self.assertEqual([x for x in rules.problems(story_v2_samples.VALUES) if x['level'] == 'error'], [])
+
+
+try:
+    import test_story_talk as talk
+    from test_world_db import database_available
+except ImportError:   # (pragma: no cover)
+    talk, database_available = None, lambda: False
+
+
+@unittest.skipUnless(talk is not None and database_available(), 'local PostgreSQL required')
+class ValuesInTheWorld(unittest.TestCase):
+    """Doc 86, Phase 2's approval checks in a throwaway world (the console's fixture): an objective's cells, a named story
+    camp, a purse a value reads, and values in effects passed to the game to refuse."""
+    setUpClass = classmethod(talk.console.ConsoleReads.setUpClass.__func__) if talk else None
+    tearDownClass = classmethod(talk.console.ConsoleReads.tearDownClass.__func__) if talk else None
+    fact = talk.console.ConsoleReads.fact if talk else None
+
+    def setUp(self):
+        talk.InTheWorld.setUp(self)
+
+    def refs(self, p, chapters=False):
+        return runner.references(self.conn, self.world, rules.validate(p), chapters=chapters)
+
+    def quest(self, objective, **more):
+        p = talk.program()
+        p['quests'] = [{'id': 'q', 'title': 'Q', 'objectives': [{'id': 'a', 'label': 'Do it.', **objective}], **more}]
+        return p
+
+    def test_an_unknown_cell_in_where_is_refused(self):
+        self.refs(self.quest({'on': 'hunted', 'where': {'cells': ['gate']}}))
+        self.assertRaisesRegex(ValueError, 'Unknown cell in this world for "where": moon', self.refs,
+                               self.quest({'on': 'hunted', 'where': {'cells': ['gate', 'moon']}}))
+        found = runner.reference_problems(self.conn, self.world, self.quest({'on': 'hunted', 'where': {'cells': ['moon']}}))
+        self.assertTrue(any('"where": moon' in x['text'] for x in found), found)
+
+    def test_a_named_camp_and_its_objective(self):
+        p = self.quest({'on': 'camp cleared', 'match': {'target': 'camp_story_sq_gate'}})
+        self.assertRaisesRegex(ValueError, 'is spawned by this story', self.refs, p)
+        p['prefix'] = 'sq'
+        p['phases'][0]['triggers'][0]['actions'] = [talk.fx('bandits.call', player='$actor', count=2, camp='sq_gate')]
+        self.refs(p)
+
+    def test_each_name_of_a_one_of_filter_is_checked(self):
+        # (Review of Phase 2: an objective's "one of" was passed over by the camp, resident and item checks.)
+        self.assertRaisesRegex(ValueError, 'No camp "camp_nowhere"', self.refs,
+                               self.quest({'on': 'camp cleared', 'match': {'target': {'in': ['camp_gate', 'camp_nowhere']}}}))
+        self.assertRaisesRegex(ValueError, 'No item "moonstone"', self.refs,
+                               self.quest({'on': 'gift', 'match': {'item': {'in': ['bread', 'moonstone']}}}))
+        self.assertRaisesRegex(ValueError, 'rm_nobody', self.refs,
+                               self.quest({'on': 'gift', 'match': {'target': {'in': ['rm111', 'rm_nobody']}}}))
+        self.refs(self.quest({'on': 'camp cleared', 'match': {'target': {'starts': 'camp_'}}}))   # (A "begins with" names none.)
+
+    def test_a_purse_a_value_reads(self):
+        grant = lambda purse: talk.fx('character.grant', player='$actor', purse='town:greyfen', reason='r',
+                                      coins={'min': [12, {'div': [{'purse': purse}, 20]}]})
+        self.refs(talk.program([grant('till:job:rm111')]))
+        self.assertRaisesRegex(ValueError, 'No purse till:job:nobody', self.refs, talk.program([grant('till:job:nobody')]))
+        p = self.quest({'on': 'gift', 'goal': {'max': [2, {'div': [{'purse': 'town:atlantis'}, 50]}]}})
+        self.assertRaisesRegex(ValueError, 'No town "atlantis"', self.refs, p)
+
+    def test_values_in_effects_are_the_games_to_refuse(self):
+        p = talk.program([talk.fx('npc.walk', npc={'field': 'target'}, cell='gate', x={'field': 'quantity'}, y=2, pace='walk', cue='c'),
+                          talk.fx('item.give', player={'field': 'target'}, item='bread', quantity={'field': 'quantity'})])
+        self.refs(p)
+
+
+
+class WordsInTheWorld(unittest.TestCase):
+    """Doc 86, Phase 3 (V2, C4): approval reads the story's words with the world's voices and ids, and a title's town."""
+    setUpClass = classmethod(talk.console.ConsoleReads.setUpClass.__func__) if talk else None
+    tearDownClass = classmethod(talk.console.ConsoleReads.tearDownClass.__func__) if talk else None
+    fact = talk.console.ConsoleReads.fact if talk else None
+    setUp, refs = ValuesInTheWorld.setUp, ValuesInTheWorld.refs
+
+    def test_forbidden_words_and_ids_are_refused_at_approval(self):
+        self.refs(talk.program([talk.fx('npc.greet', npc='rm111', player='$actor', text='#greet# You kept the lamp lit.')]))
+        self.assertRaisesRegex(ValueError, 'never said in this world', self.refs,
+                               talk.program([talk.fx('journal.note', text='A dog barks at the gate.')]))
+        self.assertRaisesRegex(ValueError, 'looks like an id', self.refs,
+                               talk.program([talk.fx('npc.greet', npc='rm111', player='$actor', text='Ask rm112 about it.')]))
+        self.assertRaisesRegex(ValueError, 'not quoted in a banner', self.refs,
+                               talk.program([talk.fx('story.tell', to='wolf', player='$actor', **{'from': 'rm111'}, text='He says: "Run."')]))
+        found = runner.reference_problems(self.conn, self.world, talk.program([talk.fx('journal.note', text='The gods are kind.')]))
+        self.assertTrue(any(x['blocks'] and 'never said' in x['text'] for x in found), found)
+
+    def test_the_givers_dialect_is_a_warning(self):
+        import story_words
+        lex = story_words.lexicon()
+        dialect, phrase = next((d, p) for d, ps in lex.items() for p, saying in ps if not saying and ' ' in p)
+        other = next(d for d in lex if d != dialect)
+        self.conn.execute("INSERT INTO live.npc_voice(world_id,npc_id,home_region,accent) VALUES (%s,'rm111',%s,'broad') "
+                          "ON CONFLICT (world_id,npc_id) DO UPDATE SET home_region=excluded.home_region, accent=excluded.accent", (self.world, other))
+        warnings = self.refs(talk.program([talk.fx('npc.greet', npc='rm111', player='$actor', text=f'Well, {phrase} indeed.')]))
+        self.assertTrue(any(f'says {dialect}' in w for w in warnings), warnings)
+
+    def test_a_titles_town(self):
+        self.refs(talk.program([talk.fx('title.give', player='$actor', title='Warden of the Weir', known='town', town='greyfen')]))
+        self.assertRaisesRegex(ValueError, 'Unknown town in this world: atlantis', self.refs,
+                               talk.program([talk.fx('title.give', player='$actor', title='Warden', known='town', town='atlantis')]))
+        self.assertRaisesRegex(ValueError, 'Unknown town in this world: atlantis', self.refs,
+                               talk.program([talk.fx('belief.forget', subject='rm111', claimKind='theft', town='atlantis', share=50)]))
+
 if __name__ == '__main__':
     unittest.main()
+
+
+@unittest.skipUnless(talk is not None and database_available(), 'local PostgreSQL required')
+class Phase9InTheWorld(unittest.TestCase):
+    """Doc 86, Phase 9's approval checks in a throwaway world (the console's fixture, House Greatly among its factions): a
+    House's purse refused while the world's switch storyHousePurses is off, and checked as SQ2 checks a purse when it is on
+    (M3); an unplaced resident first in line, never a placed one, in a town of the world (J7); a casting's town."""
+    setUpClass = classmethod(talk.console.ConsoleReads.setUpClass.__func__) if talk else None
+    tearDownClass = classmethod(talk.console.ConsoleReads.tearDownClass.__func__) if talk else None
+    fact = talk.console.ConsoleReads.fact if talk else None
+
+    def setUp(self):
+        talk.InTheWorld.setUp(self)
+
+    def refs(self, p, chapters=False):
+        return runner.references(self.conn, self.world, rules.validate(p), chapters=chapters)
+
+    def switch(self, on, accounts=None):
+        self.conn.execute('RESET ROLE')
+        self.conn.execute("""UPDATE game.checkpoints SET payload=jsonb_set(payload::jsonb,'{people}',%s::jsonb)::text WHERE world_id=%s""",
+                          (json.dumps({'storyHousePurses': True} if on else {}), self.world))
+        if accounts:
+            self.conn.execute("""UPDATE game.checkpoints SET payload=jsonb_set(payload::jsonb,'{society,accounts}',
+                                 (payload::jsonb->'society'->'accounts') || %s::jsonb)::text WHERE world_id=%s""",
+                              (json.dumps(accounts), self.world))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+
+    def test_a_house_purse_is_refused_while_the_switch_is_off(self):
+        grant = lambda purse: talk.program([talk.fx('character.grant', player='$actor', coins=5, purse=purse, reason='Greatly pays it')])
+        self.assertRaisesRegex(ValueError, 'House purses are off in this world', self.refs, grant('house:greatly'))
+        self.assertRaisesRegex(ValueError, 'No House "fell"', self.refs, grant('house:fell'))
+        self.switch(True)
+        self.assertRaisesRegex(ValueError, 'has no purse yet', self.refs, grant('house:greatly'))
+        self.switch(True, {'purse:house_greatly': {'cash': 42}})
+        for purse in ('house:greatly', 'house:house_greatly'):
+            with self.subTest(purse=purse):
+                self.refs(grant(purse))
+        self.switch(False)
+        self.assertRaisesRegex(ValueError, 'House purses are off', self.refs, grant('house:greatly'))
+        found = runner.reference_problems(self.conn, self.world, grant('house:greatly'))
+        self.assertTrue(any('storyHousePurses' in x['text'] for x in found), found)
+
+    def test_only_an_unplaced_resident_is_put_first_in_line(self):
+        self.conn.execute('RESET ROLE')
+        self.conn.execute("""INSERT INTO live.npcs(world_id,id,name,role,age,voice,appearance,hours_start,hours_end,home_x,home_y,
+                             work_x,work_y,evening_x,evening_y) VALUES (%s,'cty_carter','Kjell Saltdale','civilian',30,1,'{}',8,12,0,0,0,0,0,0)""",
+                          (self.world,))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+        self.refs(talk.program([talk.fx('npc.queue', npc='cty_carter', town='greyfen')]))
+        self.assertRaisesRegex(ValueError, 'rm111 has a place in the world already', self.refs,
+                               talk.program([talk.fx('npc.queue', npc='rm111', town='greyfen')]))
+        self.assertRaisesRegex(ValueError, 'Unknown town in this world: atlantis', self.refs,
+                               talk.program([talk.fx('npc.queue', npc='cty_carter', town='atlantis')]))
+
+    def test_a_castings_town_and_house(self):
+        p = talk.program([talk.fx('cast.pick', var='carter', job='carter', town='greyfen')])
+        p['variables'] = [{'id': 'carter', 'type': 'resident', 'scope': 'story'}]
+        self.refs(p)
+        p['phases'][0]['triggers'][0]['actions'][0]['effect']['town'] = 'atlantis'
+        self.assertRaisesRegex(ValueError, 'Unknown town in this world: atlantis', self.refs, p)
+        p['phases'][0]['triggers'][0]['actions'][0]['effect'].update(town='greyfen', faction='house_nobody')
+        self.assertRaisesRegex(ValueError, 'Unknown faction in this world: house_nobody', self.refs, p)

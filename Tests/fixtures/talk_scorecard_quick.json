@@ -27,12 +27,12 @@
    "better": "higher",
    "gate": "soft",
    "target": "8 h+",
-   "value": 4.648888888888888,
+   "value": 1.9565972222222223,
    "passes": false,
    "by_profile": {
-    "town": 4.649
+    "town": 1.957
    },
-   "control": 4.648888888888888,
+   "control": 1.9565972222222223,
    "separation": 0.0,
    "real_better": false,
    "separates": false,
@@ -849,7 +849,7 @@
     "exchange": 276
    },
    "R2_detail": {
-    "median": 5.128055555555554,
+    "median": 2.6233333333333335,
     "censored": false
    },
    "R6_detail": {
@@ -1110,6 +1110,16 @@
     "town": "/tmp/tmp.nYYQF7cBe3/town"
    },
    "on": "2026-11-19T03:13:57+00:00"
+  },
+  {
+   "metrics": [
+    "R2"
+   ],
+   "why": "Doc 86 wave G (2026-11-22): 16 inert lines in resident.tree's hub, each gated on a self.id and a Ninth Howl talk key the talk town lacks, reseed the run, and R2 (three listeners' median) moves with that alone: against the previous trees and baseline, 18 dummy say lines at the same place, gated on a resident id nobody has, give the same 1.96, while 20 comment lines there (or the new lines commented out) leave R2 unchanged. No line the town can say was added or removed.",
+   "from": {
+    "town": "/tmp/nhbis/final"
+   },
+   "on": "2026-11-23T05:35:21+00:00"
   }
  ]
 }

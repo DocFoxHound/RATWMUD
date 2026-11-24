@@ -208,8 +208,8 @@ ID = re.compile(r'^[a-z][a-z0-9_]{0,39}$')          # Within ratw_id (48), leavi
 # nothing changes: Atlas needs dm, and only admin gets character.dm. A host's Editor (tools/world_admin.py) never signs
 # in an admin row; there Atlas needs builder and My world's actions and the accounts need owner.
 # (Doc 85, Phases 9 and 10: the effects marked needsBuilder in the trigger catalogue: factions, standing, prices and projects.)
-BUILDER_STORY = ('A builder or owner must approve a story that changes standing with a faction or the economy on '
-                 'this world: ')
+BUILDER_STORY = ('A builder or owner must approve a story that changes standing with a faction, the economy or the realm\'s '
+                 'figures on this world: ')
 RANK = {'viewer': 0, 'dm': 1, 'builder': 2, 'owner': 3, 'admin': 4}
 PLAIN_ID = re.compile(r'^[^\s\x00-\x1f\x7f]+$')       # An account or good id: no spaces or control characters.
 MIME = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png',
@@ -835,33 +835,31 @@ class DungeonMaster:
                 (world,)).fetchall()]
 
     def save_figure(self, who, target, figure, remove=False):
-        """Someone residents know of who isn't in the game yet; `npc` once they arrive."""
+        """Someone residents know of who isn't in the game yet; `npc` once they arrive. Written as a story's figure.set
+        writes one (story_runner.write_figure: doc 86, C9)."""
         self.allowed(who, 'voice.sync')
         if not isinstance(figure, dict):
             raise DMError('Describe the figure.')
         fid = str(figure.get('id', '')).strip()
-        roles = [k.removeprefix('figure_') for k in json.loads((Path(__file__).resolve().parent.parent / 'Data' / 'Talk' / 'facts.json')
-                                                              .read_text())['world'] if k.startswith('figure_')]
         if not ID.match(fid):
             raise DMError('A figure needs an id (lower case).')
         with self.connect(target) as conn:
             with conn.transaction():
                 world = C.world_of(conn)
-                if remove:
-                    conn.execute('DELETE FROM live.figures WHERE world_id = %s AND id = %s', (world, fid))
-                else:
-                    name, title, role = str(figure.get('name', '')).strip(), str(figure.get('title', '')).strip(), str(figure.get('role', '')).strip()
-                    known, about, npc = str(figure.get('knownIn', 'realm')).strip(), str(figure.get('about', '')).strip(), str(figure.get('npc', '')).strip()
-                    if not 1 <= len(name) <= 120 or len(title) > 120 or role not in roles or len(about) > 600 or \
-                            not re.fullmatch(r'realm|region:[a-z_]+|house:[a-z_]+', known):
-                        raise DMError(f'A figure needs a name, a role ({", ".join(roles)}), where they are known (realm, region:<name>, '
-                                      'house:<name>) and at most 600 characters about them.')
+                if not remove:
+                    npc = str(figure.get('npc', '')).strip()
                     if npc and not conn.execute('SELECT 1 FROM live.npcs WHERE world_id = %s AND id = %s', (world, npc)).fetchone():
                         raise DMError('No such resident for them to be.')
-                    conn.execute('''INSERT INTO live.figures (world_id, id, name, title, role, known_in, about, npc_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                                    ON CONFLICT (world_id, id) DO UPDATE SET name = excluded.name, title = excluded.title, role = excluded.role,
-                                        known_in = excluded.known_in, about = excluded.about, npc_id = excluded.npc_id, updated_at = now()''',
-                                 (world, fid, name, title, role, known, about, npc or None))
+                try:
+                    if remove:
+                        conn.execute('DELETE FROM live.figures WHERE world_id = %s AND id = %s', (world, fid))
+                    else:
+                        story_runner.write_figure(conn, world, {
+                            'id': fid, 'name': str(figure.get('name', '')).strip(), 'title': str(figure.get('title', '')).strip(),
+                            'role': str(figure.get('role', '')).strip(), 'knownIn': str(figure.get('knownIn', 'realm')).strip(),
+                            'about': str(figure.get('about', '')).strip()}, keep_npc=str(figure.get('npc', '')).strip() or None)
+                except ValueError as error:
+                    raise DMError(str(error)) from None
                 action_id = self.queue(conn, who, target, 'voice.sync', fid, f'voice.sync after {"removing" if remove else "saving"} the figure {fid}')
         return {'id': action_id, 'status': 'queued'}
 
@@ -2785,6 +2783,42 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                                 raise DMError("Changing the world's variables on this world needs its owner, or the owner's "
                                               '"may steer campaigns" for your account.', 403)
                             result = story_runner.world_var(conn, world, who['username'], data)
+                        elif op == 'realm-vars':   # (Doc 86, J2: each wolf's realm values, by name and wolf; a read.)
+                            result = {**story_runner.realm_vars(conn, world, data.get('name'), data.get('wolf')),
+                                      'audit': story_runner.realm_var_audit(conn, world)}
+                        elif op == 'realm-var':
+                            # (Setting a wolf's realm value steers every story that reads it, as a world variable does.)
+                            if hosted and who['role'] != 'owner' and not who.get('maySteerCampaigns'):
+                                raise DMError("Changing the wolves' realm values on this world needs its owner, or the owner's "
+                                              '"may steer campaigns" for your account.', 403)
+                            result = story_runner.realm_var(conn, world, who['username'], data)
+                        elif op == 'sentences':   # (Doc 86, L4: the residents stories sentenced; a read.)
+                            result = {'sentences': story_runner.sentences(conn, world)}
+                        elif op == 'sentence-release':
+                            # (Doc 86, L4: "Release now": steering, as letting go of a campaign's holds is.)
+                            if hosted and who['role'] != 'owner' and not who.get('maySteerCampaigns'):
+                                raise DMError("Letting a sentenced resident go on this world needs its owner, or the owner's "
+                                              '"may steer campaigns" for your account.', 403)
+                            result = story_runner.release_sentence(conn, world, who['username'], data)
+                        elif op == 'house-purses-state':   # (Doc 86, M3: the switch, each House's purse; a read.)
+                            result = story_runner.house_purses_state(conn, world)
+                        elif op == 'house-purses':
+                            # (Doc 86, M3: the world switch for House purses moves money each day: the owner's alone, or
+                            # the studio's admin, who outranks an owner.)
+                            if RANK[who['role']] < RANK['owner']:
+                                raise DMError("Turning House purses on or off is the world owner's.", 403)
+                            result = story_runner.house_purses(conn, world, who['username'], data)
+                        elif op == 'campaign-release':
+                            # (Doc 86, C11: an act stopped early lets go of the residents it held for its campaign: steering.)
+                            if hosted and who['role'] != 'owner' and not who.get('maySteerCampaigns'):
+                                raise DMError("Letting go of a campaign's holds on this world needs its owner, or the owner's "
+                                              '"may steer campaigns" for your account.', 403)
+                            result = story_runner.release_campaign(conn, world, who['username'], data.get('campaign'))
+                        elif op == 'figure-undo':
+                            # (Doc 86, C9: the figure a story set put back as it was; figures need a builder on a hosted world.)
+                            if hosted and RANK[who['role']] < RANK['builder']:
+                                raise DMError('A builder or owner must change the figures of the realm on this world.', 403)
+                            result = story_runner.restore_figure(conn, world, who['username'], data.get('history'))
                         elif op == 'publish':
                             result = story_runner.publish(conn, world, data.get('ticket'))
                         elif op in ('signal', 'signal-ticket', 'voice', 'voice-ticket', 'retry', 'stop'):

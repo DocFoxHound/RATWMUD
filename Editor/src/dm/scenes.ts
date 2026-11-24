@@ -1,7 +1,8 @@
 import type {Place} from '../model/model.mjs';
 import type {Region} from './StoryRegions';
 
-export interface CastRole {id:string; npc?:string; selector?:{role?:string;cell?:string}}
+// (Doc 86, T3: or a stranger the same story brings with "Bring a stranger", by their id.)
+export interface CastRole {id:string; npc?:string; selector?:{role?:string;cell?:string}; visitor?:string}
 export interface Choice {id:string;label:string;next?:string}
 interface AI {personality:string;intent:string}
 interface BeatBase {id:string;speaker:string}

@@ -535,7 +535,7 @@ class Game
     const std::map<std::string, std::string>& mantleWearers() const { return mantleOf_; }
     Result loadMantle(const std::string& id);
     // Doc 84 Phase 10: the DM's mantle.assign <npc> (payload {"mantle": id}, or "npc mantle") and mantle.release <npc>.
-    Result assignMantle(const std::string& npc, const std::string& mantle);
+    Result assignMantle(const std::string& npc, const std::string& mantle, const std::string& how = "dm");
     Result releaseMantle(const std::string& npc);
     Result loadVoice(const std::string& npc);
     // What the talk library is asked when `a` speaks to `b` (to no one: b "") of a concept, here and now: the two
@@ -1162,11 +1162,13 @@ class Game
         std::vector<std::string> howlers;
         bool indoors = false;
         std::set<std::string> heard;
+        int x = -1, y = -1;                 // (Doc 86, J5: the tile of the howl that opened it, for "chorus closed".)
     };
     std::vector<Chorus> choruses_;
     std::map<std::string, double> howledAt_, chorusBondDay_;
     std::map<std::string, std::pair<double, std::string>> recentHowls_;
     Result howl(const std::string& id);
+    bool howlFrom(Entity& e, bool resident);   // (Doc 86, J5: a wolf's howl or a resident's; true when it joined a chorus.)
     double howlCooldownLeft(const std::string& id) const;
     void sendHowl(Chorus& chorus);
     void residentsHear(const Chorus& chorus);
@@ -1508,6 +1510,45 @@ class Game
     // events; "" when none asks), and whether a live story listens for a watched event.
     std::string storyFactsJson();
     bool storyWatches(const std::string& kind) const { return storyWatch_.events.count(kind) > 0; }
+    // Doc 86, Phase 1b (for tests and the console): whether a resident is protected now, and what the stories hold them by
+    // ("spare", "protect") with its owners ("run:<run>", "campaign:<id>"); what the residents remember from the stories.
+    bool residentProtected(const std::string& id) const { return isProtected(id); }
+    std::set<std::string> storyHoldOwners(const std::string& kind, const std::string& npc) const;
+    struct StoryMemo
+    {
+        std::string value;
+        double until = -1;                          // (The world's day it is forgotten.)
+        std::string run;
+        bool keep = false;                          // (Kept after its run ends, until `until`.)
+    };
+    const std::map<std::string, std::map<std::string, StoryMemo>>& storyMemory() const { return storyMemory_; }
+    // Doc 86, L4: a resident a story sentenced, held at a place indoors for a number of days, even after the story ends
+    // (never in Storyline::held, so endStoryWorld leaves it); saved with the checkpoint (people.storySentences).
+    struct StorySentence
+    {
+        std::string place, by, run;                 // by: the story's program id (its storyline's templateId), or the run.
+        double x = 0, y = 0;                        // The tile they are kept on.
+        double began = 0, until = 0;                // Calendar days.
+        int days = 0, pace = 0;
+    };
+    const std::map<std::string, StorySentence>& storySentences() const { return storySentences_; }
+    // Lets a sentenced resident go now (`why` the event's detail: "served" at its end, "released" by a Dungeon Master),
+    // with "sentence served". False when they are serving none.
+    bool endSentence(const std::string& npc, const std::string& why);
+    // Doc 86, C10: the camp a story's foe is (foe_<8 hex of the run>_<its id>; a resident made one is npc-<resident>).
+    static std::string storyFoeCampId(const std::string& run, const std::string& foe);
+    const std::map<std::string, std::string>& storyItemNames() const { return storyItemNames_; }   // (Doc 86, J9.)
+    // Doc 86, Phase 3 (for tests and the window): a story's greeting waiting for one wolf at one resident (C5), and the title a
+    // resident uses for a wolf: the newest one known where the resident lives ("" none; C4).
+    struct StoryGreet
+    {
+        std::string text, run;
+        double until = 0;                           // (The world's day it lapses.)
+    };
+    const std::map<std::string, std::map<std::string, StoryGreet>>& storyGreets() const { return storyGreets_; }
+    std::string storyTitleFor(const std::string& wolf, const std::string& npc) const;
+    // (The card's: newest first, each with where it is known; for another viewer, the names in them veiled as theirs.)
+    json::Value titlesView(const Entity& wolf, const std::string& viewer = {}) const;
     bool approvedStoryteller(const std::string& account) const;
     // Open dice (doc 58, 6): "2d6+1" rolled from a seed, in words ("2d6 + 1: 3 + 5 + 1 = 9"); "" with why, past the limits.
     static std::string rollDice(const std::string& spec, const std::string& seed, std::string& error);
@@ -1579,8 +1620,9 @@ class Game
     bool storyOfferOpen(const storylines::Storyline& s, const json::Value& offer, const std::string& wolf) const;
     struct StoryChoice
     {
-        std::string kind, run, id, words;           // kind: offer, handin, choice.
+        std::string kind, run, id, words;           // kind: offer, handin, during (doc 86, C6), choice.
     };
+    std::map<std::string, std::int64_t> storyCrowdNoted_;   // Doc 86, N1: a resident's crowded hub noted (game day + 1).
     std::vector<StoryChoice> storyChoicesFor(const std::string& wolf, const std::string& npc) const;
     const json::Value* storyOffer(const std::string& run, const std::string& quest) const;
     std::string storyHome(const talk::Tree& t, const std::string& entry) const;
@@ -2577,6 +2619,7 @@ class Game
         // and amounts, the factions and numbers the stories' triggers name).
         std::set<std::string> near;
         std::set<std::pair<std::string, std::int64_t>> purses, standing;
+        std::set<std::string> purseFacts;           // Doc 86, M2: the purses whose pennies the facts report.
         bool weatherWhereWolves = false;
         bool facts() const { return !sections.empty(); }
     };
@@ -2587,7 +2630,10 @@ class Game
     double storyWatchAccumulator_ = 0, storyWeatherAccumulator_ = 0;
     int storyHour_ = -1;
     std::int64_t storyDay_ = -1;
-    std::string storyPeriod_, storySeason_;
+    std::string storyPeriod_, storySeason_, storyMoon_;   // (Doc 86, J4: the moon's quarter last seen.)
+  public:
+    static const char* moonQuarter(double phase);         // new, waxing, full or waning (Doc 86, J4).
+  private:
     std::map<std::string, std::string> storyWeather_;             // Place -> the weather last seen there.
     // Doc 85, Phase 10 (RatwGameStoryFacts.cpp, storyWorldWatch): the events Phase 8 left, each looked for only while a live
     // story listens. What each was last seen as; a first look makes no event.
@@ -2600,6 +2646,25 @@ class Game
     std::map<std::string, std::string> storyMantles_;             // Resident -> the mantle they wore.
     bool storyRelationsSeen_ = false, storyMantlesSeen_ = false;
     std::string storyPurseAccount(const std::string& purse) const;   // A reward's purse (town:<id>...) as the account it is.
+  public:
+    // Doc 86, M3: House purses (house:<faction>, the account purse:<faction>), each filled once a game day by a share of
+    // its businesses' tills (the posts whose work place the House claims): HouseShare percent of what a till holds over
+    // HouseTillFloat, the purse holding at most HousePurseMost. Behind the world switch storyHousePurses (off: no money
+    // moves and a house: purse pays nothing), set by the owner's story.house_purses on|off and kept in the checkpoint.
+    static constexpr std::int64_t HouseShare = 10, HouseTillFloat = 80, HousePurseMost = 2500;
+    bool storyHousePurses() const { return storyHousePurses_; }
+    std::string housePurseFaction(const std::string& purse) const;   // house:<x> -> the House's faction id ("" none).
+  private:
+    bool storyHousePurses_ = false;
+    std::int64_t housePurseDay_ = -1;               // (Saved: the game day the Houses last took their share.)
+    std::int64_t storyTopicsDay_ = -1;              // (Doc 86, T6: the story topic looked at again once a game day.)
+    void tendHousePurses();
+  public:
+    // Doc 86, C1b: a story's words with the name tokens its engines put in ({@w:<wolf>}, {@r:<resident>}, {@p:<place>},
+    // {@i:<item>}, {@f:<faction>}) made names, cut at `limit` characters on a word boundary (RatwGameStorylines.cpp).
+    std::string fillStoryNames(const std::string& text, std::size_t limit) const;
+  private:
+    json::Value fillQuestWords(const json::Value& v, const char* key, std::size_t limit) const;
     std::map<std::string, std::map<std::string, std::set<std::string>>> storyOccupants_;   // Run -> region -> its wolves inside.
     void storyRegionCrossed(const std::string& run, const std::string& region, const std::string& wolf, bool inside,
                             const std::string& cell, int x, int y);
@@ -2644,11 +2709,64 @@ class Game
     static bool storyWorldOrder(const std::string& kind);
     Result applyStoryWorld(const std::string& kind, const std::string& target, const json::Value& payload);
     void endStoryWorld(storylines::Storyline& story);   // Undoes what the story's world effects left (a run that ends).
+    void refreshStoryDoors();                           // The doors live stories hold open to wolves, told to the world.
     void tickStoryWorld(double dt);                     // Holds kept, locks kept, the weather and markers run out.
     std::set<std::string> storiesHolding_;              // Live world stories with something held (refreshStoryWatch).
     double storyWorldAccumulator_ = 0;
     bool heldByAnotherStory(const std::string& npc, const std::string& run) const;
-    void noteStoryHeld(const json::Value& payload, const char* key, const std::string& id);   // (A stranger, a mantle.)
+    // Doc 86, C10: a story's foe made (again, after a restart) from what the story keeps of it (its held.foes entry).
+    Result storyFoeFrom(storylines::Storyline& story, const std::string& camp, const json::Value& kept);
+    void noteStoryHeld(const json::Value& payload, const char* key, const std::string& id);   // (A stranger.)
+    // Doc 86, C15: a mantle a story binds is kept with it as {npc: the mantle they wore before, or ""} (held.mantles; how it
+    // was bound in held.mantleHow), and given back when the story ends or lays it down itself (putBackMantle).
+    // After review: with what it bound (held.mantleBound), put back only while they still wear it; a later story's binding
+    // over it takes the "before" on (handOnStoryMantle).
+    void noteStoryMantle(const json::Value& payload, const std::string& npc, const std::string& before, const std::string& how,
+                         const std::string& bound);
+    Result putBackMantle(const std::string& npc, const std::string& before, const std::string& how, const std::string& bound = {});
+    bool storyBoundMantle(const json::Value& payload, const std::string& npc, std::string& before, std::string& how, std::string& bound);
+    bool handOnStoryMantle(const std::string& run, const std::string& npc, const std::string& before, const std::string& how,
+                           const std::string& bound);
+    // Doc 86, Phase 1b (RatwGameStoryWorld.cpp): residents a story spares from old age or protects for a while (C11), and
+    // what residents remember and come to believe from a story (C8, T7).
+    std::map<std::string, std::map<std::string, std::set<std::string>>> storyHolds_;   // kind -> npc -> owners
+    std::map<std::string, std::map<std::string, StoryMemo>> storyMemory_;              // owner -> key -> memo
+    double storyMemoryWarnedDay_ = -1;
+    Result applyStoryHold(const std::string& kind, const std::string& npc, const json::Value& payload);
+    Result applyStoryTalk(const std::string& kind, const std::string& target, const json::Value& payload);
+    // Doc 86, T6: the director's `story` topic is live in the world while a live story has a realm key remembered (C8,
+    // talk.remember scope realm): one topic for each key's prefix (nh for nh_stage), given only when the talk library has
+    // scenes for talk.story. Worked out again whenever a story's talk memory changes, a run ends and at a load.
+    void storyTopicsChanged();
+    // Doc 86, Phase 3 (RatwGameStoryWorld.cpp): a wolf named by a title (C4), a resident's words for one wolf the next time it
+    // opens their window (C5), and a rumour put to rest (J8).
+    std::map<std::string, std::map<std::string, StoryGreet>> storyGreets_;             // npc -> wolf -> greeting
+    std::map<std::string, StorySentence> storySentences_;                               // npc -> sentence (doc 86, L4)
+    Result applyStorySentence(const storylines::Storyline& story, const std::string& npc, const json::Value& payload);
+    void tendSentences();                           // Each held where sentenced (again after a restart); served at the end.
+    Result applyStoryThanks(const std::string& kind, const std::string& target, const json::Value& payload);
+    // Doc 86, J3 (RatwGameSocial.cpp): a story's closure quest done by a wolf counts as a finished Story (the Quickening's
+    // closedStories): one receipt a quest, at most standing().storyQuestClosuresMost from one story's program id.
+    Result storyClosure(const std::string& wolf, const json::Value& payload);
+    // Doc 86, Phase 5: a resident a story asks to howl (J5, RatwGameHowl.cpp); an animal a story stages for the next hunt
+    // begun in one of its regions (L1, RatwGameStoryWorld.cpp: held.hunts), met by the hunt a wolf begins there.
+    Result residentHowl(const std::string& npc);
+    Result storyHunt(const std::string& wolf);
+    // Doc 86, J9 (RatwGameStoryWorld.cpp): the stories' own items. A tagged item.give is checked (storyItemGiven) and, once
+    // in the pack, names its item (storyItemHeld: id -> name, saved with the checkpoint and given to items::nameStoryItem,
+    // as every name is shown) and, unless kept, lists it in the run's held.tags; endStoryWorld takes every unit of those back from every purse and the ground.
+    std::map<std::string, std::string> storyItemNames_;
+    Result storyItemGiven(const std::string& wolf, const std::string& item, const json::Value& payload, std::string& name);
+    void storyItemHeld(const std::string& item, const json::Value& payload, const std::string& name);
+    Result applyStoryWatch(const std::string& run, const json::Value& payload);   // (J6: the watch sent again.)
+    std::string takeStoryGreet(const std::string& npc, const std::string& wolf);       // The greeting, once ("" none).
+    void dropStoryHolds(const std::string& owner);      // Every hold of "run:<run>" or "campaign:<id>" let go.
+    void sparedChanged();                               // Tells the world whom old age passes by.
+    void storyRecall(const std::string& owner, const std::string& prefix, talk::Facts& into);
+    void storyTalkSave(json::Value& root) const;
+    void storyTalkLoad(const json::Value& saved);
+    void storyGreetsSave(json::Value& root) const;
+    void storyGreetsLoad(const json::Value& saved);
     // An order a story sends that the DM's own tools send too, with the story's way of naming what it acts on: a town's
     // project of a kind, a wolf's deed in its words, a wolf's personal quest from a template ("" when none is found).
     std::string storyProject(const std::string& town, const std::string& kind) const;

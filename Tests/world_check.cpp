@@ -4,7 +4,7 @@
 //   world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N [--at-seams]] [--no-check] [--full] [--deterministic] [--events FILE]
 //                                                       [--threads N] [--day N] [--sample] [--no-profile] [--no-births]
 //                                                       [--fast] [--no-talk-ledger] [--unseen-step N] [--straight] [--coarse-ticks] [--ship-day]
-//                                                       [--wagon-day] [--stage FILE]]
+//                                                       [--wagon-day] [--stage FILE] [--foes K[:strength[:band[:stance]]]]]
 //
 // --simulate then runs the world the way the game server does (20 ticks a second) between two hours of the day and
 // reports how long ticks take, so a region's population can be checked against the server's 50 ms tick budget.
@@ -43,6 +43,13 @@
 // --ship-day (doc 79, Phase 5's repair) brings each port's next ship in five seconds into the window (World::dockShip,
 // as the DM would), so a window that no ship's own hour falls in is measured with a ship in: its goods on the shelves,
 // the Wharf's hands at its cargo, the Wharf a crowd.
+// --foes K[:strength[:band[:stance]]] (doc 86, C10t: the load rows of the foe tuning) brings K story foes (tough, band 2,
+// waiting, unless said) through foe.add's own path (World::addStoryFoe) to the K outdoor cells with the most residents at
+// the start, and sends the players after them, round the foes in turn: each walks to its foe and, in a fight, plays its turns
+// as battle_play's scripted fighter does (closes on the nearest and bites). It reports the fights a game hour, the foes
+// beaten and fled, the wolves downed, and the fights left open once their foe was gone (it must be 0). Compare its tick
+// times with the same run without --foes, and with --foes-crowd-only: the players sent to the same places in the same
+// crowds, but no foe brought (so what the foes cost is told from what a crowd of wolves in one place costs).
 // --wagon-day (doc 79, Progress, "Wagons and farms on DEV") sends a wagon out five seconds into the window from every
 // market along its roads, one for each carter it has free (World::sendCaravan, as the Dev Console would), so a window
 // is measured with the roads as busy as the world's carters can make them: a fresh world posts its first wagons two days
@@ -54,6 +61,7 @@
 #include "RatwPool.h"
 #include "RatwWire.h"
 #include "RatwWorld.h"
+#include "battle_play.h"
 
 #include <algorithm>
 #include <array>
@@ -616,6 +624,9 @@ int main(int argc, char** argv)
     bool shipDay = false;                           // --ship-day: each port's next ship in, early in the window.
     bool wagonDay = false;                          // --wagon-day: every free carter out with a wagon, early in the window.
     std::string stageFile;                          // --stage FILE: a JSON line a run day (doc 79, 16.13).
+    int foeCount = 0, foeBand = 2;                  // --foes K[:strength[:band[:stance]]] (doc 86, C10t).
+    std::string foeTier = "tough", foeStance = "waits";
+    bool foeCrowdOnly = false;                      // --foes-crowd-only: the crowds the foes would draw, with no foe.
     bool usage = argc != 2 && !simulate;
     for (int i = 5; simulate && i < argc; ++i)
     {
@@ -657,6 +668,25 @@ int main(int argc, char** argv)
             eventsFile = argv[++i];
         else if (flag == "--stage" && i + 1 < argc)
             stageFile = argv[++i];
+        else if (flag == "--foes-crowd-only")
+            foeCrowdOnly = true;
+        else if (flag == "--foes" && i + 1 < argc)
+        {
+            // K[:strength[:band[:stance]]]: "2:fierce:8:hunts".
+            std::vector<std::string> parts;
+            std::stringstream spec(argv[++i]);
+            for (std::string part; std::getline(spec, part, ':');)
+                parts.push_back(part);
+            foeCount = parts.empty() ? 0 : std::max(0, std::atoi(parts[0].c_str()));
+            if (parts.size() > 1)
+                foeTier = parts[1];
+            if (parts.size() > 2)
+                foeBand = std::clamp(std::atoi(parts[2].c_str()), 0, 8);
+            if (parts.size() > 3)
+                foeStance = parts[3];
+            usage = usage || foeCount < 1 || (foeTier != "tough" && foeTier != "fierce" && foeTier != "champion") ||
+                    (foeStance != "waits" && foeStance != "hunts");
+        }
         else if (flag == "--threads" && i + 1 < argc)
             threads = unsigned(std::max(1, std::atoi(argv[++i])));
         else if (flag == "--day" && i + 1 < argc)
@@ -671,7 +701,8 @@ int main(int argc, char** argv)
     {
         std::cerr << "usage: world_check EXPORT_DIR [--simulate FROM_HOUR TO_HOUR [--players N [--at-seams]] [--no-check] [--full] [--deterministic]"
                      " [--events FILE] [--threads N] [--day N] [--sample] [--no-profile] [--no-births] [--fast] [--no-talk-ledger]"
-                     " [--unseen-step N] [--straight] [--coarse-ticks] [--ship-day] [--wagon-day] [--stage FILE]]\n";
+                     " [--unseen-step N] [--straight] [--coarse-ticks] [--ship-day] [--wagon-day] [--stage FILE]"
+                     " [--foes K[:strength[:band[:stance]]] [--foes-crowd-only]]]\n";
         return 2;
     }
     if (fast)
@@ -850,6 +881,128 @@ int main(int argc, char** argv)
         }
         std::cout << "  " << placed << " players by seams (of " << edges.size() << " cells with one east of them)\n";
     }
+    // --foes: K story foes in the busiest outdoor cells (the most residents at the start), the players sent after them.
+    std::vector<std::string> foeCamps;
+    std::map<std::string, ratw::World::StoryFoeSpec> foeSpots;   // Each foe's (or, crowd only, its place's) spec.
+    std::map<std::string, std::string> seeking;     // Player -> the foe's camp it goes after.
+    struct FoeTally
+    {
+        int fights = 0, beaten = 0, fled = 0, timedOut = 0, downed = 0, open = 0;
+    } foeTally;
+    std::set<std::string> openSeen;
+    if (foeCount > 0)
+    {
+        std::map<std::string, int> crowd;
+        for (const auto& [id, e] : server.entities())
+            if (e.npc && !e.dead)
+                if (const auto* c = server.cell(e.cellId); c && c->outdoors)
+                    ++crowd[e.cellId];
+        std::vector<std::pair<int, std::string>> busiest;
+        for (const auto& [cell, n] : crowd)
+            busiest.push_back({-n, cell});
+        std::sort(busiest.begin(), busiest.end());
+        for (const auto& [n, cellId] : busiest)
+        {
+            if (int(foeCamps.size()) >= foeCount)
+                break;
+            if (!server.ensureLoaded(cellId).ok)
+                continue;
+            const auto* c = server.cell(cellId);
+            ratw::World::StoryFoeSpec spec;
+            spec.camp = "foe_bench000_" + std::to_string(foeCamps.size() + 1);
+            spec.foe = "bench-" + std::to_string(foeCamps.size() + 1);
+            spec.run = "world-check";
+            spec.name = "The Grey Captain";
+            spec.cell = cellId;
+            spec.tier = foeTier;
+            spec.band = foeBand;
+            spec.stance = foeStance;
+            spec.until = server.time() + (to - from) * 600.0 + 3600;
+            bool placed = false;
+            for (int r = 0; r < 30 && !placed; ++r)
+                for (int dy = -r; dy <= r && !placed; ++dy)
+                    for (int dx = -r; dx <= r && !placed; ++dx)
+                        if (std::max(std::abs(dx), std::abs(dy)) == r)
+                        {
+                            const ratw::Vec2 p{c->width / 2 + dx + .5, c->height / 2 + dy + .5};
+                            if (!server.openGround(cellId, p))
+                                continue;
+                            spec.x = p.x;
+                            spec.y = p.y;
+                            placed = foeCrowdOnly || server.addStoryFoe(spec).ok;
+                        }
+            if (placed)
+            {
+                foeCamps.push_back(spec.camp);
+                foeSpots[spec.camp] = spec;
+            }
+        }
+        // The players after them, round the foes in turn: each put 20 tiles off its foe (or as near as there is ground).
+        for (std::size_t p = 0; p < players.size() && !foeCamps.empty(); ++p)
+        {
+            const auto& camp = foeCamps[p % foeCamps.size()];
+            const auto* foe = &foeSpots[camp];
+            seeking[players[p]] = camp;
+            for (int r = 20; r >= 2; --r)
+                if (server.teleport(players[p], foe->cell, foe->x - r + .0, foe->y + double(p % 7) - 3).ok ||
+                    server.teleport(players[p], foe->cell, foe->x + r + .0, foe->y + double(p % 7) - 3).ok)
+                    break;
+        }
+        std::cout << "  " << foeCamps.size() << (foeCrowdOnly ? " places of foes (crowd only, no foe brought: " : " foes (") << foeTier << ", band " << foeBand << ", " << foeStance << ") brought, "
+                  << seeking.size() << " players sent after them\n";
+    }
+    // (Each half second: those who seek a foe walk to it, or play their turn in its fight; fights of a foe gone counted.)
+    const auto tendFoes = [&](int i) {
+        if (foeCamps.empty())
+            return;
+        for (const auto& [p, camp] : seeking)
+        {
+            if (const auto* b = server.battleOf(p); b && !b->over)
+            {
+                ratw::test::takeGround(server, p);
+                ratw::test::playTurn(server, p);
+                continue;
+            }
+            if (i % 10 != 0)
+                continue;
+            const auto* me = server.entity(p);
+            const auto& spot = foeSpots[camp];
+            if (!me || me->downedLeft > 0 || me->cellId != spot.cell)
+                continue;
+            if (foeCrowdOnly)
+            {
+                // (No foe: the crowd walks to its place and stays about it, as it would round a foe.)
+                if (me->path.empty() && std::hypot(me->position.x - spot.x, me->position.y - spot.y) > 4)
+                    server.moveTo(p, spot.x, spot.y);
+                continue;
+            }
+            if (!server.storyFoe(camp))
+                continue;
+            const auto* lead = server.entity("road:" + camp + ":0");
+            if (lead && std::hypot(me->position.x - lead->position.x, me->position.y - lead->position.y) <= ratw::battle::StartReach - 1)
+                server.attack(p, lead->id);
+            else if (lead && me->path.empty())
+                server.moveTo(p, lead->position.x, lead->position.y);
+        }
+        if (i % 20 == 0)
+            for (const auto& b : server.battles())
+                if (ratw::World::storyFoeCamp(b.camp) && !server.storyFoe(b.camp) && !b.over && !openSeen.count(b.id))
+                {
+                    openSeen.insert(b.id);
+                    ++foeTally.open;
+                }
+    };
+    const auto countFoes = [&](const std::vector<ratw::WorldEvent>& taken) {
+        for (const auto& e : taken)
+        {
+            if (e.kind == "fight" && ratw::World::storyFoeCamp(e.actor.rfind("road:", 0) == 0 ? e.actor.substr(5) : e.target.rfind("road:", 0) == 0 ? e.target.substr(5) : ""))
+                ++foeTally.fights;
+            foeTally.beaten += e.kind == "foe defeated";
+            foeTally.fled += e.kind == "foe fled" && e.item == "fled";
+            foeTally.timedOut += e.kind == "foe fled" && e.item == "time";
+            foeTally.downed += e.kind == "downed" && seeking.count(e.target);
+        }
+    };
     std::vector<double> views, motions;
     const auto npcs = [&] {
         std::size_t n = 0;
@@ -936,6 +1089,7 @@ int main(int argc, char** argv)
     // The world's events as the harness takes them: counted for --stage, kept for --events.
     const auto takeAll = [&] {
         auto taken = server.takeEvents();
+        countFoes(taken);
         if (stage)
             stage->take(taken);
         if (!eventsFile.empty())
@@ -1026,7 +1180,9 @@ int main(int argc, char** argv)
             const auto loadedBefore = server.loadedCells();
             if (i % 300 == 0)                          // Walk east and west, as a player would.
                 for (const auto& p : players)
-                    server.move(p, (i / 300) % 2 ? -1 : 1, 0);
+                    if (!seeking.count(p))
+                        server.move(p, (i / 300) % 2 ? -1 : 1, 0);
+            tendFoes(i);
             const auto profileBefore = server.tickProfile();
             server.tick(0.05);
             ++ticksRun;
@@ -1070,7 +1226,7 @@ int main(int argc, char** argv)
                 picked += server.ambientPicks(players).size();
                 picking.push_back(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - lookBegin).count());
             }
-            if ((!eventsFile.empty() || stage) && i % 20 == 0)
+            if ((!eventsFile.empty() || stage || !foeCamps.empty()) && i % 20 == 0)
                 takeAll();
             const double tickOnly = (profileAfter.streaming.total - profileBefore.streaming.total) +
                                     (profileAfter.schedules.total - profileBefore.schedules.total) +
@@ -1276,6 +1432,14 @@ int main(int argc, char** argv)
                 std::cout << " " << sec;
             std::cout << "\n";
         }
+    }
+    if (!foeCamps.empty())
+    {
+        takeAll();
+        const double hours = std::max(1e-9, to - from);
+        std::cout << "  foes: " << foeTally.fights << " fights with them (" << foeTally.fights / hours << " a game hour); " << foeTally.beaten
+                  << " beaten, " << foeTally.fled << " fled, " << foeTally.timedOut << " out of time; " << foeTally.downed
+                  << " wolves downed; " << foeTally.open << " fights left open once their foe was gone\n";
     }
     // Who is where their day says they should be, and who could find no way there.
     std::size_t arrived = 0, underway = 0;

@@ -4,15 +4,39 @@
 // world's drafts together, in order (each rehearsed and checked as its own approval would be), and publishes the first.
 import {useEffect, useState} from 'react';
 import {storyProgram, type Target} from '../api';
-import {campaignText, chapterMark, chapterStartText, chapterStrip, type Campaign, type RunDetail} from '../../lib/campaigns';
+import {campaignText, chapterMark, chapterReadyText, chapterStartText, chapterStrip, type Campaign, type Readiness, type RunDetail, type RunRow} from '../../lib/campaigns';
 
-export function CampaignCards({campaigns, open}: {campaigns: Campaign[]; open: (run: string) => void}) {
+/** Doc 86, R3: the running chapter's readiness in one line, and "Advance…" to open its run on the Overview. */
+function ChapterReady({ready, chapter, run, open}: {ready?: Readiness; chapter: number; run?: string; open: (run: string) => void}) {
+    if (!ready) return null;
+    return <small className={`camp-chapter-ready ${ready.met ? 'met' : ''}`}>{chapterReadyText(ready, chapter)}
+        {run && <> · <button type="button" className="link-button" onClick={() => open(run)}>Advance…</button></>}</small>;
+}
+
+export function CampaignCards({campaigns, open, runs, target, maySteer}: {campaigns: Campaign[]; open: (run: string) => void; runs?: RunRow[];
+    /** Doc 86, C11: may let go of a campaign's holds on residents (steering). */
+    target?: Target; maySteer?: boolean}) {
+    const [said, setSaid] = useState('');
     if (!campaigns.length) return null;
+    const release = async (c: Campaign) => {
+        if (!target || !window.confirm(`Let go of the residents ${c.title} spares or protects for the campaign? Old age and fights may take them again.`)) return;
+        try { await storyProgram(target, 'campaign-release', {campaign: c.id}); setSaid(`${c.title}: its holds are let go.`); }
+        catch (e) { setSaid((e as Error).message); }
+    };
+    const byRun = new Map((runs ?? []).map(r => [r.run, r]));
     return <div className="camp-campaigns" aria-label="Campaigns of chapters">
-        {campaigns.map(c => <div key={c.id} className={`camp-campaign ${c.status}`}>
-            <b>{c.title}</b> <small className="hint">{campaignText(c)} · approved by {c.approvedBy}</small>
-            <ChapterChips campaign={c} open={open} />
-        </div>)}
+        {campaigns.map(c => {
+            const n = c.chapters.findIndex(ch => ch.runs.some(x => ['running', 'held', 'paused'].includes(x.status)));
+            const live = n >= 0 ? c.chapters[n].runs.find(x => ['running', 'held', 'paused'].includes(x.status)) : undefined;
+            return <div key={c.id} className={`camp-campaign ${c.status}`}>
+                <b>{c.title}</b> <small className="hint">{campaignText(c)} · approved by {c.approvedBy}</small>
+                <ChapterChips campaign={c} open={open} />
+                {live && <ChapterReady ready={byRun.get(live.run)?.ready} chapter={n + 1} run={live.run} open={open} />}
+                {!live && target && maySteer && c.status !== 'approved' && <small> · <button type="button" className="link-button"
+                    title="For an act stopped early: the residents its chapters held for the campaign (doc 86)" onClick={() => void release(c)}>Let go of the campaign's holds…</button></small>}
+            </div>;
+        })}
+        {said && <p className="hint">{said}</p>}
     </div>;
 }
 
@@ -31,6 +55,7 @@ export function ChapterBar({detail, names, open}: {detail: RunDetail; names: Rec
     return <div className="camp-chapter-bar">
         <span>Chapter {(c.chapter ?? 0) + 1} of {c.chapters.length} of <b>{c.title}</b>:</span>
         <ChapterChips campaign={c} open={open} current={c.chapter} />
+        <ChapterReady ready={detail.ready} chapter={(c.chapter ?? 0) + 1} open={open} />
         {(detail.chapterStarts ?? []).map(s => <small key={s.story} className="hint">Starts {chapterStartText(s, c, names)}.</small>)}
         {(detail.chaptersStarted ?? []).filter(s => s.refused).map(s => <small key={s.story} className="error-text">Did not start {s.story}: {s.refused}</small>)}
     </div>;
@@ -44,7 +69,7 @@ export function NewCampaign({target, done}: {target: Target; done: (run?: string
     const [chosen, setChosen] = useState<number[]>([]);
     const [id, setId] = useState(''), [title, setTitle] = useState('');
     const [problem, setProblem] = useState(''), [busy, setBusy] = useState(false);
-    const [approved, setApproved] = useState<{campaign: string; ticket?: string; chapters: {story: string; title: string}[]} | null>(null);
+    const [approved, setApproved] = useState<{campaign: string; ticket?: string; chapters: {story: string; title: string}[]; warnings?: string[]} | null>(null);
     useEffect(() => {
         storyProgram<{drafts: DraftRow[]}>(target, 'draft.list').then(r => setDrafts(r.drafts), e => setProblem((e as Error).message));
     }, [target]);
@@ -76,6 +101,7 @@ export function NewCampaign({target, done}: {target: Target; done: (run?: string
             "Start the next chapter" (story.start), when it has ended (the default) or at once. The first is published here; the others wait for the chapter before them.</p>
         {approved ? <>
             <p>Approved <b>{approved.campaign}</b>: {approved.chapters.map((c, i) => `${i + 1}. ${c.title}`).join(' · ')}.</p>
+            {approved.warnings?.length ? <ul className="hint">{approved.warnings.map((w, i) => <li key={i}>{w}</li>)}</ul> : null}
             {approved.ticket ? <div className="camp-controls"><button className="primary" disabled={busy} onClick={() => void publish()}>Publish chapter 1 now</button>
                 <button onClick={() => done()}>Later</button><small className="hint">The ticket is good for a day.</small></div>
                 : <p className="hint">Its first chapter has started already: the new approval replaces the chapters still to come.</p>}

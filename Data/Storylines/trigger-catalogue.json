@@ -1,7 +1,7 @@
 {
  "format": "ratw-trigger-catalogue",
  "version": 1,
- "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions. Phase 6: quests (a version 2 story's \"quests\"), audiences \"open\" and \"everyone\", and the effects marked \"story\", which the story keeps itself (quest progress, who takes part, a choice laid over a resident's window) rather than sending to the game; events marked \"story\" are the story's own facts, sent as it runs and never in the world's log. A parameter marked \"optional\" may be left out. Phase 8: conditions marked \"facts\" read the world's facts as of the event (game.story_facts: where a wolf is, what they carry, the time, the weather, standing, a resident's state), and the events marked \"watch\" are written by the game only while a live story listens for them (its watch list, sent with each phase). Phase 9: more world effects (doc 85, 3.5): telling the wolves, the journal, map markers, trackers, taking items, warrants, strangers, mantles, holds, followers, doors, the ground, boards, the weather (never the calendar), market events, prices, projects, deeds, personal quests and stopping a scene. \"actsOnWolves\" needs \"may act on players' wolves\" on a hosted world, \"needsBuilder\" (factions: relations and standing) a builder or the owner, as approving it does. Phase 10: chapters (story.start, a campaign of stories approved together), \"story started\" and \"story ended\" from the story runner, and the events Phase 8 left (a wolf near a resident, a purse or a standing crossing a number the trigger names, a stance changed, mantles, a skill grown, an injury healed): \"needsMatch\" names the fields a trigger on it must give. \"needsBuilder\" also marks the effects that change the economy (prices, projects).",
+ "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions. Phase 6: quests (a version 2 story's \"quests\"), audiences \"open\" and \"everyone\", and the effects marked \"story\", which the story keeps itself (quest progress, who takes part, a choice laid over a resident's window) rather than sending to the game; events marked \"story\" are the story's own facts, sent as it runs and never in the world's log. A parameter marked \"optional\" may be left out. Phase 8: conditions marked \"facts\" read the world's facts as of the event (game.story_facts: where a wolf is, what they carry, the time, the weather, standing, a resident's state), and the events marked \"watch\" are written by the game only while a live story listens for them (its watch list, sent with each phase). Phase 9: more world effects (doc 85, 3.5): telling the wolves, the journal, map markers, trackers, taking items, warrants, strangers, mantles, holds, followers, doors, the ground, boards, the weather (never the calendar), market events, prices, projects, deeds, personal quests and stopping a scene. \"actsOnWolves\" needs \"may act on players' wolves\" on a hosted world, \"needsBuilder\" (factions: relations and standing) a builder or the owner, as approving it does. Phase 10: chapters (story.start, a campaign of stories approved together), \"story started\" and \"story ended\" from the story runner, and the events Phase 8 left (a wolf near a resident, a purse or a standing crossing a number the trigger names, a stance changed, mantles, a skill grown, an injury healed): \"needsMatch\" names the fields a trigger on it must give. \"needsBuilder\" also marks the effects that change the economy (prices, projects). Doc 86, Phase 1a: the values {\"audience\": \"all|active|online\"} (how many wolves the story has; how many were seen in the last activeDays game days, a program field, 18 when not given; how many are signed in now), {\"times\": [a, b]} and {\"div\": [a, b]} (floored toward zero; by 0, no value), and the share of the wolves who took part: {\"percent\": {\"list\": <a story or world list of wolves>} | {\"where\": <a test for each wolf>}, \"of\": \"active|all|online\"} and {\"among\": ...} (how many); the condition \"participation\" (enough of them, with a floor and a cap); a phase's Readiness (\"ready\": the parts that say it may move on, its exit {\"on\": \"ready\"}, auto, then, slowAfterDays, slowNeedsYou, autoAfterDays) and the admin's Advance. A parameter of type \"condition\" is a condition tree tested once for each wolf, the wolf as $each. Doc 86, Phase 2: a parameter marked \"operand\" may be a value: {\"var\"}, {\"field\"}, {\"each\"}, {\"audience\"}, {\"purse\"} or arithmetic, of the parameter's kind (a number for a whole number; a variable of its kind or a text, or the event's field, for a wolf, a resident, a place, an item, a faction or a town); worked out when the trigger fires (or a reward is given), clamped to the parameter's bounds, and with no value the effect is not sent. A text marked \"fills\" in a version 2 story may hold {name} or {name.of} (a declared variable, or the acting or looped wolf's own), filled when it is sent ({{ and }} are braces); a wolf, a resident, a place, an item or a faction fills as its name. {\"purse\": \"<purse>\"} is what a purse holds now. A filter's value may be a text, {\"starts\": \"<text>\"} or {\"in\": [...]} (begins with; one of), and the field condition takes \"starts\" and \"in\". The moon (\"calendar is\" moon; the event \"moon\"). A quest objective may say where it counts (\"where\": cells or a region) and who it credits (\"credit\": actor, target or present); camp cleared, caravan arrives, ship lost, ship docks, project built and festival are mission evidence. A story camp may be named (\"camp\", with the program's \"prefix\"). A quest's join.again waits that many game days before the same wolf takes it again. An objective's goal may be a value (\"goalLive\" keeps up with it); a shown number may show \"of\" another (showOf), or mirror a world variable named by a wolf's text (mirror). Doc 86, Phase 3: the action rank (the top wolves by a number each keeps, into a list of wolves), {\"tally\": {\"sum\", \"where\", \"is\", \"over\"}} (a number added up, or wolves counted, over every wolf of the story or a list), a quest's credit \"share\" (each wolf rewarded by their share: {\"share\": true} in its rewards, creditMin the least), the effects title.give and title.take (and the event \"title given\"), npc.greet (a resident's words for one wolf, once, in their voice) and belief.forget (a rumour put to rest); a phase's npc.line is said in the resident's voice.",
  "groups": [
   {
    "id": "story",
@@ -102,12 +102,20 @@
    "label": "Residents"
   },
   {
+   "id": "talk",
+   "label": "Talk, rumour and figures"
+  },
+  {
    "id": "wolves",
    "label": "Players' wolves"
   },
   {
    "id": "places",
    "label": "Places and regions"
+  },
+  {
+   "id": "foes",
+   "label": "Foes"
   },
   {
    "id": "economy",
@@ -159,17 +167,26 @@
   "run": "A story release.",
   "number": "A number the event records.",
   "variable": "A declared variable of this story (version 2), of the types the parameter names.",
-  "operand": "A value: a number, on or off, a text, a variable, the event's field, a list's count, a timer's days, the loop's value, or a little arithmetic.",
+  "operand": "A value: a number, on or off, a text, a variable, the event's field, a list's count, a timer's days, the loop's value, a little arithmetic (plus, minus, min, max, times, div), the story's audience counted (all, active, online), the share (percent) or number (among) of the wolves who took part, or what a purse holds now ({\"purse\": \"town:coldwater\"}), a tally over every wolf ({\"tally\": {\"sum\": <a wolf's number>, \"where\": <a wolf's text or switch>, \"is\": <its value>, \"over\": \"participants\" | {\"list\": ...}}}), or, in the rewards of a quest credited by share, the wolf's share ({\"share\": true}).",
   "trigger": "A trigger of this story.",
   "whose": "Whose value of a variable kept for each wolf or party: the acting wolf's, or the looped wolf's.",
   "quest": "A quest of this story (version 2).",
   "objective": "An objective of the quest named beside it.",
-  "purse": "Who pays: a town's treasury (town:<town>), its works, watch or church (town:<town>:works), a business's till (till:<id>) or a Chapter's treasury (chapter:<id>). Never minted.",
+  "purse": "Who pays: a town's treasury (town:<town>), a business's till (till:job:<founder>, or till:<founder>) or a Chapter's treasury (chapter:<id>). Never minted; approval checks the world has it.",
   "offer": "A story choice's name: what a dialogue choice event comes back with.",
   "door": "A door of the world (its id: link_<link>_a or _b; a story locks both sides).",
   "mantle": "A mantle (doc 84): a part a resident takes up, with its own lines.",
   "visitor": "A temporary resident's id, given by the story (letters, digits, - and _).",
-  "story": "Another story of this world, by its id: a chapter of the same campaign (Phase 10)."
+  "story": "Another story of this world, by its id: a chapter of the same campaign (Phase 10).",
+  "condition": "A condition tree tested once for each wolf, the wolf as $each (doc 86, R1).",
+  "talkkey": "A talk memory key: lower-case letters, digits and _, up to 40, starting with a letter.",
+  "talkvalue": "A talk memory value: lower-case letters, digits and _, up to 40.",
+  "figure": "A figure's id (live.figures): lower-case letters, digits and _, 3 to 40.",
+  "camp": "A story camp's name: lower-case letters, digits and _, 3 to 30, beginning with the story's prefix (nh_, sq_, mq_, lq_, st_); the camp is camp_story_<name>.",
+  "species": "An animal of Data/Wild/animals.json (its id).",
+  "tag": "A story's own mark on an item (small letters, digits and _, up to 32): the item is the story's, named as the story names it, and taken back when the run ends unless kept.",
+  "foe": "A story's foe, by the id the story gives it (letters, digits, - and _); for a resident made a foe, the resident's id.",
+  "post": "A post in the careers book (its id, job:<the resident who founded it>), as the world was last saved."
  },
  "trigger": {
   "once": {
@@ -186,7 +203,8 @@
   "exit": {
    "participant": "a wolf of the story",
    "players": "when {n} different wolves of the story have",
-   "percent": "when {n}% of the audience have"
+   "percent": "when {n}% of the audience have",
+   "ready": "when the phase is ready (its Readiness: enough wolves took part, enough days, ...), by itself or when an admin presses Advance"
   },
   "limits": {
    "triggers": 64,
@@ -214,7 +232,8 @@
   "enabled": {
    "true": "on from the start",
    "false": "off until turned on"
-  }
+  },
+  "match": "A filter's value is a text (the field is exactly it), {\"starts\": \"<text>\"} (it begins with it: 1 to 120 characters, case-sensitive) or {\"in\": [\"a\", \"b\"]} (it is one of up to 32). A gift's item is its base id unless the filter gives a mark. A field the game must know to look at (needsMatch) stays exact words."
  },
  "events": [
   {
@@ -465,7 +484,7 @@
    "group": "scenes",
    "title": "A scene fails",
    "sentence": "Scene {detail} fails",
-   "help": "An embedded scene could not go on (marked failed) and ended.",
+   "help": "An embedded scene could not go on (marked failed) and ended; item says why where it is known (\"a stranger is not here\": a stranger cast in it the story has not brought, or sent away).",
    "fields": {
     "actor": {
      "type": "wolf",
@@ -490,6 +509,11 @@
     "quantity": {
      "type": "number",
      "label": "the visit (the run's visit number)"
+    },
+    "item": {
+     "type": "text",
+     "label": "why, where it is known (a stranger is not here)",
+     "any": "any"
     }
    },
    "tile": true
@@ -699,7 +723,7 @@
     }
    },
    "tile": true,
-   "notes": "A trigger on 'gift' also fires on 'gift again'. A gift's item filter matches the base item, so a marked or crafted rope counts as rope (unless the filter names marks with ~ or @).",
+   "notes": "A trigger on 'gift' also fires on 'gift again'. A gift's item filter matches the base item, so a marked or crafted rope counts as rope (unless the filter names marks with ~ or @). A story's own item is named item^tag (letter^watch_list): only that story's.",
    "mission": true,
    "measures": [
     "quantity",
@@ -743,7 +767,7 @@
     }
    },
    "tile": true,
-   "notes": "Item filter matches the base item, as for gift.",
+   "notes": "Item filter matches the base item, as for gift (a story's own item as item^tag).",
    "mission": true,
    "measures": [
     "quantity",
@@ -1119,7 +1143,8 @@
     }
    },
    "tile": true,
-   "notes": "tile only when a character cleared it and stands in that cell."
+   "notes": "tile only when a character cleared it and stands in that cell.",
+   "mission": true
   },
   {
    "id": "bandits scattered",
@@ -1213,7 +1238,8 @@
      "label": "kinds of goods it carried"
     }
    },
-   "tile": false
+   "tile": false,
+   "mission": true
   },
   {
    "id": "festival",
@@ -1238,7 +1264,8 @@
      "any": "any"
     }
    },
-   "tile": false
+   "tile": false,
+   "mission": true
   },
   {
    "id": "project built",
@@ -1278,7 +1305,8 @@
     }
    },
    "tile": false,
-   "notes": "actor carries the 'town:' prefix. The project's x,y are passed in the event's time slots and overwritten, so no tile is logged."
+   "notes": "actor carries the 'town:' prefix. The project's x,y are passed in the event's time slots and overwritten, so no tile is logged.",
+   "mission": true
   },
   {
    "id": "project gift",
@@ -2419,7 +2447,8 @@
      "label": "kinds of goods it brings"
     }
    },
-   "tile": false
+   "tile": false,
+   "mission": true
   },
   {
    "id": "ship lost",
@@ -2458,7 +2487,8 @@
      "label": "kinds of goods it was bringing"
     }
    },
-   "tile": false
+   "tile": false,
+   "mission": true
   },
   {
    "id": "ship sails",
@@ -2720,7 +2750,7 @@
    "group": "talk",
    "title": "Two worked together",
    "sentence": "{actor} and {target} work together at {item}",
-   "help": "When a joint work (foraging, farm work, bench work) ends, one event for each pair who worked enough beats side by side.",
+   "help": "When a joint work (foraging, farm work, bench work) ends, one event for each pair who worked enough beats side by side. A wolf who lent a paw to a resident at their own work (Lend a paw): actor the wolf, target the resident, item 'beside', quantity the beats, once a game day for the pair.",
    "fields": {
     "actor": {
      "type": "character",
@@ -4580,6 +4610,104 @@
    "tile": false
   },
   {
+   "id": "succession",
+   "group": "town",
+   "title": "A post changes hands",
+   "sentence": "{actor} takes up {detail} after {target}",
+   "help": "A resident took a post by the careers book's rules (a death, a retirement, a vacancy filled): actor the new holder, target the one before (may be empty), detail '<post title>: <how>'.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the new holder",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "resident",
+     "label": "who held it before",
+     "any": "anyone"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the post and how",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "sentence begun",
+   "group": "town",
+   "title": "A resident is sentenced",
+   "sentence": "{actor} is held at {cell} by {detail}",
+   "help": "A story sentenced a resident (Sentence a resident): actor the resident, cell where they are held, quantity the days, target the story's run, detail the story's id.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the resident",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story's run",
+     "any": "any run"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where they are held",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "story",
+     "label": "the story that sentenced them",
+     "any": "any story"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "days"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "sentence served",
+   "group": "town",
+   "title": "A sentence is served",
+   "sentence": "{actor} is let go from {cell} ({item})",
+   "help": "A resident's sentence is over: item served (its last day came, even after the story ended) or released (by the Campaigns console's Release now); quantity the whole days they were held, target the run that sentenced them, detail its story's id. They walk home.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the resident",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story's run",
+     "any": "any run"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where they are held",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "served or released",
+     "any": "either"
+    },
+    "detail": {
+     "type": "story",
+     "label": "the story that sentenced them",
+     "any": "any story"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "days served"
+    }
+   },
+   "tile": true
+  },
+  {
    "id": "promise",
    "group": "talk",
    "title": "A promise is made",
@@ -5524,6 +5652,18 @@
    "exitOnly": true
   },
   {
+   "id": "ready",
+   "group": "story",
+   "title": "The phase is ready",
+   "sentence": "The phase's Readiness is met (or an admin presses Advance)",
+   "help": "The way on when the phase is ready: every part of its Readiness met (enough of the active wolves took part, enough days in the phase or the chapter, values, missions, a quest). With auto it is taken by itself (at once, or at the moment `then` names); otherwise the Campaigns console says it is ready and an admin presses Advance.",
+   "fields": {},
+   "tile": false,
+   "notes": "Exits only, and only in a phase with \"ready\" (exactly one). Taken by the story runner, never by a world event. Its only fields are on and to.",
+   "special": "gate",
+   "exitOnly": true
+  },
+  {
    "id": "quest accepted",
    "group": "quests",
    "title": "A wolf takes on a quest",
@@ -5742,7 +5882,7 @@
    "group": "quests",
    "title": "A story's quest is done",
    "sentence": "{actor}'s quest {detail} is done",
-   "help": "The story's own fact: a copy of a quest was completed (handed in, or its last required objective done); its rewards follow.",
+   "help": "The story's own fact: a copy of a quest was completed (handed in, or its last required objective done); its rewards follow. (A closure quest also counts as a finished Story for the wolf.)",
    "fields": {
     "actor": {
      "type": "wolf",
@@ -6162,6 +6302,46 @@
    "watch": true
   },
   {
+   "id": "moon",
+   "group": "time",
+   "title": "The moon turns",
+   "sentence": "the moon is {detail}",
+   "help": "The moon passed into another quarter of its round (detail: new, waxing, full or waning; quantity: the day of the moon's round, 0 to 29). Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "detail": {
+     "type": "text",
+     "label": "new, waxing, full or waning",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the day of the moon's round"
+    }
+   },
+   "tile": false,
+   "watch": true
+  },
+  {
+   "id": "month begins",
+   "group": "time",
+   "title": "A new month begins",
+   "sentence": "month {detail} begins",
+   "help": "The first day of the world's 28-day month (the economy's: doc 42), counted from the year's first day: detail the month's number in the year (1 to 13; the year's last day belongs to the 13th), quantity the same. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "detail": {
+     "type": "text",
+     "label": "the month's number",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the month's number"
+    }
+   },
+   "tile": false,
+   "watch": true
+  },
+  {
    "id": "item picked up",
    "group": "gifts",
    "title": "A wolf picks up an item",
@@ -6175,7 +6355,7 @@
     },
     "item": {
      "type": "item",
-     "label": "the item",
+     "label": "the item (a story's own as item^tag)",
      "any": "anything"
     },
     "cell": {
@@ -6210,7 +6390,7 @@
     },
     "item": {
      "type": "item",
-     "label": "the item",
+     "label": "the item (a story's own as item^tag)",
      "any": "anything"
     },
     "cell": {
@@ -6264,9 +6444,14 @@
      "type": "number",
      "label": "the pennies paid or got",
      "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the wolf is",
+     "any": "anywhere"
     }
    },
-   "tile": true,
+   "tile": false,
    "watch": true,
    "mission": true,
    "measures": [
@@ -6525,7 +6710,7 @@
    "group": "money",
    "title": "A purse crosses an amount",
    "sentence": "the purse {target} goes {item} past {detail}p",
-   "help": "A town's treasury, its works, watch or church, a till or a Chapter's purse (as a reward names one: town:<town>, town:<town>:works, till:<id>, chapter:<id>) goes up or down past an amount the trigger names in its detail (quantity: what it holds now). Name the purse and the amount. Written only while a live story listens for it (the story's watch list).",
+   "help": "A town's treasury, a business's till or a Chapter's purse (as a reward names one: town:<town>, till:job:<resident>, chapter:<id>) goes up or down past an amount the trigger names in its detail (quantity: what it holds now). Name the purse and the amount. Written only while a live story listens for it (the story's watch list).",
    "fields": {
     "target": {
      "type": "purse",
@@ -6671,6 +6856,77 @@
    "watch": true
   },
   {
+   "id": "howled",
+   "group": "talk",
+   "title": "Someone howls",
+   "sentence": "{actor} howls at {cell} ({item})",
+   "help": "A wolf (or a resident a story asked to) howls: item is the town it was howled in, or wild; detail the chorus it opened or joined. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who howled",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the town, or wild",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the chorus it opened or joined",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "mission": true
+  },
+  {
+   "id": "chorus closed",
+   "group": "talk",
+   "title": "A chorus ends",
+   "sentence": "a chorus ends at {cell} ({item}), begun by {actor}",
+   "help": "A gathering howl closed: actor began it, quantity is how many howled in it (residents too), item the town or wild, detail the chorus. When a resident began it (a story's npc.howl), the actor is that resident: a quest objective on it should credit the wolves present (credit: present), or it credits nobody who joined. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who began it",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the town, or wild",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the chorus",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many howled"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "mission": true,
+   "measures": [
+    "quantity"
+   ]
+  },
+  {
    "id": "skill practised",
    "group": "fame",
    "title": "A wolf's skill grows a step",
@@ -6697,6 +6953,37 @@
    "watch": true
   },
   {
+   "id": "title given",
+   "group": "fame",
+   "title": "A wolf is given a title",
+   "sentence": "{actor} is named {detail}",
+   "help": "A story named the wolf by a title (detail: the title; target: the story's run; item: realm or town:<id>).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run",
+     "any": "any story"
+    },
+    "item": {
+     "type": "text",
+     "label": "where it is known (realm, or town:<town>)",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the title",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "mission": true
+  },
+  {
    "id": "injury healed",
    "group": "fights",
    "title": "A wolf's injury heals",
@@ -6716,6 +7003,103 @@
    },
    "tile": true,
    "watch": true
+  },
+  {
+   "id": "foe downed",
+   "group": "fights",
+   "title": "A foe's follower falls",
+   "sentence": "{actor} brings down one of {target}'s band ({detail})",
+   "help": "A follower of a story's foe is downed (target the foe's id; a resident's id for a resident made a foe).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who landed the last blow",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "foe",
+     "label": "the foe",
+     "any": "any foe"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the follower's name",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "mission": true
+  },
+  {
+   "id": "foe defeated",
+   "group": "fights",
+   "title": "A foe is beaten",
+   "sentence": "{actor} beats {detail}",
+   "help": "A story's foe (or a resident made one) is downed: actor landed the last blow, target is the foe's id (a resident's id for foe.outlaw), detail their name, quantity how many wolves fought them. Once a foe: their band breaks and runs.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who landed the last blow",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "foe",
+     "label": "the foe",
+     "any": "any foe"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "their name",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "wolves who fought"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": []
+  },
+  {
+   "id": "foe fled",
+   "group": "fights",
+   "title": "A foe gets away",
+   "sentence": "{detail} gets away",
+   "help": "A story's foe broke off a fight and fled, their time ran out, or they died or were gone outside a fight (detail: their name; item: fled, time or gone). They are gone with their band.",
+   "fields": {
+    "target": {
+     "type": "foe",
+     "label": "the foe",
+     "any": "any foe"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "fled, time or gone",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "their name",
+     "any": "any"
+    }
+   },
+   "tile": true
   },
   {
    "id": "story started",
@@ -6770,6 +7154,123 @@
    "tile": false,
    "story": true,
    "notes": "Sent by the story runner to every other live story of the world that listens for it; never in the world's log."
+  },
+  {
+   "id": "story notified",
+   "group": "story",
+   "title": "Another story sends news",
+   "sentence": "{target} sends the news {detail} about {actor}",
+   "help": "A story's 'Tell another story' reached this one: detail is the news's name, actor the wolf it is about (may be empty), quantity its number, target the sending story's id, item its run.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf it is about",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "story",
+     "label": "the story that sent it",
+     "any": "any story"
+    },
+    "item": {
+     "type": "run",
+     "label": "its run",
+     "any": "any run"
+    },
+    "detail": {
+     "type": "signal",
+     "label": "the news",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "its number"
+    }
+   },
+   "tile": false,
+   "story": true,
+   "needsMatch": [
+    "detail"
+   ],
+   "notes": "Sent by the story runner to every other live story of the world that listens for that news (or to the one named); never in the world's log."
+  },
+  {
+   "id": "variable changed",
+   "group": "story",
+   "title": "A world variable changes",
+   "sentence": "the world's {target} becomes {detail}",
+   "help": "Another story changed a world variable this story declares: target is its name, quantity the new number (for a number), detail the new value as text, item the run that changed it. Told once a tick at most, with the latest value; a story never hears its own changes.",
+   "fields": {
+    "target": {
+     "type": "variable",
+     "label": "the variable",
+     "any": "the variable named"
+    },
+    "detail": {
+     "type": "text",
+     "label": "its new value",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "its new number"
+    },
+    "item": {
+     "type": "run",
+     "label": "the run that changed it",
+     "any": "any run"
+    }
+   },
+   "tile": false,
+   "story": true,
+   "needsMatch": [
+    "target"
+   ],
+   "notes": "Sent by the story runner to every other live story of the world that declares the variable and listens for it; never in the world's log."
+  },
+  {
+   "id": "cast chosen",
+   "group": "story",
+   "title": "A resident is cast",
+   "sentence": "{target} is cast as {detail} (near {actor})",
+   "help": "The story's 'Cast a resident' found someone: target the resident, detail the variable they were put in, actor the wolf they were chosen near (empty when none was named).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf they were chosen near",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "resident",
+     "label": "the resident cast",
+     "any": "anyone"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the variable",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "story": true,
+   "notes": "Sent by the story itself as it runs, after the fact whose trigger cast; the game never records it."
+  },
+  {
+   "id": "cast failed",
+   "group": "story",
+   "title": "Nobody fits a casting",
+   "sentence": "nobody fits {detail}",
+   "help": "The story's 'Cast a resident' found nobody living and placed who fits: detail the variable (it keeps what it held).",
+   "fields": {
+    "detail": {
+     "type": "text",
+     "label": "the variable",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "story": true,
+   "notes": "Sent by the story itself as it runs, after the fact whose trigger cast; the game never records it."
   }
  ],
  "conditions": [
@@ -6798,7 +7299,7 @@
    "id": "field",
    "title": "The event's field",
    "sentence": "the event's {field} {op} {value}",
-   "help": "Compares one field of the event that just happened. Text takes = and !=; quantity and coins take a number.",
+   "help": "Compares one field of the event that just happened. Text takes =, !=, begins with (\"starts\": 1 to 120 characters) and is one of (\"in\": a list of up to 32 texts); quantity and coins take a number.",
    "params": [
     {
      "key": "field",
@@ -6824,8 +7325,20 @@
       ">",
       ">=",
       "<",
-      "<="
-     ]
+      "<=",
+      "starts",
+      "in"
+     ],
+     "words": {
+      "=": "=",
+      "!=": "!=",
+      ">": ">",
+      ">=": ">=",
+      "<": "<",
+      "<=": "<=",
+      "starts": "begins with",
+      "in": "is one of"
+     }
     },
     {
      "key": "value",
@@ -7367,8 +7880,8 @@
    "v2": true,
    "facts": true,
    "title": "How many stand in a region",
-   "sentence": "{op} {value} of the story's wolves stand in {region}",
-   "help": "Counts the wolves of the story standing in the region now (StarCraft's Bring). Wolves away are not counted.",
+   "sentence": "{op} {value} {who} {list} stand in {region}",
+   "help": "Counts the wolves of the story standing in the region now (StarCraft's Bring), or the residents of a list who stand in it. Wolves away are not counted; a resident the world's facts do not have is unknown, not counted (and when every one listed is, the whole condition is unknown). A dead resident does not stand anywhere.",
    "params": [
     {
      "key": "op",
@@ -7395,10 +7908,38 @@
     {
      "key": "value",
      "type": "int",
-     "label": "wolves",
+     "label": "how many",
      "min": 0,
      "max": 5000,
      "default": 1
+    },
+    {
+     "key": "who",
+     "type": "choice",
+     "label": "who is counted",
+     "values": [
+      "wolves",
+      "residents"
+     ],
+     "default": "wolves",
+     "optional": true,
+     "words": {
+      "": "of the story's wolves",
+      "wolves": "of the story's wolves",
+      "residents": "of the residents in"
+     }
+    },
+    {
+     "key": "list",
+     "type": "variable",
+     "label": "the residents",
+     "of": [
+      "residents"
+     ],
+     "optional": true,
+     "words": {
+      "": ""
+     }
     },
     {
      "key": "region",
@@ -7414,7 +7955,7 @@
    "facts": true,
    "title": "A wolf carries an item",
    "sentence": "{who} carries {op} {value} {item}",
-   "help": "How many of an item the wolf has in their pack (marked or crafted ones count as their base item). Unknown for a wolf away.",
+   "help": "How many of an item the wolf has in their pack (marked or crafted ones count as their base item, and so does a story's own item; name a story's own as item^tag, letter^watch_list, to count only it). Unknown for a wolf away.",
    "params": [
     {
      "key": "who",
@@ -7455,7 +7996,8 @@
     {
      "key": "item",
      "type": "item",
-     "label": "the item"
+     "label": "the item",
+     "own": true
     }
    ],
    "reads": "wolves.carries"
@@ -7657,6 +8199,45 @@
    "reads": "wolves"
   },
   {
+   "id": "wolf has",
+   "v2": true,
+   "facts": true,
+   "title": "A wolf's Gift",
+   "sentence": "{who}'s {what} is {value}",
+   "help": "The Gift a wolf was made with (doc 43): its tier (normal, gifted or quickened) or its family (fire, earth, water, wind, sound, blinker, gravity, seer; none for a normal wolf). Never tell it in a story's words: test it, and offer what fits. Unknown for a wolf away.",
+   "params": [
+    {
+     "key": "who",
+     "type": "wolf",
+     "label": "the wolf",
+     "optional": true,
+     "default": "$actor"
+    },
+    {
+     "key": "what",
+     "type": "choice",
+     "label": "what",
+     "values": [
+      "tier",
+      "family"
+     ],
+     "words": {
+      "tier": "Gift's tier",
+      "family": "Gift's family"
+     },
+     "default": "tier"
+    },
+    {
+     "key": "value",
+     "type": "text",
+     "label": "is",
+     "max": 40,
+     "default": "normal"
+    }
+   ],
+   "reads": "wolves"
+  },
+  {
    "id": "party size",
    "v2": true,
    "facts": true,
@@ -7801,7 +8382,7 @@
    "facts": true,
    "title": "A resident's job, mood or mantle",
    "sentence": "{npc}'s {what} is {value}",
-   "help": "A named resident's job (the kind of work, as residents' talk names it: guard, merchant, smith, farmer...), their mood now (even, bright, low or sore), the mantle they wear (doc 84), or the town they live in.",
+   "help": "A named resident's job (the kind of work, as residents' talk names it: guard, merchant, smith, farmer...), their mood now (even, bright, low or sore), the mantle they wear (doc 84), or the town they live in, or the post they hold (its title as the careers book has it, e.g. reigning at the Great Palace; none: empty).",
    "params": [
     {
      "key": "npc",
@@ -7816,7 +8397,8 @@
       "job",
       "mood",
       "mantle",
-      "town"
+      "town",
+      "post"
      ],
      "default": "job"
     },
@@ -7862,7 +8444,7 @@
    "facts": true,
    "title": "The day, the season, the time of day",
    "sentence": "the {what} is {value}",
-   "help": "The weekday (Marketday, Restday...), the season, or the time of day (dawn, day, dusk, night).",
+   "help": "The weekday (Marketday, Restday...), the season, the time of day (dawn, day, dusk, night), or the moon (new, waxing, full, waning).",
    "params": [
     {
      "key": "what",
@@ -7871,12 +8453,14 @@
      "values": [
       "weekday",
       "season",
-      "period"
+      "period",
+      "moon"
      ],
      "words": {
       "weekday": "weekday",
       "season": "season",
-      "period": "time of day"
+      "period": "time of day",
+      "moon": "the moon"
      },
      "default": "weekday"
     },
@@ -7899,7 +8483,11 @@
       "dawn",
       "day",
       "dusk",
-      "night"
+      "night",
+      "new",
+      "waxing",
+      "full",
+      "waning"
      ],
      "default": "Restday"
     }
@@ -8088,6 +8676,92 @@
       "hidden"
      ],
      "default": "done"
+    }
+   ]
+  },
+  {
+   "id": "participation",
+   "v2": true,
+   "title": "Enough wolves took part",
+   "sentence": "at least {percent}% of the {of} wolves (at least {floor}; {cap}) {source} {list}{where}",
+   "help": "Counts the story's wolves who are active (seen in the last activeDays game days; or all of them, or those online now) and, of those, the ones in a list of wolves or the ones for whom a test is true. True when they are at least the share asked and at least the floor (the floor never asks for more wolves than are active; a cap, if given, is always enough, so a crowd of 3,000 does not need 1,000). With no active wolves it is false; with the online wolves not known it is unknown. A wolf who did it and then went quiet leaves both counts, so the share stays honest.",
+   "params": [
+    {
+     "key": "source",
+     "type": "choice",
+     "label": "who counts",
+     "values": [
+      "list",
+      "where"
+     ],
+     "words": {
+      "list": "are in the list",
+      "where": "meet the test"
+     },
+     "default": "list"
+    },
+    {
+     "key": "list",
+     "type": "variable",
+     "label": "the list",
+     "of": [
+      "wolves"
+     ],
+     "scope": [
+      "story",
+      "world"
+     ],
+     "optional": true
+    },
+    {
+     "key": "where",
+     "type": "condition",
+     "label": "the test for each wolf",
+     "optional": true,
+     "each": "wolves"
+    },
+    {
+     "key": "of",
+     "type": "choice",
+     "label": "out of",
+     "values": [
+      "active",
+      "all",
+      "online"
+     ],
+     "words": {
+      "active": "active",
+      "all": "story's",
+      "online": "online"
+     },
+     "default": "active"
+    },
+    {
+     "key": "percent",
+     "type": "int",
+     "label": "the share (%)",
+     "min": 1,
+     "max": 100
+    },
+    {
+     "key": "floor",
+     "type": "int",
+     "label": "at least this many",
+     "min": 1,
+     "max": 5000,
+     "optional": true,
+     "default": 1
+    },
+    {
+     "key": "cap",
+     "type": "int",
+     "label": "this many is always enough",
+     "min": 1,
+     "max": 5000,
+     "optional": true,
+     "words": {
+      "": "no cap"
+     }
     }
    ]
   }
@@ -8834,6 +9508,86 @@
    ]
   },
   {
+   "id": "rank",
+   "v2": true,
+   "group": "variables",
+   "title": "Rank the wolves",
+   "sentence": "Put the top {top} wolves of {over} {list} by {var} (at least {min}) into {into}",
+   "help": "Orders wolves by a number each wolf has (a player variable), highest first, ties broken by the story's seed, and puts the first ones into a list of wolves (cleared first). Wolves without a value, or below the least, are left out. Use For each over that list to name, thank or reward them. Not inside For each.",
+   "params": [
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "by",
+     "of": [
+      "number"
+     ],
+     "scope": [
+      "player",
+      "realm"
+     ]
+    },
+    {
+     "key": "top",
+     "type": "operand",
+     "label": "how many (1 to 500)",
+     "kind": "number"
+    },
+    {
+     "key": "over",
+     "type": "choice",
+     "label": "among",
+     "values": [
+      "participants",
+      "list"
+     ],
+     "words": {
+      "participants": "the wolves of the story",
+      "list": "the wolves in"
+     },
+     "default": "participants"
+    },
+    {
+     "key": "list",
+     "type": "variable",
+     "label": "the list",
+     "of": [
+      "wolves"
+     ],
+     "scope": [
+      "story",
+      "world"
+     ],
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "min",
+     "type": "operand",
+     "label": "at least",
+     "kind": "number",
+     "optional": true,
+     "words": {
+      "": "any"
+     }
+    },
+    {
+     "key": "into",
+     "type": "variable",
+     "label": "into the list",
+     "of": [
+      "wolves"
+     ],
+     "scope": [
+      "story",
+      "world"
+     ]
+    }
+   ]
+  },
+  {
    "id": "start timer",
    "v2": true,
    "group": "variables",
@@ -9218,7 +9972,8 @@
      "key": "player",
      "type": "wolf",
      "label": "who sees it",
-     "world": true
+     "world": true,
+     "operand": true
     },
     {
      "key": "cue",
@@ -9259,13 +10014,15 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "cell",
      "type": "place",
      "label": "the place",
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "x",
@@ -9273,7 +10030,8 @@
      "label": "tile x",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "y",
@@ -9281,7 +10039,8 @@
      "label": "tile y",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "pace",
@@ -9309,13 +10068,15 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "text",
      "type": "text",
      "label": "the words",
-     "max": 200
+     "max": 200,
+     "fills": true
     },
     {
      "key": "cue",
@@ -9334,7 +10095,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "posture",
@@ -9371,7 +10133,8 @@
      "type": "int",
      "label": "points",
      "min": 1,
-     "max": 99
+     "max": 99,
+     "operand": true
     }
    ]
   },
@@ -9390,14 +10153,16 @@
     {
      "key": "item",
      "type": "item",
-     "label": "the item"
+     "label": "the item",
+     "operand": true
     },
     {
      "key": "quantity",
      "type": "int",
      "label": "how many",
      "min": 1,
-     "max": 100
+     "max": 100,
+     "operand": true
     }
    ]
   },
@@ -9426,7 +10191,8 @@
      "type": "int",
      "label": "hours",
      "min": 1,
-     "max": 168
+     "max": 168,
+     "operand": true
     }
    ]
   },
@@ -9434,8 +10200,8 @@
    "id": "story.area.spawn",
    "group": "places",
    "title": "A bandit camp in a region",
-   "sentence": "A camp of {count} bandits in {region}",
-   "help": "Bandits camp in the rectangle.",
+   "sentence": "A camp of {count} bandits in {region} {camp}",
+   "help": "Bandits camp in the rectangle. Named (\"camp\"), the camp is camp_story_<name>: a second spawn of that name while it stands joins it; once it is cleared the name may be used again, and bandit falls and camp cleared carry the id.",
    "params": [
     {
      "key": "region",
@@ -9447,7 +10213,17 @@
      "type": "int",
      "label": "how many",
      "min": 1,
-     "max": 6
+     "max": 6,
+     "operand": true
+    },
+    {
+     "key": "camp",
+     "type": "camp",
+     "label": "the camp's name",
+     "optional": true,
+     "words": {
+      "": "a camp of its own"
+     }
     }
    ]
   },
@@ -9461,13 +10237,15 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "cell",
      "type": "place",
      "label": "the place",
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "x",
@@ -9475,7 +10253,8 @@
      "label": "tile x",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "y",
@@ -9483,7 +10262,8 @@
      "label": "tile y",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     }
    ]
   },
@@ -9491,13 +10271,31 @@
    "id": "npc.protect",
    "group": "residents",
    "title": "Protect a resident",
-   "sentence": "{npc} cannot be killed",
-   "help": "Marks the resident as one who cannot be killed.",
+   "sentence": "{npc} cannot be killed {lasts}",
+   "help": "Marks the resident as one who cannot be killed: for good (until Unprotect), while this story runs, or while its campaign runs (let go when the campaign ends).",
    "params": [
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
+    },
+    {
+     "key": "lasts",
+     "type": "choice",
+     "label": "for",
+     "values": [
+      "ever",
+      "run",
+      "campaign"
+     ],
+     "words": {
+      "ever": "for good (until Unprotect)",
+      "run": "while this story runs",
+      "campaign": "while the campaign runs"
+     },
+     "optional": true,
+     "default": "ever"
     }
    ]
   },
@@ -9506,12 +10304,58 @@
    "group": "residents",
    "title": "Remove a resident's protection",
    "sentence": "{npc} can be killed again",
-   "help": "Takes the mark off.",
+   "help": "Takes the mark off. When this story protected them for its run or its campaign, lets go of that protection only: one protected in their own right, or by the Dungeon Master, stays protected.",
    "params": [
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
+    }
+   ]
+  },
+  {
+   "id": "npc.spare",
+   "group": "residents",
+   "title": "Spare a resident from old age",
+   "sentence": "{npc} does not die of old age while {lasts}",
+   "help": "Old age passes the resident by (stories and fights still can't kill a protected one: Protect them too). For this story, or for its whole campaign (let go when the campaign ends).",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "operand": true
+    },
+    {
+     "key": "lasts",
+     "type": "choice",
+     "label": "for",
+     "values": [
+      "run",
+      "campaign"
+     ],
+     "words": {
+      "run": "this story runs",
+      "campaign": "the campaign runs"
+     },
+     "optional": true,
+     "default": "run"
+    }
+   ]
+  },
+  {
+   "id": "npc.unspare",
+   "group": "residents",
+   "title": "Let old age take its course",
+   "sentence": "{npc} is no longer spared by this story",
+   "help": "Ends this story's (or its campaign's) sparing; another story may still spare them.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "operand": true
     }
    ]
   },
@@ -9525,7 +10369,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     }
    ]
   },
@@ -9540,7 +10385,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "add",
@@ -9580,7 +10426,8 @@
      "type": "int",
      "label": "severity",
      "min": 1,
-     "max": 3
+     "max": 3,
+     "operand": true
     }
    ]
   },
@@ -9626,7 +10473,8 @@
      "type": "int",
      "label": "days",
      "min": 1,
-     "max": 366
+     "max": 366,
+     "operand": true
     },
     {
      "key": "words",
@@ -9646,7 +10494,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "a resident of the household"
+     "label": "a resident of the household",
+     "operand": true
     },
     {
      "key": "band",
@@ -9665,7 +10514,8 @@
      "type": "int",
      "label": "days",
      "min": 1,
-     "max": 112
+     "max": 112,
+     "operand": true
     }
    ]
   },
@@ -9679,7 +10529,8 @@
     {
      "key": "town",
      "type": "town",
-     "label": "the town"
+     "label": "the town",
+     "operand": true
     },
     {
      "key": "name",
@@ -9692,7 +10543,8 @@
      "type": "int",
      "label": "days from now",
      "min": 0,
-     "max": 30
+     "max": 30,
+     "operand": true
     }
    ]
   },
@@ -9706,7 +10558,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "template",
@@ -9716,12 +10569,14 @@
     {
      "key": "resident",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "place",
      "type": "place",
-     "label": "the place"
+     "label": "the place",
+     "operand": true
     }
    ]
   },
@@ -9736,12 +10591,14 @@
     {
      "key": "faction",
      "type": "faction",
-     "label": "the faction"
+     "label": "the faction",
+     "operand": true
     },
     {
      "key": "other",
      "type": "faction",
-     "label": "the other faction"
+     "label": "the other faction",
+     "operand": true
     },
     {
      "key": "stance",
@@ -9761,7 +10618,8 @@
      "type": "int",
      "label": "disposition",
      "min": -100,
-     "max": 100
+     "max": 100,
+     "operand": true
     },
     {
      "key": "reason",
@@ -9775,20 +10633,31 @@
    "id": "bandits.call",
    "group": "wolves",
    "title": "Send bandits after a wolf",
-   "sentence": "{count} bandits come for {player}",
-   "help": "The wolf must be in the world.",
+   "sentence": "{count} bandits come for {player} {camp}",
+   "help": "The wolf must be in the world. Named (\"camp\"), the camp is camp_story_<name>: a second spawn of that name while it stands joins it; once it is cleared the name may be used again, and bandit falls and camp cleared carry the id.",
    "params": [
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "count",
      "type": "int",
      "label": "how many",
      "min": 1,
-     "max": 6
+     "max": 6,
+     "operand": true
+    },
+    {
+     "key": "camp",
+     "type": "camp",
+     "label": "the camp's name",
+     "optional": true,
+     "words": {
+      "": "a camp of its own"
+     }
     }
    ]
   },
@@ -9802,7 +10671,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "skill",
@@ -9837,14 +10707,16 @@
      "label": "points",
      "min": -100,
      "max": 100,
-     "nonzero": true
+     "nonzero": true,
+     "operand": true
     },
     {
      "key": "days",
      "type": "int",
      "label": "days",
      "min": 1,
-     "max": 366
+     "max": 366,
+     "operand": true
     },
     {
      "key": "words",
@@ -9864,13 +10736,15 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "detail",
      "type": "text",
      "label": "the deed",
-     "max": 200
+     "max": 200,
+     "fills": true
     }
    ]
   },
@@ -9884,7 +10758,8 @@
     {
      "key": "town",
      "type": "town",
-     "label": "the town"
+     "label": "the town",
+     "operand": true
     },
     {
      "key": "project",
@@ -9895,7 +10770,8 @@
      "key": "cell",
      "type": "place",
      "label": "the place",
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "x",
@@ -9903,7 +10779,8 @@
      "label": "tile x",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "y",
@@ -9911,7 +10788,8 @@
      "label": "tile y",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "title",
@@ -9936,7 +10814,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -9957,7 +10836,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -9978,7 +10858,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -9999,7 +10880,30 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
+   "id": "quest.withdraw",
+   "group": "quests",
+   "title": "Take back an offer",
+   "sentence": "{quest} is no longer offered to {player}",
+   "help": "Takes an offered (not yet accepted) quest back from one wolf, with no 'failed' mark in their journal: its giver and the notice board leave it out for them. A copy already taken is untouched. Offering it to the same wolf again clears the mark. Use it when a wolf takes one road and the others should close (a quest's 'Only for wolves who...' does this by itself for new stories).",
+   "params": [
+    {
+     "key": "quest",
+     "type": "quest",
+     "label": "the quest"
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "from the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -10025,7 +10929,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -10051,7 +10956,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -10077,7 +10983,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -10103,14 +11010,16 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "amount",
      "type": "int",
      "label": "how much",
      "min": 1,
-     "max": 1000000
+     "max": 1000000,
+     "operand": true
     }
    ],
    "v2": true,
@@ -10126,7 +11035,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -10142,7 +11052,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ],
    "v2": true,
@@ -10153,12 +11064,13 @@
    "group": "residents",
    "title": "Offer a choice in a resident's window",
    "sentence": "{npc} offers the choice {id} to {player}: the wolf says {words}, {npc} replies {reply} (once: {once})",
-   "help": "While this phase visit is open, the resident's dialogue window shows a story choice to the wolf (or every wolf of the story): the wolf's words, the resident's reply in their own voice. Picking it makes a 'dialogue choice' event.",
+   "help": "While this phase visit is open, the resident's dialogue window shows a story choice to the wolf (or every wolf of the story): the wolf's words, the resident's reply in their own voice. Picking it makes a 'dialogue choice' event. Offered again to another wolf with the same name, it is added for them; each wolf sees it until they pick it (once) or the visit ends.",
    "params": [
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "id",
@@ -10181,7 +11093,8 @@
      "key": "player",
      "type": "wolf",
      "label": "who sees it (empty: every wolf of the story)",
-     "optional": true
+     "optional": true,
+     "operand": true
     },
     {
      "key": "once",
@@ -10198,19 +11111,21 @@
    "group": "wolves",
    "title": "Pay a wolf from a purse",
    "sentence": "Pay {player} {coins} pennies from {purse}: {reason}",
-   "help": "Coins from a named purse (a town, its works, a business's till, a Chapter), never made from nothing: refused when the purse is short or over the wolf's day of grants.",
+   "help": "Coins from a named purse (a town's treasury, a business's till, a Chapter), never made from nothing: refused when the purse is short or over the wolf's day of grants. Approval checks the world has the purse.",
    "params": [
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "coins",
      "type": "int",
      "label": "pennies",
      "min": 1,
-     "max": 2500
+     "max": 2500,
+     "operand": true
     },
     {
      "key": "purse",
@@ -10229,25 +11144,57 @@
    "id": "item.give",
    "group": "wolves",
    "title": "Give a wolf an item",
-   "sentence": "Give {player} {quantity} {item}",
-   "help": "An item into one wolf's pack; a full pack is refused and the wolf told.",
+   "sentence": "Give {player} {quantity} {item} {tag} {name} {keep}",
+   "help": "An item into one wolf's pack; a full pack is refused and the wolf told. With a story mark (tag) it is the story's own item: shown by the name given (called), never sold to a shop or a stall, never used up in making or wear, and taken back from every pack, purse and the ground when the run ends unless kept after the story. Filters and \"carries\" name it as item^tag (letter^watch_list).",
    "params": [
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "item",
      "type": "item",
-     "label": "the item"
+     "label": "the item",
+     "operand": true
     },
     {
      "key": "quantity",
      "type": "int",
      "label": "how many",
      "min": 1,
-     "max": 20
+     "max": 20,
+     "operand": true
+    },
+    {
+     "key": "tag",
+     "type": "tag",
+     "label": "a story mark",
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "name",
+     "type": "text",
+     "label": "called",
+     "max": 60,
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "keep",
+     "type": "bool",
+     "label": "kept after the story",
+     "optional": true,
+     "words": {
+      "true": "kept after the story",
+      "false": "taken back at the end"
+     }
     }
    ]
   },
@@ -10261,12 +11208,14 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "faction",
      "type": "faction",
-     "label": "the faction"
+     "label": "the faction",
+     "operand": true
     },
     {
      "key": "points",
@@ -10274,7 +11223,8 @@
      "label": "points",
      "min": -10,
      "max": 10,
-     "nonzero": true
+     "nonzero": true,
+     "operand": true
     },
     {
      "key": "reason",
@@ -10318,7 +11268,8 @@
      "optional": true,
      "words": {
       "": ""
-     }
+     },
+     "operand": true
     },
     {
      "key": "region",
@@ -10333,7 +11284,8 @@
      "key": "text",
      "type": "text",
      "label": "the words",
-     "max": 300
+     "max": 300,
+     "fills": true
     },
     {
      "key": "from",
@@ -10342,7 +11294,8 @@
      "optional": true,
      "words": {
       "": ""
-     }
+     },
+     "operand": true
     }
    ]
   },
@@ -10360,13 +11313,15 @@
      "optional": true,
      "words": {
       "": "every wolf of the story"
-     }
+     },
+     "operand": true
     },
     {
      "key": "text",
      "type": "text",
      "label": "the note",
-     "max": 200
+     "max": 200,
+     "fills": true
     }
    ]
   },
@@ -10381,7 +11336,8 @@
      "key": "cell",
      "type": "place",
      "label": "the place",
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "x",
@@ -10389,7 +11345,8 @@
      "label": "tile x",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "y",
@@ -10397,7 +11354,8 @@
      "label": "tile y",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "player",
@@ -10406,7 +11364,8 @@
      "optional": true,
      "words": {
       "": "the story's wolves"
-     }
+     },
+     "operand": true
     },
     {
      "key": "label",
@@ -10419,7 +11378,8 @@
      "type": "int",
      "label": "minutes",
      "min": 1,
-     "max": 240
+     "max": 240,
+     "operand": true
     }
    ]
   },
@@ -10463,19 +11423,22 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "item",
      "type": "item",
-     "label": "the item"
+     "label": "the item",
+     "operand": true
     },
     {
      "key": "quantity",
      "type": "int",
      "label": "how many",
      "min": 1,
-     "max": 20
+     "max": 20,
+     "operand": true
     }
    ]
   },
@@ -10490,19 +11453,22 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "town",
      "type": "town",
-     "label": "the town"
+     "label": "the town",
+     "operand": true
     },
     {
      "key": "fine",
      "type": "int",
      "label": "the fine (pennies)",
      "min": 0,
-     "max": 200
+     "max": 200,
+     "operand": true
     },
     {
      "key": "reason",
@@ -10522,12 +11488,14 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "town",
      "type": "town",
-     "label": "the town"
+     "label": "the town",
+     "operand": true
     }
    ]
   },
@@ -10553,7 +11521,8 @@
      "key": "cell",
      "type": "place",
      "label": "the place",
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "x",
@@ -10561,7 +11530,8 @@
      "label": "tile x",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "y",
@@ -10569,14 +11539,16 @@
      "label": "tile y",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "minutes",
      "type": "int",
      "label": "minutes",
      "min": 1,
-     "max": 1440
+     "max": 1440,
+     "operand": true
     },
     {
      "key": "like",
@@ -10585,7 +11557,8 @@
      "optional": true,
      "words": {
       "": "a stranger"
-     }
+     },
+     "operand": true
     },
     {
      "key": "description",
@@ -10618,12 +11591,13 @@
    "group": "residents",
    "title": "Bind a mantle",
    "sentence": "{npc} takes up the mantle {mantle}",
-   "help": "A mantle (doc 84: a part with its own lines in the dialogue window) bound to the resident. Released when the story ends.",
+   "help": "A mantle (doc 84: a part with its own lines in the dialogue window) bound to the resident. When the story ends, or lays the mantle down itself, the mantle they wore before is theirs again (none before: they wear none).",
    "params": [
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "mantle",
@@ -10637,12 +11611,176 @@
    "group": "residents",
    "title": "Release a mantle",
    "sentence": "{npc} lays down their mantle",
-   "help": "The resident's mantle is released.",
+   "help": "The resident's mantle is released. One this story bound: the mantle they wore before is theirs again.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "operand": true
+    }
+   ]
+  },
+  {
+   "id": "npc.howl",
+   "group": "residents",
+   "title": "A resident howls",
+   "sentence": "{npc} howls",
+   "help": "The resident howls where they stand: it opens or joins a chorus, wolves hear it as any howl, and the town remembers it. Refused for a resident dead, down or in a fight, and for one who howled within the howl's rest (a few minutes).",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "operand": true
+    }
+   ]
+  },
+  {
+   "id": "npc.post",
+   "group": "residents",
+   "title": "Give a resident a post",
+   "needsBuilder": true,
+   "sentence": "{npc} takes the post {post}; whoever held it gives it up",
+   "help": "A lasting change in the careers book, in one step: the resident leaves any post they hold and takes this one; the one before them is left without it, for the vacancy rules to look after ('succession' follows, detail '<post>: by the story'). Never the Watch's posts (the watch chooses its own). Never undone.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "operand": true
+    },
+    {
+     "key": "post",
+     "type": "post",
+     "label": "the post"
+    }
+   ]
+  },
+  {
+   "id": "npc.queue",
+   "group": "residents",
+   "title": "Put an unplaced resident first in line",
+   "needsBuilder": true,
+   "sentence": "{npc} is first in line for the next post that falls vacant in {town}",
+   "help": "An unplaced resident (one the world knows but who has no home yet) takes the next vacancy in that town that nobody of the town takes (an apprentice, a master, kin, a local or the best trained come first), before the city's wolves and the Country. It never makes a vacancy, and nobody new is made. Lasting: never undone. Refused for a resident with a place, or one too young or too old to take up a post.",
    "params": [
     {
      "key": "npc",
      "type": "resident",
      "label": "the resident"
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town"
+    }
+   ]
+  },
+  {
+   "id": "cast.pick",
+   "group": "residents",
+   "title": "Cast a resident",
+   "v2": true,
+   "story": true,
+   "sentence": "Choose a resident {job} {town} {faction} {quarter}, not in {notIn}, near {near}, as {var}",
+   "help": "The story looks for a living, placed resident who fits (their work, their town, their House, their quarter), leaves out those in a list, prefers the one nearest a wolf, and puts them in a resident variable. Then 'cast chosen' happens (or 'cast failed' when nobody fits, and the variable keeps what it held). Use it for quests any town can give: a quest's giver may be that variable.",
+   "params": [
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "into",
+     "of": [
+      "resident"
+     ]
+    },
+    {
+     "key": "job",
+     "type": "text",
+     "label": "whose work is",
+     "max": 40,
+     "optional": true,
+     "words": {
+      "": "of any work"
+     }
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "in the town",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": "in any town"
+     }
+    },
+    {
+     "key": "faction",
+     "type": "faction",
+     "label": "of the House",
+     "optional": true,
+     "words": {
+      "": "of any House"
+     }
+    },
+    {
+     "key": "quarter",
+     "type": "text",
+     "label": "in the quarter",
+     "max": 40,
+     "optional": true,
+     "words": {
+      "": "in any quarter"
+     }
+    },
+    {
+     "key": "notIn",
+     "type": "variable",
+     "label": "not one of",
+     "of": [
+      "residents"
+     ],
+     "optional": true,
+     "words": {
+      "": "nobody left out"
+     }
+    },
+    {
+     "key": "near",
+     "type": "wolf",
+     "label": "nearest to",
+     "optional": true,
+     "words": {
+      "": "anyone"
+     }
+    }
+   ]
+  },
+  {
+   "id": "npc.sentence",
+   "group": "residents",
+   "title": "Sentence a resident",
+   "needsBuilder": true,
+   "sentence": "{npc} is held at {place} for {days} days",
+   "help": "The resident is taken to the place (indoors) and kept there for the days, even after the story ends ('sentence begun', then 'sentence served' on the last day). They keep their post and their home, and walk home when it is served. Never a protected resident, the dead, one in a fight or away, or one serving a sentence already. The Campaigns console lists sentences, with Release now.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "operand": true
+    },
+    {
+     "key": "place",
+     "type": "place",
+     "label": "the place (an interior)"
+    },
+    {
+     "key": "days",
+     "type": "int",
+     "label": "days",
+     "min": 1,
+     "max": 28
     }
    ]
   },
@@ -10656,7 +11794,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     }
    ]
   },
@@ -10670,7 +11809,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     }
    ]
   },
@@ -10684,7 +11824,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     }
    ]
   },
@@ -10698,12 +11839,14 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     },
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     }
    ]
   },
@@ -10717,7 +11860,8 @@
     {
      "key": "npc",
      "type": "resident",
-     "label": "the resident"
+     "label": "the resident",
+     "operand": true
     }
    ]
   },
@@ -10726,7 +11870,7 @@
    "group": "places",
    "title": "Lock a door",
    "sentence": "Lock {door}",
-   "help": "Both sides of the door are locked (it closes first). Unlocked again when the story ends.",
+   "help": "Both sides of the door are locked (it closes first). Unlocked again when the story ends. A door this story had opened to wolves is closed to them again. Residents are locked out too: to close a door to wolves only, close it instead.",
    "params": [
     {
      "key": "door",
@@ -10740,7 +11884,7 @@
    "group": "places",
    "title": "Unlock a door",
    "sentence": "Unlock {door}",
-   "help": "Both sides of a locked door are unlocked. Locked again when the story ends.",
+   "help": "Both sides of a locked door are unlocked. Wolves may go through it until the story closes or locks it, or ends, even a shop's out of hours, but never into a private home (someone's home and nobody's work, or the stairs up to one): approval refuses one. Locked again when the story ends.",
    "params": [
     {
      "key": "door",
@@ -10754,7 +11898,7 @@
    "group": "places",
    "title": "Open a door",
    "sentence": "Open {door}",
-   "help": "The door stands open (an unlocked one). It stays as a wolf would leave it.",
+   "help": "The door stands open (an unlocked one). Wolves may go through it until the story closes or locks it, or ends, even a shop's out of hours, but never into a private home (someone's home and nobody's work, or the stairs up to one): approval refuses one. It stays as a wolf would leave it.",
    "params": [
     {
      "key": "door",
@@ -10768,7 +11912,7 @@
    "group": "places",
    "title": "Close a door",
    "sentence": "Close {door}",
-   "help": "The door is shut. It stays as a wolf would leave it.",
+   "help": "The door is shut. It stays as a wolf would leave it. One the story opened to wolves is closed to them again, its own lock left alone so its residents still go in: how a story ends the window it opened.",
    "params": [
     {
      "key": "door",
@@ -10787,20 +11931,23 @@
     {
      "key": "item",
      "type": "item",
-     "label": "the item"
+     "label": "the item",
+     "operand": true
     },
     {
      "key": "quantity",
      "type": "int",
      "label": "how many",
      "min": 1,
-     "max": 5
+     "max": 5,
+     "operand": true
     },
     {
      "key": "cell",
      "type": "place",
      "label": "the place",
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "x",
@@ -10808,7 +11955,8 @@
      "label": "tile x",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     },
     {
      "key": "y",
@@ -10816,7 +11964,8 @@
      "label": "tile y",
      "min": 0,
      "max": 4095,
-     "part": "tile"
+     "part": "tile",
+     "operand": true
     }
    ]
   },
@@ -10830,20 +11979,23 @@
     {
      "key": "town",
      "type": "town",
-     "label": "the town"
+     "label": "the town",
+     "operand": true
     },
     {
      "key": "text",
      "type": "text",
      "label": "the notice",
-     "max": 300
+     "max": 300,
+     "fills": true
     },
     {
      "key": "days",
      "type": "int",
      "label": "days",
      "min": 1,
-     "max": 28
+     "max": 28,
+     "operand": true
     }
    ]
   },
@@ -10861,7 +12013,8 @@
      "optional": true,
      "words": {
       "": ""
-     }
+     },
+     "operand": true
     },
     {
      "key": "town",
@@ -10870,7 +12023,8 @@
      "optional": true,
      "words": {
       "": ""
-     }
+     },
+     "operand": true
     },
     {
      "key": "weather",
@@ -10891,7 +12045,222 @@
      "type": "int",
      "label": "hours",
      "min": 1,
-     "max": 72
+     "max": 72,
+     "operand": true
+    }
+   ]
+  },
+  {
+   "id": "hunt.stage",
+   "group": "places",
+   "title": "An animal waits for the next hunt",
+   "sentence": "The next hunt in {region} meets {count} {species} (for {minutes} minutes)",
+   "help": "The next hunt any wolf begins inside the region (one of the story's or a passer-by) has this animal in its arena, as well as whatever the ground gives, even on ground too built up or bare for game of its own; never in a town or indoors. The kill is an ordinary 'hunted' with the animal as target. One hunt meets it; it lapses after the minutes of the world's clock. Nothing roams the map: the animal lives only in that hunt. Undone when the story ends.",
+   "params": [
+    {
+     "key": "region",
+     "type": "region",
+     "label": "the region"
+    },
+    {
+     "key": "species",
+     "type": "species",
+     "label": "the animal"
+    },
+    {
+     "key": "count",
+     "type": "int",
+     "label": "how many",
+     "min": 1,
+     "max": 3,
+     "default": 1
+    },
+    {
+     "key": "minutes",
+     "type": "int",
+     "label": "minutes",
+     "min": 1,
+     "max": 1440,
+     "default": 60
+    }
+   ]
+  },
+  {
+   "id": "foe.add",
+   "group": "foes",
+   "title": "Bring a foe",
+   "sentence": "{name} ({foe}), a {strength} foe with a band of {band}, comes to {cell,x,y} for {minutes} minutes, looking like {like} {description}, and {stance}",
+   "help": "A named enemy who can be fought and beaten: wolves may set on them without a crime, the Watch on duty in the place helps the wolves, and their followers break and run when they fall ('foe defeated'). A waiting foe holds its ground and fights a wolf who comes within 6 tiles; a hunting one goes for the nearest wolf within 12. They come and go: never a resident, never saved, gone when the story ends (no event) or their time runs out, or when they break off a fight ('foe fled'). How strong each kind is: Data/Storylines/foes.json.",
+   "params": [
+    {
+     "key": "foe",
+     "type": "foe",
+     "label": "their id"
+    },
+    {
+     "key": "name",
+     "type": "text",
+     "label": "their name",
+     "max": 60
+    },
+    {
+     "key": "cell",
+     "type": "place",
+     "label": "the place",
+     "part": "tile",
+     "operand": true
+    },
+    {
+     "key": "x",
+     "type": "int",
+     "label": "tile x",
+     "min": 0,
+     "max": 4095,
+     "part": "tile",
+     "operand": true
+    },
+    {
+     "key": "y",
+     "type": "int",
+     "label": "tile y",
+     "min": 0,
+     "max": 4095,
+     "part": "tile",
+     "operand": true
+    },
+    {
+     "key": "strength",
+     "type": "choice",
+     "label": "how strong",
+     "values": [
+      "tough",
+      "fierce",
+      "champion"
+     ],
+     "default": "tough"
+    },
+    {
+     "key": "band",
+     "type": "int",
+     "label": "followers",
+     "min": 0,
+     "max": 8,
+     "operand": true
+    },
+    {
+     "key": "stance",
+     "type": "choice",
+     "label": "what they do",
+     "values": [
+      "waits",
+      "hunts"
+     ],
+     "words": {
+      "waits": "holds the ground",
+      "hunts": "comes for the nearest wolf"
+     },
+     "default": "waits"
+    },
+    {
+     "key": "minutes",
+     "type": "int",
+     "label": "minutes",
+     "min": 1,
+     "max": 1440,
+     "operand": true
+    },
+    {
+     "key": "like",
+     "type": "resident",
+     "label": "looking like (a resident)",
+     "optional": true,
+     "words": {
+      "": "a stranger"
+     }
+    },
+    {
+     "key": "description",
+     "type": "text",
+     "label": "how they look",
+     "max": 200,
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    }
+   ]
+  },
+  {
+   "id": "foe.leave",
+   "group": "foes",
+   "title": "A foe leaves",
+   "sentence": "{foe} and their followers leave",
+   "help": "The story's foe and their band go (no event). Not while they fight: then refused, and they go when the fight is over or their time runs out.",
+   "params": [
+    {
+     "key": "foe",
+     "type": "foe",
+     "label": "their id"
+    }
+   ]
+  },
+  {
+   "id": "foe.outlaw",
+   "group": "foes",
+   "title": "Make a resident a foe",
+   "needsBuilder": true,
+   "sentence": "{npc} turns on the wolves with a band of {band} for {minutes} minutes ({strength}); killed if beaten: {lethal}",
+   "help": "A resident (never a protected one, the dead, one down, in a fight, away, or held by another story) may be fought for a while without a crime, the Watch on the wolves' side. Beaten ('foe defeated', target the resident), they are downed, got up again where they lie when the fight is over and held until the story ends, never killed unless the story says so (then 'death' follows). When the minutes pass, or the story ends, they are themselves again. Their followers are strangers who go with them.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "operand": true
+    },
+    {
+     "key": "minutes",
+     "type": "int",
+     "label": "minutes",
+     "min": 1,
+     "max": 720
+    },
+    {
+     "key": "strength",
+     "type": "choice",
+     "label": "how strong",
+     "values": [
+      "tough",
+      "fierce",
+      "champion"
+     ],
+     "optional": true,
+     "words": {
+      "": "tough"
+     }
+    },
+    {
+     "key": "band",
+     "type": "int",
+     "label": "followers",
+     "min": 0,
+     "max": 6,
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": "no"
+     }
+    },
+    {
+     "key": "lethal",
+     "type": "bool",
+     "label": "may die",
+     "optional": true,
+     "words": {
+      "true": "yes",
+      "false": "no",
+      "": "no"
+     }
     }
    ]
   },
@@ -10945,7 +12314,8 @@
      "type": "int",
      "label": "days from today",
      "min": 0,
-     "max": 7
+     "max": 7,
+     "operand": true
     },
     {
      "key": "hour",
@@ -10956,7 +12326,8 @@
      "optional": true,
      "words": {
       "": "9"
-     }
+     },
+     "operand": true
     }
    ]
   },
@@ -11042,7 +12413,8 @@
     {
      "key": "town",
      "type": "town",
-     "label": "the town"
+     "label": "the town",
+     "operand": true
     },
     {
      "key": "project",
@@ -11062,7 +12434,8 @@
     {
      "key": "town",
      "type": "town",
-     "label": "the town"
+     "label": "the town",
+     "operand": true
     },
     {
      "key": "project",
@@ -11082,13 +12455,100 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "detail",
      "type": "text",
      "label": "the deed's words",
      "max": 200
+    }
+   ]
+  },
+  {
+   "id": "title.give",
+   "group": "wolves",
+   "title": "Name a wolf by a title",
+   "sentence": "{player} is named {title}, known {known} {town}, for {days} days",
+   "help": "A title the wolf carries: shown on their character card (unless they hide it) and to residents, who may use it (the talk fact player.title). Known in the realm or one town. 0 days (or none given): for good. A wolf carries up to 8 story titles; the newest is the one used; given again, it is renewed. A deed of its naming goes into the town's talk. Not taken back when the story ends: it lapses by its days, or Take a title back.",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf",
+     "operand": true
+    },
+    {
+     "key": "title",
+     "type": "text",
+     "label": "the title",
+     "max": 60,
+     "fills": true
+    },
+    {
+     "key": "known",
+     "type": "choice",
+     "label": "known",
+     "values": [
+      "realm",
+      "town"
+     ],
+     "words": {
+      "realm": "in the realm",
+      "town": "in the town of",
+      "": "in the realm"
+     },
+     "default": "realm",
+     "optional": true
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "days",
+     "type": "int",
+     "label": "days (0: for good)",
+     "min": 0,
+     "max": 365,
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": "ever"
+     }
+    }
+   ]
+  },
+  {
+   "id": "title.take",
+   "group": "wolves",
+   "title": "Take a title back",
+   "sentence": "{player} is no longer called {title}",
+   "help": "Takes back a title this story gave (or, with no title named, every title it gave this wolf).",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf",
+     "operand": true
+    },
+    {
+     "key": "title",
+     "type": "text",
+     "label": "the title",
+     "max": 60,
+     "fills": true,
+     "optional": true,
+     "words": {
+      "": "every title from this story"
+     }
     }
    ]
   },
@@ -11102,7 +12562,8 @@
     {
      "key": "player",
      "type": "wolf",
-     "label": "the wolf"
+     "label": "the wolf",
+     "operand": true
     },
     {
      "key": "template",
@@ -11114,14 +12575,16 @@
      "type": "int",
      "label": "the step (1 is the first)",
      "min": 1,
-     "max": 10
+     "max": 10,
+     "operand": true
     },
     {
      "key": "objective",
      "type": "int",
      "label": "the objective (1 is the first)",
      "min": 1,
-     "max": 8
+     "max": 8,
+     "operand": true
     }
    ]
   },
@@ -11206,6 +12669,471 @@
    ],
    "v2": true,
    "story": true
+  },
+  {
+   "id": "story.notify",
+   "group": "chapters",
+   "title": "Tell another story",
+   "sentence": "Tell {story} the news {signal} about {player}, worth {amount}",
+   "help": "Another live story of this world hears 'story notified' with this name, the wolf and a number, between two of its events. With no story named, every live story listening for that name hears it. A quest pack uses it to credit a wolf in whichever chapter of a campaign is running. At most 200 a tick go; the rest wait for the next.",
+   "params": [
+    {
+     "key": "signal",
+     "type": "signal",
+     "label": "the news (its name)"
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "about the wolf",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": "nobody in particular"
+     }
+    },
+    {
+     "key": "amount",
+     "type": "int",
+     "label": "a number",
+     "min": -1000000,
+     "max": 1000000,
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": "nothing"
+     }
+    },
+    {
+     "key": "story",
+     "type": "story",
+     "label": "the story",
+     "optional": true,
+     "words": {
+      "": "every story listening"
+     }
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
+   "id": "talk.remember",
+   "group": "talk",
+   "title": "Residents remember something",
+   "sentence": "{scope} {town} {npc} {player} remembers {key} = {value} for {days} days (after the story: {keep})",
+   "help": "Talk memory residents' lines can test (world.mem.<key> for the realm or a town, self.mem.<key> for one resident, pair.mem.<key> for one resident about one wolf: Data/Talk lines gated on it play). Realm: every resident; a town: its residents (the whole city is one town); a resident: that one; a resident and a wolf: that resident, when that wolf is the one they talk to. Taken back when the story ends unless kept.",
+   "params": [
+    {
+     "key": "scope",
+     "type": "choice",
+     "label": "who",
+     "values": [
+      "realm",
+      "town",
+      "npc",
+      "pair"
+     ],
+     "words": {
+      "realm": "the realm",
+      "town": "the town of",
+      "npc": "the resident",
+      "pair": "the resident, about the wolf,"
+     },
+     "default": "town"
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "key",
+     "type": "talkkey",
+     "label": "what (a key)"
+    },
+    {
+     "key": "value",
+     "type": "talkvalue",
+     "label": "its value"
+    },
+    {
+     "key": "days",
+     "type": "int",
+     "label": "days",
+     "min": 1,
+     "max": 365,
+     "operand": true
+    },
+    {
+     "key": "keep",
+     "type": "bool",
+     "label": "kept after the story",
+     "optional": true,
+     "words": {
+      "true": "kept",
+      "false": "taken back"
+     }
+    }
+   ]
+  },
+  {
+   "id": "talk.forget",
+   "group": "talk",
+   "title": "Residents forget something",
+   "sentence": "{scope} {town} {npc} {player} forgets {key}",
+   "help": "Takes away a memory a story gave (any story's, by key).",
+   "params": [
+    {
+     "key": "scope",
+     "type": "choice",
+     "label": "who",
+     "values": [
+      "realm",
+      "town",
+      "npc",
+      "pair"
+     ],
+     "words": {
+      "realm": "the realm",
+      "town": "the town of",
+      "npc": "the resident",
+      "pair": "the resident, about the wolf,"
+     },
+     "default": "town"
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "key",
+     "type": "talkkey",
+     "label": "what (a key)"
+    }
+   ]
+  },
+  {
+   "id": "belief.plant",
+   "group": "talk",
+   "title": "Start a rumour",
+   "sentence": "{count} residents of {town} come to believe {claimKind} {subject} {claim} ({confidence}% sure)",
+   "help": "Residents of a town (chosen by the story's seed: placed, living, not the one it is about) believe something of a resident, as if they had heard it: it is told in gossip ('#x.name# <claim>') and spreads along friendships and caravans as any belief does. About residents only, never a wolf. A clearing (story.cleared) is told as '<Name> never <claim>': write the claim as the thing not done.",
+   "params": [
+    {
+     "key": "subject",
+     "type": "resident",
+     "label": "about",
+     "operand": true
+    },
+    {
+     "key": "claim",
+     "type": "text",
+     "label": "that they (a phrase)",
+     "max": 120
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "in the town",
+     "operand": true
+    },
+    {
+     "key": "count",
+     "type": "int",
+     "label": "how many",
+     "min": 1,
+     "max": 50,
+     "operand": true
+    },
+    {
+     "key": "confidence",
+     "type": "int",
+     "label": "how sure (%)",
+     "min": 10,
+     "max": 90,
+     "operand": true
+    },
+    {
+     "key": "claimKind",
+     "type": "choice",
+     "label": "the kind of claim",
+     "values": [
+      "story.rumour",
+      "story.cleared"
+     ],
+     "words": {
+      "story.rumour": "that",
+      "story.cleared": "that it is not true that"
+     },
+     "optional": true,
+     "default": "story.rumour"
+    }
+   ]
+  },
+  {
+   "id": "npc.greet",
+   "group": "talk",
+   "title": "A resident greets one wolf",
+   "sentence": "{npc} greets {player}: {text} (for {days} days)",
+   "help": "The next time this wolf opens the resident's window (within the days; 7 when not given), the resident greets them with these words, in their own voice (#symbols# fill in their dialect), instead of their usual greeting: once. A later greeting for the same wolf from the same resident replaces it. A word of thanks: not taken back when the story ends. In a quest's rewards it is for each wolf with credit.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "operand": true
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf",
+     "operand": true
+    },
+    {
+     "key": "text",
+     "type": "text",
+     "label": "the greeting",
+     "max": 200,
+     "fills": true
+    },
+    {
+     "key": "days",
+     "type": "int",
+     "label": "for days",
+     "min": 1,
+     "max": 28,
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": "7"
+     }
+    }
+   ]
+  },
+  {
+   "id": "belief.forget",
+   "group": "talk",
+   "title": "Put a rumour to rest",
+   "sentence": "Residents {town} believe {share}% less that {subject} did {claimKind}",
+   "help": "Residents (of one town, or everywhere) grow less sure of one kind of claim about a resident (a theft, an attempted theft, a story's rumour...): each holder's belief loses that share of its strength, and one too faint is forgotten. Lasting: not taken back when the story ends.",
+   "params": [
+    {
+     "key": "subject",
+     "type": "resident",
+     "label": "about",
+     "operand": true
+    },
+    {
+     "key": "claimKind",
+     "type": "choice",
+     "label": "the kind of claim",
+     "values": [
+      "theft",
+      "theft.attempt",
+      "theft.unseen",
+      "assault",
+      "assault.unseen",
+      "violent",
+      "warrant",
+      "promise.broken",
+      "prowling",
+      "story.rumour"
+     ]
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "in the town",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": "everywhere"
+     }
+    },
+    {
+     "key": "share",
+     "type": "int",
+     "label": "by (%)",
+     "min": 10,
+     "max": 100,
+     "operand": true
+    }
+   ]
+  },
+  {
+   "id": "figure.set",
+   "group": "talk",
+   "title": "Name a figure of the realm",
+   "needsBuilder": true,
+   "sentence": "The figure {figure}: {npc} {player} {name} is the realm's {role}, {title}, known {known} {region} {house} ({about})",
+   "help": "Who residents mean by the ruler, the lord, the captain, the high priest, the hero or the villain (#world.figure_<role># in their lines), where they are known. A resident, a wolf, or a name only. It stays after the story; Clear the figure takes it away.",
+   "params": [
+    {
+     "key": "figure",
+     "type": "figure",
+     "label": "its id"
+    },
+    {
+     "key": "role",
+     "type": "choice",
+     "label": "the role",
+     "values": [
+      "ruler",
+      "lord",
+      "captain",
+      "high_priest",
+      "hero",
+      "villain"
+     ]
+    },
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "a resident",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "a wolf",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "name",
+     "type": "text",
+     "label": "or a name",
+     "max": 120,
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "title",
+     "type": "text",
+     "label": "their title",
+     "max": 120,
+     "optional": true
+    },
+    {
+     "key": "known",
+     "type": "choice",
+     "label": "known",
+     "values": [
+      "realm",
+      "region",
+      "house"
+     ],
+     "words": {
+      "realm": "in the realm",
+      "region": "in",
+      "house": "among"
+     },
+     "default": "realm"
+    },
+    {
+     "key": "region",
+     "type": "town",
+     "label": "the town or land",
+     "optional": true,
+     "words": {
+      "": ""
+     },
+     "operand": true
+    },
+    {
+     "key": "house",
+     "type": "faction",
+     "label": "the House",
+     "optional": true,
+     "words": {
+      "": ""
+     },
+     "operand": true
+    },
+    {
+     "key": "about",
+     "type": "text",
+     "label": "about them",
+     "max": 600,
+     "optional": true
+    }
+   ]
+  },
+  {
+   "id": "figure.clear",
+   "group": "talk",
+   "title": "Clear a figure",
+   "needsBuilder": true,
+   "sentence": "Residents no longer speak of the figure {figure}",
+   "help": "Takes a figure away (one a story or a Dungeon Master set).",
+   "params": [
+    {
+     "key": "figure",
+     "type": "figure",
+     "label": "its id"
+    }
+   ]
   }
  ],
  "variables": {
@@ -11235,7 +13163,8 @@
    "story": "the story's (one)",
    "player": "each wolf's own",
    "party": "each party's own",
-   "world": "the world's (kept after the story, shared by every story)"
+   "world": "the world's (kept after the story, shared by every story)",
+   "realm": "each wolf's own, kept after the story and shared by every story of the world that declares it"
   },
   "defaults": {
    "number": 0,

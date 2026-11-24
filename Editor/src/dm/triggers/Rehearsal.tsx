@@ -5,7 +5,7 @@
 import {useContext, useState} from 'react';
 import {storyProgram, type Target} from '../api';
 import {eventText, judgedState, type Judged} from '../../lib/campaigns';
-import {eventParts, plain, type Fact, type Program} from '../../lib/workbench';
+import {eventParts, plain, tokenWords, type Fact, type Program} from '../../lib/workbench';
 import {Conditions, WordingContext} from '../campaigns/Explain';
 import {useBench} from './context';
 
@@ -76,7 +76,7 @@ function Stepper({data, at, go, close}: {data: Steps; at: number; go: (i: number
                 <p className="wb-journal">“{s.journal}”</p>
                 {s.fired.length > 0 && <><h6>Fired</h6><ul>{s.fired.map((f, i) => <li key={i}>{f.scope === 'campaign' ? 'Campaign' : f.phase} / <b>{f.trigger}</b> ← {f.signal ?? f.on}</li>)}</ul></>}
                 {s.effects.length > 0 && <><h6>Sent to the game</h6><ul>{s.effects.map((e, i) => <li key={i}><code>{String(e.kind)}</code> {Object.entries(e).filter(([k]) => k !== 'kind' && k !== 'phase')
-                    .map(([k, v]) => `${k} ${flat[String(v)] ?? String(v)}`).join(', ')}</li>)}</ul></>}</div>
+                    .map(([k, v]) => `${k} ${flat[String(v)] ?? (typeof v === 'string' ? tokenWords(v, names) : String(v))}`).join(', ')}</li>)}</ul></>}</div>
             <div><h6>Counters</h6>{!Object.keys(story).length && !Object.keys(player).length ? <p className="hint">none yet</p> : <dl className="wb-counters">
                 {Object.entries(story).map(([k, v]) => <div key={k} className={changed('story', story) && (before?.counters as {story?: Record<string, number>})?.story?.[k] !== v ? 'changed' : ''}><dt>{k}</dt><dd>{v}</dd></div>)}
                 {Object.entries(player).flatMap(([w, o]) => Object.entries(o).map(([k, v]) => <div key={w + k}><dt>{k} <small>{flat[w] ?? w}</small></dt><dd>{v}</dd></div>))}</dl>}

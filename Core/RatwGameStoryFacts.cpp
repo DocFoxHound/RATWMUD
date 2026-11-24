@@ -10,6 +10,7 @@
 #include "RatwGame.h"
 
 #include "RatwCalendar.h"
+#include "RatwItems.h"
 
 #include <algorithm>
 #include <cmath>
@@ -30,8 +31,27 @@ constexpr double NearTiles = 3;         // within this many tiles,
 constexpr double ApartTiles = 5;        // and not again until they have been further apart than this.
 constexpr double WorldSeconds = 2;      // Purses, standing, stances and mantles, looked at this often.
 
-std::string baseItem(const std::string& item) { return item.substr(0, item.find_first_of("~@")); }
+std::string baseItem(const std::string& item) { return item.substr(0, item.find_first_of("~@^")); }
 } // namespace
+
+// Doc 86, J4: the moon in four, by the octant its name has (calendar::calendarAt's moonName): new, waxing, full, waning.
+const char* Game::moonQuarter(double phase)
+{
+    const auto octant = static_cast<unsigned>(std::floor(phase * 8.0 + .5)) % 8;
+    return octant == 0 ? "new" : octant < 4 ? "waxing" : octant == 4 ? "full" : "waning";
+}
+
+void Game::refreshStoryDoors()
+{
+    // (Doc 86: the doors the live stories hold unlocked or open, open to wolves while they do.)
+    std::set<std::string> open;
+    for (const auto& id : storiesHolding_)
+        if (const auto* s = storylines_.find(id); s && s->live() && s->held.isObject())
+            for (const auto& [door, j] : s->held.object("doors").fields())
+                if (j.boolean("wolves"))
+                    open.insert(door);
+    world_.setStoryOpenDoors(open);
+}
 
 void Game::refreshStoryWatch()
 {
@@ -41,7 +61,8 @@ void Game::refreshStoryWatch()
     {
         // (Doc 85, Phase 9: the live stories holding something in the world, for tickStoryWorld.)
         if (s.source == "storykeeper" && s.live() && s.held.isObject() &&
-            (s.held.object("npcs").size() || s.held.object("doors").size() || s.held.object("weather").size() || s.held.array("pings").size()))
+            (s.held.object("npcs").size() || s.held.object("doors").size() || s.held.object("weather").size() || s.held.array("pings").size() ||
+             s.held.array("hunts").size() || s.held.object("foes").size()))   // (Doc 86, L1 and C10: staged hunts, foes.)
             storiesHolding_.insert(id);
         if (s.source != "storykeeper" || !s.live() || !s.watch.isObject())
             continue;
@@ -57,6 +78,7 @@ void Game::refreshStoryWatch()
         add("residents", w.residents);
         add("cells", w.cells);
         add("events", w.events);
+        add("purseFacts", w.purseFacts);   // (Doc 86, M2: the purses a story's values read.)
         for (const auto& r : s.watch.array("relations"))
             if (r.isArray() && r.size() == 2 && r.items()[0].isString() && r.items()[1].isString() && w.relations.size() < WatchMost)
                 w.relations.insert({r.items()[0].asString(), r.items()[1].asString()});
@@ -74,6 +96,7 @@ void Game::refreshStoryWatch()
     if (w.events != storyWatch_.events)
         world_.setWatchedEvents(w.events);
     storyWatch_ = std::move(w);
+    refreshStoryDoors();
 }
 
 void Game::handEventsToStore()
@@ -146,8 +169,15 @@ std::string Game::storyFactsJson()
                 std::map<std::string, double> held;
                 if (purse)
                     for (const auto& [item, n] : purse->stock)
-                        if (n > 0 && w.items.count(baseItem(item)))
-                            held[baseItem(item)] += n;
+                        if (n > 0)
+                        {
+                            // (Doc 86, J9: a story's own item under its own id when the watch names it, and as its base
+                            // too: the watch is every live story's, so one story's naming it never hides it from another.)
+                            if (items::storyTagged(item) && w.items.count(item))
+                                held[item] += n;
+                            if (w.items.count(baseItem(item)))
+                                held[baseItem(item)] += n;
+                        }
                 for (const auto& [item, n] : held)
                     carries.add(item, n);
                 f.add("carries", std::move(carries));
@@ -181,6 +211,11 @@ std::string Game::storyFactsJson()
             f.add("hurt", e->hurt > 0 || !e->injuries.empty());
             f.add("wanted", world_.warrantFor(id) != nullptr);
             f.add("held", world_.custodyOf(id) != nullptr);
+            // (Doc 86, J10: the Gift the wolf was made with: normal (no family), gifted or quickened, and its family.)
+            auto gift = Value::object();
+            gift.add("tier", e->gift.empty() ? "normal" : e->quickened ? "quickened" : "gifted");
+            gift.add("family", e->gift);
+            f.add("gift", std::move(gift));
             wolves.add(id, std::move(f));
         }
         if (w.sections.count("wolves"))
@@ -209,6 +244,8 @@ std::string Game::storyFactsJson()
             r.add("mantle", mantle == mantleOf_.end() ? std::string() : mantle->second);
             const auto* spec = world_.society().spec(npc);
             r.add("town", townFor(spec && !spec->home.cell.empty() ? spec->home.cell : e->cellId));
+            const auto* post = world_.society().jobOf(npc);   // (Doc 86, C13b: the post they hold, by its title.)
+            r.add("post", post ? post->title : std::string());
             residents.add(npc, std::move(r));
         }
         doc.add("residents", std::move(residents));
@@ -226,6 +263,7 @@ std::string Game::storyFactsJson()
         o.add("period", date.period);
         o.add("dayOfSeason", double(date.dayOfSeason));
         o.add("year", double(date.year));
+        o.add("moon", moonQuarter(date.moonPhase));   // (Doc 86, J4.)
         doc.add("world", std::move(o));
     }
     if (w.sections.count("weather"))
@@ -250,6 +288,15 @@ std::string Game::storyFactsJson()
         }
         doc.add("weather", std::move(weather));
     }
+    if (w.sections.count("purses"))
+    {
+        // (Doc 86, M2: what each purse a story reads holds now, its account as character.grant reads it.)
+        auto purses = Value::object();
+        for (const auto& purse : w.purseFacts)
+            if (const auto* a = world_.society().account(storyPurseAccount(purse)))
+                purses.add(purse, double(a->cash));
+        doc.add("purses", std::move(purses));
+    }
     if (w.sections.count("relations"))
     {
         auto relations = Value::object();
@@ -273,6 +320,7 @@ void Game::storyWatchTick(double real)
     {
         storyHour_ = -1;
         storyDay_ = -1;
+        storyMoon_.clear();
         storyWeather_.clear();
         storyNear_.clear();
         storyPurses_.clear();
@@ -294,6 +342,11 @@ void Game::storyWatchTick(double real)
     {
         if (day != storyDay_ && w.count("day begins"))
             world_.recordEvent({"day begins", {}, {}, {}, 0, 0, season, date.dayOfSeason, 0, calendar::weekdayName(calendar::weekdayOf(days))});
+        // (Doc 86, C13a: the first day of the economy's 28-day month; quantity and detail its number in the year, 1 to 13.)
+        if (day != storyDay_ && w.count("month begins"))
+            if (const int month = calendar::monthOfYear(date.dayOfYear);
+                month != calendar::monthOfYear(calendar::calendarAt(double(storyDay_)).dayOfYear))
+                world_.recordEvent({"month begins", {}, {}, {}, 0, 0, {}, month, 0, std::to_string(month)});
         if (season != storySeason_ && w.count("season begins"))
             world_.recordEvent({"season begins", {}, {}, {}, 0, 0, {}, 0, 0, season});
         if (hour != storyHour_ && w.count("hour"))
@@ -302,7 +355,11 @@ void Game::storyWatchTick(double real)
             world_.recordEvent({"dawn", {}, {}, {}, 0, 0, {}, 0, 0, {}});
         if (date.period != storyPeriod_ && date.period == "night" && w.count("night falls"))
             world_.recordEvent({"night falls", {}, {}, {}, 0, 0, {}, 0, 0, {}});
+        // (Doc 86, J4: the moon into another quarter; quantity the day of its round, 0 to 29.)
+        if (const std::string moon = moonQuarter(date.moonPhase); moon != storyMoon_ && !storyMoon_.empty() && w.count("moon"))
+            world_.recordEvent({"moon", {}, {}, {}, 0, 0, {}, int(std::floor(std::fmod(days, calendar::LunarCycleDays))), 0, moon});
     }
+    storyMoon_ = moonQuarter(date.moonPhase);
     storyHour_ = hour;
     storyDay_ = day;
     storySeason_ = season;
@@ -339,7 +396,7 @@ void Game::storyWatchTick(double real)
 std::string Game::storyPurseAccount(const std::string& purse) const
 {
     // (As character.grant reads a reward's purse: a town's treasury by its town, or the one treasury of a world without
-    // towns on its roads; town:<id>:works, till:<id> and chapter:<id> are accounts by those names.)
+    // towns on its roads; town:<id>:works, till:job:<id> and chapter:<id> are accounts by those names.)
     const auto& society = world_.society();
     if (purse.rfind("town:", 0) == 0 && purse.find(':', 5) == std::string::npos)
     {
@@ -351,6 +408,16 @@ std::string Game::storyPurseAccount(const std::string& purse) const
         if (world_.towns().empty() && society.account("treasury"))
             return "treasury";
     }
+    // (Doc 86, M3: a House's purse, house:<faction> or house:<name without house_>, only while storyHousePurses is on.)
+    if (purse.rfind("house:", 0) == 0)
+    {
+        const auto faction = housePurseFaction(purse);
+        return storyHousePurses_ && !faction.empty() ? "purse:" + faction : std::string();
+    }
+    // (Doc 86, SQ2: a business's till is the account till:job:<founder>; till:<id> names it when no till:<id> account is.)
+    if (purse.rfind("till:", 0) == 0 && purse.rfind("till:job:", 0) != 0 && !society.account(purse) &&
+        society.account("till:job:" + purse.substr(5)))
+        return "till:job:" + purse.substr(5);
     return purse;
 }
 

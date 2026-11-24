@@ -17,7 +17,9 @@ import type {MyWorld} from './dm/api';
 import {CampaignsTab, type CampaignsInitial} from './dm/CampaignsTab';
 import {GuideTab} from './dm/GuideTab';
 import {WorldVarsPanel} from './dm/campaigns/WorldVars';
-import type {Campaign} from './lib/campaigns';
+import {HousePursesPanel} from './dm/campaigns/HousePurses';
+import {SentencesPanel} from './dm/campaigns/Sentences';
+import type {Campaign, Readiness} from './lib/campaigns';
 import type {Explained, MigrationReport, Order, Preview, Problems, RunDetail, RunRow, TimelineItem, Version} from './lib/campaigns';
 import {AskDialog, MovePanel} from './dm/campaigns/Steer';
 import {ProblemsList} from './dm/StoryProgramPanel';
@@ -314,11 +316,35 @@ export function renderAll(): Record<string, string> {
     out['Campaigns (chapters)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignList, overview: {...campaignList.overview, campaigns: [ford]}}} />);
     out['Campaigns (a chapter)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignRunning, detail: {...campaignRunning.detail!,
         campaign: {...ford, chapter: 1}, chapterStarts: [{story: 'spring-council', audience: 'same', when: 'ended', carry: true}]}}} />);
+    // (Doc 86, Phase 1a: a chapter paced by its Readiness: the bars, Advance beside Hold, the Ready column, the alert first.)
+    const ready: Readiness = {phase: 'ferry-watch', visit: 2, met: true, auto: false, to: 'deep-freeze', metAt: 93, activeDays: 18, parts: [
+        {kind: 'participation', label: 'Wolves who kept the ferries', met: true, value: 42, need: 42, of: 'active', count: 118, share: 35, percent: 35, floor: 5, cap: 150,
+            audience: {all: 260, active: 118, online: 31}},
+        {kind: 'minDays', label: 'Days in the chapter', met: true, value: 11.2, need: 10, since: 'chapter', held: 1.5}]};
+    const readyRow = {...runningRow, ready, alerts: [{kind: 'ready' as const, needsYou: true, phase: 'ferry-watch', to: 'deep-freeze', metAt: 93, parts: 2, met: 2}]};
+    out['Campaigns (ready)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignRunning, overview: {...campaignRunning.overview!, runs: [readyRow]},
+        detail: {...campaignRunning.detail!, ...readyRow, controls: {...campaignRunning.detail!.controls!, ready: {to: 'deep-freeze', auto: false, then: null, thenWords: null, met: true}}}}} />);
+    out['Campaigns (ready list)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignList, overview: {...campaignList.overview,
+        runs: [{...readyRow, ready: {...ready, met: false, parts: [{...ready.parts[0], met: false, value: 21, share: 18, need: 42}, ready.parts[1]]}, alerts: [
+            {kind: 'slow' as const, needsYou: true, days: 31, words: '21 of 118 active wolves (18%; 35% and 42 needed)'}]}]}}} />);
+    // (A record kept by moving onto a new version, not measured again until the game answers: no parts yet.)
+    const kept = {...readyRow, ready: {...ready, parts: undefined as unknown as Readiness['parts']}};
+    out['Campaigns (ready, moving)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignList, overview: {...campaignList.overview, runs: [kept]},
+        detail: {...campaignRunning.detail!, ...kept}}} />);
     out['World variables'] = renderToString(<WorldVarsPanel target="dev" names={names} mayChange initial={{declarations: true, variables: [
         {name: 'ferries-run', type: 'number', value: 4, declared: true, note: 'ferries that crossed this winter', declaredBy: 'martin', updatedBy: 'martin',
          stories: [{run: runningRow.run, story: 'winter-ferries', title: 'Ninety days on the winter ferries', type: 'number', status: 'running'}]},
         {name: 'bells', type: 'switch', value: true, declared: false, run: 'world-old', stories: []}],
         audit: [{at: 1763800000, name: 'ferries-run', detail: 'ferries-run: 3 → 4. Reason: "one more crossed at dawn"', who: 'martin'}]}} />);
+    // (Doc 86, Phase 8: each wolf's realm values, and the residents stories sentenced.)
+    out['Realm variables'] = renderToString(<WorldVarsPanel target="dev" names={names} mayChange realm={{realm: true, values: [
+        {name: 'nh_voice', wolf: 'player-ash', type: 'number', value: 4, run: runningRow.run, updatedAt: '2026-11-24T10:00:00Z'}],
+        names: [{name: 'nh_voice', type: 'number', wolves: 1, stories: [{run: runningRow.run, story: 'act-two', title: 'Act II: the Turn', type: 'number', status: 'running'}]}],
+        audit: [{at: 1763800000, name: 'nh_voice/player-ash', detail: 'nh_voice for player-ash: 3 → 4. Reason: "a howl the game missed"', who: 'martin'}]}} />);
+    out['House purses'] = renderToString(<HousePursesPanel target="dev" mayChange initial={{on: false, houses: [{id: 'house_greatly', name: 'House Greatly', purse: null},
+        {id: 'house_fell', name: 'House Fell', purse: 42}], audit: [{at: 1, on: false, detail: 'House purses off. Reason: "not yet"', who: 'martin'}]}} />);
+    out['Sentences'] = renderToString(<SentencesPanel target="dev" mayRelease initial={[{npc: 'rm_ilse_coalley', name: 'Ilse Coalley', place: 'r2_the_keep_down',
+        placeName: 'The Keep, below', by: 'lq-wreckers-light', run: 'world-1', days: 7, began: 60, until: 67, left: 4.25}]} />);
     out['Guide'] = renderToString(<GuideTab />);
     out['Guide (search)'] = renderToString(<GuideTab initialQuery="purse crossed" />);
     out['Story problems'] = renderToString(<ProblemsList found={problems} untried={['ferry-watch/begin-deep-freeze']} phases={['enrol', 'ferry-watch']} go={none} asking={false} />);
@@ -336,6 +362,7 @@ export const WB_REFS: Refs = {
     places: [{id: 'reed_ford', kind: 'cell', name: 'Reed Ford', width: 64, height: 64, town: 'greyfen'}],
     items: [{id: 'rope', name: 'Rope (coil)', category: 'tool'}], factions: [{id: 'ridgemere_watch', name: 'The Ridgemere Watch'}],
     towns: [{id: 'greyfen', name: 'greyfen'}], markets: [], areas: [], ships: [], templates: [], projects: [],
+    tills: [{id: 'till:job:rm111', name: "Ivo Tarmarsh's till"}],   // (Doc 86, SQ2.)
 };
 export function renderWorkbenches(catalog: FullCatalogue, programs: Record<string, Program>): {html: Record<string, string>; edits: number; views: number} {
     const html: Record<string, string> = {};

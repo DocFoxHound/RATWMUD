@@ -164,6 +164,11 @@ void Game::windowFacts(const std::string& playerId, const DialogueSession& d, ta
     f["player.named"] = yes(knowsName(npcId, playerId));
     f["player.met"] = yes(known_.knows(playerId, npcId));
     f["player.newcomer"] = yes(isNewcomer(accountKey(playerId)));
+    // Doc 86, C4: the newest title a story named the wolf by that is known where this resident lives.
+    const auto title = storyTitleFor(playerId, npcId);
+    f["player.titled"] = yes(!title.empty());
+    if (!title.empty())
+        f["player.title"] = title;
     // What the player has heard: each claim's kind, and :self or :kin where it is about the one spoken to or theirs.
     std::string knows;
     if (const auto heard = playerClaims_.find(playerId); heard != playerClaims_.end())
@@ -190,6 +195,23 @@ void Game::windowFacts(const std::string& playerId, const DialogueSession& d, ta
             f["player.asked"] = "way", f["here.way_asked"] = v.substr(0, bar);
         else if (k == "asked_person" && f["player.asked"] == "none")
             f["player.asked"] = "person", f["here.person_asked"] = v.substr(0, bar);
+    }
+    // Doc 86, N2: the wolf's own part in the live stories: each quest's state (player.quest.<program>/<quest>) and the values
+    // a story tells residents of (player.story.<name>), the newest run's last.
+    std::vector<const storylines::Storyline*> stories;
+    for (const auto& [id, s] : storylines_.all())
+        if (s.source == "storykeeper" && s.live() && s.questViews.count(playerId))
+            stories.push_back(&s);
+    std::stable_sort(stories.begin(), stories.end(), [](const auto* a, const auto* b) { return a->began < b->began; });
+    for (const auto* s : stories)
+    {
+        const auto& view = s->questViews.at(playerId);
+        if (!s->templateId.empty())
+            for (const auto& q : view.array("quests"))
+                if (const auto id = q.string("id"); !id.empty())
+                    f["player.quest." + s->templateId + "/" + id] = q.string("status");
+        for (const auto& [name, v] : view.object("talk").fields())
+            f["player.story." + name] = v.asString("");
     }
     // The new lists' counts.
     for (const char* list : {"here.opinions", "here.kin", "here.people", "here.heard"})
@@ -364,26 +386,67 @@ bool Game::windowNode(const std::string& playerId, const DialogueSession& d, con
     if (f == t->nodes.end())
         return false;
     out = f->second;
-    if (nodeId == storyHome(*t, d.entry))
+    const auto home = storyHome(*t, d.entry);
+    // (Doc 86, N1: in a resident's own tree, the story choices the hub has no room for go under Ask about...)
+    const bool aboutTakesRest = d.tree == "resident" && home == "hub" && t->nodes.count("about");
+    if (nodeId == home || (aboutTakesRest && nodeId == "about"))
     {
         // A world story's quests and choices with this resident (doc 85, Phase 6), on the node the window opens with for
-        // talk, before the way out, in what room it leaves (nine at most; a wearer's grafts get the rest).
+        // talk, before the way out, in what room it leaves (nine at most; a wearer's grafts get the rest). Doc 86, N1: the
+        // hand-ins first, then offers, the words while under way and choices; what doesn't fit goes under `about`, and only
+        // what doesn't fit there either is left out (noted once a day for the resident: a giver crowded with stories).
         auto story = storyChoicesFor(playerId, d.npc);
         if (!story.empty())
         {
-            auto q = dialogueQuery(playerId, d);
-            q.concept = out.concept;
-            const auto shown = talk_.choices(out, q, 0, [&](const std::string& list) { return dialogueItems(playerId, d.npc, list); });
-            const std::size_t room = shown.size() >= 9 ? 0 : 9 - shown.size();
-            std::vector<talk::TreeChoice> add;
-            for (const auto& c : story)
+            const auto roomOf = [&](const talk::TreeNode& n) {
+                auto q = dialogueQuery(playerId, d);
+                q.concept = n.concept;
+                const auto shown = talk_.choices(n, q, 0, [&](const std::string& list) { return dialogueItems(playerId, d.npc, list); });
+                return shown.size() >= 9 ? std::size_t(0) : 9 - shown.size();
+            };
+            const auto& hub = nodeId == home ? out : t->nodes.at(home);
+            std::size_t hubRoom = roomOf(hub);
+            const bool hubHasAbout = std::any_of(hub.choices.begin(), hub.choices.end(), [](const talk::TreeChoice& c) { return c.go == "about"; });
+            // (One place kept for the way to the rest, when the hub has none: never the last place a hand-in would take, and
+            // none on a full hub.)
+            bool link = false;
+            if (aboutTakesRest && story.size() > hubRoom && !hubHasAbout)
             {
-                if (add.size() >= room)
-                    break;
+                if (hubRoom >= 2)
+                    --hubRoom, link = true;
+                else if (hubRoom == 1 && story.front().kind != "handin")
+                    hubRoom = 0, link = true;
+            }
+            const bool aboutReached = aboutTakesRest && (hubHasAbout || link);
+            const auto first = std::min(story.size(), hubRoom);
+            std::vector<StoryChoice> mine;
+            if (nodeId == home)
+                mine.assign(story.begin(), story.begin() + std::ptrdiff_t(first));
+            else
+            {
+                const auto room = roomOf(out);
+                const auto last = std::min(story.size(), first + room);
+                mine.assign(story.begin() + std::ptrdiff_t(first), story.begin() + std::ptrdiff_t(last));
+            }
+            const std::size_t placed = first + (aboutReached ? std::min(story.size() - first, roomOf(t->nodes.at("about"))) : 0);
+            if (placed < story.size())
+            {
+                const auto day = std::int64_t(std::floor(world_.calendarDays()));
+                if (auto& at = storyCrowdNoted_[d.npc]; at != day + 1)
+                {
+                    at = day + 1;
+                    note("warn", "RATW_STORY " + d.npc + " has " + std::to_string(story.size()) + " story choices for " + playerId + ": " +
+                                     std::to_string(story.size() - placed) + " left out (a giver crowded with stories)");
+                }
+            }
+            std::vector<talk::TreeChoice> add;
+            for (const auto& c : mine)
+            {
                 talk::TreeChoice choice;
                 choice.words = c.words;
-                const auto node = "@story:" + c.run + ":" + (c.kind == "offer" ? "offer" : c.kind == "handin" ? "thanks" : "reply") + ":" + c.id;
-                if (c.kind == "offer")
+                const auto node = "@story:" + c.run + ":" +
+                                  (c.kind == "offer" ? "offer" : c.kind == "handin" ? "thanks" : c.kind == "during" ? "during" : "reply") + ":" + c.id;
+                if (c.kind == "offer" || c.kind == "during")
                     choice.go = node;
                 else
                 {
@@ -392,6 +455,13 @@ bool Game::windowNode(const std::string& playerId, const DialogueSession& d, con
                     choice.then = node;
                 }
                 add.push_back(std::move(choice));
+            }
+            if (nodeId == home && link)
+            {
+                talk::TreeChoice more;
+                more.words = "Ask about something else...";
+                more.go = "about";
+                add.push_back(std::move(more));
             }
             auto at = out.choices.end();
             if (!out.choices.empty() && (out.choices.back().go == "bye" || out.choices.back().go == "hub" || out.choices.back().go == "about"))
@@ -517,6 +587,17 @@ bool Game::storyNode(const std::string& playerId, const DialogueSession& d, cons
             out.said = "That's seen to, for now.";
             back(out);
         }
+        return true;
+    }
+    if (kind == "during")
+    {
+        // (Doc 86, C6: the giver's words while the wolf's copy is under way, in their own voice, then back to the hub.)
+        const auto* offer = storyOffer(run, id);
+        const auto* view = s->questView(playerId, id);
+        if (!offer || offer->string("npc") != d.npc || offer->string("during").empty() || !view || view->string("status") != "active")
+            return false;
+        out.said = offer->string("during");
+        back(out);
         return true;
     }
     if (kind == "thanks")

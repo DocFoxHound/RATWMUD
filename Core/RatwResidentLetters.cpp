@@ -152,7 +152,7 @@ void Game::watchEvent(const WorldEvent& e)
 bool Game::giftWorthThanks(const WorldEvent& e) const
 {
     // Coins and the goods' catalogue price, against 5p.
-    const auto* good = e.item.empty() ? nullptr : items::good(e.item.substr(0, e.item.find('~')));
+    const auto* good = e.item.empty() ? nullptr : items::good(items::baseOf(e.item));
     return double(e.coins) + (good ? double(good->price) : 0.) * e.quantity >= 5.;
 }
 

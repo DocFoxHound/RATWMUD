@@ -569,6 +569,182 @@ void phaseTenEvents()
     fs::remove_all(root);
     fs::remove(save);
 }
+
+// Doc 86, Phase 2: the moon (J4) in the world's facts and as a watched event, and what a purse a story reads holds (M2).
+void phaseTwoMoonAndPurses()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyfacts-p2-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    {
+        Town t(writeDoors(root), save, 120, true);
+        auto& w = t.g.world();
+        t.enter(t.ash, 1, "ash", "Ash", 0, 12.5);
+        std::vector<WorldEvent> seen;
+        w.setEventWatcher([&](const WorldEvent& e) { seen.push_back(e); });
+        const auto of = [&](const std::string& kind) {
+            std::vector<WorldEvent> out;
+            for (const auto& e : seen)
+                if (e.kind == kind)
+                    out.push_back(e);
+            return out;
+        };
+        expect(std::string(game::Game::moonQuarter(0.0)) == "new" && std::string(game::Game::moonQuarter(0.2)) == "waxing" &&
+                   std::string(game::Game::moonQuarter(0.5)) == "full" && std::string(game::Game::moonQuarter(0.8)) == "waning" &&
+                   std::string(game::Game::moonQuarter(0.97)) == "new",
+               "the moon in four, by the octant of its name");
+        // Day 88.6 is a new moon, 103.4 a full one (a round of 29.53 days from Spring 1's new moon).
+        const auto toDay = [&](double day) {
+            const double now = w.calendarDays();
+            const double cycles = now > day ? std::ceil((now - day) / calendar::LunarCycleDays) : 0;
+            w.advanceCalendar(day + cycles * calendar::LunarCycleDays - now);
+            t.run(.5);
+        };
+        toDay(88.6);
+        expect(calendar::calendarAt(w.calendarDays()).moonName == "new moon", "a new moon");
+        const auto& town = w.towns().front();
+        auto& society = w.society();
+        if (!society.account(town.store) || society.account(town.store)->cash < 50)
+            testPurse(society, town.store, 212);
+        const auto run = "world-the-moon";
+        auto phase = parsed(R"({"title":"The moon","phase":"wait","journal":"Wait for the moon.","visit":1})");
+        auto players = json::Value::array();
+        players.push(t.ash.entityId);
+        phase.set("players", players);
+        auto watch = parsed(R"({"events":["moon"],"facts":["world","purses"]})");
+        auto held = json::Value::array();
+        held.push("town:" + town.id);
+        held.push("till:job:nobody_here");
+        watch.set("purseFacts", held);
+        phase.set("watch", watch);
+        expect(t.g.applyDmAct({"1", "story.phase", run, "dm", json::dump(phase)}).ok, "the story opens watching the moon and a purse");
+        seen.clear();
+        t.run(2.5);
+        expect(of("moon").empty(), "the first look makes no event");
+        json::Value facts;
+        std::string error;
+        expect(json::parse(t.g.storyFactsJson(), facts, error), "the facts are a document: " + error);
+        expect(facts["world"].string("moon") == "new", "the world's facts have the moon: " + json::dump(facts["world"]));
+        expect(facts["purses"].number("town:" + town.id) == double(society.account(town.store)->cash) &&
+                   !facts["purses"].has("till:job:nobody_here"),
+               "the purse read holds what the treasury holds; one with no account is left out: " + json::dump(facts["purses"]));
+        toDay(103.4);
+        t.run(2.5);
+        auto moon = of("moon");
+        expect(moon.size() == 1 && moon[0].detail == "full" && moon[0].quantity == 14, "the moon turns full: one event, day 14 of its round (" +
+               (moon.empty() ? std::string("none") : moon[0].detail + " " + std::to_string(moon[0].quantity)) + ")");
+        t.run(2.5);
+        expect(of("moon").size() == 1, "once per change");
+        expect(json::parse(t.g.storyFactsJson(), facts, error) && facts["world"].string("moon") == "full", "and the facts say full");
+        auto end = parsed(R"({"title":"The moon","phase":"over","journal":"Over.","visit":2,"end":true})");
+        end.set("players", players);
+        expect(t.g.applyDmAct({"2", "story.phase", run, "dm", json::dump(end)}).ok, "the story ends");
+        t.run(1.5);
+        seen.clear();
+        toDay(118.2);
+        t.run(2.5);
+        expect(of("moon").empty(), "after the end: no moon");
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
+// Doc 86, Phase 4: the first day of the economy's 28-day month as a watched event (C13a), a wolf's Gift (J10) and the post a
+// resident holds (C13b) in the world's facts.
+void phaseFourMonthGiftsAndPosts()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyfacts-p4-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    {
+        Town t(writeDoors(root), save, 120, true);
+        auto& w = t.g.world();
+        t.enter(t.ash, 1, "ash", "Ash", 0, 12.5);
+        t.enter(t.bo, 2, "bo", "Bo", 0, 14.5);
+        expect(calendar::monthOfYear(1) == 1 && calendar::monthOfYear(28) == 1 && calendar::monthOfYear(29) == 2 &&
+                   calendar::monthOfYear(364) == 13 && calendar::monthOfYear(365) == 13,
+               "the month by the day of the year: 28 days each, the year's last day in the 13th");
+        std::vector<WorldEvent> seen;
+        w.setEventWatcher([&](const WorldEvent& e) { seen.push_back(e); });
+        const auto of = [&](const std::string& kind) {
+            std::vector<WorldEvent> out;
+            for (const auto& e : seen)
+                if (e.kind == kind)
+                    out.push_back(e);
+            return out;
+        };
+        expect(w.giveGift(t.ash.entityId, "fire", true).ok, "Ash is Quickened (fire)");
+        expect(w.giveGift(t.bo.entityId, "", false).ok, "Bo has no Gift");
+        // A resident with a post and one without.
+        std::string holder, idle;
+        for (const auto& [id, e] : w.entities())
+        {
+            if (!e.npc || e.dead || !w.society().resident(id))
+                continue;
+            if (w.society().jobOf(id) && holder.empty())
+                holder = id;
+            else if (!w.society().jobOf(id) && idle.empty())
+                idle = id;
+        }
+        expect(!holder.empty(), "the town has a resident at a post");
+        const auto run = "world-the-month";
+        auto phase = parsed(R"({"title":"The month","phase":"wait","journal":"Wait for the month.","visit":1})");
+        auto players = json::Value::array();
+        players.push(t.ash.entityId);
+        players.push(t.bo.entityId);
+        phase.set("players", players);
+        auto watch = parsed(R"({"events":["month begins"],"facts":["wolves","residents"]})");
+        auto residents = json::Value::array();
+        residents.push(holder);
+        if (!idle.empty())
+            residents.push(idle);   // (The fixture's residents all have a trade; one written with "-" has none.)
+        watch.set("residents", residents);
+        phase.set("watch", watch);
+        expect(t.g.applyDmAct({"1", "story.phase", run, "dm", json::dump(phase)}).ok, "the story opens watching the month");
+        // (To the day before a month's first: the next one at least a day ahead.)
+        double eve = std::floor(w.calendarDays()) + 1;
+        while ((calendar::calendarAt(eve + 1).dayOfYear - 1) % calendar::MonthDays != 0 || calendar::calendarAt(eve + 1).dayOfYear > 337)
+            eve += 1;
+        eve += .5;
+        const int next = calendar::monthOfYear(calendar::calendarAt(eve + 1).dayOfYear);
+        w.advanceCalendar(eve - w.calendarDays());
+        t.run(2.5);
+        seen.clear();
+        t.run(2.5);
+        expect(of("month begins").empty(), "a day inside a month makes no event");
+        w.advanceCalendar(1.0);
+        t.run(2.5);
+        const auto month = of("month begins");
+        const int expected = calendar::monthOfYear(calendar::calendarAt(w.calendarDays()).dayOfYear);
+        expect(month.size() == 1 && month[0].quantity == expected && month[0].detail == std::to_string(expected) && expected == next,
+               "month " + std::to_string(next) + " begins: one event (" +
+                   (month.empty() ? std::string("none") : month[0].detail + " " + std::to_string(month[0].quantity)) + ")");
+        w.advanceCalendar(1.0);
+        t.run(2.5);
+        expect(of("month begins").size() == 1, "the next day is no new month");
+        json::Value facts;
+        std::string error;
+        expect(json::parse(t.g.storyFactsJson(), facts, error), "the facts are a document: " + error);
+        const auto& ash = facts["wolves"][t.ash.entityId]["gift"];
+        const auto& bo = facts["wolves"][t.bo.entityId]["gift"];
+        expect(ash.string("tier") == "quickened" && ash.string("family") == "fire", "Ash's Gift: " + json::dump(ash));
+        expect(bo.string("tier") == "normal" && bo.string("family").empty(), "Bo's: none: " + json::dump(bo));
+        expect(w.giveGift(t.bo.entityId, "seer", false).ok, "Bo is Gifted (seer)");
+        expect(json::parse(t.g.storyFactsJson(), facts, error) && facts["wolves"][t.bo.entityId]["gift"].string("tier") == "gifted" &&
+                   facts["wolves"][t.bo.entityId]["gift"].string("family") == "seer",
+               "and the facts say gifted, seer");
+        expect(facts["residents"][holder].string("post") == w.society().jobOf(holder)->title && !facts["residents"][holder].string("post").empty(),
+               "the post a resident holds, by its title: " + json::dump(facts["residents"][holder]));
+        expect(idle.empty() || (facts["residents"][idle].has("post") && facts["residents"][idle].string("post").empty()), "none for a resident without");
+        auto end = parsed(R"({"title":"The month","phase":"over","journal":"Over.","visit":2,"end":true})");
+        end.set("players", players);
+        expect(t.g.applyDmAct({"2", "story.phase", run, "dm", json::dump(end)}).ok, "the story ends");
+        t.run(1.5);
+        seen.clear();
+        w.advanceCalendar(calendar::MonthDays);
+        t.run(2.5);
+        expect(of("month begins").empty(), "after the end: no month");
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
 } // namespace
 
 int main()
@@ -577,6 +753,8 @@ int main()
     {
         factsAndWatchedEvents();
         phaseTenEvents();
+        phaseTwoMoonAndPurses();
+        phaseFourMonthGiftsAndPosts();
     }
     catch (const std::exception& e)
     {

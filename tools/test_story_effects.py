@@ -66,7 +66,31 @@ GOOD = {
     'deed.revoke': {'player': '$actor', 'detail': 'Held the bridge.'},
     'storyline.tick': {'player': '$actor', 'template': 'the-debt', 'step': 2, 'objective': 1},
     'scene.stop': {},
+    # (Doc 86, Phase 1b: what residents remember of a story, and a rumour it starts; tools/test_story_talk.py tests them.)
+    'talk.remember': {'scope': 'town', 'town': 'greyfen', 'key': 'nh_stage', 'value': 'reckoning', 'days': 30},
+    'talk.forget': {'scope': 'town', 'town': 'greyfen', 'key': 'nh_stage'},
+    'belief.plant': {'subject': 'rm111', 'claim': 'was seen at the mill at midnight', 'town': 'greyfen', 'count': 3, 'confidence': 60},
+    # (Doc 86, Phase 3: a title, a resident's greeting for one wolf, a rumour put to rest.)
+    'title.give': {'player': '$actor', 'title': 'the Lamp of Greyfen', 'known': 'town', 'town': 'greyfen', 'days': 30},
+    'title.take': {'player': '$actor', 'title': 'the Lamp of Greyfen'},
+    'npc.greet': {'npc': 'rm111', 'player': '$actor', 'text': 'Back again? #greet#', 'days': 7},
+    'belief.forget': {'subject': 'rm111', 'claimKind': 'story.rumour', 'town': 'greyfen', 'share': 50},
+    # (Doc 86, Phase 5: an animal for the next hunt in a story region.)
+    'hunt.stage': {'region': 'gate', 'species': 'bear', 'count': 1, 'minutes': 120},
+    # (Doc 86, Phase 7: a story's foe, sent away, and a resident made one.)
+    'foe.add': {'foe': 'grey-captain', 'name': 'The Grey Captain', 'cell': 'gate', 'x': 3, 'y': 2, 'strength': 'champion', 'band': 4,
+                'stance': 'waits', 'minutes': 60, 'like': 'rm111'},
+    'foe.leave': {'foe': 'grey-captain'},
+    'foe.outlaw': {'npc': 'rm113', 'minutes': 30, 'strength': 'tough', 'band': 2},
+    # (Doc 86, Phase 8: a post given in one step (C14), a resident sentenced past the story's end (L4).)
+    'npc.post': {'npc': 'rm111', 'post': 'job:rm112'},
+    'npc.sentence': {'npc': 'rm113', 'place': 'cells', 'days': 7},
 }
+PHASE1B_ORDERS = ('talk.remember', 'talk.forget', 'belief.plant')
+PHASE3_ORDERS = ('title.give', 'title.take', 'npc.greet', 'belief.forget')
+PHASE5_ORDERS = ('hunt.stage',)   # (Doc 86, L1: an animal for the next hunt in a region.)
+PHASE7_ORDERS = ('foe.add', 'foe.leave', 'foe.outlaw')   # (Doc 86, C10: foes.)
+PHASE8_ORDERS = ('npc.sentence',)   # (Doc 86, L4: a sentence; C14's npc.post is the resident's own order, not a world order.)
 
 
 def program(effects=(), entry=(), audience=None):
@@ -94,8 +118,11 @@ def effect(kind, **more):
 class Catalogue(unittest.TestCase):
     def test_the_new_effects_are_in_the_catalogue_with_typed_parameters_and_sentences(self):
         ids = [e['id'] for e in CAT['effects']]
-        self.assertEqual(len(ids), 71)   # (Phase 10's story.start, the story's own: not a game order.)
-        self.assertNotIn('story.start', runner.WORLD_ORDERS)
+        self.assertEqual(len(ids), 93)   # (Doc 86 Phase 9's npc.queue (a single-key order) and cast.pick (the story's own). Phase 7's three foe effects. Phase 10's story.start, the story's own: not a game order; doc 86 Phase 1b's 7, Phase 3's 4,
+        self.assertNotIn('story.start', runner.WORLD_ORDERS)   # Phase 4's story.notify and quest.withdraw, the story's own too.)
+        for kind in ('story.notify', 'quest.withdraw', 'cast.pick'):
+            self.assertNotIn(kind, runner.WORLD_ORDERS)
+            self.assertIn(kind, quests.STORY_EFFECTS)
         for kind in NEW:
             with self.subTest(kind=kind):
                 self.assertIn(kind, ids)
@@ -104,7 +131,9 @@ class Catalogue(unittest.TestCase):
                 self.assertIn(item['group'], {g['id'] for g in CAT['actionGroups']})
                 for p in item['params']:
                     self.assertIn(p['type'], CAT['types'])
-        self.assertEqual(set(NEW) - {'story.tracker'}, set(runner.WORLD_ORDERS), 'every game order has its mapping')
+        self.assertEqual(set(NEW) - {'story.tracker'} | set(PHASE1B_ORDERS) | set(PHASE3_ORDERS) | set(PHASE5_ORDERS) | set(PHASE7_ORDERS) | set(PHASE8_ORDERS),
+                         set(runner.WORLD_ORDERS),
+                         'every game order has its mapping')
         self.assertIn('story.tracker', quests.STORY_EFFECTS, 'the tracker is the story\'s own')
 
     def test_the_lists_the_catalogue_names_are_the_games(self):
@@ -119,7 +148,11 @@ class Catalogue(unittest.TestCase):
     def test_who_may_send_them_on_a_hosted_world(self):
         self.assertEqual(rules.WOLF_EFFECTS, {'character.injury', 'story.area.damage', 'item.take', 'warrant.issue'})
         # (Doc 85, Phase 10: the economy's effects need a builder or the owner too: prices and projects.)
-        self.assertEqual(rules.BUILDER_EFFECTS, {'faction.relation', 'standing.adjust', 'prices.reset', 'project.complete', 'project.cancel'})
+        self.assertEqual(rules.BUILDER_EFFECTS, {'faction.relation', 'standing.adjust', 'prices.reset', 'project.complete', 'project.cancel',
+                                                 'figure.set', 'figure.clear',   # (Doc 86, C9: the realm's figures.)
+                                                 'foe.outlaw',    # (Doc 86, C10: a resident made a foe.)
+                                                 'npc.post', 'npc.sentence',   # (Doc 86, C14 and L4: posts and sentences.)
+                                             'npc.queue'})   # (Doc 86, J7: an unplaced resident first in line.)
         self.assertEqual(studio.STORY_WOLF_KINDS, rules.WOLF_EFFECTS)
         self.assertEqual(runner.WOLF_EFFECTS, rules.WOLF_EFFECTS)
         p = program([effect('item.take')])
@@ -187,7 +220,8 @@ class Orders(unittest.TestCase):
     """The game order each becomes: its own name, what it acts on as the target, the run and its visit in the payload."""
 
     def order(self, e, actor='player-ash'):
-        phase = rules.phases_of(rules.validate(program([e])))[0]
+        # (A foe sent away is one the story brings: doc 86, C10.)
+        phase = rules.phases_of(rules.validate(program([effect('foe.add'), e] if e['kind'] == 'foe.leave' else [e])))[0]
         return runner.world_order(e, actor, 'world-run', 3, phase)
 
     def test_each_order(self):
@@ -209,6 +243,88 @@ class Orders(unittest.TestCase):
         self.assertEqual(self.order(effect('project.complete'))[1:], ('greyfen', {'kind': 'granary', 'run': 'world-run', 'visit': 3}))
         self.assertEqual(self.order(effect('visitor.add'))[1], 'pale-rider')
         self.assertEqual(self.order(effect('storyline.tick'))[2]['template'], 'the-debt')
+        # (Doc 86, L1: the staged hunt names the story's region with its bounds, for the run.)
+        self.assertEqual(self.order(effect('hunt.stage'))[1:], ('world-run', {'region': GATE, 'species': 'bear', 'count': 1, 'minutes': 120,
+                                                                        'run': 'world-run', 'visit': 3}))
+
+    def test_a_resident_howls_and_a_hunt_is_staged(self):
+        # (Doc 86, J5: npc.howl is the resident's own order; L1: hunt.stage's animal is one of Data/Wild/animals.json, its
+        # count 1 to 3, its region the story's; undone at the run's end.)
+        self.assertEqual(runner.action({'kind': 'npc.howl', 'npc': 'rm111'}, 'player-ash'), ('npc.howl', 'rm111', {}))
+        rules.validate(program([{'kind': 'npc.howl', 'npc': 'rm111'}, effect('hunt.stage')]))
+        for bad in ({'species': 'dragon'}, {'species': 'Bear'}, {'count': 4}, {'count': 0}, {'minutes': 1441}, {'region': 'nowhere'}):
+            with self.subTest(bad=bad):
+                self.assertRaisesRegex(ValueError, 'invalid hunt.stage', rules.validate, program([effect('hunt.stage', **bad)]))
+        self.assertIn('hunt.stage', rules.UNDONE_AT_END)
+        self.assertNotIn('hunt.stage', rules.WOLF_EFFECTS | rules.BUILDER_EFFECTS)
+        self.assertNotIn('npc.howl', rules.WOLF_EFFECTS | rules.BUILDER_EFFECTS)
+        self.assertEqual({s['id'] for s in runner.static_refs()['species']}, set(rules.animal_habitats()))
+        # (A glyph under two grounds is the first's, as the game reads animals.json: w is water, not mud.)
+        self.assertEqual(rules.animal_ground()['w'], 'water')
+        self.assertEqual(rules.animal_ground()['D'], 'mud')
+
+    def test_foes(self):
+        # (Doc 86, C10: the orders, by the story's id for the foe and the resident made one; the checks; undone at the end; a
+        # resident made a foe needs a builder.)
+        self.assertEqual(self.order(effect('foe.add'))[:2], ('foe.add', 'grey-captain'))
+        self.assertEqual(self.order(effect('foe.add'))[2], {'name': 'The Grey Captain', 'cell': 'gate', 'x': 3, 'y': 2, 'strength': 'champion',
+                                                             'band': 4, 'stance': 'waits', 'minutes': 60, 'like': 'rm111', 'run': 'world-run',
+                                                             'visit': 3})
+        self.assertEqual(self.order(effect('foe.leave'))[:2], ('foe.leave', 'grey-captain'))
+        self.assertEqual(self.order(effect('foe.outlaw'))[1:], ('rm113', {'minutes': 30, 'strength': 'tough', 'band': 2, 'run': 'world-run', 'visit': 3}))
+        rules.validate(program([effect('foe.add'), effect('foe.leave'), effect('foe.outlaw', lethal=True)]))
+        rules.validate(program([effect('foe.add', band={'min': [8, {'div': [{'audience': 'active'}, 2]}]})]))   # (C1a: a band from the crowd.)
+        for bad in ({'foe': 'Grey Captain'}, {'foe': 'gc'}, {'foe': 'npc-rm113'}, {'strength': 'follower'}, {'band': 9}, {'strength': 'mighty'}, {'stance': 'roams'}, {'minutes': 1441},
+                    {'name': ''}, {'x': 5000}):
+            with self.subTest(bad=bad):
+                self.assertRaisesRegex(ValueError, 'invalid foe.add', rules.validate, program([effect('foe.add', **bad)]))
+        for bad in ({'band': 7}, {'minutes': 721}):
+            with self.subTest(bad=bad):
+                self.assertRaisesRegex(ValueError, 'invalid foe.outlaw', rules.validate, program([effect('foe.outlaw', **bad)]))
+        self.assertRaisesRegex(ValueError, 'one name and one strength', rules.validate,
+                               program([effect('foe.add'), effect('foe.add', name='The Captain')]))
+        self.assertRaisesRegex(ValueError, 'names a foe the story brings', rules.validate, program([effect('foe.leave', foe='hakon')]))
+        self.assertEqual(rules.BUILDER_EFFECTS & set(PHASE7_ORDERS), {'foe.outlaw'})
+        self.assertFalse(rules.WOLF_EFFECTS & set(PHASE7_ORDERS))
+        self.assertLessEqual({'foe.add', 'foe.outlaw'}, set(rules.UNDONE_AT_END))
+        self.assertIn('foe', rules.CATALOGUE['types'])
+        # (A foe event read for a foe the story never brings is warned of; one it brings, or a resident it makes one, is not.)
+        p = program([effect('foe.add'), effect('foe.outlaw')])
+        p['phases'][0]['triggers'].append({'id': 'beaten', 'on': 'foe defeated', 'match': {'target': 'grey-captain'},
+                                            'actions': [{'do': 'note', 'text': 'x'}]})
+        p['phases'][0]['triggers'].append({'id': 'held', 'on': 'foe defeated', 'match': {'target': 'rm113'},
+                                            'actions': [{'do': 'note', 'text': 'x'}]})
+        rules.validate(p)
+        self.assertFalse([w for w in rules.program_warnings(p) if 'foe this story never brings' in w['text']])
+        p['phases'][0]['triggers'].append({'id': 'other', 'on': 'foe fled', 'match': {'target': 'hakon'}, 'actions': [{'do': 'note', 'text': 'x'}]})
+        warned = [w for w in rules.program_warnings(p) if 'foe this story never brings' in w['text']]
+        self.assertEqual(len(warned), 1)
+        self.assertIn('hakon', warned[0]['text'])
+        self.assertTrue(warned[0]['path'].startswith('phases[0].triggers[3]'), warned[0]['path'])
+
+    def test_a_storys_own_item_is_given_by_the_games_id(self):
+        # (Doc 86, J9: item.give with a tag: the item by the id the game keeps it under, its name, kept or not, and the run
+        # that takes it back; a plain item.give is the order it always was.)
+        import story_v2_samples as samples
+        p = copy.deepcopy(samples.LETTERS)
+        rules.validate(p)
+        phase = rules.effective_phase(p, p['phases'][0])
+        state = {'actor': 'player-ash', 'visits': 2, 'phase': 'carry'}
+        kind, target, payload = runner.order_of(None, 'w', 'world-run', 'martin', state, samples.WATCH_LIST, phase)
+        self.assertEqual((kind, target), ('item.give', 'player-ash'))
+        self.assertEqual(payload, {'item': rules.tagged_item('v2-watch-list', 'letter', 'watch_list'), 'quantity': 1, 'name': 'The watch list',
+                                   'run': 'world-run', 'visit': 2})
+        kind, target, payload = runner.order_of(None, 'w', 'world-run', 'martin', state, {**samples.THANKS_WRIT, 'reward': 'deliver'}, phase)
+        self.assertEqual(payload, {'item': rules.tagged_item('v2-watch-list', 'writ', 'thanks'), 'quantity': 1,
+                                   'name': "The warden's writ of thanks", 'keep': True, 'run': 'world-run', 'visit': 2})
+        plain = {'kind': 'item.give', 'player': '$actor', 'item': 'rope', 'quantity': 2}
+        self.assertEqual(runner.order_of(None, 'w', 'world-run', 'martin', state, plain, phase), ('item.give', 'player-ash', {'item': 'rope', 'quantity': 2}))
+        self.assertEqual(rules.tag_hash('v2-watch-list'), rules.tagged_item('v2-watch-list', 'x', 'y')[2:10])
+        self.assertIn('tag', rules.CATALOGUE['types'])
+        params = {q['key']: q for q in rules.EFFECT_PARAMS['item.give']}
+        self.assertEqual((params['tag']['type'], params['name']['type'], params['keep']['type']), ('tag', 'text', 'bool'))
+        self.assertTrue(all(params[k].get('optional') for k in ('tag', 'name', 'keep')))
+        self.assertNotIn('item.give', rules.UNDONE_AT_END, 'only a story\'s own item is taken back, and only unless kept: said in its help')
 
     def test_the_tracker_is_hidden_and_shown_again_by_the_story(self):
         p = rules.validate(program([effect('story.tracker')]))
@@ -240,6 +356,13 @@ class InTheWorld(unittest.TestCase):
                           (self.world, self.world))
         self.conn.execute("""INSERT INTO world.links(world_id,id,name,kind,open,a_area,a_x,a_y,b_area,b_x,b_y)
                              VALUES (%s,'inn','The inn door','door',false,'gate',5,1,'inn',1,1)""", (self.world,))
+        # (Doc 86, L4: the Watch's cells, indoors, down the stairs from the gate; and a store room nothing reaches.)
+        self.conn.execute("INSERT INTO world.areas(world_id,id,kind) VALUES (%s,'cells','interior'),(%s,'sealed','interior')", (self.world, self.world))
+        self.conn.execute("""INSERT INTO world.interiors(world_id,id,name,width,height,glyphs)
+                             VALUES (%s,'cells','The cells',4,4,%s),(%s,'sealed','A sealed room',4,4,%s)""",
+                          (self.world, '.' * 16, self.world, '.' * 16))
+        self.conn.execute("""INSERT INTO world.links(world_id,id,name,kind,open,a_area,a_x,a_y,b_area,b_x,b_y)
+                             VALUES (%s,'cells_stair','The stair down','stairs',true,'gate',2,2,'cells',1,1)""", (self.world,))
         self.conn.execute('SET LOCAL ROLE ratw_dm')
 
     def approve(self, p):
@@ -265,6 +388,79 @@ class InTheWorld(unittest.TestCase):
         refs = runner.refs(self.conn, self.world)
         self.assertEqual(refs['doors'], [{'id': 'link_inn_a', 'name': 'The inn door', 'cell': 'gate'}])
         self.assertEqual(refs['mantles'], [])
+
+    def test_posts_and_sentences_are_checked_against_the_world(self):
+        # (Doc 86, C14: a post of the careers book as last saved (dm.story_posts, 0080), never the Watch's; L4: a sentence
+        # served indoors, somewhere a way leads in.)
+        self.conn.execute('RESET ROLE')
+        self.conn.execute("""UPDATE game.checkpoints SET payload=%s WHERE world_id=%s""", (json.dumps({'calendarDays': 10, 'society': {'careers': {
+            'positions': {'job:rm112': {'holder': 'rm112'}, 'job:rm119': {'holder': 'rm119', 'lastHolder': ''}, 'job:rm113': {'holder': ''}}}},
+            'people': {'storySentences': {'rm113': {'place': 'cells', 'by': 'long-night', 'run': 'r1', 'days': 7, 'began': 8, 'until': 15}}}}),
+            self.world))
+        self.conn.execute("UPDATE live.npcs SET role='guard',work_label='keeping the gate' WHERE world_id=%s AND id='rm119'", (self.world,))
+        self.conn.execute("UPDATE live.npcs SET work_label='keeping the inn' WHERE world_id=%s AND id='rm112'", (self.world,))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+        crown = {'kind': 'npc.post', 'npc': 'rm111', 'post': 'job:rm112'}
+        self.approve(program([crown, effect('npc.sentence')]))
+        for e, words in [({**crown, 'post': 'job:rm999'}, 'Unknown post'), ({**crown, 'post': 'job:rm119'}, 'the watch chooses its own'),
+                         ({**effect('npc.sentence'), 'place': 'gate'}, 'served indoors'),
+                         ({**effect('npc.sentence'), 'place': 'sealed'}, 'no way in'), ({**crown, 'npc': 'rm999'}, 'Unknown npc')]:
+            with self.subTest(words=words):
+                self.assertRaisesRegex(ValueError, words, self.approve, program([e]))
+        posts = runner.refs(self.conn, self.world)['posts']
+        self.assertEqual(posts, [{'id': 'job:rm113', 'name': 'job:rm113', 'title': 'job:rm113', 'holder': ''},
+                                 {'id': 'job:rm112', 'name': 'keeping the inn', 'title': 'keeping the inn', 'holder': 'rm112'}],
+                         "by title (an unknown founder's by its id), never the Watch's")
+        self.assertEqual(runner.action(crown, 'player-ash'), ('npc.post', 'rm111', {'post': 'job:rm112'}))
+        [held] = runner.sentences(self.conn, self.world)
+        self.assertEqual((held['npc'], held['name'], held['placeName'], held['left'], held['by']), ('rm113', 'Tamsin', 'The cells', 5, 'long-night'))
+        out = runner.release_sentence(self.conn, self.world, 'martin', {'npc': 'rm113', 'reason': 'served long enough'})
+        order = self.conn.execute('SELECT kind,target_id FROM dm.actions WHERE id=%s', (out['receipt'],)).fetchone()
+        self.assertEqual(order, ('npc.unsentence', 'rm113'))
+        self.assertRaisesRegex(ValueError, 'serving no sentence', runner.release_sentence, self.conn, self.world, 'martin',
+                               {'npc': 'rm111', 'reason': 'served long enough'})
+        self.assertTrue(self.conn.execute("SELECT 1 FROM dm.audit WHERE action='story.sentence-release' AND target='rm113'").fetchone())
+
+    def test_a_hunt_staged_in_a_town_is_warned_of(self):
+        # (Doc 86, L1, after review: no hunt begins in a town, as the game has its towns, two or more with a market.)
+        staged = program([effect('hunt.stage')])
+        town = lambda out: [c['text'] for c in out if 'no hunt begins in a town' in c['text']]
+        self.assertEqual(town(runner.world_checks(self.conn, self.world, staged)), [], 'no towns saved yet')
+        self.conn.execute('RESET ROLE')
+        self.conn.execute("""UPDATE game.checkpoints SET payload='{"calendarDays":10,"society":{"report":{"markets":
+                             [{"id":"greyfen"},{"id":"tarnby"}]}}}' WHERE world_id=%s""", (self.world,))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+        out = [c for c in runner.world_checks(self.conn, self.world, staged) if 'no hunt begins in a town' in c['text']]
+        self.assertEqual([(c['text'], c['blocks']) for c in out],
+                         [('gate is in the town of greyfen: no hunt begins in a town, so this animal is never met.', False)])
+
+    def test_a_story_never_opens_a_private_home_to_wolves(self):
+        # (Doc 86: a house Ivo lives in and nobody works in; the inn, where Wren lives above her work, is a workplace.)
+        self.conn.execute('RESET ROLE')
+        self.conn.execute("INSERT INTO world.areas(world_id,id,kind) VALUES (%s,'house','cell')", (self.world,))
+        self.conn.execute("INSERT INTO world.cells(world_id,id,name,x,y,width,height,region) VALUES (%s,'house','A house',400,100,6,6,'greyfen')",
+                          (self.world,))
+        self.conn.execute("""INSERT INTO world.links(world_id,id,name,kind,open,a_area,a_x,a_y,b_area,b_x,b_y)
+                             VALUES (%s,'house','The house door','door',false,'gate',6,1,'house',1,1)""", (self.world,))
+        self.conn.execute("UPDATE live.npcs SET home_area='house', work_area='gate' WHERE world_id=%s AND id='rm111'", (self.world,))
+        self.conn.execute("UPDATE live.npcs SET home_area='inn', work_area='inn' WHERE world_id=%s AND id='rm112'", (self.world,))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+        for kind in ('door.unlock', 'door.open'):
+            for door in ('link_house_a', 'link_house_b', 'link_house'):
+                with self.subTest(kind=kind, door=door):
+                    self.assertRaisesRegex(ValueError, "may not open a private home to wolves: .* leads into house",
+                                           self.approve, program([{**effect(kind), 'door': door}]))
+        # (Locking or shutting a home is fine, and so is opening the inn, a workplace with a home above it.)
+        self.approve(program([{**effect('door.lock'), 'door': 'link_house_a'}, {**effect('door.close'), 'door': 'link_house_a'},
+                              effect('door.unlock'), effect('door.open')]))
+        # (In the trigger and in a phase's opening effects alike.)
+        self.assertRaisesRegex(ValueError, 'private home', self.approve, program(entry=[{**effect('door.open'), 'door': 'link_house_a'}]))
+        # (Once Wren works at the gate, the inn is only her home: a private one.)
+        self.conn.execute('RESET ROLE')
+        self.conn.execute("UPDATE live.npcs SET work_area='gate' WHERE world_id=%s AND id='rm112'", (self.world,))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+        self.assertRaisesRegex(ValueError, 'leads into inn', self.approve, program([effect('door.unlock')]))
+        self.assertEqual(runner.private_home(self.conn, self.world, ['gate']), None)
 
     def test_a_published_story_sends_them_to_the_game_in_one_batch(self):
         ticket = self.approve(program(self.every()))['ticket']

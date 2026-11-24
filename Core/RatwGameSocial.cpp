@@ -7,6 +7,7 @@
 #include "RatwPractice.h"
 #include "RatwGame.h"
 
+#include <cctype>
 #include <functional>
 #include <set>
 #include <algorithm>
@@ -663,6 +664,21 @@ bool Game::socialCommand(Connection* c, const Value& j, Result& result)
         result = {dropped, dropped ? "You let it be known you'd rather not be called that." : "That isn't a name folk call you.", {}};
         return true;
     }
+    if (verb == "hidetitles")
+    {
+        // Doc 86, D3: a player hides the titles stories named them by from their card (residents still use them).
+        auto* me = world_.entity(id);
+        if (!me || me->npc)
+        {
+            result = {false, "Only a wolf has titles.", {}};
+            return true;
+        }
+        me->titlesHidden = j.boolean("hidden");
+        characters_[id] = *me;
+        record(Character, id);
+        result = {true, me->titlesHidden ? "Others no longer see your titles on your card." : "Others see your titles on your card again.", {}};
+        return true;
+    }
     if (verb == "star")
     {
         const auto target = j.string("target");
@@ -981,6 +997,47 @@ standing::Measures Game::measuresOf(const std::string& account) const
     m.closedStories = int(stories.size());
     m.upheldReports = upheldReports(account);
     return m;
+}
+
+Result Game::storyClosure(const std::string& wolf, const json::Value& payload)
+{
+    // Doc 86, J3: a world story's closure quest done by this wolf (a quest line's last chapter, or a campaign chapter's side
+    // story) counts as a finished Story: one story_closure receipt, session "quest:<program>/<quest>", which closedStories
+    // counts (measuresOf). Keyed by the program's id, so a new version or a second run never counts the same quest twice; and
+    // the game holds the cap itself: past standing().storyQuestClosuresMost from one program, the order is applied and pays
+    // nothing, so the run goes on. Never undone: it is a record of a finished story.
+    const auto story = payload.string("story"), quest = payload.string("quest"), kind = payload.string("kind");
+    const auto okId = [](const std::string& v) {
+        return !v.empty() && v.size() <= 80 && std::all_of(v.begin(), v.end(), [](unsigned char c) {
+            return std::isalnum(c) || c == '_' || c == '-' || c == '.';
+        });
+    };
+    if (!okId(story) || !okId(quest) || (kind != "line" && kind != "side"))
+        return {false, "A finished Story needs its story, its quest and its kind (line or side).", wolf};
+    const auto* e = world_.entity(wolf);
+    if ((e && e->npc) || (!e && !characters_.count(wolf)))
+        return {false, "No such wolf.", wolf};
+    const auto session = "quest:" + story + "/" + quest, prefix = "quest:" + story + "/";
+    int already = 0;
+    for (const auto i : social_.receiptsOf(wolf))
+    {
+        const auto& r = social_.entries[i];
+        if (r.reason != "story_closure" || r.session.rfind(prefix, 0) != 0)
+            continue;
+        if (r.session == session)
+            return {true, "Counted already: " + payload.string("title", quest) + ".", wolf};
+        ++already;
+    }
+    const auto& st = practice::standing();
+    if (already >= st.storyQuestClosuresMost)
+        return {true, "Not counted: already " + std::to_string(already) + " from this story.", wolf};
+    const int paid = social_.storyQuestClosure(wolf, session, st.storyQuestClosure, now());
+    socialViewsDirty_ = true;
+    if (const auto account = accounts_.ownerOf(wolf); !account.empty())
+        checkUnlocks(account);
+    saveSoon();
+    return {true, "A finished Story: " + json::utf8Prefix(payload.string("title", quest), 120) + " (" + std::to_string(paid) +
+                      " social).", wolf};
 }
 
 void Game::checkUnlocks(const std::string& account)

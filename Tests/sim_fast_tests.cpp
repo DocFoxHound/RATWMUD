@@ -299,6 +299,19 @@ void theHarness(const std::string& binary, const fs::path& root)
     expect(oneOut.find("real money balanced") != std::string::npos, "real money balanced at the end");
     const auto playerOut = runIt("player", "--threads 1 --players 1");
     expect(playerOut.find("1 player") != std::string::npos, "--players 1 keeps a player for a city check");
+    {
+        // --foes (doc 86, C10t's load rows): two players sent after a story's foe for a game hour; the foe is brought, the
+        // run completes, and no fight is left open once its foe is gone.
+        const auto cmd = "\"" + binary + "\" \"" + root.string() + "\" --simulate 6 7 --no-check --threads 1 --players 2 --no-births --foes 1 > \"" +
+                         (out / "foes.out").string() + "\" 2>&1";
+        const auto ran = std::system(cmd.c_str());
+        const auto foesOut = slurp(out / "foes.out");
+        expect(ran == 0 && foesOut.find("1 foes (tough, band 2, waits) brought, 2 players sent after them") != std::string::npos &&
+                   foesOut.find("  foes: ") != std::string::npos && foesOut.find(" 0 fights left open once their foe was gone") != std::string::npos,
+               "world_check --players 2 --foes 1 completes: " + foesOut.substr(0, 1500));
+        const auto bad = "\"" + binary + "\" \"" + root.string() + "\" --simulate 6 7 --foes 1:mighty > /dev/null 2>&1";
+        expect(std::system(bad.c_str()) != 0, "a foe of no such strength is refused");
+    }
     for (const char* gone : {"--economy x.jsonl", "--farms 0", "--rule-at 1 steer 1", "--steer-table x.json", "--economy-level full"})
     {
         const auto cmd = "\"" + binary + "\" \"" + root.string() + "\" --simulate 6 30 " + gone + " > /dev/null 2>&1";

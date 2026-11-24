@@ -35,6 +35,10 @@ def request(data, snapshot, world_key=None, read_world=False):
         return {'digest': rules.review(data.get('program'))['digest']}
     if op == 'rehearse':
         return rules.review(data.get('program'))
+    if op == 'words':
+        # (Doc 86, V2: the story's words checked offline: symbols, forbidden words, ids in speech, lengths, face banners.)
+        import story_words
+        return {'problems': story_words.check(data.get('program'))}
     if op in ('atlas.search', 'npc.context') and not read_world:
         if op == 'atlas.search':
             q = str(data.get('query', '')).casefold()

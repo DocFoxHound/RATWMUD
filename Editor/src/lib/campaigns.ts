@@ -27,15 +27,41 @@ export type Waiting =
     | {on: 'clock'; at: number; what: Listening}
     | {on: 'direction'; signal: string; what: Listening}
     | {on: 'wolves'; events: string[]; what: Listening[]}
+    // (Doc 86, R2: the phase moves on when ready: by itself, at its moment, or when an admin presses Advance.)
+    | {on: 'ready'; to: string; auto: boolean; then?: {on: string; match?: Record<string, string>} | null; met: boolean;
+        waitingFor?: {on: string; match?: Record<string, string>} | null; autoAfterDays?: number | null}
     | {on: 'end'};
 export interface Alert {
-    kind: 'paused' | 'held' | 'runner' | 'game' | 'behind' | 'quiet' | 'stuck' | 'overdue' | 'full'; needsYou: boolean; problem?: string; order?: Order;
+    kind: 'paused' | 'held' | 'runner' | 'game' | 'behind' | 'quiet' | 'stuck' | 'overdue' | 'full' | 'ready' | 'slow'; needsYou: boolean; problem?: string; order?: Order;
     events?: number; seconds?: number; hours?: number; since?: string; wolfSeen?: string; by?: string; reason?: string; age?: number | null;
     beatAt?: string | null; runner?: boolean;
     // (Phase 3: cannot move on, a timer overdue, the audience nearly full.)
     phase?: string; reasons?: Partial<Record<Cannot, number>>; goneDays?: number; timer?: string; signal?: string; at?: number; clock?: string;
     wolves?: number; cap?: number;
+    // (Doc 86, R2: ready to advance (where to, since when, how many parts are met), or slow (after how many days, its furthest part).)
+    to?: string; metAt?: number | null; met?: number; parts?: number; autoAfterDays?: number | null; days?: number; slowAfterDays?: number | null;
+    part?: ReadyPart | null; words?: string;
 }
+/** One part of a phase's Readiness as the runner measured it (story_program.readiness): its progress and its need. */
+export interface ReadyPart {
+    kind: 'participation' | 'minDays' | 'value' | 'test' | 'missions' | 'quest' | 'any'; label: string; met: boolean;
+    value: number | null; need: number | null;
+    /** participation: out of (active, all, online), how many (|D|), the share now, the share asked, the floor and the cap, the audience. */
+    of?: string; count?: number | null; share?: number | null; percent?: number; floor?: number; cap?: number;
+    audience?: {all: number; active: number; online: number | null};
+    /** minDays: since the phase or the chapter, and the held days not counted. */
+    since?: 'phase' | 'chapter'; held?: number; quest?: string;
+    any?: ReadyPart[];
+}
+/** A phase's Readiness (doc 86, R2): met (latched once every part is, or pushed), whether it goes by itself, where to. */
+export interface Readiness {
+    phase: string; visit: number; met: boolean; auto: boolean; to: string; metAt: number | null;
+    pushed?: {by: string; reason: string; day: number; when: 'then'; anyway?: boolean} | null;
+    then?: {on: string; match?: Record<string, string>} | null; thenWords?: string | null; waitingFor?: {on: string; match?: Record<string, string>} | null;
+    slow?: boolean; slowNeedsYou?: boolean; parts: ReadyPart[]; days?: number; heldDays?: number; checkedAt?: number | null; held?: boolean;
+    activeDays?: number; slowAfterDays?: number | null; autoAfterDays?: number | null;
+}
+export interface ReadyLogEntry { day: number | null; kind: 'ready' | 'slow' | 'pushed' | 'advanced' | 'taken'; text: string; phase: string; visit: number; by?: string; at?: string }
 export interface MissionSummary { id: string; title: string; mode: 'individual' | 'group' | 'either'; completed: number; required: number; ready: boolean; optional: boolean }
 export interface Objective { label: string; on: string; goal?: number; measure?: string; match?: Record<string, string>; signal?: string }
 export interface Mission extends MissionSummary {
@@ -50,6 +76,8 @@ export interface RunRow {
     storyId?: string; format?: number; moving?: boolean;
     /** Phase 6: who takes part (a living audience: open or everyone, with its cap). */
     audience?: Audience;
+    /** Doc 86, R2: the phase's Readiness, when it has one. */
+    ready?: Readiness;
 }
 /** The audience of a run (doc 85, Phase 6): its kind, its cap, how many take part, and whether wolves may still join. */
 export interface Audience { kind: string; cap?: number | null; size?: number; joinable?: boolean }
@@ -69,12 +97,32 @@ export interface WorldVar { name: string; type: string; value: Value | null; dec
     updatedBy?: string | null; updatedAt?: string | null; run?: string | null; unset?: boolean;
     stories: {run: string | null; story: string; title: string; type: string; status: string; campaign?: string}[] }
 export interface WorldVars { variables: WorldVar[]; declarations: boolean; audit?: {at: number; name: string; detail: string; who: string}[] }
+/** Doc 86, J2: each wolf's realm values (op realm-vars): newest first, and the realm names the world's stories declare. */
+export interface RealmValue { name: string; wolf: string; type: string; value: Value; run: string | null; updatedAt: string | null }
+export interface RealmVars { realm: boolean; values: RealmValue[]; names: {name: string; type: string | null; wolves: number;
+    stories: {run: string; story: string; title: string; type: string; status: string}[]}[]; audit?: {at: number; name: string; detail: string; who: string}[] }
+/** Doc 86, L4: a resident a story sentenced (op sentences), as the world was last saved. */
+export interface Sentence { npc: string; name: string; place: string; placeName: string; by: string; run: string; days: number;
+    began: number | null; until: number; left: number }
+/** A sentence in words: "Ilse Coalley, held at the Keep's cells by lq-wreckers-light: 4.5 of 7 days left". */
+export function sentenceLine(s: Sentence): string {
+    const left = s.left <= 0 ? 'served (let go at the next moment)' : `${+s.left.toFixed(1)} of ${s.days} day${s.days === 1 ? '' : 's'} left`;
+    return `${s.name}, held at ${s.placeName || s.place} by ${s.by || s.run}: ${left}`;
+}
+/** Doc 86, M3: the world switch for House purses (op house-purses-state), as the world was last saved. */
+export interface HousePurses { on: boolean; houses: {id: string; name: string; purse: number | null}[];
+    audit?: {at: number; on: boolean; detail: string; who: string}[] }
+/** A House's purse in words: "House Greatly: 42 pennies in its purse" (none yet: "no purse yet"). */
+export function housePurseLine(h: HousePurses['houses'][number]): string {
+    return `${h.name}: ${h.purse === null ? 'no purse yet' : `${h.purse} penn${h.purse === 1 ? 'y' : 'ies'} in its purse`}`;
+}
 export interface Region { id: string; cell: string; x1: number; y1: number; x2: number; y2: number }
 export interface Timer { signal?: string; at: number; clock?: 'game' | 'real'; actor?: string; interval?: number; scope?: string }
 export interface RunState {
     phase: string; entered: number; cohort: string[]; votes: Record<string, string[]>; visits: number; actor: string; publishedAt?: number;
     /** The variables (version 1's counters): the story's and the world's, each wolf's and each party's (doc 85, 3.2). */
-    counters?: {story?: Record<string, Value>; world?: Record<string, Value>; player?: Record<string, Record<string, Value>>; party?: Record<string, Record<string, Value>>};
+    counters?: {story?: Record<string, Value>; world?: Record<string, Value>; player?: Record<string, Record<string, Value>>; party?: Record<string, Record<string, Value>>;
+        realm?: Record<string, Record<string, Value>>};
     timers?: Record<string, Timer>;
     fired?: Record<string, string[]>; campaignFired?: Record<string, string[]>; triggerEffects?: Effect[]; disabled?: string[];
     held?: {by: string; reason: string; at: number; cursor: number};
@@ -87,7 +135,7 @@ export interface RunState {
 /** A variable's value: a number, on or off, a text or id, a list, or (a timer) the day it started. */
 export type Value = number | boolean | string | (number | string)[] | null;
 /** A variable an admin may set (story_runner.variables): a version 2 story's declared ones, a version 1 story's counters. */
-export interface ControlVariable { key: string; scope: 'story' | 'player' | 'party' | 'world'; type?: string; initial?: Value; show?: string; note?: string; clock?: string }
+export interface ControlVariable { key: string; scope: 'story' | 'player' | 'party' | 'world' | 'realm'; type?: string; initial?: Value; show?: string; note?: string; clock?: string }
 /** A value in words: 3, on, Ash Greymantle, "rope, axle", since day 12.5. */
 export function valueText(v: Value | undefined, type: string | undefined, names: Record<string, string> = {}): string {
     if (v === undefined) return '';
@@ -100,7 +148,7 @@ export function valueText(v: Value | undefined, type: string | undefined, names:
 /** A value a firing or a command changed (the timeline's "watches 5 → 6"). */
 export interface Change { what: 'counter' | 'timer'; key: string; scope?: string; wolf?: string; before: Value; after: Value; type?: string }
 export type CommandKind = 'hold' | 'resume' | 'stop' | 'signal' | 'fire' | 'enable' | 'disable' | 'enter' | 'set' | 'timer' | 'mission' | 'order' | 'tell' | 'scene' | 'migrate'
-    | 'objective' | 'quest' | 'participant' | 'story-event';
+    | 'objective' | 'quest' | 'participant' | 'story-event' | 'advance' | 'foe';
 /** One thing a move onto a new version keeps, resets, defaults, drops or adds (story_program.migration), with why. */
 export interface MigrationLine {
     what: 'phase' | 'variable' | 'timer' | 'wait' | 'mission' | 'fired' | 'count' | 'off' | 'vote' | 'steps' | 'seed'; key: string;
@@ -140,6 +188,8 @@ export interface Controls {
     missions: {id: string; title: string; mode: string; objectives: number}[]; scenes: string[]; regions: string[];
     /** Phase 6: the quests a command may name, with their objectives' ids. */
     quests?: {id: string; title: string; objectives: string[]}[];
+    /** Doc 86, R2: the phase's Advance, when it has Readiness. */
+    ready?: {to: string; auto: boolean; then: {on: string; match?: Record<string, string>} | null; thenWords: string | null; met: boolean} | null;
 }
 export interface Visit { visit: number; phase: string; day: number; cause: string; receipts: number[]; missions?: Mission[] | null }
 export interface Firing {
@@ -148,6 +198,18 @@ export interface Firing {
     changes?: Change[]; byHand?: boolean; checked?: boolean; command?: number; by?: string;
     /** Version 2: Note actions' lines, and how it fired (by a Run, or resumed after a Wait). */
     notes?: string[]; via?: 'run' | 'wait';
+    /** Doc 86, C9: a figure of the realm the story set or cleared, and the row it replaced (null: there was none). */
+    figure?: {id: string; previous: Record<string, unknown> | null};
+}
+/** Doc 86, C10: one of a run's foes now (story_runner.foes_now): a foe it brought, or a resident it made one (outlaw). */
+export interface FoeNow { camp: string; foe: string; outlaw: boolean; name: string; strength: string; band: number; left?: number | null;
+    fighting: boolean; endsAt?: number | null }
+/** The Foes panel's words for one: who, how strong, the band standing, and the time left (as of the world's last save). */
+export function foeLine(f: FoeNow, names: Record<string, string>, nowSeconds: number): string {
+    const who = f.outlaw ? `${nameOf(names, f.foe)} (a resident made a foe)` : f.name ? `${f.name} (${f.foe})` : f.foe;
+    const band = !f.band ? 'no followers' : f.left === undefined || f.left === null ? `a band of ${f.band}` : `${f.left} of ${f.band} followers standing`;
+    const left = f.endsAt ? Math.max(0, Math.round((f.endsAt - nowSeconds) / 60)) : null;
+    return `${who}, ${f.strength}, ${band}${left === null ? '' : `, ${left === 0 ? 'its time all but up' : `about ${left} minute${left === 1 ? '' : 's'} left`}`}${f.fighting ? ' · fighting now' : ''}`;
 }
 export interface RunDetail extends RunRow {
     state: RunState | null; program?: Record<string, unknown> & {title: string; id: string}; approvedBy: string; cursor: number; now: Now;
@@ -160,9 +222,15 @@ export interface RunDetail extends RunRow {
     quests?: QuestBoard[]; audience?: Audience; parties?: Record<string, string>;
     /** Phase 7: effects the game refused, held for their wolf until they are next in the world. */
     whenHere?: HeldForWolf[];
+    /** Doc 86, C10: the run's foes in the world, as the game last saved them (the Foes panel). */
+    foes?: FoeNow[];
     /** Phase 10: the campaign it is a chapter of; the chapters it waits to start, has started, and the one that started it. */
     campaign?: Campaign | null; chapterStarts?: ChapterStart[]; chaptersStarted?: {story: string; run?: string; refused?: string}[];
     chapterOf?: {campaign: string; from: string; story: string; chapter: number} | null;
+    /** Doc 86, C8: what the residents remember of this run, as the game last saved it. */
+    memory?: Memory[];
+    /** Doc 86, R2: readiness met, slow, pushed, advanced and taken (the last 20). */
+    readyLog?: ReadyLogEntry[];
 }
 export type QuestStatus = 'offered' | 'active' | 'ready' | 'done' | 'failed' | 'abandoned' | 'expired';
 /** One copy of a quest (story_runner.status's `quests`): a wolf's own, a party's, or the story's one copy. */
@@ -171,7 +239,7 @@ export interface QuestCopy {
     times?: number; objectives: Record<string, {n?: number; done?: boolean; failed?: boolean; shown?: boolean}>;
 }
 export interface QuestBoard {
-    id: string; title: string; summary?: string; scope: 'player' | 'party' | 'story'; lifetime?: string; repeat?: string; giver?: string | null; open?: boolean;
+    id: string; title: string; summary?: string; scope: 'player' | 'party' | 'story'; lifetime?: string; repeat?: string; giver?: string | null; giverVar?: string; open?: boolean;
     objectives: {id: string; label: string; optional?: boolean; hidden?: boolean; goal?: number; measure?: string; after?: string[]}[];
     copies: QuestCopy[]; counts?: Partial<Record<QuestStatus, number>>; starts?: number; cap?: number | null; limit?: number | null;
 }
@@ -181,17 +249,19 @@ export type TimelineItem =
     | ({key: string; type: 'order'; at: string | null} & Order)
     | ({key: string; type: 'command'; at: string | null; command: CommandKind; askedAt: string | null} & Omit<Command, 'kind' | 'at'>)
     | ({key: string; type: 'version'; at: string | null; phase: string | null; phaseFrom: string | null; warnings: string[];
-        counts: Record<'kept' | 'reset' | 'defaulted' | 'dropped' | 'added', number>} & Omit<Version, 'report'>);
+        counts: Record<'kept' | 'reset' | 'defaulted' | 'dropped' | 'added', number>} & Omit<Version, 'report'>)
+    // (Doc 86, R2: a readiness entry from the run's own log.)
+    | ({key: string; type: 'ready'; at: string | null; readyKind: ReadyLogEntry['kind']} & Omit<ReadyLogEntry, 'at'>);
 export interface WorldEvent { id: number; kind: string; actor: string; target: string; cell: string; item: string; quantity: number; coins: number; detail: string; day: number; x: number | null; y: number | null; at: string }
-export interface TimelineCursor { visit?: number; trigger?: number; order?: number; command?: number; version?: number; at?: string }
+export interface TimelineCursor { visit?: number; trigger?: number; order?: number; command?: number; version?: number; ready?: number; at?: string }
 export interface TimelinePage { run: string; items: TimelineItem[]; events: Record<string, WorldEvent>; names: Record<string, string>; before: TimelineCursor | null; since: TimelineCursor; now: string }
 
 export const nameOf = (names: Record<string, string>, id: string | null | undefined) => (id ? names[id] ?? id : '');
 
 // ------------------------------------------------------------------------------------------------- the timeline
 
-const RANK = {phase: 0, trigger: 1, order: 2, command: 3, version: 4} as const;
-const seqOf = (i: TimelineItem) => (i.type === 'phase' ? i.visit : i.id);
+const RANK = {phase: 0, trigger: 1, order: 2, command: 3, version: 4, ready: 5} as const;
+const seqOf = (i: TimelineItem) => (i.type === 'phase' ? i.visit : i.type === 'ready' ? Math.round((i.day ?? 0) * 1000) : i.id);
 /** Newest first, as the runner sorts (tools/story_runner.timeline): by time, then visit, then a visit opened before its
  *  firings, its orders and the admin's commands, then by id. */
 export function newestFirst(a: TimelineItem, b: TimelineItem): number {
@@ -207,14 +277,14 @@ export function mergeTimeline(known: TimelineItem[], fresh: TimelineItem[]): Tim
 }
 /** The cursor for the next poll: the newest of each kind the console holds, and the time of the last answer. */
 export function sinceOf(items: TimelineItem[], previous: TimelineCursor, at: string): TimelineCursor {
-    const most = (type: TimelineItem['type'], had?: number) => Math.max(had ?? 0, ...items.filter(i => i.type === type).map(seqOf));
+    const most = (type: Exclude<TimelineItem['type'], 'ready'>, had?: number) => Math.max(had ?? 0, ...items.filter(i => i.type === type).map(seqOf));
     return {visit: most('phase', previous.visit), trigger: most('trigger', previous.trigger), order: most('order', previous.order),
         command: most('command', previous.command), version: most('version', previous.version), at};
 }
 export type TimelineFilter = 'all' | 'phase' | 'trigger' | 'order' | 'command';
 export function filterTimeline(items: TimelineItem[], kind: TimelineFilter, wolf = '', trigger = ''): TimelineItem[] {
     const wolfOf = (i: Extract<TimelineItem, {type: 'command'}>) => String(i.payload?.actor ?? i.payload?.player ?? '');
-    return items.filter(i => (kind === 'all' || i.type === kind || (kind === 'command' && i.type === 'version'))
+    return items.filter(i => (kind === 'all' || i.type === kind || (kind === 'command' && (i.type === 'version' || i.type === 'ready')))
         && (!wolf || (i.type === 'trigger' ? i.actor === wolf : i.type === 'order' ? i.target === wolf : i.type === 'command' ? wolfOf(i) === wolf : true))
         && (!trigger || (i.type === 'trigger' && i.trigger === trigger) || (i.type === 'command' && i.payload?.trigger === trigger)));
 }
@@ -295,6 +365,7 @@ export function waitingLines(waiting: Waiting[] | undefined, names: Record<strin
         else if (w.on === 'clock') out.push({who: 'the clock', tone: 'normal', text: `${listeningLine(w.what, names)}, ${dueText(w.at, 'game', day)}`});
         else if (w.on === 'direction') out.push({who: 'a direction', tone: 'normal', text: `a Dungeon Master's "${w.signal}"`});
         else if (w.on === 'wolves') out.push({who: 'wolves', tone: 'normal', text: w.what.slice(0, 4).map(l => listeningLine(l, names)).join(' · ') + (w.what.length > 4 ? ' …' : '')});
+        else if (w.on === 'ready') out.push(readyWaitLine(w));
         else if (w.on === 'end') out.push({who: 'nothing', tone: 'done', text: 'this phase is an ending'});
     }
     return out;
@@ -308,7 +379,8 @@ export function waitingOn(waiting: Waiting[] | undefined, names: Record<string, 
             ? (publishedAt !== undefined && nowIso ? w.at - (Date.parse(nowIso) / 1000 - publishedAt) / 86400 : Infinity)
             : w.at - (day ?? 0)}))
         .sort((a, b) => a.left - b.left)[0]?.w;
-    const pick = first ?? timed ?? all.find(w => w.on === 'direction') ?? all.find(w => w.on === 'wolves') ?? all.find(w => w.on === 'end');
+    const pick = first ?? all.find(w => w.on === 'ready' && w.met && !w.auto && !w.waitingFor) ?? timed ?? all.find(w => w.on === 'direction')
+        ?? all.find(w => w.on === 'ready') ?? all.find(w => w.on === 'wolves') ?? all.find(w => w.on === 'end');
     return pick ? waitingLines([pick], names, day, publishedAt, nowIso)[0] : null;
 }
 
@@ -322,7 +394,98 @@ export function alertText(a: Alert, names: Record<string, string>): string {
     if (a.kind === 'stuck') return `Cannot move on from ${a.phase}: nothing in it can still fire by itself (${stuckReasons(a)}). Fire a trigger, set a variable or go to a phase.`;
     if (a.kind === 'overdue') return `Timer ${a.signal ?? a.timer} is overdue by ${secondsText(a.seconds ?? 0, false)} and has not fired: is the story waiting on the game?`;
     if (a.kind === 'full') return `Its audience is nearly full: ${a.wolves} of ${a.cap} wolves.`;
+    // (Doc 86, R2 rules 6 and 7, and decisions §6.2's "Ready to push" for a slow chapter that needs you.)
+    if (a.kind === 'ready') return `Ready to advance: ${a.phase} → ${a.to}${a.metAt != null ? ` since day ${dayText(a.metAt)}` : ''} (all ${a.parts ?? 0} parts met)`
+        + (a.autoAfterDays ? `; it goes by itself ${a.autoAfterDays} days after` : '');
+    if (a.kind === 'slow') return a.needsYou ? `Ready to push: ${a.words || a.part?.label || 'the furthest part'}. Advance anyway, or wait.`
+        : `Slow: ${a.part ? partShort(a.part) : 'not ready'} after ${Math.floor(a.days ?? 0)} days; Advance anyway, or wait`;
     return `Quiet for ${Math.round(a.hours ?? 0)} h while its wolves were about: nothing fired and no mission moved.`;
+}
+
+// ------------------------------------------------------------------------------------------------- readiness (doc 86, R3)
+
+const dayText = (d: number) => (Number.isInteger(d) ? String(d) : d.toFixed(1));
+const OF_WORDS: Record<string, string> = {active: 'active', all: 'story', online: 'online'};
+/** A part in short: "21% of the 35% needed", "11 of 10 days", "2 of 3". */
+export function partShort(p: ReadyPart): string {
+    if (p.kind === 'any') return (p.any ?? []).map(partShort).join(' or ');
+    if (p.kind === 'participation') return p.count == null ? 'who is online is not known' : `${p.share ?? 0}% of the ${p.percent}% needed`;
+    if (p.kind === 'minDays') return `${dayText(p.value ?? 0)} of ${dayText(p.need ?? 0)} days`;
+    if (p.kind === 'test') return p.met ? 'met' : 'not yet';
+    return `${p.value ?? '—'} of ${p.need ?? '—'}`;
+}
+/** The fill (0 to 1) of a part toward its need; 1 when met. */
+export function partFill(p: ReadyPart): number {
+    if (p.met) return 1;
+    if (p.kind === 'any') return Math.max(0, ...(p.any ?? []).map(partFill));
+    if (p.value == null || !p.need) return 0;
+    return Math.max(0, Math.min(1, p.value / p.need));
+}
+export interface ReadyBar { label: string; fill: number; mark: number; text: string; met: boolean; kind: ReadyPart['kind']; any?: ReadyBar[] }
+/** One bar per part (doc 86, R3): `fill` the progress, `mark` where the need is on it (participation: the share needed of
+ *  those counted), and the words: "42 of 118 active wolves (36%); 35% and at least 5 needed", "11.2 of 10 days in the chapter
+ *  (1.5 held days not counted)". */
+export function readyBars(r: Readiness | null | undefined, names: Record<string, string> = {}): ReadyBar[] {
+    void names;
+    const bar = (p: ReadyPart): ReadyBar => {
+        if (p.kind === 'any') {
+            const kids = (p.any ?? []).map(bar);
+            return {label: p.label, fill: partFill(p), mark: 1, met: p.met, kind: p.kind, any: kids, text: kids.map(k => k.text).join(' · or · ')};
+        }
+        if (p.kind === 'participation') {
+            const of = OF_WORDS[p.of ?? 'active'] ?? p.of;
+            if (p.count == null) return {label: p.label, fill: 0, mark: 1, met: false, kind: p.kind, text: `who is ${of} is not known yet`};
+            const mark = p.count ? Math.min(1, (p.need ?? 0) / p.count) : 1;
+            const text = `${p.value ?? 0} of ${p.count} ${of} wolves (${p.share ?? 0}%); ${p.percent}% and at least ${p.floor ?? 1} needed`
+                + (p.cap ? `, ${p.cap} always enough` : '') + (p.met ? '' : ` (${p.need ?? '—'} wolves)`);
+            return {label: p.label, fill: p.count ? Math.min(1, (p.value ?? 0) / p.count) : 0, mark, met: p.met, kind: p.kind, text};
+        }
+        if (p.kind === 'minDays') {
+            const held = p.held ? ` (${dayText(p.held)} held day${p.held === 1 ? '' : 's'} not counted)` : '';
+            return {label: p.label, fill: partFill(p), mark: 1, met: p.met, kind: p.kind,
+                text: `${dayText(p.value ?? 0)} of ${dayText(p.need ?? 0)} days in the ${p.since === 'chapter' ? 'chapter' : 'phase'}${held}`};
+        }
+        if (p.kind === 'test') return {label: p.label, fill: p.met ? 1 : 0, mark: 1, met: p.met, kind: p.kind, text: p.met ? 'met' : 'not yet'};
+        return {label: p.label, fill: partFill(p), mark: 1, met: p.met, kind: p.kind, text: `${p.value ?? '—'} of ${p.need ?? '—'}`};
+    };
+    return (r?.parts ?? []).map(bar);
+}
+/** The Readiness header: "Ready to advance to ch1_end (since day 93)", "Not ready: 2 of 4 met", "Waiting for the next day
+ *  (ready since day 93)", "Goes on by itself when ready". */
+export function readyHeader(r: Readiness | null | undefined): {text: string; tone: 'ready' | 'waiting' | 'not'} {
+    if (!r) return {text: 'Not measured yet', tone: 'not'};
+    const since = r.metAt != null ? ` since day ${dayText(r.metAt)}` : '';
+    if (r.met && r.waitingFor) return {text: `Waiting for ${r.thenWords ?? r.waitingFor.on} (ready${since})`, tone: 'waiting'};
+    if (r.met && r.pushed) return {text: `Pushed by ${r.pushed.by.split('#')[0]}: waiting for ${r.thenWords ?? 'its moment'}`, tone: 'waiting'};
+    if (r.met) return {text: `Ready to advance to ${r.to}${since ? ` (${since.trim()})` : ''}`, tone: 'ready'};
+    const parts = r.parts ?? [];
+    const met = parts.filter(p => p.met).length;
+    return {text: r.auto ? `Goes on by itself when ready: ${met} of ${parts.length} met` : `Not ready: ${met} of ${parts.length} met`, tone: 'not'};
+}
+/** The list's compact readiness: the furthest part not met, and "ready" when met. */
+export function readySummary(r: Readiness | null | undefined): {text: string; fill: number; met: boolean} | null {
+    if (!r) return null;
+    if (r.met) return {text: 'ready', fill: 1, met: true};
+    const left = (r.parts ?? []).filter(p => !p.met).sort((a, b) => partFill(b) - partFill(a))[0];
+    return left ? {text: `${left.label}: ${partShort(left)}`, fill: partFill(left), met: false} : {text: 'measuring…', fill: 0, met: false};
+}
+/** The chapters bar's line: "Ch 1 · 36% of 35% · day 11 of 10 · ready". */
+export function chapterReadyText(r: Readiness | null | undefined, chapter: number): string {
+    if (!r) return '';
+    const bits = [`Ch ${chapter}`];
+    for (const p of r.parts ?? []) {
+        if (p.kind === 'participation' && p.count != null) bits.push(`${p.share ?? 0}% of ${p.percent}%`);
+        else if (p.kind === 'minDays') bits.push(`day ${Math.floor(p.value ?? 0)} of ${dayText(p.need ?? 0)}`);
+    }
+    bits.push(r.met ? 'ready' : 'not ready');
+    return bits.join(' · ');
+}
+function readyWaitLine(w: Extract<Waiting, {on: 'ready'}>): WaitLine {
+    if (w.met && w.waitingFor) return {who: 'its moment', tone: 'normal', text: `ready: goes on to ${w.to} at the next ${w.waitingFor.on}`};
+    if (w.met && !w.auto) return {who: 'you', tone: 'alert', text: `ready: waits for an admin to advance it to ${w.to}`
+        + (w.autoAfterDays ? ` (or goes by itself ${w.autoAfterDays} days after)` : '')};
+    if (w.auto) return {who: 'readiness', tone: 'normal', text: `goes on by itself to ${w.to} when ready${w.then ? ', at the next ' + w.then.on : ''}`};
+    return {who: 'readiness', tone: 'normal', text: `when ready, waits for an admin to advance it to ${w.to}`};
 }
 
 // ------------------------------------------------------------------------------------------------- wolves
@@ -433,6 +596,7 @@ const PRETTY: Record<CommandKind, string> = {
     disable: 'turned a trigger off', enter: 'went to a phase', set: 'set a variable', timer: 'changed a timer', mission: 'changed a mission',
     order: 'dealt with an order', tell: 'told the wolves', scene: 'started a scene', migrate: 'moved it onto a new version',
     objective: 'changed an objective', quest: 'changed a quest', participant: 'changed who takes part', 'story-event': 'heard of another story',
+    advance: 'advanced it (its Readiness)', foe: 'sent a foe away',
 };
 const OBJ_WORDS: Record<string, string> = {complete: 'completed', progress: 'added to', reveal: 'revealed', fail: 'failed', reset: 'reset'};
 const QUEST_WORDS: Record<string, string> = {give: 'gave', take: 'took away', complete: 'completed', fail: 'failed'};
@@ -459,6 +623,12 @@ export function commandLine(kind: CommandKind, payload: Record<string, unknown>,
         // (Phase 10: another story of the world started or ended, told by the story runner itself.)
         case 'story-event': { const e = (p.event ?? {}) as Record<string, string>;
             return `heard that the story ${e.target} ${e.kind === 'story started' ? 'started' : 'ended' + (e.detail ? ` (${e.detail})` : '')}`; }
+        // (Doc 86, R2: the phase's ready exit, now, anyway or at its moment; `to` and `notReady` are the console's own words.)
+        case 'advance': { const to = p.to ? ` to ${p.to}` : '';
+            if (p.when === 'then') return `Advance${to} at ${p.thenWords ?? 'its next moment'}${p.anyway ? ' (anyway)' : ''}`;
+            return p.anyway ? `Advance${to} now anyway${p.notReady ? ` (not ready: ${p.notReady})` : ''}` : `Advance${to} now (ready)`; }
+        // (Doc 86, C10: the Foes panel's Send away.)
+        case 'foe': return `sent ${nameOf(names, String(p.foe))} away`;
         default: return PRETTY[kind] ?? kind;
     }
 }
@@ -473,7 +643,7 @@ export function beforeAfter(c: Pick<Command, 'result'>): string {
 }
 /** Ask the reason again for these, and the story's title typed (5.8, rule 2). */
 export const typedTitle = (kind: CommandKind, payload: Record<string, unknown>, way?: 'back' | 'on' | 'again') =>
-    kind === 'stop' || (kind === 'order' && payload.do === 'skip') || (kind === 'enter' && way === 'back');
+    kind === 'stop' || (kind === 'order' && payload.do === 'skip') || (kind === 'enter' && way === 'back') || (kind === 'advance' && payload.anyway === true);
 /** Which way a jump goes: on, back or again (doc 85, 5.1 rule 5: going back gives nothing back). */
 export function wayOf(phases: string[], from: string | null, to: string): 'on' | 'back' | 'again' {
     if (from === to) return 'again';
@@ -1016,4 +1186,25 @@ export function parseWorldValue(type: string, text: string): {value: Value} | {p
         return {value: parts as unknown as Value};
     }
     return t.length <= 200 ? {value: t} : {problem: 'At most 200 characters.'};
+}
+
+/** Doc 86, C9: what "Undo this figure" does, in words. */
+export function figureUndoText(f: {id: string; previous: Record<string, unknown> | null}): string {
+    return f.previous ? `Put the figure ${f.id} back as it was (${String(f.previous.name ?? f.id)}, ${String(f.previous.role ?? '')})`
+        : `Take the figure ${f.id} away (there was none before)`;
+}
+
+/** Doc 86, C8: one thing residents remember of a story: whose memory (realm, town:<id>, person:<npc>, pair:<a>|<b>). */
+export interface Memory {owner: string; key: string; value: string; keep: boolean; daysLeft: number | null}
+/** Who remembers, in words: "the realm", "the town of Coldwater", "Ivo Tarmarsh", "Ivo Tarmarsh, about Ash". */
+export function memoryOwnerText(owner: string, names: Record<string, string>): string {
+    if (owner === 'realm') return 'the realm';
+    if (owner.startsWith('town:')) return 'the town of ' + nameOf(names, owner.slice(5));
+    if (owner.startsWith('person:')) return nameOf(names, owner.slice(7));
+    if (owner.startsWith('pair:')) {
+        const [a, b] = owner.slice(5).split('|');
+        const wolfFirst = a.startsWith('wolf-') || a.startsWith('player-');
+        return `${nameOf(names, wolfFirst ? b : a)}, about ${nameOf(names, wolfFirst ? a : b)}`;
+    }
+    return owner;
 }

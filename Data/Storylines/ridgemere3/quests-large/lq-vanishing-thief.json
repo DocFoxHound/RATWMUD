@@ -1,0 +1,6035 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "lq-vanishing-thief",
+ "title": "The Thief Who Wasn't There",
+ "prefix": "lq",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "quietAfterHours": 0,
+ "variables": [
+  {
+   "id": "found",
+   "type": "number",
+   "scope": "story",
+   "show": "Ways under the Heights found",
+   "note": "The shared goal: one for each wolf who goes under the street (large 12). At the goal, the reckoning."
+  },
+  {
+   "id": "found_goal",
+   "type": "number",
+   "scope": "story",
+   "initial": 3,
+   "note": "Three, and one more for every three wolves who have gone under (large 1.3)."
+  },
+  {
+   "id": "helpers",
+   "type": "wolves",
+   "scope": "story",
+   "note": "Wolves who have gone under the street this visit."
+  },
+  {
+   "id": "third",
+   "type": "number",
+   "scope": "story",
+   "note": "New helpers since the goal last grew (every third grows it)."
+  },
+  {
+   "id": "t_forgive",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for forgiving the pup."
+  },
+  {
+   "id": "t_name",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for naming her."
+  },
+  {
+   "id": "t_blinker",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for the Quickened lie."
+  },
+  {
+   "id": "reckon_set",
+   "type": "switch",
+   "scope": "story",
+   "note": "The 3-day tally has begun."
+  },
+  {
+   "id": "lq_coin",
+   "type": "number",
+   "scope": "player",
+   "note": "Coin this line has paid the wolf, ever (35 at most)."
+  },
+  {
+   "id": "lq_thin",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf was paid in kind (a thin purse)."
+  },
+  {
+   "id": "road",
+   "type": "text",
+   "scope": "player",
+   "note": "The road the wolf took in chapter 3 (one only)."
+  },
+  {
+   "id": "paid_under",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf has gone under the street once (its first reward given)."
+  },
+  {
+   "id": "laid",
+   "type": "switch",
+   "scope": "player",
+   "note": "A pledge has been left in the cache for this wolf since they last took Under the Street (one a time: no pledge farm)."
+  },
+  {
+   "id": "lq_thief",
+   "type": "text",
+   "scope": "world",
+   "note": "The Thief Who Wasn't There: walking (the rumour), forgiven, named or blinker."
+  },
+  {
+   "id": "nh_stage",
+   "type": "number",
+   "scope": "world",
+   "note": "Read only: the Ninth Howl chapter running (5 and on: the Wardens are coming)."
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "note": "The realm's voice; a road done adds 8."
+  },
+  {
+   "id": "nh_voice_ridgemere",
+   "type": "number",
+   "scope": "world",
+   "note": "Ridgemere's strand; forgiven 8, named 4, the lie 2."
+  },
+  {
+   "id": "coin_ridgemere_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:ridgemere; nh-purses owns it (sets it to 0 each day). This story only reads and adds."
+  },
+  {
+   "id": "coin_ridgemere_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:ridgemere above its floor (nh-purses turns it off below 60, on at 80). Read only here."
+  }
+ ],
+ "regions": [
+  {
+   "id": "vance_street",
+   "cell": "w_ridgemere_1_1",
+   "x1": 187,
+   "y1": 124,
+   "x2": 207,
+   "y2": 144
+  },
+  {
+   "id": "old_drain",
+   "cell": "w_ridgemere_1_1",
+   "x1": 13,
+   "y1": 41,
+   "x2": 20,
+   "y2": 42
+  },
+  {
+   "id": "vance_door",
+   "cell": "w_ridgemere_1_1",
+   "x1": 195,
+   "y1": 130,
+   "x2": 199,
+   "y2": 134
+  },
+  {
+   "id": "ss_stair",
+   "cell": "w_ridgemere_1_1",
+   "x1": 60,
+   "y1": 63,
+   "x2": 64,
+   "y2": 67
+  }
+ ],
+ "quests": [
+  {
+   "id": "locked",
+   "title": "Locked Rooms",
+   "summary": "Pledges vanish from the locked strongroom at Vance House. The Vance who runs the Rag Mill wants a plain answer for the House.",
+   "giver": "rm_eleanor_vance",
+   "board": "ridgemere",
+   "repeat": "once",
+   "join": {
+    "cap": 40
+   },
+   "phases": [
+    "open",
+    "rumour",
+    "reckoning",
+    "after_blinker",
+    "after_blinker_wardens"
+   ],
+   "offer": {
+    "ask": "Something missing from your strongroom?",
+    "say": "#greet#, #address#. Pledges gone from our strongroom on the Rise: a ring, a clip, a bracelet. No lock forced, no window open. The Heights say a Quickened wolf walks through walls. Petra wants a plain answer, and so do I. Look the house over, ask about, and watch our street one night.",
+    "accept": "I'll watch your street.",
+    "decline": "Not my business.",
+    "handIn": "Nobody came by the street.",
+    "thanks": "#thanks#. Nobody by the street. Then by what, the open air? There's an old street under these houses, they say, from before the walls. Find where it opens, and find who knows it."
+   },
+   "objectives": [
+    {
+     "id": "room",
+     "label": "Look Vance House over from its door: no lock forced, no window open.",
+     "on": "region entered",
+     "match": {
+      "target": "vance_door"
+     }
+    },
+    {
+     "id": "servant",
+     "label": "Ask the Harrowgates' man, out on the Rise all day, what he hears at night.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_emmerich_greyridge",
+      "detail": "lq_th_roald"
+     }
+    },
+    {
+     "id": "thornbury",
+     "label": "Ask the Eastgate stable keeper what went from the Thornburys' harness.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_ragnar_roperidge",
+      "detail": "lq_th_silas"
+     }
+    },
+    {
+     "id": "watch",
+     "label": "Watch the Vance street one night.",
+     "on": "story signal",
+     "signal": "street_watched"
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "watched the Vance street for the wall-walking thief"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    }
+   ]
+  },
+  {
+   "id": "under",
+   "title": "Under the Street",
+   "repeat": "weekly",
+   "join": {
+    "cap": 12
+   },
+   "phases": [
+    "open",
+    "rumour",
+    "reckoning",
+    "after_blinker",
+    "after_blinker_wardens"
+   ],
+   "summary": "Follow the scent of old stone to the Sunken Street, find the bricked arch by its far door, and find who knows the old street.",
+   "objectives": [
+    {
+     "id": "down",
+     "label": "Follow the scent of old stone to the Sunken Street's Commons stair.",
+     "on": "region entered",
+     "match": {
+      "target": "ss_stair"
+     }
+    },
+    {
+     "id": "arch",
+     "label": "Find the bricked arch by the Sunken Street's far door, and what's behind it.",
+     "on": "region entered",
+     "match": {
+      "target": "old_drain"
+     },
+     "after": [
+      "down"
+     ]
+    },
+    {
+     "id": "cache",
+     "label": "Pick up a pledge from the cache.",
+     "on": "story signal",
+     "signal": "pledge_found",
+     "after": [
+      "arch"
+     ]
+    },
+    {
+     "id": "thief",
+     "label": "Find the one who knows the old street.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rmx_una_brineridge",
+      "detail": "lq_th_street"
+     },
+     "after": [
+      "cache"
+     ]
+    },
+    {
+     "id": "lookout",
+     "label": "Ask her lookout.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rmx_finn_dripwick",
+      "detail": "lq_th_palle"
+     },
+     "after": [
+      "thief"
+     ],
+     "hidden": true,
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    }
+   ]
+  },
+  {
+   "id": "thief_forgive",
+   "title": "What Is Owed",
+   "phases": [
+    "reckoning",
+    "after_forgiven",
+    "after_named",
+    "after_blinker",
+    "after_blinker_wardens"
+   ],
+   "repeat": "once",
+   "summary": "Give the pledges back to their owners, and put Petra Vance's rates plainly to the Vance at the Rag Mill.",
+   "objectives": [
+    {
+     "id": "face",
+     "label": "Tell the young wolf who knows the old street what she did.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rmx_una_brineridge",
+      "detail": "lq_th_face"
+     }
+    },
+    {
+     "id": "clip",
+     "label": "Give the brass harness clip back to the timber feller upstairs in the Slop Rooms.",
+     "on": "gift",
+     "match": {
+      "target": "tn_fh_ivy_stonehollow",
+      "item": "brass_clip"
+     },
+     "after": [
+      "face"
+     ]
+    },
+    {
+     "id": "bracelet",
+     "label": "Give the silver bracelet back to the porter on Oakum Stair.",
+     "on": "gift",
+     "match": {
+      "target": "rm_piet_wickridge",
+      "item": "silver_bracelet"
+     },
+     "after": [
+      "face"
+     ]
+    },
+    {
+     "id": "ring",
+     "label": "Give the ear-ring back to its owner at Rag End.",
+     "on": "gift",
+     "match": {
+      "target": "rm_runa_ropemarsh",
+      "item": "ear_ring"
+     },
+     "after": [
+      "face"
+     ]
+    },
+    {
+     "id": "plain",
+     "label": "Put Petra's rates plainly to the Vance at the Rag Mill.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_eleanor_vance",
+      "detail": "lq_th_forgive"
+     },
+     "after": [
+      "face"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "gave the Sump its pledges back from Vance House"
+    },
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "showed the Heights there was no Quickened thief"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "scent_locket",
+     "quantity": 1
+    }
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "locked",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "under",
+      "status": "done"
+     }
+    ]
+   }
+  },
+  {
+   "id": "thief_name",
+   "title": "Name the Thief",
+   "phases": [
+    "reckoning",
+    "after_forgiven",
+    "after_named",
+    "after_blinker",
+    "after_blinker_wardens"
+   ],
+   "repeat": "once",
+   "summary": "Take a pledge back to the Vance at the Rag Mill and name the thief.",
+   "objectives": [
+    {
+     "id": "face",
+     "label": "Tell the young wolf who knows the old street what she did.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rmx_una_brineridge",
+      "detail": "lq_th_face"
+     }
+    },
+    {
+     "id": "pledge",
+     "label": "Give the Vance at the Rag Mill one of the pledges back.",
+     "on": "story signal",
+     "signal": "pledge_returned",
+     "after": [
+      "face"
+     ]
+    },
+    {
+     "id": "name",
+     "label": "Name the thief to the Vance at the Rag Mill.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_eleanor_vance",
+      "detail": "lq_th_name"
+     },
+     "after": [
+      "pledge"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "named the Heights thief to Vance House"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "silver_clip",
+     "quantity": 1
+    }
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "locked",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "under",
+      "status": "done"
+     }
+    ]
+   }
+  },
+  {
+   "id": "thief_quickened",
+   "title": "A Quickened Thief",
+   "phases": [
+    "reckoning",
+    "after_forgiven",
+    "after_named",
+    "after_blinker",
+    "after_blinker_wardens"
+   ],
+   "repeat": "once",
+   "summary": "Tell the Vances it was a Quickened wolf, and keep the young thief's secret.",
+   "objectives": [
+    {
+     "id": "face",
+     "label": "Tell the young wolf who knows the old street what she did.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rmx_una_brineridge",
+      "detail": "lq_th_face"
+     }
+    },
+    {
+     "id": "lie",
+     "label": "Tell the Vance at the Rag Mill a Quickened wolf walked through the walls.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_eleanor_vance",
+      "detail": "lq_th_blinker"
+     },
+     "after": [
+      "face"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "swore a Quickened thief robbed the Heights"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    }
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "locked",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "under",
+      "status": "done"
+     }
+    ]
+   }
+  }
+ ],
+ "triggers": [
+  {
+   "id": "locked-done",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "locked"
+   },
+   "note": "Chapter 2 by journal (no giver: large 1.1).",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "quest.offer",
+      "quest": "under",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "watch-enter",
+   "on": "region entered",
+   "audience": "participant",
+   "match": {
+    "target": "vance_street"
+   },
+   "if": {
+    "test": "hour between",
+    "from": 23,
+    "to": 4
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "locked",
+      "objective": "watch",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "watch-hour",
+   "on": "hour",
+   "match": {
+    "detail": "1"
+   },
+   "note": "A wolf already keeping watch on the street at one.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "wolf in region",
+        "region": "vance_street",
+        "who": "$each"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "locked",
+          "objective": "watch",
+          "player": "$each"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pledge-found",
+   "on": "item picked up",
+   "audience": "participant",
+   "match": {
+    "cell": "w_ridgemere_1_1"
+   },
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "compare",
+      "left": {
+       "field": "item"
+      },
+      "op": "=",
+      "right": "brass_clip"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "field": "item"
+      },
+      "op": "=",
+      "right": "silver_bracelet"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "field": "item"
+      },
+      "op": "=",
+      "right": "ear_ring"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "under",
+      "objective": "cache",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "under-start",
+   "on": "quest started",
+   "audience": "participant",
+   "match": {
+    "detail": "under"
+   },
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "laid"
+    }
+   ]
+  },
+  {
+   "id": "cache-lay",
+   "on": "region entered",
+   "audience": "participant",
+   "match": {
+    "target": "old_drain"
+   },
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "laid",
+      "is": false
+     },
+     {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "phase is",
+        "phase": "open"
+       },
+       {
+        "test": "phase is",
+        "phase": "rumour"
+       },
+       {
+        "test": "phase is",
+        "phase": "reckoning"
+       },
+       {
+        "test": "phase is",
+        "phase": "after_blinker"
+       },
+       {
+        "test": "phase is",
+        "phase": "after_blinker_wardens"
+       }
+      ]
+     }
+    ]
+   },
+   "note": "A pledge in the cache for each wolf who comes to the arch, once each time they take Under the Street (items on the ground do not outlast a restart, and an hourly refill was a pledge farm: large 1.3's unique pieces).",
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "laid"
+    },
+    {
+     "do": "random",
+     "choices": [
+      {
+       "weight": 1,
+       "actions": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "brass_clip",
+          "quantity": 1,
+          "cell": "w_ridgemere_1_1",
+          "x": 15,
+          "y": 41,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "weight": 1,
+       "actions": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "silver_bracelet",
+          "quantity": 1,
+          "cell": "w_ridgemere_1_1",
+          "x": 16,
+          "y": 41,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "weight": 1,
+       "actions": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "ear_ring",
+          "quantity": 1,
+          "cell": "w_ridgemere_1_1",
+          "x": 17,
+          "y": 42,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "face-pledges",
+   "on": "dialogue choice",
+   "audience": "participant",
+   "once": "member",
+   "match": {
+    "item": "rmx_una_brineridge",
+    "detail": "lq_th_face"
+   },
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": "thief_forgive"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": "thief_name"
+     }
+    ]
+   },
+   "note": "Faced, the pup gives up what the road needs: every pledge to a wolf who will take them home (those the wolf hasn't got), and to a wolf bound for the lender, one more in the cache if they carry none.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": "thief_forgive"
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "carries",
+        "item": "brass_clip",
+        "op": "<",
+        "value": 1
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "brass_clip",
+          "quantity": 1,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "carries",
+        "item": "silver_bracelet",
+        "op": "<",
+        "value": 1
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "silver_bracelet",
+          "quantity": 1,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "carries",
+        "item": "ear_ring",
+        "op": "<",
+        "value": 1
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "ear_ring",
+          "quantity": 1,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "She digs the rest of the pledges out from behind the bricked arch and puts them in your paws, to go home.",
+        "ifRefused": "skip"
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "carries",
+          "item": "brass_clip",
+          "op": "<",
+          "value": 1
+         },
+         {
+          "test": "carries",
+          "item": "silver_bracelet",
+          "op": "<",
+          "value": 1
+         },
+         {
+          "test": "carries",
+          "item": "ear_ring",
+          "op": "<",
+          "value": 1
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "brass_clip",
+          "quantity": 1,
+          "cell": "w_ridgemere_1_1",
+          "x": 15,
+          "y": 41,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "One pledge still lies in the cache behind the bricked arch, if you mean to take it to the Vances.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "under-done",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "under"
+   },
+   "note": "The first time under: a deed, torches and 6 from the treasury (decisions 3.2).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "paid_under",
+      "is": false
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "paid_under"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "found the old way under the Heights that the vanishing thief used",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "torch",
+        "quantity": 2,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_ridgemere_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_ridgemere_day"
+          },
+          "op": "<=",
+          "right": 129
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "lq_coin"
+          },
+          "op": "<=",
+          "right": 29
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:ridgemere"
+          },
+          "op": ">=",
+          "right": 66
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": {
+           "min": [
+            6,
+            {
+             "div": [
+              {
+               "purse": "town:ridgemere"
+              },
+              20
+             ]
+            }
+           ]
+          },
+          "purse": "town:ridgemere",
+          "reason": "Vance House pays for plain word of the old street",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_ridgemere_day",
+         "value": {
+          "min": [
+           6,
+           {
+            "div": [
+             {
+              "purse": "town:ridgemere"
+             },
+             20
+            ]
+           }
+          ]
+         }
+        },
+        {
+         "do": "add",
+         "var": "lq_coin",
+         "value": {
+          "min": [
+           6,
+           {
+            "div": [
+             {
+              "purse": "town:ridgemere"
+             },
+             20
+            ]
+           }
+          ]
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "lq_thin"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "realm",
+          "key": "lq_thief_thin",
+          "value": "yes",
+          "days": 1
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The treasury is thin this week, so Vance House's thanks comes as bread instead of coin.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "quest.offer",
+      "quest": "thief_forgive",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "quest.offer",
+      "quest": "thief_name",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "quest.offer",
+      "quest": "thief_quickened",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "under-tally",
+   "on": "quest completed",
+   "match": {
+    "detail": "under"
+   },
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "phase is",
+      "phase": "open"
+     },
+     {
+      "test": "phase is",
+      "phase": "rumour"
+     }
+    ]
+   },
+   "note": "The shared goal, and the rumour growing on the Heights board at one and two (large 12).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "in list",
+       "list": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      }
+     },
+     "then": [
+      {
+       "do": "list add",
+       "var": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      },
+      {
+       "do": "add",
+       "var": "third",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "third"
+        },
+        "op": ">=",
+        "right": 3
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "third",
+         "value": 0
+        },
+        {
+         "do": "add",
+         "var": "found_goal",
+         "value": 1
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "found",
+     "value": 1
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "found"
+      },
+      "op": "=",
+      "right": 1
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "board.post",
+        "town": "ridgemere",
+        "days": 14,
+        "text": "VANCE HOUSE: a reward for plain word of the wall-walking thief. No tales of magic. Petra Vance.",
+        "ifRefused": "skip"
+       }
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "found"
+          },
+          "op": "=",
+          "right": 2
+         },
+         {
+          "test": "phase is",
+          "phase": "open"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "board.post",
+          "town": "ridgemere",
+          "days": 14,
+          "text": "VANCE HOUSE: another pledge gone. The Heights ask their neighbours to lock their cellars. Petra Vance.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "schedule",
+         "signal": "to_rumour",
+         "days": 0.0006944444444444445
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "found"
+        },
+        "op": ">=",
+        "right": {
+         "var": "found_goal"
+        }
+       },
+       {
+        "test": "phase is",
+        "phase": "rumour"
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "schedule",
+       "signal": "to_reckoning",
+       "days": 0.0006944444444444445
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-start",
+   "on": "quest started",
+   "audience": "participant",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "compare",
+      "left": {
+       "field": "detail"
+      },
+      "op": "=",
+      "right": "thief_forgive"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "field": "detail"
+      },
+      "op": "=",
+      "right": "thief_name"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "field": "detail"
+      },
+      "op": "=",
+      "right": "thief_quickened"
+     }
+    ]
+   },
+   "note": "One road a wolf. The first: its weight on the tally; the first of all starts the 3-day reckoning.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "thief_forgive"
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "road",
+         "value": "thief_forgive"
+        },
+        {
+         "do": "add",
+         "var": "t_forgive",
+         "value": 1
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "thief_name"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "road",
+           "value": "thief_name"
+          },
+          {
+           "do": "add",
+           "var": "t_name",
+           "value": 1
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "set",
+         "var": "road",
+         "value": "thief_quickened"
+        },
+        {
+         "do": "add",
+         "var": "t_blinker",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "reckoning"
+         },
+         {
+          "test": "switch",
+          "var": "reckon_set",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "reckon_set"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "road"
+        },
+        "op": "!=",
+        "right": {
+         "field": "detail"
+        }
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "thief_forgive"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.fail",
+            "quest": "thief_forgive",
+            "player": "$actor"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "compare",
+            "left": {
+             "field": "detail"
+            },
+            "op": "=",
+            "right": "thief_name"
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "quest.fail",
+              "quest": "thief_name",
+              "player": "$actor"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.fail",
+            "quest": "thief_quickened",
+            "player": "$actor"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Another road taken: you have already settled what is owed under the Heights.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "gift-pledge",
+   "on": "gift",
+   "audience": "participant",
+   "match": {
+    "target": "rm_eleanor_vance"
+   },
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "compare",
+      "left": {
+       "field": "item"
+      },
+      "op": "=",
+      "right": "brass_clip"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "field": "item"
+      },
+      "op": "=",
+      "right": "silver_bracelet"
+     },
+     {
+      "test": "compare",
+      "left": {
+       "field": "item"
+      },
+      "op": "=",
+      "right": "ear_ring"
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "thief_name",
+      "objective": "pledge",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "thief_forgive-done",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "thief_forgive"
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_ridgemere_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_ridgemere_day"
+        },
+        "op": "<=",
+        "right": 123
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 72
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:ridgemere",
+        "reason": "the Sump courts thank you for their pledges",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_ridgemere_day",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "realm",
+        "key": "lq_thief_thin",
+        "value": "yes",
+        "days": 1
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The treasury is thin this week, so Vance House's thanks comes as bread instead of coin.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 8
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_ridgemere",
+     "value": 8
+    }
+   ]
+  },
+  {
+   "id": "thief_name-done",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "thief_name"
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_ridgemere_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_ridgemere_day"
+        },
+        "op": "<=",
+        "right": 123
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 72
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:ridgemere",
+        "reason": "Vance House's thanks for a plain answer",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_ridgemere_day",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "realm",
+        "key": "lq_thief_thin",
+        "value": "yes",
+        "days": 1
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The treasury is thin this week, so Vance House's thanks comes as bread instead of coin.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 8
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_ridgemere",
+     "value": 4
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "journal.note",
+      "player": "$actor",
+      "text": "The young thief is in debt to Vance House, and Greywool keeps her on.",
+      "ifRefused": "skip"
+     }
+    }
+   ]
+  },
+  {
+   "id": "thief_quickened-done",
+   "on": "quest completed",
+   "audience": "participant",
+   "match": {
+    "detail": "thief_quickened"
+   },
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_ridgemere_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_ridgemere_day"
+        },
+        "op": "<=",
+        "right": 125
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 25
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 70
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": {
+         "min": [
+          10,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "town:ridgemere",
+        "reason": "Vance House's gratitude",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_ridgemere_day",
+       "value": {
+        "min": [
+         10,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": {
+        "min": [
+         10,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "realm",
+        "key": "lq_thief_thin",
+        "value": "yes",
+        "days": 1
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The treasury is thin this week, so Vance House's thanks comes as bread instead of coin.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 8
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_ridgemere",
+     "value": 2
+    }
+   ]
+  },
+  {
+   "id": "day-sweep",
+   "on": "day begins",
+   "note": "Under the street again each week to those who went, and the roads to those who have none.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "paid_under",
+        "is": true,
+        "of": "$each"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "quest.offer",
+          "quest": "under",
+          "player": "$each"
+         }
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "road",
+           "of": "$each"
+          },
+          "op": "=",
+          "right": ""
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "thief_forgive",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "thief_name",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "thief_quickened",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "wardens",
+   "on": "day begins",
+   "if": {
+    "test": "phase is",
+    "phase": "after_blinker"
+   },
+   "note": "In a world that believed the lie, the Wardens come with the campaign's fifth chapter (the DM may also send it: wardens).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "nh_stage"
+      },
+      "op": ">=",
+      "right": 5
+     },
+     "then": [
+      {
+       "do": "enter",
+       "phase": "after_blinker_wardens"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "season",
+   "on": "season begins",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "phase is",
+      "phase": "after_blinker"
+     },
+     {
+      "test": "phase is",
+      "phase": "after_blinker_wardens"
+     }
+    ]
+   },
+   "note": "The lie left the pup at it: a new season, and the Heights lose pledges again (a fresh shared goal).",
+   "actions": [
+    {
+     "do": "enter",
+     "phase": "open"
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "Pledges vanish from a locked strongroom on the Rise, and the Heights whisper of a wall-walking thief.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rm_eleanor_vance",
+     "text": "Lock your doors, they say. Ours were locked. Bright One keep us from wolves who walk through walls."
+    },
+    {
+     "kind": "item.place",
+     "item": "brass_clip",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1",
+     "x": 15,
+     "y": 41,
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "item.place",
+     "item": "silver_bracelet",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1",
+     "x": 16,
+     "y": 41,
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "item.place",
+     "item": "ear_ring",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1",
+     "x": 17,
+     "y": 42,
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_thief",
+     "value": "walking",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "open-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "Each visit: the residents' choices and a fresh shared goal; the rumour walks the Heights.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_emmerich_greyridge",
+        "id": "lq_th_roald",
+        "words": "Have you heard anything on the Rise at night?",
+        "reply": "I'm out on the Rise from first light, and I go home late. There's scratching under the street at night, like something in the drains, and the Vance cellars smell of old stone and wet. Nobody believes a servant."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_ragnar_roperidge",
+        "id": "lq_th_silas",
+        "words": "Was anything taken from the Thornburys?",
+        "reply": "Not from the house. The Thornburys stable here, and their master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back. It went off his harness, off my own peg. Funny sort of thief, that takes back only what was pawned."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_street",
+        "words": "Somebody knows the old street under the Heights. Is it you?",
+        "reply": "Might be. Folk who know it don't shout it in the lane. You found the cache, so you know I'm not much of a ghost. Ask me straight what I did, and I'll tell you straight."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_finn_dripwick",
+        "id": "lq_th_palle",
+        "words": "Do you keep watch for her?",
+        "reply": "Somebody has to whistle. She's cleverer than the whole Heights lot. If you're going to name her, name me too. It's only fair."
+       }
+      },
+      {
+       "do": "set",
+       "var": "found",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "found_goal",
+       "value": 3
+      },
+      {
+       "do": "list clear",
+       "var": "helpers"
+      },
+      {
+       "do": "set",
+       "var": "third",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "t_forgive",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "t_name",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "t_blinker",
+       "value": 0
+      },
+      {
+       "do": "turn off",
+       "var": "reckon_set"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "lq_thief"
+        },
+        "op": "=",
+        "right": ""
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "lq_thief",
+         "value": "walking"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "to-rumour",
+     "on": "story signal",
+     "signal": "to_rumour",
+     "actions": [
+      {
+       "do": "enter",
+       "phase": "rumour"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "rumour",
+   "journal": "Another pledge gone, and all the Heights talk of Gifts.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rm_eleanor_vance",
+     "text": "Another pledge gone, and the whole Heights whispering about Gifts. Petra wants a plain answer, and nobody will give her one."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_thief",
+     "value": "walking",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "rumour-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "A game minute in: the residents' choices in their windows for this visit.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_emmerich_greyridge",
+        "id": "lq_th_roald",
+        "words": "Have you heard anything on the Rise at night?",
+        "reply": "I'm out on the Rise from first light, and I go home late. There's scratching under the street at night, like something in the drains, and the Vance cellars smell of old stone and wet. Nobody believes a servant."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_ragnar_roperidge",
+        "id": "lq_th_silas",
+        "words": "Was anything taken from the Thornburys?",
+        "reply": "Not from the house. The Thornburys stable here, and their master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back. It went off his harness, off my own peg. Funny sort of thief, that takes back only what was pawned."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_street",
+        "words": "Somebody knows the old street under the Heights. Is it you?",
+        "reply": "Might be. Folk who know it don't shout it in the lane. You found the cache, so you know I'm not much of a ghost. Ask me straight what I did, and I'll tell you straight."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_finn_dripwick",
+        "id": "lq_th_palle",
+        "words": "Do you keep watch for her?",
+        "reply": "Somebody has to whistle. She's cleverer than the whole Heights lot. If you're going to name her, name me too. It's only fair."
+       }
+      }
+     ]
+    },
+    {
+     "id": "to-reckoning",
+     "on": "story signal",
+     "signal": "to_reckoning",
+     "actions": [
+      {
+       "do": "enter",
+       "phase": "reckoning"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "reckoning",
+   "journal": "The old way under the Heights is found. What is owed must be settled.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rm_eleanor_vance",
+     "text": "So somebody's found the way in. Then tell me plainly who it is. Petra will not have tales of magic in the house."
+    },
+    {
+     "kind": "board.post",
+     "town": "ridgemere",
+     "days": 7,
+     "ifRefused": "skip",
+     "text": "VANCE HOUSE: plain word wanted of the wall-walking thief. Ask at the Vances' Rag Mill. Petra Vance."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_thief",
+     "value": "walking",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "reckoning-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "A game minute in: every choice, the roads to every wolf who went under, and the default in 7 days if nobody chooses.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_emmerich_greyridge",
+        "id": "lq_th_roald",
+        "words": "Have you heard anything on the Rise at night?",
+        "reply": "I'm out on the Rise from first light, and I go home late. There's scratching under the street at night, like something in the drains, and the Vance cellars smell of old stone and wet. Nobody believes a servant."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_ragnar_roperidge",
+        "id": "lq_th_silas",
+        "words": "Was anything taken from the Thornburys?",
+        "reply": "Not from the house. The Thornburys stable here, and their master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back. It went off his harness, off my own peg. Funny sort of thief, that takes back only what was pawned."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_finn_dripwick",
+        "id": "lq_th_palle",
+        "words": "Do you keep watch for her?",
+        "reply": "Somebody has to whistle. She's cleverer than the whole Heights lot. If you're going to name her, name me too. It's only fair."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_street",
+        "words": "Somebody knows the old street under the Heights. Is it you?",
+        "reply": "Might be. Folk who know it don't shout it in the lane. You found the cache, so you know I'm not much of a ghost. Ask me straight what I did, and I'll tell you straight."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_face",
+        "words": "You took the pledges from Vance House.",
+        "reply": "Took them back. A feller's harness clip, a bracelet a lighterman left his brother, an old ear-ring. My mother's shawl. The Vances lend at a penny a week on the mark and keep the pledge if you're a day late. I'm not Quickened. I know the old street."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_way",
+        "words": "Show me the way you came.",
+        "reply": "Down the Sunken Street, past the bricked arch, up the drain under the Vance cellar. Mind the low bit. And don't tell Greywool. They think I'm at the loom."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_gift",
+        "words": "If I carried a Gift, I'd know one. You haven't got one, have you?",
+        "reply": "No. I've just got four paws and a good nose and an old street nobody remembers. You lot make everything into magic."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_eleanor_vance",
+        "id": "lq_th_forgive",
+        "words": "Your rates are robbery. Let the Sump pledges go.",
+        "reply": "Robbery? A penny a week on a mark is... a great deal, put that way. Bright One forgive us, Petra keeps a ledger like a fist. I'll have her let them go. And the girl stays out of our cellar."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_eleanor_vance",
+        "id": "lq_th_blinker",
+        "words": "It was a Quickened wolf. Nobody could have stopped it.",
+        "reply": "Then the Heights were right, and we were fools to want a plain answer. Petra will write to whoever answers for such wolves. Somebody must."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_eleanor_vance",
+        "id": "lq_th_name",
+        "words": "It was a young Sump wolf, through an old drain. No Gift at all.",
+        "reply": "A Sump girl? Through our cellar? Bright One, and the whole Heights talking of Gifts. Petra will call her debt in, and Greywool can keep her or not. A plain answer. We asked for it."
+       }
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "paid_under",
+            "is": true,
+            "of": "$each"
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "road",
+             "of": "$each"
+            },
+            "op": "=",
+            "right": ""
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "thief_forgive",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "thief_name",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "thief_quickened",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "schedule",
+       "signal": "reckon",
+       "days": 7
+      }
+     ]
+    },
+    {
+     "id": "reckon",
+     "on": "story signal",
+     "signal": "reckon",
+     "note": "The reckoning (large 1.2): the heaviest road wins; a tie, or nobody, forgives the pup.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "t_name"
+          },
+          "op": ">",
+          "right": {
+           "var": "t_forgive"
+          }
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "t_name"
+          },
+          "op": ">",
+          "right": {
+           "var": "t_blinker"
+          }
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "lq_thief",
+         "value": "named"
+        },
+        {
+         "do": "enter",
+         "phase": "after_named"
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "t_blinker"
+            },
+            "op": ">",
+            "right": {
+             "var": "t_forgive"
+            }
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "t_blinker"
+            },
+            "op": ">",
+            "right": {
+             "var": "t_name"
+            }
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "lq_thief",
+           "value": "blinker"
+          },
+          {
+           "do": "enter",
+           "phase": "after_blinker"
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "set",
+         "var": "lq_thief",
+         "value": "forgiven"
+        },
+        {
+         "do": "enter",
+         "phase": "after_forgiven"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_forgiven",
+   "journal": "Vance House let the Sump pledges go, and the Heights know there was no Quickened thief.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rm_eleanor_vance",
+     "text": "A penny a week on a mark. Put plainly, it was robbery. Petra keeps a gentler ledger now, Bright One forgive us the old one."
+    },
+    {
+     "kind": "npc.line",
+     "npc": "rmx_una_brineridge",
+     "text": "Mam's shawl is back on my peg. Somebody put it to the lender plain, and she listened. Fancy that."
+    },
+    {
+     "kind": "board.post",
+     "town": "ridgemere",
+     "days": 28,
+     "ifRefused": "skip",
+     "text": "VANCE HOUSE: pledges from the Sump courts may be had back for the loan alone, no weekly penny. Petra Vance."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_thief",
+     "value": "forgiven",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "after_forgiven-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "A game minute in: the residents' choices in their windows for this visit.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_emmerich_greyridge",
+        "id": "lq_th_roald",
+        "words": "Have you heard anything on the Rise at night?",
+        "reply": "I'm out on the Rise from first light, and I go home late. There's scratching under the street at night, like something in the drains, and the Vance cellars smell of old stone and wet. Nobody believes a servant."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_ragnar_roperidge",
+        "id": "lq_th_silas",
+        "words": "Was anything taken from the Thornburys?",
+        "reply": "Not from the house. The Thornburys stable here, and their master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back. It went off his harness, off my own peg. Funny sort of thief, that takes back only what was pawned."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_finn_dripwick",
+        "id": "lq_th_palle",
+        "words": "Do you keep watch for her?",
+        "reply": "Somebody has to whistle. She's cleverer than the whole Heights lot. If you're going to name her, name me too. It's only fair."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_street",
+        "words": "Somebody knows the old street under the Heights. Is it you?",
+        "reply": "Might be. Folk who know it don't shout it in the lane. You found the cache, so you know I'm not much of a ghost. Ask me straight what I did, and I'll tell you straight."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_face",
+        "words": "You took the pledges from Vance House.",
+        "reply": "Took them back. A feller's harness clip, a bracelet a lighterman left his brother, an old ear-ring. My mother's shawl. The Vances lend at a penny a week on the mark and keep the pledge if you're a day late. I'm not Quickened. I know the old street."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_way",
+        "words": "Show me the way you came.",
+        "reply": "Down the Sunken Street, past the bricked arch, up the drain under the Vance cellar. Mind the low bit. And don't tell Greywool. They think I'm at the loom."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_gift",
+        "words": "If I carried a Gift, I'd know one. You haven't got one, have you?",
+        "reply": "No. I've just got four paws and a good nose and an old street nobody remembers. You lot make everything into magic."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_eleanor_vance",
+        "id": "lq_th_forgive",
+        "words": "Your rates are robbery. Let the Sump pledges go.",
+        "reply": "Robbery? A penny a week on a mark is... a great deal, put that way. Bright One forgive us, Petra keeps a ledger like a fist. I'll have her let them go. And the girl stays out of our cellar."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_eleanor_vance",
+        "id": "lq_th_blinker",
+        "words": "It was a Quickened wolf. Nobody could have stopped it.",
+        "reply": "Then the Heights were right, and we were fools to want a plain answer. Petra will write to whoever answers for such wolves. Somebody must."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_eleanor_vance",
+        "id": "lq_th_name",
+        "words": "It was a young Sump wolf, through an old drain. No Gift at all.",
+        "reply": "A Sump girl? Through our cellar? Bright One, and the whole Heights talking of Gifts. Petra will call her debt in, and Greywool can keep her or not. A plain answer. We asked for it."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_named",
+   "journal": "The Heights thief was named: a young Sump wolf with no Gift at all.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rm_eleanor_vance",
+     "text": "Named, and her debt called in. We asked for a plain answer. Neither of us thought it would sit so cold."
+    },
+    {
+     "kind": "npc.line",
+     "npc": "rmx_una_brineridge",
+     "text": "You named me. Fine. Greywool kept me on, no thanks to you, and the Vances keep their ledger. Don't come down my street."
+    },
+    {
+     "kind": "board.post",
+     "town": "ridgemere",
+     "days": 28,
+     "ifRefused": "skip",
+     "text": "VANCE HOUSE: the Heights thief was a young Sump wolf, through an old drain. No Gift. The cellar is bricked up. Petra Vance."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_thief",
+     "value": "named",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "after_named-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "A game minute in: the residents' choices in their windows for this visit.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_emmerich_greyridge",
+        "id": "lq_th_roald",
+        "words": "Have you heard anything on the Rise at night?",
+        "reply": "I'm out on the Rise from first light, and I go home late. There's scratching under the street at night, like something in the drains, and the Vance cellars smell of old stone and wet. Nobody believes a servant."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_ragnar_roperidge",
+        "id": "lq_th_silas",
+        "words": "Was anything taken from the Thornburys?",
+        "reply": "Not from the house. The Thornburys stable here, and their master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back. It went off his harness, off my own peg. Funny sort of thief, that takes back only what was pawned."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_finn_dripwick",
+        "id": "lq_th_palle",
+        "words": "Do you keep watch for her?",
+        "reply": "Somebody has to whistle. She's cleverer than the whole Heights lot. If you're going to name her, name me too. It's only fair."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_street",
+        "words": "Somebody knows the old street under the Heights. Is it you?",
+        "reply": "Might be. Folk who know it don't shout it in the lane. You found the cache, so you know I'm not much of a ghost. Ask me straight what I did, and I'll tell you straight."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_face",
+        "words": "You took the pledges from Vance House.",
+        "reply": "Took them back. A feller's harness clip, a bracelet a lighterman left his brother, an old ear-ring. My mother's shawl. The Vances lend at a penny a week on the mark and keep the pledge if you're a day late. I'm not Quickened. I know the old street."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_way",
+        "words": "Show me the way you came.",
+        "reply": "Down the Sunken Street, past the bricked arch, up the drain under the Vance cellar. Mind the low bit. And don't tell Greywool. They think I'm at the loom."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_gift",
+        "words": "If I carried a Gift, I'd know one. You haven't got one, have you?",
+        "reply": "No. I've just got four paws and a good nose and an old street nobody remembers. You lot make everything into magic."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_eleanor_vance",
+        "id": "lq_th_forgive",
+        "words": "Your rates are robbery. Let the Sump pledges go.",
+        "reply": "Robbery? A penny a week on a mark is... a great deal, put that way. Bright One forgive us, Petra keeps a ledger like a fist. I'll have her let them go. And the girl stays out of our cellar."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_eleanor_vance",
+        "id": "lq_th_blinker",
+        "words": "It was a Quickened wolf. Nobody could have stopped it.",
+        "reply": "Then the Heights were right, and we were fools to want a plain answer. Petra will write to whoever answers for such wolves. Somebody must."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_eleanor_vance",
+        "id": "lq_th_name",
+        "words": "It was a young Sump wolf, through an old drain. No Gift at all.",
+        "reply": "A Sump girl? Through our cellar? Bright One, and the whole Heights talking of Gifts. Petra will call her debt in, and Greywool can keep her or not. A plain answer. We asked for it."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_blinker",
+   "journal": "The Heights swear a Quickened thief walks through their walls.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rm_eleanor_vance",
+     "text": "A Gift, then. Petra sleeps with a lamp lit and a letter written. Somebody must answer for such wolves."
+    },
+    {
+     "kind": "npc.line",
+     "npc": "rmx_una_brineridge",
+     "text": "Quickened, they say. Ha. Mind your strongrooms, Heights."
+    },
+    {
+     "kind": "board.post",
+     "town": "ridgemere",
+     "days": 28,
+     "ifRefused": "skip",
+     "text": "Lock your strongrooms. The Heights ask the Council to send for the Wardens."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_thief",
+     "value": "blinker",
+     "days": 365
+    }
+   ],
+   "exits": [
+    {
+     "on": "dm signal",
+     "match": {
+      "detail": "wardens"
+     },
+     "to": "after_blinker_wardens"
+    }
+   ],
+   "triggers": [
+    {
+     "id": "after_blinker-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "A game minute in: the residents' choices in their windows for this visit.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_emmerich_greyridge",
+        "id": "lq_th_roald",
+        "words": "Have you heard anything on the Rise at night?",
+        "reply": "I'm out on the Rise from first light, and I go home late. There's scratching under the street at night, like something in the drains, and the Vance cellars smell of old stone and wet. Nobody believes a servant."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_ragnar_roperidge",
+        "id": "lq_th_silas",
+        "words": "Was anything taken from the Thornburys?",
+        "reply": "Not from the house. The Thornburys stable here, and their master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back. It went off his harness, off my own peg. Funny sort of thief, that takes back only what was pawned."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_finn_dripwick",
+        "id": "lq_th_palle",
+        "words": "Do you keep watch for her?",
+        "reply": "Somebody has to whistle. She's cleverer than the whole Heights lot. If you're going to name her, name me too. It's only fair."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_street",
+        "words": "Somebody knows the old street under the Heights. Is it you?",
+        "reply": "Might be. Folk who know it don't shout it in the lane. You found the cache, so you know I'm not much of a ghost. Ask me straight what I did, and I'll tell you straight."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_face",
+        "words": "You took the pledges from Vance House.",
+        "reply": "Took them back. A feller's harness clip, a bracelet a lighterman left his brother, an old ear-ring. My mother's shawl. The Vances lend at a penny a week on the mark and keep the pledge if you're a day late. I'm not Quickened. I know the old street."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_way",
+        "words": "Show me the way you came.",
+        "reply": "Down the Sunken Street, past the bricked arch, up the drain under the Vance cellar. Mind the low bit. And don't tell Greywool. They think I'm at the loom."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_gift",
+        "words": "If I carried a Gift, I'd know one. You haven't got one, have you?",
+        "reply": "No. I've just got four paws and a good nose and an old street nobody remembers. You lot make everything into magic."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_eleanor_vance",
+        "id": "lq_th_forgive",
+        "words": "Your rates are robbery. Let the Sump pledges go.",
+        "reply": "Robbery? A penny a week on a mark is... a great deal, put that way. Bright One forgive us, Petra keeps a ledger like a fist. I'll have her let them go. And the girl stays out of our cellar."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_eleanor_vance",
+        "id": "lq_th_blinker",
+        "words": "It was a Quickened wolf. Nobody could have stopped it.",
+        "reply": "Then the Heights were right, and we were fools to want a plain answer. Petra will write to whoever answers for such wolves. Somebody must."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_eleanor_vance",
+        "id": "lq_th_name",
+        "words": "It was a young Sump wolf, through an old drain. No Gift at all.",
+        "reply": "A Sump girl? Through our cellar? Bright One, and the whole Heights talking of Gifts. Petra will call her debt in, and Greywool can keep her or not. A plain answer. We asked for it."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_blinker_wardens",
+   "journal": "Black cloaks on the Pass Road, and the Heights say Vance House sent for them.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rm_eleanor_vance",
+     "text": "Black cloaks on the Pass Road, and they say the Vances sent for them. Bright One help us, perhaps we did."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_thief",
+     "value": "blinker",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "after_blinker_wardens-lay",
+     "on": "clock",
+     "afterDays": 0.0006944444444444445,
+     "once": "visit",
+     "note": "A game minute in: the residents' choices in their windows for this visit.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_emmerich_greyridge",
+        "id": "lq_th_roald",
+        "words": "Have you heard anything on the Rise at night?",
+        "reply": "I'm out on the Rise from first light, and I go home late. There's scratching under the street at night, like something in the drains, and the Vance cellars smell of old stone and wet. Nobody believes a servant."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_ragnar_roperidge",
+        "id": "lq_th_silas",
+        "words": "Was anything taken from the Thornburys?",
+        "reply": "Not from the house. The Thornburys stable here, and their master bought a brass clip off Vance House last winter, a pledge somebody in the Sump never paid back. It went off his harness, off my own peg. Funny sort of thief, that takes back only what was pawned."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_finn_dripwick",
+        "id": "lq_th_palle",
+        "words": "Do you keep watch for her?",
+        "reply": "Somebody has to whistle. She's cleverer than the whole Heights lot. If you're going to name her, name me too. It's only fair."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_street",
+        "words": "Somebody knows the old street under the Heights. Is it you?",
+        "reply": "Might be. Folk who know it don't shout it in the lane. You found the cache, so you know I'm not much of a ghost. Ask me straight what I did, and I'll tell you straight."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_face",
+        "words": "You took the pledges from Vance House.",
+        "reply": "Took them back. A feller's harness clip, a bracelet a lighterman left his brother, an old ear-ring. My mother's shawl. The Vances lend at a penny a week on the mark and keep the pledge if you're a day late. I'm not Quickened. I know the old street."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_way",
+        "words": "Show me the way you came.",
+        "reply": "Down the Sunken Street, past the bricked arch, up the drain under the Vance cellar. Mind the low bit. And don't tell Greywool. They think I'm at the loom."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_una_brineridge",
+        "id": "lq_th_gift",
+        "words": "If I carried a Gift, I'd know one. You haven't got one, have you?",
+        "reply": "No. I've just got four paws and a good nose and an old street nobody remembers. You lot make everything into magic."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_eleanor_vance",
+        "id": "lq_th_forgive",
+        "words": "Your rates are robbery. Let the Sump pledges go.",
+        "reply": "Robbery? A penny a week on a mark is... a great deal, put that way. Bright One forgive us, Petra keeps a ledger like a fist. I'll have her let them go. And the girl stays out of our cellar."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_eleanor_vance",
+        "id": "lq_th_blinker",
+        "words": "It was a Quickened wolf. Nobody could have stopped it.",
+        "reply": "Then the Heights were right, and we were fools to want a plain answer. Petra will write to whoever answers for such wolves. Somebody must."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_eleanor_vance",
+        "id": "lq_th_name",
+        "words": "It was a young Sump wolf, through an old drain. No Gift at all.",
+        "reply": "A Sump girl? Through our cellar? Bright One, and the whole Heights talking of Gifts. Petra will call her debt in, and Greywool can keep her or not. A plain answer. We asked for it."
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "tests": [
+  {
+   "name": "Four wolves find the old street; forgiving wins; each road paid and fed",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.05,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 0.055,
+     "actor": "wolf-ash",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 0.06,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 0.065,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e5",
+     "kind": "hour",
+     "day": 0.07,
+     "detail": "1",
+     "quantity": 1,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_1_1",
+        "x": 197,
+        "y": 134,
+        "indoors": false,
+        "downed": false,
+        "hurt": false,
+        "wanted": false,
+        "held": false,
+        "partySize": 1,
+        "carries": {},
+        "coins": 10
+       }
+      },
+      "world": {
+       "hour": 1
+      }
+     }
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.08,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 0.1,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e8",
+     "kind": "region entered",
+     "day": 0.105,
+     "actor": "wolf-birch",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e9",
+     "kind": "dialogue choice",
+     "day": 0.11,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e10",
+     "kind": "dialogue choice",
+     "day": 0.115,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 0.12,
+     "actor": "wolf-birch",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 0.13,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 0.14,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 0.145,
+     "actor": "wolf-cedar",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e15",
+     "kind": "dialogue choice",
+     "day": 0.15,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e16",
+     "kind": "dialogue choice",
+     "day": 0.155,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 0.16,
+     "actor": "wolf-cedar",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "quest handed in",
+     "day": 0.17,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e19",
+     "kind": "quest accepted",
+     "day": 0.18,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e20",
+     "kind": "region entered",
+     "day": 0.185,
+     "actor": "wolf-dun",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e21",
+     "kind": "dialogue choice",
+     "day": 0.19,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e22",
+     "kind": "dialogue choice",
+     "day": 0.195,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e23",
+     "kind": "region entered",
+     "day": 0.2,
+     "actor": "wolf-dun",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e24",
+     "kind": "quest handed in",
+     "day": 0.21,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e25",
+     "kind": "quest accepted",
+     "day": 0.218,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e26",
+     "kind": "region entered",
+     "day": 0.22,
+     "actor": "wolf-ash",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e27",
+     "kind": "region entered",
+     "day": 0.225,
+     "actor": "wolf-ash",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e28",
+     "kind": "item picked up",
+     "day": 0.23,
+     "actor": "wolf-ash",
+     "item": "brass_clip",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e29",
+     "kind": "dialogue choice",
+     "day": 0.235,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e30",
+     "kind": "dialogue choice",
+     "day": 0.24,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_finn_dripwick",
+     "detail": "lq_th_palle"
+    },
+    {
+     "id": "e31",
+     "kind": "quest accepted",
+     "day": 0.268,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e32",
+     "kind": "region entered",
+     "day": 0.27,
+     "actor": "wolf-birch",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e33",
+     "kind": "region entered",
+     "day": 0.275,
+     "actor": "wolf-birch",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e34",
+     "kind": "item picked up",
+     "day": 0.28,
+     "actor": "wolf-birch",
+     "item": "silver_bracelet",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e35",
+     "kind": "dialogue choice",
+     "day": 0.285,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e36",
+     "kind": "quest accepted",
+     "day": 0.318,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e37",
+     "kind": "region entered",
+     "day": 0.32,
+     "actor": "wolf-cedar",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e38",
+     "kind": "region entered",
+     "day": 0.325,
+     "actor": "wolf-cedar",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e39",
+     "kind": "item picked up",
+     "day": 0.33,
+     "actor": "wolf-cedar",
+     "item": "ear_ring",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e40",
+     "kind": "dialogue choice",
+     "day": 0.335,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e41",
+     "kind": "quest accepted",
+     "day": 0.368,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e42",
+     "kind": "region entered",
+     "day": 0.37,
+     "actor": "wolf-dun",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e43",
+     "kind": "region entered",
+     "day": 0.375,
+     "actor": "wolf-dun",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e44",
+     "kind": "item picked up",
+     "day": 0.38,
+     "actor": "wolf-dun",
+     "item": "brass_clip",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e45",
+     "kind": "dialogue choice",
+     "day": 0.385,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e46",
+     "kind": "arrival",
+     "day": 0.43,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e47",
+     "kind": "quest accepted",
+     "day": 0.47,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "thief_forgive"
+    },
+    {
+     "id": "e48",
+     "kind": "quest accepted",
+     "day": 0.48,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "thief_forgive"
+    },
+    {
+     "id": "e49",
+     "kind": "quest accepted",
+     "day": 0.49,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "thief_name"
+    },
+    {
+     "id": "e50",
+     "kind": "quest accepted",
+     "day": 0.5,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "",
+     "detail": "thief_quickened"
+    },
+    {
+     "id": "e51",
+     "kind": "quest accepted",
+     "day": 0.51,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "",
+     "detail": "thief_name"
+    },
+    {
+     "id": "e52",
+     "kind": "dialogue choice",
+     "day": 0.52,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_face"
+    },
+    {
+     "id": "e53",
+     "kind": "dialogue choice",
+     "day": 0.53,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_gift"
+    },
+    {
+     "id": "e54",
+     "kind": "gift",
+     "day": 0.54,
+     "actor": "wolf-ash",
+     "target": "tn_fh_ivy_stonehollow",
+     "item": "brass_clip",
+     "quantity": 1
+    },
+    {
+     "id": "e55",
+     "kind": "gift",
+     "day": 0.54,
+     "actor": "wolf-ash",
+     "target": "rm_piet_wickridge",
+     "item": "silver_bracelet",
+     "quantity": 1
+    },
+    {
+     "id": "e56",
+     "kind": "gift",
+     "day": 0.54,
+     "actor": "wolf-ash",
+     "target": "rm_runa_ropemarsh",
+     "item": "ear_ring",
+     "quantity": 1
+    },
+    {
+     "id": "e57",
+     "kind": "dialogue choice",
+     "day": 0.55,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "lq_th_forgive"
+    },
+    {
+     "id": "e58",
+     "kind": "dialogue choice",
+     "day": 0.56,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_face"
+    },
+    {
+     "id": "e59",
+     "kind": "gift",
+     "day": 0.57,
+     "actor": "wolf-cedar",
+     "target": "rm_eleanor_vance",
+     "item": "silver_bracelet",
+     "quantity": 1,
+     "cell": "rm_the_rag_mill"
+    },
+    {
+     "id": "e60",
+     "kind": "dialogue choice",
+     "day": 0.58,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "lq_th_name"
+    },
+    {
+     "id": "e61",
+     "kind": "dialogue choice",
+     "day": 0.59,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_face"
+    },
+    {
+     "id": "e62",
+     "kind": "dialogue choice",
+     "day": 0.6,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "lq_th_blinker"
+    },
+    {
+     "id": "e63",
+     "kind": "day begins",
+     "day": 2.0,
+     "detail": "Stoneday",
+     "item": "spring",
+     "quantity": 3
+    },
+    {
+     "id": "e64",
+     "kind": "hour",
+     "day": 3.67,
+     "detail": "9",
+     "quantity": 9
+    },
+    {
+     "id": "e65",
+     "kind": "arrival",
+     "day": 3.77,
+     "actor": "wolf-birch"
+    }
+   ],
+   "expect": [
+    "open",
+    "rumour",
+    "reckoning",
+    "after_forgiven"
+   ],
+   "expectQuests": {
+    "locked": {
+     "wolf-ash": "done",
+     "wolf-birch": "done",
+     "wolf-cedar": "done",
+     "wolf-dun": "done"
+    },
+    "under": {
+     "wolf-ash": "done",
+     "wolf-birch": "done",
+     "wolf-cedar": "done",
+     "wolf-dun": "done"
+    },
+    "thief_forgive": {
+     "wolf-ash": "done",
+     "wolf-birch": "active"
+    },
+    "thief_name": {
+     "wolf-cedar": "done",
+     "wolf-dun": "failed"
+    },
+    "thief_quickened": {
+     "wolf-dun": "done"
+    }
+   },
+   "expectVariables": {
+    "story": {
+     "found": 4,
+     "found_goal": 4,
+     "t_forgive": 2,
+     "t_name": 1,
+     "t_blinker": 1
+    },
+    "player": {
+     "wolf-ash": {
+      "lq_coin": 18,
+      "road": "thief_forgive"
+     },
+     "wolf-cedar": {
+      "lq_coin": 18
+     },
+     "wolf-dun": {
+      "lq_coin": 16
+     }
+    },
+    "world": {
+     "lq_thief": "forgiven",
+     "coin_ridgemere_day": 58,
+     "nh_realm": 24,
+     "nh_voice_ridgemere": 14
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
+   }
+  },
+  {
+   "name": "The lie wins; the Wardens come; next season the young thief is at it again",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.05,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 0.055,
+     "actor": "wolf-ash",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 0.06,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 0.065,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 0.07,
+     "actor": "wolf-ash",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.08,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 0.09,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e8",
+     "kind": "region entered",
+     "day": 0.095,
+     "actor": "wolf-birch",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e9",
+     "kind": "dialogue choice",
+     "day": 0.1,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e10",
+     "kind": "dialogue choice",
+     "day": 0.105,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 0.11,
+     "actor": "wolf-birch",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 0.12,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 0.13,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 0.135,
+     "actor": "wolf-cedar",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e15",
+     "kind": "dialogue choice",
+     "day": 0.14,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e16",
+     "kind": "dialogue choice",
+     "day": 0.145,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 0.15,
+     "actor": "wolf-cedar",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "quest handed in",
+     "day": 0.16,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e19",
+     "kind": "quest accepted",
+     "day": 0.17,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e20",
+     "kind": "region entered",
+     "day": 0.175,
+     "actor": "wolf-dun",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e21",
+     "kind": "dialogue choice",
+     "day": 0.18,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e22",
+     "kind": "dialogue choice",
+     "day": 0.185,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e23",
+     "kind": "region entered",
+     "day": 0.19,
+     "actor": "wolf-dun",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e24",
+     "kind": "quest handed in",
+     "day": 0.2,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e25",
+     "kind": "quest accepted",
+     "day": 0.208,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e26",
+     "kind": "region entered",
+     "day": 0.21,
+     "actor": "wolf-ash",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e27",
+     "kind": "region entered",
+     "day": 0.215,
+     "actor": "wolf-ash",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e28",
+     "kind": "item picked up",
+     "day": 0.22,
+     "actor": "wolf-ash",
+     "item": "brass_clip",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e29",
+     "kind": "dialogue choice",
+     "day": 0.225,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e30",
+     "kind": "dialogue choice",
+     "day": 0.23,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_finn_dripwick",
+     "detail": "lq_th_palle"
+    },
+    {
+     "id": "e31",
+     "kind": "quest accepted",
+     "day": 0.258,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e32",
+     "kind": "region entered",
+     "day": 0.26,
+     "actor": "wolf-birch",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e33",
+     "kind": "region entered",
+     "day": 0.265,
+     "actor": "wolf-birch",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e34",
+     "kind": "item picked up",
+     "day": 0.27,
+     "actor": "wolf-birch",
+     "item": "silver_bracelet",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e35",
+     "kind": "dialogue choice",
+     "day": 0.275,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e36",
+     "kind": "quest accepted",
+     "day": 0.308,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e37",
+     "kind": "region entered",
+     "day": 0.31,
+     "actor": "wolf-cedar",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e38",
+     "kind": "region entered",
+     "day": 0.315,
+     "actor": "wolf-cedar",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e39",
+     "kind": "item picked up",
+     "day": 0.32,
+     "actor": "wolf-cedar",
+     "item": "ear_ring",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e40",
+     "kind": "dialogue choice",
+     "day": 0.325,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e41",
+     "kind": "quest accepted",
+     "day": 0.358,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e42",
+     "kind": "region entered",
+     "day": 0.36,
+     "actor": "wolf-dun",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e43",
+     "kind": "region entered",
+     "day": 0.365,
+     "actor": "wolf-dun",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e44",
+     "kind": "item picked up",
+     "day": 0.37,
+     "actor": "wolf-dun",
+     "item": "brass_clip",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e45",
+     "kind": "dialogue choice",
+     "day": 0.375,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e46",
+     "kind": "arrival",
+     "day": 0.42,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e47",
+     "kind": "quest accepted",
+     "day": 0.43,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "thief_quickened"
+    },
+    {
+     "id": "e48",
+     "kind": "quest accepted",
+     "day": 0.44,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "thief_quickened"
+    },
+    {
+     "id": "e49",
+     "kind": "quest accepted",
+     "day": 0.45,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "thief_forgive"
+    },
+    {
+     "id": "e50",
+     "kind": "hour",
+     "day": 3.53,
+     "detail": "9",
+     "quantity": 9
+    },
+    {
+     "id": "e51",
+     "kind": "day begins",
+     "day": 4.0,
+     "detail": "Riverday",
+     "item": "spring",
+     "quantity": 4
+    },
+    {
+     "id": "e52",
+     "kind": "dm signal",
+     "day": 4.1,
+     "detail": "wardens"
+    },
+    {
+     "id": "e53",
+     "kind": "arrival",
+     "day": 4.2,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e54",
+     "kind": "season begins",
+     "day": 5.0,
+     "detail": "summer"
+    },
+    {
+     "id": "e55",
+     "kind": "arrival",
+     "day": 5.1,
+     "actor": "wolf-ash"
+    }
+   ],
+   "expect": [
+    "open",
+    "rumour",
+    "reckoning",
+    "after_blinker",
+    "after_blinker_wardens",
+    "open"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_thief": "blinker"
+    },
+    "story": {
+     "found": 0,
+     "t_blinker": 0
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
+   }
+  },
+  {
+   "name": "Naming the young thief wins two to one",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.05,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 0.055,
+     "actor": "wolf-ash",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 0.06,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 0.065,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 0.07,
+     "actor": "wolf-ash",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.08,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 0.09,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e8",
+     "kind": "region entered",
+     "day": 0.095,
+     "actor": "wolf-birch",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e9",
+     "kind": "dialogue choice",
+     "day": 0.1,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e10",
+     "kind": "dialogue choice",
+     "day": 0.105,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 0.11,
+     "actor": "wolf-birch",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 0.12,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 0.13,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 0.135,
+     "actor": "wolf-cedar",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e15",
+     "kind": "dialogue choice",
+     "day": 0.14,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e16",
+     "kind": "dialogue choice",
+     "day": 0.145,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 0.15,
+     "actor": "wolf-cedar",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "quest handed in",
+     "day": 0.16,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e19",
+     "kind": "quest accepted",
+     "day": 0.17,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e20",
+     "kind": "region entered",
+     "day": 0.175,
+     "actor": "wolf-dun",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e21",
+     "kind": "dialogue choice",
+     "day": 0.18,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e22",
+     "kind": "dialogue choice",
+     "day": 0.185,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e23",
+     "kind": "region entered",
+     "day": 0.19,
+     "actor": "wolf-dun",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e24",
+     "kind": "quest handed in",
+     "day": 0.2,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e25",
+     "kind": "quest accepted",
+     "day": 0.208,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e26",
+     "kind": "region entered",
+     "day": 0.21,
+     "actor": "wolf-ash",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e27",
+     "kind": "region entered",
+     "day": 0.215,
+     "actor": "wolf-ash",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e28",
+     "kind": "item picked up",
+     "day": 0.22,
+     "actor": "wolf-ash",
+     "item": "brass_clip",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e29",
+     "kind": "dialogue choice",
+     "day": 0.225,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e30",
+     "kind": "dialogue choice",
+     "day": 0.23,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_finn_dripwick",
+     "detail": "lq_th_palle"
+    },
+    {
+     "id": "e31",
+     "kind": "quest accepted",
+     "day": 0.258,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e32",
+     "kind": "region entered",
+     "day": 0.26,
+     "actor": "wolf-birch",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e33",
+     "kind": "region entered",
+     "day": 0.265,
+     "actor": "wolf-birch",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e34",
+     "kind": "item picked up",
+     "day": 0.27,
+     "actor": "wolf-birch",
+     "item": "silver_bracelet",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e35",
+     "kind": "dialogue choice",
+     "day": 0.275,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e36",
+     "kind": "quest accepted",
+     "day": 0.308,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e37",
+     "kind": "region entered",
+     "day": 0.31,
+     "actor": "wolf-cedar",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e38",
+     "kind": "region entered",
+     "day": 0.315,
+     "actor": "wolf-cedar",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e39",
+     "kind": "item picked up",
+     "day": 0.32,
+     "actor": "wolf-cedar",
+     "item": "ear_ring",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e40",
+     "kind": "dialogue choice",
+     "day": 0.325,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e41",
+     "kind": "quest accepted",
+     "day": 0.358,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e42",
+     "kind": "region entered",
+     "day": 0.36,
+     "actor": "wolf-dun",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e43",
+     "kind": "region entered",
+     "day": 0.365,
+     "actor": "wolf-dun",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e44",
+     "kind": "item picked up",
+     "day": 0.37,
+     "actor": "wolf-dun",
+     "item": "brass_clip",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e45",
+     "kind": "dialogue choice",
+     "day": 0.375,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e46",
+     "kind": "arrival",
+     "day": 0.42,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e47",
+     "kind": "quest accepted",
+     "day": 0.43,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "thief_name"
+    },
+    {
+     "id": "e48",
+     "kind": "quest accepted",
+     "day": 0.44,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "thief_name"
+    },
+    {
+     "id": "e49",
+     "kind": "quest accepted",
+     "day": 0.45,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "thief_forgive"
+    },
+    {
+     "id": "e50",
+     "kind": "hour",
+     "day": 3.53,
+     "detail": "9",
+     "quantity": 9
+    },
+    {
+     "id": "e51",
+     "kind": "arrival",
+     "day": 3.63,
+     "actor": "wolf-ash"
+    }
+   ],
+   "expect": [
+    "open",
+    "rumour",
+    "reckoning",
+    "after_named"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_thief": "named"
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
+   }
+  },
+  {
+   "name": "A tie between naming and forgiving forgives the young thief",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.05,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 0.055,
+     "actor": "wolf-ash",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 0.06,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 0.065,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 0.07,
+     "actor": "wolf-ash",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.08,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 0.09,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e8",
+     "kind": "region entered",
+     "day": 0.095,
+     "actor": "wolf-birch",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e9",
+     "kind": "dialogue choice",
+     "day": 0.1,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e10",
+     "kind": "dialogue choice",
+     "day": 0.105,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 0.11,
+     "actor": "wolf-birch",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 0.12,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 0.13,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 0.135,
+     "actor": "wolf-cedar",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e15",
+     "kind": "dialogue choice",
+     "day": 0.14,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e16",
+     "kind": "dialogue choice",
+     "day": 0.145,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 0.15,
+     "actor": "wolf-cedar",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "quest handed in",
+     "day": 0.16,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e19",
+     "kind": "quest accepted",
+     "day": 0.17,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e20",
+     "kind": "region entered",
+     "day": 0.175,
+     "actor": "wolf-dun",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e21",
+     "kind": "dialogue choice",
+     "day": 0.18,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e22",
+     "kind": "dialogue choice",
+     "day": 0.185,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e23",
+     "kind": "region entered",
+     "day": 0.19,
+     "actor": "wolf-dun",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e24",
+     "kind": "quest handed in",
+     "day": 0.2,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e25",
+     "kind": "quest accepted",
+     "day": 0.208,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e26",
+     "kind": "region entered",
+     "day": 0.21,
+     "actor": "wolf-ash",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e27",
+     "kind": "region entered",
+     "day": 0.215,
+     "actor": "wolf-ash",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e28",
+     "kind": "item picked up",
+     "day": 0.22,
+     "actor": "wolf-ash",
+     "item": "brass_clip",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e29",
+     "kind": "dialogue choice",
+     "day": 0.225,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e30",
+     "kind": "dialogue choice",
+     "day": 0.23,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_finn_dripwick",
+     "detail": "lq_th_palle"
+    },
+    {
+     "id": "e31",
+     "kind": "quest accepted",
+     "day": 0.258,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e32",
+     "kind": "region entered",
+     "day": 0.26,
+     "actor": "wolf-birch",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e33",
+     "kind": "region entered",
+     "day": 0.265,
+     "actor": "wolf-birch",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e34",
+     "kind": "item picked up",
+     "day": 0.27,
+     "actor": "wolf-birch",
+     "item": "silver_bracelet",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e35",
+     "kind": "dialogue choice",
+     "day": 0.275,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e36",
+     "kind": "quest accepted",
+     "day": 0.308,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e37",
+     "kind": "region entered",
+     "day": 0.31,
+     "actor": "wolf-cedar",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e38",
+     "kind": "region entered",
+     "day": 0.315,
+     "actor": "wolf-cedar",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e39",
+     "kind": "item picked up",
+     "day": 0.32,
+     "actor": "wolf-cedar",
+     "item": "ear_ring",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e40",
+     "kind": "dialogue choice",
+     "day": 0.325,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e41",
+     "kind": "quest accepted",
+     "day": 0.358,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e42",
+     "kind": "region entered",
+     "day": 0.36,
+     "actor": "wolf-dun",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e43",
+     "kind": "region entered",
+     "day": 0.365,
+     "actor": "wolf-dun",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e44",
+     "kind": "item picked up",
+     "day": 0.37,
+     "actor": "wolf-dun",
+     "item": "brass_clip",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e45",
+     "kind": "dialogue choice",
+     "day": 0.375,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e46",
+     "kind": "arrival",
+     "day": 0.42,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e47",
+     "kind": "quest accepted",
+     "day": 0.43,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "thief_name"
+    },
+    {
+     "id": "e48",
+     "kind": "quest accepted",
+     "day": 0.44,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "thief_forgive"
+    },
+    {
+     "id": "e49",
+     "kind": "hour",
+     "day": 3.53,
+     "detail": "9",
+     "quantity": 9
+    }
+   ],
+   "expect": [
+    "open",
+    "rumour",
+    "reckoning",
+    "after_forgiven"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_thief": "forgiven"
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
+   }
+  },
+  {
+   "name": "Nobody takes a road: after 7 days the young thief is forgiven by default",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 0.05,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 0.055,
+     "actor": "wolf-ash",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 0.06,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 0.065,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 0.07,
+     "actor": "wolf-ash",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 0.08,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 0.09,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e8",
+     "kind": "region entered",
+     "day": 0.095,
+     "actor": "wolf-birch",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e9",
+     "kind": "dialogue choice",
+     "day": 0.1,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e10",
+     "kind": "dialogue choice",
+     "day": 0.105,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 0.11,
+     "actor": "wolf-birch",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 0.12,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 0.13,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 0.135,
+     "actor": "wolf-cedar",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e15",
+     "kind": "dialogue choice",
+     "day": 0.14,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e16",
+     "kind": "dialogue choice",
+     "day": 0.145,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 0.15,
+     "actor": "wolf-cedar",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "quest handed in",
+     "day": 0.16,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e19",
+     "kind": "quest accepted",
+     "day": 0.17,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e20",
+     "kind": "region entered",
+     "day": 0.175,
+     "actor": "wolf-dun",
+     "target": "vance_door",
+     "cell": "w_ridgemere_1_1",
+     "x": 197,
+     "y": 132
+    },
+    {
+     "id": "e21",
+     "kind": "dialogue choice",
+     "day": 0.18,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_emmerich_greyridge",
+     "detail": "lq_th_roald"
+    },
+    {
+     "id": "e22",
+     "kind": "dialogue choice",
+     "day": 0.185,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_ragnar_roperidge",
+     "detail": "lq_th_silas"
+    },
+    {
+     "id": "e23",
+     "kind": "region entered",
+     "day": 0.19,
+     "actor": "wolf-dun",
+     "target": "vance_street",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "facts": {
+      "world": {
+       "hour": 23
+      }
+     }
+    },
+    {
+     "id": "e24",
+     "kind": "quest handed in",
+     "day": 0.2,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rm_eleanor_vance",
+     "detail": "locked"
+    },
+    {
+     "id": "e25",
+     "kind": "quest accepted",
+     "day": 0.208,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e26",
+     "kind": "region entered",
+     "day": 0.21,
+     "actor": "wolf-ash",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e27",
+     "kind": "region entered",
+     "day": 0.215,
+     "actor": "wolf-ash",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e28",
+     "kind": "item picked up",
+     "day": 0.22,
+     "actor": "wolf-ash",
+     "item": "brass_clip",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e29",
+     "kind": "dialogue choice",
+     "day": 0.225,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e30",
+     "kind": "dialogue choice",
+     "day": 0.23,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_finn_dripwick",
+     "detail": "lq_th_palle"
+    },
+    {
+     "id": "e31",
+     "kind": "quest accepted",
+     "day": 0.258,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e32",
+     "kind": "region entered",
+     "day": 0.26,
+     "actor": "wolf-birch",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e33",
+     "kind": "region entered",
+     "day": 0.265,
+     "actor": "wolf-birch",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e34",
+     "kind": "item picked up",
+     "day": 0.27,
+     "actor": "wolf-birch",
+     "item": "silver_bracelet",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e35",
+     "kind": "dialogue choice",
+     "day": 0.275,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e36",
+     "kind": "quest accepted",
+     "day": 0.308,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e37",
+     "kind": "region entered",
+     "day": 0.31,
+     "actor": "wolf-cedar",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e38",
+     "kind": "region entered",
+     "day": 0.315,
+     "actor": "wolf-cedar",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e39",
+     "kind": "item picked up",
+     "day": 0.32,
+     "actor": "wolf-cedar",
+     "item": "ear_ring",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e40",
+     "kind": "dialogue choice",
+     "day": 0.325,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e41",
+     "kind": "quest accepted",
+     "day": 0.358,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "",
+     "detail": "under"
+    },
+    {
+     "id": "e42",
+     "kind": "region entered",
+     "day": 0.36,
+     "actor": "wolf-dun",
+     "target": "ss_stair",
+     "cell": "w_ridgemere_1_1",
+     "x": 62,
+     "y": 65
+    },
+    {
+     "id": "e43",
+     "kind": "region entered",
+     "day": 0.365,
+     "actor": "wolf-dun",
+     "target": "old_drain",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run",
+     "x": 16,
+     "y": 42
+    },
+    {
+     "id": "e44",
+     "kind": "item picked up",
+     "day": 0.37,
+     "actor": "wolf-dun",
+     "item": "brass_clip",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e45",
+     "kind": "dialogue choice",
+     "day": 0.375,
+     "actor": "wolf-dun",
+     "target": "run",
+     "item": "rmx_una_brineridge",
+     "detail": "lq_th_street"
+    },
+    {
+     "id": "e46",
+     "kind": "arrival",
+     "day": 0.42,
+     "actor": "wolf-ash"
+    },
+    {
+     "id": "e47",
+     "kind": "arrival",
+     "day": 0.43,
+     "actor": "wolf-birch"
+    },
+    {
+     "id": "e48",
+     "kind": "hour",
+     "day": 7.63,
+     "detail": "9",
+     "quantity": 9
+    }
+   ],
+   "expect": [
+    "open",
+    "rumour",
+    "reckoning",
+    "after_forgiven"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_thief": "forgiven"
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
+   }
+  }
+ ]
+}

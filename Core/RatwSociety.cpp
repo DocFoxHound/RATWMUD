@@ -136,11 +136,18 @@ int Society::stockAll(const EconomyAccount& account, const std::string& base)
 }
 std::vector<std::string> Society::kindsHeld(const EconomyAccount& account, const std::string& base)
 {
-    // Every kind of it in the purse: each quality, and masterworks under their makers' marks; plainest first.
-    const auto b = items::baseOf(base);
+    // Every kind of it in the purse: each quality, and masterworks under their makers' marks; plainest first. A story's own
+    // item (doc 86, J9) is no kind of its base here, so nothing makes with it, eats it or pays with it: only itself, asked by name.
     std::vector<std::string> out;
+    if (items::storyTagged(base))
+    {
+        if (const auto found = account.stock.find(base); found != account.stock.end() && found->second > 0)
+            out.push_back(base);
+        return out;
+    }
+    const auto b = items::baseOf(base);
     for (const auto& [item, n] : account.stock)
-        if (n > 0 && items::baseOf(item) == b)
+        if (n > 0 && !items::storyTagged(item) && items::baseOf(item) == b)
             out.push_back(item);
     const auto rank = [](const std::string& id) { const int q = items::qualityOf(id); return q == 1 ? 0 : q == 0 ? 1 : q; };
     std::stable_sort(out.begin(), out.end(), [&](const std::string& x, const std::string& y) { return rank(x) < rank(y); });
@@ -353,6 +360,8 @@ std::vector<std::string> Society::wares(const std::string& merchant) const
 }
 const char* Society::itemName(const std::string& id)
 {
+    if (const auto* named = items::storyItemName(id))   // (Doc 86, J9: a story's own item, by the name its story gave it.)
+        return named->c_str();
     if (const auto* worn = items::wearable(id))
         return worn->name.c_str();
     if (id != "herbs" && id != "meal" && id != "sword")
@@ -512,6 +521,28 @@ bool Society::destroy(const std::string& accountId, const std::string& item, int
             break;
     }
     return true;
+}
+std::map<std::string, int> Society::takeAll(const std::set<std::string>& items, const std::string& reason)
+{
+    std::map<std::string, int> out;
+    if (items.empty())
+        return out;
+    for (auto& [id, account] : state_.accounts)
+        for (auto it = account.stock.begin(); it != account.stock.end();)
+        {
+            if (!items.count(it->first))
+            {
+                ++it;
+                continue;
+            }
+            if (it->second > 0)
+            {
+                out[id] += it->second;
+                record(reason, id, "consumed", it->first, it->second, 0);
+            }
+            it = account.stock.erase(it);
+        }
+    return out;
 }
 EconomyResult Society::eat(const std::string& player)
 {
@@ -1119,13 +1150,14 @@ bool Society::rehome(const std::string& id)
 // Food (doc 35, Part 7).
 bool Society::edible(const std::string& item)
 {
-    const auto* good = items::good(item);
+    // (A story's own item, for all it is bread underneath, is the story's to take back, never eaten: doc 86, J9.)
+    const auto* good = items::storyTagged(item) ? nullptr : items::good(item);
     return good && good->nourish > 0 && !good->drink;
 }
 
 int Society::nourishment(const std::string& item)
 {
-    const auto* good = items::good(item);
+    const auto* good = items::storyTagged(item) ? nullptr : items::good(item);
     return good && !good->drink ? good->nourish : 0;
 }
 
@@ -1134,7 +1166,7 @@ std::string Society::bestFood(const EconomyAccount& account)
     const std::string* best = nullptr;
     int most = 0;
     for (const auto& [item, n] : account.stock)
-        if (n > 0)
+        if (n > 0 && !items::storyTagged(item))     // (A story's own item is never eaten: doc 86, J9.)
             if (const auto* good = items::good(item); good && !good->drink && good->nourish > most)
             {
                 most = good->nourish;
@@ -1149,7 +1181,7 @@ std::string Society::eatFirst(const EconomyAccount& account)
     const items::Item* firstGood = nullptr;
     const auto keeps = [](const items::Item* g) { return g->keeps > 0 ? g->keeps : 1e9; };
     for (const auto& [item, n] : account.stock)
-        if (n > 0)
+        if (n > 0 && !items::storyTagged(item))
             if (const auto* good = items::good(item); good && !good->drink && good->nourish > 0)
                 if (!first || keeps(good) < keeps(firstGood) || (keeps(good) == keeps(firstGood) && good->nourish > firstGood->nourish))
                 {
@@ -1162,7 +1194,7 @@ std::string Society::eatFirst(const EconomyAccount& account)
 bool Society::hasFood(const EconomyAccount& account)
 {
     for (const auto& [item, n] : account.stock)
-        if (n > 0)
+        if (n > 0 && !items::storyTagged(item))
             if (const auto* good = items::good(item); good && !good->drink && good->nourish > 0)
                 return true;
     return false;

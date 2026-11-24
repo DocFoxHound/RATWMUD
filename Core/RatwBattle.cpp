@@ -1,5 +1,6 @@
 // Turn-based fights in arenas (RatwBattle.h; Docs/Design/33-combat.md). World members, kept here.
 #include "RatwBattle.h"
+#include "RatwStoryFoes.h"
 #include "RatwGifts.h"
 #include "RatwLevels.h"
 #include "RatwItems.h"
@@ -296,6 +297,10 @@ battle::Temperament World::temperamentOf(const Entity& e) const
     auto t = battle::temperament(role, folk != folk_.end() && folk->second.kind == "bandit", e.age, e.npc);
     if (folk != folk_.end() && folk->second.skill >= 0)
         t.skill = folk->second.skill;
+    // A story's foe (doc 86, C10): aggressive, as strong as its kind in Data/Storylines/foes.json (a resident made one too).
+    if (const auto* foe = e.npc ? storyFoeOf(e.id) : nullptr)
+        if (const auto* s = foes::strength(foeLeader(e.id) ? foe->spec.tier : "follower"))
+            t = {s->skill, "aggressive", s->flee};
     if (!e.npc)
         t.skill = e.fightingSkill;                  // A player's: their own, grown by fighting (doc 49).
     return t;
@@ -597,7 +602,9 @@ Result World::startBattle(const std::string& attacker, const std::string& target
         b.camp = camp->id;
         const auto& player = campOf(target) ? attacker : target;
         auto enc = std::find_if(encounters_.begin(), encounters_.end(), [&](const Encounter& e) { return e.camp == camp->id; });
-        if (enc == encounters_.end())
+        if (storyFoeCamp(camp->id))
+            ;                                       // (Doc 86, C10: a story's foe asks no purse: no encounter, nothing to pay.)
+        else if (enc == encounters_.end())
             encounters_.push_back({camp->id, player, 0, time_, true});
         else
             enc->fighting = true;
@@ -627,6 +634,9 @@ Result World::startBattle(const std::string& attacker, const std::string& target
             side = other->leaderId == attacker ? 0 : other->leaderId == target ? 1 : -1;
         if (side < 0 && !b.incident.empty() && other->npc && guardOnDuty(other->id) && visionClarity(other->id, attacker) > 0)
             side = 1;
+        // (Doc 86, C10: against a story's foe, the Watch on duty in the place takes the wolves' side.)
+        if (side < 0 && storyFoeCamp(b.camp) && other->npc && !storyFoeOf(other->id) && guardOnDuty(other->id))
+            side = campOf(attacker) ? 1 : 0;
         if (side >= 0)
             enterBattle(b, other->id, side, false);
     }
@@ -2575,7 +2585,39 @@ void World::downFighter(Battle& b, BattleFighter& f, double overkill, double bas
     recordEvent({"downed", by, f.id, b.cellId, 0, 0, {}, 0, 0, b.id, f.x, f.y});
     if (!e->npc && storyListens("wolf downed"))   // (Doc 85, Phase 8: the wolf as the actor, for a story's $actor.)
         recordEvent({"wolf downed", f.id, by, b.cellId, 0, 0, {}, 0, 0, b.id, f.x, f.y});
-    if (auto* camp = campOf(f.id))
+    if (const auto* foe = storyFoeOf(f.id))
+    {
+        // A story's foe (doc 86, C10): a follower down is 'foe downed'; the leader down is 'foe defeated' (once), the
+        // wolves who fought it counted, and the band breaks and runs.
+        auto& mine = storyFoes_[foe->spec.camp];
+        const std::string who = mine.spec.npc.empty() ? mine.spec.foe : mine.spec.npc;
+        const std::int64_t mark = foes::runMark(mine.spec.run);   // (The run's mark: its foe, not another run's of that id.)
+        if (!foeLeader(f.id))
+            recordEvent({"foe downed", by, who, b.cellId, 0, 0, {}, 0, mark, e->name, f.x, f.y});
+        else if (!mine.beaten)
+        {
+            mine.beaten = true;
+            mine.beatenAt = time_;
+            std::set<std::string> wolves = mine.fought;
+            for (const auto& o : b.fighters)
+                if (o.side != f.side)
+                    if (const auto* oe = entity(o.id); oe && !oe->npc)
+                        wolves.insert(o.id);
+            recordEvent({"foe defeated", by, who, b.cellId, 0, 0, {}, int(wolves.size()), mark, mine.spec.name, f.x, f.y});
+            if (mine.spec.npc.empty() || !mine.spec.lethal)
+                e->downedLeft = std::max(e->downedLeft, 1e6);   // (Carried off, or got up again, when the fight ends: never dies of it.)
+            for (auto& o : b.fighters)
+                if (o.id != f.id && o.status == "fighting" && storyFoeOf(o.id) == foe)
+                {
+                    if (const auto* oe = entity(o.id))
+                        fightLine(b, o.id, {}, "flee", oe->name + " breaks and runs.");
+                    leaveArena(b, o, true);
+                }
+        }
+        if (!foeLeader(f.id))
+            e->downedLeft = std::max(e->downedLeft, 1e6);       // (A follower down is carried off after the fight.)
+    }
+    else if (auto* camp = campOf(f.id))
     {
         const auto folk = folk_.find(f.id);
         camp->strength = std::max(0.0, camp->strength - (folk != folk_.end() ? folk->second.share : 1));
@@ -2670,6 +2712,18 @@ void World::leaveArena(Battle& b, BattleFighter& f, bool fleeing)
     {
         f.status = "fled";
         b.fled.insert(f.id);
+        // (Doc 86, C10: a story's foe who breaks off fled; its band runs with it.)
+        if (const auto* foe = storyFoeOf(f.id); foe && foeLeader(f.id) && !foe->beaten && !foe->fled)
+        {
+            storyFoes_[foe->spec.camp].fled = true;
+            for (auto& o : b.fighters)
+                if (o.id != f.id && o.status == "fighting" && storyFoeOf(o.id) == foe)
+                {
+                    if (const auto* oe = entity(o.id))
+                        fightLine(b, o.id, {}, "flee", oe->name + " breaks and runs.");
+                    leaveArena(b, o, true);
+                }
+        }
     }
     if (!e)
         return;
@@ -2741,6 +2795,11 @@ void World::finishBattle(Battle& b)
     endHunt(b);                                     // A hunt's animals go with it (doc 41).
     if (b.camp.empty())
         return;
+    if (storyFoeCamp(b.camp))
+    {
+        foeFightEnds(b);                            // (Doc 86, C10: nobody robbed and no camp cleared; the downed carried off.)
+        return;
+    }
     if (testCamp(b.camp))
     {
         // A Dev Console fight: its bandits, any allies made up for it, and its camp go with it; nobody is robbed, and no
@@ -3284,6 +3343,13 @@ void World::tendDowned(double dt)
         }
         if (e.downedLeft <= 0 || inBattle(id))
             continue;
+        if (e.npc && e.downedLeft >= 1e5 && !storyFoeOf(id))
+        {
+            // (Doc 86, C10: a story's foe held down for the fight's end, with no fight and no foe now: a restart, say.
+            // They get up; nobody lies a lifetime in the road.)
+            standUp(e, battle::StruggleUpHealth);
+            continue;
+        }
         if (e.struggleUntil > 0 && time_ >= e.struggleUntil)
         {
             standUp(e, battle::StruggleUpHealth);
@@ -3578,6 +3644,16 @@ Result World::placeOnGround(const std::string& cellId, int x, int y, const std::
     return {true, "Left on the ground.", ground_.back().id};
 }
 
+std::map<std::string, int> World::takeBackItems(const std::set<std::string>& items)
+{
+    if (items.empty())
+        return {};
+    ground_.erase(std::remove_if(ground_.begin(), ground_.end(), [&](const GroundItem& g) { return items.count(g.item) > 0; }),
+                  ground_.end());
+    // (Nothing of it is held in the mouth, worn or worn down: it is never a blade, a wearable or gear that wears.)
+    return society_.takeAll(items, "story: taken back");
+}
+
 Result World::takeItem(const std::string& id, const std::string& groundId)
 {
     auto* e = entity(id);
@@ -3595,7 +3671,8 @@ Result World::takeItem(const std::string& id, const std::string& groundId)
     ground_.erase(it);
     if (!e->npc && storyListens("item picked up"))
         recordEvent({"item picked up", id, {}, e->cellId, 0, 0, item, 1, 0, {}});
-    return {true, "You pick up the " + item + ".", {}};
+    // (A story's own item by the name its story gave it: doc 86, J9.)
+    return {true, "You pick up " + (items::storyTagged(item) ? items::theItem(Society::itemName(item), true) : "the " + item) + ".", {}};
 }
 
 void World::dropItem(Battle& b, BattleFighter& f)
@@ -3673,6 +3750,8 @@ void World::hurtFighter(Battle& b, BattleFighter& t, double damage, double downe
         return;
     damage = huntBlow(b, t, damage, downedBase, by);   // An animal (doc 41): its own health, and the blow remembered.
     damage = sparBlow(b, damage, by);               // A spar (doc 53, 5): a blade strikes blunted.
+    if (const auto* foe = d->npc ? storyFoeOf(t.id) : nullptr)   // A story's foe takes a blow as its kind's hp says (doc 86, C10).
+        damage *= foes::hurtScale(foeLeader(t.id) ? foe->spec.tier : "follower");
     d->hurt += damage;
     t.tally.taken += damage;                        // (The end screen's figures: doc 51.)
     if (auto* striker = b.fighter(by))

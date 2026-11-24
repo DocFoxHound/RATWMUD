@@ -46,6 +46,8 @@ export function StoryProgramPanel({sceneLibraryKey, world, target, storageKey, c
     const [ticket, setTicket] = useState('');
     const [selected, setSelected] = useState('');
     const [published, setPublished] = useState('');
+    // (Doc 86, G3: what approval warns of without refusing: a purse not yet saved, a face that has died, a variable told twice.)
+    const [warnings, setWarnings] = useState<string[]>([]);
     // Approve as a new version of a running campaign (doc 85, Phase 5b): the live runs of this story, and what came of it.
     const [liveRuns, setLiveRuns] = useState<{run: string; title: string; status: string; phase: string | null; visit?: number; digest: string}[]>([]);
     const [forRun, setForRun] = useState('');
@@ -98,7 +100,7 @@ export function StoryProgramPanel({sceneLibraryKey, world, target, storageKey, c
     const dirty = source !== (meta.saved ?? '');
     function setText(text: string, mark?: string) {
         setHist(h => commit(h, text, mark));
-        setTicket(''); setReport(undefined); setPublished(''); setStepping(null); setChosenCase(null);
+        setTicket(''); setReport(undefined); setPublished(''); setStepping(null); setChosenCase(null); setWarnings([]);
         try { localStorage.setItem(storageKey, text); } catch { setFeedback('Browser storage is full or unavailable. Save the draft or export a copy to keep it.'); }
     }
     const edit = (p: Program, mark?: string) => setText(pretty(p), mark);
@@ -241,8 +243,8 @@ export function StoryProgramPanel({sceneLibraryKey, world, target, storageKey, c
             {shown?.quests?.length ? <p>Quests · {shown.quests.map(q => q.title).join(', ')}</p> : null}
             <details><summary>Version fingerprint</summary><code>{report.digest}</code></details>
             <button disabled={!canDirect || !reviewed || busy || !!ticket} onClick={() => void perform(async () => {
-                const r = await storyProgram<{ticket: string; run: string}>(target, 'approve', {program, digest: report.digest});
-                setTicket(r.ticket); setSelected(r.run);
+                const r = await storyProgram<{ticket: string; run: string; warnings?: string[]}>(target, 'approve', {program, digest: report.digest});
+                setTicket(r.ticket); setSelected(r.run); setWarnings(r.warnings ?? []);
             })}>Approve this version for {worldName(target)}</button>
             {liveRuns.length > 0 && <div className="wb-for-run">
                 <span>or as a new version of a running campaign:</span>
@@ -251,8 +253,8 @@ export function StoryProgramPanel({sceneLibraryKey, world, target, storageKey, c
                     {liveRuns.map(r => <option key={r.run} value={r.run} disabled={r.digest === report.digest}>{r.title} · {r.status} · {r.phase}{r.visit ? ` (visit ${r.visit})` : ''}
                         {r.digest === report.digest ? ' · on this version' : ''}</option>)}</select>
                 <button disabled={!canDirect || !reviewed || busy || !forRun} onClick={() => void perform(async () => {
-                    const r = await storyProgram<{run: string; version: number; report: MigrationReport}>(target, 'approve', {program, digest: report.digest, forRun});
-                    setAsVersion(r);
+                    const r = await storyProgram<{run: string; version: number; report: MigrationReport; warnings?: string[]}>(target, 'approve', {program, digest: report.digest, forRun});
+                    setAsVersion(r); setWarnings(r.warnings ?? []);
                 })}>Approve as its new version</button></div>}
             {asVersion && <div className="wb-as-version" role="status">
                 <p>Approved as a new version of <code>{asVersion.run}</code>: nothing has moved yet. Move the run onto it from Campaigns (it asks first, with a reason).
@@ -260,7 +262,8 @@ export function StoryProgramPanel({sceneLibraryKey, world, target, storageKey, c
                 {asVersion.report.blocked && <p className="hint">{asVersion.report.blocked}</p>}
                 <ul>{diffLines(asVersion.report.diff).map((l, i) => <li key={'d' + i}>{l}</li>)}</ul>
                 {!asVersion.report.blocked && <p className="hint">For the run as it stands: {migrationGroups(asVersion.report).map(g => `${g.lines.length} ${g.group}`).join(', ')}.</p>}
-            </div>}</section>}
+            </div>}
+            {warnings.length > 0 && <div className="wb-warnings" role="status"><p>Approved, with warnings:</p><ul>{warnings.map((w, i) => <li key={i}>{w}</li>)}</ul></div>}</section>}
         {ticket && <fieldset disabled={busy}><label>Publication ticket<input readOnly value={ticket} onFocus={e => e.target.select()}/></label>
             <button onClick={() => void perform(async () => { const r = await storyProgram<{run: string}>(target, 'publish', {ticket}); setTicket(''); setPublished(r.run); })}>Publish approved story</button>
             {openCampaigns && selected && <button onClick={() => openCampaigns(selected)}>Open in Campaigns</button>}</fieldset>}

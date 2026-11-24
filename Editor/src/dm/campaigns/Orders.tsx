@@ -2,7 +2,7 @@
 // expired (Retry, or since Phase 2 "Skip it and carry on"), what is still to send, and what was applied. Since Phase 7 a
 // run's orders go together (one batch, each order with its own outcome), and one refused for a wolf who is away may wait
 // for them ("Retry when … is next here"; the effects held so are listed).
-import {ago, effectLine, nameOf, orderLine, stuckItem, type Order, type RunDetail, type RunRow} from '../../lib/campaigns';
+import {ago, effectLine, foeLine, nameOf, orderLine, stuckItem, type Order, type RunDetail, type RunRow} from '../../lib/campaigns';
 import type {SteerFn} from './Steer';
 
 export function Orders({detail, row, names, now, busy, steer}: {detail: RunDetail; row: RunRow; names: Record<string, string>; now: string;
@@ -14,7 +14,17 @@ export function Orders({detail, row, names, now, busy, steer}: {detail: RunDetai
     const stuckOn = (o: Order) => o.items ? stuckItem(o) : undefined;
     const canAct = (o: Order) => steer && row.status === 'paused' && o.id === head &&
         (o.status === 'refused' || o.status === 'expired' || (o.status === 'applied' && !!stuckOn(o)));
+    const nowSeconds = Date.parse(now) / 1000 || Date.now() / 1000;
     return <div className="camp-orders">
+        {!!detail.foes?.length && <><h3>Foes</h3><ul className="camp-order-list">{detail.foes.map(f =>
+            <li key={f.camp} className={f.fighting ? 'waiting' : 'applied'}><span><b>{foeLine(f, names, nowSeconds)}</b></span>
+                {steer && row.status !== 'complete' && <span className="camp-group"><button disabled={busy} onClick={() => steer({kind: 'foe',
+                    payload: {do: 'leave', foe: f.foe}, title: `Send ${f.outlaw ? nameOf(names, f.foe) : f.name || f.foe} away`,
+                    does: [f.outlaw ? `${nameOf(names, f.foe)} is a foe no more, their band gone (foe.leave); no event.`
+                        : `${f.name || f.foe} and their band leave the world (foe.leave); no event.`],
+                    warn: f.fighting ? 'They are fighting now: the game refuses it until the fight is over.' : undefined})}>Send away…</button></span>}
+            </li>)}</ul>
+            <p className="hint">As the world last saved them (a minute or so behind). A foe sent away goes with no event: nothing in the story hears it.</p></>}
         {send && send.on === 'send' && <><h3>Still to send</h3><ol>{send.effects.map((e, i) =>
             <li key={i} className="waiting">{effectLine(e, names)}<small>{head ? `waiting behind #${head}` : i ? 'with the one before' : 'next'}</small></li>)}</ol></>}
         {!!detail.whenHere?.length && <><h3>Waiting for their wolf</h3><ul className="camp-order-list">{detail.whenHere.map((h, i) =>

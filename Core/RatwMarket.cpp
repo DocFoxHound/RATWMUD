@@ -2732,6 +2732,8 @@ EconomyResult Society::stagedQuote(const std::string& player, const std::string&
         return {false, "This trader is unavailable."};
     if (quantity < 1 || quantity > 99)
         return {false, "Choose a whole quantity from 1 to 99."};
+    if (items::storyTagged(item))
+        return {false, "That belongs to a story."};   // (Doc 86, J9: never sold to a shop, nor bought from one.)
     const auto deals = wares(seller);
     if (!itemValid(item) || std::find(deals.begin(), deals.end(), items::baseOf(item)) == deals.end())
         return {false, "This trader has no use for those goods."};

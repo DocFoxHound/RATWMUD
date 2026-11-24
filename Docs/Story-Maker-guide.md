@@ -44,8 +44,9 @@ A small quest is one quest any wolf may pick up from a resident, do and hand bac
    that resident.
 4. **What to do:** one to six steps, each an event from the picker ("gives rope to Ivo the carter", "enters the mill"), with
    how many times. The journal shows each step's words.
-5. **The reward:** a deed told of them, coins **from a purse** (a town's treasury, its works, watch or church, a till, a
-   Chapter's purse: refused when the purse is short, never minted), an item, or standing with a faction.
+5. **The reward:** a deed told of them, coins **from a purse** (a town's treasury, a business's till, `till:job:<resident>`, a
+   Chapter's purse: refused when the purse is short, never minted), an item, or standing with a faction. Approval checks that
+   the purse exists in the world as last saved.
 6. **The offer:** what the resident says in their dialogue window, and the wolf's words to ask, accept and hand it in.
 7. **Make the small quest.** It makes a version 2 story with an open audience (anyone who asks may take it), one phase that
    stays open, the quest, and a rehearsal case (a wolf takes it, does each step, hands it in).
@@ -138,9 +139,101 @@ running chapter onto a new version as any run: section 12).
 chapter can wait for another), its run as the item, and for an ending how it ended (`complete`, `success`, `failure`,
 `abandoned`, `stopped`) as the detail. A story ended by an admin's Stop starts no chapter.
 
-**Carrying state.** Three ways, from the lightest: `carry` (the next chapter's own variables start where the last left
-off), **world variables** (section 6: kept after a story ends, read by every story that declares them), and the audience
-(`same` or a list).
+**Quest packs that feed a campaign.** A pack (a story of its own, approved alone) tells whichever chapter is running what a
+wolf did with **Tell another story** (`story.notify`): a name for the news, the wolf it is about, and a number.
+
+```json
+{"do": "effect", "effect": {"kind": "story.notify", "signal": "lamp_lit", "player": "$actor", "amount": 2}}
+```
+
+Every other live story listening for that news hears **Another story sends news** (`story notified`: `detail` the news,
+`actor` the wolf, `quantity` the number, `target` the sending story's id, `item` its run) between two of its events, the
+next tick, through its inbox, as a console command lands. With `"story": "nh-ch1"` only that story's run hears it. A
+trigger on it needs the news named (`"match": {"detail": "lamp_lit"}`); with `"audience": "participant"` it is for a wolf
+of the hearing story, and `player`/`$actor` effects there act on that wolf. `"once": "member"` keeps a wolf from counting
+twice. At most 200 news a tick go from one story; the rest wait for the next. Naming a story that is not approved or running
+yet is a warning at approval, not a refusal: a pack may be approved before the chapter it feeds. A rehearsal may make up a
+`story notified` fact to test the hearing side.
+
+**A world variable that changes.** A story that declares a world variable may listen for **A world variable changes**
+(`variable changed`, `"match": {"target": "nh_realm"}`): when another story changes it, this one hears it once that tick,
+with the latest value (`quantity` the number, `detail` the value as words, `item` the run that changed it). A story never
+hears its own changes; two changes before it takes the first are one telling. Listen for it instead of looking at the
+variable on every hour.
+
+**Carrying state.** Four ways, from the lightest: `carry` (the next chapter's own variables start where the last left
+off), **world variables** (section 6: kept after a story ends, read by every story that declares them), **realm
+variables** (each wolf's own, kept after a story ends: below), and the audience (`same` or a list).
+
+**Across campaigns: realm variables.** What one wolf did in Act I and Act II must still be known in Act III, whichever
+stories ran between, and a pack must be able to add to it beside the chapter. A variable of the **realm** scope is each
+wolf's own value (as `player` is), but kept after the story ends, in the world's own store, and shared by every story of
+the world that declares the same name and type: Act I declares `nh_voice` (realm, a number) and adds to it; Act II, a
+year later and approved on its own, declares `nh_voice` too and reads each wolf's value. It is never carried (there is
+nothing to carry: every story reads the one value). Each story reads its wolves' values when it starts, the ones another
+story changed since at each of its turns, and a wolf's when they join; it writes the ones it changed at the end of each
+turn. Two stories adding to the same wolf's value both count. A story declaring a realm name as another type than the
+wolves keep it, or than another live story declares it, is refused at approval.
+
+```json
+{"id": "nh_voice",  "type": "number", "scope": "realm", "show": "Your voice in the Moot"}
+{"id": "nh_pledge", "type": "text",   "scope": "realm", "talk": true}
+```
+
+A rehearsal case of a later act can give what each wolf brings with them: `"realm": {"player-ash": {"nh_voice": 3}}`.
+
+**Campaign-long holds.** A chapter may hold a resident for the **whole campaign**, not just its own run: **Spare a resident
+from old age** (`npc.spare`) and **Protect a resident** (`npc.protect`) take `"lasts": "campaign"`. The hold outlives the
+chapter that set it and is let go when the campaign ends (the last chapter done, none running). Only a story approved as a
+chapter may hold for the campaign; approving it alone is refused. An act stopped early keeps its holds until an admin
+presses **Let go of the campaign's holds…** on the campaign's card in the Campaigns list. With `"lasts": "run"` (Spare's
+default) the hold goes when the run ends; Protect's default, `ever`, is the mark it always was (until Unprotect). A
+story's **Unprotect** of a resident it protected for its run or campaign lets go of that protection only: a House head,
+one Atlas protects or one a Dungeon Master protected stays protected.
+
+```json
+{"kind": "npc.spare",   "npc": "rm_ingrid_kendrick", "lasts": "campaign"}
+{"kind": "npc.protect", "npc": "rm_ingrid_kendrick", "lasts": "campaign"}
+```
+
+### Chapters that move on when the wolves have done enough
+
+A chapter need not move on by a date. Give its working phase **Readiness** (`ready`): what must be true before it may move
+on, and its one **ready exit**. The runner measures it (at least once a game hour) and shows it in the console as bars.
+
+```json
+{"id": "ch1_main", "journal": "…", "effects": [],
+ "ready": {
+   "all": [
+     {"participation": {"list": "ch1_did"}, "of": "active", "percent": 30, "floor": 3, "cap": 150, "label": "Wolves who did the chapter's work"},
+     {"minDays": 10, "since": "chapter", "label": "Days in the chapter"}
+   ],
+   "auto": true, "slowAfterDays": 30, "slowNeedsYou": true
+ },
+ "exits": [{"on": "ready", "to": "ch1_end"}]}
+```
+
+- **The parts** (1 to 8, all needed; `{"any": [2 to 4 parts]}` is one of them): `participation` (a share of the active wolves
+  who are in a list, or who meet a test: section 6), `minDays` (game days since the phase or the chapter began; held time
+  does not count), `value` with `atLeast` (two numbers of the story or the world), `test` (a condition over the story's own
+  state), `missions` (the phase's missions done), `quest` (a story quest done). Each may have a `label` for its bar.
+- **Ready stays ready.** Once every part is met, the phase is ready for the visit: a crowd arriving later and lowering the
+  share does not take it back.
+- **`auto`**: true moves on by itself at once (or at the `then` moment: `{"on": "day begins"}`, `hour`, `season begins`,
+  `festival`, or a `dm signal`). False (the default) waits for an admin's **Advance** (section 11), and with
+  `autoAfterDays` goes by itself that many days after it became ready, for a world with no admin about.
+- **`slowAfterDays`**: not ready after that long, the console says **slow** (with `slowNeedsYou`, as a "needs you" alert:
+  "Ready to push").
+- The ready exit has no acting wolf: a phase that rewards `$actor` cannot be entered by it. The phase's other exits keep
+  working beside it.
+- A rehearsal case may check it (`{"check": "ready", "met": true}` among its events) and press Advance (`{"advance": "now"}`,
+  `"anyway"` or `"then"`); a case may also give the audience (`"audience": {"active": 120}`) or the active wolves
+  (`"activeWolves": [...]`). Rehearsing names a Readiness no case made ready (`uncoveredReady`).
+
+**Recommended for a campaign's chapters:** `activeDays` 18 (three real days), 25 to 35% of the active wolves who did one of
+the chapter's tasks (a story list `ch<n>_did`, one `list add` per task), a floor of 2 or 3, `cap` 150, `minDays` the
+chapter's shortest sensible length, `slowAfterDays` its soft maximum, and `auto` true with an admin's Advance for the slow
+ones (or `auto` false where an admin is always about).
 
 ## 5. Flow: if, wait, for each, random
 
@@ -157,6 +250,7 @@ Version 2 actions may hold actions of their own, three deep, 24 in a trigger cou
 | `stop` | Skip the rest of the list. |
 | `note` | A line for the DM in the timeline, nowhere in the world. |
 | `finish` | End the run: `success`, `failure` or `abandoned`, with a line. For `$actor` or `$each`: that wolf's own ending. |
+| `rank` | **Rank the wolves:** the top 1 to 500 wolves by a number each keeps (a player variable), highest first, ties by the run's seed, into a list of wolves of the story or the world (cleared first). Those with no value, or below `min`, are left out; `over` a list ranks only its wolves. Then For each over the list names, thanks or rewards them. Not inside For each. |
 
 ```json
 {"do": "if", "if": {"test": "count in region", "region": "ford", "op": ">=", "value": 3},
@@ -182,16 +276,138 @@ A version 2 story declares every variable it uses: a misspelt name is an error, 
 
 - **Types:** `number`, `switch` (on or off), `text` (200 characters), references (`wolf`, `resident`, `place`, `region`,
   `item`, `faction`), lists (`numbers`, `texts`, `wolves`, `residents`: 500 values), and `timer` (a moment: "days since").
-- **Scopes:** `story` (one value), `player` (one per wolf), `party` (one per party taking part), and `world`.
+- **Scopes:** `story` (one value), `player` (one per wolf), `party` (one per party taking part), `world`, and `realm`
+  (one per wolf, kept after the story and shared by every story that declares it: section 4, "Across campaigns").
 - **Values** in a Set or a Compare: a constant, `{"var": "ropes"}`, an event field `{"field": "quantity"}`, `{"count":
-  "mustered"}`, `{"since": "began"}`, `{"each": true}`, and a little arithmetic: `{"plus": [a, b]}`, `minus`, `min`, `max`.
+  "mustered"}`, `{"since": "began"}`, `{"each": true}`, and a little arithmetic: `{"plus": [a, b]}`, `minus`, `min`, `max`,
+  `times`, and `div` (floored toward zero; dividing by 0 gives no value, so nothing fires on it).
 - **Shown:** a number or switch with `show` appears in each wolf's journal under the story as a tracker; the effect **Show or
   hide a tracker** hides and shows it.
+- **Told to residents** (`"talk": true`, a wolf's own number, switch or text; at most 8 a story): the residents that wolf
+  talks to in the dialogue window know it as `player.story.<name>` (a number's digits, `yes` or `no`, the text as it is), so
+  a line can say "You pledged to Coldwater, didn't you?" with `say[player.story.p_howl=coldwater]`. A text a line could not
+  test (capitals, spaces) is kept but not told, with a note in the timeline. Two live stories telling the same name: the
+  newest run's value is the one they know (approval warns).
 - **World variables** are kept after a story ends and shared by every story that declares one of that name and type (a map
   editor's game cache). **Campaigns → World variables…** lists them, with the stories that read each. There an admin
   **declares** one for the world (a type, a first value, a note), **sets** its value and **removes** it, each with a reason,
   audited (`story.world-var`). A story that declares a world variable the world has declared as another type is refused
   at approval. A live story reads a new value at its next turn.
+- **Realm variables** (each wolf's own, across stories) behave as a wolf's own value everywhere: read `of` the acting wolf
+  or `$each`, shown as a tracker, told to residents, ranked by, tallied, a mirror's key. **Campaigns → World variables…**,
+  tab **Per wolf**, lists the values the wolves keep (filter by name and wolf) and the stories that declare each name; an
+  admin **sets** one wolf's value there, with a reason, audited (`story.realm-var`). A live story reads it at its next turn.
+
+### Goals that scale
+
+`{"audience": "all"}` is how many wolves the story has, `{"audience": "active"}` how many of them are **active**, and
+`{"audience": "online"}` how many are signed in now (unknown until the world says who is online: the story then watches the
+world's wolves). Active means seen, signed in or the actor of any event, in the last `activeDays` game days: a program
+field, 1 to 120, **18** when not given (three real days at the normal speed, so a wolf who plays every other evening still
+counts). The runner keeps who it has seen, and a chapter started by another fills it at once from the world's log, so it
+does not open with no active wolves.
+
+A goal that grows with the crowd: `{"max": [12, {"times": [{"audience": "active"}, 2]}]}` is twelve, or two for every
+active wolf when there are more than six.
+
+**What a purse holds now:** `{"purse": "town:coldwater"}` is the pennies in that purse (a town's treasury, a till, a
+Chapter's: as a reward's purse is named), read from the world's facts as of the event; the story then watches it. A purse
+the world has no account for has no value. So a reward that follows the purse: `{"min": [12, {"div": [{"purse":
+"town:coldwater"}, 20]}]}` pays twelve, or a twentieth of the treasury when it is poorer (212 pennies pay 10). It never
+mints: the coins still come from the purse, and approval checks the purse is the world's.
+
+### Values in an effect
+
+A parameter of an effect marked **operand** in the reference (whole numbers, and the wolf, resident, place, item, faction or
+town an effect names) may be a **value**, worked out as the trigger fires: `"coins": {"min": [20, {"var": "p_voice", "of":
+"$actor"}]}`, `"npc": {"var": "guide"}` (a resident variable), `"player": {"field": "target"}` (the wolf the event was done
+for), `{"each": true}` inside For each, arithmetic, the audience, a share or a purse.
+
+- A number is floored and kept to the parameter's bounds (`coins` 1 to 2,500): 0 pennies are 1, 9,000 are 2,500. A number
+  that may not be 0 (`nonzero`) and comes out 0 sends nothing.
+- An id must come out as a text: a variable of its kind (or a text variable), the event's field that holds one (a wolf:
+  `actor` or `target`; a resident: `target` or `item`; a place: `cell`), the loop's value. A wolf variable where a resident
+  goes is refused when the story is checked.
+- **With no value** (a wolf not in the story, a variable never set, a purse not known) the effect is **not sent**, and the
+  firing's history says "skipped: coins has no value". Nothing fires on unknown.
+- A quest's reward works its values out as it is given, the wolf credited as `$actor` (it reads no event field and no loop).
+- What a phase sends as it opens is written as it is: values are for a trigger's effects and a quest's rewards. Approval
+  leaves a value to the game, which refuses an id it does not know (the effect's `ifRefused` applies).
+
+### Words with fills
+
+In a version 2 story, the words of **Tell the wolves**, **Pin to a board**, **Note in the journal**, **A resident speaks**
+and **Award a deed** (marked **fills** in the reference), a quest's summary and objectives, and an offer's words may hold
+`{name}` (a declared variable) or `{name.of}` (that variable of the acting wolf, or of the looped wolf inside For each over
+wolves). `{{` and `}}` are braces.
+
+```json
+{"kind": "board.post", "town": "coldwater", "days": 3,
+ "text": "{finder} stood watch at the ford; the beacons have {bar} of {bar_goal} measures."}
+```
+
+- A number fills as its digits, a switch as yes or no, a text as it is. A **wolf, a resident, a place, an item or a faction
+  fills as its name**: the story leaves a token the game turns into the name when it shows the words ("Ash stood watch at
+  the ford…"). A fill with no value is nothing, with a note.
+- A wolf's own variable is always written `{name.of}`; the story's and the world's without. An offer's words are the same
+  for every wolf, so they take no `{name.of}`, nor does the summary of a quest a resident gives or a board shows (it is the
+  offer's words too); a quest's summary and objectives are otherwise filled for each wolf who reads them. A reward given
+  once (it names no wolf as `$actor` and reads none of theirs) takes no `{name.of}` either.
+- **The length is checked with each fill at its widest**: a number 11 characters, a text 200, a wolf's name 24, any other
+  name 40. A text fill fits a 300-character notice, not a 200-character note. The game cuts what is longer at a word.
+- The workbench shows fills as chips, offers the declared variables to fill in, and the widest length beside the count;
+  a rehearsal shows a name as «wolf: Ash».
+
+### A number shown of another, and a mirror
+
+A shown number may say what it is out of: `{"id": "ch_bar", "type": "number", "scope": "story", "show": "This chapter",
+"showOf": "ch_goal"}` reads "This chapter: 34 / 80" over a thin bar in the journal. `showOf` names a declared number the
+same wolf can read (the story's, the world's, or the same wolf's own).
+
+A wolf's shown number may **mirror** a world number: the one their own text names.
+
+```json
+{"id": "p_voice", "type": "number", "scope": "player", "show": "Your town's howl",
+ "mirror": {"key": "p_howl", "names": {"ridgemere": "nh_voice_ridgemere", "coldwater": "nh_voice_coldwater"}}}
+```
+
+A wolf whose `p_howl` is `coldwater` sees `nh_voice_coldwater`; one with none sees 0. It is never stored and never set
+(a Set on it is refused, in a trigger and on the console); triggers read it as any variable. It is not told to residents
+(`talk`): it holds nothing of its own. Up to 16 names, each a declared world number. So "Your town's
+howl" needs no hourly For each over thousands of wolves.
+
+### Counting who took part
+
+`{"percent": {"list": "ch1_did"}, "of": "active"}` is the share (0 to 100) of the active wolves who are in the list
+`ch1_did`; `{"among": …}` is how many. Instead of a list, a **test for each wolf**: `{"percent": {"where": {"test":
+"compare", "left": {"var": "p_hauls", "of": "$each"}, "op": ">=", "right": 3}}, "of": "active"}`. `of` may also be `all`
+(the story's wolves) or `online`.
+
+The condition **Enough wolves took part** (`participation`) asks for a share, a floor and a cap:
+
+```json
+{"test": "participation", "list": "ch1_did", "of": "active", "percent": 30, "floor": 3, "cap": 150}
+```
+
+- It needs the larger of the share (rounded up) and the floor; **the floor never asks for more wolves than are active**, so a
+  world of 1 to 5 wolves can always get there; a `cap` is always enough (a crowd of 3,000 does not need 900); never fewer
+  than 1. With no active wolves it is false; with `online` not known it is unknown.
+- **Why active is the fair count:** a wolf who did it and then went quiet leaves both counts, so the share stays honest when
+  the crowd changes.
+- **A list or a test:** a list (`list add` the acting wolf when they do a task) is cheap and remembers; a test reads each
+  wolf's own variables (`of: "$each"`), switches, lists, days and quests, but never the world's facts or the event (it is
+  counted outside one), 3 deep and 8 conditions at most.
+
+### Counting over every wolf
+
+`{"tally": {"sum": "p_voice"}}` adds up a number each wolf keeps, over every wolf of the story (5,000 at most, no 500 cap);
+`{"tally": {}}` counts them. `where` and `is` keep only the wolves whose own text or switch is that value: `{"tally": {"sum":
+"p_voice", "where": "p_backs", "is": "lamp"}}` is the voices of the wolves who back the lamp. `"over": {"list":
+"nh_pledge_coldwater"}` counts a story or world list's wolves instead. A wolf with no value adds 0.
+
+**Tally or For each?** For each runs up to 500 times and may do things for each wolf; a tally is one value, read in one go over
+all of them, for a number to compare, show or set (`{"do": "set", "var": "ch9_voices", "value": {"tally": {"sum":
+"p_voice"}}}`). A tally is not allowed inside For each (nor in a test for each wolf), and is one level deep in arithmetic at most.
 
 ## 7. Quests and rewards
 
@@ -206,10 +422,14 @@ A quest is a version 2 story's quest object, shown in each wolf's journal:
    {"id": "bring", "label": "Bring a replacement axle.", "on": "gift", "match": {"target": "rm111", "item": "axle"}, "after": ["ask"]},
    {"id": "wheel", "label": "A spare wheel would not go amiss.", "on": "gift", "match": {"target": "rm111", "item": "cart_wheel"}, "optional": true},
    {"id": "thief", "label": "Find who cut the axle.", "on": "story signal", "signal": "thief-named", "hidden": true}],
- "fail": [{"on": "death", "match": {"target": "rm111"}}, {"afterDays": 3}],
+ "fail": [{"on": "death", "match": {"actor": "rm111"}}, {"afterDays": 3}],
  "rewards": [{"kind": "character.grant", "player": "$actor", "coins": 12, "purse": "town:greyfen", "reason": "the carter thanks you"}],
  "bonus": [{"kind": "deed.award", "player": "$actor", "detail": "Brought the carter a spare wheel too."}]}
 ```
+
+The examples here use the test town's ids (Greyfen, `rm111` the carter, `town:greyfen`): on your world pick its own
+residents, places and purses from the pickers. A `death` filters on who died, its `actor` (it has no `target`): the fail
+rule above ends the quest when the carter dies.
 
 - **Scope:** `player` (each wolf their own copy), `party` (the party the wolf was in when it started; one who leaves keeps
   the credit earned), `story` (one copy for everyone, `contributors` different wolves).
@@ -220,9 +440,232 @@ A quest is a version 2 story's quest object, shown in each wolf's journal:
 - **Rewards** are effects given to each wolf with credit (`bonus` when every optional objective was done too). **Coins come
   from a purse** and are refused when it is short. A refused reward waits for its wolf by default (`ifRefused: "when here"`):
   it is sent again when they are next in the world.
+- **A choice for one wolf.** **Offer a choice in a resident's window** (`npc.offer`) with `"player": "$actor"` lays the
+  choice over that resident's window for the acting wolf. Offered again with the same name to another wolf, it is added for
+  them: each wolf sees it until they pick it (with `once`, each once) or the visit ends. The words and the reply are the
+  latest offer's. Offered with no `player`, it is every wolf's of the story, as before.
+- **Its state in the window.** Each quest a wolf has is known to the residents they talk to as
+  `player.quest.<story id>/<quest id>` (`offered`, `active`, `ready`, `done`, `failed`, `abandoned`, `expired`):
+  `say[player.quest.ninth-howl.1/where_king=active priority=3] Still looking for the King, then?`.
+- **Purses that pay:** a town's treasury (`town:<town>`; the city's is the realm's treasury), a business's till
+  (`till:job:<founder>`, or `till:<founder>`), a Chapter's (`chapter:<id>`), a House's (`house:<House>`, below). Approval
+  refuses a purse the world (as last saved) has no account for; no world has a town's works, watch or church purse, so
+  `town:<town>:works` is refused too.
+- **A House's purse** (`house:greatly`, or by the faction's id, `house:house_greatly`): filled once a game day by the
+  House's own businesses (the posts whose work place the House claims), a tenth of what each till holds over 80 pennies,
+  2,500 at most; it pays what it holds and never more. It is behind a **world switch**, `storyHousePurses`, **off** on every
+  world until its owner turns it on (**Campaigns → House purses…**, with a reason; op `house-purses`), and off again in a
+  world given to someone else: while it is off no money moves to a House and approval refuses a
+  `house:` purse ("House purses are off in this world"). It moves money each day, so it waits on the economy check. Until
+  then pay from the treasury, a town, or a House business's own till (for Greatly, `till:job:rm_eleanor_saltcot`).
+- **A plain cap on the coin** (`"rewardLimit": {"perDay": 2, "scope": "quest"}`, the quest editor's **Coin rewards a game
+  day, at most**): after 2 hand-ins with coin in a game day the rest are given without their coin (one hand-in counts once:
+  its rewards, its bonus and every wolf of a party; the rewards' other effects, a
+  greeting, a deed, still come; the timeline's reward notes say why). `"scope": "purse"` counts every quest of the story
+  that pays from the same purse. It is the shorthand of the one purse rule (decisions 3.2): where the story declares them,
+  each coin paid is added to the world number `coin_<purse>_day` (`coin_ridgemere_day`, `coin_till_eleanor_saltcot_day`)
+  that `nh-purses` sets back to 0 each day, and no coin is paid while the switch `coin_<purse>_ok` is off.
+- **A goal from a value:** an objective's `goal` may be a value, `{"max": [12, {"times": [{"audience": "active"}, 4]}]}`,
+  read when a copy starts and kept in it (1 to 1,000,000). With `"goalLive": true` (a quest of the whole story only) it is
+  read again as the copy is credited and after each firing, never below what is made, and the objective is done the
+  moment what is made reaches it. A goal not known when the copy starts (a purse or the wolves online not known yet) is
+  read again as the copy is credited and after each event, and is out of reach until it is; the journal and the console's
+  Quests grid show it as it reads now.
+- **Again after a wait:** `"join": {"again": 7}`: after any end (done, failed or abandoned) the same wolf waits 7 game days
+  before taking it again ("Not yet." in the window). With a `repeat`, done waits the longer of the two. Without it, a wolf
+  who failed or abandoned may take it again at once, as before.
+- **Rewards in proportion:** a quest of the whole story (or a party) with `"credit": "share"` keeps what each wolf made (the
+  sum of their progress on its objectives), and in its rewards `{"share": true}` is that wolf's amount: `"coins": {"min": [20,
+  {"times": [{"share": true}, 2]}]}` pays two pennies a load, at most 20. `"creditMin": 2` leaves out every reward for a wolf
+  who made less than 2; with no least share, a wolf who made nothing gets nothing. Without `credit` the rewards are the same for everyone, as before. The quest editor's **Reward each by
+  their share** and **The least share**.
+- **Thanks by name:** `npc.greet` (a reward or a trigger's effect for the acting wolf) has a resident greet that wolf the next
+  time they open the resident's window, in the resident's own voice (`#symbols#` fill in their dialect), instead of the usual
+  greeting (the opening line of their Talk window: Trade, a fine or Introduce keep their own, and the greeting waits), once,
+  within its days (7 when not given, 28 at most). A later greeting for the same wolf from the same resident
+  replaces it. It is a word of thanks: it stays when the run ends. In a quest's rewards it is for each wolf with credit, and
+  from the quest's giver unless it names another resident:
+  `{"kind": "npc.greet", "player": "$actor", "text": "#greet# You brought the axle. I'll not forget it."}`. Only a
+  greeting, `npc.line`, an offer's words and a choice's reply are said in a voice: `npc.speak` and a scene's lines are said as
+  written, so `#symbols#` there are refused. A fact such as `#player.title#` in a greeting is left out for a wolf who has
+  none there (the words check warns of it): a line in the resident's tree gated on `player.titled` is surer.
+- **Titles:** `title.give` names a wolf by a title (60 characters, no `#` or ids), known in the realm or one town, for good
+  (0 days) or up to 365 days. It is on their character card (they may hide it from others' closer look; residents still use
+  it), a deed of its naming goes into the town's talk, and the event **A wolf is given a title** (`title given`) follows. A
+  wolf carries 8 story titles at most (a ninth drops the oldest that lapses, else the oldest); given again, a title is renewed.
+  Residents use the newest known where they live: `say[player.titled=yes priority=4] They call you #player.title# now.`
+  `title.take` takes back one title this story gave, or every one. Titles stay when the run ends. Ranks and thanks together:
+  `rank` the wolves by what they carried, then For each over the list `title.give` and `npc.greet`.
 - **Who may take part:** audience `players` (a list), `active` (active in the last N days, frozen at publication), `open`
   (nobody at first: a wolf comes in by taking a quest, or by `participant.add`), `everyone` (the active wolves, and each who
   signs in after). Open and everyone take a `cap`, up to 5,000.
+
+### Quests any town can give
+
+A quest's giver may be **whoever a resident variable of the story holds** (`"giver": {"var": "carter"}`; the quest editor's
+**Or given by whoever a variable holds**), and **Cast a resident** (`cast.pick`) fills it as the story runs: a living,
+placed resident whose work is the words given (`job`: "carter" finds a "carter at the yard"), of a town, of a House (a
+member, or one whose work place it claims), of a quarter, none of a list left out (`notIn`), the nearest the named wolf
+first (at their work in the wolf's place, then their home, then the wolf's town), the rest in an order the run keeps.
+At least one of the work, the town, the House or the quarter. Then **A resident is cast** (`cast chosen`: `target` the
+resident, `detail` the variable, `actor` the wolf they were chosen near) or **Nobody fits a casting** (`cast failed`: the
+variable keeps what it held) follows, in the same turn.
+
+```json
+{"do": "effect", "effect": {"kind": "cast.pick", "var": "carter", "job": "carter", "town": "larkfield", "notIn": "tried", "near": "$actor"}}
+```
+
+The offer goes to the resident the variable holds, and moves when it changes: cast again when the carter dies (a trigger on
+`death` whose actor is the variable's), and the next wolf takes it at the new carter. A wolf's copy is handed in to the giver
+it began with (their journal names them), and a reward's greeting is from that giver too. Keep those cast in a list (`list
+add` on `cast chosen`) and leave them out, so the same carter is never cast twice. A rehearsal case says who the world
+would cast: `"cast": {"carter": ["rm111", "rm112"]}` (the first not left out; none: `cast failed`).
+
+### Chains: requires
+
+A quest may be **only for the wolves for whom a condition holds** (`requires`; the quest editor's **Only for wolves
+who…**): over variables, the phase and quests (`compare`, `switch`, `in list`, `days since`, `quest is`, `objective is`,
+`phase is`, in All, Any and Not, 4 deep, 12 conditions), the wolf as the acting one. Never the world's facts (a purse, who
+is online) or an event's fields: an offer is not an event. The one field it reads is the wolf it is worked out for (the
+event's actor, `{"field": "actor"}`): "only for the wolves in the list pledged" is
+`{"test": "in list", "list": "pledged", "value": {"field": "actor"}}`.
+
+```json
+{"id": "oil", "title": "Oil for the lamp", "giver": "rm111", "requires": {"test": "quest is", "quest": "lamp", "status": "done"}, ...}
+```
+
+- When it reads anything of the wolf's own (a per-wolf variable, a quest's copy for the wolf), it is worked out for each wolf
+  of the story, and the giver and the notice board offer it to those wolves only: part two of a chain shows only to the wolf
+  who finished part one. A wolf outside the story never meets such a requirement.
+- When it reads only the story's own (a story or world variable, the phase, the story's copy), it is one gate for everyone:
+  closed, no wolf may take the quest; a wolf whose copy is already under way keeps it, with the giver's words while under
+  way, its hand-in and its thanks.
+- Taking it (from the giver, the board, `quest.offer` or `quest.start`) checks it again for that wolf: "Not yet."
+- **Taking an offer back:** **Take back an offer** (`quest.withdraw`) takes an offered quest back from one wolf, with no mark
+  in their journal: its giver and the board leave it out for them; a copy taken stays; offering it again clears it. With
+  `requires`, the other roads of a choice are simply never offered, so a new story rarely needs it.
+
+### The giver while under way
+
+`"offer": {"during": "Keep the oil dry on the road, #address#.", "duringAsk": "About the oil..."}`: while the wolf's copy is
+under way (not ready), the giver's hub has one choice (`duringAsk`, "About <title>..." by default) that has the giver say
+`during` in their own voice (`#symbols#` fill in), then back to the hub. It raises the watched `dialogue node` event
+(`@story:<run>:during:<quest>`), no story event. It needs a giver.
+
+### Many stories at one resident
+
+A resident's hub holds nine choices. A world story's choices there come in this order: hand-ins first, then offers, then
+the words while under way, then story choices, each in story order. What doesn't fit goes under **I want to know more about
+something...** (the resident's `about` node), and only what doesn't fit there either is left out (the game's log notes it
+once a day for that resident: a giver crowded with stories). A hand-in is never the one left out. Spread a pack's quests over
+several givers rather than lean on that.
+
+### Quests that count as a finished Story
+
+`"closure": "line"` (or `true`) on the last chapter of a quest line, or `"closure": "side"` on a campaign chapter's side
+story: when a wolf's copy is done, each wolf with credit has a **finished Story**, as the Quickening counts them
+(`closedStories`; a party's copy, each member one). The game keeps the count by the story's id: the same quest never counts
+twice (a new version, another run), and at most **4 from one story** for one wolf (a fifth is applied and pays nothing).
+It pays 3 social, and it is never undone.
+
+- A `line` closure ends a chain: it requires another quest of the story done, and no quest of the story requires it.
+- A `side` closure only in a story approved as a chapter of a campaign (approving it alone is refused).
+- Either is a wolf's or a party's quest, taken once; at most 4 closure quests a story.
+- **The game's words never claim it.** No quest text says "this counts toward your Quickening": the Quickening checklist
+  shows the count.
+
+### Where an objective counts
+
+`"where": {"cells": ["w_ridgemere_2_0", "w_ridgemere_2_2"]}` (1 to 16 cells) or `"where": {"region": "rainward"}` (a
+region of the story): the event counts only there. With a region, the event's tile must be inside the rectangle; an event
+with no tile counts when the region's cell is the event's. An event with no place never counts. Approval checks the cells
+are the world's.
+
+```json
+{"id": "birds", "label": "Take two pheasants in the Rainward Woods.", "on": "hunted", "match": {"target": "pheasant"},
+ "where": {"cells": ["w_ridgemere_2_0", "w_ridgemere_2_2"]}, "goal": 2}
+```
+
+### Who an objective credits
+
+`"credit": "actor"` (the default): the wolf who did it. `"credit": "target"`: the wolf it was done for, on a stall sale
+(the stall's keeper: "sell three things at your stall"), a vouch, telling or vouching to the Wardens. `"credit": "present"`:
+every wolf of the story standing in the event's cell when it is written (as the world's facts say; the story watches the
+wolves; 500 at most). A quest's one copy for the whole story gains once from one event, however many are there.
+
+The events with no wolf are objectives too: **a camp cleared** (its `actor` when that is a wolf; "by the watch" credits
+nobody), **a wagon arriving**, **a ship docking**, **a ship lost**, **a project built** and **a festival**. The last five
+never have a wolf as their actor, so their objectives must say `"credit": "present"` ("Nobody is the actor of a wagon
+arriving: credit the wolves present").
+
+```json
+{"id": "meet", "label": "Be at the market when the oil wagon comes in.", "on": "caravan arrives", "credit": "present",
+ "where": {"cells": ["grey"]}}
+```
+
+A trade done carries the wolf's `cell`, so "sell it in the city" is `"match": {"cell": "<a city cell>", "detail": "sold"}`.
+
+### A story's camps
+
+**A bandit camp in a region** and **Send bandits after a wolf** take a `camp`: its name, 3 to 30 small letters, digits and
+`_`, beginning with the story's **prefix** (`"prefix": "sq"` at the top of the program: 2 to 8 small letters; the design
+set's are `nh`, `sq`, `mq`, `lq` and `st`). The camp is `camp_story_<name>`, so `camp cleared` and `bandit falls` carry an
+id the story knows: `"match": {"target": "camp_story_sq_beacon_camp"}` is a plain objective. While that camp stands, a
+second spawn of the name joins it (its strength grows); once it is cleared the name makes a new camp. Without a name, a
+camp is numbered as before. Approval refuses an objective on a `camp_story_` the story never spawns.
+
+### A beast for the hunt
+
+**An animal waits for the next hunt** (`hunt.stage`): the next hunt a wolf begins inside one of the story's regions has 1
+to 3 of an animal of `Data/Wild/animals.json` in its arena, beside whatever the ground gives (even ground that gives
+nothing that day, or ground too built up or bare to give game of its own, such as a road or a yard out in the Country).
+Hunts never begin in a town or indoors, staged or not. One hunt meets it, begun by any wolf there, one of the story's or a
+passer-by; it lapses after its minutes of the world's clock (1 to 1,440), or when the story ends. Nothing roams the map:
+the animal lives only in that one hunt, so no wild population is made and none is left behind. The kill is an ordinary
+`hunted`, with the animal as its target, so the objective is a plain one:
+
+```json
+{"kind": "hunt.stage", "region": "greytarn", "species": "bear", "count": 1, "minutes": 120}
+{"id": "kill", "label": "Bring down Old Brown at the tarn.", "on": "hunted", "match": {"target": "bear"}, "where": {"cells": ["w_ridgemere_7_6"]}}
+```
+
+Give the kill's `where` as the region's cell, not the region: a hunt's `hunted` is recorded at the killer's tile in its
+arena, which spans more than a small region, so a kill of the staged bear can fall outside the region. The stage already
+ties the bear to the region's hunts. A story
+holds at most 8 at once. Approval warns (it does not refuse) when the animal lives on none of the region's ground ("a bear
+on open water"), when the region is indoors, or when it is in a town (no hunt begins there). Stage it when the wolves are about to go out
+(at dusk, when a quest is taken): an animal no hunt meets is gone after its minutes.
+
+### Story items
+
+**A story's own item** is an `item.give` with a story mark (`tag`: small letters, digits and `_`, up to 32), a name
+(`name`, up to 60 characters, shown in the pack, the trade window and gifts) and, if it should outlast the story, `keep`:
+
+```json
+{"kind": "item.give", "player": "$actor", "item": "letter", "quantity": 1, "tag": "watch_list", "name": "The watch list"}
+{"id": "hand", "label": "Give the watch list to the warden.", "on": "gift", "match": {"item": "letter^watch_list", "target": "rm112"}}
+{"test": "carries", "item": "letter^watch_list", "op": ">=", "value": 1}
+```
+
+It is a letter (it weighs what a letter weighs), but it is the story's: no shop or stall takes it ("That belongs to a
+story."), it is never built with, made into something, used up or eaten as a letter (a story's bread is not eaten
+either), and it never wears. Name it in a filter (`gift`, `gift again`, `item picked up`, `item dropped`) or in "carries"
+as `item^tag`: `letter^watch_list` is this story's list and nothing else, not a plain letter and not another story's
+list of the same mark. Name it whole: "begins with" cannot name it (the game's id has the story's mark inside it), but
+"one of" can list it. "carries letter" still counts it as a letter, as it counts a fine or a marked one, whatever any
+other story is watching; so does a plain `letter` filter on a gift (`gift`, `gift again`). A filter on `item picked up`
+or `item dropped` matches the item exactly, as for a fine or a marked one, so name the story's own as `letter^watch_list`
+there. Give it from a plain item (no `~` make or `@` maker's mark), with one name, and kept or not, wherever the story
+gives it. The base is checked against the gives. The base is checked against the item catalogue at approval as any item, and an `item^tag` the story never
+gives (no "Give a wolf an item" of that item with that mark) is warned of: only one an earlier version of the story gave
+could match it.
+
+When the run ends, every one not kept is taken back: out of every pack, from a resident it was given to, and off the
+ground; the wolves who carried it are told it is gone with the story. A kept one stays with its name (a writ of
+thanks, a token). The game keeps the item under an id with the story's own mark in it (`letter^ab12cd34.watch_list`, the
+eight letters and digits made from the story's id), so two stories' lists never meet; rehearsals, What if and the
+workbench take `letter^watch_list` as you write it. A new version of the same story reads the items an earlier one gave;
+a different story (another chapter of a campaign) does not: give the next chapter its own.
 
 ## 8. The world's facts and watched events
 
@@ -237,7 +680,7 @@ Some events are **watched**: the game writes them only while a live story listen
 locked; buildings entered and left; a region occupied and emptied; the weather changed; the hour, a new day, dawn,
 nightfall, a new season; items picked up and dropped; a trade; dialogue windows; a crime seen; a wolf downed and revived;
 parties formed and ended; a wolf near a resident; a purse or a wolf's standing past a number; a faction's stance changed; a
-mantle taken or laid down; a skill grown a step; an injury healed). Three of them need the trigger to say what to look at,
+mantle taken or laid down; a skill grown a step; an injury healed; someone howls; a chorus ends). Three of them need the trigger to say what to look at,
 in its filters:
 
 | Event | Filters it needs | Example |
@@ -245,6 +688,218 @@ in its filters:
 | `near resident` | `target`: the resident | `"match": {"target": "rm111"}`: a wolf comes within three tiles of Ivo, wherever he is |
 | `purse crossed` | `target`: the purse; `detail`: the amount | `"match": {"target": "town:greyfen", "detail": "500"}` (`item` is `up` or `down`) |
 | `standing crossed` | `target`: the faction; `detail`: the number | `"match": {"target": "watch", "detail": "-20"}` |
+
+Those filters stay exact words. Elsewhere **a filter may begin with a text or be one of several**: `"match": {"detail":
+{"starts": "Stood watch at the ford"}}` (1 to 120 characters, capitals counted) or `"match": {"target": {"in": ["rm111",
+"rm112"]}}` (up to 32), in triggers, exits, missions, a quest's objectives and fail rules, and Readiness's moment. A gift's
+item is its base id inside both, unless the filter gives a mark. A **deed's detail ends with "(<deed id>)"**, so match it
+by how it begins. The condition **The event's field** takes **begins with** (`"op": "starts"`) and **is one of** (`"op":
+"in"`, a list).
+
+**The moon.** `calendar is` reads the moon (`"what": "moon"`: `new`, `waxing`, `full` or `waning`, by the quarter its name
+falls in), and the watched event **The moon turns** (`moon`: `detail` the quarter, `quantity` the day of its round, 0 to 29)
+comes when it passes into another quarter. A Readiness may wait for the next new moon: `"then": {"on": "moon", "match":
+{"detail": "new"}}`. The detail is checked: `new`, `waxing`, `full` or `waning` (or one of them). The moon is optional
+timing: a chapter is paced by participation and time.
+
+**The month, a post, a wolf's Gift.** The watched event **A new month begins** (`month begins`: `detail` and `quantity` the
+month's number, 1 to 13) comes on the first day of the economy's 28-day month (the year's 365th day stays in the 13th); a
+Readiness may wait for it: `"then": {"on": "month begins"}`. **A post changes hands** (`succession`: `actor` the new holder,
+`target` the one before, `detail` "<post title>: <how>") comes when the careers book fills a post. **A resident's job, mood
+or mantle** reads the post they hold too (`"what": "post"`, its title as the careers book has it; empty for none), and
+**A wolf's Gift** (`wolf has`) the tier the wolf was made with (`normal`, `gifted`, `quickened`) or its family (`fire`,
+`earth`, `water`, `wind`, `sound`, `blinker`, `gravity`, `seer`; empty for a normal wolf). Test it and offer what fits;
+never tell it in a story's words.
+
+**Howls.** **Someone howls** (`howled`: `actor` the wolf, or a resident a story asked to; `item` the town it was howled
+in, or `wild`; `detail` the chorus it opened or joined) and **A chorus ends** (`chorus closed`: `actor` who began it,
+`quantity` how many howled in it, residents too, `item` and `detail` as before) are watched events, and objectives. **A
+resident howls** (`npc.howl`) has a resident howl where they stand: it opens or joins a chorus, wolves hear it as any howl
+(a direction and a distance, never a name) and the town remembers it. A howl's rest holds for a resident as for a wolf (a
+few minutes), so a second `npc.howl` too soon is refused ("howled a moment ago": give it `"ifRefused": "skip"` in a trigger
+that may fire often); so is one for a resident dead, down, away or in a fight. "Three howled together" is an exit on `chorus
+closed` with `"minQuantity": 3`, or a trigger with the condition **The event's field** `quantity` at least 3. When a
+resident began the chorus, `chorus closed`'s actor is that resident: a quest objective on it credits the wolves who joined
+only with `"credit": "present"`.
+
+**How many residents stand in a region.** **How many stand in a region** (`count in region`) counts the story's wolves, or,
+with `"who": "residents"` and a `list` (a residents list the story or the world keeps), the residents of that list standing in
+the region now: `{"test": "count in region", "region": "the_ropes", "op": ">=", "value": 3, "who": "residents", "list":
+"crew"}`. A dead resident stands nowhere; one the facts do not have is not counted, and when none of the list is known the
+condition is unknown. The story watches the list's residents: when the list changes (a trigger adds one, another story's
+world list grows), the runner tells the game again, so the next facts have them. A list holds 500 at most.
+
+### Talk and rumour from a story
+
+A story changes what residents say without writing their words: it gives them **memories** their lines in `Data/Talk` are
+gated on, starts **rumours**, and names the realm's **figures**.
+
+**Memories** (`talk.remember`, `talk.forget`): a key and a value (small letters, digits and `_`, up to 40) for 1 to 365
+days, remembered by
+
+| `scope` | who | the line's gate |
+|---|---|---|
+| `realm` | every resident | `world.mem.<key>` |
+| `town` (with `town`) | the residents in that town (the whole city is one town) | `world.mem.<key>`, over the realm's |
+| `npc` (with `npc`) | that resident | `self.mem.<key>` |
+| `pair` (with `npc` and `player`) | that resident, when that wolf is the one they talk to | `pair.mem.<key>` |
+
+```json
+{"kind": "talk.remember", "scope": "realm", "key": "nh_stage", "value": "reckoning", "days": 30}
+{"kind": "talk.remember", "scope": "pair", "npc": "rm_willa_hale", "player": "$actor", "key": "nh_stone", "value": "brought", "days": 120, "keep": true}
+```
+
+A line in a resident's tree: `say[world.mem.nh_stage=reckoning] They say the reckoning is close.` and
+`say[pair.mem.nh_stone=brought priority=5] You're the one who brought my mother's stone.` The order a resident recalls them
+in: the realm's, then the town's (over it), then talk's own memory of the town (over both); a resident's own; and, talking
+with a wolf, the story's pair memory, then talk's own of the two. **Pair memory** is for a wolf of the story: the acting wolf
+of a participant trigger (`$actor`) or the looped wolf (`$each`), or a quest's reward; never named, never at a phase's
+opening. Memories are taken back when the run ends unless `keep` (then they last their days). A town or a resident keeps 64
+of a story's memories, a pair 16; past that the soonest to be forgotten goes first (the console's Problems says so once a
+game day). **Campaigns → the run → Variables & timers → What residents remember** lists them, as the game last saved it.
+
+Writing the lines: no resident's name in a library line (they are said by everyone), the speaker's dialect as any line,
+and a key table of the campaign's (`nh_stage`, `nh_debts`…) so chapters agree on the words.
+
+**The story topic.** While a live story has residents remember a realm key (`scope: "realm"`), two residents who meet may
+talk of **the story itself**: the director's `story` topic (news, as a death or a festival is), one for each key's prefix
+(`nh` for `nh_stage`), with `topic.story` the prefix. Its scenes are the library's `talk.story` ones, gated on the keys:
+`scene talk.story` with `[topic.story=nh world.mem.nh_stage=reckoning]`. It opens only where the library has `talk.story`
+scenes, so a town whose library has none (the talk town of the tests) never hears it, and it closes when the run ends or
+its keys are forgotten. Until such scenes are written, the campaign rides `news`, `gossip` or `day`, gated on `world.mem.nh_*`.
+Whoever writes the first ones adds `talk.story` to `Data/Talk/settings.json`'s concepts (the library refuses a concept it
+declares with nothing written for it).
+
+**Rumours** (`belief.plant`): a number of residents of a town (living, placed, never the one it is about; the same ones each
+time, by the run's seed) come to believe a phrase of a resident, as if they had heard it: gossip tells it ("Ingrid Kendrick
+was seen at the Customs House at midnight") and it spreads on friendships and caravans like any belief, fading by the
+world's rules. Write the phrase as what follows a name, in small letters at first, with no ids or names: no word with `_`, none
+that starts `wolf-`, and none that runs letters into digits (the game takes "rm111", but also "2am" or "3rd-rate", for an
+id: write "at two in the morning", "third-rate"). `"claimKind":
+"story.cleared"` plants the **clearing**, written as the thing **not** done ("took the Customs House silver"): it is told
+"Ingrid Kendrick never took the Customs House silver". A clearing does not lower the old belief; putting a rumour to rest
+is `belief.forget`: residents (of one town, or everywhere) grow less sure of one kind of claim about a resident (a theft, an
+attempted theft, a story's rumour...): each holder's belief loses that share of its strength (10% to 100%), and one too faint
+(5% or less) is forgotten. `{"kind": "belief.forget", "subject": "rm_ingrid_kendrick", "claimKind": "story.rumour", "share":
+60}`. Twice at 50% leaves a quarter; 100% forgets it. It lasts.
+
+**Figures** (`figure.set`, `figure.clear`; a builder's on a hosted world): who residents mean by the ruler, the lord, the
+captain, the high priest, the hero or the villain (`#world.figure_villain#` in their lines), known in the realm, in a town,
+or among a House. A resident, a wolf (by their name at that moment) or a name only. A figure stays after the story; the
+run's timeline keeps the row it replaced, and **Undo this figure…** there puts it back.
+
+### Foes
+
+**Bring a foe** (`foe.add`) puts a named enemy and up to 8 followers on a tile for 1 to 1,440 minutes: `tough`, `fierce` or
+`champion` (how strong each is lives in `Data/Storylines/foes.json`), waiting (`waits`: it holds its ground and fights a wolf
+who comes within 6 tiles of it) or hunting (`hunts`: it goes for the nearest wolf within 12). It may look like a resident
+(`like`: their looks, and their description if it has none of its own).
+
+```json
+{"kind": "foe.add", "foe": "captain", "name": "The Grey Captain", "cell": "w_pass_3_2", "x": 14, "y": 9, "strength": "champion",
+ "band": {"min": [8, {"div": [{"audience": "active"}, 2]}]}, "stance": "waits", "minutes": 120, "like": "cty_stone_sunton"}
+{"on": "foe defeated", "match": {"target": "captain"}, "to": "the-pass-held"}
+```
+
+- Setting on a foe is **no crime**, and the Watch on duty in the place takes the **wolves' side**.
+- When the leader falls their band **breaks and runs**: `foe defeated` (once; its `quantity` is how many wolves fought them,
+  in all of their fights), and the foe is gone with their band once the fight is over. Each follower brought down is
+  `foe downed`. Nobody is robbed and no camp is cleared: a foe is not a bandit camp, and never counted with the world's.
+- When their minutes run out, or their leader breaks off a fight and runs, it is `foe fled` (`item`: `time` or `fled`).
+  One a restart could not make again (its time ran out meanwhile, or its resident is gone) is `foe fled` (`time`) too, so
+  the story never waits on it.
+- **Send away** (`foe.leave`) takes them away with no event (not while they fight). The console does the same by hand: the
+  run's Orders tab lists its **Foes** (who, how strong, the followers still standing, the time left, fighting or not, as the
+  world last saved them) with **Send away…** beside each.
+- A foe's id is the story's own (3 to 40 small letters, digits, `-` and `_`, never beginning `npc-`); a foe event's
+  `target` is that id. One id is one foe: brought with one name and one strength wherever the story brings them. A foe
+  event is heard only by the run whose foe it was: two runs (of one quest, say) that both bring a "captain" never hear each
+  other's.
+- A foe is no bandit camp: it asks no purse (there is nothing to pay it), robs no wagon, has no bounty posted on it, and
+  the Watch never goes out after it.
+
+**Make a resident a foe** (`foe.outlaw`; a builder's on a hosted world) lets the wolves fight a resident for 1 to 720
+minutes, with 0 to 6 followers, without a crime, the Watch on the wolves' side. Never a protected resident, the dead, one
+down, in a fight, away with a party, or held by another story. While a foe they keep the ground where they were made one
+(their day, their shop and their bed wait), their band beside them; no other story takes hold of them and nobody's party
+takes them along. Beaten (`foe defeated`, target the resident's id) they are
+downed, got up again where they lie when the fight is over, and **held until the story ends**; never killed, unless the
+story says they may die (`"lethal": true`: then `death` follows the fight). Afterwards they are themselves again, their
+bonds untouched. A story that ends while they fight takes them out of the fight, on their feet.
+
+**The population rule**: foes are never residents and never stay. They are not saved; the story keeps what makes them again
+after a restart while their time lasts, and its end takes them all away (no event). Their followers are strangers who go
+with them.
+
+How strong the kinds are was tuned by combat simulations (`build-core/foe_sim`, doc 86, Phase 7): see
+`Docs/Design/86-quests-and-the-ninth-howl.md`, "Phase 7 as built", for the bar and where the table stands.
+
+### Strangers in scenes
+
+A scene's cast may name a **stranger the same story brings** with "Bring a stranger": `{"id": "captain", "visitor":
+"grey-captain"}`, beside a named resident (`npc`) or a selector. The stranger speaks in **their own panel** in the dialogue
+window, with the face they were given (`like`). Bring them before the scene plays: if they are not in the world when it
+starts (never brought, sent away, or gone), the scene fails (`scene failed`, `item` "a stranger is not here"). Approval
+refuses a stranger the story never brings, and warns when it brings them only in a later phase than the scene is played.
+A face banner (`story.tell` with `from`) is never a stranger's: a resident's or a stranger's words reach a wolf only in the
+dialogue window.
+
+### Lasting changes: the crown's change and a sentence
+
+Two effects change a resident's life past the story's end. Both need a builder or the owner on a hosted world, and
+neither is undone when the run ends.
+
+**The crown's change: Give a resident a post** (`npc.post`) gives a post of the careers book to a resident **in one step,
+whether someone holds it or not**: the resident leaves any post they held (it stands empty, for the vacancy rules to fill),
+and whoever held this one is left without it (they keep their home and their purse; succession may find them work later).
+The careers book notes it as a **succession** (`succession`, detail `<post>: by the story`), so a story listening for a
+post changing hands hears it. A post is named by its id, `job:<the resident who founded it>`; the workbench lists them by
+title with who holds each, as the world was last saved, and approval refuses one the world has not, and the Watch's posts
+(the watch chooses its own). The post keeps its founder's id after the founder is gone: on Ridgemere 3 "reigning at the
+Great Palace" is `job:rm_gunnar_harrowgate`, held by Dagfinn Thornham.
+
+```json
+{"kind": "npc.post", "npc": "rm_ottilie_harrowgate", "post": "job:rm_gunnar_harrowgate"}
+```
+
+**Sentence a resident** (`npc.sentence`) takes a resident to a place indoors (one a door or stairs lead into) and keeps them
+there for 1 to 28 days, **even after the story ends**: Ilse Coalley's week in the Watch cells outlasts the line that put her
+there. They keep their post and their home, and walk home when it is served. The game says **A resident is sentenced**
+(`sentence begun`: `actor` the resident, `cell` where, `quantity` the days, `detail` the story) and, on the last day, **A
+sentence is served** (`sentence served`, `item` `served`; `released` when an admin let them go early). Refused for a
+protected resident, the dead, one in a fight or away with a party, a foe, one held by another story, and one serving a
+sentence already; while they serve it no other story holds them and no party takes them along. The Campaigns console's
+**Sentences** lists who is held where, for how much longer, by which story, with **Release now…** (the owner, or "may steer
+campaigns", with a reason).
+
+```json
+{"kind": "npc.sentence", "npc": "rm_ilse_coalley", "place": "r2_the_keep_down", "days": 7}
+```
+
+**Put an unplaced resident first in line** (`npc.queue`, a builder or the owner) names a resident the world knows but who
+has no home yet (one of the Country's) to take **the next post that falls vacant in a town**, by the careers book's rules:
+when a post there that pays has stood empty its eight days with nobody of the town to take it (an apprentice, a master,
+kin, a local or the best trained come first), they are sent for before the city's wolves and the Country's choice (of any
+class), and come in from the Country to take it. One who cannot come yet (no home in reach) keeps their place while the
+next in line is tried; one placed since, or now past working age, leaves the line. It never makes a vacancy, and nobody new is made. Lasting; refused at
+approval for a resident who has a place already, and by the game for one too young or too old to take up a post. Named
+again, they are first again; named for another town, they move there.
+
+```json
+{"kind": "npc.queue", "npc": "cty_eskar", "town": "coldwater"}
+```
+
+**A paw at a resident's work.** A wolf beside a resident at their own post, in their hours (one that is not farm work or a
+bench: those have their own work), may **Lend a paw** from the resident's menu: the work's spells come by the clock, no
+wage is paid and nothing of the resident's is made faster. When it ends, **Two worked together** (`together`) has `actor`
+the wolf, `target` the resident, `item` `beside` and `quantity` the spells, once a game day for a wolf and a resident:
+`{"on": "together", "match": {"item": "beside", "target": "rm_osric_ropeworth"}}` is "work beside the ropemaker".
+
+**A mantle given back.** A mantle a story binds (`mantle.assign`) is laid down when the story ends, or when it lays it down
+itself (`mantle.release`), and **the mantle the resident wore before is theirs again** (none before: they wear none). A
+mantle passed on to someone else since cannot come back: theirs is laid down instead. One who no longer wears the story's
+mantle (a Dungeon Master bound them another since) is left as they are; and where two stories bound one resident in turn,
+the end of both gives back what they wore before either, whichever ends first.
 
 ## 9. Rehearsing
 
@@ -259,9 +914,26 @@ phase reached by one that passes. **Step through** plays one case event by event
 
 A Dungeon Master approves the exact version rehearsed (a digest covers the whole document). Approval checks the ids it
 names against the world (residents, wolves, places and tiles, factions, items, doors, mantles, towns, projects,
-templates), and refuses what the world does not have. A publication ticket comes back, good for a day; **Publish** starts
+templates), and refuses what the world does not have. It also refuses a `door.unlock` or `door.open` of a door into a
+**private home** (an interior some resident lives in and nobody works in, counting the rooms up its stairs; a shop with a
+flat above is a workplace, a lodging house's empty ground floor with homes upstairs is not): a door a story unlocks or
+opens is open to wolves until the story closes or locks it, or ends, and a story never opens someone's home to them.
+Closing the door (`door.close`) ends a window without locking its residents out; `door.lock` locks them out too. A publication ticket comes back, good for a day; **Publish** starts
 the run: the audience is frozen (unless it is open or everyone), the first phase opens, and the game is told. A campaign of
 chapters is approved from **Campaigns → New campaign…** (section 4).
+
+Approval also reads **every word the story says** (`tools/story_words.py`, also the Problems list and the CLI
+`python3 tools/story_words.py --stories DIR`): it refuses the words `Data/Storylines/words.json` lists, with what to say
+instead (the young of wolves are pups; the world's two powers are the Bright One and the Dark One, never another word for
+them; a private message is never called anything else), a word that looks like
+an id in anything a wolf reads (`rm111`, `rm_eleanor_saltcot`, `wolf-…`, or any of the world's resident or place ids), a
+`#symbol#` the talk library does not have (or one in words not said in a resident's voice: `npc.speak`, a scene's lines,
+and every word no resident says), a stray `[` or an unclosed `#`, words too long
+with every fill at its widest, and a banner with a resident's face that quotes them. It warns of a resident's words in
+another dialect's set phrases than their own (Fenshore-raised residents speak Mirebridge's; an accent of `none` is plain),
+of a banner with a resident's face at all, of `npc.speak` said to a wolf ("you": the window is the place), and of a
+clearing that begins "never" (the game says "never" itself), and of a fact such as `#player.title#` in a story's words
+(left out for a wolf who has none there).
 
 Try a new story on a throwaway copy of the world before the live one: the live world's players are not test subjects.
 
@@ -299,6 +971,33 @@ when, why, and the values before and after:
 | Tell the wolves… | A line to the story's wolves, one wolf, a wolf's party, the wolves in a region, or everyone. |
 | Move onto a new version… | Section 12. |
 
+### Moving a chapter on
+
+A phase with Readiness (section 4) shows it on the run's **Overview**, under the phase strip:
+
+- **The header**: "Ready to advance to ch1_end (since day 93)", "Not ready: 2 of 4 met", "Waiting for the next day (ready
+  since day 93)", or "Goes on by itself when ready".
+- **The bars**, one per part. Who took part: "42 of 118 active wolves (36%); 35% and at least 5 needed", the tick where the
+  need is; above them "active 118 · in the story 260 · online now 31" and the window (seen in the last 18 game days, 3 real
+  days). Time: "11.2 of 10 days in the chapter (1.5 held days not counted)".
+- **Advance…** (when ready) takes the ready exit now, with the next phase's entry effects. **Advance anyway…** (when not
+  ready) does the same and asks for the story's title as well as a reason. **Advance at the next …** (a phase with `then`)
+  counts as ready and waits for that moment. **⏸ Hold / ▶ Resume** sit beside them: **holding stops the chapter's clock**
+  (held days never count toward its days, its slow alert or its `autoAfterDays`).
+- **The alerts**: **ready to advance** (it waits for you: it needs you, is listed first, and counts on the Campaigns tab),
+  and **slow** (not ready after its `slowAfterDays`: "Slow: 21% of the 35% needed after 31 days"; with `slowNeedsYou`, "Ready
+  to push: …", and it needs you). A phase whose way on is Readiness is never "cannot move on".
+- **The list** has a **Ready** column (the furthest part, or a green "ready"); each campaign's running chapter shows its line
+  ("Ch 1 · 36% of 35% · day 11 of 10 · ready") with **Advance…**, which opens it.
+- **Who may press it**: whoever may steer the campaign (the owner, or "may steer campaigns"); a chapter whose next phase
+  could release an effect needing more (acting on wolves, a builder's) needs that too.
+- **What is kept**: the command's row holds the readiness as you saw it (every part's progress) and your reason; the audit
+  says it in words; the Timeline shows "ready", "slow", "advanced by …" and "moved on by itself".
+
+*Worked example.* Chapter 1 is at 36% of the 35% needed, 11 of 10 days: the header is green, "Ready to advance to ch1_end
+(since day 93)", and the alert says it waits for you. Press **Advance…**, write "Chapter one has done enough, on to the
+Herald's Word", read **This will do** (the ending phase's entry effects and the snapshot), and **Send it**.
+
 **Safety rules:** every command needs a reason; every control shows **This will do** (a dry run of the command, nothing
 saved or sent) and waits for a second click; stopping, going back, skipping an order and removing a wolf also ask for the
 story's title; a command made for an earlier visit or another version is refused unless you say "even if it has moved on";
@@ -326,11 +1025,14 @@ Ranks are viewer, dm, builder, owner. In your own studio a Dungeon Master does e
 | See the Campaigns console | a Dungeon Master (it names wolves and where they are) |
 | Approve and publish a story, a campaign | a Dungeon Master, and the marks below for what it contains |
 | A story that **acts on wolves** (`character.injury`, `story.area.damage`, `item.take`, `warrant.issue`) | the owner, or "may act on players' wolves" |
-| A story that **needs a builder** (`faction.relation`, `standing.adjust`, and since Phase 10 the economy's `prices.reset`, `project.complete`, `project.cancel`) | a builder or the owner |
+| A story that **needs a builder** (`faction.relation`, `standing.adjust`, since Phase 10 the economy's `prices.reset`, `project.complete`, `project.cancel`, the realm's figures, `figure.set`, `figure.clear`, a resident made a foe, `foe.outlaw`, and the lasting changes to residents, `npc.post`, `npc.sentence` and `npc.queue`) | a builder or the owner |
+| Undo a figure a story set | a builder or the owner |
+| Let go of a campaign's holds | the owner, or "may steer campaigns" |
 | Steer a running story (every control) | the owner, or the owner's "may steer campaigns" for the account (My world, Editor accounts) |
 | A control that could release an effect marked above | also what approving it would need |
-| Declare, set or remove a world variable | the owner, or "may steer campaigns" |
-| Hold all; change the alert rules; grant "may steer campaigns" | the owner |
+| Declare, set or remove a world variable; set a wolf's realm value | the owner, or "may steer campaigns" |
+| Release a sentenced resident now | the owner, or "may steer campaigns" |
+| Hold all; change the alert rules; grant "may steer campaigns"; turn House purses on or off (`house-purses`) | the owner |
 
 The weather, notices, market events and the other effects need what the same act needs by hand on LIVE: a Dungeon Master.
 Underneath it all the game's own guard stays: on a community world with cheats off, a reward to the host's own wolf is
@@ -344,13 +1046,31 @@ takes back what the story held, as it was before the story first touched it. Wha
 | Effect | When the run ends |
 |---|---|
 | `door.lock`, `door.unlock` | the door's lock goes back to what it was before the story touched it (a restart gives the map's) |
+| `door.unlock`, `door.open` | wolves are kept out again where the town's rule keeps them out (a shop out of hours, a house); while the story ran, the door was open to them |
 | `npc.hold` | the resident is released to their day |
 | `npc.follow` | the resident leaves the party and goes home |
 | `visitor.add` | the stranger goes |
-| `mantle.assign` | the mantle is laid down |
+| `mantle.assign` | the mantle is laid down, and the one the resident wore before is theirs again |
 | `board.post` | the notice comes down |
 | `weather.set` | the weather goes back to the season's (it also runs out by itself after its hours) |
 | `story.ping` | the map markers go (they also run out by themselves) |
+| `hunt.stage` | an animal no hunt has met yet goes (it also lapses after its minutes) |
+| `foe.add` | the foe and their band go, even mid-fight, with no event (they also go when their time runs out: `foe fled`) |
+| `foe.outlaw` | the resident is themselves again, and one beaten and held by the story is released |
+| `item.give` with a `tag` | every unit of the story's own item is taken back from every pack, purse and the ground, unless `keep` (then it **stays**, with its name) |
+| `npc.spare`, `npc.protect` with `lasts: run` | the resident is no longer spared, or protected, by this run (another story's hold stays) |
+| `npc.spare`, `npc.protect` with `lasts: campaign` | **stay** until the campaign ends (or an admin lets go of its holds) |
+| `talk.remember` | the residents forget it, unless `keep` (then it lasts its days) |
+| `belief.plant`, `belief.forget`, `figure.set` | **stay**: a rumour fades by the world's rules, and so does the doubt put on it; a figure until cleared (or undone from the timeline) |
+| `title.give`, `npc.greet` | **stay**: a title lasts its days (or for good) until `title.take`; a greeting waits its days for its wolf |
+| a closure quest's finished Story | **stays**: a record of a finished story |
+| `npc.howl` | **stays**: the town remembers the howl a while, as any howl |
+| `npc.post` | **stays**: the crown's change (a post given, whoever held it) is the careers book's from then on |
+| `npc.queue` | **stays**: the resident keeps their place in line until a post there falls vacant |
+| `cast.pick` | the story's own: the variable goes with the run; the resident is untouched |
+| `npc.sentence` | **stays**: the resident serves the days even after the story ends (`sentence served`), unless an admin presses **Release now** |
+| a realm variable | **stays**: each wolf's value is kept for every story that declares it |
+| `story.notify`, `quest.withdraw` | the story's own: news told is told; an offer taken back goes with the run |
 | `journal.note` | **stays**: the wolf's journal keeps it |
 | items given or placed, coins paid, deeds, standing, warrants, injuries, relations, market events, prices, projects, residents killed | **stay**: not a rollback |
 
@@ -369,6 +1089,29 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | A chapter did not start | the earlier chapter's Timeline | Its note says why: not a chapter of the campaign, already running, the audience empty. |
 | A watched event never comes | the trigger's filters | `near resident`, `purse crossed` and `standing crossed` need their names in the filters; the others need a live story listening (the watch list goes with each phase). |
 | A world variable reads its first value | Campaigns → World variables | A story declaring it as another type reads nothing of it; check the type. |
+| A realm value reads its first value | Campaigns → World variables → **Per wolf** | Is it kept for that wolf, and as the type this story declares? A value kept under another type is not read. A chapter started in the same turn another ends reads the other's last changes at its own first turn. |
+| A sentenced resident is not where the story put them | Campaigns → **Sentences** | Still serving? They are put back within a moment unless in a fight; a sentence served or released lets them walk home. |
+| It says ready but did not move | Overview → **Readiness** | `auto` is off: it waits for an admin. Press **Advance…** (or give it `autoAfterDays`). With `then` it waits for that moment ("Waiting for the next day"). A held run's clock is stopped. |
+| The share reads 0% | Readiness → the bar | No active wolves yet (none seen in the last `activeDays` game days), or the list is empty. Who is "online" is unknown until the world says (the story watches its wolves). |
+| A resident's memory line never plays | Variables & timers → **What residents remember** | Is the key there, with days left? A town's is that town's residents only; a pair's only for that wolf. The line's gate must match the key and value exactly. |
+| Approval refuses a purse | the purse | `till:job:<founder>` (or `till:<founder>`) of a till the world has; no town has works, watch or church purses. |
+| An effect was not sent | the firing's history | "skipped: coins has no value": a value it reads had none (a wolf not in the story, a purse not known). A reward with no value is in the timeline as "Reward not given". |
+| A name shows as «wolf: …» or a fill is empty | Rehearse → Step through | A rehearsal shows the token the game turns into a name. An empty fill had no value (noted in the firing). |
+| An objective never ticks | Quests → the objective | `where` (the cells or the region), `credit` (the actor, the target, those present: is the story watching its wolves?), and a `camp_story_` name the story spawns. |
+| A greeting was never said | the resident's window | It is said once, the next time that wolf opens that resident's window (not while they sleep), within its days; a later greeting replaced it? |
+| A resident never uses a title | the line's gate | `player.titled=yes` and `#player.title#`; a title known in a town is only that town's residents'. |
+| Approval refuses words | the words | a word of `words.json` (it says what to write instead), an id in speech, a `#symbol#` the library lacks, a banner that quotes a resident: see section 10. |
+| A quest is not offered to a wolf | the quest's **Only for wolves who…** | It holds for that wolf? (A chain: is the quest before it done for them?) Taken back from them (`quest.withdraw`)? Too many stories at one giver: see "Many stories at one resident". |
+| A chapter never hears a pack | the pack's Timeline and the chapter's trigger | `story.notify`'s news name and the chapter's `"match": {"detail": ...}` the same words; a named `story` is the chapter's id, and it is running. |
+| A staged animal never shows | the hunt's place | The hunt must begin inside the region (the wolf's tile), within the minutes, and only the first hunt there meets it, whoever begins it. Hunts begin only outdoors, never in a town. |
+| A story's item is not taken by a shop | its mark | "That belongs to a story.": an item given with a `tag` is never sold; give a plain one for the wolves to sell. |
+| A gift of the story's letter does nothing | the filter | Name it `letter^watch_list` (the item, `^`, its mark), as the `item.give` gives it; a plain `letter` filter takes any letter. |
+| `npc.howl` was refused | the order | "howled a moment ago": a resident's voice rests as a wolf's does; "dead", "down", "in a fight". |
+| A foe is never set upon | the foe's stance and tile | A waiting foe fights only a wolf within 6 tiles of the ground it holds, a hunting one the nearest within 12; neither starts on a wolf who is down or just out of a fight. |
+| `foe.leave` was refused | the order | "That foe is fighting": they go when the fight is over, or when their time runs out. |
+| `foe.outlaw` was refused | the order | protected, dead, down, in a fight, away with a party, held by another story, or a foe already. |
+| A scene with a stranger failed | the scene's `item` | "a stranger is not here": bring them (`visitor.add`) before the scene plays, and not just its minutes before. |
+| A count of residents is always unknown | the world's facts | None of the list's residents is in the facts yet: the list was empty when the phase began and the game has not been told again (is the runner running?). |
 | Problems in the draft | Story Creator → **Problems** | Every problem at once with **Go**, and the world's warnings (a signal nothing hears, a counter nothing sets, an id the world lacks). |
 
 ## 16. Limits
@@ -386,6 +1129,29 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | Audience | 500 (players, active); 5,000 (open, everyone) |
 | Chapters in a campaign | 12 |
 | Rehearsal cases; facts per case | 32; 256 |
+| Readiness | 8 parts; an `any` of 2 to 4, one deep; labels 80 characters; `minDays` and the slow and auto days up to 3,650 |
+| Counting who took part | 5,000 wolves; a test for each wolf 3 deep and 8 conditions; not inside For each; `activeDays` 1 to 120 |
+| Talk memory | keys and values 40 small letters, digits and `_`; 1 to 365 days; 64 a town or a resident, 16 a pair; 8,192 and 20,000 in all |
+| Values told to residents | 8 a story |
+| A rumour | a phrase of 120 characters; 1 to 50 residents; 10% to 90% sure |
+| Filters | `starts` 1 to 120 characters; `in` 1 to 32 texts of 120 |
+| An objective | `where` 1 to 16 cells or a region; a goal from a value 1 to 1,000,000; `join.again` 1 to 365 game days; 500 wolves credited by one event |
+| Fills | each at its widest: a number 11, a text 200, a wolf's name 24, another name 40 |
+| A mirror; a camp's name; a prefix | 16 names; 3 to 30 of `a-z0-9_`; 2 to 8 small letters |
+| Rank; a tally | the top 1 to 500, over 5,000 wolves; a tally over 5,000, one level deep in arithmetic; neither inside For each |
+| A title; a greeting | 60 characters, 8 a wolf, 1 to 365 days or for good; 200 characters, 1 to 28 days, one a wolf a resident, 20,000 in all |
+| Putting a rumour to rest | 10% to 100% a time; forgotten at 5% |
+| News for other stories | 200 a story a tick (the rest wait); 5,000 waiting at most |
+| A quest's "Only for wolves who…" | 4 deep, 12 conditions; worked out for 5,000 wolves |
+| Closure quests | 4 a story; 4 finished Stories from one story for one wolf |
+| A resident's hub | 9 choices; what doesn't fit goes under Ask about... (9 more) |
+| A staged hunt | 1 to 3 animals, 1 to 1,440 minutes; 8 a story at once; one hunt each |
+| A resident's howl | one a howl's rest (as a wolf's); residents counted in a region: a list of 500 |
+| A story's own items | a mark of 1 to 32 of `a-z0-9_`, a name of 60 characters; 64 kinds a story; 4,000 named in the world |
+| Foes | 8 a story at once; 0 to 8 followers (a resident made a foe: 0 to 6); 1 to 1,440 minutes (a resident: 720); an id of 3 to 40 |
+| A scene's cast | 16 roles: residents, selectors or strangers the story brings |
+| A sentence | 1 to 28 days, indoors; one at a time a resident |
+| Realm variables | as any variable (64 a story); the console lists 200 values at a time |
 
 <!-- reference:begin (made by tools/story_guide.py from Data/Storylines/trigger-catalogue.json: do not edit by hand) -->
 
@@ -395,7 +1161,7 @@ Made from the trigger catalogue (`Data/Storylines/trigger-catalogue.json`), the 
 
 ### Events
 
-207 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
+223 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
 
 #### Story engine
 
@@ -465,6 +1231,16 @@ Exits only (not a trigger). Its parameter is the list 'missions' (ids of this ph
 {"id": "when-missions-completed", "on": "missions completed", "actions": [{"do": "note", "text": "The missions are done"}]}
 ```
 
+<a id="event-ready"></a>**`ready`**: The phase is ready
+
+The way on when the phase is ready: every part of its Readiness met (enough of the active wolves took part, enough days in the phase or the chapter, values, missions, a quest). With auto it is taken by itself (at once, or at the moment `then` names); otherwise the Campaigns console says it is ready and an admin presses Advance.
+
+Exits only, and only in a phase with "ready" (exactly one). Taken by the story runner, never by a world event. Its only fields are on and to.
+
+```json
+{"id": "when-ready", "on": "ready", "actions": [{"do": "note", "text": "The phase is ready"}]}
+```
+
 <a id="event-story-started"></a>**`story started`**: Another story starts (the story's own)
 
 Another story of this world was published, or started by a chapter before it (story.start): its id, not its run, so one chapter can wait for another.
@@ -495,6 +1271,75 @@ Sent by the story runner to every other live story of the world that listens for
 
 ```json
 {"id": "when-story-ended", "on": "story ended", "match": {"target": "the-crossing"}, "actions": [{"do": "note", "text": "Another story ends"}]}
+```
+
+<a id="event-story-notified"></a>**`story notified`**: Another story sends news (the story's own)
+
+A story's 'Tell another story' reached this one: detail is the news's name, actor the wolf it is about (may be empty), quantity its number, target the sending story's id, item its run.
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | the wolf it is about (wolf) | any wolf |
+| `target` | the story that sent it (story) | any story |
+| `item` | its run (run) | any run |
+| `detail` | the news (signal) | any |
+| `quantity` | its number (number) |  |
+
+A trigger on it must name `detail` in its filters.
+
+Sent by the story runner to every other live story of the world that listens for that news (or to the one named); never in the world's log.
+
+```json
+{"id": "when-story-notified", "on": "story notified", "match": {"detail": "500"}, "actions": [{"do": "note", "text": "Another story sends news"}]}
+```
+
+<a id="event-variable-changed"></a>**`variable changed`**: A world variable changes (the story's own)
+
+Another story changed a world variable this story declares: target is its name, quantity the new number (for a number), detail the new value as text, item the run that changed it. Told once a tick at most, with the latest value; a story never hears its own changes.
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `target` | the variable (variable) | the variable named |
+| `detail` | its new value (text) | any |
+| `quantity` | its new number (number) |  |
+| `item` | the run that changed it (run) | any run |
+
+A trigger on it must name `target` in its filters.
+
+Sent by the story runner to every other live story of the world that declares the variable and listens for it; never in the world's log.
+
+```json
+{"id": "when-variable-changed", "on": "variable changed", "match": {"target": "ropes"}, "actions": [{"do": "note", "text": "A world variable changes"}]}
+```
+
+<a id="event-cast-chosen"></a>**`cast chosen`**: A resident is cast (the story's own)
+
+The story's 'Cast a resident' found someone: target the resident, detail the variable they were put in, actor the wolf they were chosen near (empty when none was named).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | the wolf they were chosen near (wolf) | any wolf |
+| `target` | the resident cast (resident) | anyone |
+| `detail` | the variable (text) | any |
+
+Sent by the story itself as it runs, after the fact whose trigger cast; the game never records it.
+
+```json
+{"id": "when-cast-chosen", "on": "cast chosen", "match": {"target": "rm111"}, "actions": [{"do": "note", "text": "A resident is cast"}]}
+```
+
+<a id="event-cast-failed"></a>**`cast failed`**: Nobody fits a casting (the story's own)
+
+The story's 'Cast a resident' found nobody living and placed who fits: detail the variable (it keeps what it held).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `detail` | the variable (text) | any |
+
+Sent by the story itself as it runs, after the fact whose trigger cast; the game never records it.
+
+```json
+{"id": "when-cast-failed", "on": "cast failed", "actions": [{"do": "note", "text": "Nobody fits a casting"}]}
 ```
 
 #### Scenes
@@ -623,7 +1468,7 @@ The typed words are never logged.
 
 <a id="event-scene-failed"></a>**`scene failed`**: A scene fails (has a tile)
 
-An embedded scene could not go on (marked failed) and ended.
+An embedded scene could not go on (marked failed) and ended; item says why where it is known ("a stranger is not here": a stranger cast in it the story has not brought, or sent away).
 
 | Field | Holds | Left out means |
 |---|---|---|
@@ -632,6 +1477,7 @@ An embedded scene could not go on (marked failed) and ended.
 | `cell` | where that wolf is (place) | anywhere |
 | `detail` | the scene's cue (cue) | any cue |
 | `quantity` | the visit (the run's visit number) (number) |  |
+| `item` | why, where it is known (a stranger is not here) (text) | any |
 
 ```json
 {"id": "when-scene-failed", "on": "scene failed", "actions": [{"do": "note", "text": "A scene fails"}]}
@@ -977,7 +1823,7 @@ A character tends a downed one beside it and stands them up.
 
 <a id="event-together"></a>**`together`**: Two worked together (mission evidence, has a tile)
 
-When a joint work (foraging, farm work, bench work) ends, one event for each pair who worked enough beats side by side.
+When a joint work (foraging, farm work, bench work) ends, one event for each pair who worked enough beats side by side. A wolf who lent a paw to a resident at their own work (Lend a paw): actor the wolf, target the resident, item 'beside', quantity the beats, once a game day for the pair.
 
 | Field | Holds | Left out means |
 |---|---|---|
@@ -1223,6 +2069,37 @@ A resident no longer wears the mantle they wore. Written only while a live story
 {"id": "when-mantle-released", "on": "mantle released", "actions": [{"do": "note", "text": "A resident lays a mantle down"}]}
 ```
 
+<a id="event-howled"></a>**`howled`**: Someone howls (watched, mission evidence, has a tile)
+
+A wolf (or a resident a story asked to) howls: item is the town it was howled in, or wild; detail the chorus it opened or joined. Written only while a live story listens for it (the story's watch list).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | who howled (character) | anyone |
+| `cell` | where (place) | anywhere |
+| `item` | the town, or wild (text) | anywhere |
+| `detail` | the chorus it opened or joined (text) | any |
+
+```json
+{"id": "when-howled", "on": "howled", "actions": [{"do": "note", "text": "Someone howls"}]}
+```
+
+<a id="event-chorus-closed"></a>**`chorus closed`**: A chorus ends (watched, mission evidence, has a tile)
+
+A gathering howl closed: actor began it, quantity is how many howled in it (residents too), item the town or wild, detail the chorus. When a resident began it (a story's npc.howl), the actor is that resident: a quest objective on it should credit the wolves present (credit: present), or it credits nobody who joined. Written only while a live story listens for it (the story's watch list).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | who began it (character) | anyone |
+| `cell` | where (place) | anywhere |
+| `item` | the town, or wild (text) | anywhere |
+| `detail` | the chorus (text) | any |
+| `quantity` | how many howled (number) |  |
+
+```json
+{"id": "when-chorus-closed", "on": "chorus closed", "actions": [{"do": "note", "text": "A chorus ends"}]}
+```
+
 #### Gifts, items and loans
 
 <a id="event-gift"></a>**`gift`**: A gift is given (mission evidence, has a tile)
@@ -1238,7 +2115,7 @@ A character gives goods or coins to another, the first gift of the game day betw
 | `quantity` | how many (number) |  |
 | `coins` | coins given (number) |  |
 
-A trigger on 'gift' also fires on 'gift again'. A gift's item filter matches the base item, so a marked or crafted rope counts as rope (unless the filter names marks with ~ or @).
+A trigger on 'gift' also fires on 'gift again'. A gift's item filter matches the base item, so a marked or crafted rope counts as rope (unless the filter names marks with ~ or @). A story's own item is named item^tag (letter^watch_list): only that story's.
 
 ```json
 {"id": "when-gift", "on": "gift", "match": {"item": "rope"}, "actions": [{"do": "note", "text": "A gift is given"}]}
@@ -1257,7 +2134,7 @@ A character gives to the same receiver again on a game day it has already given 
 | `quantity` | how many (number) |  |
 | `coins` | coins given (number) |  |
 
-Item filter matches the base item, as for gift.
+Item filter matches the base item, as for gift (a story's own item as item^tag).
 
 ```json
 {"id": "when-gift-again", "on": "gift again", "match": {"item": "rope"}, "actions": [{"do": "note", "text": "Another gift the same day"}]}
@@ -1361,7 +2238,7 @@ A wolf picked up something lying on the ground (what was knocked loose in a figh
 | Field | Holds | Left out means |
 |---|---|---|
 | `actor` | the wolf (wolf) | any wolf |
-| `item` | the item (item) | anything |
+| `item` | the item (a story's own as item^tag) (item) | anything |
 | `cell` | where (place) | anywhere |
 | `quantity` | how many (number) | any |
 
@@ -1376,7 +2253,7 @@ A wolf's held item fell to the ground (knocked loose in a fight). Written only w
 | Field | Holds | Left out means |
 |---|---|---|
 | `actor` | the wolf (wolf) | any wolf |
-| `item` | the item (item) | anything |
+| `item` | the item (a story's own as item^tag) (item) | anything |
 | `cell` | where (place) | anywhere |
 | `detail` | how (text) | any |
 
@@ -1598,6 +2475,52 @@ An injury of a wolf healed with rest: the injury in words. Written only while a 
 {"id": "when-injury-healed", "on": "injury healed", "actions": [{"do": "note", "text": "A wolf's injury heals"}]}
 ```
 
+<a id="event-foe-downed"></a>**`foe downed`**: A foe's follower falls (mission evidence, has a tile)
+
+A follower of a story's foe is downed (target the foe's id; a resident's id for a resident made a foe).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | who landed the last blow (character) | anyone |
+| `target` | the foe (foe) | any foe |
+| `cell` | where (place) | anywhere |
+| `detail` | the follower's name (text) | any |
+
+```json
+{"id": "when-foe-downed", "on": "foe downed", "actions": [{"do": "note", "text": "A foe's follower falls"}]}
+```
+
+<a id="event-foe-defeated"></a>**`foe defeated`**: A foe is beaten (mission evidence, has a tile)
+
+A story's foe (or a resident made one) is downed: actor landed the last blow, target is the foe's id (a resident's id for foe.outlaw), detail their name, quantity how many wolves fought them. Once a foe: their band breaks and runs.
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | who landed the last blow (character) | anyone |
+| `target` | the foe (foe) | any foe |
+| `cell` | where (place) | anywhere |
+| `detail` | their name (text) | any |
+| `quantity` | wolves who fought (number) |  |
+
+```json
+{"id": "when-foe-defeated", "on": "foe defeated", "actions": [{"do": "note", "text": "A foe is beaten"}]}
+```
+
+<a id="event-foe-fled"></a>**`foe fled`**: A foe gets away (has a tile)
+
+A story's foe broke off a fight and fled, their time ran out, or they died or were gone outside a fight (detail: their name; item: fled, time or gone). They are gone with their band.
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `target` | the foe (foe) | any foe |
+| `cell` | where (place) | anywhere |
+| `item` | fled, time or gone (text) | any |
+| `detail` | their name (text) | any |
+
+```json
+{"id": "when-foe-fled", "on": "foe fled", "actions": [{"do": "note", "text": "A foe gets away"}]}
+```
+
 #### Bandits and the roads
 
 <a id="event-raid"></a>**`raid`**: Bandits rob a wagon
@@ -1632,7 +2555,7 @@ Once a game week a new bandit camp may form in wild country along a road (never 
 {"id": "when-bandits-gather", "on": "bandits gather", "actions": [{"do": "note", "text": "Bandits make camp on a road"}]}
 ```
 
-<a id="event-camp-cleared"></a>**`camp cleared`**: A bandit camp is broken (has a tile)
+<a id="event-camp-cleared"></a>**`camp cleared`**: A bandit camp is broken (mission evidence, has a tile)
 
 A bandit camp is broken: by whoever beat its last bandits, or by a town's watch on patrol.
 
@@ -1825,7 +2748,7 @@ Bandits beat a wolf to the ground in a road fight and take half its purse.
 
 #### Caravans, wagons, carts
 
-<a id="event-caravan-arrives"></a>**`caravan arrives`**: A wagon arrives at a market
+<a id="event-caravan-arrives"></a>**`caravan arrives`**: A wagon arrives at a market (mission evidence)
 
 A wagon between markets reaches the far market and unloads.
 
@@ -2073,7 +2996,7 @@ The staged economy commits a wagon between two markets and posts its notices.
 
 #### Ships
 
-<a id="event-ship-docks"></a>**`ship docks`**: A ship comes in
+<a id="event-ship-docks"></a>**`ship docks`**: A ship comes in (mission evidence)
 
 A ship on the timetable comes in to its port with its cargo.
 
@@ -2090,7 +3013,7 @@ A ship on the timetable comes in to its port with its cargo.
 {"id": "when-ship-docks", "on": "ship docks", "actions": [{"do": "note", "text": "A ship comes in"}]}
 ```
 
-<a id="event-ship-lost"></a>**`ship lost`**: A ship is lost at sea
+<a id="event-ship-lost"></a>**`ship lost`**: A ship is lost at sea (mission evidence)
 
 A ship due at a port is lost with all its cargo (by chance or by the Dungeon Master).
 
@@ -2461,7 +3384,7 @@ The Dungeon Master nudges a market's Times up or down for some days; posted once
 {"id": "when-times-nudged", "on": "times nudged", "actions": [{"do": "note", "text": "Trade at a market is nudged"}]}
 ```
 
-<a id="event-trade-done"></a>**`trade done`**: A wolf buys or sells (watched, mission evidence, has a tile)
+<a id="event-trade-done"></a>**`trade done`**: A wolf buys or sells (watched, mission evidence)
 
 A wolf bought from or sold to a trader (a shop, a stall's keeper): detail is bought or sold, coins what changed hands. Written only while a live story listens for it (the story's watch list).
 
@@ -2473,6 +3396,7 @@ A wolf bought from or sold to a trader (a shop, a stall's keeper): detail is bou
 | `detail` | bought or sold (text) | any |
 | `quantity` | how many (number) | any |
 | `coins` | the pennies paid or got (number) | any |
+| `cell` | where the wolf is (place) | anywhere |
 
 ```json
 {"id": "when-trade-done", "on": "trade done", "match": {"target": "rm111"}, "actions": [{"do": "note", "text": "A wolf buys or sells"}]}
@@ -2480,7 +3404,7 @@ A wolf bought from or sold to a trader (a shop, a stall's keeper): detail is bou
 
 <a id="event-purse-crossed"></a>**`purse crossed`**: A purse crosses an amount (watched)
 
-A town's treasury, its works, watch or church, a till or a Chapter's purse (as a reward names one: town:<town>, town:<town>:works, till:<id>, chapter:<id>) goes up or down past an amount the trigger names in its detail (quantity: what it holds now). Name the purse and the amount. Written only while a live story listens for it (the story's watch list).
+A town's treasury, a business's till or a Chapter's purse (as a reward names one: town:<town>, till:job:<resident>, chapter:<id>) goes up or down past an amount the trigger names in its detail (quantity: what it holds now). Name the purse and the amount. Written only while a live story listens for it (the story's watch list).
 
 | Field | Holds | Left out means |
 |---|---|---|
@@ -2848,7 +3772,7 @@ One faction's stance toward another changed (a DM's change, a story's, or the wo
 
 #### Town life
 
-<a id="event-festival"></a>**`festival`**: A festival begins
+<a id="event-festival"></a>**`festival`**: A festival begins (mission evidence)
 
 A town's festival day reaches noon and the festival starts at the square.
 
@@ -2862,7 +3786,7 @@ A town's festival day reaches noon and the festival starts at the square.
 {"id": "when-festival", "on": "festival", "actions": [{"do": "note", "text": "A festival begins"}]}
 ```
 
-<a id="event-project-built"></a>**`project built`**: A town project is finished
+<a id="event-project-built"></a>**`project built`**: A town project is finished (mission evidence)
 
 A town project has all its materials and work and stands built.
 
@@ -3117,6 +4041,53 @@ A town project (built or not) is removed and its gifts refunded.
 {"id": "when-project-removed", "on": "project removed", "actions": [{"do": "note", "text": "A town project is removed"}]}
 ```
 
+<a id="event-succession"></a>**`succession`**: A post changes hands
+
+A resident took a post by the careers book's rules (a death, a retirement, a vacancy filled): actor the new holder, target the one before (may be empty), detail '<post title>: <how>'.
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | the new holder (resident) | anyone |
+| `target` | who held it before (resident) | anyone |
+| `detail` | the post and how (text) | any |
+
+```json
+{"id": "when-succession", "on": "succession", "match": {"target": "rm111"}, "actions": [{"do": "note", "text": "A post changes hands"}]}
+```
+
+<a id="event-sentence-begun"></a>**`sentence begun`**: A resident is sentenced (has a tile)
+
+A story sentenced a resident (Sentence a resident): actor the resident, cell where they are held, quantity the days, target the story's run, detail the story's id.
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | the resident (resident) | anyone |
+| `target` | the story's run (run) | any run |
+| `cell` | where they are held (place) | anywhere |
+| `detail` | the story that sentenced them (story) | any story |
+| `quantity` | days (number) |  |
+
+```json
+{"id": "when-sentence-begun", "on": "sentence begun", "actions": [{"do": "note", "text": "A resident is sentenced"}]}
+```
+
+<a id="event-sentence-served"></a>**`sentence served`**: A sentence is served (has a tile)
+
+A resident's sentence is over: item served (its last day came, even after the story ended) or released (by the Campaigns console's Release now); quantity the whole days they were held, target the run that sentenced them, detail its story's id. They walk home.
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | the resident (resident) | anyone |
+| `target` | the story's run (run) | any run |
+| `cell` | where they are held (place) | anywhere |
+| `item` | served or released (text) | either |
+| `detail` | the story that sentenced them (story) | any story |
+| `quantity` | days served (number) |  |
+
+```json
+{"id": "when-sentence-served", "on": "sentence served", "actions": [{"do": "note", "text": "A sentence is served"}]}
+```
+
 #### Fame, journal and tales
 
 <a id="event-storyline-objective"></a>**`storyline objective`**: A storyline objective is met (has a tile)
@@ -3316,6 +4287,21 @@ A wolf's skill passes a whole step by practice (quantity: the new whole value), 
 {"id": "when-skill-practised", "on": "skill practised", "actions": [{"do": "note", "text": "A wolf's skill grows a step"}]}
 ```
 
+<a id="event-title-given"></a>**`title given`**: A wolf is given a title (mission evidence)
+
+A story named the wolf by a title (detail: the title; target: the story's run; item: realm or town:<id>).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | the wolf (wolf) | any wolf |
+| `target` | the story run (run) | any story |
+| `item` | where it is known (realm, or town:<town>) (text) | anywhere |
+| `detail` | the title (text) | any |
+
+```json
+{"id": "when-title-given", "on": "title given", "actions": [{"do": "note", "text": "A wolf is given a title"}]}
+```
+
 #### Quests and parties
 
 <a id="event-quest-accepted"></a>**`quest accepted`**: A wolf takes on a quest
@@ -3436,7 +4422,7 @@ Sent by the story itself as it runs, after the fact that caused it; the game nev
 
 <a id="event-quest-completed"></a>**`quest completed`**: A story's quest is done (the story's own, mission evidence)
 
-The story's own fact: a copy of a quest was completed (handed in, or its last required objective done); its rewards follow.
+The story's own fact: a copy of a quest was completed (handed in, or its last required objective done); its rewards follow. (A closure quest also counts as a finished Story for the wolf.)
 
 | Field | Holds | Left out means |
 |---|---|---|
@@ -3658,6 +4644,32 @@ The first day of a season (detail: spring, summer, autumn or winter). Written on
 {"id": "when-season-begins", "on": "season begins", "actions": [{"do": "note", "text": "A season begins"}]}
 ```
 
+<a id="event-moon"></a>**`moon`**: The moon turns (watched)
+
+The moon passed into another quarter of its round (detail: new, waxing, full or waning; quantity: the day of the moon's round, 0 to 29). Written only while a live story listens for it (the story's watch list).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `detail` | new, waxing, full or waning (text) | any |
+| `quantity` | the day of the moon's round (number) |  |
+
+```json
+{"id": "when-moon", "on": "moon", "actions": [{"do": "note", "text": "The moon turns"}]}
+```
+
+<a id="event-month-begins"></a>**`month begins`**: A new month begins (watched)
+
+The first day of the world's 28-day month (the economy's: doc 42), counted from the year's first day: detail the month's number in the year (1 to 13; the year's last day belongs to the 13th), quantity the same. Written only while a live story listens for it (the story's watch list).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `detail` | the month's number (text) | any |
+| `quantity` | the month's number (number) |  |
+
+```json
+{"id": "when-month-begins", "on": "month begins", "actions": [{"do": "note", "text": "A new month begins"}]}
+```
+
 #### Dialogue windows
 
 <a id="event-dialogue-opened"></a>**`dialogue opened`**: A wolf opens a resident's window (watched, mission evidence, has a tile)
@@ -3733,14 +4745,14 @@ True when the condition under it is false.
 
 <a id="condition-field"></a>**`field`**: The event's field
 
-Compares one field of the event that just happened. Text takes = and !=; quantity and coins take a number.
+Compares one field of the event that just happened. Text takes =, !=, begins with ("starts": 1 to 120 characters) and is one of ("in": a list of up to 32 texts); quantity and coins take a number.
 
 Reads: the event's **actor** **=** **value**
 
 | Parameter | What | Kind |
 |---|---|---|
 | `field` | the field | choice; one of: `actor`, `target`, `cell`, `item`, `detail`, `quantity`, `coins` |
-| `op` | the comparison | choice; one of: `=`, `!=`, `>`, `>=`, `<`, `<=` |
+| `op` | the comparison | choice; one of: `=`, `!=`, `>`, `>=`, `<`, `<=`, `starts`, `in` |
 | `value` | the value | value |
 
 ```json
@@ -4011,14 +5023,16 @@ Reads: **$actor** is **indoors**
 
 <a id="condition-count-in-region"></a>**`count in region`**: How many stand in a region (v2, reads the world's facts)
 
-Counts the wolves of the story standing in the region now (StarCraft's Bring). Wolves away are not counted.
+Counts the wolves of the story standing in the region now (StarCraft's Bring), or the residents of a list who stand in it. Wolves away are not counted; a resident the world's facts do not have is unknown, not counted (and when every one listed is, the whole condition is unknown). A dead resident does not stand anywhere.
 
-Reads: **at least** **1** of the story's wolves stand in **square**
+Reads: **at least** **1** stand in **square**
 
 | Parameter | What | Kind |
 |---|---|---|
 | `op` | the comparison | choice; one of: `=`, `!=`, `>`, `>=`, `<`, `<=`; default ">=" |
-| `value` | wolves | int; 0 to 5000; default 1 |
+| `value` | how many | int; 0 to 5000; default 1 |
+| `who` | who is counted | choice; one of: `wolves`, `residents`; optional; default "wolves" |
+| `list` | the residents | variable; a variable of type residents; optional |
 | `region` | the region | region |
 
 ```json
@@ -4027,7 +5041,7 @@ Reads: **at least** **1** of the story's wolves stand in **square**
 
 <a id="condition-carries"></a>**`carries`**: A wolf carries an item (v2, reads the world's facts)
 
-How many of an item the wolf has in their pack (marked or crafted ones count as their base item). Unknown for a wolf away.
+How many of an item the wolf has in their pack (marked or crafted ones count as their base item, and so does a story's own item; name a story's own as item^tag, letter^watch_list, to count only it). Unknown for a wolf away.
 
 Reads: **$actor** carries **at least** **1** **rope**
 
@@ -4108,6 +5122,22 @@ Reads: **$actor** **is** **wanted by the watch**
 {"test": "wolf is", "who": "$actor", "state": "wanted", "is": true}
 ```
 
+<a id="condition-wolf-has"></a>**`wolf has`**: A wolf's Gift (v2, reads the world's facts)
+
+The Gift a wolf was made with (doc 43): its tier (normal, gifted or quickened) or its family (fire, earth, water, wind, sound, blinker, gravity, seer; none for a normal wolf). Never tell it in a story's words: test it, and offer what fits. Unknown for a wolf away.
+
+Reads: 's **Gift's tier** is **normal**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `who` | the wolf | wolf; optional; default "$actor" |
+| `what` | what | choice; one of: `tier`, `family`; default "tier" |
+| `value` | is | text; up to 40 characters; default "normal" |
+
+```json
+{"test": "wolf has", "what": "tier", "value": "normal"}
+```
+
 <a id="condition-party-size"></a>**`party size`**: A wolf's party (v2, reads the world's facts)
 
 How many wolves are in the wolf's party, the wolf included (1: alone). Unknown for a wolf away.
@@ -4186,14 +5216,14 @@ Reads: **rm111** stands in **square**
 
 <a id="condition-resident-has"></a>**`resident has`**: A resident's job, mood or mantle (v2, reads the world's facts)
 
-A named resident's job (the kind of work, as residents' talk names it: guard, merchant, smith, farmer...), their mood now (even, bright, low or sore), the mantle they wear (doc 84), or the town they live in.
+A named resident's job (the kind of work, as residents' talk names it: guard, merchant, smith, farmer...), their mood now (even, bright, low or sore), the mantle they wear (doc 84), or the town they live in, or the post they hold (its title as the careers book has it, e.g. reigning at the Great Palace; none: empty).
 
 Reads: **rm111**'s **job** is **A few words.**
 
 | Parameter | What | Kind |
 |---|---|---|
 | `npc` | the resident | resident |
-| `what` | what | choice; one of: `job`, `mood`, `mantle`, `town`; default "job" |
+| `what` | what | choice; one of: `job`, `mood`, `mantle`, `town`, `post`; default "job" |
 | `value` | is | text; up to 80 characters |
 
 ```json
@@ -4217,14 +5247,14 @@ Reads: the hour is from **6** to **18**
 
 <a id="condition-calendar-is"></a>**`calendar is`**: The day, the season, the time of day (v2, reads the world's facts)
 
-The weekday (Marketday, Restday...), the season, or the time of day (dawn, day, dusk, night).
+The weekday (Marketday, Restday...), the season, the time of day (dawn, day, dusk, night), or the moon (new, waxing, full, waning).
 
 Reads: the **weekday** is **Restday**
 
 | Parameter | What | Kind |
 |---|---|---|
-| `what` | what | choice; one of: `weekday`, `season`, `period`; default "weekday" |
-| `value` | is | choice; one of: `Dawnday`, `Hearthday`, `Stoneday`, `Riverday`, `Emberday`, `Marketday`, `Restday`, `spring`, `summer`, `autumn`, `winter`, `dawn`, `day`, `dusk`, `night`; default "Restday" |
+| `what` | what | choice; one of: `weekday`, `season`, `period`, `moon`; default "weekday" |
+| `value` | is | choice; one of: `Dawnday`, `Hearthday`, `Stoneday`, `Riverday`, `Emberday`, `Marketday`, `Restday`, `spring`, `summer`, `autumn`, `winter`, `dawn`, `day`, `dusk`, `night`, `new`, `waxing`, `full`, `waning`; default "Restday" |
 
 ```json
 {"test": "calendar is", "what": "weekday", "value": "Restday"}
@@ -4293,6 +5323,26 @@ Reads: **ask** of **axle** **for the acting wolf** is **done**
 
 ```json
 {"test": "objective is", "quest": "axle", "objective": "ask", "of": "$actor", "status": "done"}
+```
+
+<a id="condition-participation"></a>**`participation`**: Enough wolves took part (v2)
+
+Counts the story's wolves who are active (seen in the last activeDays game days; or all of them, or those online now) and, of those, the ones in a list of wolves or the ones for whom a test is true. True when they are at least the share asked and at least the floor (the floor never asks for more wolves than are active; a cap, if given, is always enough, so a crowd of 3,000 does not need 1,000). With no active wolves it is false; with the online wolves not known it is unknown. A wolf who did it and then went quiet leaves both counts, so the share stays honest.
+
+Reads: at least **1**% of the **active** wolves (at least; ) **are in the list**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `source` | who counts | choice; one of: `list`, `where`; default "list" |
+| `list` | the list | variable; a variable of type wolves; optional |
+| `where` | the test for each wolf | condition; optional |
+| `of` | out of | choice; one of: `active`, `all`, `online`; default "active" |
+| `percent` | the share (%) | int; 1 to 100 |
+| `floor` | at least this many | int; 1 to 5000; optional; default 1 |
+| `cap` | this many is always enough | int; 1 to 5000; optional |
+
+```json
+{"test": "participation", "source": "list", "of": "active", "percent": 1}
 ```
 
 ### Actions
@@ -4536,6 +5586,25 @@ Reads: Pick one of **ropes** at random as **ropes**
 
 ```json
 {"do": "pick", "list": "ropes", "var": "ropes"}
+```
+
+<a id="action-rank"></a>**`rank`**: Rank the wolves (v2)
+
+Orders wolves by a number each wolf has (a player variable), highest first, ties broken by the story's seed, and puts the first ones into a list of wolves (cleared first). Wolves without a value, or below the least, are left out. Use For each over that list to name, thank or reward them. Not inside For each.
+
+Reads: Put the top **1** wolves of **the wolves of the story** by **ropes** (at least ) into **ropes**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `var` | by | variable; a variable of type number |
+| `top` | how many (1 to 500) | operand |
+| `over` | among | choice; one of: `participants`, `list`; default "participants" |
+| `list` | the list | variable; a variable of type wolves; optional |
+| `min` | at least | operand; optional |
+| `into` | into the list | variable; a variable of type wolves |
+
+```json
+{"do": "rank", "var": "ropes", "top": 1, "over": "participants", "into": "ropes"}
 ```
 
 <a id="action-start-timer"></a>**`start timer`**: Start a timer variable (v2)
@@ -4797,7 +5866,7 @@ Reads: Go to the phase **muster**
 
 ### Effects
 
-71 world effects, each one action `{"do": "effect", "effect": {...}}` (or, for a phase, one of what it sends as it opens). Each becomes an order the game applies and may refuse, with a receipt, except the story's own. On any effect the game applies, `ifRefused` says what the story does when it is refused: `pause` (the default), `skip`, or `when here` (an effect to one wolf, held until they are next in the world, `waitDays` 1 to 90).
+93 world effects, each one action `{"do": "effect", "effect": {...}}` (or, for a phase, one of what it sends as it opens). Each becomes an order the game applies and may refuse, with a receipt, except the story's own. On any effect the game applies, `ifRefused` says what the story does when it is refused: `pause` (the default), `skip`, or `when here` (an effect to one wolf, held until they are next in the world, `waitDays` 1 to 90).
 
 #### Telling the wolves
 
@@ -4955,13 +6024,14 @@ Reads: Put **rm111** at **greyfen-square, 1, 1**
 
 <a id="effect-npc-protect"></a>**`npc.protect`**: Protect a resident
 
-Marks the resident as one who cannot be killed.
+Marks the resident as one who cannot be killed: for good (until Unprotect), while this story runs, or while its campaign runs (let go when the campaign ends).
 
 Reads: **rm111** cannot be killed
 
 | Parameter | What | Kind |
 |---|---|---|
 | `npc` | the resident | resident |
+| `lasts` | for | choice; one of: `ever`, `run`, `campaign`; optional; default "ever" |
 
 ```json
 {"do": "effect", "effect": {"kind": "npc.protect", "npc": "rm111"}}
@@ -4969,7 +6039,7 @@ Reads: **rm111** cannot be killed
 
 <a id="effect-npc-unprotect"></a>**`npc.unprotect`**: Remove a resident's protection
 
-Takes the mark off.
+Takes the mark off. When this story protected them for its run or its campaign, lets go of that protection only: one protected in their own right, or by the Dungeon Master, stays protected.
 
 Reads: **rm111** can be killed again
 
@@ -4979,6 +6049,35 @@ Reads: **rm111** can be killed again
 
 ```json
 {"do": "effect", "effect": {"kind": "npc.unprotect", "npc": "rm111"}}
+```
+
+<a id="effect-npc-spare"></a>**`npc.spare`**: Spare a resident from old age
+
+Old age passes the resident by (stories and fights still can't kill a protected one: Protect them too). For this story, or for its whole campaign (let go when the campaign ends).
+
+Reads: **rm111** does not die of old age while
+
+| Parameter | What | Kind |
+|---|---|---|
+| `npc` | the resident | resident |
+| `lasts` | for | choice; one of: `run`, `campaign`; optional; default "run" |
+
+```json
+{"do": "effect", "effect": {"kind": "npc.spare", "npc": "rm111"}}
+```
+
+<a id="effect-npc-unspare"></a>**`npc.unspare`**: Let old age take its course
+
+Ends this story's (or its campaign's) sparing; another story may still spare them.
+
+Reads: **rm111** is no longer spared by this story
+
+| Parameter | What | Kind |
+|---|---|---|
+| `npc` | the resident | resident |
+
+```json
+{"do": "effect", "effect": {"kind": "npc.unspare", "npc": "rm111"}}
 ```
 
 <a id="effect-npc-revive"></a>**`npc.revive`**: Revive a resident
@@ -4997,7 +6096,7 @@ Reads: Bring **rm111** back to life
 
 <a id="effect-npc-offer"></a>**`npc.offer`**: Offer a choice in a resident's window (v2, the story's own)
 
-While this phase visit is open, the resident's dialogue window shows a story choice to the wolf (or every wolf of the story): the wolf's words, the resident's reply in their own voice. Picking it makes a 'dialogue choice' event.
+While this phase visit is open, the resident's dialogue window shows a story choice to the wolf (or every wolf of the story): the wolf's words, the resident's reply in their own voice. Picking it makes a 'dialogue choice' event. Offered again to another wolf with the same name, it is added for them; each wolf sees it until they pick it (once) or the visit ends.
 
 Reads: **rm111** offers the choice **ask-about-the-ford** to: the wolf says **the ford is open again**, **rm111** replies **A few words.** (once: )
 
@@ -5051,7 +6150,7 @@ Reads: Send **stranger-1** away
 
 <a id="effect-mantle-assign"></a>**`mantle.assign`**: Bind a mantle (undone at the end)
 
-A mantle (doc 84: a part with its own lines in the dialogue window) bound to the resident. Released when the story ends.
+A mantle (doc 84: a part with its own lines in the dialogue window) bound to the resident. When the story ends, or lays the mantle down itself, the mantle they wore before is theirs again (none before: they wear none).
 
 Reads: **rm111** takes up the mantle **ferryman**
 
@@ -5066,7 +6165,7 @@ Reads: **rm111** takes up the mantle **ferryman**
 
 <a id="effect-mantle-release"></a>**`mantle.release`**: Release a mantle
 
-The resident's mantle is released.
+The resident's mantle is released. One this story bound: the mantle they wore before is theirs again.
 
 Reads: **rm111** lays down their mantle
 
@@ -5076,6 +6175,86 @@ Reads: **rm111** lays down their mantle
 
 ```json
 {"do": "effect", "effect": {"kind": "mantle.release", "npc": "rm111"}}
+```
+
+<a id="effect-npc-howl"></a>**`npc.howl`**: A resident howls
+
+The resident howls where they stand: it opens or joins a chorus, wolves hear it as any howl, and the town remembers it. Refused for a resident dead, down or in a fight, and for one who howled within the howl's rest (a few minutes).
+
+Reads: **rm111** howls
+
+| Parameter | What | Kind |
+|---|---|---|
+| `npc` | the resident | resident |
+
+```json
+{"do": "effect", "effect": {"kind": "npc.howl", "npc": "rm111"}}
+```
+
+<a id="effect-npc-post"></a>**`npc.post`**: Give a resident a post (needs a builder)
+
+A lasting change in the careers book, in one step: the resident leaves any post they hold and takes this one; the one before them is left without it, for the vacancy rules to look after ('succession' follows, detail '<post>: by the story'). Never the Watch's posts (the watch chooses its own). Never undone.
+
+Reads: **rm111** takes the post **job:rm112**; whoever held it gives it up
+
+| Parameter | What | Kind |
+|---|---|---|
+| `npc` | the resident | resident |
+| `post` | the post | post |
+
+```json
+{"do": "effect", "effect": {"kind": "npc.post", "npc": "rm111", "post": "job:rm112"}}
+```
+
+<a id="effect-npc-queue"></a>**`npc.queue`**: Put an unplaced resident first in line (needs a builder)
+
+An unplaced resident (one the world knows but who has no home yet) takes the next vacancy in that town that nobody of the town takes (an apprentice, a master, kin, a local or the best trained come first), before the city's wolves and the Country. It never makes a vacancy, and nobody new is made. Lasting: never undone. Refused for a resident with a place, or one too young or too old to take up a post.
+
+Reads: **cty_fisher** is first in line for the next post that falls vacant in **greyfen**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `npc` | the resident | resident |
+| `town` | the town | town |
+
+```json
+{"do": "effect", "effect": {"kind": "npc.queue", "npc": "cty_fisher", "town": "greyfen"}}
+```
+
+<a id="effect-cast-pick"></a>**`cast.pick`**: Cast a resident (v2, the story's own)
+
+The story looks for a living, placed resident who fits (their work, their town, their House, their quarter), leaves out those in a list, prefers the one nearest a wolf, and puts them in a resident variable. Then 'cast chosen' happens (or 'cast failed' when nobody fits, and the variable keeps what it held). Use it for quests any town can give: a quest's giver may be that variable.
+
+Reads: Choose a resident **carter** **greyfen**, not in, near **$actor**, as **carter**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `var` | into | variable; a variable of type resident |
+| `job` | whose work is | text; up to 40 characters; optional |
+| `town` | in the town | town; optional |
+| `faction` | of the House | faction; optional |
+| `quarter` | in the quarter | text; up to 40 characters; optional |
+| `notIn` | not one of | variable; a variable of type residents; optional |
+| `near` | nearest to | wolf; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "cast.pick", "var": "carter", "job": "carter", "town": "greyfen", "near": "$actor"}}
+```
+
+<a id="effect-npc-sentence"></a>**`npc.sentence`**: Sentence a resident (needs a builder)
+
+The resident is taken to the place (indoors) and kept there for the days, even after the story ends ('sentence begun', then 'sentence served' on the last day). They keep their post and their home, and walk home when it is served. Never a protected resident, the dead, one in a fight or away, or one serving a sentence already. The Campaigns console lists sentences, with Release now.
+
+Reads: **rm113** is held at **greyfen-cells** for **7** days
+
+| Parameter | What | Kind |
+|---|---|---|
+| `npc` | the resident | resident |
+| `place` | the place (an interior) | place |
+| `days` | days | int; 1 to 28 |
+
+```json
+{"do": "effect", "effect": {"kind": "npc.sentence", "npc": "rm113", "place": "greyfen-cells", "days": 7}}
 ```
 
 <a id="effect-npc-kill"></a>**`npc.kill`**: A resident dies
@@ -5149,6 +6328,137 @@ Reads: **rm111** stops travelling with the party
 {"do": "effect", "effect": {"kind": "npc.unfollow", "npc": "rm111"}}
 ```
 
+#### Talk, rumour and figures
+
+<a id="effect-talk-remember"></a>**`talk.remember`**: Residents remember something
+
+Talk memory residents' lines can test (world.mem.<key> for the realm or a town, self.mem.<key> for one resident, pair.mem.<key> for one resident about one wolf: Data/Talk lines gated on it play). Realm: every resident; a town: its residents (the whole city is one town); a resident: that one; a resident and a wolf: that resident, when that wolf is the one they talk to. Taken back when the story ends unless kept.
+
+Reads: **the town of** **greyfen** remembers **ford_open** = **yes** for **30** days (after the story: )
+
+| Parameter | What | Kind |
+|---|---|---|
+| `scope` | who | choice; one of: `realm`, `town`, `npc`, `pair`; default "town" |
+| `town` | the town | town; optional |
+| `npc` | the resident | resident; optional |
+| `player` | the wolf | wolf; optional |
+| `key` | what (a key) | talkkey |
+| `value` | its value | talkvalue |
+| `days` | days | int; 1 to 365 |
+| `keep` | kept after the story | bool; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "talk.remember", "scope": "town", "town": "greyfen", "key": "ford_open", "value": "yes", "days": 30}}
+```
+
+<a id="effect-talk-forget"></a>**`talk.forget`**: Residents forget something
+
+Takes away a memory a story gave (any story's, by key).
+
+Reads: **the town of** **greyfen** forgets **ford_open**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `scope` | who | choice; one of: `realm`, `town`, `npc`, `pair`; default "town" |
+| `town` | the town | town; optional |
+| `npc` | the resident | resident; optional |
+| `player` | the wolf | wolf; optional |
+| `key` | what (a key) | talkkey |
+
+```json
+{"do": "effect", "effect": {"kind": "talk.forget", "scope": "town", "town": "greyfen", "key": "ford_open"}}
+```
+
+<a id="effect-belief-plant"></a>**`belief.plant`**: Start a rumour
+
+Residents of a town (chosen by the story's seed: placed, living, not the one it is about) believe something of a resident, as if they had heard it: it is told in gossip ('#x.name# <claim>') and spreads along friendships and caravans as any belief does. About residents only, never a wolf. A clearing (story.cleared) is told as '<Name> never <claim>': write the claim as the thing not done.
+
+Reads: **6** residents of **greyfen** come to believe **rm111** **was seen at the ford at midnight** (**60**% sure)
+
+| Parameter | What | Kind |
+|---|---|---|
+| `subject` | about | resident |
+| `claim` | that they (a phrase) | text; up to 120 characters |
+| `town` | in the town | town |
+| `count` | how many | int; 1 to 50 |
+| `confidence` | how sure (%) | int; 10 to 90 |
+| `claimKind` | the kind of claim | choice; one of: `story.rumour`, `story.cleared`; optional; default "story.rumour" |
+
+```json
+{"do": "effect", "effect": {"kind": "belief.plant", "subject": "rm111", "claim": "was seen at the ford at midnight", "town": "greyfen", "count": 6, "confidence": 60}}
+```
+
+<a id="effect-npc-greet"></a>**`npc.greet`**: A resident greets one wolf
+
+The next time this wolf opens the resident's window (within the days; 7 when not given), the resident greets them with these words, in their own voice (#symbols# fill in their dialect), instead of their usual greeting: once. A later greeting for the same wolf from the same resident replaces it. A word of thanks: not taken back when the story ends. In a quest's rewards it is for each wolf with credit.
+
+Reads: **rm111** greets **$actor**: **The bells ring for the ford.** (for days)
+
+| Parameter | What | Kind |
+|---|---|---|
+| `npc` | the resident | resident |
+| `player` | the wolf | wolf |
+| `text` | the greeting | text; up to 200 characters |
+| `days` | for days | int; 1 to 28; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "npc.greet", "npc": "rm111", "player": "$actor", "text": "The bells ring for the ford."}}
+```
+
+<a id="effect-belief-forget"></a>**`belief.forget`**: Put a rumour to rest
+
+Residents (of one town, or everywhere) grow less sure of one kind of claim about a resident (a theft, an attempted theft, a story's rumour...): each holder's belief loses that share of its strength, and one too faint is forgotten. Lasting: not taken back when the story ends.
+
+Reads: Residents believe **10**% less that **rm111** did **theft**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `subject` | about | resident |
+| `claimKind` | the kind of claim | choice; one of: `theft`, `theft.attempt`, `theft.unseen`, `assault`, `assault.unseen`, `violent`, `warrant`, `promise.broken`, `prowling`, `story.rumour` |
+| `town` | in the town | town; optional |
+| `share` | by (%) | int; 10 to 100 |
+
+```json
+{"do": "effect", "effect": {"kind": "belief.forget", "subject": "rm111", "claimKind": "theft", "share": 10}}
+```
+
+<a id="effect-figure-set"></a>**`figure.set`**: Name a figure of the realm (needs a builder)
+
+Who residents mean by the ruler, the lord, the captain, the high priest, the hero or the villain (#world.figure_<role># in their lines), where they are known. A resident, a wolf, or a name only. It stays after the story; Clear the figure takes it away.
+
+Reads: The figure **ford_villain**: **rm111** is the realm's **villain**, **the ford breaker**, known **in** **greyfen** ()
+
+| Parameter | What | Kind |
+|---|---|---|
+| `figure` | its id | figure |
+| `role` | the role | choice; one of: `ruler`, `lord`, `captain`, `high_priest`, `hero`, `villain` |
+| `npc` | a resident | resident; optional |
+| `player` | a wolf | wolf; optional |
+| `name` | or a name | text; up to 120 characters; optional |
+| `title` | their title | text; up to 120 characters; optional |
+| `known` | known | choice; one of: `realm`, `region`, `house`; default "realm" |
+| `region` | the town or land | town; optional |
+| `house` | the House | faction; optional |
+| `about` | about them | text; up to 600 characters; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "figure.set", "figure": "ford_villain", "role": "villain", "npc": "rm111", "title": "the ford breaker", "known": "region", "region": "greyfen"}}
+```
+
+<a id="effect-figure-clear"></a>**`figure.clear`**: Clear a figure (needs a builder)
+
+Takes a figure away (one a story or a Dungeon Master set).
+
+Reads: Residents no longer speak of the figure **ford_villain**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `figure` | its id | figure |
+
+```json
+{"do": "effect", "effect": {"kind": "figure.clear", "figure": "ford_villain"}}
+```
+
 #### Players' wolves
 
 <a id="effect-character-injury"></a>**`character.injury`**: Injure a wolf (acts on wolves)
@@ -5169,7 +6479,7 @@ Reads: Give **$actor** a **torn_flank** of severity **1**
 
 <a id="effect-bandits-call"></a>**`bandits.call`**: Send bandits after a wolf
 
-The wolf must be in the world.
+The wolf must be in the world. Named ("camp"), the camp is camp_story_<name>: a second spawn of that name while it stands joins it; once it is cleared the name may be used again, and bandit falls and camp cleared carry the id.
 
 Reads: **1** bandits come for **$actor**
 
@@ -5177,6 +6487,7 @@ Reads: **1** bandits come for **$actor**
 |---|---|---|
 | `player` | the wolf | wolf |
 | `count` | how many | int; 1 to 6 |
+| `camp` | the camp's name | camp; optional |
 
 ```json
 {"do": "effect", "effect": {"kind": "bandits.call", "player": "$actor", "count": 1}}
@@ -5242,7 +6553,7 @@ Reads: Take **$actor** out of the story
 
 <a id="effect-character-grant"></a>**`character.grant`**: Pay a wolf from a purse
 
-Coins from a named purse (a town, its works, a business's till, a Chapter), never made from nothing: refused when the purse is short or over the wolf's day of grants.
+Coins from a named purse (a town's treasury, a business's till, a Chapter), never made from nothing: refused when the purse is short or over the wolf's day of grants. Approval checks the world has the purse.
 
 Reads: Pay **$actor** **12** pennies from **town:greyfen**: **the carter thanks you**
 
@@ -5259,7 +6570,7 @@ Reads: Pay **$actor** **12** pennies from **town:greyfen**: **the carter thanks 
 
 <a id="effect-item-give"></a>**`item.give`**: Give a wolf an item
 
-An item into one wolf's pack; a full pack is refused and the wolf told.
+An item into one wolf's pack; a full pack is refused and the wolf told. With a story mark (tag) it is the story's own item: shown by the name given (called), never sold to a shop or a stall, never used up in making or wear, and taken back from every pack, purse and the ground when the run ends unless kept after the story. Filters and "carries" name it as item^tag (letter^watch_list).
 
 Reads: Give **$actor** **1** **rope**
 
@@ -5268,6 +6579,9 @@ Reads: Give **$actor** **1** **rope**
 | `player` | the wolf | wolf |
 | `item` | the item | item |
 | `quantity` | how many | int; 1 to 20 |
+| `tag` | a story mark | tag; optional |
+| `name` | called | text; up to 60 characters; optional |
+| `keep` | kept after the story | bool; optional |
 
 ```json
 {"do": "effect", "effect": {"kind": "item.give", "player": "$actor", "item": "rope", "quantity": 1}}
@@ -5353,6 +6667,39 @@ Reads: Revoke **$actor**'s deed **Kept the ford.**
 {"do": "effect", "effect": {"kind": "deed.revoke", "player": "$actor", "detail": "Kept the ford."}}
 ```
 
+<a id="effect-title-give"></a>**`title.give`**: Name a wolf by a title
+
+A title the wolf carries: shown on their character card (unless they hide it) and to residents, who may use it (the talk fact player.title). Known in the realm or one town. 0 days (or none given): for good. A wolf carries up to 8 story titles; the newest is the one used; given again, it is renewed. A deed of its naming goes into the town's talk. Not taken back when the story ends: it lapses by its days, or Take a title back.
+
+Reads: **$actor** is named **The ford is open**, known, for days
+
+| Parameter | What | Kind |
+|---|---|---|
+| `player` | the wolf | wolf |
+| `title` | the title | text; up to 60 characters |
+| `known` | known | choice; one of: `realm`, `town`; optional; default "realm" |
+| `town` | the town | town; optional |
+| `days` | days (0: for good) | int; 0 to 365; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "title.give", "player": "$actor", "title": "The ford is open"}}
+```
+
+<a id="effect-title-take"></a>**`title.take`**: Take a title back
+
+Takes back a title this story gave (or, with no title named, every title it gave this wolf).
+
+Reads: **$actor** is no longer called
+
+| Parameter | What | Kind |
+|---|---|---|
+| `player` | the wolf | wolf |
+| `title` | the title | text; up to 60 characters; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "title.take", "player": "$actor"}}
+```
+
 #### Places and regions
 
 <a id="effect-story-area-damage"></a>**`story.area.damage`**: Hurt the wolves in a region (acts on wolves)
@@ -5404,7 +6751,7 @@ Reads: The story's wolves inside **square** are **fed** for **1** hours
 
 <a id="effect-story-area-spawn"></a>**`story.area.spawn`**: A bandit camp in a region
 
-Bandits camp in the rectangle.
+Bandits camp in the rectangle. Named ("camp"), the camp is camp_story_<name>: a second spawn of that name while it stands joins it; once it is cleared the name may be used again, and bandit falls and camp cleared carry the id.
 
 Reads: A camp of **1** bandits in **square**
 
@@ -5412,6 +6759,7 @@ Reads: A camp of **1** bandits in **square**
 |---|---|---|
 | `region` | the region | region |
 | `count` | how many | int; 1 to 6 |
+| `camp` | the camp's name | camp; optional |
 
 ```json
 {"do": "effect", "effect": {"kind": "story.area.spawn", "region": "square", "count": 1}}
@@ -5419,7 +6767,7 @@ Reads: A camp of **1** bandits in **square**
 
 <a id="effect-door-lock"></a>**`door.lock`**: Lock a door (undone at the end)
 
-Both sides of the door are locked (it closes first). Unlocked again when the story ends.
+Both sides of the door are locked (it closes first). Unlocked again when the story ends. A door this story had opened to wolves is closed to them again. Residents are locked out too: to close a door to wolves only, close it instead.
 
 Reads: Lock **link_inn_door_a**
 
@@ -5433,7 +6781,7 @@ Reads: Lock **link_inn_door_a**
 
 <a id="effect-door-unlock"></a>**`door.unlock`**: Unlock a door (undone at the end)
 
-Both sides of a locked door are unlocked. Locked again when the story ends.
+Both sides of a locked door are unlocked. Wolves may go through it until the story closes or locks it, or ends, even a shop's out of hours, but never into a private home (someone's home and nobody's work, or the stairs up to one): approval refuses one. Locked again when the story ends.
 
 Reads: Unlock **link_inn_door_a**
 
@@ -5447,7 +6795,7 @@ Reads: Unlock **link_inn_door_a**
 
 <a id="effect-door-open"></a>**`door.open`**: Open a door
 
-The door stands open (an unlocked one). It stays as a wolf would leave it.
+The door stands open (an unlocked one). Wolves may go through it until the story closes or locks it, or ends, even a shop's out of hours, but never into a private home (someone's home and nobody's work, or the stairs up to one): approval refuses one. It stays as a wolf would leave it.
 
 Reads: Open **link_inn_door_a**
 
@@ -5461,7 +6809,7 @@ Reads: Open **link_inn_door_a**
 
 <a id="effect-door-close"></a>**`door.close`**: Close a door
 
-The door is shut. It stays as a wolf would leave it.
+The door is shut. It stays as a wolf would leave it. One the story opened to wolves is closed to them again, its own lock left alone so its residents still go in: how a story ends the window it opened.
 
 Reads: Close **link_inn_door_a**
 
@@ -5522,6 +6870,81 @@ Reads: The weather in **greyfen** is **snow** for **6** hours
 
 ```json
 {"do": "effect", "effect": {"kind": "weather.set", "town": "greyfen", "weather": "snow", "hours": 6}}
+```
+
+<a id="effect-hunt-stage"></a>**`hunt.stage`**: An animal waits for the next hunt (undone at the end)
+
+The next hunt any wolf begins inside the region (one of the story's or a passer-by) has this animal in its arena, as well as whatever the ground gives, even on ground too built up or bare for game of its own; never in a town or indoors. The kill is an ordinary 'hunted' with the animal as target. One hunt meets it; it lapses after the minutes of the world's clock. Nothing roams the map: the animal lives only in that hunt. Undone when the story ends.
+
+Reads: The next hunt in **square** meets **1** **bear** (for **120** minutes)
+
+| Parameter | What | Kind |
+|---|---|---|
+| `region` | the region | region |
+| `species` | the animal | species |
+| `count` | how many | int; 1 to 3; default 1 |
+| `minutes` | minutes | int; 1 to 1440; default 60 |
+
+```json
+{"do": "effect", "effect": {"kind": "hunt.stage", "region": "square", "species": "bear", "count": 1, "minutes": 120}}
+```
+
+#### Foes
+
+<a id="effect-foe-add"></a>**`foe.add`**: Bring a foe (undone at the end)
+
+A named enemy who can be fought and beaten: wolves may set on them without a crime, the Watch on duty in the place helps the wolves, and their followers break and run when they fall ('foe defeated'). A waiting foe holds its ground and fights a wolf who comes within 6 tiles; a hunting one goes for the nearest wolf within 12. They come and go: never a resident, never saved, gone when the story ends (no event) or their time runs out, or when they break off a fight ('foe fled'). How strong each kind is: Data/Storylines/foes.json.
+
+Reads: **The Grey Captain** (**captain**), a **champion** foe with a band of **4**, comes to **greyfen-square, 12, 9** for **120** minutes, looking like **rm111**, and **holds the ground**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `foe` | their id | foe |
+| `name` | their name | text; up to 60 characters |
+| `cell` | the place | place |
+| `x` | tile x | int; 0 to 4095 |
+| `y` | tile y | int; 0 to 4095 |
+| `strength` | how strong | choice; one of: `tough`, `fierce`, `champion`; default "tough" |
+| `band` | followers | int; 0 to 8 |
+| `stance` | what they do | choice; one of: `waits`, `hunts`; default "waits" |
+| `minutes` | minutes | int; 1 to 1440 |
+| `like` | looking like (a resident) | resident; optional |
+| `description` | how they look | text; up to 200 characters; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "foe.add", "foe": "captain", "name": "The Grey Captain", "cell": "greyfen-square", "x": 12, "y": 9, "strength": "champion", "band": 4, "stance": "waits", "minutes": 120, "like": "rm111"}}
+```
+
+<a id="effect-foe-leave"></a>**`foe.leave`**: A foe leaves
+
+The story's foe and their band go (no event). Not while they fight: then refused, and they go when the fight is over or their time runs out.
+
+Reads: **captain** and their followers leave
+
+| Parameter | What | Kind |
+|---|---|---|
+| `foe` | their id | foe |
+
+```json
+{"do": "effect", "effect": {"kind": "foe.leave", "foe": "captain"}}
+```
+
+<a id="effect-foe-outlaw"></a>**`foe.outlaw`**: Make a resident a foe (needs a builder, undone at the end)
+
+A resident (never a protected one, the dead, one down, in a fight, away, or held by another story) may be fought for a while without a crime, the Watch on the wolves' side. Beaten ('foe defeated', target the resident), they are downed, got up again where they lie when the fight is over and held until the story ends, never killed unless the story says so (then 'death' follows). When the minutes pass, or the story ends, they are themselves again. Their followers are strangers who go with them.
+
+Reads: **rm113** turns on the wolves with a band of **1** for **60** minutes (**tough**); killed if beaten
+
+| Parameter | What | Kind |
+|---|---|---|
+| `npc` | the resident | resident |
+| `minutes` | minutes | int; 1 to 720 |
+| `strength` | how strong | choice; one of: `tough`, `fierce`, `champion`; optional |
+| `band` | followers | int; 0 to 6; optional |
+| `lethal` | may die | bool; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "foe.outlaw", "npc": "rm113", "minutes": 60, "strength": "tough", "band": 1}}
 ```
 
 #### Towns, markets and factions
@@ -5799,6 +7222,21 @@ Reads: Fail **axle** for **$actor**
 {"do": "effect", "effect": {"kind": "quest.fail", "quest": "axle", "player": "$actor"}}
 ```
 
+<a id="effect-quest-withdraw"></a>**`quest.withdraw`**: Take back an offer (v2, the story's own)
+
+Takes an offered (not yet accepted) quest back from one wolf, with no 'failed' mark in their journal: its giver and the notice board leave it out for them. A copy already taken is untouched. Offering it to the same wolf again clears the mark. Use it when a wolf takes one road and the others should close (a quest's 'Only for wolves who...' does this by itself for new stories).
+
+Reads: **axle** is no longer offered to **$actor**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `quest` | the quest | quest |
+| `player` | from the wolf | wolf |
+
+```json
+{"do": "effect", "effect": {"kind": "quest.withdraw", "quest": "axle", "player": "$actor"}}
+```
+
 <a id="effect-objective-complete"></a>**`objective.complete`**: Complete an objective (v2, the story's own)
 
 Marks one objective of the copy the wolf holds done (a hidden one is shown).
@@ -5899,6 +7337,23 @@ Reads: Start the chapter **the-crossing** for **this story's wolves**, carrying 
 
 ```json
 {"do": "effect", "effect": {"kind": "story.start", "story": "the-crossing", "audience": "same", "carry": true, "when": "ended"}}
+```
+
+<a id="effect-story-notify"></a>**`story.notify`**: Tell another story (v2, the story's own)
+
+Another live story of this world hears 'story notified' with this name, the wolf and a number, between two of its events. With no story named, every live story listening for that name hears it. A quest pack uses it to credit a wolf in whichever chapter of a campaign is running. At most 200 a tick go; the rest wait for the next.
+
+Reads: Tell the news **gate-opens** about, worth
+
+| Parameter | What | Kind |
+|---|---|---|
+| `signal` | the news (its name) | signal |
+| `player` | about the wolf | wolf; optional |
+| `amount` | a number | int; -1000000 to 1000000; optional |
+| `story` | the story | story; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "story.notify", "signal": "gate-opens"}}
 ```
 
 #### Scenes

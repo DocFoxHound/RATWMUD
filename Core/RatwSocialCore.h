@@ -173,6 +173,9 @@ class SocialLedger
     SocialResult extend(const std::string& owner, const std::string& story, const std::string& session, double now);
     SocialResult close(const std::string& owner, const std::string& story, double now);
     SocialResult storyStar(const std::string& giver, const std::string& recipient, const std::string& story, double now);
+    // Doc 86, J3: a world story's closure quest done by `actor`: one story_closure receipt for `session`
+    // ("quest:<program>/<quest>"), the amount within the daily cap (a zero receipt too). Returns what it paid.
+    int storyQuestClosure(const std::string& actor, const std::string& session, int amount, double now);
     const SocialStory* storyOf(const std::string& session) const;
 
     std::vector<LedgerEntry> entries;

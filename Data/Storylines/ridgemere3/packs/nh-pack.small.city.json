@@ -1,0 +1,7108 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "nh-pack.small.city",
+ "title": "Errands of Ridgemere",
+ "prefix": "sq",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "variables": [
+  {
+   "id": "nh_stage",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The Ninth Howl chapter running (read only here)."
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The realm's voice; every errand adds 2."
+  },
+  {
+   "id": "nh_voice_ridgemere",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Ridgemere's strand; city errands add 2."
+  },
+  {
+   "id": "nh_voice_oakhaven",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Oakhaven's strand; the crate (16) adds 2."
+  },
+  {
+   "id": "nh_names",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The Book of Names; the Records page adds 1, Ch 4-6 only."
+  },
+  {
+   "id": "nh_b_quarrel",
+   "type": "text",
+   "scope": "world",
+   "initial": "",
+   "note": "The Houses' quarrel (Ch 6); read only, to colour the estates' lines."
+  },
+  {
+   "id": "nh_b_peace",
+   "type": "switch",
+   "scope": "world",
+   "initial": false,
+   "note": "The Houses' peace kept (Ch 6); read only, so the estates' lines never speak of a quarrel the peace mended."
+  },
+  {
+   "id": "coin_ridgemere_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:ridgemere by every story (cap 135); nh-purses zeroes it, this pack adds."
+  },
+  {
+   "id": "coin_ridgemere_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "The treasury's floor switch (off below 60, on at 80); nh-purses owns it, this pack reads it."
+  },
+  {
+   "id": "sq_done",
+   "type": "number",
+   "scope": "player",
+   "show": "Errands for Ridgemere",
+   "note": "The wolf's city errands done."
+  },
+  {
+   "id": "ship_in",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "A ship is at the Ridgemere piers (on when she docks, off when she sails), so a wolf who comes while she is in takes her lines."
+  },
+  {
+   "id": "t_prop_bread",
+   "type": "timer",
+   "scope": "player",
+   "note": "When this wolf was last handed the props for sq-morning-bread (once a game day, so taking the errand up again never mints more)."
+  },
+  {
+   "id": "t_prop_alms",
+   "type": "timer",
+   "scope": "player",
+   "note": "When this wolf was last handed the props for sq-almoners-round (once a game day, so taking the errand up again never mints more)."
+  },
+  {
+   "id": "t_prop_letter",
+   "type": "timer",
+   "scope": "player",
+   "note": "When this wolf was last handed the props for sq-heights-round (once a game day, so taking the errand up again never mints more)."
+  },
+  {
+   "id": "t_prop_crate",
+   "type": "timer",
+   "scope": "player",
+   "note": "When this wolf was last handed the props for sq-oakhaven-load (once a game day, so taking the errand up again never mints more)."
+  },
+  {
+   "id": "t_prop_bolt",
+   "type": "timer",
+   "scope": "player",
+   "note": "When this wolf was last handed the props for sq-timberland-court-errand (once a game day, so taking the errand up again never mints more)."
+  }
+ ],
+ "regions": [
+  {
+   "id": "piers",
+   "cell": "w_ridgemere_0_1",
+   "x1": 148,
+   "y1": 94,
+   "x2": 171,
+   "y2": 99
+  },
+  {
+   "id": "cathedral_door",
+   "cell": "w_ridgemere_0_0",
+   "x1": 228,
+   "y1": 172,
+   "x2": 234,
+   "y2": 178
+  },
+  {
+   "id": "clock_door",
+   "cell": "w_ridgemere_1_0",
+   "x1": 110,
+   "y1": 178,
+   "x2": 116,
+   "y2": 184
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "Ridgemere's bakers, healers, clerks and dockers want a paw with the day's work. Ask them, or read the city board.",
+   "effects": [
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "props",
+     "on": "quest started",
+     "audience": "participant",
+     "note": "The props an errand needs, given when the copy starts: bread (1, 9), the letter (7), the crate (16), the bolt (48); once a game day a wolf, so dropping an errand and taking it up again never mints a second set.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "field",
+        "field": "detail",
+        "op": "=",
+        "value": "sq-morning-bread"
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "not",
+          "condition": {
+           "test": "compare",
+           "left": {
+            "since": "t_prop_bread"
+           },
+           "op": "<",
+           "right": 1
+          }
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 4
+           }
+          },
+          {
+           "do": "start timer",
+           "var": "t_prop_bread"
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "You were handed the Morning Oven's loaves once already today. Carry those, or bring your own."
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-almoners-round"
+         },
+         "then": [
+          {
+           "do": "if",
+           "if": {
+            "test": "not",
+            "condition": {
+             "test": "compare",
+             "left": {
+              "since": "t_prop_alms"
+             },
+             "op": "<",
+             "right": 1
+            }
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "item.give",
+              "player": "$actor",
+              "item": "bread",
+              "quantity": 3
+             }
+            },
+            {
+             "do": "start timer",
+             "var": "t_prop_alms"
+            }
+           ],
+           "else": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "journal.note",
+              "player": "$actor",
+              "text": "You were handed the abbey's alms bread once already today. Carry those, or bring your own."
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-heights-round"
+         },
+         "then": [
+          {
+           "do": "if",
+           "if": {
+            "test": "not",
+            "condition": {
+             "test": "compare",
+             "left": {
+              "since": "t_prop_letter"
+             },
+             "op": "<",
+             "right": 1
+            }
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "item.give",
+              "player": "$actor",
+              "item": "letter",
+              "quantity": 1,
+              "tag": "city_letter",
+              "name": "The City Office letter"
+             }
+            },
+            {
+             "do": "start timer",
+             "var": "t_prop_letter"
+            }
+           ],
+           "else": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "journal.note",
+              "player": "$actor",
+              "text": "You were handed the City Office letter once already today. Carry it up."
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-oakhaven-load"
+         },
+         "then": [
+          {
+           "do": "if",
+           "if": {
+            "test": "not",
+            "condition": {
+             "test": "compare",
+             "left": {
+              "since": "t_prop_crate"
+             },
+             "op": "<",
+             "right": 1
+            }
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "item.give",
+              "player": "$actor",
+              "item": "crate",
+              "quantity": 1,
+              "tag": "yard_crate",
+              "name": "The Carters' Yard crate"
+             }
+            },
+            {
+             "do": "start timer",
+             "var": "t_prop_crate"
+            }
+           ],
+           "else": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "journal.note",
+              "player": "$actor",
+              "text": "You were handed the Carters' Yard crate once already today. Carry it on."
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-timberland-court-errand"
+         },
+         "then": [
+          {
+           "do": "if",
+           "if": {
+            "test": "not",
+            "condition": {
+             "test": "compare",
+             "left": {
+              "since": "t_prop_bolt"
+             },
+             "op": "<",
+             "right": 1
+            }
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "item.give",
+              "player": "$actor",
+              "item": "wool_cloth",
+              "quantity": 1,
+              "tag": "greywool_bolt",
+              "name": "Greywool's bolt"
+             }
+            },
+            {
+             "do": "start timer",
+             "var": "t_prop_bolt"
+            }
+           ],
+           "else": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "journal.note",
+              "player": "$actor",
+              "text": "You were handed Greywool's bolt once already today. Carry it up."
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "bread-early",
+     "on": "gift",
+     "audience": "participant",
+     "match": {
+      "target": "rm_ottilie_nailmarsh",
+      "item": "bread"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "quest is",
+          "quest": "sq-morning-bread",
+          "of": "$actor",
+          "status": "active"
+         },
+         {
+          "test": "quest is",
+          "quest": "sq-morning-bread",
+          "of": "$actor",
+          "status": "ready"
+         }
+        ]
+       },
+       {
+        "test": "hour between",
+        "from": 4,
+        "to": 9
+       }
+      ]
+     },
+     "note": "Bread given to the infirmary's porter before the tenth hour completes the hidden optional objective.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "sq-morning-bread",
+        "objective": "early",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "pup-lost",
+     "on": "quest started",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-gone-to-see-the-ships"
+     },
+     "note": "The pup goes down to the pier and waits there; her father says where to look, to this wolf only.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.move",
+        "npc": "rm_corra_ropewick",
+        "cell": "w_ridgemere_0_1",
+        "x": 161,
+        "y": 97,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.hold",
+        "npc": "rm_corra_ropewick",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_soren_ropewick",
+        "id": "corra-where",
+        "player": "$actor",
+        "once": true,
+        "words": "Where does she usually go?",
+        "reply": "Wherever the masts are. The pier under the Grayrock office, mostly. Follow your nose, eh? She smells of schoolroom chalk and the coal I keep in my pocket for luck."
+       }
+      }
+     ]
+    },
+    {
+     "id": "pup-found",
+     "on": "near resident",
+     "audience": "participant",
+     "match": {
+      "target": "rm_corra_ropewick"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "quest is",
+          "quest": "sq-gone-to-see-the-ships",
+          "of": "$actor",
+          "status": "active"
+         },
+         {
+          "test": "quest is",
+          "quest": "sq-gone-to-see-the-ships",
+          "of": "$actor",
+          "status": "ready"
+         }
+        ]
+       },
+       {
+        "test": "objective is",
+        "quest": "sq-gone-to-see-the-ships",
+        "objective": "find",
+        "of": "$actor",
+        "status": "to do"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "rm_corra_ropewick",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.follow",
+        "npc": "rm_corra_ropewick",
+        "player": "$actor",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "sq-gone-to-see-the-ships",
+        "objective": "find",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "pup-home",
+     "on": "near resident",
+     "audience": "participant",
+     "match": {
+      "target": "rm_soren_ropewick"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "quest is",
+          "quest": "sq-gone-to-see-the-ships",
+          "of": "$actor",
+          "status": "active"
+         },
+         {
+          "test": "quest is",
+          "quest": "sq-gone-to-see-the-ships",
+          "of": "$actor",
+          "status": "ready"
+         }
+        ]
+       },
+       {
+        "test": "objective is",
+        "quest": "sq-gone-to-see-the-ships",
+        "objective": "find",
+        "of": "$actor",
+        "status": "done"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.unfollow",
+        "npc": "rm_corra_ropewick",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "sq-gone-to-see-the-ships",
+        "objective": "home",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "pup-let-go",
+     "on": "quest failed",
+     "match": {
+      "detail": "sq-gone-to-see-the-ships"
+     },
+     "note": "The copy ended without her: she goes back to her day.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.unfollow",
+        "npc": "rm_corra_ropewick",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "rm_corra_ropewick",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "id": "pup-given-up",
+     "on": "quest abandoned",
+     "match": {
+      "detail": "sq-gone-to-see-the-ships"
+     },
+     "note": "The copy ended without her: she goes back to her day.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.unfollow",
+        "npc": "rm_corra_ropewick",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "rm_corra_ropewick",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "id": "records-page",
+     "on": "quest started",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-records-copying"
+     },
+     "note": "Ch 4-6 only: the hidden objective is shown; outside those chapters the errand is just an errand.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 4
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": "<=",
+          "right": 6
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.reveal",
+          "quest": "sq-records-copying",
+          "objective": "roll",
+          "player": "$actor"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "records-roll",
+     "on": "conversation",
+     "audience": "participant",
+     "match": {
+      "target": "rm_runa_ashridge"
+     },
+     "note": "Asked after the paper and ink while the page is shown: the page is found, and the Book of Names gains a name (Ch 4-6).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "quest is",
+            "quest": "sq-records-copying",
+            "of": "$actor",
+            "status": "active"
+           },
+           {
+            "test": "quest is",
+            "quest": "sq-records-copying",
+            "of": "$actor",
+            "status": "ready"
+           }
+          ]
+         },
+         {
+          "test": "objective is",
+          "quest": "sq-records-copying",
+          "objective": "sort",
+          "of": "$actor",
+          "status": "done"
+         },
+         {
+          "test": "objective is",
+          "quest": "sq-records-copying",
+          "objective": "roll",
+          "of": "$actor",
+          "status": "to do"
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 4
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": "<=",
+          "right": 6
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "sq-records-copying",
+          "objective": "roll",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "add",
+         "var": "nh_names",
+         "value": 1
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "candles-tallow",
+     "on": "gift",
+     "audience": "participant",
+     "match": {
+      "target": "rm_sten_kelpwell",
+      "item": "candle_tallow"
+     },
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "sq-restday-candles",
+        "of": "$actor",
+        "status": "active"
+       },
+       {
+        "test": "quest is",
+        "quest": "sq-restday-candles",
+        "of": "$actor",
+        "status": "ready"
+       }
+      ]
+     },
+     "note": "Tallow candles count as the wax ones the objective names.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "field",
+        "field": "quantity",
+        "op": ">=",
+        "value": 2
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "sq-restday-candles",
+          "objective": "candles",
+          "player": "$actor"
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.progress",
+          "quest": "sq-restday-candles",
+          "objective": "candles",
+          "player": "$actor",
+          "amount": 1
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "candles-service",
+     "on": "region entered",
+     "audience": "participant",
+     "match": {
+      "target": "cathedral_door"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "quest is",
+          "quest": "sq-restday-candles",
+          "of": "$actor",
+          "status": "active"
+         },
+         {
+          "test": "quest is",
+          "quest": "sq-restday-candles",
+          "of": "$actor",
+          "status": "ready"
+         }
+        ]
+       },
+       {
+        "test": "calendar is",
+        "what": "weekday",
+        "value": "Restday"
+       },
+       {
+        "test": "hour between",
+        "from": 9,
+        "to": 11
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "sq-restday-candles",
+        "objective": "service",
+        "player": "$actor"
+       }
+      }
+     ],
+     "note": "The cathedral is locked to wolves (doc 82): the service is kept at its door, on Restday between the ninth hour and the eleventh."
+    },
+    {
+     "id": "marketday-stall",
+     "on": "stall rented",
+     "audience": "participant",
+     "match": {
+      "cell": "w_ridgemere_1_1"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "quest is",
+          "quest": "sq-marketday-stock",
+          "of": "$actor",
+          "status": "active"
+         },
+         {
+          "test": "quest is",
+          "quest": "sq-marketday-stock",
+          "of": "$actor",
+          "status": "ready"
+         }
+        ]
+       },
+       {
+        "test": "calendar is",
+        "what": "weekday",
+        "value": "Marketday"
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "sq-marketday-stock",
+        "objective": "stall",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "dawn-bell",
+     "on": "region entered",
+     "audience": "participant",
+     "match": {
+      "target": "clock_door"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "quest is",
+          "quest": "sq-dawn-bell",
+          "of": "$actor",
+          "status": "active"
+         },
+         {
+          "test": "quest is",
+          "quest": "sq-dawn-bell",
+          "of": "$actor",
+          "status": "ready"
+         }
+        ]
+       },
+       {
+        "test": "objective is",
+        "quest": "sq-dawn-bell",
+        "objective": "ring",
+        "of": "$actor",
+        "status": "to do"
+       },
+       {
+        "test": "hour between",
+        "from": 5,
+        "to": 7
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.tell",
+        "to": "wolf",
+        "player": "$actor",
+        "text": "You haul on the rope. The bell rolls out over the roofs, and somewhere below a door bangs open."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "sq-dawn-bell",
+        "objective": "ring",
+        "player": "$actor"
+       }
+      }
+     ],
+     "note": "The Clock Tower is locked to wolves (doc 82): the bell is rung from the rope at its door."
+    },
+    {
+     "id": "ship-lines",
+     "on": "ship docks",
+     "match": {
+      "target": "ridgemere"
+     },
+     "note": "A ship in at Ridgemere: the story notes she is in, and each wolf with the errand who is on the piers takes her lines.",
+     "actions": [
+      {
+       "do": "set",
+       "var": "ship_in",
+       "value": true
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "quest is",
+              "quest": "sq-mooring-lines",
+              "of": "$each",
+              "status": "active"
+             },
+             {
+              "test": "quest is",
+              "quest": "sq-mooring-lines",
+              "of": "$each",
+              "status": "ready"
+             }
+            ]
+           },
+           {
+            "test": "wolf in region",
+            "who": "$each",
+            "region": "piers"
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "sq-mooring-lines",
+            "objective": "lines",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "ship-gone",
+     "on": "ship sails",
+     "match": {
+      "target": "ridgemere"
+     },
+     "note": "She sails that evening: a wolf who comes to the piers now is too late for her lines.",
+     "actions": [
+      {
+       "do": "set",
+       "var": "ship_in",
+       "value": false
+      }
+     ]
+    },
+    {
+     "id": "ship-lines-late",
+     "on": "region entered",
+     "audience": "participant",
+     "match": {
+      "target": "piers"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "ship_in",
+        "is": true
+       },
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "quest is",
+          "quest": "sq-mooring-lines",
+          "of": "$actor",
+          "status": "active"
+         },
+         {
+          "test": "quest is",
+          "quest": "sq-mooring-lines",
+          "of": "$actor",
+          "status": "ready"
+         }
+        ]
+       },
+       {
+        "test": "objective is",
+        "quest": "sq-mooring-lines",
+        "objective": "lines",
+        "of": "$actor",
+        "status": "to do"
+       }
+      ]
+     },
+     "note": "A wolf who comes onto the pier deck while a ship is in takes her lines too.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "sq-mooring-lines",
+        "objective": "lines",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "willow-tea",
+     "on": "gift",
+     "audience": "participant",
+     "match": {
+      "target": "rm_mogens_ashley",
+      "item": "willow_tea"
+     },
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "sq-heights-thyme",
+        "of": "$actor",
+        "status": "active"
+       },
+       {
+        "test": "quest is",
+        "quest": "sq-heights-thyme",
+        "of": "$actor",
+        "status": "ready"
+       }
+      ]
+     },
+     "note": "Willow tea counts as the bark the objective names: two cups do it.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "field",
+        "field": "quantity",
+        "op": ">=",
+        "value": 2
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "sq-heights-thyme",
+          "objective": "bark",
+          "player": "$actor"
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.progress",
+          "quest": "sq-heights-thyme",
+          "objective": "bark",
+          "player": "$actor",
+          "amount": 1
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "rainward-pheasant",
+     "on": "hunted",
+     "audience": "participant",
+     "match": {
+      "target": "pheasant"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "quest is",
+          "quest": "sq-rainward-pheasants",
+          "of": "$actor",
+          "status": "active"
+         },
+         {
+          "test": "quest is",
+          "quest": "sq-rainward-pheasants",
+          "of": "$actor",
+          "status": "ready"
+         }
+        ]
+       },
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "field",
+          "field": "cell",
+          "op": "=",
+          "value": "w_ridgemere_2_0"
+         },
+         {
+          "test": "field",
+          "field": "cell",
+          "op": "=",
+          "value": "w_ridgemere_2_2"
+         }
+        ]
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.progress",
+        "quest": "sq-rainward-pheasants",
+        "objective": "birds",
+        "player": "$actor",
+        "amount": 1
+       }
+      }
+     ]
+    },
+    {
+     "id": "fell-colour",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-fellhall-errand"
+     },
+     "note": "Reads nh_stage and nh_b_quarrel and nh_b_peace only to colour a line (decisions 7.1): fell_timber is this House's quarrel. With the peace kept, the quiet line plays.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 6
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_b_quarrel"
+          },
+          "op": "=",
+          "right": "fell_timber"
+         },
+         {
+          "test": "switch",
+          "var": "nh_b_peace",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "rm_erland_fogley",
+          "id": "fell-upstairs",
+          "player": "$actor",
+          "once": true,
+          "words": "How is it up at Fellhall?",
+          "reply": "The family and Timberland aren't speaking, so the kitchen cooks for one House and feeds the gossip of two. The cottages don't take sides. We take plates."
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": ">=",
+            "right": 6
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_b_quarrel"
+            },
+            "op": "!=",
+            "right": ""
+           },
+           {
+            "test": "switch",
+            "var": "nh_b_peace",
+            "is": false
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "rm_erland_fogley",
+            "id": "fell-houses",
+            "player": "$actor",
+            "once": true,
+            "words": "How is it up at Fellhall?",
+            "reply": "The Houses have fallen out, and the family's at the windows all day watching who calls on whom. The kitchen just counts the plates coming back."
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 1
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "rm_erland_fogley",
+            "id": "fell-quiet",
+            "player": "$actor",
+            "once": true,
+            "words": "How is it up at Fellhall?",
+            "reply": "Upstairs is the steward's business, and the family's. In the cottages we know the price of eggs and which lanes flood first. That's enough knowing for anyone."
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "grayrock-colour",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-grayrock-hall-errand"
+     },
+     "note": "Reads nh_stage and nh_b_quarrel and nh_b_peace only to colour a line (decisions 7.1): greatly_grayrock is this House's quarrel. With the peace kept, the quiet line plays.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 6
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_b_quarrel"
+          },
+          "op": "=",
+          "right": "greatly_grayrock"
+         },
+         {
+          "test": "switch",
+          "var": "nh_b_peace",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "rm_agna_dripridge",
+          "id": "grayrock-upstairs",
+          "player": "$actor",
+          "once": true,
+          "words": "How is it up at the Hall?",
+          "reply": "The Hall and Greatly are at each other's throats. Every Greatly cart that passes the gate gets a look from the steward that'd curdle milk. I just carry the sheets."
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": ">=",
+            "right": 6
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_b_quarrel"
+            },
+            "op": "!=",
+            "right": ""
+           },
+           {
+            "test": "switch",
+            "var": "nh_b_peace",
+            "is": false
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "rm_agna_dripridge",
+            "id": "grayrock-houses",
+            "player": "$actor",
+            "once": true,
+            "words": "How is it up at the Hall?",
+            "reply": "The Houses have fallen out, and the Hall's doors are shut to callers half the day. More sheets to carry, and fewer feet to dirty them."
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 1
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "rm_agna_dripridge",
+            "id": "grayrock-quiet",
+            "player": "$actor",
+            "once": true,
+            "words": "How is it up at the Hall?",
+            "reply": "Upstairs is upstairs. The family's away more than it's home, and the steward keeps the keys. Down in the cottages we keep the rain out, or try."
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "court-colour",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-timberland-court-errand"
+     },
+     "note": "Reads nh_stage and nh_b_quarrel and nh_b_peace only to colour a line (decisions 7.1): fell_timber is this House's quarrel. With the peace kept, the quiet line plays.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 6
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "nh_b_quarrel"
+          },
+          "op": "=",
+          "right": "fell_timber"
+         },
+         {
+          "test": "switch",
+          "var": "nh_b_peace",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "rm_lotte_greyley",
+          "id": "court-upstairs",
+          "player": "$actor",
+          "once": true,
+          "words": "How is it up at the Court?",
+          "reply": "The Court and Fellhall have fallen out over the timber, and the steward has us counting every log in the woodstore. I count. Nobody notices."
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": ">=",
+            "right": 6
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_b_quarrel"
+            },
+            "op": "!=",
+            "right": ""
+           },
+           {
+            "test": "switch",
+            "var": "nh_b_peace",
+            "is": false
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "rm_lotte_greyley",
+            "id": "court-houses",
+            "player": "$actor",
+            "once": true,
+            "words": "How is it up at the Court?",
+            "reply": "The Houses have all fallen out, and the Court's doors are barred to half the city. The bolts still need carrying, mind."
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 1
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "rm_lotte_greyley",
+            "id": "court-quiet",
+            "player": "$actor",
+            "once": true,
+            "words": "How is it up at the Court?",
+            "reply": "Upstairs is the steward's worry. Down here we worry about the damp, and the damp doesn't take sides."
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "feed-ridgemere",
+     "on": "quest completed",
+     "audience": "participant",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-morning-bread"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-mending-herbs"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-gone-to-see-the-ships"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-smokehouse-wood"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-ropewalk-resin"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-records-copying"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-heights-round"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-restday-candles"
+         }
+        ]
+       },
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-almoners-round"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-marketday-stock"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-rag-market-mushrooms"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-nailers-charcoal"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-greatly-stables"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-dawn-bell"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-mooring-lines"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-heights-thyme"
+         }
+        ]
+       },
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-rainward-pheasants"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-sounding-the-tarns"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-fellhall-errand"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-grayrock-hall-errand"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-timberland-court-errand"
+         }
+        ]
+       }
+      ]
+     },
+     "note": "A small deed for Ridgemere: +2 to the realm and its voice (campaign 2.3, distance weight), one errand on the tracker.",
+     "actions": [
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 2
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_ridgemere",
+       "value": 2
+      },
+      {
+       "do": "add",
+       "var": "sq_done",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "id": "feed-oakhaven",
+     "on": "quest completed",
+     "audience": "participant",
+     "if": {
+      "test": "field",
+      "field": "detail",
+      "op": "=",
+      "value": "sq-oakhaven-load"
+     },
+     "note": "A small deed for Oakhaven: +2 to the realm and its voice (campaign 2.3, distance weight), one errand on the tracker.",
+     "actions": [
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 2
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_oakhaven",
+       "value": 2
+      },
+      {
+       "do": "add",
+       "var": "sq_done",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "id": "pay-city-2",
+     "on": "quest completed",
+     "audience": "participant",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-morning-bread"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-records-copying"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-heights-round"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-restday-candles"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-almoners-round"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-marketday-stock"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-rag-market-mushrooms"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-dawn-bell"
+         }
+        ]
+       },
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-fellhall-errand"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-grayrock-hall-errand"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-timberland-court-errand"
+         }
+        ]
+       }
+      ]
+     },
+     "note": "2 pennies from the treasury while its floor switch is on and the day has room (cap 135, decisions 3.2); otherwise two loaves.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_ridgemere_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_ridgemere_day"
+          },
+          "op": "<=",
+          "right": 133
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:ridgemere"
+          },
+          "op": ">=",
+          "right": 62
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 2,
+          "purse": "town:ridgemere",
+          "reason": "The city pays for an errand well done",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_ridgemere_day",
+         "value": 2
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The city's purse has paid all it can for errands today, so this one is paid in bread."
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "pay-city-3",
+     "on": "quest completed",
+     "audience": "participant",
+     "if": {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-mending-herbs"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-gone-to-see-the-ships"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-smokehouse-wood"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-ropewalk-resin"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-nailers-charcoal"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-greatly-stables"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-mooring-lines"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-oakhaven-load"
+         }
+        ]
+       },
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-heights-thyme"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-rainward-pheasants"
+         },
+         {
+          "test": "field",
+          "field": "detail",
+          "op": "=",
+          "value": "sq-sounding-the-tarns"
+         }
+        ]
+       }
+      ]
+     },
+     "note": "3 pennies from the treasury while its floor switch is on and the day has room (cap 135, decisions 3.2); otherwise two loaves.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_ridgemere_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_ridgemere_day"
+          },
+          "op": "<=",
+          "right": 132
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:ridgemere"
+          },
+          "op": ">=",
+          "right": 63
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 3,
+          "purse": "town:ridgemere",
+          "reason": "The city pays for an errand well done",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_ridgemere_day",
+         "value": 3
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The city's purse has paid all it can for errands today, so this one is paid in bread."
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "deed-morning-bread",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-morning-bread"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "carried the Morning Oven's bread down to the Sump Infirmary"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-mending-herbs",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-mending-herbs"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "filled the House of Mending's herb shelf"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-gone-to-see-the-ships",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-gone-to-see-the-ships"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "walked a lost pup home from the Wharf"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-smokehouse-wood",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-smokehouse-wood"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "kept the North Wharf smokehouse fires going"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-ropewalk-resin",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-ropewalk-resin"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "brought pine resin for the Ropewalk tar pots"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-records-copying",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-records-copying"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "brought paper and ink for the Council Press's printing of the old rolls"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-heights-round",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-heights-round"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "carried a City Office letter up to the Heights"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-restday-candles",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-restday-candles"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "brought candles for the Restday service"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-almoners-round",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-almoners-round"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "carried the abbey's alms bread through the Sump"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-marketday-stock",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-marketday-stock"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "stocked the Market Hall provisioner's shelves"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-rag-market-mushrooms",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-rag-market-mushrooms"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "brought mushrooms for the Rag Market greens stall"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-nailers-charcoal",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-nailers-charcoal"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "carried charcoal to the Nailers' Forge"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-greatly-stables",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-greatly-stables"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "fed and bedded the Greatly horses"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-dawn-bell",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-dawn-bell"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "rang the dawn bell from the Clock Tower"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-mooring-lines",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-mooring-lines"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "took a ship's lines at the Ridgemere piers"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-oakhaven-load",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-oakhaven-load"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "carried a Carters' Yard crate along the Sound Road to Oakhaven"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-heights-thyme",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-heights-thyme"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "brought willow bark for the stiff joints of the Heights"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-rainward-pheasants",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-rainward-pheasants"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "brought pheasants from the Rainward Woods to the Cinder butchers"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-sounding-the-tarns",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-sounding-the-tarns"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "walked the tarns for the Soundings chart"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-fellhall-errand",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-fellhall-errand"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "carried the market eggs to the Fellhall kitchen"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-grayrock-hall-errand",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-grayrock-hall-errand"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "brought fresh linen for the Grayrock Hall chambers"
+       }
+      }
+     ]
+    },
+    {
+     "id": "deed-timberland-court-errand",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "sq-timberland-court-errand"
+     },
+     "once": "member",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "carried a Greywool bolt up to Timberland Court"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "quests": [
+  {
+   "id": "sq-morning-bread",
+   "title": "Morning Bread for the Sump",
+   "summary": "Carry the Morning Oven's first loaves down the Sump Stairs, to the porter who carries for the Sump Infirmary.",
+   "giver": "rm_tove_brinegate",
+   "repeat": "daily",
+   "join": {
+    "cap": 3
+   },
+   "offer": {
+    "ask": "You've flour to your elbows. Something wanted?",
+    "say": "#greet#. The first loaves go down to the Sump Infirmary every morning, and my carrier's off his feet. The nurse can't leave her sick, so four loaves to the porter at the foot of the Sump Stairs who carries for the infirmary. Take the Stairs, not the lanes; the lanes flood first. Will you?",
+    "accept": "I'll take them down.",
+    "decline": "Not today.",
+    "handIn": "The infirmary has its bread.",
+    "thanks": "#thanks#. Warm bread for the sick, and not a loaf dropped. Take a cake for the walk. Same again tomorrow, if your paws are willing."
+   },
+   "objectives": [
+    {
+     "id": "deliver",
+     "label": "Give the four loaves to the infirmary's porter at the foot of the Sump Stairs.",
+     "on": "gift",
+     "match": {
+      "target": "rm_ottilie_nailmarsh",
+      "item": "bread"
+     },
+     "goal": 4,
+     "measure": "quantity"
+    },
+    {
+     "id": "early",
+     "label": "Get them there before the tenth hour, while they are warm.",
+     "on": "story signal",
+     "signal": "bread-early",
+     "optional": true,
+     "hidden": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "honey_cake",
+     "quantity": 1
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "bread",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "bread",
+     "quantity": 1
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-mending-herbs",
+   "title": "Herbs for the House of Mending",
+   "summary": "The apothecary on Market Square mixes the House of Mending's draughts, and the abbey garden can't keep up.",
+   "giver": "rm_rupert_pitchford",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Is the House of Mending short of something?",
+    "say": "#greet#. I mix the draughts for the abbey's House of Mending, and it goes through herbs faster than the abbey garden grows them. Five bunches, from the long grass outside the walls or under the willows. Yarrow too, if you find it. I'll not ask where you picked them.",
+    "accept": "Five bunches. I'll find them.",
+    "decline": "Not today.",
+    "handIn": "Your herbs, and yarrow if I found it.",
+    "thanks": "#thanks#. That's the week's draughts for the House of Mending. If you come in hurt one day, it'll be your own herbs in the poultice, and I'll tell the healer whose they were."
+   },
+   "objectives": [
+    {
+     "id": "herbs",
+     "label": "Bring the apothecary five bunches of herbs.",
+     "on": "gift",
+     "match": {
+      "target": "rm_rupert_pitchford",
+      "item": "herbs"
+     },
+     "goal": 5,
+     "measure": "quantity"
+    },
+    {
+     "id": "yarrow",
+     "label": "Find two sprigs of yarrow for the poultices.",
+     "on": "gift",
+     "match": {
+      "target": "rm_rupert_pitchford",
+      "item": "yarrow"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "herbs",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "yarrow_poultice",
+     "quantity": 1
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-gone-to-see-the-ships",
+   "title": "Gone to See the Ships",
+   "summary": "The old wolf above the pawnshop has lost his littlest to the ships again. Find her and walk her home.",
+   "giver": "rm_soren_ropewick",
+   "repeat": "weekly",
+   "join": {
+    "cap": 1,
+    "again": 7
+   },
+   "fail": [
+    {
+     "afterDays": 1
+    },
+    {
+     "on": "death",
+     "match": {
+      "actor": "rm_soren_ropewick"
+     }
+    },
+    {
+     "on": "death",
+     "match": {
+      "actor": "rm_corra_ropewick"
+     }
+    }
+   ],
+   "offer": {
+    "ask": "You look like you've lost something.",
+    "say": "#greet#, #address#. My littlest slipped her lessons again. She'll be down at the water counting masts; she always is. My knees won't take the Sump Stairs twice in a day. Would you find my minnow and walk her home, eh?",
+    "accept": "I'll find her.",
+    "decline": "I can't just now.",
+    "handIn": "Here she is, safe.",
+    "thanks": "There's my minnow. #thanks#, #address#. The patrolman on the Sump round used to walk her home, before he went up the Hundred Steps to keep the Palace lamp. Now it's you. #farewell#.",
+    "duringAsk": "Any sign of her?",
+    "during": "Not home yet, then. She'll be where the masts are thickest, #address#. Down the Sump Stairs and out to the piers."
+   },
+   "objectives": [
+    {
+     "id": "find",
+     "label": "Find his pup on the piers.",
+     "on": "story signal",
+     "signal": "corra-found"
+    },
+    {
+     "id": "home",
+     "label": "Walk her back to her father.",
+     "on": "story signal",
+     "signal": "corra-home",
+     "after": [
+      "find"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "ships",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ]
+  },
+  {
+   "id": "sq-smokehouse-wood",
+   "title": "Oak Smoke for the Herring",
+   "summary": "The herring is in at the North Wharf smokehouse and its fires are low.",
+   "giver": "rm_rosamund_coalford",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Your fires look low.",
+    "say": "#greet#. The herring's in and my fires are low. Three armfuls of firewood, and two strips of oak bark for the flavour. Oak, mind, not pine; pine smoke makes the fish taste of a ship's hold. The broad-leaved trees past the walls have both.",
+    "accept": "Oak, not pine. I'll bring it.",
+    "decline": "Another day.",
+    "handIn": "Wood and oak bark, as you asked.",
+    "thanks": "That'll smoke sweet. #thanks#. Take a fish; it's this week's. Eat it while the Houses are still speaking to each other. I don't think they will be by winter."
+   },
+   "objectives": [
+    {
+     "id": "wood",
+     "label": "Bring three armfuls of firewood.",
+     "on": "gift",
+     "match": {
+      "target": "rm_rosamund_coalford",
+      "item": "firewood"
+     },
+     "goal": 3,
+     "measure": "quantity"
+    },
+    {
+     "id": "bark",
+     "label": "Bring two strips of oak bark.",
+     "on": "gift",
+     "match": {
+      "target": "rm_rosamund_coalford",
+      "item": "oak_bark"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "smoked_fish",
+     "quantity": 1
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "smoke",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-ropewalk-resin",
+   "title": "Resin for the Tar Pot",
+   "summary": "The Ropewalk's tar pot wants pine resin, and the Grayrock ships take every fathom of rope it makes.",
+   "giver": "rm_kari_bilgehand",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "What's that smell? Tar?",
+    "say": "#greet#. Tar, and not enough of it. An untarred rope rots on its first wet voyage. Three lumps of pine resin for the pot, from the pines up in the hills. And a lump of beeswax, if the chandlers can spare one, for whipping the ends.",
+    "accept": "Three lumps of resin. Done.",
+    "decline": "Not now.",
+    "handIn": "Resin for your pot.",
+    "thanks": "#thanks#. Into the pot it goes, and into the steward's book to the lump. Take a coil; tarred, it'll outlast us both. The Grayrock ships take every fathom I make."
+   },
+   "objectives": [
+    {
+     "id": "resin",
+     "label": "Bring three lumps of pine resin.",
+     "on": "gift",
+     "match": {
+      "target": "rm_kari_bilgehand",
+      "item": "resin"
+     },
+     "goal": 3,
+     "measure": "quantity"
+    },
+    {
+     "id": "wax",
+     "label": "Bring a lump of beeswax for whipping the rope ends.",
+     "on": "gift",
+     "match": {
+      "target": "rm_kari_bilgehand",
+      "item": "beeswax"
+     },
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "rope",
+     "quantity": 1
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "craft"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "resin",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "cord",
+     "quantity": 2
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-records-copying",
+   "title": "Paper for the Rolls",
+   "summary": "The Council Press is setting the Records Office's old rolls in type, and runs short of paper and ink.",
+   "giver": "rm_runa_ashridge",
+   "repeat": "daily",
+   "join": {
+    "cap": 6
+   },
+   "offer": {
+    "ask": "Is the Press short of something?",
+    "say": "#greet#. The Press is setting the Records Office's old rolls in type, and the rolls don't wait. Bring me two sheets of paper and a pot of ink. The Office pays by the page, and you'll hear things off those proofs nobody downstairs remembers.",
+    "accept": "Paper and ink.",
+    "decline": "My paws are full.",
+    "handIn": "Paper and ink, as asked.",
+    "thanks": "#thanks#. Good sheets, too. You'd be surprised what's in those old rolls. A whole village struck off in one line, the spring after a flood. Come again."
+   },
+   "objectives": [
+    {
+     "id": "copy",
+     "label": "Bring the printer two sheets of paper.",
+     "on": "gift",
+     "match": {
+      "target": "rm_runa_ashridge",
+      "item": "paper"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    },
+    {
+     "id": "sort",
+     "label": "Bring a pot of ink.",
+     "on": "gift",
+     "match": {
+      "target": "rm_runa_ashridge",
+      "item": "ink"
+     }
+    },
+    {
+     "id": "roll",
+     "label": "Ask the printer about the drowned village's page in the old count.",
+     "on": "story signal",
+     "signal": "records-roll",
+     "optional": true,
+     "hidden": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "records",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "story.tell",
+     "to": "wolf",
+     "player": "$actor",
+     "text": "Under the drowned village's name, someone has written: struck from the rolls, the spring after the flood. Nothing else."
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-heights-round",
+   "title": "The Heights Round",
+   "summary": "Carry a City Office letter for the Vance house to the Vance who runs the Rag Mill.",
+   "giver": "rmx_kjell_coalham",
+   "repeat": "daily",
+   "join": {
+    "cap": 3
+   },
+   "fail": [
+    {
+     "on": "death",
+     "match": {
+      "actor": "rmx_kjell_coalham"
+     }
+    }
+   ],
+   "offer": {
+    "ask": "Is the City Office sending something up the hill?",
+    "say": "#greet#. The City Office leaves its Heights letters with us at the Stairs, since nobody else likes the climb. This one's for the Vance house. Their doorkeeper never comes down, so give it to the Vance who runs the Rag Mill; she takes the House's letters home. My knees have done that hill enough.",
+    "accept": "I'll take it up.",
+    "decline": "Find another paw today.",
+    "handIn": "Your letter is delivered.",
+    "thanks": "#thanks#. One less on the pile, and one less climb for me. Half the Heights owes a House factor, and they'd sooner not open anything with a seal on it. You got one taken in. That's a day's work, that is.",
+    "duringAsk": "Still on the stairs?",
+    "during": "Still climbing? The letter goes to the Vance who runs the Rag Mill, #address#. Their doorkeeper never comes down."
+   },
+   "objectives": [
+    {
+     "id": "letter",
+     "label": "Give the letter to the Vance who runs the Rag Mill.",
+     "on": "gift",
+     "match": {
+      "target": "rm_eleanor_vance",
+      "item": "letter^city_letter"
+     }
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "letter",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-restday-candles",
+   "title": "Candles for Restday",
+   "summary": "On Restday the cathedral burns more candles than Wickham's can pour. Bring two, and stand at the cathedral door for the service.",
+   "giver": "rm_sten_kelpwell",
+   "repeat": "weekly",
+   "join": {
+    "cap": 10
+   },
+   "offer": {
+    "ask": "Is there work for a pair of paws here?",
+    "say": "#greet#. Wickham's pours the cathedral's candles, and on Restday it burns more than we can pour. Bring me two, wax or tallow, and they go up with ours. Then stand at the cathedral door for the Restday service, between the ninth hour and the eleventh. The Bright One sees who fills the lamps.",
+    "accept": "Two candles, and I'll be there.",
+    "decline": "Not this week.",
+    "handIn": "Candles, and I stood at the door for the service.",
+    "thanks": "#thanks#. The old King's candle is still lit by the altar, the sexton says; they've not let it go out since he went up. Yours will stand beside it."
+   },
+   "objectives": [
+    {
+     "id": "candles",
+     "label": "Bring the chandler two candles, wax or tallow.",
+     "on": "gift",
+     "match": {
+      "target": "rm_sten_kelpwell",
+      "item": "candle_wax"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    },
+    {
+     "id": "service",
+     "label": "Stand at the cathedral door for the Restday service, between the ninth hour and the eleventh.",
+     "on": "story signal",
+     "signal": "restday-service"
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "candles",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-almoners-round",
+   "title": "The Almoner's Round",
+   "summary": "The abbey's brewer hands out the alms bread the almoner leaves at the brewhouse: a loaf each to three wolves on the Wharf and in the Sump, and no questions asked.",
+   "giver": "rm_arne_wickdale",
+   "repeat": "weekly",
+   "join": {
+    "cap": 6
+   },
+   "offer": {
+    "ask": "You're carrying a lot of bread.",
+    "say": "#greet#. The abbey's alms go down to the Sump, and the almoner can't carry them all, so she leaves the bread here at the brewhouse for whoever will. Three loaves, one each, to three wolves on the Wharf side who look like they need it. Don't ask them why.",
+    "accept": "Three loaves, three wolves.",
+    "decline": "Not this week.",
+    "handIn": "All three loaves are given.",
+    "thanks": "#thanks#. Three fed. The almoner says the Sump never had a lake to feed it, so it has us. #farewell#."
+   },
+   "objectives": [
+    {
+     "id": "alms",
+     "label": "Give a loaf each to three wolves on the Wharf and in the Sump.",
+     "on": "gift",
+     "match": {
+      "item": "bread",
+      "cell": "w_ridgemere_0_1"
+     },
+     "goal": 3
+    },
+    {
+     "id": "meal",
+     "label": "Share a meal with someone in the Sump.",
+     "on": "shared meal",
+     "match": {
+      "cell": "w_ridgemere_0_1"
+     },
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "alms",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "porridge",
+     "quantity": 1
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-marketday-stock",
+   "title": "Marketday Stock",
+   "summary": "Marketday empties the Market Hall provisioner's shelves by noon. Sell her three things you've gathered.",
+   "giver": "rm_thyra_plankridge",
+   "repeat": "daily",
+   "join": {
+    "cap": 6
+   },
+   "offer": {
+    "ask": "Your shelves look bare.",
+    "say": "#greet#. Marketday empties my shelves by noon. Sell me three of anything good you've gathered: mushrooms, berries, herbs. I'll pay an honest price and a little over. And if you've the nerve, rent a stall on the Square on Marketday and see how the other half lives.",
+    "accept": "Three goods. I'll be back.",
+    "decline": "I've nothing to sell today.",
+    "handIn": "That's three sold to you.",
+    "thanks": "#thanks#. Fair dealing. Half the Square owes the Counting House this month, so it's nice to trade with someone who doesn't flinch at a coin. I've a letter for a lord who's never home, if you ever see him."
+   },
+   "objectives": [
+    {
+     "id": "stock",
+     "label": "Sell the provisioner three goods you have gathered.",
+     "on": "trade done",
+     "match": {
+      "target": "rm_thyra_plankridge",
+      "detail": "sold"
+     },
+     "goal": 3,
+     "measure": "quantity"
+    },
+    {
+     "id": "stall",
+     "label": "Rent a stall on Market Square on Marketday.",
+     "on": "story signal",
+     "signal": "marketday-stall",
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "stock",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce"
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-rag-market-mushrooms",
+   "title": "Greens for the Rag Market",
+   "summary": "The greens stall in the Rag Market is a basket short. City wolves buy mushrooms above all.",
+   "giver": "rm_agnes_millford",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "What sells best on this stall?",
+    "say": "#greet#, #address#. City wolves'll buy any green thing, mm? Mushrooms most of all. Four, from the deadwood and the ferns in the woods past the walls. A few berries too, for colour, if it's the season. Back home in the Rainwood I'd have a basket by breakfast.",
+    "accept": "Four mushrooms, coming.",
+    "decline": "Not today.",
+    "handIn": "Mushrooms for your stall.",
+    "thanks": "Good bark, these. #thanks#. Have yesterday's stew, mm? It's better the second day, like most things. And every penny the stall makes goes to the factor by the new moon."
+   },
+   "objectives": [
+    {
+     "id": "mushrooms",
+     "label": "Bring four mushrooms.",
+     "on": "gift",
+     "match": {
+      "target": "rm_agnes_millford",
+      "item": "mushrooms"
+     },
+     "goal": 4,
+     "measure": "quantity"
+    },
+    {
+     "id": "berries",
+     "label": "Bring two handfuls of berries for colour.",
+     "on": "gift",
+     "match": {
+      "target": "rm_agnes_millford",
+      "item": "berries"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "mushroom_stew",
+     "quantity": 1
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "greens",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-nailers-charcoal",
+   "title": "Charcoal for the Nail-Hearths",
+   "summary": "The Nailers' Forge in the Cinders eats charcoal faster than Timberland sends it.",
+   "giver": "rm_wynn_sootworth",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Those hearths look hungry.",
+    "say": "#greet#. The nail-hearths eat charcoal like the Houses eat coin. Three sacks from the Timberland charcoal store, on the Sump side of the Commons, and I'll keep the fires in through Emberday. Timberland pays, eventually. Timberland always pays eventually.",
+    "accept": "Three sacks. I'll bring them.",
+    "decline": "Not today.",
+    "handIn": "Three sacks of charcoal.",
+    "thanks": "#thanks#. Take a paw of nails; we make more than we sell. And if anyone from another House asks what you saw down here, you saw a forge. That's all there is to see."
+   },
+   "objectives": [
+    {
+     "id": "charcoal",
+     "label": "Bring the smith three sacks of charcoal.",
+     "on": "gift",
+     "match": {
+      "target": "rm_wynn_sootworth",
+      "item": "charcoal"
+     },
+     "goal": 3,
+     "measure": "quantity"
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "nails",
+     "quantity": 4
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "charcoal",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-greatly-stables",
+   "title": "Oats for the Factors' Horses",
+   "summary": "The Greatly horses want oats and straw, and the Greatly Yard feeds them: the factors will soon be riding their debt rounds.",
+   "giver": "rm_hjalte_sootby",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Do the Greatly horses want feeding?",
+    "say": "#greet#. The Yard keeps the Greatly stables fed, and Greatly horses eat better than half the Sump. Three of oats and two bundles of straw, brought to me here. Any provisioner has oats; for straw, try the sundries shop in the Sump. The factors want the horses fresh for the debt rounds.",
+    "accept": "Oats and straw. I'll fetch it.",
+    "decline": "Not for Greatly.",
+    "handIn": "Oats and straw, as asked.",
+    "thanks": "#thanks#. Don't look so sour. Whoever owns the horse, it's the horse that's hungry. They'll be in the mangers before the stable shuts."
+   },
+   "objectives": [
+    {
+     "id": "oats",
+     "label": "Bring three of oats.",
+     "on": "gift",
+     "match": {
+      "target": "rm_hjalte_sootby",
+      "item": "oats"
+     },
+     "goal": 3,
+     "measure": "quantity"
+    },
+    {
+     "id": "straw",
+     "label": "Bring two bundles of straw for bedding.",
+     "on": "gift",
+     "match": {
+      "target": "rm_hjalte_sootby",
+      "item": "straw"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "stables",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-dawn-bell",
+   "title": "The Dawn Bell",
+   "summary": "Nobody has rung the Clock Tower bell at first light since the old King went up. Ring it, and tell the Sump Stairs porter.",
+   "giver": "rm_mathis_plankham",
+   "repeat": "daily",
+   "fail": [
+    {
+     "on": "death",
+     "match": {
+      "actor": "rm_mathis_plankham"
+     }
+    }
+   ],
+   "offer": {
+    "ask": "Who rings the morning bell these days?",
+    "say": "#greet#. Since the old King went up nobody rings the morning bell, and half the Sump Stairs sleep through the first hour. The tower's kept locked, but the bell rope comes down by the Clock Tower door. Pull it between the fifth hour and the seventh, and come and tell me.",
+    "accept": "I'll ring it.",
+    "decline": "I sleep late.",
+    "handIn": "The bell's rung.",
+    "thanks": "#thanks#. I heard it from the Stairs. There's wolves in the Sump who set their day by that bell, and they've been late ever since he went up. It's a small thing, but somebody had to see it done.",
+    "duringAsk": "About the bell...",
+    "during": "The rope hangs at the Clock Tower door. First light, #address#, and not a breath before, or the whole Sump grumbles."
+   },
+   "objectives": [
+    {
+     "id": "ring",
+     "label": "Pull the bell rope at the Clock Tower door at first light, between the fifth hour and the seventh.",
+     "on": "story signal",
+     "signal": "dawn-bell"
+    },
+    {
+     "id": "tell",
+     "label": "Tell the porter the bell is rung.",
+     "on": "conversation",
+     "match": {
+      "target": "rm_mathis_plankham"
+     },
+     "after": [
+      "ring"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "bell",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-mooring-lines",
+   "title": "Take Her Lines",
+   "summary": "Be on the piers while a ship is in to take her lines, and bring a coil of rope for the bollards.",
+   "giver": "rm_wystan_coalmarsh",
+   "repeat": "daily",
+   "join": {
+    "cap": 8
+   },
+   "fail": [
+    {
+     "afterDays": 7
+    }
+   ],
+   "offer": {
+    "ask": "You look like you're waiting for something.",
+    "say": "#greet#, #address#. When a ship comes in, somebody has to be on the pier to take her lines, and the Grayrock office never sends enough paws. Be on the piers when the next one's in, and bring me a coil of rope for the bollards. The notice by the office says which day she's due.",
+    "accept": "I'll be on the pier.",
+    "decline": "I can't wait about today.",
+    "handIn": "She's tied up, and here's your rope.",
+    "thanks": "#thanks#. Snug as a pup in a basket. I'll be up in the Heights one day, you know, a house with a door that sticks. And I'll still come down to take a ship's lines.",
+    "duringAsk": "About the lines...",
+    "during": "Watch the notice by the office for her. When she's in, the lines go on her before she settles."
+   },
+   "objectives": [
+    {
+     "id": "lines",
+     "label": "Be on the piers while a ship is in, and take her lines.",
+     "on": "story signal",
+     "signal": "ship-lines"
+    },
+    {
+     "id": "rope",
+     "label": "Bring the docker a coil of rope for the bollards.",
+     "on": "gift",
+     "match": {
+      "target": "rm_wystan_coalmarsh",
+      "item": "rope"
+     }
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "lines",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-oakhaven-load",
+   "title": "A Crate Light",
+   "summary": "The Oakhaven wagon went out a crate light. Carry it along the Sound Road to Oakhaven Stores.",
+   "giver": "rm_petra_plankhand",
+   "repeat": "daily",
+   "join": {
+    "cap": 3
+   },
+   "offer": {
+    "ask": "Is that crate going somewhere?",
+    "say": "#greet#. The Oakhaven wagon went out a crate light, and the storekeeper there counts everything twice. Carry it along the Sound Road to Oakhaven Stores, would you? It's not heavy. It's just far, and the road's not as safe as it was.",
+    "accept": "I'll carry it to Oakhaven.",
+    "decline": "Too far for me today.",
+    "handIn": "The crate's in Oakhaven.",
+    "thanks": "#thanks#. He'll have counted it twice and found it right, for once. Roads are like the Houses, mind: never quite where you left them."
+   },
+   "objectives": [
+    {
+     "id": "crate",
+     "label": "Carry the crate to the Oakhaven storekeeper.",
+     "on": "gift",
+     "match": {
+      "target": "tn_oh_cairn_oakhaven",
+      "item": "crate^yard_crate"
+     }
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_last",
+     "value": "crate",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "crate",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-heights-thyme",
+   "title": "Willow Bark for the Heights' Joints",
+   "summary": "The damp has got into every old joint in the Heights. The Mortar and Pestle's hand, who carries its physic up the hill, trusts willow bark.",
+   "giver": "rm_mogens_ashley",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Who's ailing in the Heights?",
+    "say": "#greet#. The damp's got into every old joint in the Heights. The good houses send for a physician first, and down here for willow when the physician's done. Three strips of willow bark from any physic on the Commons, or willow tea if they've some made. I carry it up the hill myself.",
+    "accept": "Three strips of willow bark.",
+    "decline": "Not today.",
+    "handIn": "Willow bark, as you asked.",
+    "thanks": "#thanks#, #address#. Steeped tonight, and three old wolves up the hill will take their stairs tomorrow without swearing at them."
+   },
+   "objectives": [
+    {
+     "id": "bark",
+     "label": "Bring three strips of willow bark, or willow tea.",
+     "on": "gift",
+     "match": {
+      "target": "rm_mogens_ashley",
+      "item": "willow_bark"
+     },
+     "goal": 3,
+     "measure": "quantity"
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "willow",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-rainward-pheasants",
+   "title": "Pheasants for the Cinder Butchers",
+   "summary": "The Heights want pheasant pie and the Cinder butcher's hooks are bare. Two birds out of the Rainward Woods.",
+   "giver": "rm_corwin_sootstack",
+   "repeat": "daily",
+   "join": {
+    "cap": 6
+   },
+   "offer": {
+    "ask": "Hooks are looking bare.",
+    "say": "#greet#, #address#. The Heights want pheasant pie and my hooks are bare. Two birds out of the Rainward Woods, past Fellhall, eh? They'd sooner run than fly; head them off. And the feathers, if you keep them. I sell those too.",
+    "accept": "Two pheasants.",
+    "decline": "Not today.",
+    "handIn": "Two birds, and the feathers.",
+    "thanks": "#thanks#. Fair catch, both. Here's a pie from yesterday's batch. Next time you're down by the Sound, ask me the name of any ship you see, eh? I know them all."
+   },
+   "objectives": [
+    {
+     "id": "birds",
+     "label": "Take two pheasants in the Rainward Woods, either side of Fellhall.",
+     "on": "story signal",
+     "signal": "rainward-pheasant",
+     "goal": 2
+    },
+    {
+     "id": "feathers",
+     "label": "Bring the butcher the feathers.",
+     "on": "gift",
+     "match": {
+      "target": "rm_corwin_sootstack",
+      "item": "feathers"
+     },
+     "goal": 3,
+     "measure": "quantity",
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "meat_pie",
+     "quantity": 1
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "pheasant",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce"
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-sounding-the-tarns",
+   "title": "Sounding the Tarns",
+   "summary": "Soundings is redrawing the Rainward Hills. Walk out to Rainmere and Slate Tarn and say they are where the chart says.",
+   "giver": "rm_yrsa_nailridge",
+   "repeat": "weekly",
+   "offer": {
+    "ask": "What are all those charts?",
+    "say": "#greet#. The cartographer's redrawing the hills and wants to know the tarns are where the old chart says. Walk out to Rainmere and on to Slate Tarn, then come back and tell me they're still there. They will be. It's the roads between that keep moving.",
+    "accept": "Rainmere and Slate Tarn.",
+    "decline": "My paws need a rest.",
+    "handIn": "Both tarns are where the chart says.",
+    "thanks": "#thanks#. She'll be pleased. She's marking every hill a howl could carry from, though she won't say why. Highmere's the one the chart's least sure of, if you ever get that far."
+   },
+   "objectives": [
+    {
+     "id": "rainmere",
+     "label": "Walk out to Rainmere.",
+     "on": "enter place",
+     "match": {
+      "target": "w_ridgemere_3_2"
+     }
+    },
+    {
+     "id": "slate",
+     "label": "Walk on to Slate Tarn.",
+     "on": "enter place",
+     "match": {
+      "target": "w_ridgemere_4_2"
+     }
+    },
+    {
+     "id": "report",
+     "label": "Tell the chart-keeper what you saw.",
+     "on": "conversation",
+     "match": {
+      "target": "rm_yrsa_nailridge"
+     },
+     "after": [
+      "rainmere",
+      "slate"
+     ]
+    },
+    {
+     "id": "highmere",
+     "label": "Go on as far as Highmere.",
+     "on": "enter place",
+     "match": {
+      "target": "w_ridgemere_6_2"
+     },
+     "optional": true
+    },
+    {
+     "id": "echo",
+     "label": "If you have the Sound Gift, use its Echo at Slate Tarn.",
+     "on": "gift used",
+     "match": {
+      "detail": "echo",
+      "cell": "w_ridgemere_4_2"
+     },
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "tarns",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "map",
+     "quantity": 1
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-fellhall-errand",
+   "title": "Eggs for the Fellhall Kitchen",
+   "summary": "The Fellhall kitchen is short for the family's supper. Four eggs and two cheeses from the Commons, to the Lamp and Wick hand who lives in the Fell cottages.",
+   "giver": "rm_erland_fogley",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Does the Fellhall kitchen want something fetched?",
+    "say": "#greet#. I live in the Fell cottages, and the hall's cook won't send to market twice. She's short for the family's supper: four eggs and two cheeses from the Commons, brought to me here, and I'll carry them up when the shop shuts. Keep to the high side of the street; the low side floods first.",
+    "accept": "Eggs and cheese, for the Fellhall kitchen.",
+    "decline": "Not today.",
+    "handIn": "Eggs whole, and the cheese.",
+    "thanks": "#thanks#. Eggs whole and the cheese not sat on. The cook will think I went to market myself. They'll be up the hill before the lamps are lit."
+   },
+   "objectives": [
+    {
+     "id": "eggs",
+     "label": "Bring four eggs for the Fellhall kitchen.",
+     "on": "gift",
+     "match": {
+      "target": "rm_erland_fogley",
+      "item": "eggs"
+     },
+     "goal": 4,
+     "measure": "quantity"
+    },
+    {
+     "id": "cheese",
+     "label": "Bring two cheeses.",
+     "on": "gift",
+     "match": {
+      "target": "rm_erland_fogley",
+      "item": "cheese"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    },
+    {
+     "id": "butter",
+     "label": "Bring a pat of butter for the family's bread, if the dairy has it.",
+     "on": "gift",
+     "match": {
+      "target": "rm_erland_fogley",
+      "item": "butter"
+     },
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "fellhall",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "meat_pie",
+     "quantity": 1
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-grayrock-hall-errand",
+   "title": "Clean Linen for Grayrock Hall",
+   "summary": "Grayrock Hall's linen came back from the washers grey with sea damp. The chambers want fresh on every bed, and the Bridge Stores hand from the Grayrock cottages carries it up.",
+   "giver": "rm_agna_dripridge",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "offer": {
+    "ask": "Is the Hall short of something?",
+    "say": "#greet#! The Hall's linen came back from the washers grey with sea damp, and the chamber keeper sent down to the cottages for fresh before anyone upstairs notices. Two lengths of linen cloth, brought to me here at the Stores, and lavender if the season's left any. I'll take them up tonight.",
+    "accept": "Two lengths of linen.",
+    "decline": "Not today.",
+    "handIn": "Linen for the beds.",
+    "thanks": "#thanks#! Every bed made before the bell, and the chamber keeper none the wiser. Take a candle; the Hall burns more than it needs."
+   },
+   "objectives": [
+    {
+     "id": "linen",
+     "label": "Bring two lengths of linen cloth.",
+     "on": "gift",
+     "match": {
+      "target": "rm_agna_dripridge",
+      "item": "linen_cloth"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    },
+    {
+     "id": "lavender",
+     "label": "Bring two sprigs of lavender for the linen presses.",
+     "on": "gift",
+     "match": {
+      "target": "rm_agna_dripridge",
+      "item": "lavender"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "grayrock",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "candle_wax",
+     "quantity": 1
+    }
+   ],
+   "board": "ridgemere"
+  },
+  {
+   "id": "sq-timberland-court-errand",
+   "title": "A Bolt for the Court",
+   "summary": "Greywool has finished the Court's winter hangings. Carry the bolt to Wenna Timberland, who keeps the House's iron trade in the yard by the Court.",
+   "giver": "rm_lotte_greyley",
+   "repeat": "daily",
+   "join": {
+    "cap": 4
+   },
+   "fail": [
+    {
+     "on": "death",
+     "match": {
+      "actor": "rm_wenna_mossgrave"
+     }
+    }
+   ],
+   "offer": {
+    "ask": "Is that bolt going somewhere?",
+    "say": "#greet#. Greywool's finished the Court's winter hangings, and I can't carry the bolt and keep my place at the loom. Take it up to Timberland Court. The chamber keeper never comes out, but Wenna Timberland is in the yard by the Court all day with the iron carts, and she'll take it in.",
+    "accept": "I'll carry it up.",
+    "decline": "Not today.",
+    "handIn": "The bolt is with Wenna Timberland.",
+    "thanks": "#thanks#. She'll have counted the ells twice before she let it out of her sight. And if you brought wood for the hall fire, thank you for that too. The damp in that hall could drown a fish."
+   },
+   "objectives": [
+    {
+     "id": "bolt",
+     "label": "Give the bolt to Wenna Timberland in the yard by the Court.",
+     "on": "gift",
+     "match": {
+      "target": "rm_wenna_mossgrave",
+      "item": "wool_cloth^greywool_bolt"
+     }
+    },
+    {
+     "id": "wood",
+     "label": "Bring two armfuls of firewood for the servants' hall fire, against the damp.",
+     "on": "gift",
+     "match": {
+      "target": "rm_lotte_greyley",
+      "item": "firewood"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "bolt",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
+   "bonus": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    }
+   ],
+   "board": "ridgemere"
+  }
+ ],
+ "tests": [
+  {
+   "name": "Bread, herbs, smoke, resin, charcoal and oats; bread again the next day",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.001,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_tove_brinegate",
+     "detail": "sq-morning-bread"
+    },
+    {
+     "id": "e2",
+     "kind": "gift",
+     "day": 1.002,
+     "actor": "wolf-birch",
+     "target": "rm_ottilie_nailmarsh",
+     "item": "bread",
+     "quantity": 4,
+     "cell": "w_ridgemere_0_1"
+    },
+    {
+     "id": "e3",
+     "kind": "gift",
+     "day": 1.003,
+     "actor": "wolf-ash",
+     "target": "rm_ottilie_nailmarsh",
+     "item": "bread",
+     "quantity": 4,
+     "cell": "w_ridgemere_0_1",
+     "facts": {
+      "world": {
+       "hour": 6
+      }
+     }
+    },
+    {
+     "id": "e4",
+     "kind": "quest handed in",
+     "day": 1.004,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_tove_brinegate",
+     "detail": "sq-morning-bread"
+    },
+    {
+     "id": "e5",
+     "kind": "quest accepted",
+     "day": 1.005,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_rupert_pitchford",
+     "detail": "sq-mending-herbs"
+    },
+    {
+     "id": "e6",
+     "kind": "gift",
+     "day": 1.006,
+     "actor": "wolf-ash",
+     "target": "rm_rupert_pitchford",
+     "item": "herbs",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e7",
+     "kind": "gift",
+     "day": 1.007,
+     "actor": "wolf-ash",
+     "target": "rm_rupert_pitchford",
+     "item": "herbs",
+     "quantity": 2,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e8",
+     "kind": "gift",
+     "day": 1.008,
+     "actor": "wolf-ash",
+     "target": "rm_rupert_pitchford",
+     "item": "yarrow",
+     "quantity": 2,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e9",
+     "kind": "quest handed in",
+     "day": 1.009,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_rupert_pitchford",
+     "detail": "sq-mending-herbs"
+    },
+    {
+     "id": "e10",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_rosamund_coalford",
+     "detail": "sq-smokehouse-wood"
+    },
+    {
+     "id": "e11",
+     "kind": "gift",
+     "day": 1.011,
+     "actor": "wolf-ash",
+     "target": "rm_rosamund_coalford",
+     "item": "firewood",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e12",
+     "kind": "gift",
+     "day": 1.012,
+     "actor": "wolf-ash",
+     "target": "rm_rosamund_coalford",
+     "item": "oak_bark",
+     "quantity": 2,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e13",
+     "kind": "quest handed in",
+     "day": 1.013,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_rosamund_coalford",
+     "detail": "sq-smokehouse-wood"
+    },
+    {
+     "id": "e14",
+     "kind": "quest accepted",
+     "day": 1.014,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "board:ridgemere",
+     "detail": "sq-ropewalk-resin"
+    },
+    {
+     "id": "e15",
+     "kind": "gift",
+     "day": 1.015,
+     "actor": "wolf-ash",
+     "target": "rm_kari_bilgehand",
+     "item": "resin",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e16",
+     "kind": "gift",
+     "day": 1.016,
+     "actor": "wolf-ash",
+     "target": "rm_kari_bilgehand",
+     "item": "beeswax",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e17",
+     "kind": "quest handed in",
+     "day": 1.017,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_kari_bilgehand",
+     "detail": "sq-ropewalk-resin"
+    },
+    {
+     "id": "e18",
+     "kind": "quest accepted",
+     "day": 1.018,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e19",
+     "kind": "gift",
+     "day": 1.019,
+     "actor": "wolf-birch",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e20",
+     "kind": "quest handed in",
+     "day": 1.02,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e21",
+     "kind": "quest accepted",
+     "day": 1.021,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_hjalte_sootby",
+     "detail": "sq-greatly-stables"
+    },
+    {
+     "id": "e22",
+     "kind": "gift",
+     "day": 1.022,
+     "actor": "wolf-birch",
+     "target": "rm_hjalte_sootby",
+     "item": "oats",
+     "quantity": 3,
+     "cell": "rm_the_greatly_yard"
+    },
+    {
+     "id": "e23",
+     "kind": "gift",
+     "day": 1.023,
+     "actor": "wolf-birch",
+     "target": "rm_hjalte_sootby",
+     "item": "straw",
+     "quantity": 2,
+     "cell": "rm_the_greatly_yard"
+    },
+    {
+     "id": "e24",
+     "kind": "quest handed in",
+     "day": 1.024,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_hjalte_sootby",
+     "detail": "sq-greatly-stables"
+    },
+    {
+     "id": "e25",
+     "kind": "quest accepted",
+     "day": 2.101,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "board:ridgemere",
+     "detail": "sq-morning-bread"
+    },
+    {
+     "id": "e26",
+     "kind": "gift",
+     "day": 2.102,
+     "actor": "wolf-ash",
+     "target": "rm_ottilie_nailmarsh",
+     "item": "bread",
+     "quantity": 4,
+     "cell": "w_ridgemere_0_1",
+     "facts": {
+      "world": {
+       "hour": 14
+      }
+     }
+    },
+    {
+     "id": "e27",
+     "kind": "quest handed in",
+     "day": 2.103,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_tove_brinegate",
+     "detail": "sq-morning-bread"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-morning-bread": {
+     "wolf-ash": "done"
+    },
+    "sq-mending-herbs": {
+     "wolf-ash": "done"
+    },
+    "sq-smokehouse-wood": {
+     "wolf-ash": "done"
+    },
+    "sq-ropewalk-resin": {
+     "wolf-ash": "done"
+    },
+    "sq-nailers-charcoal": {
+     "wolf-birch": "done"
+    },
+    "sq-greatly-stables": {
+     "wolf-birch": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "nh_realm": 14,
+     "nh_voice_ridgemere": 14,
+     "nh_voice_oakhaven": 0,
+     "coin_ridgemere_day": 19
+    },
+    "player": {
+     "wolf-ash": {
+      "sq_done": 5
+     },
+     "wolf-birch": {
+      "sq_done": 2
+     }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
+   }
+  },
+  {
+   "name": "The lost pup is found on the pier and walked home; the copy was taken",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.001,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_soren_ropewick",
+     "detail": "sq-gone-to-see-the-ships"
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 1.002,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_soren_ropewick",
+     "detail": "sq-gone-to-see-the-ships"
+    },
+    {
+     "id": "e3",
+     "kind": "near resident",
+     "day": 1.003,
+     "actor": "wolf-ash",
+     "target": "rm_soren_ropewick",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 2
+    },
+    {
+     "id": "e4",
+     "kind": "near resident",
+     "day": 1.004,
+     "actor": "wolf-ash",
+     "target": "rm_corra_ropewick",
+     "cell": "w_ridgemere_0_1",
+     "quantity": 2
+    },
+    {
+     "id": "e5",
+     "kind": "near resident",
+     "day": 1.005,
+     "actor": "wolf-ash",
+     "target": "rm_soren_ropewick",
+     "cell": "w_ridgemere_1_1",
+     "quantity": 1
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 1.006,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_soren_ropewick",
+     "detail": "sq-gone-to-see-the-ships"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-gone-to-see-the-ships": {
+     "wolf-ash": "done"
+    }
+   },
+   "expectTriggers": [
+    "props",
+    "pup-lost",
+    "pup-found",
+    "pup-home",
+    "feed-ridgemere",
+    "pay-city-3",
+    "deed-gone-to-see-the-ships"
+   ],
+   "expectEffects": [
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "phase": "open",
+     "kind": "npc.move",
+     "npc": "rm_corra_ropewick",
+     "cell": "w_ridgemere_0_1",
+     "x": 161,
+     "y": 97,
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "open",
+     "kind": "npc.hold",
+     "npc": "rm_corra_ropewick",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "open",
+     "kind": "npc.release",
+     "npc": "rm_corra_ropewick",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "open",
+     "kind": "npc.follow",
+     "npc": "rm_corra_ropewick",
+     "player": "wolf-ash",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "open",
+     "kind": "npc.unfollow",
+     "npc": "rm_corra_ropewick",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "open",
+     "kind": "story.practice",
+     "player": "wolf-ash",
+     "skill": "watch",
+     "reward": "sq-gone-to-see-the-ships"
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "ships",
+     "days": 2,
+     "reward": "sq-gone-to-see-the-ships"
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365,
+     "reward": "sq-gone-to-see-the-ships"
+    },
+    {
+     "phase": "open",
+     "kind": "character.grant",
+     "player": "wolf-ash",
+     "coins": 3,
+     "purse": "town:ridgemere",
+     "reason": "The city pays for an errand well done",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "open",
+     "kind": "deed.award",
+     "player": "wolf-ash",
+     "detail": "walked a lost pup home from the Wharf"
+    }
+   ],
+   "expectVariables": {
+    "world": {
+     "nh_realm": 2,
+     "coin_ridgemere_day": 3
+    },
+    "player": {
+     "wolf-ash": {
+      "sq_done": 1
+     }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
+   }
+  },
+  {
+   "name": "The pup is not found in a day, and the next wolf gives it up",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.001,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_soren_ropewick",
+     "detail": "sq-gone-to-see-the-ships"
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 2.501,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_soren_ropewick",
+     "detail": "sq-gone-to-see-the-ships"
+    },
+    {
+     "id": "e3",
+     "kind": "quest abandoned",
+     "day": 2.502,
+     "actor": "wolf-birch",
+     "target": "run",
+     "detail": "sq-gone-to-see-the-ships"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-gone-to-see-the-ships": {
+     "wolf-ash": "failed",
+     "wolf-birch": "abandoned"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "nh_realm": 0,
+     "coin_ridgemere_day": 0
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
+   }
+  },
+  {
+   "name": "Records, a letter up the hill, Restday candles and the alms round",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.001,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_runa_ashridge",
+     "detail": "sq-records-copying"
+    },
+    {
+     "id": "e2",
+     "kind": "gift",
+     "day": 1.002,
+     "actor": "wolf-ash",
+     "target": "rm_runa_ashridge",
+     "item": "paper",
+     "quantity": 2,
+     "cell": "rm_the_council_press"
+    },
+    {
+     "id": "e3",
+     "kind": "gift",
+     "day": 1.003,
+     "actor": "wolf-ash",
+     "target": "rm_runa_ashridge",
+     "item": "ink",
+     "quantity": 1,
+     "cell": "rm_the_council_press"
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 1.004,
+     "actor": "wolf-ash",
+     "target": "rm_runa_ashridge",
+     "cell": "rm_the_council_press"
+    },
+    {
+     "id": "e5",
+     "kind": "quest handed in",
+     "day": 1.005,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_runa_ashridge",
+     "detail": "sq-records-copying"
+    },
+    {
+     "id": "e6",
+     "kind": "quest accepted",
+     "day": 1.006,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rmx_kjell_coalham",
+     "detail": "sq-heights-round"
+    },
+    {
+     "id": "e7",
+     "kind": "gift",
+     "day": 1.007,
+     "actor": "wolf-birch",
+     "target": "rm_eleanor_vance",
+     "item": "letter^city_letter",
+     "quantity": 1,
+     "cell": "rm_the_rag_mill"
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.008,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rmx_kjell_coalham",
+     "detail": "sq-heights-round"
+    },
+    {
+     "id": "e9",
+     "kind": "quest accepted",
+     "day": 1.009,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "rm_sten_kelpwell",
+     "detail": "sq-restday-candles"
+    },
+    {
+     "id": "e10",
+     "kind": "gift",
+     "day": 1.01,
+     "actor": "wolf-elm",
+     "target": "rm_sten_kelpwell",
+     "item": "candle_tallow",
+     "quantity": 1,
+     "cell": "rm_wickham_s_chandlery"
+    },
+    {
+     "id": "e11",
+     "kind": "gift",
+     "day": 1.011,
+     "actor": "wolf-elm",
+     "target": "rm_sten_kelpwell",
+     "item": "candle_wax",
+     "quantity": 1,
+     "cell": "rm_wickham_s_chandlery"
+    },
+    {
+     "id": "e12",
+     "kind": "region entered",
+     "day": 1.012,
+     "actor": "wolf-elm",
+     "target": "cathedral_door",
+     "cell": "w_ridgemere_0_0",
+     "x": 231,
+     "y": 176,
+     "facts": {
+      "world": {
+       "hour": 10,
+       "weekday": "Restday"
+      }
+     }
+    },
+    {
+     "id": "e13",
+     "kind": "quest handed in",
+     "day": 1.013,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "rm_sten_kelpwell",
+     "detail": "sq-restday-candles"
+    },
+    {
+     "id": "e14",
+     "kind": "quest accepted",
+     "day": 1.014,
+     "actor": "wolf-fern",
+     "target": "run",
+     "item": "rm_arne_wickdale",
+     "detail": "sq-almoners-round"
+    },
+    {
+     "id": "e15",
+     "kind": "gift",
+     "day": 1.015,
+     "actor": "wolf-fern",
+     "target": "rm_wystan_coalmarsh",
+     "item": "bread",
+     "quantity": 1,
+     "cell": "w_ridgemere_0_1"
+    },
+    {
+     "id": "e16",
+     "kind": "gift",
+     "day": 1.016,
+     "actor": "wolf-fern",
+     "target": "rm_agnes_millford",
+     "item": "bread",
+     "quantity": 1,
+     "cell": "w_ridgemere_0_1"
+    },
+    {
+     "id": "e17",
+     "kind": "gift",
+     "day": 1.017,
+     "actor": "wolf-fern",
+     "target": "rm_tove_brinegate",
+     "item": "bread",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_0"
+    },
+    {
+     "id": "e18",
+     "kind": "gift",
+     "day": 1.018,
+     "actor": "wolf-fern",
+     "target": "rm_corwin_sootstack",
+     "item": "bread",
+     "quantity": 1,
+     "cell": "w_ridgemere_0_1"
+    },
+    {
+     "id": "e19",
+     "kind": "shared meal",
+     "day": 1.019,
+     "actor": "wolf-fern",
+     "target": "rm_soren_ropewick",
+     "cell": "w_ridgemere_0_1"
+    },
+    {
+     "id": "e20",
+     "kind": "quest handed in",
+     "day": 1.02,
+     "actor": "wolf-fern",
+     "target": "run",
+     "item": "rm_arne_wickdale",
+     "detail": "sq-almoners-round"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-records-copying": {
+     "wolf-ash": "done"
+    },
+    "sq-heights-round": {
+     "wolf-birch": "done"
+    },
+    "sq-restday-candles": {
+     "wolf-elm": "done"
+    },
+    "sq-almoners-round": {
+     "wolf-fern": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "nh_realm": 8,
+     "nh_names": 0,
+     "coin_ridgemere_day": 8
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
+   }
+  },
+  {
+   "name": "A Marketday stall, greens, the dawn bell, a ship in and sailed, the crate and willow tea",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.001,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_thyra_plankridge",
+     "detail": "sq-marketday-stock"
+    },
+    {
+     "id": "e2",
+     "kind": "trade done",
+     "day": 1.002,
+     "actor": "wolf-ash",
+     "target": "rm_thyra_plankridge",
+     "item": "mushrooms",
+     "detail": "sold",
+     "quantity": 2,
+     "coins": 4,
+     "cell": "r2_the_market_hall"
+    },
+    {
+     "id": "e3",
+     "kind": "trade done",
+     "day": 1.003,
+     "actor": "wolf-ash",
+     "target": "rm_thyra_plankridge",
+     "item": "berries",
+     "detail": "sold",
+     "quantity": 1,
+     "coins": 1,
+     "cell": "r2_the_market_hall"
+    },
+    {
+     "id": "e4",
+     "kind": "stall rented",
+     "day": 1.004,
+     "actor": "wolf-ash",
+     "cell": "w_ridgemere_1_1",
+     "detail": "stall_3",
+     "coins": 2,
+     "facts": {
+      "world": {
+       "weekday": "Marketday",
+       "hour": 9
+      }
+     }
+    },
+    {
+     "id": "e5",
+     "kind": "quest handed in",
+     "day": 1.005,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_thyra_plankridge",
+     "detail": "sq-marketday-stock"
+    },
+    {
+     "id": "e6",
+     "kind": "quest accepted",
+     "day": 1.006,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_agnes_millford",
+     "detail": "sq-rag-market-mushrooms"
+    },
+    {
+     "id": "e7",
+     "kind": "gift",
+     "day": 1.007,
+     "actor": "wolf-ash",
+     "target": "rm_agnes_millford",
+     "item": "mushrooms",
+     "quantity": 4,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.008,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_agnes_millford",
+     "detail": "sq-rag-market-mushrooms"
+    },
+    {
+     "id": "e9",
+     "kind": "quest accepted",
+     "day": 1.009,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_mathis_plankham",
+     "detail": "sq-dawn-bell"
+    },
+    {
+     "id": "e10",
+     "kind": "region entered",
+     "day": 1.01,
+     "actor": "wolf-birch",
+     "target": "clock_door",
+     "cell": "w_ridgemere_1_0",
+     "x": 113,
+     "y": 182,
+     "facts": {
+      "world": {
+       "weekday": "Marketday",
+       "hour": 6
+      }
+     }
+    },
+    {
+     "id": "e11",
+     "kind": "conversation",
+     "day": 1.011,
+     "actor": "wolf-birch",
+     "target": "rm_mathis_plankham",
+     "cell": "w_ridgemere_0_1"
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 1.012,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_mathis_plankham",
+     "detail": "sq-dawn-bell"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 1.013,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "rm_wystan_coalmarsh",
+     "detail": "sq-mooring-lines"
+    },
+    {
+     "id": "e14",
+     "kind": "quest accepted",
+     "day": 1.014,
+     "actor": "wolf-fern",
+     "target": "run",
+     "item": "rm_wystan_coalmarsh",
+     "detail": "sq-mooring-lines"
+    },
+    {
+     "id": "e15",
+     "kind": "ship docks",
+     "day": 1.015,
+     "actor": "s21",
+     "target": "ridgemere",
+     "item": "the Fair Wind",
+     "cell": "w_ridgemere_0_1",
+     "quantity": 4,
+     "facts": {
+      "wolves": {
+       "wolf-elm": {
+        "cell": "w_ridgemere_0_1",
+        "x": 160,
+        "y": 96
+       },
+       "wolf-fern": {
+        "cell": "w_ridgemere_1_1",
+        "x": 40,
+        "y": 40
+       }
+      }
+     }
+    },
+    {
+     "id": "e15a",
+     "kind": "region entered",
+     "day": 1.0151,
+     "actor": "wolf-fern",
+     "target": "piers",
+     "cell": "w_ridgemere_0_1",
+     "detail": "run"
+    },
+    {
+     "id": "e15b",
+     "kind": "gift",
+     "day": 1.0152,
+     "actor": "wolf-fern",
+     "target": "rm_wystan_coalmarsh",
+     "item": "rope",
+     "quantity": 1,
+     "cell": "w_ridgemere_0_1"
+    },
+    {
+     "id": "e15c",
+     "kind": "quest handed in",
+     "day": 1.0153,
+     "actor": "wolf-fern",
+     "target": "run",
+     "item": "rm_wystan_coalmarsh",
+     "detail": "sq-mooring-lines"
+    },
+    {
+     "id": "e15d",
+     "kind": "quest accepted",
+     "day": 1.0154,
+     "actor": "wolf-gale",
+     "target": "run",
+     "item": "rm_wystan_coalmarsh",
+     "detail": "sq-mooring-lines"
+    },
+    {
+     "id": "e15e",
+     "kind": "ship sails",
+     "day": 1.0155,
+     "actor": "s21",
+     "target": "ridgemere",
+     "item": "the Fair Wind",
+     "cell": "w_ridgemere_0_1",
+     "quantity": 2
+    },
+    {
+     "id": "e15f",
+     "kind": "region entered",
+     "day": 1.0156,
+     "actor": "wolf-gale",
+     "target": "piers",
+     "cell": "w_ridgemere_0_1",
+     "detail": "run"
+    },
+    {
+     "id": "e15g",
+     "kind": "gift",
+     "day": 1.0157,
+     "actor": "wolf-gale",
+     "target": "rm_wystan_coalmarsh",
+     "item": "rope",
+     "quantity": 1,
+     "cell": "w_ridgemere_0_1"
+    },
+    {
+     "id": "e16",
+     "kind": "gift",
+     "day": 1.016,
+     "actor": "wolf-elm",
+     "target": "rm_wystan_coalmarsh",
+     "item": "rope",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e17",
+     "kind": "quest handed in",
+     "day": 1.017,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "rm_wystan_coalmarsh",
+     "detail": "sq-mooring-lines"
+    },
+    {
+     "id": "e18",
+     "kind": "quest accepted",
+     "day": 1.018,
+     "actor": "wolf-fern",
+     "target": "run",
+     "item": "rm_petra_plankhand",
+     "detail": "sq-oakhaven-load"
+    },
+    {
+     "id": "e19",
+     "kind": "gift",
+     "day": 1.019,
+     "actor": "wolf-fern",
+     "target": "tn_oh_cairn_oakhaven",
+     "item": "crate^yard_crate",
+     "quantity": 1,
+     "cell": "cn_oakhaven_store"
+    },
+    {
+     "id": "e20",
+     "kind": "quest handed in",
+     "day": 1.02,
+     "actor": "wolf-fern",
+     "target": "run",
+     "item": "rm_petra_plankhand",
+     "detail": "sq-oakhaven-load"
+    },
+    {
+     "id": "e21",
+     "kind": "quest accepted",
+     "day": 1.021,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_mogens_ashley",
+     "detail": "sq-heights-thyme"
+    },
+    {
+     "id": "e22",
+     "kind": "gift",
+     "day": 1.022,
+     "actor": "wolf-birch",
+     "target": "rm_mogens_ashley",
+     "item": "willow_tea",
+     "quantity": 1,
+     "cell": "rm_the_harness_shop"
+    },
+    {
+     "id": "e23",
+     "kind": "gift",
+     "day": 1.023,
+     "actor": "wolf-birch",
+     "target": "rm_mogens_ashley",
+     "item": "willow_tea",
+     "quantity": 1,
+     "cell": "rm_the_harness_shop"
+    },
+    {
+     "id": "e24",
+     "kind": "gift",
+     "day": 1.024,
+     "actor": "wolf-birch",
+     "target": "rm_mogens_ashley",
+     "item": "willow_bark",
+     "quantity": 1,
+     "cell": "rm_the_harness_shop"
+    },
+    {
+     "id": "e25",
+     "kind": "quest handed in",
+     "day": 1.025,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_mogens_ashley",
+     "detail": "sq-heights-thyme"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-marketday-stock": {
+     "wolf-ash": "done"
+    },
+    "sq-rag-market-mushrooms": {
+     "wolf-ash": "done"
+    },
+    "sq-dawn-bell": {
+     "wolf-birch": "done"
+    },
+    "sq-mooring-lines": {
+     "wolf-elm": "done",
+     "wolf-fern": "done",
+     "wolf-gale": "active"
+    },
+    "sq-oakhaven-load": {
+     "wolf-fern": "done"
+    },
+    "sq-heights-thyme": {
+     "wolf-birch": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "nh_realm": 14,
+     "nh_voice_ridgemere": 12,
+     "nh_voice_oakhaven": 2,
+     "coin_ridgemere_day": 18
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
+   }
+  },
+  {
+   "name": "Pheasants in the Rainward Woods, the tarns, and the three estates",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.001,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_corwin_sootstack",
+     "detail": "sq-rainward-pheasants"
+    },
+    {
+     "id": "e2",
+     "kind": "hunted",
+     "day": 1.002,
+     "actor": "wolf-ash",
+     "target": "pheasant",
+     "cell": "w_ridgemere_2_0",
+     "detail": "a clean kill",
+     "quantity": 2
+    },
+    {
+     "id": "e3",
+     "kind": "hunted",
+     "day": 1.003,
+     "actor": "wolf-ash",
+     "target": "pheasant",
+     "cell": "w_ridgemere_3_2",
+     "detail": "a good kill",
+     "quantity": 2
+    },
+    {
+     "id": "e4",
+     "kind": "hunted",
+     "day": 1.004,
+     "actor": "wolf-ash",
+     "target": "pheasant",
+     "cell": "w_ridgemere_2_2",
+     "detail": "a good kill",
+     "quantity": 2
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 1.005,
+     "actor": "wolf-ash",
+     "target": "rm_corwin_sootstack",
+     "item": "feathers",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 1.006,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_corwin_sootstack",
+     "detail": "sq-rainward-pheasants"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 1.007,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_yrsa_nailridge",
+     "detail": "sq-sounding-the-tarns"
+    },
+    {
+     "id": "e8",
+     "kind": "conversation",
+     "day": 1.008,
+     "actor": "wolf-birch",
+     "target": "rm_yrsa_nailridge",
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e9",
+     "kind": "enter place",
+     "day": 1.009,
+     "actor": "wolf-birch",
+     "target": "w_ridgemere_3_2",
+     "cell": "w_ridgemere_3_2",
+     "detail": "w_ridgemere_2_2"
+    },
+    {
+     "id": "e10",
+     "kind": "enter place",
+     "day": 1.01,
+     "actor": "wolf-birch",
+     "target": "w_ridgemere_4_2",
+     "cell": "w_ridgemere_4_2",
+     "detail": "w_ridgemere_3_2"
+    },
+    {
+     "id": "e11",
+     "kind": "enter place",
+     "day": 1.011,
+     "actor": "wolf-birch",
+     "target": "w_ridgemere_6_2",
+     "cell": "w_ridgemere_6_2",
+     "detail": "w_ridgemere_5_2"
+    },
+    {
+     "id": "e12",
+     "kind": "gift used",
+     "day": 1.012,
+     "actor": "wolf-birch",
+     "cell": "w_ridgemere_4_2",
+     "item": "sound",
+     "detail": "echo"
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 1.013,
+     "actor": "wolf-birch",
+     "target": "rm_yrsa_nailridge",
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e14",
+     "kind": "quest handed in",
+     "day": 1.014,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_yrsa_nailridge",
+     "detail": "sq-sounding-the-tarns"
+    },
+    {
+     "id": "e15",
+     "kind": "quest accepted",
+     "day": 1.015,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "rm_erland_fogley",
+     "detail": "sq-fellhall-errand"
+    },
+    {
+     "id": "e17",
+     "kind": "gift",
+     "day": 1.017,
+     "actor": "wolf-elm",
+     "target": "rm_erland_fogley",
+     "item": "eggs",
+     "quantity": 4,
+     "cell": "rm_the_lamp_wick"
+    },
+    {
+     "id": "e18",
+     "kind": "gift",
+     "day": 1.018,
+     "actor": "wolf-elm",
+     "target": "rm_erland_fogley",
+     "item": "cheese",
+     "quantity": 2,
+     "cell": "rm_the_lamp_wick"
+    },
+    {
+     "id": "e19",
+     "kind": "quest handed in",
+     "day": 1.019,
+     "actor": "wolf-elm",
+     "target": "run",
+     "item": "rm_erland_fogley",
+     "detail": "sq-fellhall-errand"
+    },
+    {
+     "id": "e20",
+     "kind": "quest accepted",
+     "day": 1.02,
+     "actor": "wolf-fern",
+     "target": "run",
+     "item": "rm_agna_dripridge",
+     "detail": "sq-grayrock-hall-errand"
+    },
+    {
+     "id": "e21",
+     "kind": "gift",
+     "day": 1.021,
+     "actor": "wolf-fern",
+     "target": "rm_agna_dripridge",
+     "item": "linen_cloth",
+     "quantity": 2,
+     "cell": "rm_bridge_stores"
+    },
+    {
+     "id": "e22",
+     "kind": "gift",
+     "day": 1.022,
+     "actor": "wolf-fern",
+     "target": "rm_agna_dripridge",
+     "item": "lavender",
+     "quantity": 2,
+     "cell": "rm_bridge_stores"
+    },
+    {
+     "id": "e23",
+     "kind": "quest handed in",
+     "day": 1.023,
+     "actor": "wolf-fern",
+     "target": "run",
+     "item": "rm_agna_dripridge",
+     "detail": "sq-grayrock-hall-errand"
+    },
+    {
+     "id": "e24",
+     "kind": "quest accepted",
+     "day": 1.024,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "board:ridgemere",
+     "detail": "sq-timberland-court-errand"
+    },
+    {
+     "id": "e25",
+     "kind": "gift",
+     "day": 1.025,
+     "actor": "wolf-ash",
+     "target": "rm_wenna_mossgrave",
+     "item": "wool_cloth^greywool_bolt",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_2"
+    },
+    {
+     "id": "e26",
+     "kind": "gift",
+     "day": 1.026,
+     "actor": "wolf-ash",
+     "target": "rm_lotte_greyley",
+     "item": "firewood",
+     "quantity": 2,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e27",
+     "kind": "quest handed in",
+     "day": 1.027,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_lotte_greyley",
+     "detail": "sq-timberland-court-errand"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-rainward-pheasants": {
+     "wolf-ash": "done"
+    },
+    "sq-sounding-the-tarns": {
+     "wolf-birch": "done"
+    },
+    "sq-fellhall-errand": {
+     "wolf-elm": "done"
+    },
+    "sq-grayrock-hall-errand": {
+     "wolf-fern": "done"
+    },
+    "sq-timberland-court-errand": {
+     "wolf-ash": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "nh_realm": 10,
+     "coin_ridgemere_day": 12
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
+   }
+  },
+  {
+   "name": "The treasury's day cap: the 46th carrier is paid in bread",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.0001,
+     "actor": "wolf-c00",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e2",
+     "kind": "gift",
+     "day": 1.0002,
+     "actor": "wolf-c00",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e3",
+     "kind": "quest handed in",
+     "day": 1.0003,
+     "actor": "wolf-c00",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e4",
+     "kind": "quest accepted",
+     "day": 1.0004,
+     "actor": "wolf-c01",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 1.0005,
+     "actor": "wolf-c01",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 1.0006,
+     "actor": "wolf-c01",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 1.0007,
+     "actor": "wolf-c02",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e8",
+     "kind": "gift",
+     "day": 1.0008,
+     "actor": "wolf-c02",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e9",
+     "kind": "quest handed in",
+     "day": 1.0009,
+     "actor": "wolf-c02",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e10",
+     "kind": "quest accepted",
+     "day": 1.001,
+     "actor": "wolf-c03",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e11",
+     "kind": "gift",
+     "day": 1.0011,
+     "actor": "wolf-c03",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 1.0012,
+     "actor": "wolf-c03",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 1.0013,
+     "actor": "wolf-c04",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e14",
+     "kind": "gift",
+     "day": 1.0014,
+     "actor": "wolf-c04",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e15",
+     "kind": "quest handed in",
+     "day": 1.0015,
+     "actor": "wolf-c04",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e16",
+     "kind": "quest accepted",
+     "day": 1.0016,
+     "actor": "wolf-c05",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e17",
+     "kind": "gift",
+     "day": 1.0017,
+     "actor": "wolf-c05",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e18",
+     "kind": "quest handed in",
+     "day": 1.0018,
+     "actor": "wolf-c05",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e19",
+     "kind": "quest accepted",
+     "day": 1.0019,
+     "actor": "wolf-c06",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e20",
+     "kind": "gift",
+     "day": 1.002,
+     "actor": "wolf-c06",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e21",
+     "kind": "quest handed in",
+     "day": 1.0021,
+     "actor": "wolf-c06",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e22",
+     "kind": "quest accepted",
+     "day": 1.0022,
+     "actor": "wolf-c07",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e23",
+     "kind": "gift",
+     "day": 1.0023,
+     "actor": "wolf-c07",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e24",
+     "kind": "quest handed in",
+     "day": 1.0024,
+     "actor": "wolf-c07",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e25",
+     "kind": "quest accepted",
+     "day": 1.0025,
+     "actor": "wolf-c08",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e26",
+     "kind": "gift",
+     "day": 1.0026,
+     "actor": "wolf-c08",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e27",
+     "kind": "quest handed in",
+     "day": 1.0027,
+     "actor": "wolf-c08",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e28",
+     "kind": "quest accepted",
+     "day": 1.0028,
+     "actor": "wolf-c09",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e29",
+     "kind": "gift",
+     "day": 1.0029,
+     "actor": "wolf-c09",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e30",
+     "kind": "quest handed in",
+     "day": 1.003,
+     "actor": "wolf-c09",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e31",
+     "kind": "quest accepted",
+     "day": 1.0031,
+     "actor": "wolf-c10",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e32",
+     "kind": "gift",
+     "day": 1.0032,
+     "actor": "wolf-c10",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e33",
+     "kind": "quest handed in",
+     "day": 1.0033,
+     "actor": "wolf-c10",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e34",
+     "kind": "quest accepted",
+     "day": 1.0034,
+     "actor": "wolf-c11",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e35",
+     "kind": "gift",
+     "day": 1.0035,
+     "actor": "wolf-c11",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e36",
+     "kind": "quest handed in",
+     "day": 1.0036,
+     "actor": "wolf-c11",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e37",
+     "kind": "quest accepted",
+     "day": 1.0037,
+     "actor": "wolf-c12",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e38",
+     "kind": "gift",
+     "day": 1.0038,
+     "actor": "wolf-c12",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e39",
+     "kind": "quest handed in",
+     "day": 1.0039,
+     "actor": "wolf-c12",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e40",
+     "kind": "quest accepted",
+     "day": 1.004,
+     "actor": "wolf-c13",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e41",
+     "kind": "gift",
+     "day": 1.0041,
+     "actor": "wolf-c13",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e42",
+     "kind": "quest handed in",
+     "day": 1.0042,
+     "actor": "wolf-c13",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e43",
+     "kind": "quest accepted",
+     "day": 1.0043,
+     "actor": "wolf-c14",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e44",
+     "kind": "gift",
+     "day": 1.0044,
+     "actor": "wolf-c14",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e45",
+     "kind": "quest handed in",
+     "day": 1.0045,
+     "actor": "wolf-c14",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e46",
+     "kind": "quest accepted",
+     "day": 1.0046,
+     "actor": "wolf-c15",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e47",
+     "kind": "gift",
+     "day": 1.0047,
+     "actor": "wolf-c15",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e48",
+     "kind": "quest handed in",
+     "day": 1.0048,
+     "actor": "wolf-c15",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e49",
+     "kind": "quest accepted",
+     "day": 1.0049,
+     "actor": "wolf-c16",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e50",
+     "kind": "gift",
+     "day": 1.005,
+     "actor": "wolf-c16",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e51",
+     "kind": "quest handed in",
+     "day": 1.0051,
+     "actor": "wolf-c16",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e52",
+     "kind": "quest accepted",
+     "day": 1.0052,
+     "actor": "wolf-c17",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e53",
+     "kind": "gift",
+     "day": 1.0053,
+     "actor": "wolf-c17",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e54",
+     "kind": "quest handed in",
+     "day": 1.0054,
+     "actor": "wolf-c17",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e55",
+     "kind": "quest accepted",
+     "day": 1.0055,
+     "actor": "wolf-c18",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e56",
+     "kind": "gift",
+     "day": 1.0056,
+     "actor": "wolf-c18",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e57",
+     "kind": "quest handed in",
+     "day": 1.0057,
+     "actor": "wolf-c18",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e58",
+     "kind": "quest accepted",
+     "day": 1.0058,
+     "actor": "wolf-c19",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e59",
+     "kind": "gift",
+     "day": 1.0059,
+     "actor": "wolf-c19",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e60",
+     "kind": "quest handed in",
+     "day": 1.006,
+     "actor": "wolf-c19",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e61",
+     "kind": "quest accepted",
+     "day": 1.0061,
+     "actor": "wolf-c20",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e62",
+     "kind": "gift",
+     "day": 1.0062,
+     "actor": "wolf-c20",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e63",
+     "kind": "quest handed in",
+     "day": 1.0063,
+     "actor": "wolf-c20",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e64",
+     "kind": "quest accepted",
+     "day": 1.0064,
+     "actor": "wolf-c21",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e65",
+     "kind": "gift",
+     "day": 1.0065,
+     "actor": "wolf-c21",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e66",
+     "kind": "quest handed in",
+     "day": 1.0066,
+     "actor": "wolf-c21",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e67",
+     "kind": "quest accepted",
+     "day": 1.0067,
+     "actor": "wolf-c22",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e68",
+     "kind": "gift",
+     "day": 1.0068,
+     "actor": "wolf-c22",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e69",
+     "kind": "quest handed in",
+     "day": 1.0069,
+     "actor": "wolf-c22",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e70",
+     "kind": "quest accepted",
+     "day": 1.007,
+     "actor": "wolf-c23",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e71",
+     "kind": "gift",
+     "day": 1.0071,
+     "actor": "wolf-c23",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e72",
+     "kind": "quest handed in",
+     "day": 1.0072,
+     "actor": "wolf-c23",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e73",
+     "kind": "quest accepted",
+     "day": 1.0073,
+     "actor": "wolf-c24",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e74",
+     "kind": "gift",
+     "day": 1.0074,
+     "actor": "wolf-c24",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e75",
+     "kind": "quest handed in",
+     "day": 1.0075,
+     "actor": "wolf-c24",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e76",
+     "kind": "quest accepted",
+     "day": 1.0076,
+     "actor": "wolf-c25",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e77",
+     "kind": "gift",
+     "day": 1.0077,
+     "actor": "wolf-c25",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e78",
+     "kind": "quest handed in",
+     "day": 1.0078,
+     "actor": "wolf-c25",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e79",
+     "kind": "quest accepted",
+     "day": 1.0079,
+     "actor": "wolf-c26",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e80",
+     "kind": "gift",
+     "day": 1.008,
+     "actor": "wolf-c26",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e81",
+     "kind": "quest handed in",
+     "day": 1.0081,
+     "actor": "wolf-c26",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e82",
+     "kind": "quest accepted",
+     "day": 1.0082,
+     "actor": "wolf-c27",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e83",
+     "kind": "gift",
+     "day": 1.0083,
+     "actor": "wolf-c27",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e84",
+     "kind": "quest handed in",
+     "day": 1.0084,
+     "actor": "wolf-c27",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e85",
+     "kind": "quest accepted",
+     "day": 1.0085,
+     "actor": "wolf-c28",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e86",
+     "kind": "gift",
+     "day": 1.0086,
+     "actor": "wolf-c28",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e87",
+     "kind": "quest handed in",
+     "day": 1.0087,
+     "actor": "wolf-c28",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e88",
+     "kind": "quest accepted",
+     "day": 1.0088,
+     "actor": "wolf-c29",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e89",
+     "kind": "gift",
+     "day": 1.0089,
+     "actor": "wolf-c29",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e90",
+     "kind": "quest handed in",
+     "day": 1.009,
+     "actor": "wolf-c29",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e91",
+     "kind": "quest accepted",
+     "day": 1.0091,
+     "actor": "wolf-c30",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e92",
+     "kind": "gift",
+     "day": 1.0092,
+     "actor": "wolf-c30",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e93",
+     "kind": "quest handed in",
+     "day": 1.0093,
+     "actor": "wolf-c30",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e94",
+     "kind": "quest accepted",
+     "day": 1.0094,
+     "actor": "wolf-c31",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e95",
+     "kind": "gift",
+     "day": 1.0095,
+     "actor": "wolf-c31",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e96",
+     "kind": "quest handed in",
+     "day": 1.0096,
+     "actor": "wolf-c31",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e97",
+     "kind": "quest accepted",
+     "day": 1.0097,
+     "actor": "wolf-c32",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e98",
+     "kind": "gift",
+     "day": 1.0098,
+     "actor": "wolf-c32",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e99",
+     "kind": "quest handed in",
+     "day": 1.0099,
+     "actor": "wolf-c32",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e100",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "wolf-c33",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e101",
+     "kind": "gift",
+     "day": 1.0101,
+     "actor": "wolf-c33",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e102",
+     "kind": "quest handed in",
+     "day": 1.0102,
+     "actor": "wolf-c33",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e103",
+     "kind": "quest accepted",
+     "day": 1.0103,
+     "actor": "wolf-c34",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e104",
+     "kind": "gift",
+     "day": 1.0104,
+     "actor": "wolf-c34",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e105",
+     "kind": "quest handed in",
+     "day": 1.0105,
+     "actor": "wolf-c34",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e106",
+     "kind": "quest accepted",
+     "day": 1.0106,
+     "actor": "wolf-c35",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e107",
+     "kind": "gift",
+     "day": 1.0107,
+     "actor": "wolf-c35",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e108",
+     "kind": "quest handed in",
+     "day": 1.0108,
+     "actor": "wolf-c35",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e109",
+     "kind": "quest accepted",
+     "day": 1.0109,
+     "actor": "wolf-c36",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e110",
+     "kind": "gift",
+     "day": 1.011,
+     "actor": "wolf-c36",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e111",
+     "kind": "quest handed in",
+     "day": 1.0111,
+     "actor": "wolf-c36",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e112",
+     "kind": "quest accepted",
+     "day": 1.0112,
+     "actor": "wolf-c37",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e113",
+     "kind": "gift",
+     "day": 1.0113,
+     "actor": "wolf-c37",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e114",
+     "kind": "quest handed in",
+     "day": 1.0114,
+     "actor": "wolf-c37",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e115",
+     "kind": "quest accepted",
+     "day": 1.0115,
+     "actor": "wolf-c38",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e116",
+     "kind": "gift",
+     "day": 1.0116,
+     "actor": "wolf-c38",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e117",
+     "kind": "quest handed in",
+     "day": 1.0117,
+     "actor": "wolf-c38",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e118",
+     "kind": "quest accepted",
+     "day": 1.0118,
+     "actor": "wolf-c39",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e119",
+     "kind": "gift",
+     "day": 1.0119,
+     "actor": "wolf-c39",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e120",
+     "kind": "quest handed in",
+     "day": 1.012,
+     "actor": "wolf-c39",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e121",
+     "kind": "quest accepted",
+     "day": 1.0121,
+     "actor": "wolf-c40",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e122",
+     "kind": "gift",
+     "day": 1.0122,
+     "actor": "wolf-c40",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e123",
+     "kind": "quest handed in",
+     "day": 1.0123,
+     "actor": "wolf-c40",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e124",
+     "kind": "quest accepted",
+     "day": 1.0124,
+     "actor": "wolf-c41",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e125",
+     "kind": "gift",
+     "day": 1.0125,
+     "actor": "wolf-c41",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e126",
+     "kind": "quest handed in",
+     "day": 1.0126,
+     "actor": "wolf-c41",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e127",
+     "kind": "quest accepted",
+     "day": 1.0127,
+     "actor": "wolf-c42",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e128",
+     "kind": "gift",
+     "day": 1.0128,
+     "actor": "wolf-c42",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e129",
+     "kind": "quest handed in",
+     "day": 1.0129,
+     "actor": "wolf-c42",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e130",
+     "kind": "quest accepted",
+     "day": 1.013,
+     "actor": "wolf-c43",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e131",
+     "kind": "gift",
+     "day": 1.0131,
+     "actor": "wolf-c43",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e132",
+     "kind": "quest handed in",
+     "day": 1.0132,
+     "actor": "wolf-c43",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e133",
+     "kind": "quest accepted",
+     "day": 1.0133,
+     "actor": "wolf-c44",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e134",
+     "kind": "gift",
+     "day": 1.0134,
+     "actor": "wolf-c44",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e135",
+     "kind": "quest handed in",
+     "day": 1.0135,
+     "actor": "wolf-c44",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e136",
+     "kind": "quest accepted",
+     "day": 1.0136,
+     "actor": "wolf-c45",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    },
+    {
+     "id": "e137",
+     "kind": "gift",
+     "day": 1.0137,
+     "actor": "wolf-c45",
+     "target": "rm_wynn_sootworth",
+     "item": "charcoal",
+     "quantity": 3,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e138",
+     "kind": "quest handed in",
+     "day": 1.0138,
+     "actor": "wolf-c45",
+     "target": "run",
+     "item": "rm_wynn_sootworth",
+     "detail": "sq-nailers-charcoal"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectVariables": {
+    "world": {
+     "coin_ridgemere_day": 135,
+     "nh_realm": 92,
+     "nh_voice_ridgemere": 92
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
+   }
+  },
+  {
+   "name": "One letter a game day, however often the errand is dropped and taken up",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.001,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_kjell_coalham",
+     "detail": "sq-heights-round"
+    },
+    {
+     "id": "e2",
+     "kind": "quest abandoned",
+     "day": 1.002,
+     "actor": "wolf-ash",
+     "target": "run",
+     "detail": "sq-heights-round"
+    },
+    {
+     "id": "e3",
+     "kind": "quest accepted",
+     "day": 1.003,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_kjell_coalham",
+     "detail": "sq-heights-round"
+    },
+    {
+     "id": "e4",
+     "kind": "gift",
+     "day": 1.004,
+     "actor": "wolf-ash",
+     "target": "rm_eleanor_vance",
+     "item": "letter^city_letter",
+     "quantity": 1,
+     "cell": "rm_the_rag_mill"
+    },
+    {
+     "id": "e5",
+     "kind": "quest handed in",
+     "day": 1.005,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_kjell_coalham",
+     "detail": "sq-heights-round"
+    },
+    {
+     "id": "e6",
+     "kind": "quest accepted",
+     "day": 2.006,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "board:ridgemere",
+     "detail": "sq-heights-round"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "sq-heights-round": {
+     "wolf-ash": "active"
+    }
+   },
+   "expectEffects": [
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "phase": "open",
+     "kind": "item.give",
+     "player": "wolf-ash",
+     "item": "letter",
+     "quantity": 1,
+     "tag": "city_letter",
+     "name": "The City Office letter"
+    },
+    {
+     "phase": "open",
+     "kind": "journal.note",
+     "player": "wolf-ash",
+     "text": "You were handed the City Office letter once already today. Carry it up."
+    },
+    {
+     "phase": "open",
+     "kind": "story.practice",
+     "player": "wolf-ash",
+     "skill": "travel",
+     "reward": "sq-heights-round"
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "letter",
+     "days": 2,
+     "reward": "sq-heights-round"
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365,
+     "reward": "sq-heights-round"
+    },
+    {
+     "phase": "open",
+     "kind": "character.grant",
+     "player": "wolf-ash",
+     "coins": 2,
+     "purse": "town:ridgemere",
+     "reason": "The city pays for an errand well done",
+     "ifRefused": "skip"
+    },
+    {
+     "phase": "open",
+     "kind": "deed.award",
+     "player": "wolf-ash",
+     "detail": "carried a City Office letter up to the Heights"
+    },
+    {
+     "phase": "open",
+     "kind": "item.give",
+     "player": "wolf-ash",
+     "item": "letter",
+     "quantity": 1,
+     "tag": "city_letter",
+     "name": "The City Office letter"
+    }
+   ],
+   "expectVariables": {
+    "world": {
+     "nh_realm": 2,
+     "coin_ridgemere_day": 2
+    },
+    "player": {
+     "wolf-ash": {
+      "sq_done": 1
+     }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
+   }
+  }
+ ]
+}

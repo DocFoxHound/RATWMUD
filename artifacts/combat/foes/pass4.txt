@@ -1,0 +1,87 @@
+# Pass 4 (doc 86, C10t): one knob per strength, hp again (follower 42->52: the one-on-one rows ran over their bands once it broke off
+# at 55; fierce 60->70: five seasoned won 98% once it fled at 30). Tough and champion unchanged (as pass 3).
+# Run: SIM_FOES=artifacts/combat/foes/pass4.json build-core/foe_sim foes; band; scaled. 2026-11-24
+{
+ "about": "Trial table, pass 4 (doc 86, C10t).",
+ "tuned": "",
+ "follower": {
+  "skill": 52,
+  "strength": 55,
+  "hp": 52,
+  "flee": 55
+ },
+ "tough": {
+  "skill": 60,
+  "strength": 60,
+  "hp": 48,
+  "flee": 25
+ },
+ "fierce": {
+  "skill": 70,
+  "strength": 68,
+  "hp": 70,
+  "flee": 30
+ },
+ "champion": {
+  "skill": 80,
+  "strength": 75,
+  "hp": 40,
+  "flee": 0
+ },
+ "followerName": "one of {name}'s band",
+ "followerLook": "Hard-faced and armed, at their leader's back."
+}
+foe table: tough 60/60/48/25 fierce 70/68/70/30 champion 80/75/40/0 follower 52/55/52/55 (skill/strength/hp/flee) from artifacts/combat/foes/pass4.json
+foe follower band 0 vs plain@new                                       win  37.3% [ 35.2,  39.4]  down 0.63 (0.00/win) hurt 1.00  111s/p90 145s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000  band 50-65  MISS  (a follower, 1 v 1, a new wolf bare)
+foe follower band 0 vs plain@seasoned+                                 win  94.8% [ 93.8,  95.7]  down 0.05 (0.00/win) hurt 0.88  126s/p90 145s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000  band 75-90  MISS  (a follower, 1 v 1, a seasoned wolf armed)
+foe tough band 0 vs plain@seasoned+                                    win  35.9% [ 33.8,  38.0]  down 0.64 (0.00/win) hurt 1.00  147s/p90 194s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000  band 25-40  PASS  (a lone wolf should look for help)
+foe tough band 2 vs 3*plain@seasoned+                                  win  43.0% [ 40.8,  45.2]  down 2.43 (1.68/win) hurt 2.82  168s/p90 225s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000  band 85-95  MISS  (three seasoned)
+foe tough band 2 vs 3*plain@new                                        win   0.1% [  0.0,   0.4]  down 3.00 (1.50/win) hurt 3.00  117s/p90 127s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000  band 50-70  MISS  (three new, bare)
+foe fierce band 4 vs 3*plain@seasoned+                                 win   0.0% [  0.0,   0.2]  down 3.00 (0.00/win) hurt 3.00  115s/p90 128s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000  band 50-65  MISS
+foe fierce band 4 vs 5*plain@seasoned+                                 win  86.4% [ 84.8,  87.8]  down 3.45 (3.21/win) hurt 4.01  146s/p90 165s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000  band 80-92  PASS
+foe fierce band 4 vs 5*plain@seasoned+ guards 2                        win 100.0% [ 99.8, 100.0]  down 3.05 (3.05/win) hurt 3.64  155s/p90 176s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000  band 0-100  PASS (14 points over the row before)  (guards help, never carry)
+foe fierce band 4 vs 2*plain@seasoned+,fireq@veteran+                  win  97.0% [ 96.1,  97.6]  down 1.48 (1.43/win) hurt 2.16  152s/p90 179s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000  band 0-85  MISS  (a Quickened lifts a party)
+foe champion band 8 vs 5*plain@seasoned+                               win   0.0% [  0.0,   0.2]  down 5.00 (0.00/win) hurt 5.00  117s/p90 138s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000  band 25-45  MISS
+foe champion band 8 vs 8*plain@seasoned+ guards 2                      win 100.0% [ 99.2, 100.0]  down 3.45 (3.45/win) hurt 5.12  113s/p90 187s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=500  band 70-85  MISS  (Ch 9's Pass)
+foe champion band 0 vs fireq@veteran+                                  win  16.9% [ 15.3,  18.6]  down 0.83 (0.00/win) hurt 1.00  130s/p90 159s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000  band 0-35  PASS  (no wolf solos the Grey Captain)
+foe fierce band scaled vs 4*plain@seasoned+                            win  98.6% [ 98.0,  99.0]  down 1.57 (1.54/win) hurt 2.43  196s/p90 237s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000  band 60-85  MISS  (a crowd is not a walkover)
+foe fierce band scaled vs 8*plain@seasoned+                            win 100.0% [ 99.8, 100.0]  down 2.98 (2.98/win) hurt 3.52  151s/p90 171s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000  band 60-85  MISS
+foe fierce band scaled vs 12*plain@seasoned+                           win 100.0% [ 99.2, 100.0]  down 2.05 (2.05/win) hurt 2.92  103s/p90 169s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=500  band 60-85  MISS
+foe fierce band scaled vs 16*plain@seasoned+                           win 100.0% [ 99.2, 100.0]  down 3.62 (3.62/win) hurt 4.69  173s/p90 221s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=500  band 60-85  MISS
+foe tough band 2 vs 3*plain@seasoned+ outlaw                           win  43.4% [ 41.2,  45.5]  down 2.42 (1.67/win) hurt 2.81  168s/p90 229s  lead-first 100%  broke<5s 100%  fled 41.2%  once 100%  outlaw never killed  n=2000  band 85-95  MISS  (as tough band 2; the resident never killed)
+fight length, champion median of its rows' medians   117s  band 90-240s  PASS
+fight length, fierce   median of its rows' medians   152s  band 40-120s  MISS
+fight length, tough    median of its rows' medians   147s  band 20-60s  MISS
+leader down: band broke within 5 s, worst row 100.0% (>= 95%); 'foe defeated' once, worst row 100.0% (100%)  PASS
+the bar: MISSED (15 rows out)
+foe table: tough 60/60/48/25 fierce 70/68/70/30 champion 80/75/40/0 follower 52/55/52/55 (skill/strength/hp/flee) from artifacts/combat/foes/pass4.json
+foe fierce band 0 vs 1*plain@seasoned+                                 win   2.6% [  2.0,   3.4]  down 0.97 (0.00/win) hurt 1.00  140s/p90 169s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 0 vs 3*plain@seasoned+                                 win 100.0% [ 99.8, 100.0]  down 0.06 (0.06/win) hurt 0.89  143s/p90 164s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 0 vs 5*plain@seasoned+                                 win 100.0% [ 99.8, 100.0]  down 0.00 (0.00/win) hurt 0.71  127s/p90 139s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 0 vs 8*plain@seasoned+                                 win 100.0% [ 99.8, 100.0]  down 0.00 (0.00/win) hurt 0.72  122s/p90 137s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 0 vs 12*plain@seasoned+                                win 100.0% [ 99.2, 100.0]  down 0.00 (0.00/win) hurt 0.47   98s/p90 114s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=500
+foe fierce band 2 vs 1*plain@seasoned+                                 win   0.0% [  0.0,   0.2]  down 1.00 (0.00/win) hurt 1.00   44s/p90  54s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 2 vs 3*plain@seasoned+                                 win   6.8% [  5.7,   7.9]  down 2.89 (1.47/win) hurt 2.98  160s/p90 199s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 2 vs 5*plain@seasoned+                                 win 100.0% [ 99.8, 100.0]  down 1.38 (1.38/win) hurt 1.98  170s/p90 192s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 2 vs 8*plain@seasoned+                                 win 100.0% [ 99.8, 100.0]  down 1.12 (1.12/win) hurt 1.84  158s/p90 178s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 2 vs 12*plain@seasoned+                                win 100.0% [ 99.2, 100.0]  down 0.98 (0.98/win) hurt 1.31  135s/p90 159s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=500
+foe fierce band 4 vs 1*plain@seasoned+                                 win   0.0% [  0.0,   0.2]  down 1.00 (0.00/win) hurt 1.00   44s/p90  46s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 4 vs 3*plain@seasoned+                                 win   0.0% [  0.0,   0.2]  down 3.00 (0.00/win) hurt 3.00  115s/p90 128s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 4 vs 5*plain@seasoned+                                 win  86.4% [ 84.8,  87.8]  down 3.45 (3.21/win) hurt 4.01  146s/p90 165s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 4 vs 8*plain@seasoned+                                 win 100.0% [ 99.8, 100.0]  down 2.98 (2.98/win) hurt 3.52  151s/p90 171s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 4 vs 12*plain@seasoned+                                win 100.0% [ 99.2, 100.0]  down 2.07 (2.07/win) hurt 2.80  120s/p90 144s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=500
+foe fierce band 6 vs 1*plain@seasoned+                                 win   0.0% [  0.0,   0.2]  down 1.00 (0.00/win) hurt 1.00   34s/p90  36s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 6 vs 3*plain@seasoned+                                 win   0.0% [  0.0,   0.2]  down 3.00 (0.00/win) hurt 3.00   94s/p90 102s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 6 vs 5*plain@seasoned+                                 win  22.1% [ 20.3,  23.9]  down 4.75 (3.84/win) hurt 4.94  137s/p90 149s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 6 vs 8*plain@seasoned+                                 win  98.3% [ 97.6,  98.8]  down 4.46 (4.40/win) hurt 5.67  166s/p90 215s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 6 vs 12*plain@seasoned+                                win 100.0% [ 99.2, 100.0]  down 2.05 (2.05/win) hurt 2.92  103s/p90 169s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=500
+foe fierce band 8 vs 1*plain@seasoned+                                 win   0.0% [  0.0,   0.2]  down 1.00 (0.00/win) hurt 1.00   34s/p90  35s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 8 vs 3*plain@seasoned+                                 win   0.0% [  0.0,   0.2]  down 3.00 (0.00/win) hurt 3.00   90s/p90  99s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 8 vs 5*plain@seasoned+                                 win   0.0% [  0.0,   0.2]  down 5.00 (0.00/win) hurt 5.00  117s/p90 139s  lead-first   0%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 8 vs 8*plain@seasoned+                                 win  28.3% [ 26.4,  30.3]  down 7.34 (5.87/win) hurt 7.83  215s/p90 261s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band 8 vs 12*plain@seasoned+                                win 100.0% [ 99.2, 100.0]  down 3.68 (3.68/win) hurt 5.32  178s/p90 221s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=500
+foe table: tough 60/60/48/25 fierce 70/68/70/30 champion 80/75/40/0 follower 52/55/52/55 (skill/strength/hp/flee) from artifacts/combat/foes/pass4.json
+foe fierce band scaled vs 4*plain@seasoned+                            win  98.6% [ 98.0,  99.0]  down 1.57 (1.54/win) hurt 2.43  196s/p90 237s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band scaled vs 8*plain@seasoned+                            win 100.0% [ 99.8, 100.0]  down 2.98 (2.98/win) hurt 3.52  151s/p90 171s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=2000
+foe fierce band scaled vs 12*plain@seasoned+                           win 100.0% [ 99.2, 100.0]  down 2.05 (2.05/win) hurt 2.92  103s/p90 169s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=500
+foe fierce band scaled vs 16*plain@seasoned+                           win 100.0% [ 99.2, 100.0]  down 3.62 (3.62/win) hurt 4.69  173s/p90 221s  lead-first 100%  broke<5s 100%  fled  0.0%  once 100%  n=500

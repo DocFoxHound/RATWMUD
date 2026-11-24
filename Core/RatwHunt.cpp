@@ -140,6 +140,7 @@ World::WildHere World::wildAround(const std::string& player) const
         here.huntWhy = "There is no game to hunt here; go out into the wild.";
         return here;
     }
+    here.wild = true;
     // Foraging: the ground right beside one.
     const int px = int(std::floor(p->position.x)), py = int(std::floor(p->position.y));
     std::vector<std::string> names;
@@ -238,9 +239,12 @@ bool World::addAnimal(Battle& b, const std::string& speciesId, bool arriving)
     return true;
 }
 
-Result World::startHunt(const std::string& player, const std::vector<std::string>& only)
+Result World::startHunt(const std::string& player, const std::vector<std::string>& only, const std::vector<std::string>& staged)
 {
     for (const auto& id : only)
+        if (!wild::speciesById(id))
+            return {false, "No such animal: " + id + ".", {}};
+    for (const auto& id : staged)
         if (!wild::speciesById(id))
             return {false, "No such animal: " + id + ".", {}};
     auto* p = entity(player);
@@ -259,7 +263,7 @@ Result World::startHunt(const std::string& player, const std::vector<std::string
     if (!ensureLoaded(p->cellId).ok || !cell(p->cellId))
         return {false, "This place isn't loaded.", {}};
     const auto here = wildAround(player);
-    if (!here.hunt)
+    if (!here.hunt && !(here.wild && !staged.empty()))   // (Doc 86, L1: a story's animal on ground too bare for any other.)
         return {false, here.huntWhy.empty() ? "There is no game to hunt here." : here.huntWhy, {}};
     leaveObserving(player);
     Battle b;
@@ -347,7 +351,9 @@ Result World::startHunt(const std::string& player, const std::vector<std::string
         }
     if (!only.empty())
         count = int(only.size()), follow = nullptr, followed.clear();   // (The game asked for, and only that.)
-    if (count == 0 || (weights.empty() && only.empty()))
+    if (weights.empty() && only.empty())
+        count = 0;                                  // (Nothing the ground gives: only what a story staged, if anything.)
+    if (count == 0 && staged.empty())
     {
         const bool hunted = huntPressure(p->cellId) >= 1;
         return {false, hunted ? "You cast about, but this ground has been hunted lately: no game shows itself."
@@ -356,6 +362,9 @@ Result World::startHunt(const std::string& player, const std::vector<std::string
     }
     for (int i = 0; i < count; ++i)
         addAnimal(b, !only.empty() ? only[std::size_t(i)] : i == 0 && follow && follow->fresh ? follow->species : pickSpecies(i), false);
+    for (const auto& id : staged)                   // (Doc 86, L1: a story's animal, beside the ground's.)
+        if (addAnimal(b, id, false))
+            ++count;
     if (follow)
     {
         auto& mine = tracks_[player];

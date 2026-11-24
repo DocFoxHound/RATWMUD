@@ -1,7 +1,7 @@
 // A world story's quests in the journal (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 6).
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {noteLines, questButtons, questLines, questMessage, questStatus, storyPings, trackerLines} from './quests.ts';
+import {noteLines, questButtons, questLines, questMessage, questStatus, storyPings, trackerLines, trackerRows} from './quests.ts';
 
 const axle = {
     id: 'axle', title: 'An axle for the carter', summary: 'The carter at the ford is stuck.', scope: 'player', status: 'active',
@@ -53,6 +53,15 @@ test('trackers', () => {
     assert.deepEqual(trackerLines({trackers: [{label: 'Ropes delivered', value: 3}, {label: 'Gate open', value: false}, {label: 'Finder', value: 'Ash'}]}),
         ['Ropes delivered: 3', 'Gate open: no', 'Finder: Ash']);
     assert.deepEqual(trackerLines({}), []);
+});
+
+test('doc 86, C1d: a number shown of another reads a / b over a thin bar', () => {
+    assert.deepEqual(trackerRows({trackers: [{label: 'This chapter', value: 34, goal: 80}, {label: 'Howls', value: 3}]}), [
+        {text: 'This chapter: 34 / 80', fill: 34 / 80},
+        {text: 'Howls: 3'},
+    ]);
+    assert.deepEqual(trackerRows({trackers: [{label: 'Past it', value: 90, goal: 80}, {label: 'Nothing asked', value: 0, goal: 0}]}).map(r => r.fill), [1, 0]);
+    assert.deepEqual(trackerLines({trackers: [{label: 'This chapter', value: 34, goal: 80}]}), ['This chapter: 34 / 80']);
 });
 
 test('doc 85, Phase 9: a world story\'s notes in the journal and its markers on the maps', () => {

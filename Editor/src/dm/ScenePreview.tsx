@@ -33,7 +33,8 @@ export function ScenePreview({scene,residents,start}:{start?:string;scene:Scene;
         {beat?<><div className="scene-dialogue">
             {person && 'appearance' in person && person.appearance && <SpeakerHead person={person}/>}
             <div><small>{beat.type==='move'?'Movement':beat.type==='pose'?'Posture':beat.ai?'Authored fallback':'Speaking'}</small>
-                <h4>{person?.name || cast?.npc || cast?.id || 'Choose a speaker'}</h4>
+                <h4>{person?.name || cast?.npc || cast?.visitor || cast?.id || 'Choose a speaker'}</h4>
+                {cast?.visitor!==undefined && <small>A stranger the story brings</small>}
                 {cast?.selector && <small>{person?'Example cast · ':''}{cast.selector.role || 'Resident'}{cast.selector.cell?' in '+cast.selector.cell:''}</small>}
                 <p>{'text' in beat?beat.text || 'Write the spoken line.':beat.type==='move'?beat.pace+' to '+(beat.cell||'a cell')+' ('+beat.x+', '+beat.y+')':beat.posture}</p></div>
         </div>{'seconds' in beat && <small>{beat.seconds} seconds{beat.type==='choice' && beat.mode==='majority'?' · Group vote':''}</small>}

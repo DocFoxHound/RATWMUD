@@ -5,8 +5,11 @@ typed variables in four scopes, conditions over the story's own state, and flow 
 else, wait, for each, random, run, enable, disable, stop, note, finish). A version 1 program runs exactly as before: every
 version 2 path is behind `phase['_v'] == 2`. Core/RatwStoryTriggers.cpp is this file's twin (tools/test_story_native.py)."""
 
+import json
+import math
 import re
 import operator
+from pathlib import Path
 
 import story_native
 
@@ -26,48 +29,77 @@ VAR_TYPES = ('number', 'switch', 'text', 'wolf', 'resident', 'place', 'region', 
              'numbers', 'texts', 'wolves', 'residents', 'timer')
 LISTS = {'numbers': 'number', 'texts': 'text', 'wolves': 'wolf', 'residents': 'resident'}
 TEXTUAL = ('text', 'wolf', 'resident', 'place', 'region', 'item', 'faction')
-SCOPES = ('story', 'player', 'party', 'world')
-PERSONAL = ('player', 'party')
+SCOPES = ('story', 'player', 'party', 'world', 'realm')
+# (Doc 86, J2: `realm` is each wolf's own as `player` is, kept after the story in dm.story_realm_vars and shared by every story
+# of the world that declares the name; the runner loads it into counters.realm and saves what changed.)
+PERSONAL = ('player', 'party', 'realm')
+OWN = ('player', 'realm')   # (A wolf's own, one value per wolf: what rank, tally and a mirror's key read.)
 AMOUNTS = ('quantity', 'coins')
 EVENT_FIELDS = ('actor', 'target', 'cell', 'item', 'detail')
 LIST_MAX = 500           # Values in a list variable.
 EACH_MAX = 500           # Turns of one For each.
+RANK_MAX = 500           # Wolves Rank puts in a list (doc 86, C3a).
 TEXT_MAX = 200           # Characters of a text value.
 ACTIONS_V2 = 24          # Actions of one trigger, counting those inside If, For each and Random.
 NEST_V2 = 3              # If, For each and Random inside one another.
 RUN_DEPTH = 8            # Run inside run, at most (cycles are refused when the story is checked).
 REAL_WAIT_MIN = 5 / 86400
 OUTCOMES = ('success', 'failure', 'abandoned')
-ARITH = ('plus', 'minus', 'min', 'max')
+ARITH = ('plus', 'minus', 'min', 'max', 'times', 'div')
+TEXT_OPS = ('starts', 'in')   # (Doc 86, C12b: the field condition's begins with and one of.)
+# Doc 86, Phase 1a (C2, R1): the story's audience counted, and what share of it took part.
+AUDIENCES = ('all', 'active', 'online')
+ACTIVE_DAYS = 18          # (A program's activeDays when it gives none: three real days at the normal speed.)
+SHARES = ('percent', 'among')
+WHERE_TESTS = ('compare', 'switch', 'in list', 'days since', 'quest is', 'objective is')
+WHERE_DEPTH, WHERE_LEAVES = 3, 8
 # Doc 85, Phase 8: conditions over the world's facts as of the event (game.story_facts, carried on the event as `facts`), and
 # over the story's quests. A fact that is missing (a wolf away, no facts at all) is unknown, and unknown never fires.
 FACTS_V2 = ('wolf here', 'wolf in region', 'wolf in place', 'wolf in town', 'wolf indoors', 'count in region', 'carries', 'coins',
-            'standing', 'reputation', 'wolf is', 'party size', 'in party with', 'resident is', 'resident in place',
+            'standing', 'reputation', 'wolf is', 'wolf has', 'party size', 'in party with', 'resident is', 'resident in place',
             'resident in region', 'resident has', 'hour between', 'calendar is', 'weather is', 'relation is')
 QUEST_V2 = ('quest is', 'objective is')
-CONDITIONS_V2 = ('compare', 'switch', 'in list', 'phase is', 'visit is', 'timer', 'fired', 'chance', 'days since', *FACTS_V2, *QUEST_V2)
+CONDITIONS_V2 = ('compare', 'switch', 'in list', 'phase is', 'visit is', 'timer', 'fired', 'chance', 'days since', *FACTS_V2, *QUEST_V2,
+                 'participation')
 STANCES = ('war', 'hostile', 'tense', 'neutral', 'friendly', 'allied')
 WOLF_STATES = ('downed', 'hurt', 'wanted', 'held')
 RESIDENT_STATES = ('alive', 'dead', 'indoors', 'out of doors')
-RESIDENT_HAS = ('job', 'mood', 'mantle', 'town')
+COUNTED = ('wolves', 'residents')   # (Doc 86, J6: who a count in a region counts.)
+RESIDENT_HAS = ('job', 'mood', 'mantle', 'town', 'post')   # (Doc 86, C13b: the post they hold.)
+# Doc 86, J10: a wolf's Gift, its tier or its family (Data/Gifts/families.json, the playable ones).
+GIFT_TIERS = ('normal', 'gifted', 'quickened')
+
+
+def _playable_families():
+    try:
+        doc = json.loads((Path(__file__).resolve().parent.parent / 'Data' / 'Gifts' / 'families.json').read_text(encoding='utf-8'))
+        return tuple(f['id'] for f in doc['families'] if not f.get('npcOnly'))
+    except (OSError, ValueError, KeyError, TypeError):
+        return ('fire', 'earth', 'water', 'wind', 'sound', 'blinker', 'gravity', 'seer')   # (The eight of doc 43.)
+
+
+GIFT_FAMILIES = _playable_families()
 CALENDAR = {'weekday': ('Dawnday', 'Hearthday', 'Stoneday', 'Riverday', 'Emberday', 'Marketday', 'Restday'),
-            'season': ('spring', 'summer', 'autumn', 'winter'), 'period': ('dawn', 'day', 'dusk', 'night')}
+            'season': ('spring', 'summer', 'autumn', 'winter'), 'period': ('dawn', 'day', 'dusk', 'night'),
+            'moon': ('new', 'waxing', 'full', 'waning')}   # (Doc 86, J4: the moon in four.)
 WEATHERS = ('clear', 'overcast', 'rain', 'storm', 'fog', 'snow', 'sandstorm')
 QUEST_STATES = ('none', 'offered', 'active', 'ready', 'done', 'failed', 'abandoned', 'expired')
 OBJECTIVE_STATES = ('done', 'failed', 'to do', 'hidden')
 # (Each facts condition: its keys besides `test`, and the optional ones.)
 FACT_SHAPES = {
     'wolf here': ((), ('who',)), 'wolf in region': (('region',), ('who',)), 'wolf in place': (('place',), ('who',)),
-    'wolf in town': (('town',), ('who',)), 'wolf indoors': (('is',), ('who',)), 'count in region': (('region', 'op', 'value'), ()),
+    'wolf in town': (('town',), ('who',)), 'wolf indoors': (('is',), ('who',)),
+    'count in region': (('region', 'op', 'value'), ('who', 'list')),   # (Doc 86, J6: the residents of a list, too.)
     'carries': (('item', 'op', 'value'), ('who',)), 'coins': (('op', 'value'), ('who',)), 'standing': (('faction', 'op', 'value'), ('who',)),
-    'reputation': (('town', 'op', 'value'), ('who',)), 'wolf is': (('state', 'is'), ('who',)), 'party size': (('op', 'value'), ('who',)),
+    'reputation': (('town', 'op', 'value'), ('who',)), 'wolf is': (('state', 'is'), ('who',)),
+    'wolf has': (('what', 'value'), ('who',)), 'party size': (('op', 'value'), ('who',)),
     'in party with': (('other',), ('who',)), 'resident is': (('npc', 'state'), ()), 'resident in place': (('npc', 'place'), ()),
     'resident in region': (('npc', 'region'), ()), 'resident has': (('npc', 'what', 'value'), ()), 'hour between': (('from', 'to'), ()),
     'calendar is': (('what', 'value'), ()), 'weather is': (('weather',), ('where',)), 'relation is': (('faction', 'other', 'op', 'stance'), ()),
 }
 FLOW_V2 = ('if', 'wait', 'each', 'random', 'run', 'enable', 'disable', 'stop', 'note', 'finish')
 STATE_V2 = ('subtract', 'multiply', 'clamp', 'turn on', 'turn off', 'toggle', 'remember', 'list add', 'list remove',
-            'list clear', 'pick', 'start timer', 'stop timer', 'shift')
+            'list clear', 'pick', 'start timer', 'stop timer', 'shift', 'rank')
 DEFAULTS = {'number': 0, 'switch': False, 'timer': None}
 
 
@@ -175,6 +207,58 @@ def operands_in(o):
                     yield from operands_in(child)
 
 
+def purses_in(v):
+    """Doc 86, M2: every purse a part of a program reads ({"purse": "<purse>"})."""
+    if isinstance(v, list):
+        for x in v:
+            yield from purses_in(x)
+    elif isinstance(v, dict):
+        if len(v) == 1 and isinstance(v.get('purse'), str):
+            yield v['purse']
+            return
+        for x in v.values():
+            if isinstance(x, (dict, list)):
+                yield from purses_in(x)
+
+
+def uses_audience(v):
+    """Doc 86, C2 and R1: whether rules (or any part of a program) count the audience: {"audience"}, {"percent"} or
+    {"among"} values, or the condition participation. (A trigger's own `audience`, "participant", is not one.)"""
+    if isinstance(v, list):
+        return any(uses_audience(x) for x in v)
+    if not isinstance(v, dict):
+        return False
+    if (len(v) == 1 and v.get('audience') in AUDIENCES) or v.get('test') == 'participation' or \
+            any(isinstance(v.get(k), dict) for k in SHARES):
+        return True
+    return any(uses_audience(x) for x in v.values() if isinstance(x, (dict, list)))
+
+
+def wheres_in(v):
+    """Every R1 test for each wolf (a `where`) in rules or a part of a program."""
+    if isinstance(v, list):
+        for x in v:
+            yield from wheres_in(x)
+    elif isinstance(v, dict):
+        if isinstance(v.get('where'), dict) and (v.get('test') == 'participation' or len(v) == 1 or 'participation' in v):
+            yield v['where']
+        for x in v.values():
+            if isinstance(x, (dict, list)):
+                yield from wheres_in(x)
+
+
+def uses_online(v):
+    """Whether a part of a program counts the wolves online now (C2): it then watches the world's wolves."""
+    if isinstance(v, list):
+        return any(uses_online(x) for x in v)
+    if not isinstance(v, dict):
+        return False
+    if (len(v) == 1 and v.get('audience') == 'online') or (v.get('of') == 'online' and (
+            v.get('test') == 'participation' or 'participation' in v or any(isinstance(v.get(k), dict) for k in SHARES))):
+        return True
+    return any(uses_online(x) for x in v.values() if isinstance(x, (dict, list)))
+
+
 def routes(phase):
     return phase['exits'] + [
         {
@@ -263,7 +347,11 @@ def _check_condition(c, depth, phase, missions, each=None):
                 c['field'] in (*rules.FIELDS, 'quantity', 'coins'),
                 'Unknown event field.',
             )
-        if kind == 'counter' or c['field'] in ('coins', 'quantity'):
+        if kind == 'field' and c['op'] in TEXT_OPS:
+            # (Doc 86, C12b: begins with a text; one of up to 32 texts.)
+            require(c['field'] not in ('coins', 'quantity'), 'Begins with and one of are for the event\'s text fields.')
+            require(rules.match_value_ok({c['op']: c['value']}), 'Begins with: 1 to 120 characters; one of: 1 to 32 texts of up to 120.')
+        elif kind == 'counter' or c['field'] in ('coins', 'quantity'):
             require(
                 c['op'] in tuple(COMPARE) and rules.integer(c['value'], -LIMIT, LIMIT),
                 'Choose a numeric comparison.',
@@ -300,8 +388,9 @@ def _check_of(o, d, each):
     rules.require(o['of'] != '$each' or each == 'wolf', '$each is a wolf only inside For each over wolves.')
 
 
-def operand_type(o, phase, each=None, depth=0):
-    """What a value in a comparison or a Set is: number, switch or text; a malformed one raises."""
+def operand_type(o, phase, each=None, depth=0, share_ok=False):
+    """What a value in a comparison or a Set is: number, switch or text; a malformed one raises. `share_ok`: a quest's reward
+    with credit by share, where {"share": true} is the credited wolf's own amount (doc 86, C3b)."""
     import story_program as rules
 
     require, shape = rules.require, rules.shape
@@ -339,12 +428,195 @@ def operand_type(o, phase, each=None, depth=0):
         shape(o, ('each',))
         require(o['each'] is True and each is not None, 'The value of the loop is only inside For each.')
         return family(each)
+    if 'purse' in o:
+        # (Doc 86, M2: the pennies a purse holds now, from the world's facts.)
+        import story_quests
+        shape(o, ('purse',))
+        require(story_quests.check_purse(o['purse']), story_quests.PURSE_WORDS)
+        return 'number'
+    if 'share' in o:
+        # (Doc 86, C3b: in a reward of a quest credited by share, the credited wolf's own amount.)
+        shape(o, ('share',))
+        require(o['share'] is True and share_ok,
+                'A share ({"share": true}) is only in the rewards of a quest that rewards each wolf by their share (credit: share).')
+        return 'number'
+    if 'tally' in o:
+        # (Doc 86, J11: a number added up, or wolves counted, over every wolf of the story or a list; no 500 cap.)
+        shape(o, ('tally',))
+        require(each is None, 'Counting over every wolf (tally) is not allowed inside For each, nor inside a test for each wolf.')
+        require(depth <= 1, 'Counting over every wolf (tally) may be one level deep in arithmetic at most.')
+        _check_tally(o['tally'], phase)
+        return 'number'
+    if 'audience' in o:
+        # (Doc 86, C2: how many wolves the story has, how many are active, how many are online now.)
+        shape(o, ('audience',))
+        require(o['audience'] in AUDIENCES, 'Count the story\'s wolves: all, active or online.')
+        return 'number'
+    share = next((k for k in SHARES if k in o), None)
+    if share is not None:
+        # (Doc 86, R1: the share, or the number, of the active wolves who took part.)
+        shape(o, (share,), ('of',))
+        require(each is None, 'Counting who took part is not allowed inside For each, nor inside its own test.')
+        require(depth <= 1, 'Counting who took part may be one level deep in arithmetic at most.')
+        require(o.get('of', 'active') in AUDIENCES, 'Out of the active wolves, all the story\'s wolves, or those online.')
+        _check_source(o[share], phase)
+        return 'number'
     key = next((k for k in ARITH if k in o), None)
     require(key is not None, 'Unknown value.')
     shape(o, (key,))
     require(depth < 2 and isinstance(o[key], list) and len(o[key]) == 2, 'Arithmetic takes two values, two deep at most.')
-    require(all(operand_type(x, phase, each, depth + 1) == 'number' for x in o[key]), 'Arithmetic is on numbers.')
+    require(all(operand_type(x, phase, each, depth + 1, share_ok) == 'number' for x in o[key]), 'Arithmetic is on numbers.')
     return 'number'
+
+
+def _check_tally(t, phase):
+    """J11: {"sum": <a wolf's number>, "where": <a wolf's text or switch>, "is": <its value>, "over": "participants" |
+    {"list": <a list of wolves>}}; every part optional, where and is together."""
+    import story_program as rules
+
+    require = rules.require
+    require(isinstance(t, dict), 'A tally: what to add up (sum), which wolves (where and is), over whom.')
+    rules.shape(t, (), ('sum', 'where', 'is', 'over'))
+    require(('where' in t) == ('is' in t), 'A tally counts the wolves whose variable (where) is a value (is): name both, or neither.')
+    if 'sum' in t:
+        d = _decl(phase, t['sum'], ('number',), 'number')
+        require(d['scope'] in OWN and 'mirror' not in d, f'"{t["sum"]}" is not a number each wolf keeps: a tally adds up '
+                                                         'a number each wolf keeps (player or realm).')
+    if 'where' in t:
+        d = _decl(phase, t['where'], ('text', 'switch'), 'text or switch')
+        require(d['scope'] in OWN, f'"{t["where"]}" is not each wolf\'s own: a tally reads a text or switch each wolf keeps (player or realm).')
+        ok = type(t['is']) is bool if d['type'] == 'switch' else isinstance(t['is'], str) and len(t['is']) <= TEXT_MAX
+        require(ok, f'"{t["where"]}" is a {d["type"]}: the tally\'s value is ' + ('on or off.' if d['type'] == 'switch' else 'a text.'))
+    over = t.get('over', 'participants')
+    require(over == 'participants' or (isinstance(over, dict) and set(over) == {'list'}),
+            'A tally is over the wolves of the story, or a list of wolves ({"list": ...}).')
+    if isinstance(over, dict):
+        d = _decl(phase, over['list'], ('wolves',), 'list of wolves')
+        require(d['scope'] not in PERSONAL, 'A tally is over a list of the story or the world.')
+
+
+# Doc 86, C1a: what may stand for an id parameter: a variable of its kind (or a text), the event's field that holds one, the
+# loop's value over a list of its kind.
+OPERAND_VARS = {'wolf': ('wolf',), 'resident': ('resident',), 'place': ('place', 'text'), 'item': ('item', 'text'),
+                'faction': ('faction', 'text'), 'town': ('text', 'region')}
+OPERAND_FIELDS = {'wolf': ('actor', 'target'), 'resident': ('target', 'item'), 'place': ('cell', 'target'), 'item': ('item',),
+                  'faction': ('target', 'detail'), 'town': ('actor', 'target', 'detail')}
+_KIND_WORDS = {'int': 'a number', 'wolf': 'a wolf', 'resident': 'a resident', 'place': 'a place', 'item': 'an item',
+               'faction': 'a faction', 'town': 'a town'}
+
+
+def check_operand_param(param, v, phase, each, reward=False, share_ok=False):
+    """C1a: a value given for an effect's parameter marked operand, of the parameter's kind. `share_ok` (C3b): a reward of a
+    quest credited by share, whose numbers may read the credited wolf's share."""
+    import story_program as rules
+
+    require = rules.require
+    kind, label = param['type'], param.get('label', param['key'])
+    words = _KIND_WORDS.get(kind, 'a value')
+    if reward:
+        require(not any('field' in o or 'each' in o or o.get('of') == '$each' for o in operands_in(v)),
+                f'A reward is given when the quest is done: {label} reads no event field and no loop value.')
+    if kind == 'int':
+        require(operand_type(v, phase, each, 0, share_ok) == 'number', f'{label} is a number: give a number value.')
+        return
+    if 'var' in v:
+        rules.shape(v, ('var',), ('of',))
+        d = _decl(phase, v['var'])
+        require(d['type'] in OPERAND_VARS.get(kind, ()) and 'mirror' not in d,
+                f'"{v["var"]}" is a {d["type"]}: {label} needs {words}' + (' (or a text)' if 'text' in OPERAND_VARS.get(kind, ()) else '') + '.')
+        _check_of(v, d, each)
+        return
+    if 'field' in v:
+        rules.shape(v, ('field',))
+        allowed = OPERAND_FIELDS.get(kind, ())
+        require(v['field'] in allowed, f'{label} is {words}: the event\'s ' + ' or '.join(allowed) + ' holds one.')
+        return
+    if 'each' in v:
+        rules.shape(v, ('each',))
+        require(v['each'] is True and each is not None, 'The value of the loop is only inside For each.')
+        require(each == kind or (each == 'text' and kind not in ('wolf', 'resident')),
+                f'The loop\'s value is {"a " + each if each else "nothing"}: {label} needs {words}.')
+        return
+    raise ValueError(f'{label} is {words}: give one, or a variable, the event\'s field or the loop\'s value.')
+
+
+def check_fills(text, param, phase, each, of_allowed=True, where=None):
+    """C1b: the fills of a version 2 text ({name}, {name.of}): declared, not a list or a timer, a wolf's own only "of", and
+    the words within their limit with every fill at its widest."""
+    import story_program as rules
+
+    require = rules.require
+    limit = param.get('max', 300) if isinstance(param, dict) else param
+    label = where or (param.get('label', param.get('key', 'the words')) if isinstance(param, dict) else 'the words')
+    found = fills_in(text)
+    if not found and '{{' not in text and '}}' not in text:
+        return
+    widest = len(FILL.sub(lambda m: '{' if m.group(0) == '{{' else '}' if m.group(0) == '}}' else '', text))
+    for name, of in found:
+        d = _decl(phase, name)
+        require(d['type'] not in LISTS and d['type'] != 'timer', f'{{{name}}}: a {d["type"]} cannot fill words (a list or a timer).')
+        if of:
+            require(of_allowed, f'{label}: the same for every wolf, so it fills no wolf\'s own value ({{{name}.of}}).')
+            require(d['scope'] in PERSONAL, f'{{{name}.of}}: only a variable of each wolf or party is read "of" a wolf.')
+        else:
+            require(d['scope'] not in PERSONAL, f'{{{name}}} is each wolf\'s own: write {{{name}.of}}.')
+        widest += FILL_WIDEST.get(d['type'], FILL_NAME) if 'mirror' not in d else FILL_WIDEST['number']
+    require(widest <= limit, f'{label} is too long once filled: up to {widest} characters with every fill at its widest '
+                             f'(a number 11, a text {TEXT_MAX}, a wolf\'s name 24, another name 40); the limit is {limit}.')
+
+
+def _check_source(src, phase):
+    """R1's who counts: {"list": a story or world list of wolves} or {"where": a test for each wolf} (exactly one)."""
+    import story_program as rules
+
+    require = rules.require
+    require(isinstance(src, dict) and ('list' in src) != ('where' in src),
+            'Count the wolves in a list, or those who meet a test (one of the two).')
+    if 'list' in src:
+        d = _decl(phase, src['list'], ('wolves',), 'list of wolves')
+        require(d['scope'] in ('story', 'world'), 'Count a list of wolves of the story or the world.')
+    else:
+        _check_where(src['where'], phase)
+
+
+def _check_where(c, phase):
+    """R1 rule 5: the test for each wolf (the wolf as $each). Variables (of $each for a wolf's own), compare, switch, in
+    list, days since and the quest conditions; no facts, event fields, loop values or counting inside; 3 deep, 8 leaves."""
+    import story_program as rules
+
+    require = rules.require
+    leaves = []
+
+    def walk(node, depth):
+        require(isinstance(node, dict) and depth <= WHERE_DEPTH, f'The test for each wolf nests {WHERE_DEPTH} deep at most.')
+        kind = node.get('test')
+        if kind in ('all', 'any'):
+            rules.shape(node, ('test', 'conditions'))
+            require(isinstance(node['conditions'], list) and 1 <= len(node['conditions']) <= 8, 'A condition group needs 1–8 conditions.')
+            for child in node['conditions']:
+                walk(child, depth + 1)
+            return
+        if kind == 'not':
+            rules.shape(node, ('test', 'condition'))
+            walk(node['condition'], depth + 1)
+            return
+        require(kind in WHERE_TESTS, 'The test for each wolf may compare values, read switches, lists, days and quests: '
+                                     'not the world\'s facts or the event (it is counted outside one).')
+        leaves.append(node)
+        require(len(leaves) <= WHERE_LEAVES, f'The test for each wolf has {WHERE_LEAVES} conditions at most.')
+        for side in ('left', 'right', 'value'):
+            for o in operands_in(node.get(side)):
+                require('field' not in o and 'each' not in o, 'The test for each wolf reads no event field and no loop value.')
+        _check_condition_v2(node, phase, 'wolf')
+        decls = phase.get('_vars', {})
+        for o in [node] + [o for side in ('left', 'right', 'value') for o in operands_in(node.get(side))]:
+            name = o.get('var') or o.get('list') or o.get('count') or o.get('since')
+            if name in decls and decls[name]['scope'] in PERSONAL:
+                require(o.get('of') == '$each', f'Read "{name}" of each wolf ($each) in the test for each wolf.')
+        if kind in QUEST_V2:
+            require(node.get('of') in ('$each', 'story'), 'In the test for each wolf, a quest is read for each wolf ($each) or the story.')
+
+    walk(c, 1)
 
 
 def _check_condition_v2(c, phase, each):
@@ -352,6 +624,18 @@ def _check_condition_v2(c, phase, each):
 
     require, shape = rules.require, rules.shape
     kind = c['test']
+    if kind == 'participation':
+        # (Doc 86, R1: enough of the active wolves took part.)
+        shape(c, ('test', 'percent'), ('source', 'list', 'where', 'of', 'floor', 'cap'))
+        require(each is None, 'Counting who took part is not allowed inside For each.')
+        _check_source({k: c[k] for k in ('list', 'where') if k in c}, phase)
+        require('source' not in c or c['source'] == ('list' if 'list' in c else 'where'), 'Who counts: the list, or the test.')
+        require(c.get('of', 'active') in AUDIENCES, 'Out of the active wolves, all the story\'s wolves, or those online.')
+        require(rules.integer(c['percent'], 1, 100), 'A share of 1 to 100%.')
+        for key in ('floor', 'cap'):
+            require(key not in c or rules.integer(c[key], 1, 5000), f'The {key}: 1 to 5,000 wolves.')
+        require(c.get('floor', 1) <= c.get('cap', 5000), 'The floor is above the cap.')
+        return
     if kind == 'compare':
         shape(c, ('test', 'left', 'op', 'right'))
         left, right = operand_type(c['left'], phase, each), operand_type(c['right'], phase, each)
@@ -428,12 +712,20 @@ def _check_fact_condition(c, phase, each):
     kind = c['test']
     needed, optional = FACT_SHAPES[kind]
     rules.shape(c, ('test', *needed), optional)
-    if 'who' in c:
+    if kind == 'count in region':
+        # (Doc 86, J6: the story's wolves, or the residents of a list of the story or the world.)
+        who = c.get('who', 'wolves')
+        require(who in COUNTED, 'Count the story\'s wolves or the residents of a list.')
+        require(('list' in c) == (who == 'residents'), 'Counting residents names their list, and only then.')
+        if 'list' in c:
+            d = _decl(phase, c['list'], ('residents',), 'list of residents')
+            require(d['scope'] in ('story', 'world'), 'Count the residents of a list the story or the world keeps (not one kept for each wolf).')
+    elif 'who' in c:
         _check_who(c['who'], each)
     if 'op' in c:
         ops = ('=', '!=', '>=', '<=') if kind == 'relation is' else tuple(COMPARE)
         require(c['op'] in ops, 'Choose a comparison.')
-    if 'value' in c and kind not in ('resident has', 'calendar is'):
+    if 'value' in c and kind not in ('resident has', 'calendar is', 'wolf has'):
         low, high = {'standing': (-100, 100), 'reputation': (-1000, 1000), 'party size': (1, 12),
                      'count in region': (0, 5000), 'carries': (0, 100000)}.get(kind, (0, LIMIT))
         require(rules.integer(c['value'], low, high), f'A whole number from {low} to {high}.')
@@ -442,7 +734,8 @@ def _check_fact_condition(c, phase, each):
             require(rules.identifier(c[key]) and c[key] in phase.get('_regions', {}), 'Unknown story region.')
     for key in ('place', 'town', 'faction', 'other', 'npc', 'item'):
         if key in c and not (kind == 'in party with' and key == 'other'):
-            require(rules.identifier(c[key]), f'Name the {key}.')
+            # (Doc 86, J9: an item may be a story's own, item^tag.)
+            require(rules.item_ok(c[key]) if key == 'item' else rules.identifier(c[key]), f'Name the {key}.')
     if kind == 'in party with':
         _check_who(c['other'], each, 'the other wolf')
     if 'is' in c:
@@ -452,11 +745,18 @@ def _check_fact_condition(c, phase, each):
     elif kind == 'resident is':
         require(c['state'] in RESIDENT_STATES, 'Alive, dead, indoors or out of doors.')
     elif kind == 'resident has':
-        require(c['what'] in RESIDENT_HAS and rules.word(c['value'], 80), 'A job, mood, mantle or town, and what it is.')
+        require(c['what'] in RESIDENT_HAS and isinstance(c['value'], str) and (rules.word(c['value'], 80) or (c['what'] == 'post' and c['value'] == '')),
+                'A job, mood, mantle, town or post, and what it is.')
+    elif kind == 'wolf has':
+        # (Doc 86, J10: normal, gifted or quickened; or a playable family, or none: a normal wolf's.)
+        require(c['what'] in ('tier', 'family'), "A wolf's Gift: its tier or its family.")
+        require(c['value'] in GIFT_TIERS if c['what'] == 'tier' else c['value'] in ('', *GIFT_FAMILIES),
+                'A tier is normal, gifted or quickened.' if c['what'] == 'tier' else
+                'A family is one of ' + ', '.join(GIFT_FAMILIES) + ' (or none, for a normal wolf).')
     elif kind == 'hour between':
         require(rules.integer(c['from'], 0, 23) and rules.integer(c['to'], 0, 23), 'Hours from 0 to 23.')
     elif kind == 'calendar is':
-        require(c['what'] in CALENDAR and c['value'] in CALENDAR[c['what']], 'A weekday, a season or a time of day, and which.')
+        require(c['what'] in CALENDAR and c['value'] in CALENDAR[c['what']], 'A weekday, a season, a time of day or the moon, and which.')
     elif kind == 'weather is':
         require(c['weather'] in WEATHERS, 'Clear, overcast, rain, storm, fog, snow or sandstorm.')
         require(c.get('where', '$actor') == '$actor' or rules.identifier(c['where']), 'Where the acting wolf is, or a place.')
@@ -501,6 +801,7 @@ def _check_action_v2(a, cx, address, depth, each, last):
     def var(d_key='var', kinds=None, words='variable'):
         d = _decl(phase, a[d_key], kinds, words)
         _check_of(a, d, each)
+        require('mirror' not in d, f'"{a[d_key]}" mirrors a world variable: it is read, never set.')   # (Doc 86, N3.)
         return d
 
     if kind in ('set', 'add', 'subtract', 'multiply'):
@@ -543,6 +844,23 @@ def _check_action_v2(a, cx, address, depth, each, last):
     elif kind in ('start timer', 'stop timer'):
         shape(a, ('do', 'var'), ('of',))
         var(kinds=('timer',), words='timer')
+    elif kind == 'rank':
+        # (Doc 86, C3a: the top wolves by a number each wolf keeps, into a list of wolves of the story or the world.)
+        shape(a, ('do', 'var', 'top', 'into'), ('over', 'list', 'min'))
+        require(each is None, 'Rank is not allowed inside For each: rank first, then loop over the list.')
+        d = _decl(phase, a['var'], ('number',), 'number')
+        require(d['scope'] in OWN and 'mirror' not in d, f'"{a["var"]}" is not a number each wolf keeps: rank by a number each wolf keeps (player or realm).')
+        require(operand_type(a['top'], phase) == 'number' and (not _num(a['top']) or 1 <= a['top'] <= RANK_MAX),
+                f'How many: 1 to {RANK_MAX}, or a number value.')
+        require('min' not in a or operand_type(a['min'], phase) == 'number', 'At least: a number, or a number value.')
+        over = a.get('over', 'participants')
+        require(over in ('participants', 'list') and ('list' in a) == (over == 'list'),
+                'Rank the wolves of the story, or those of a list (name the list).')
+        if over == 'list':
+            src = _decl(phase, a['list'], ('wolves',), 'list of wolves')
+            require(src['scope'] not in PERSONAL, 'Rank the wolves of a list of the story or the world.')
+        into = _decl(phase, a['into'], ('wolves',), 'list of wolves')
+        require(into['scope'] not in PERSONAL, 'Rank into a list of wolves of the story or the world.')
     elif kind == 'shift':
         shape(a, ('do', 'signal', 'days'), ('owner',))
         require(rules.identifier(a['signal']) and a.get('owner', 'story') in ('story', 'player'), 'Name the timer and whose it is.')
@@ -566,13 +884,23 @@ def _check_action_v2(a, cx, address, depth, each, last):
                     require(param['type'] == each or (param['type'] == 'character' and each in ('wolf', 'resident')),
                             f'$each is a {each}: it cannot be {param["label"]}.')
             effect = {k: (stand if v == '$each' else v) for k, v in effect.items()}
-        rules.validate_effect(effect, phase['id'], phase.get('_regions'), phase.get('_scenes'))
+        # (Doc 86, C1: a parameter marked operand may be a value of its kind; a text marked fills may hold {name}.)
+        rules.validate_effect(effect, phase['id'], phase.get('_regions'), phase.get('_scenes'),
+                              operand=lambda param, v: check_operand_param(param, v, phase, each))
+        for param in rules.EFFECT_PARAMS.get(effect['kind'], ()):
+            if param.get('fills') and isinstance(effect.get(param['key']), str):
+                check_fills(effect[param['key']], param, phase, each)
         require(effect['kind'] != 'npc.line', 'Set resident dialogue on phase entry.')
         rules.quests.check_story_effect(effect, phase, t)
+        # (Doc 86, C8: what one resident remembers of one wolf is for a wolf of the story: the acting one of a participant
+        # trigger, or the looped one.)
+        require(not (effect['kind'] in ('talk.remember', 'talk.forget') and effect.get('scope') == 'pair' and a['effect'].get('player') == '$actor'
+                     and t.get('audience') != 'participant'), rules.PAIR_WORDS)
         # (Doc 85, Phase 6: taking a wolf in, or offering or giving them a quest, may name the acting wolf from a trigger of
         # anyone in the world: that is how an open audience is joined.)
         require(a['effect'].get('player') != '$actor' or t.get('audience') == 'participant'
-                or effect['kind'] in rules.quests.TAKES_IN, 'An actor effect requires a participant trigger.')
+                or effect['kind'] in rules.quests.TAKES_IN or effect['kind'] in rules.quests.NOTICE_EFFECTS,
+            'An actor effect requires a participant trigger.')   # (Doc 86, C12a: news only names the wolf: any trigger may.)
     elif kind == 'enter':
         shape(a, ('do', 'phase'))
         require(rules.identifier(a['phase']) and last, 'Enter phase must be the last action.')
@@ -736,16 +1064,18 @@ def _check_trigger(t, phase, ids, links, runs=None, collect=None):
     else:
         require('afterDays' not in t, 'Only timers take a delay.')
     match = t.get('match', {})
-    require(
-        isinstance(match, dict) and all(k in rules.FIELDS and rules.word(v, 400) for k, v in match.items()),
-        'Invalid trigger filters.',
-    )
+    require(rules.match_ok(match), 'Invalid trigger filters.')
     # (Doc 85, Phase 10: a watched event the game can only look for when it is told what to look at: a resident to come
-    # near, a purse and the amount it crosses, a faction and the standing.)
+    # near, a purse and the amount it crosses, a faction and the standing. Doc 86, C12b: those stay exact texts.)
     needs = rules.NEEDS_MATCH.get(t['on'], ())
-    require(all(match.get(k) for k in needs), f'"{t["on"]}" needs its ' + ' and '.join(rules.MATCH_WORDS[k] for k in needs) + ' named.')
+    require(all(match.get(k) for k in needs), f'"{t["on"]}" needs its ' + ' and '.join(rules.match_word(t['on'], k) for k in needs) + ' named.')
+    require(all(isinstance(match[k], str) for k in needs),
+            f'"{t["on"]}" needs its ' + ' and '.join(rules.match_word(t['on'], k) for k in needs) + ' as exact words (not "begins with" or "one of"): '
+            'the game must know what to look at.')
     if t['on'] in ('purse crossed', 'standing crossed') and 'detail' in match:
         require(re.fullmatch(r'-?[0-9]{1,9}', match['detail']) is not None, f'"{t["on"]}" names a whole number to cross.')
+    rules.check_moon(t['on'], match)
+    rules.check_variable_changed(t['on'], match, phase)
     rules.check_region_source(t, phase.get('_regions'))
     if 'if' in t:
         condition(t['if'], 1)
@@ -882,13 +1212,13 @@ def party_of(state, wolf):
     return state.get('parties', {}).get(wolf, wolf)
 
 
-def var_store(state, scope, wolf, write=False):
+def var_store(state, scope, wolf, write=False, members=None):
     """The store a variable lives in: one for the story or the world, one per wolf or party. None: a wolf not in the
-    story (nothing of theirs is read or written)."""
+    story (nothing of theirs is read or written). `members`: the cohort as a set, when the caller has it (R1's count)."""
     if scope in PERSONAL:
-        if wolf not in state['cohort']:
+        if wolf not in (state['cohort'] if members is None else members):
             return None
-        owner = wolf if scope == 'player' else party_of(state, wolf)
+        owner = party_of(state, wolf) if scope == 'party' else wolf
         if write:
             return state.setdefault('counters', {}).setdefault(scope, {}).setdefault(owner, {})
         return state.get('counters', {}).get(scope, {}).get(owner, {})
@@ -908,7 +1238,19 @@ class Ctx:
         self.day, self.elapsed, self.ready, self.emit = day, elapsed, ready, emit
         self.rule, self.entry, self.firings = rule, entry, firings
         self.each, self.target, self.depth = None, None, 0
+        self.each_wolf = False   # (Doc 86, C1b: whether the loop is over wolves, so {name.of} reads the looped wolf.)
         self.vars = phase.get('_vars', {}) if phase else {}
+        self._audience = None
+        self.members = None   # (Doc 86, R1: the cohort as a set while a test is counted for each wolf.)
+        self.share = None     # (Doc 86, C3b: the credited wolf's share, while a reward of a quest credited by share is given.)
+
+    def audience(self):
+        """Doc 86, C2: the story's wolves counted (all, active, online) and the active and online ones, worked out once per
+        firing; the native twin is sent the same (story_native.fire_v2)."""
+        if self._audience is None:
+            self._audience = audience_of(self.state, self.day, (self.phase or {}).get('_activeDays', ACTIVE_DAYS),
+                                         facts_of(self.event) if self.event else None)
+        return self._audience
 
     def wolf(self, of):
         return self.each if of == '$each' else self.actor
@@ -928,14 +1270,96 @@ def _field(event, name):
     return value
 
 
+def audience_of(state, day, active_days, facts=None):
+    """Doc 86, C2: {all, active, online, activeIds, onlineIds}. Active: the story's wolves seen (signed in, or the actor of
+    any event: state['seen'], kept by the runner and by a rehearsal) within `active_days` game days of `day`. Online: the
+    story's wolves among the signed-in wolves of the world's facts, else as the run last knew (state['online']), else
+    unknown (MISSING, None for the ids). A rehearsal's case may give the counts (`audience`) or the active wolves."""
+    cohort = state.get('cohort', [])
+    members = set(cohort)
+    given = state.get('rehearsalActive')
+    if given is not None:
+        active = sorted(w for w in set(given) if w in members)
+    else:
+        seen = state.get('seen') or {}
+        if day is None:
+            day = max(seen.values(), default=0)
+        since = day - active_days
+        active = [w for w in cohort if seen.get(w, -1e18) >= since]
+    wolves = facts.get('wolves') if isinstance(facts, dict) else None
+    if isinstance(wolves, dict):
+        online = sorted(w for w in wolves if w in members)
+    elif isinstance(state.get('online'), list):
+        online = sorted(w for w in state['online'] if w in members)
+    else:
+        online = None
+    out = {'all': len(cohort), 'active': len(active), 'online': MISSING if online is None else len(online),
+           'activeIds': active, 'onlineIds': online}
+    for key, n in (state.get('rehearsalAudience') or {}).items():
+        out[key] = n
+    return out
+
+
+def share_need(d, percent, floor=1, cap=None):
+    """R1 rule 4 (decisions §6.2): the wolves needed out of d. The floor never asks for more wolves than are active; a cap is
+    always enough; never below 1."""
+    need = max(min(floor, d), -(-percent * d // 100))
+    if cap is not None:
+        need = min(need, cap)
+    return max(need, 1)
+
+
+def counted(src, of, x):
+    """R1 rule 1-2: (S, D), the wolves who count and those counted against, or None when D is unknown (online, not known)."""
+    aud = x.audience()
+    d = aud['activeIds'] if of == 'active' else list(x.state.get('cohort', [])) if of == 'all' else aud['onlineIds']
+    if d is None:
+        return None
+    if 'list' in src:
+        decl = x.vars[src['list']]
+        store = var_store(x.state, decl['scope'], '')
+        members = set(store.get(src['list'], initial(decl)))
+        return [w for w in d if w in members], d
+    out, before, members = [], x.each, x.members
+    x.members = frozenset(x.state.get('cohort', ()))
+    try:
+        for w in d:
+            x.each = w
+            if test(src['where'], x) is True:
+                out.append(w)
+    finally:
+        x.each, x.members = before, members
+    return out, d
+
+
 def value_of(o, x):
     """An operand's value now, or MISSING (a value of a wolf not in the story, a timer not started, no loop)."""
     if not isinstance(o, dict):
         return o
+    if 'audience' in o:
+        return x.audience()[o['audience']]
+    if 'share' in o:
+        return MISSING if x.share is None else x.share
+    if 'tally' in o:
+        return tally(o['tally'], x)
+    share = next((k for k in SHARES if k in o), None)
+    if share is not None:
+        r = counted(o[share], o.get('of', 'active'), x)
+        if r is None:
+            return MISSING
+        s, d = r
+        return len(s) if share == 'among' else (100 * len(s) // len(d) if d else 0)
+    if 'purse' in o:
+        # (Doc 86, M2: what the purse holds now, as the world's facts of the event say; not known, no value.)
+        f = facts_of(x.event) if x.event else None
+        n = ((f or {}).get('purses') or {}).get(o['purse']) if isinstance((f or {}).get('purses'), dict) else None
+        return n if _num(n) else MISSING
+    if 'var' in o and 'mirror' in x.vars.get(o['var'], {}):
+        return mirror_value(x.vars[o['var']], x, o.get('of'))
     if 'var' in o or 'count' in o or 'since' in o:
         name = o.get('var') or o.get('count') or o.get('since')
         d = x.vars[name]
-        store = var_store(x.state, d['scope'], x.wolf(o.get('of')))
+        store = var_store(x.state, d['scope'], x.wolf(o.get('of')), members=x.members)
         if store is None:
             return MISSING
         value = store.get(name, initial(d))
@@ -952,7 +1376,92 @@ def value_of(o, x):
     a, b = (value_of(v, x) for v in o[key])
     if a is MISSING or b is MISSING:
         return MISSING
+    if key == 'div':
+        # (Doc 86, C2: floored toward zero, as the native twin's trunc of a double; by 0, no value.)
+        return MISSING if b == 0 else int(a / b)
+    if key == 'times':
+        # (Exact below 2^53, as the native twin's double is; past it, the double's own product, so both twins agree.)
+        product = a * b
+        return product if abs(product) <= 2 ** 53 else float(a) * float(b)
     return a + b if key == 'plus' else a - b if key == 'minus' else min(a, b) if key == 'min' else max(a, b)
+
+
+def tally(t, x):
+    """J11: over every wolf of the story (or of a list of wolves), those whose `where` is `is` (every one without), their
+    `sum` added up (counted without); a wolf with no value adds 0. The native twin's Dispatch2::tally."""
+    state = x.state
+    cohort = state.get('cohort', [])
+    over = t.get('over', 'participants')
+    if isinstance(over, dict):
+        d = x.vars[over['list']]
+        members = set(cohort)
+        wolves = [w for w in (var_store(state, d['scope'], '') or {}).get(over['list'], initial(d)) if w in members]
+    else:
+        wolves = cohort
+    where, total = t.get('where'), 0
+    # (Doc 86, J2: each wolf's own values, of the scope each variable read is declared in: player or realm.)
+    counters = state.get('counters', {})
+    wheres = counters.get(x.vars[where]['scope'], {}) if where else {}
+    sums = counters.get(x.vars[t['sum']]['scope'], {}) if 'sum' in t else {}
+    blank = initial(x.vars[where]) if where else None
+    for w in wolves:
+        if where is not None and wheres.get(w, {}).get(where, blank) != t['is']:
+            continue
+        if 'sum' in t:
+            v = sums.get(w, {}).get(t['sum'], 0)
+            total += v if _num(v) else 0
+        else:
+            total += 1
+    return total
+
+
+def rank(a, x):
+    """C3a: the wolves of `over` with a stored number `var` (at least `min`), highest first, ties by the seed (fnv of seed|wolf),
+    the first `top` (1 to 500) into the list `into` (cleared first). A value not known for top or min: nothing changes."""
+    state = x.state
+    top = value_of(a['top'], x)
+    least = value_of(a['min'], x) if 'min' in a else None
+    if top is MISSING or least is MISSING or not _num(top) or (least is not None and not _num(least)):
+        x.note('skipped: rank has no value')
+        return
+    top = max(1, min(RANK_MAX, math.floor(top)))
+    cohort = state.get('cohort', [])
+    if a.get('over', 'participants') == 'list':
+        d = x.vars[a['list']]
+        members = set(cohort)
+        wolves = [w for w in (var_store(state, d['scope'], '') or {}).get(a['list'], initial(d)) if w in members]
+    else:
+        wolves = cohort
+    name, seed = a['var'], str(state.get('seed', ''))
+    players = state.get('counters', {}).get(x.vars[name]['scope'] if name in x.vars else 'player', {})
+    found = []
+    for w in wolves:
+        own = players.get(w)
+        if not own or name not in own or not _num(own[name]):
+            continue
+        v = own[name]
+        if least is not None and v < least:
+            continue
+        found.append((-v, fnv(seed + '|' + w), w))
+    found.sort()
+    d = x.vars[a['into']]
+    var_store(state, d['scope'], '', True)[a['into']] = [w for _, _, w in found[:top]]
+
+
+def mirror_value(d, x, of=None, wolf=None):
+    """Doc 86, N3: a shown number of each wolf that mirrors a world variable: the wolf's `key` text names which (`names`);
+    never stored. An unknown or empty key reads 0; a wolf not in the story, no value."""
+    m = d['mirror']
+    key = x.vars.get(m['key'], {})
+    who = wolf if wolf is not None else x.wolf(of)
+    store = var_store(x.state, key.get('scope', 'player'), who, members=x.members)
+    if store is None:
+        return MISSING
+    name = m['names'].get(store.get(m['key'], initial(key)) if key else '')
+    if not name or name not in x.vars:
+        return 0
+    v = var_store(x.state, 'world', '').get(name, initial(x.vars[name]))
+    return v if _num(v) else 0
 
 
 def test_v2(c, x):
@@ -991,6 +1500,12 @@ def test_v2(c, x):
         return fact_test(c, x)[0]
     if kind in QUEST_V2:
         return quest_test(c, x)[0]
+    if kind == 'participation':
+        r = counted(c, c.get('of', 'active'), x)
+        if r is None:
+            return None
+        s, d = r
+        return bool(d) and len(s) >= share_need(len(d), c['percent'], c.get('floor', 1), c.get('cap'))
     if kind == 'days since':
         if x.day is None:
             return None
@@ -1058,6 +1573,18 @@ def fact_test(c, x):
         r = x.phase.get('_regions', {}).get(c['region'])
         if r is None:
             return None, None
+        if c.get('who') == 'residents':
+            # (Doc 86, J6: the listed residents the facts have, alive and inside; none of them known: unknown.)
+            listed = value_of({'var': c['list']}, x)
+            if listed is MISSING or not isinstance(listed, list):
+                return None, None
+            res = f.get('residents') if isinstance(f.get('residents'), dict) else {}
+            ids = sorted({i for i in listed if isinstance(i, str)})
+            known = [res[i] for i in ids if isinstance(res.get(i), dict)]
+            if ids and not known:
+                return None, None
+            n = sum(1 for one in known if one.get('alive') is True and _inside(r, one))
+            return COMPARE[c['op']](n, c['value']), n
         cohort = set(x.state.get('cohort', ()))
         n = sum(1 for wid, w in wolves.items() if wid in cohort and isinstance(w, dict) and _inside(r, w))
         return COMPARE[c['op']](n, c['value']), n
@@ -1106,6 +1633,11 @@ def fact_test(c, x):
     if kind == 'wolf is':
         v = w.get(c['state']) is True
         return v == c['is'], v
+    if kind == 'wolf has':
+        # (Doc 86, J10: the facts' gift, {tier, family}; none written: unknown.)
+        g = w.get('gift')
+        v = g.get(c['what']) if isinstance(g, dict) else None
+        return (None, None) if not isinstance(v, str) else (v == c['value'], v)
     if kind == 'in party with':
         o = wolves.get(_who(x, c['other']))
         party = w.get('party')
@@ -1239,6 +1771,117 @@ def count_firing(phase, state, trigger_id):
         counts.setdefault(bucket, {})[key] = counts.get(bucket, {}).get(key, 0) + 1
 
 
+# ------------------------------------------------------------------- doc 86, Phase 2 (C1): values in effects, fills in words
+
+_SPECS = {}
+# (A fill's widest, for the length check: a number, a text, a wolf's name, any other name.)
+FILL_WIDEST = {'number': 11, 'switch': 3, 'text': TEXT_MAX, 'wolf': 24}
+FILL_NAME = 40
+NAME_TOKENS = {'wolf': 'w', 'resident': 'r', 'place': 'p', 'item': 'i', 'faction': 'f'}
+FILL = re.compile(r'\{\{|\}\}|\{([A-Za-z0-9_][A-Za-z0-9_.:-]*?)(\.of)?\}|[{}]')
+
+
+def effect_specs():
+    """{effect: {param: spec}} for the parameters marked operand or fills in the catalogue (the native twin is sent the same)."""
+    if not _SPECS:
+        import story_program as rules
+        for kind, params in rules.EFFECT_PARAMS.items():
+            mine = {p['key']: {k: p[k] for k in ('type', 'min', 'max', 'nonzero', 'operand', 'fills') if k in p}
+                    for p in params if p.get('operand') or p.get('fills')}
+            if mine:
+                _SPECS[kind] = mine
+    return _SPECS
+
+
+def fills_in(text):
+    """The fills of a text: [(name, of)]; raises on a lone brace."""
+    out = []
+    for m in FILL.finditer(text):
+        token = m.group(0)
+        if token in ('{{', '}}'):
+            continue
+        if m.group(1) is None:
+            raise ValueError('A lone { or } in words: write {{ or }} for a brace, or {name} for a variable.')
+        out.append((m.group(1), bool(m.group(2))))
+    return out
+
+
+def fills_in_quietly(text):
+    """Whether a text holds any {name} fill (a lone brace is no fill)."""
+    return any(m.group(1) is not None for m in FILL.finditer(text))
+
+
+def _fill_one(name, of, x):
+    d = x.vars.get(name)
+    if d is None:
+        return MISSING, None
+    wolf = (x.each if x.each_wolf and x.each is not None else x.actor) if of else None
+    if 'mirror' in d:
+        return mirror_value(d, x, wolf=wolf if of else ''), d
+    store = var_store(x.state, d['scope'], wolf if of else '', members=x.members)
+    if store is None:
+        return MISSING, d
+    return store.get(name, initial(d)), d
+
+
+def fill_text(text, x):
+    """C1b: a version 2 story's words with their fills: a number's digits, a switch's yes or no, a text as it is, and a wolf, a
+    resident, a place, an item or a faction as a name token ({@w:<id>}...) the game turns into the name. A fill with no value is
+    nothing, with a note. {{ and }} are braces."""
+    def one(m):
+        token = m.group(0)
+        if token == '{{':
+            return '{'
+        if token == '}}':
+            return '}'
+        if m.group(1) is None:
+            return token
+        v, d = _fill_one(m.group(1), bool(m.group(2)), x)
+        if v is MISSING or v is None:
+            x.note(f'fill {m.group(1)} has no value')
+            return ''
+        kind = d['type']
+        if kind == 'switch':
+            return 'yes' if v is True else 'no'
+        if kind == 'number' or _num(v):
+            return str(int(v)) if _num(v) else ''
+        if kind in NAME_TOKENS:
+            return '{@' + NAME_TOKENS[kind] + ':' + v + '}' if isinstance(v, str) and v else ''
+        return v if isinstance(v, str) else ''
+    return FILL.sub(one, text)
+
+
+def resolve_effect(effect, x):
+    """C1a and C1b: an effect as it is sent, its operand parameters worked out (a number floored and kept to its bounds; an id
+    a text) and its words filled. None when a value is missing (or a number that may not be 0 is 0): it is not sent, and the
+    firing's history says why."""
+    specs = effect_specs().get(effect.get('kind'))
+    if not specs:
+        return effect
+    out = dict(effect)
+    for key, p in specs.items():
+        v = out.get(key)
+        if p.get('operand') and isinstance(v, dict):
+            r = value_of(v, x)
+            if p['type'] == 'int':
+                if r is MISSING or not _num(r):
+                    x.note(f'skipped: {key} has no value')
+                    return None
+                n = max(p.get('min', -LIMIT), min(p.get('max', LIMIT), math.floor(r)))
+                if p.get('nonzero') and n == 0:
+                    x.note(f'skipped: {key} is 0')
+                    return None
+                out[key] = n
+            else:
+                if not isinstance(r, str) or not r:
+                    x.note(f'skipped: {key} has no value')
+                    return None
+                out[key] = r
+        elif p.get('fills') and isinstance(v, str) and ('{' in v or '}' in v):
+            out[key] = fill_text(v, x)
+    return out
+
+
 def _act(a, x, address):
     op, state = a['do'], x.state
     if op == 'enter':
@@ -1251,7 +1894,9 @@ def _act(a, x, address):
                 effect[k] = x.actor
             elif v == '$each' and x.each is not None:
                 effect[k] = x.each
-        state.setdefault('triggerEffects', []).append(effect)
+        effect = resolve_effect(effect, x)
+        if effect is not None:
+            state.setdefault('triggerEffects', []).append(effect)
     elif op in ('schedule', 'cancel'):
         name = action_signal = a['signal']
         # A slash cannot appear in a signal ID. Shared keys stay compatible with older releases.
@@ -1287,14 +1932,15 @@ def _act(a, x, address):
         if 'else' in a:
             return _run(a['else'], x, (*address, 'else'))
     elif op == 'each':
-        before = x.each
+        before, before_wolf = x.each, x.each_wolf
+        x.each_wolf = a['over'] != 'list' or x.vars[a['list']]['type'] == 'wolves'
         for wolf in _wolves(a, x)[:EACH_MAX]:
             x.each = wolf
             r = _run(a['actions'], x, (*address, 'actions'))
             if r:
-                x.each = before
+                x.each, x.each_wolf = before, before_wolf
                 return r
-        x.each = before
+        x.each, x.each_wolf = before, before_wolf
     elif op == 'random':
         total = sum(c['weight'] for c in a['choices'])
         roll = draw(state, total)
@@ -1398,6 +2044,8 @@ def _act(a, x, address):
             return None
         clock = x.vars[a['var']].get('clock', 'game')
         _set_var(a, x, lambda _: x.now(clock))
+    elif op == 'rank':
+        rank(a, x)
     elif op == 'shift':
         key = a['signal'] + '/' + x.actor if a.get('owner') == 'player' else a['signal']
         timer = state.get('timers', {}).get(key)
@@ -1446,6 +2094,15 @@ def judge(c, state, event, ready, regions=None, known=None, phase=None, day=None
         node = dict(c)
         if kind == 'chance':
             return {**node, 'verdict': None, 'needs': 'roll'}
+        if kind == 'participation':
+            # (Doc 86, R1: the counts behind it, for the console's "why".)
+            x = Ctx(phase or {}, state, event, event.get('actor', ''), day, elapsed, ready, None)
+            r = counted(c, c.get('of', 'active'), x)
+            if r is None:
+                return {**node, 'verdict': None, 'needs': 'online'}
+            s, d = r
+            need = share_need(len(d), c['percent'], c.get('floor', 1), c.get('cap')) if d else None
+            return {**node, 'verdict': bool(d) and len(s) >= need, 'fact': {'among': len(s), 'of': len(d), 'need': need}}
         if kind in FACTS_V2 or kind in QUEST_V2:
             # (Doc 85, Phase 8: the world's facts as of the event, and the story's quests; the fact read is shown.)
             wolfish = c.get('who', '$actor') == '$actor' or c.get('of', '$actor') == '$actor' and kind in QUEST_V2
@@ -1497,7 +2154,7 @@ def judge(c, state, event, ready, regions=None, known=None, phase=None, day=None
     if known is not None and c['field'] not in known:
         return {**node, 'value': None, 'verdict': None, 'needs': 'event'}
     value = event.get(c['field'], 0 if c['field'] in ('coins', 'quantity') else '')
-    return {**node, 'value': value, 'verdict': COMPARE[c['op']](value, c['value'])}
+    return {**node, 'value': value, 'verdict': field_compare(c['op'], value, c['value'])}
 
 
 def _shown(v):
@@ -1573,7 +2230,15 @@ def satisfied(c, state, event, ready, regions=None, phase=None, day=None, elapse
         value = counter_store(state, c['scope'], event.get('actor')).get(c['key'], 0)
     else:
         value = event.get(c['field'], 0 if c['field'] in ('coins', 'quantity') else '')
-    return COMPARE[c['op']](value, c['value'])
+    return field_compare(c['op'], value, c['value'])
+
+
+def field_compare(op, value, expected):
+    """The field condition's comparison: the six of COMPARE, and (doc 86, C12b) begins with and one of."""
+    if op in TEXT_OPS:
+        import story_program as rules
+        return rules.match_one({op: expected}, value if isinstance(value, str) else '')
+    return COMPARE[op](value, expected)
 
 
 def _firing(phase, event, actor, day, elapsed, t, via=None):

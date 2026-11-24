@@ -15,8 +15,16 @@ export interface Param {
     all?: boolean;
     /** Version 2: a variable's types (`variable`), an optional slot, an operand's kind or the slot it must match. */
     of?: string[]; optional?: boolean; kind?: string; like?: string;
+    /** Doc 86, J9: an item slot that may name the story's own item (item^tag): "carries", as an event's filter may. */
+    own?: boolean;
+    /** Doc 86, C3a: a `variable` slot's scopes (Rank: a wolf's own number, into a list of the story or the world). */
+    scope?: string[];
     /** (The Editor's own: an `objective` slot's quest, filled from the record beside it, so its picker lists that quest's.) */
     quest?: string;
+    /** Doc 86, Phase 2: an effect's parameter that may be a value worked out as it fires (C1a), words that may hold fills (C1b). */
+    operand?: boolean; fills?: boolean;
+    /** (The Editor's own: "…or a value" for an id parameter: its type (wolf, resident, place, item, faction, town).) */
+    idKind?: string;
 }
 export interface Field {type: string; label: string; any?: string}
 export interface CatEvent {
@@ -47,13 +55,27 @@ export interface Catalogue {
  *  value, or a little arithmetic. */
 export type Operand = number | boolean | string | {var: string; of?: string} | {field: string} | {count: string; of?: string}
     | {since: string; of?: string} | {each: true} | {plus: [Operand, Operand]} | {minus: [Operand, Operand]} | {min: [Operand, Operand]}
-    | {max: [Operand, Operand]};
+    | {max: [Operand, Operand]}
+    // (Doc 86, Phase 1a: the story's audience counted; times and div; the share, or the number, of the wolves who took part.)
+    | {audience: 'all' | 'active' | 'online'} | {times: [Operand, Operand]} | {div: [Operand, Operand]}
+    | {percent: ShareSource; of?: string} | {among: ShareSource; of?: string}
+    // (Doc 86, Phase 2, M2: what a purse holds now.)
+    | {purse: string}
+    // (Doc 86, Phase 3: a tally over every wolf (J11); a credited wolf's share, in a quest's rewards (C3b).)
+    | {tally: Tally} | {share: true};
+/** Doc 86, J11: a number each wolf keeps added up (sum), or wolves counted, over the story's wolves or a list, those whose
+ *  text or switch (where) is a value (is). */
+export interface Tally {sum?: string; where?: string; is?: string | boolean; over?: 'participants' | {list: string}}
+/** A filter's value (doc 86, C12b): a text, "begins with", or "one of". */
+export type MatchValue = string | {starts: string} | {in: string[]};
+/** Who counts (doc 86, R1): the wolves of a story or world list, or those for whom a test is true (the wolf as $each). */
+export type ShareSource = {list: string} | {where: Condition};
 export type Condition =
     | {test: 'all' | 'any'; conditions: Condition[]}
     | {test: 'not'; condition: Condition}
     | {test: 'mission'; id: string}
     | {test: 'region'; region: string}
-    | {test: 'field'; field: string; op: string; value: string | number}
+    | {test: 'field'; field: string; op: string; value: string | number | string[]}
     | {test: 'counter'; scope: string; key: string; op: string; value: number}
     // (Version 2.)
     | {test: 'compare'; left: Operand; op: string; right: Operand}
@@ -64,6 +86,8 @@ export type Condition =
     | {test: 'timer'; signal: string; owner?: string; op?: string; days?: number}
     | {test: 'fired'; trigger: string; op: string; value: number; in?: string}
     | {test: 'chance'; percent: number}
+    // (Doc 86, R1: enough of the active wolves took part.)
+    | {test: 'participation'; source?: 'list' | 'where'; list?: string; where?: Condition; of?: string; percent: number; floor?: number; cap?: number}
     | {test: 'days since'; from: string; op: string; days: number; var?: string; of?: string};
 export type Effect = Record<string, string | number | boolean> & {kind: string};   // (Phase 9: a tracker's show is a switch.)
 export interface Branch2 {if: Condition; then: Action[]}
@@ -81,6 +105,8 @@ export type Action =
     | {do: 'remember'; var: string; from: string; of?: string}
     | {do: 'list add' | 'list remove'; var: string; value: Operand; of?: string}
     | {do: 'pick'; list: string; var: string; of?: string}
+    // (Doc 86, C3a: the top wolves by a number each keeps, into a list of wolves.)
+    | {do: 'rank'; var: string; top: Operand; into: string; over?: string; list?: string; min?: Operand}
     | {do: 'shift'; signal: string; days: number; owner?: string}
     // (Version 2: flow.)
     | {do: 'if'; if: Condition; then: Action[]; elif?: Branch2[]; else?: Action[]}
@@ -99,7 +125,12 @@ export interface Trigger {
     enabled?: boolean;
 }
 /** A declared variable of a version 2 story (doc 85, 3.2). */
-export interface Variable {id: string; type: string; scope: string; initial?: unknown; note?: string; show?: string; clock?: string}
+export interface Variable {id: string; type: string; scope: string; initial?: unknown; note?: string; show?: string; clock?: string;
+    /** Doc 86, N2: a wolf's own value told to the residents they talk to (player.story.<name> in the dialogue window). */
+    talk?: boolean;
+    /** Doc 86, C1d: shown "of" another number ("This chapter: 34 / 80"); N3: a wolf's number that mirrors the world number
+     *  their text `key` names. */
+    showOf?: string; mirror?: {key: string; names: Record<string, string>}}
 export interface Exit {
     on: string; to: string; match?: Record<string, string>; afterDays?: number; percent?: number; players?: number; participant?: boolean;
     missions?: string[]; minCoins?: number; minQuantity?: number; prerequisites?: unknown[];
@@ -109,7 +140,16 @@ export interface Objective {label: string; on: string; signal?: string; sameAsFi
 export interface Mission {id: string; title: string; mode: 'individual' | 'group' | 'either'; objectives: Objective[];
     contributors?: number; players?: number; percent?: number}
 export interface Phase {id: string; journal: string; effects: Effect[]; exits: Exit[]; triggers?: Trigger[]; missions?: Mission[];
-    guestVoices?: string[]; campaignRules?: boolean}
+    guestVoices?: string[]; campaignRules?: boolean; ready?: ReadyBlock}
+/** A phase's Readiness (doc 86, R2): what it needs before it may move on by its ready exit. */
+export type ReadyPartSpec = {label?: string} & ({participation: ShareSource; of?: string; percent: number; floor?: number; cap?: number}
+    | {minDays: number; since?: 'phase' | 'chapter'} | {value: Operand; atLeast: Operand} | {test: Condition} | {missions: string[]} | {quest: string}
+    | {any: ReadyPartSpec[]});
+export interface ReadyBlock {all: ReadyPartSpec[]; auto?: boolean; then?: {on: string; match?: Record<string, string>}; slowAfterDays?: number;
+    slowNeedsYou?: boolean; autoAfterDays?: number}
+/** A rehearsal's readiness step (doc 86, R2): assert the phase is (not) ready, or press Advance. */
+export type ReadyStep = {check: 'ready'; met: boolean} | {advance: 'now' | 'anyway' | 'then'};
+export const isStep = (f: unknown): f is ReadyStep => !!f && typeof f === 'object' && !('kind' in f) && ('check' in f || 'advance' in f);
 /** One part of a library entry (tools/story_library.components): an opening, an objective, a participation rule, an outcome. */
 export interface Component {role: string; label: string; trigger?: Trigger; objective?: Objective; gate?: Pick<Mission, 'mode' | 'percent' | 'contributors'>; action?: Action}
 export interface Region {id: string; cell: string; x1: number; y1: number; x2: number; y2: number}
@@ -126,29 +166,61 @@ export interface Case {name: string; cohort: string[]; events: Fact[]; expect: s
     /** Phase 6: each quest's copies as the case ends: {quest: {holder: status}} (a wolf id, "party:<id>" or "story"). */
     expectQuests?: Record<string, Record<string, string>>;
     /** Phase 8: the world's facts as the case begins. */
-    facts?: WorldFacts}
+    facts?: WorldFacts;
+    /** Doc 86, J2: what each wolf holds of the story's realm variables at the start, as an earlier story left it. */
+    realm?: Record<string, Record<string, unknown>>;
+    /** Doc 86, C7: who the world would cast into each resident variable, best first. */
+    cast?: Record<string, string[]>}
 /** A quest's objective (doc 85, 3.6): an event of a wolf with filters, a goal, what must come first, optional or hidden. */
 export interface QuestObjective {id: string; label: string; on: string; signal?: string; match?: Record<string, string>;
-    goal?: number; measure?: 'count' | 'quantity' | 'coins'; after?: string[]; optional?: boolean; hidden?: boolean}
+    goal?: number | Operand; measure?: 'count' | 'quantity' | 'coins'; after?: string[]; optional?: boolean; hidden?: boolean;
+    /** Doc 86, Phase 2: the goal kept up with as its value changes (C1c); only in some cells or a region (SQ1); who it
+     *  credits (SQ5). */
+    goalLive?: boolean; where?: {cells: string[]} | {region: string}; credit?: 'actor' | 'target' | 'present'}
 /** What fails a quest: an event (with filters), or a deadline after it starts. */
 export type FailRule = {on: string; match?: Record<string, string>; signal?: string} | {afterDays: number; clock?: 'game' | 'real'};
-export interface QuestOffer {ask?: string; say: string; accept?: string; decline?: string; handIn?: string; thanks?: string}
-export interface QuestJoin {who?: 'anyone' | 'participants'; region?: string; cap?: number; limit?: number}
+export interface QuestOffer {ask?: string; say: string; accept?: string; decline?: string; handIn?: string; thanks?: string;
+    /** Doc 86, C6: what the giver says while the wolf's copy is under way, and the wolf's choice that asks it. */
+    during?: string; duringAsk?: string}
+export interface QuestJoin {who?: 'anyone' | 'participants'; region?: string; cap?: number; limit?: number;
+    /** Doc 86, N4: game days before the same wolf may take it again, after any end. */
+    again?: number}
 /** A quest (doc 85, 3.6; Phase 6): a version 2 story's, offered by a resident or given by a trigger. */
 export interface Quest {
     id: string; title: string; summary?: string; scope?: 'player' | 'party' | 'story'; contributors?: number; lifetime?: 'campaign' | 'phase';
-    phases?: string[]; repeat?: 'once' | 'daily' | 'weekly' | 'always'; giver?: string; board?: string; offer?: QuestOffer; handIn?: boolean; join?: QuestJoin;
+    phases?: string[]; repeat?: 'once' | 'daily' | 'weekly' | 'always';
+    /** A resident, or (doc 86, C7) the resident a story variable holds: cast as it runs; a copy keeps the giver it began with. */
+    giver?: string | {var: string}; board?: string; offer?: QuestOffer; handIn?: boolean; join?: QuestJoin;
     abandon?: boolean; objectives: QuestObjective[]; fail?: FailRule[]; rewards?: Effect[]; bonus?: Effect[];
+    /** Doc 86, C3b: each credited wolf rewarded by their share ({"share": true} in the rewards), at least creditMin. */
+    credit?: 'share'; creditMin?: number;
+    /** Doc 86, C6: only for the wolves for whom this holds (variables, the phase and quests; the wolf as the acting one). */
+    requires?: Condition;
+    /** Doc 86, J3: done, it counts as a finished Story for each wolf with credit (true is read as "line"). */
+    closure?: true | 'line' | 'side';
+    /** Doc 86, SQ4: its coin rewards stop after perDay a game day, counted for the quest or its purse (decisions 3.2's counters). */
+    rewardLimit?: {perDay: number; scope?: 'quest' | 'purse'};
 }
+/** Doc 86, C7: the resident who gives a quest as words: a resident's name, or "whoever <variable> holds". */
+export function giverWords(q: Quest, names: Record<string, Record<string, string> | undefined>): string {
+    if (!q.giver) return '';
+    if (typeof q.giver === 'object') return `whoever ${q.giver.var} holds`;
+    return names.resident?.[q.giver] ?? q.giver;
+}
+/** Doc 86, C6: the conditions a quest's "Only for wolves who…" may use (an offer is not an event: no world facts). */
+export const REQUIRES_TESTS = ['all', 'any', 'not', 'compare', 'switch', 'in list', 'days since', 'quest is', 'objective is', 'phase is'];
 export interface Audience {kind: string; days?: number; players?: string[]; cap?: number}
 export interface Program {
     format?: string; version?: number; id: string; title: string; audience: Audience;
     start: string; phases: Phase[]; triggers?: Trigger[]; regions?: Region[]; scenes?: Scene[]; tests: Case[]; quietAfterHours?: number;
     variables?: Variable[]; quests?: Quest[];
+    /** Doc 86, L2: the story's prefix (nh, sq, mq, lq, st): its camps' names begin with it. */
+    prefix?: string; activeDays?: number;
 }
 
 export const SIGNAL = 'story signal';
 export const GATE = 'missions completed';
+export const READY = 'ready';   // (Doc 86, R2: the exit a phase's Readiness takes.)
 export const FIELDS = ['actor', 'target', 'cell', 'item', 'detail'] as const;
 export const AMOUNTS = ['quantity', 'coins'] as const;
 const clone = <T,>(v: T): T => structuredClone(v);
@@ -167,12 +239,65 @@ export interface Refs {
     doors?: {id: string; name: string; cell?: string}[]; mantles?: {id: string; name: string}[];
     /** Phase 10: the stories a chapter may start (drafts, releases, campaigns' chapters), and the world's declared variables. */
     stories?: {id: string; name: string; hint?: string}[]; worldVars?: {id: string; name: string; type: string; note?: string}[];
+    /** Doc 86, SQ2: the businesses' tills a reward may pay from (till:job:<founder>, as the last checkpoint has them). */
+    tills?: {id: string; name: string}[];
+    /** Doc 86, L1: the animals of Data/Wild/animals.json a story may stage for a hunt, with the ground they live on. */
+    species?: {id: string; name: string; habitats?: string[]}[];
+    /** Doc 86, C14: the careers book's posts as last saved (job:<founder>), by title, with who holds each; never the Watch's. */
+    posts?: {id: string; name: string; title: string; holder: string}[];
 }
 /** The kinds a picker of a type lists (a `character` is a wolf or a resident). */
 export const REF_KIND: Record<string, keyof Refs> = {
     resident: 'residents', wolf: 'wolves', place: 'places', faction: 'factions', town: 'towns', market: 'markets', area: 'areas',
     ship: 'ships', item: 'items', template: 'templates', project: 'projects', door: 'doors', mantle: 'mantles', story: 'stories',
+    species: 'species', post: 'posts',
 };
+/** Doc 86, Phase 1b: the values a program's effects give one parameter (talk memory's keys and values, figures' ids). */
+export function effectValuesOf(p: Program, kinds: string[], key: string): string[] {
+    const out = new Set<string>();
+    const effects = [...p.phases.flatMap(ph => ph.effects ?? []), ...(p.quests ?? []).flatMap(q => [...(q.rewards ?? []), ...(q.bonus ?? [])]),
+        ...[...(p.triggers ?? []), ...p.phases.flatMap(ph => ph.triggers ?? [])].flatMap(t => allActions(t.actions).flatMap(({a}) => a.do === 'effect' ? [a.effect] : []))];
+    for (const e of effects) if (kinds.includes(e.kind) && typeof e[key] === 'string' && e[key]) out.add(e[key] as string);
+    return [...out].sort();
+}
+export const talkKeysOf = (p: Program) => effectValuesOf(p, ['talk.remember', 'talk.forget'], 'key');
+export const talkValuesOf = (p: Program) => effectValuesOf(p, ['talk.remember'], 'value');
+export const figuresOf = (p: Program) => effectValuesOf(p, ['figure.set', 'figure.clear'], 'figure');
+/** Doc 86, J9: the story's own items a program gives (item.give with a tag, wherever it is: a phase's effects, a trigger's
+ *  actions at any depth, a quest's rewards, a chapter's...), as a filter or "carries" names them (letter^watch_list), with
+ *  the name it gives them and the base item. A rehearsal's events are the game's, not the story's, and are left out. */
+export function storyItemsOf(p: Program): {id: string; item: string; tag: string; name: string; keep: boolean}[] {
+    const out = new Map<string, {id: string; item: string; tag: string; name: string; keep: boolean}>();
+    const visit = (node: unknown): void => {
+        if (Array.isArray(node)) { node.forEach(visit); return; }
+        if (!node || typeof node !== 'object') return;
+        const e = node as Record<string, unknown>;
+        if (e.kind === 'item.give' && typeof e.item === 'string' && typeof e.tag === 'string' && e.tag) {
+            const id = `${e.item}^${e.tag}`;
+            if (!out.has(id)) out.set(id, {id, item: e.item, tag: e.tag, name: typeof e.name === 'string' ? e.name : '', keep: e.keep === true});
+        }
+        for (const v of Object.values(e)) visit(v);
+    };
+    for (const [k, v] of Object.entries(p)) if (k !== 'tests') visit(v);
+    return [...out.values()].sort((a, b) => a.id.localeCompare(b.id));
+}
+/** Doc 86, J9: whether a slot may name the story's own item: an event's filter (no parameter) or a parameter that says so
+ *  ("carries"); never an effect's own item (item.give, item.take, item.place, a region's item), which the game refuses. */
+export const ownItemsHere = (slot: Pick<Slot, 'param'>) => !slot.param || slot.param.own === true;
+export const tagsOf = (p: Program) => [...new Set(storyItemsOf(p).map(s => s.tag))].sort();
+/** Doc 86, C10: the foes a program brings (foe.add, anywhere but a rehearsal), by the ids it gives them, with their names. */
+export function foesOf(p: Program): {id: string; name: string}[] {
+    const out = new Map<string, string>();
+    const visit = (node: unknown): void => {
+        if (Array.isArray(node)) { node.forEach(visit); return; }
+        if (!node || typeof node !== 'object') return;
+        const e = node as Record<string, unknown>;
+        if (e.kind === 'foe.add' && typeof e.foe === 'string' && e.foe && !out.has(e.foe)) out.set(e.foe, typeof e.name === 'string' ? e.name : '');
+        for (const v of Object.values(e)) visit(v);
+    };
+    for (const [k, v] of Object.entries(p)) if (k !== 'tests') visit(v);
+    return [...out].map(([id, name]) => ({id, name})).sort((a, b) => a.id.localeCompare(b.id));
+}
 /** Phase 9: the strangers (visitor.add) a program brings, by the ids it gives them. */
 export function visitorsOf(p: Program): string[] {
     const out = new Set<string>();
@@ -199,6 +324,11 @@ export function namesOf(refs: Refs | null, program?: Program | null): Names {
         // (Phase 6: quests by title, their objectives by label.)
         out.quest = Object.fromEntries((program.quests ?? []).map(q => [q.id, q.title || q.id]));
         out.objective = Object.fromEntries((program.quests ?? []).flatMap(q => q.objectives.map(o => [o.id, o.label || o.id])));
+        // (Doc 86, J9: the story's own items by the name it gives them, "the story's letter" when it gives none.)
+        out.item = {...out.item};
+        // (Doc 86, C10: a foe by the name the story gives them.)
+        out.foe = Object.fromEntries(foesOf(program).map(f => [f.id, f.name ? `${f.name} (${f.id})` : f.id]));
+        for (const s of storyItemsOf(program)) out.item[s.id] = s.name ? `“${s.name}” (the story's ${out.item[s.item] ?? s.item})` : `the story's ${out.item[s.item] ?? s.item} (${s.tag})`;
     }
     out.purse = purseNames(refs);
     return out;
@@ -216,6 +346,12 @@ const SLOT = /\{([^}]+)\}/g;
 export function shown(type: string, value: unknown, names: Names, param?: Param): string {
     if (type === 'operand') return operandWords(value as Operand, names);
     if (value === undefined || value === null || value === '') return '';
+    // (Doc 86, C1a: a parameter given a value, worked out as it fires; C12b: a filter that begins with or is one of.)
+    if (typeof value === 'object') {
+        const m = matchWords(value, names, type);
+        if (m !== undefined) return m;
+        if (isOperand(value)) return operandWords(value as Operand, names);
+    }
     if (typeof value === 'boolean') return param?.words?.[String(value)] ?? (value ? 'yes' : 'no');
     const text = String(value);
     if (param?.words && text in param.words) return param.words[text];
@@ -228,9 +364,13 @@ export function shown(type: string, value: unknown, names: Names, param?: Param)
     const name = names[type]?.[text];
     if (name && name !== text) return name;
     if (type === 'choice' || type === 'int' || type === 'days' || type === 'number') return text.replaceAll('_', ' ');
-    if (type === 'text') return '“' + text + '”';
+    // (Doc 86, C1b: a fill reads as ⟨name⟩, a wolf's own as ⟨name of the wolf⟩; Sentence.tsx shows each as a chip.)
+    if (type === 'text') return '“' + fillChips(text) + '”';
     return text;
 }
+/** A text's fills as the sentence shows them: {bar} as ⟨bar⟩, {p_town.of} as ⟨p_town of the wolf⟩, {{ and }} as braces. */
+export const fillChips = (text: string) => text.replace(/\{\{|\}\}|\{([A-Za-z0-9_][A-Za-z0-9_.:-]*?)(\.of)?\}/g,
+    (m, name?: string, of?: string) => m === '{{' ? '{' : m === '}}' ? '}' : `⟨${name}${of ? ' of the wolf' : ''}⟩`);
 
 /** A catalogue sentence cut into words and slots; `slot(name)` says what fills each. */
 export function parts(template: string, slot: (name: string) => Omit<Slot, 'slot'>): Part[] {
@@ -246,6 +386,44 @@ export function parts(template: string, slot: (name: string) => Omit<Slot, 'slot
 }
 export const plain = (ps: Part[]) => ps.map(p => 'text' in p ? p.text : p.hidden ? '' : (p.shown || p.label)).join('').replace(/ {2,}/g, ' ').replace(/ ([,:])/g, '$1').trim();
 
+const OPERAND_KEYS = ['var', 'field', 'count', 'since', 'each', 'audience', 'purse', 'percent', 'among', 'plus', 'minus', 'min', 'max', 'times', 'div'];
+/** Whether a value is a version 2 value's form ({var}, {field}, arithmetic...), as a parameter marked operand holds one. */
+export const isOperand = (v: unknown): boolean => !!v && typeof v === 'object' && !Array.isArray(v) && OPERAND_KEYS.some(k => k in (v as object));
+
+/** A filter's value in words (doc 86, C12b): "begins with “stood watch”", "one of Coldwater, Larkfield"; undefined when it is
+ *  not a filter's form. */
+export function matchWords(v: unknown, names: Names, type = 'text'): string | undefined {
+    if (!v || typeof v !== 'object' || Array.isArray(v)) return undefined;
+    const o = v as Record<string, unknown>;
+    if (typeof o.starts === 'string' && Object.keys(o).length === 1) return `begins with “${o.starts}”`;
+    if (Array.isArray(o.in) && Object.keys(o).length === 1) return 'one of ' + o.in.map(x => shown(type === 'text' ? 'plain' : type, x, names)).join(', ');
+    return undefined;
+}
+
+/** The fills of a version 2 text (doc 86, C1b): {name} and {name.of}; {{ and }} are braces. */
+export function fillsOf(text: string): {name: string; of: boolean}[] {
+    const out: {name: string; of: boolean}[] = [];
+    for (const m of text.matchAll(/\{\{|\}\}|\{([A-Za-z0-9_][A-Za-z0-9_.:-]*?)(\.of)?\}/g)) if (m[1]) out.push({name: m[1], of: !!m[2]});
+    return out;
+}
+/** The widest a text with fills can be (story_triggers.check_fills): a number 11, a switch 3, a text 200, a wolf's name 24,
+ *  another name 40. */
+export function widestFilled(text: string, p: Program): number {
+    const base = text.replace(/\{\{|\}\}|\{([A-Za-z0-9_][A-Za-z0-9_.:-]*?)(\.of)?\}/g, m => m === '{{' ? '{' : m === '}}' ? '}' : '').length;
+    const widest: Record<string, number> = {number: 11, switch: 3, text: 200, wolf: 24};
+    return base + fillsOf(text).reduce((n, f) => {
+        const v = p.variables?.find(x => x.id === f.name);
+        return n + (v?.mirror ? 11 : widest[v?.type ?? ''] ?? 40);
+    }, 0);
+}
+
+/** The name tokens a fill leaves for the game ({@w:<wolf>}, {@r:...}, {@p:...}, {@i:...}, {@f:...}) as a rehearsal shows them
+ *  (doc 86, C1b): «wolf: Bilbo», with the rehearsal's names. */
+export function tokenWords(text: string, names: Names): string {
+    const kinds: Record<string, [string, string]> = {w: ['wolf', 'wolf'], r: ['resident', 'resident'], p: ['place', 'place'], i: ['item', 'item'], f: ['faction', 'faction']};
+    return text.replace(/\{@([wrpif]):([^}]*)\}/g, (_m, k: string, id: string) => `«${kinds[k][0]}: ${names[kinds[k][1]]?.[id] ?? id}»`);
+}
+
 const FIELD_WORDS: Record<string, string> = {actor: 'the acting wolf', target: "the event's target", cell: "the event's place", item: "the event's item",
     detail: "the event's detail", quantity: "the event's quantity", coins: "the event's coins"};
 /** A version 2 value in words: 3, on, “text”, ropes, the event's item, how many in signed, days since gate, the looped wolf. */
@@ -260,10 +438,29 @@ export function operandWords(o: Operand | undefined, names: Names): string {
     if ('count' in o) return 'how many in ' + whose(o) + o.count;
     if ('since' in o) return 'the days since ' + whose(o) + o.since;
     if ('each' in o) return 'the looped value';
+    if ('audience' in o) return AUDIENCE_WORDS[o.audience] ?? o.audience;
+    if ('purse' in o) return `what ${names.purse?.[o.purse] ?? o.purse} holds`;
+    if ('share' in o) return "the wolf's share";
+    if ('tally' in o) return tallyWords(o.tally);
+    if ('percent' in o || 'among' in o) {
+        const src = ('percent' in o ? o.percent : o.among) as ShareSource;
+        const who = OF_WORDS[o.of ?? 'active'] ?? o.of;
+        const which = 'list' in src ? `in ${src.list}` : 'who meet a test';
+        return 'percent' in o ? `the share (%) of the ${who} wolves ${which}` : `how many of the ${who} wolves are ${which.replace('who meet', 'meeting')}`;
+    }
     const [key, pair] = Object.entries(o)[0] as [string, [Operand, Operand]];
     const [a, b] = pair.map(x => operandWords(x, names));
-    return key === 'plus' ? `(${a} + ${b})` : key === 'minus' ? `(${a} − ${b})` : key === 'min' ? `the smaller of ${a} and ${b}` : `the larger of ${a} and ${b}`;
+    return key === 'plus' ? `(${a} + ${b})` : key === 'minus' ? `(${a} − ${b})` : key === 'times' ? `(${a} × ${b})` : key === 'div' ? `(${a} ÷ ${b}, whole)`
+        : key === 'min' ? `the smaller of ${a} and ${b}` : `the larger of ${a} and ${b}`;
 }
+/** Doc 86, J11: "the p_voice of every wolf of the story whose p_backs is “lamp”, added up", "how many wolves in pledged". */
+export function tallyWords(t: Tally): string {
+    const over = t.over && typeof t.over === 'object' ? `in ${t.over.list}` : 'of the story';
+    const which = t.where ? ` whose ${t.where} is ${typeof t.is === 'boolean' ? (t.is ? 'on' : 'off') : '“' + (t.is ?? '') + '”'}` : '';
+    return t.sum ? `the ${t.sum} of every wolf ${over}${which}, added up` : `how many wolves ${over}${which}`;
+}
+const AUDIENCE_WORDS: Record<string, string> = {all: "how many wolves the story has", active: 'how many wolves are active', online: 'how many wolves are online'};
+const OF_WORDS: Record<string, string> = {active: 'active', all: "story's", online: 'online'};
 /** What kind of value an operand is (number, switch or text), as story_triggers.operand_type says; '' when it cannot tell. */
 export function operandKind(o: Operand | undefined, p: Program): string {
     if (typeof o === 'number') return 'number';
@@ -293,6 +490,15 @@ export function actionItem(cat: Catalogue, a: Action | {do: string; var?: unknow
     return itemOf(cat.actions, a.do);
 }
 
+/** Doc 86, J6: a count in a region names its residents list when residents are counted, and only then: going back to
+ *  the story's wolves drops the list. */
+export function countWho<T extends Record<string, unknown>>(c: T): T {
+    if (c.test !== 'count in region' || c.who === 'residents' || !('list' in c)) return c;
+    const {list, ...rest} = c;
+    void list;
+    return rest as T;
+}
+
 /** The params of an item filled from a record (an action, a condition, an effect): a slot per sentence slot. */
 export function itemParts(item: CatItem, record: Record<string, unknown>, names: Names): Part[] {
     const params = item.params ?? [];
@@ -309,7 +515,7 @@ export function itemParts(item: CatItem, record: Record<string, unknown>, names:
         const type = param?.type ?? 'text';
         if (type === 'whose') {   // (Shown only before a variable of each wolf or party.)
             const name = record.var ?? record.list;
-            const personal = ['player', 'party'].includes(names['var-scope']?.[String(name)] ?? '');
+            const personal = ['player', 'party', 'realm'].includes(names['var-scope']?.[String(name)] ?? '');
             const text = personal ? (param?.words?.[String(value ?? '$actor')] ?? "the acting wolf's") : '';
             return {keys, type, label: param?.label ?? keys[0], value, param, shown: text, empty: !personal, hidden: !personal} as Omit<Slot, 'slot'>;
         }
@@ -322,7 +528,9 @@ export function itemParts(item: CatItem, record: Record<string, unknown>, names:
         }
         if (param?.optional && (value === undefined || value === '')) {
             // (A list or a timer variable that only some choices need: asked for when "the list" or "the timer" is chosen.)
-            const wanted = param.type === 'variable' && (record.over === 'list' || record.from === 'var');
+            // (Doc 86, J6: a count in a region asks for its residents list once residents are counted.)
+            const wanted = param.type === 'variable' && (record.over === 'list' || record.from === 'var'
+                || (item.id === 'count in region' && param.key === 'list' && record.who === 'residents'));
             return {keys, type, label: wanted ? param.label : param.words?.[''] ?? '', value, param, shown: param.words?.[''] ?? '', empty: true,
                 hidden: !param.words?.[''] && !wanted} as Omit<Slot, 'slot'>;
         }
@@ -383,11 +591,23 @@ export function conditionParts(cat: Catalogue, c: Condition, names: Names): Part
         const defaults = Object.fromEntries((item.params ?? []).filter(p => ['who', 'of', 'where'].includes(p.key) && p.default !== undefined).map(p => [p.key, p.default]));
         return itemParts(item, {...defaults, ...c} as unknown as Json, names);
     }
+    if (c.test === 'participation') {
+        // (Doc 86, R1: who counts as the list or the test, the test in words, the cap only when given.)
+        const source = c.source ?? ('where' in c && c.where ? 'where' : 'list');
+        const ps = itemParts(item, {...c, source, of: c.of ?? 'active'} as unknown as Json, names);
+        return ps.map(p => !('slot' in p) ? p : p.slot === 'where' ? {...p, hidden: source !== 'where', empty: source === 'where' && !c.where,
+            shown: c.where ? '(' + plain(conditionParts(cat, c.where, names)).replaceAll("the looped wolf's", "the wolf's") + ')' : ''}
+            : p.slot === 'list' ? {...p, hidden: source !== 'list', empty: source === 'list' && !c.list}
+            : p.slot === 'cap' ? {...p, shown: c.cap ? `${c.cap} always enough` : 'no cap', empty: false}
+            : p.slot === 'floor' ? {...p, shown: String(c.floor ?? 1), empty: false} : p);
+    }
     if (c.test === 'field') {
         const amount = (AMOUNTS as readonly string[]).includes(c.field);
         const ps = itemParts(item, c as unknown as Json, names);
+        // (Doc 86, C12b: "begins with" a text, "is one of" a list.)
+        const value = c.op === 'in' && Array.isArray(c.value) ? (c.value as unknown[]).map(x => '“' + String(x) + '”').join(', ') : undefined;
         return ps.map(p => 'slot' in p && p.slot === 'value' ? {...p, type: amount ? 'int' : 'text',
-            shown: amount ? String(c.value) : shown('text', c.value, names)} : p);
+            shown: amount ? String(c.value) : value ?? shown('text', c.value, names)} : p);
     }
     return itemParts(item, c as unknown as Json, names);
 }
@@ -410,7 +630,8 @@ export function refusable(cat: Catalogue, kind: string): boolean {
 export function effectParts(cat: Catalogue, e: Effect, names: Names): Part[] {
     const item = itemOf(cat.effects, e.kind);
     if (!item) return [{text: 'the world effect ' + e.kind}];
-    return itemParts(item, e, names);
+    // (Doc 86, C10: a foe brought reads by the name it is given and the id it is given beside, never its name twice.)
+    return itemParts(item, e, e.kind === 'foe.add' ? {...names, foe: {}} : names);
 }
 
 export function exitParts(cat: Catalogue, x: Exit, names: Names, phaseMissions: Mission[]): Part[] {
@@ -419,6 +640,8 @@ export function exitParts(cat: Catalogue, x: Exit, names: Names, phaseMissions: 
         const titles = (x.missions ?? []).map(id => phaseMissions.find(m => m.id === id)?.title || id);
         head.push({text: 'the missions '}, {slot: 'missions', keys: ['missions'], type: 'missions', label: 'missions', value: x.missions,
             shown: titles.join(', '), empty: !titles.length}, {text: ' are complete'});
+    } else if (x.on === READY) {
+        head.push({text: 'the phase is ready (its Readiness is met, or an admin presses Advance)'});
     } else if (x.on === 'dm signal') {
         head.push({text: 'a Dungeon Master directs '}, {slot: 'detail', keys: ['detail'], type: 'text', label: 'a direction',
             value: x.match?.detail, shown: x.match?.detail ?? '', empty: !x.match?.detail});
@@ -718,22 +941,41 @@ export function variablesOf(p: Program): Variable[] {
     return countersOf(p).map(c => ({id: c.key, type: 'number', scope: c.scope}));
 }
 /** The variable names an operand, a condition or an action reads or writes. */
-function operandVars(o: unknown): string[] {
+export function operandVars(o: unknown): string[] {
     if (!o || typeof o !== 'object') return [];
     const x = o as Json;
     const own = ['var', 'count', 'since'].flatMap(k => typeof x[k] === 'string' ? [x[k] as string] : []);
-    return [...own, ...['plus', 'minus', 'min', 'max'].flatMap(k => Array.isArray(x[k]) ? (x[k] as unknown[]).flatMap(operandVars) : [])];
+    const shares = ['percent', 'among'].flatMap(k => record(x[k]) ? [...(typeof (x[k] as Json).list === 'string' ? [(x[k] as Json).list as string] : []),
+        ...(record((x[k] as Json).where) ? conditionsOf((x[k] as Json).where as Condition).flatMap(conditionVars) : [])] : []);
+    // (Doc 86, J11: a tally reads what it adds up, the variable it picks wolves by, and the list it is over.)
+    const t = record(x.tally) ? x.tally as Json : null;
+    const tally = t ? [t.sum, t.where, record(t.over) ? (t.over as Json).list : undefined].filter((v): v is string => typeof v === 'string') : [];
+    return [...own, ...shares, ...tally, ...['plus', 'minus', 'min', 'max', 'times', 'div'].flatMap(k => Array.isArray(x[k]) ? (x[k] as unknown[]).flatMap(operandVars) : [])];
 }
 export function conditionVars(c: Condition): string[] {
     const x = c as unknown as Json;
-    return [...(['switch', 'in list', 'days since'].includes(c.test) ? [x.var, x.list].filter((v): v is string => typeof v === 'string') : []),
+    return [...(['switch', 'in list', 'days since', 'participation', 'count in region'].includes(c.test) ? [x.var, x.list].filter((v): v is string => typeof v === 'string') : []),
+        ...(c.test === 'participation' && c.where ? conditionsOf(c.where).flatMap(conditionVars) : []),
         ...operandVars(x.left), ...operandVars(x.right), ...operandVars(x.value)];
 }
 export function actionVars(a: Action): {reads: string[]; writes: string[]} {
     const x = a as unknown as Json;
     if (a.do === 'each') return {reads: a.list ? [a.list] : [], writes: []};
     if (a.do === 'pick') return {reads: [a.list], writes: [a.var]};
+    if (a.do === 'rank') return {reads: [a.var, ...(a.list ? [a.list] : []), ...operandVars(a.top), ...operandVars(a.min)], writes: [a.into]};
     return {reads: operandVars(x.value), writes: typeof x.var === 'string' && a.do !== 'if' ? [x.var] : []};
+}
+/** Doc 86, R2: the variables a phase's Readiness reads (its participation parts' lists and tests, its values and tests,
+ *  inside an `any` group too). */
+export function readyVars(ph: Phase): string[] {
+    const part = (x: ReadyPartSpec): string[] => {
+        if ('any' in x) return x.any.flatMap(part);
+        if ('participation' in x) return 'list' in x.participation ? [x.participation.list] : conditionsOf(x.participation.where).flatMap(conditionVars);
+        if ('value' in x) return [...operandVars(x.value), ...operandVars(x.atLeast)];
+        if ('test' in x) return conditionsOf(x.test).flatMap(conditionVars);
+        return [];
+    };
+    return (ph.ready?.all ?? []).flatMap(part);
 }
 export function eachTrigger(p: Program, fn: (t: Trigger, ref: Ref) => void) {
     (p.triggers ?? []).forEach((t, index) => fn(t, {kind: 'trigger', phase: null, index}));
@@ -781,7 +1023,11 @@ export function usesOf(p: Program, what: {type: string; id: string; scope?: stri
     p.phases.forEach((ph, phase) => {
         if (type === 'phase') {
             ph.exits.forEach((x, index) => { if (x.to === id) out.push({ref: {kind: 'exit', phase, index}, where: `${ph.id}: exit ${index + 1} goes there`}); });
-        } else if (type !== 'signal' && type !== 'counter' && type !== 'variable' && type !== 'trigger') {
+        } else if (type === 'variable') {
+            if (readyVars(ph).includes(id)) out.push({ref: {kind: 'phase', phase}, where: `${ph.id}: its Readiness reads it`});
+        } else if (type !== 'signal' && type !== 'counter' && type !== 'trigger') {
+            // (Doc 86, R2: a Readiness part names this phase's missions and the story's quests.)
+            if (hasValue(ph.ready)) out.push({ref: {kind: 'phase', phase}, where: `${ph.id}: its Readiness`});
             ph.exits.forEach((x, index) => { if (hasValue(x.match)) out.push({ref: {kind: 'exit', phase, index}, where: `${ph.id}: exit ${index + 1}`}); });
             if (ph.effects.some(hasValue)) out.push({ref: {kind: 'entry', phase}, where: `${ph.id}: when it opens`});
             if (ph.guestVoices?.includes(id)) out.push({ref: {kind: 'phase', phase}, where: `${ph.id}: a guest voice`});
@@ -866,28 +1112,77 @@ export function renameVariable(p: Program, from: string, to: string): Program {
         if (!o || typeof o !== 'object') return o;
         const x = o as Json;
         for (const k of ['var', 'count', 'since']) if (x[k] === from) return {...x, [k]: to} as Operand;
-        for (const k of ['plus', 'minus', 'min', 'max']) if (Array.isArray(x[k])) {
+        for (const k of ['percent', 'among']) if (record(x[k])) { const s = share(x[k] as ShareSource); if (s !== x[k]) return {...x, [k]: s} as Operand; }
+        for (const k of ['plus', 'minus', 'min', 'max', 'times', 'div']) if (Array.isArray(x[k])) {
             const pair = (x[k] as Operand[]).map(op);
             return pair.some((v, i) => v !== (x[k] as Operand[])[i]) ? {[k]: pair} as Operand : o;
         }
         return o;
     };
+    // (Doc 86, C7: an effect's own variables (a tracker's, a chapter's list, a casting's into and not one of) and its values.)
+    const effectOf = (e: Json): Json => {
+        let changed = false;
+        const out = Object.fromEntries(Object.entries(e).map(([k, v]) => {
+            const w = k !== 'kind' && (['var', 'list', 'notIn'].includes(k) && v === from ? to : record(v) ? op(v as Operand) : v);
+            if (w !== v && k !== 'kind') changed = true;
+            return [k, k === 'kind' ? v : w];
+        }));
+        return changed ? out : e;
+    };
     const named = (x: Json) => {
         let next = x;
+        if (next.do === 'effect' && record(next.effect)) { const e = effectOf(next.effect as Json); if (e !== next.effect) next = {...next, effect: e}; }
         for (const k of ['var', 'list']) if (next[k] === from) next = {...next, [k]: to};
         for (const k of ['left', 'right', 'value']) if (k in next) { const v = op(next[k] as Operand); if (v !== next[k]) next = {...next, [k]: v}; }
+        if (record(next.where)) { const w = cond(next.where as Condition); if (w !== next.where) next = {...next, where: w}; }   // (A participation's test.)
         return next;
     };
-    const out = rewriteTriggers(p, t => mapTriggerConditions({...t, actions: mapActions(t.actions, a => named(a as unknown as Json) as unknown as Action)},
-        c => ['compare', 'switch', 'in list', 'days since'].includes(c.test) ? named(c as unknown as Json) as unknown as Condition : c));
+    // (Doc 86, J6: a count in a region reads a residents list.)
+    const one = (c: Condition) => ['compare', 'switch', 'in list', 'days since', 'participation', 'count in region'].includes(c.test) ? named(c as unknown as Json) as unknown as Condition : c;
+    const cond = (c: Condition): Condition => mapCondition(c, one);
+    const share = (s: ShareSource): ShareSource => 'list' in s ? (s.list === from ? {list: to} : s) : (cond(s.where) === s.where ? s : {where: cond(s.where)});
+    // (Doc 86, R2: a phase's Readiness reads variables in its participation parts, its values and its tests.)
+    const readyPart = (x: ReadyPartSpec): ReadyPartSpec => {
+        if ('any' in x) { const any = x.any.map(readyPart); return any.some((y, i) => y !== x.any[i]) ? {...x, any} : x; }
+        if ('participation' in x) { const s = share(x.participation); return s === x.participation ? x : {...x, participation: s}; }
+        if ('value' in x) { const v = op(x.value), a = op(x.atLeast); return v === x.value && a === x.atLeast ? x : {...x, value: v, atLeast: a}; }
+        if ('test' in x) { const t = cond(x.test); return t === x.test ? x : {...x, test: t}; }
+        return x;
+    };
+    const renamed = rewriteTriggers(p, t => mapTriggerConditions({...t, actions: mapActions(t.actions, a => named(a as unknown as Json) as unknown as Action)}, one));
+    const out = {...renamed, phases: renamed.phases.map(ph => {
+        if (!ph.ready) return ph;
+        const all = ph.ready.all.map(readyPart);
+        return all.some((x, i) => x !== ph.ready!.all[i]) ? {...ph, ready: {...ph.ready, all}} : ph;
+    })};
     const tests = out.tests.map(c => {
         const v = c.expectVariables as Record<string, Json> | undefined;
-        if (!v) return c;
         const rename = (o: Json) => from in o ? Object.fromEntries(Object.entries(o).map(([k, x]) => [k === from ? to : k, x])) : o;
-        return {...c, expectVariables: Object.fromEntries(Object.entries(v).map(([scope, o]) => [scope,
-            scope === 'player' || scope === 'party' ? Object.fromEntries(Object.entries(o).map(([w, x]) => [w, rename(x as Json)])) : rename(o)]))};
+        const byWolf = (o: Json) => Object.fromEntries(Object.entries(o).map(([w, x]) => [w, rename(x as Json)]));
+        // (Doc 86, J2: a case's realm values, by wolf, are renamed too.)
+        const realm = c.realm as Json | undefined;
+        const next = realm ? {...c, realm: byWolf(realm)} : c;
+        if (!v) return next;
+        return {...next, expectVariables: Object.fromEntries(Object.entries(v).map(([scope, o]) => [scope,
+            scope === 'player' || scope === 'party' || scope === 'realm' ? byWolf(o) : rename(o)]))};
     });
-    return {...out, tests, variables: (out.variables ?? []).map(v => v.id === from ? {...v, id: to} : v)};
+    // (Doc 86, C7: a quest's giver read from a variable, and a case's castings, by the variable's name.)
+    const castCases = tests.map(c => {
+        const cast = c.cast;
+        return cast && from in cast ? {...c, cast: Object.fromEntries(Object.entries(cast).map(([k, x]) => [k === from ? to : k, x]))} : c;
+    });
+    const quests = out.quests?.map(q => {
+        let next = q;
+        if (typeof q.giver === 'object' && q.giver.var === from) next = {...next, giver: {var: to}};
+        for (const key of ['rewards', 'bonus'] as const) {
+            const list = next[key];
+            if (!list) continue;
+            const mapped = list.map(e => effectOf(e as unknown as Json) as unknown as Effect);
+            if (mapped.some((e, i) => e !== list[i])) next = {...next, [key]: mapped};
+        }
+        return next;
+    });
+    return {...out, ...(quests ? {quests} : {}), tests: castCases, variables: (out.variables ?? []).map(v => v.id === from ? {...v, id: to} : v)};
 }
 
 /** A trigger renamed, and the rehearsal cases that expect it by name. */
@@ -1035,6 +1330,8 @@ export function newEffect(cat: Catalogue, kind: string, p: Program): Effect {
         else if (param.type === 'bool') e[param.key] = true;
         else if (param.type === 'variable') e[param.key] = (p.variables ?? []).find(v => v.show && (param.of ?? []).includes(v.type))?.id ?? '';
         else if (param.type === 'visitor') e[param.key] = 'stranger-' + ((visitorsOf(p).length) + 1);
+        // (Doc 86, C10: a new foe's id of the story's own; one sent away, the first it brings.)
+        else if (param.type === 'foe') e[param.key] = kind === 'foe.add' ? 'foe-' + (foesOf(p).length + 1) : foesOf(p)[0]?.id ?? '';
         else e[param.key] = '';
     }
     if (kind === 'scene.play' && p.scenes?.[0]?.visibility === 'public') e.player = 'world';
@@ -1062,6 +1359,12 @@ export function newAction(cat: Catalogue, kind: string, p: Program, trigger?: st
             return {do: 'pick', list: list?.id ?? 'names', var: into?.id ?? 'chosen'};
         }
         case 'start timer': case 'stop timer': return {do: kind, var: firstVar(p, TIMERS, 'since')};
+        case 'rank': {
+            // (Doc 86, C3a: by a number each wolf keeps, into a list of wolves of the story or the world.)
+            const by = (p.variables ?? []).find(v => v.type === 'number' && v.scope === 'player' && !v.mirror)?.id ?? 'progress';
+            const into = (p.variables ?? []).find(v => v.type === 'wolves' && (v.scope === 'story' || v.scope === 'world'))?.id ?? 'best';
+            return {do: 'rank', var: by, top: 3, into};
+        }
         case 'shift': return {do: 'shift', signal: signalsOf(p)[0] ?? 'deadline', days: 1};
         case 'if': return {do: 'if', if: newCondition('compare', p, null), then: [{do: 'note', text: 'Then…'}]};
         case 'wait': return {do: 'wait', days: 1};
@@ -1096,6 +1399,7 @@ export function newWorldCondition(item: CatItem, p: Program): Condition {
     const c: Record<string, unknown> = {test: item.id};
     for (const param of item.params ?? []) {
         if (['who', 'of', 'where'].includes(param.key)) continue;   // (The acting wolf unless another is chosen.)
+        if (param.optional) continue;                              // (Doc 86, J6: a count's residents list, only when chosen.)
         if (param.type === 'region') c[param.key] = p.regions?.[0]?.id ?? '';
         else if (param.type === 'quest') c[param.key] = p.quests?.[0]?.id ?? '';
         else if (param.type === 'objective') c[param.key] = p.quests?.find(q => q.id === c.quest)?.objectives[0]?.id ?? '';
@@ -1120,6 +1424,8 @@ export function newCondition(kind: string, p: Program, phase: number | null, cat
         case 'fired': return {test: 'fired', trigger: triggersOf(p, phase)[0]?.id ?? (p.triggers ?? [])[0]?.id ?? '', op: '>=', value: 1};
         case 'chance': return {test: 'chance', percent: 50};
         case 'days since': return {test: 'days since', from: 'phase', op: '>=', days: 1};
+        case 'participation': { const list = (p.variables ?? []).find(v => v.type === 'wolves' && ['story', 'world'].includes(v.scope))?.id ?? 'did';
+            return {test: 'participation', source: 'list', list, of: 'active', percent: 35, floor: 3}; }
         case 'counter': return newCondition('compare', p, phase);
     }
     switch (kind) {
@@ -1151,8 +1457,8 @@ const record = (v: unknown): v is Json => typeof v === 'object' && v !== null &&
 const V2_TESTS = ['compare', 'switch', 'in list', 'phase is', 'visit is', 'timer', 'fired', 'chance', 'days since',
     // (Phase 8: over the world's facts as of the event, and the story's quests.)
     'wolf here', 'wolf in region', 'wolf in place', 'wolf in town', 'wolf indoors', 'count in region', 'carries', 'coins', 'standing', 'reputation',
-    'wolf is', 'party size', 'in party with', 'resident is', 'resident in place', 'resident in region', 'resident has', 'hour between', 'calendar is',
-    'weather is', 'relation is', 'quest is', 'objective is'];
+    'wolf is', 'wolf has', 'party size', 'in party with', 'resident is', 'resident in place', 'resident in region', 'resident has', 'hour between', 'calendar is',
+    'weather is', 'relation is', 'quest is', 'objective is', 'participation'];
 function editableCondition(v: unknown, depth = 0): boolean {
     if (!record(v) || depth > 5) return false;
     if (v.test === 'all' || v.test === 'any') return Array.isArray(v.conditions) && v.conditions.every(c => editableCondition(c, depth + 1));
@@ -1160,10 +1466,13 @@ function editableCondition(v: unknown, depth = 0): boolean {
     if (v.test === 'region') return typeof v.region === 'string';
     if (v.test === 'mission') return typeof v.id === 'string';
     if (V2_TESTS.includes(String(v.test))) return true;   // (Version 2: shown as its sentence; the check says what is wrong.)
-    return (v.test === 'counter' || v.test === 'field') && ['string', 'number'].includes(typeof v.value);
+    // (Doc 86, C12b: the field's "is one of" takes a list of texts.)
+    return (v.test === 'counter' || v.test === 'field') && (['string', 'number'].includes(typeof v.value)
+        || (v.test === 'field' && v.op === 'in' && Array.isArray(v.value) && v.value.every(x => typeof x === 'string')));
 }
 const ACTIONS = ['enter', 'emit', 'set', 'add', 'schedule', 'cancel', 'subtract', 'multiply', 'clamp', 'turn on', 'turn off', 'toggle', 'remember',
-    'list add', 'list remove', 'list clear', 'pick', 'start timer', 'stop timer', 'shift', 'wait', 'run', 'enable', 'disable', 'stop', 'note', 'finish'];
+    'list add', 'list remove', 'list clear', 'pick', 'start timer', 'stop timer', 'shift', 'wait', 'run', 'enable', 'disable', 'stop', 'note', 'finish',
+    'rank'];
 function editableActions(v: unknown, depth = 0): boolean {
     return Array.isArray(v) && depth <= 4 && v.every(a => record(a) && (a.do === 'effect' ? record(a.effect) && typeof a.effect.kind === 'string'
         : a.do === 'if' ? editableCondition(a.if) && editableActions(a.then, depth + 1) && (a.else === undefined || editableActions(a.else, depth + 1))
@@ -1198,7 +1507,7 @@ export function editable(v: unknown): v is Program {
         && (p.scenes === undefined || (Array.isArray(p.scenes) && p.scenes.every(s => record(s) && typeof s.title === 'string' && Array.isArray(s.beats))))
         && (p.quests === undefined || (Array.isArray(p.quests) && p.quests.every(editableQuest)))
         && Array.isArray(p.tests) && p.tests.every(c => record(c) && typeof c.name === 'string' && Array.isArray(c.cohort) && Array.isArray(c.expect)
-            && Array.isArray(c.events) && c.events.every(f => record(f) && typeof f.kind === 'string'))
+            && Array.isArray(c.events) && c.events.every(f => record(f) && (typeof f.kind === 'string' || isStep(f))))
         && Array.isArray(p.phases) && p.phases.length > 0 && p.phases.every(ph => record(ph) && typeof ph.id === 'string' && typeof ph.journal === 'string'
             && (ph.guestVoices === undefined || Array.isArray(ph.guestVoices))
             && (ph.triggers === undefined || (Array.isArray(ph.triggers) && ph.triggers.every(editableTrigger)))
@@ -1224,7 +1533,7 @@ export function wordingOf(cat: Catalogue, flat: Record<string, string>) {
 
 /** The quest effects' kinds that name a quest (and an objective): renaming one follows them. */
 export const QUEST_EFFECTS = ['quest.offer', 'quest.start', 'quest.complete', 'quest.fail', 'objective.complete', 'objective.fail', 'objective.reveal',
-    'objective.progress'];
+    'objective.progress', 'quest.withdraw'];
 /** The events a quest's objectives may wait for: the catalogue's mission events, and a story signal. */
 export function objectiveEvents(cat: Catalogue): CatEvent[] {
     return cat.events.filter(e => e.mission || e.id === SIGNAL);
@@ -1232,13 +1541,12 @@ export function objectiveEvents(cat: Catalogue): CatEvent[] {
 /** Who pays a coin reward (doc 85, question 4: never minted): each town's treasury, works, watch and church, from the refs. */
 export function purseNames(refs: Refs | null): Record<string, string> {
     const out: Record<string, string> = {};
-    for (const t of refs?.towns ?? []) {
-        out['town:' + t.id] = `${t.name}'s treasury`;
-        for (const [k, w] of [['works', 'Town Works'], ['watch', 'watch'], ['church', 'church']]) out[`town:${t.id}:${k}`] = `${t.name}'s ${w}`;
-    }
+    for (const t of refs?.towns ?? []) out['town:' + t.id] = `${t.name}'s treasury`;
+    // (Doc 86, SQ2: a business's till pays as till:job:<founder>; no world has a town's works, watch or church purse.)
+    for (const t of refs?.tills ?? []) out[t.id] = t.name;
     return out;
 }
-export const PURSE = /^(town:[A-Za-z0-9_.-]{1,60}(:(works|watch|church))?|till:[A-Za-z0-9_.:-]{1,70}|chapter:[A-Za-z0-9_.:-]{1,70})$/;
+export const PURSE = /^(town:[A-Za-z0-9_.-]{1,60}(:(works|watch|church))?|till:(job:)?[A-Za-z0-9_.-]{1,70}|chapter:[A-Za-z0-9_.:-]{1,70})$/;
 const ID = /^[A-Za-z0-9_][A-Za-z0-9_.:-]{0,79}$/;
 export const isId = (v: string) => ID.test(v);
 
@@ -1269,12 +1577,27 @@ function mapEffects(p: Program, fn: (e: Effect) => Effect): Program {
         }),
         ...(p.quests ? {quests: p.quests.map(q => ({...q, ...(q.rewards ? {rewards: list(q.rewards)} : {}), ...(q.bonus ? {bonus: list(q.bonus)} : {})}))} : {})};
 }
+/** Every condition that reads a quest (`quest is`, `objective is`) in the triggers and in the quests' "Only for wolves who…",
+ *  passed through `fn`. */
+function mapQuestConditions(p: Program, fn: (c: {test: string; quest?: string; objective?: string}) => Record<string, unknown> | null): Program {
+    const leaf = (c: Condition): Condition => {
+        const r = c as unknown as {test: string; quest?: string; objective?: string};
+        if (r.test !== 'quest is' && r.test !== 'objective is') return c;
+        const next = fn(r);
+        return next ? {...r, ...next} as unknown as Condition : c;
+    };
+    const out = rewriteTriggers(p, t => mapTriggerConditions(t, leaf));
+    if (!out.quests) return out;
+    const quests = out.quests.map(q => { if (!q.requires) return q; const r = mapCondition(q.requires, leaf); return r === q.requires ? q : {...q, requires: r}; });
+    return quests.some((q, i) => q !== out.quests![i]) ? {...out, quests} : out;
+}
 const QUEST_FACTS = ['quest accepted', 'quest declined', 'quest handed in', 'quest abandoned', 'quest started', 'quest completed', 'quest failed', 'objective completed'];
 /** A quest renamed everywhere: its id, the quest effects naming it, objectives and fail rules waiting for its events, and the
  *  rehearsal cases (their facts and expectQuests). */
 export function renameQuest(p: Program, from: string, to: string): Program {
     if (from === to) return p;
     let out = mapEffects(p, e => QUEST_EFFECTS.includes(e.kind) && e.quest === from ? {...e, quest: to} : e);
+    out = mapQuestConditions(out, c => c.quest === from ? {quest: to} : null);
     const rule = <T extends {on?: string; match?: Record<string, string>}>(o: T): T =>
         o.on && QUEST_FACTS.includes(o.on) && o.match?.detail === from ? {...o, match: {...o.match, detail: to}} : o;
     out = rewriteTriggers(out, t => rule(t));
@@ -1288,7 +1611,8 @@ export function renameQuest(p: Program, from: string, to: string): Program {
 /** An objective renamed: its id, the others' `after` naming it, and the objective effects naming it for its quest. */
 export function renameObjective(p: Program, quest: string, from: string, to: string): Program {
     if (from === to) return p;
-    const out = mapEffects(p, e => QUEST_EFFECTS.includes(e.kind) && e.quest === quest && e.objective === from ? {...e, objective: to} : e);
+    let out = mapEffects(p, e => QUEST_EFFECTS.includes(e.kind) && e.quest === quest && e.objective === from ? {...e, objective: to} : e);
+    out = mapQuestConditions(out, c => c.test === 'objective is' && c.quest === quest && c.objective === from ? {objective: to} : null);
     return {...out, quests: (out.quests ?? []).map(q => q.id !== quest ? q : {...q, objectives: q.objectives.map(o => ({...(o.id === from ? {...o, id: to} : o),
         ...(o.after ? {after: o.after.map(a => a === from ? to : a)} : {})}))})};
 }
@@ -1323,7 +1647,7 @@ export function smallQuestProgram(input: SmallQuestInput): Program {
     objectives.filter(o => !o.optional).forEach((o, i) => {
         if (o.on === SIGNAL) return;   // (A signal is the story's own: a case cannot state one.)
         const fact: Fact = {id: o.id, kind: o.on, day: 0, actor: wolf, ...(o.match ?? {})};
-        const goal = o.goal ?? 1;
+        const goal = typeof o.goal === 'number' ? o.goal : 1;
         if (o.measure === 'quantity') fact.quantity = goal;
         else if (o.measure === 'coins') fact.coins = goal;
         for (let k = 0; k < (o.measure && o.measure !== 'count' ? 1 : goal); k++) events.push({...fact, id: goal > 1 && (!o.measure || o.measure === 'count') ? `${o.id}-${k + 1}` : o.id, day: 0.01 * (i + 1)});

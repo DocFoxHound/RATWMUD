@@ -91,8 +91,10 @@ A program of `"version": 2` (Docs/Design/85-story-triggers-and-campaign-control.
 numbers, switches and timers) and a `note`. Types: `number`, `switch`, `text`, `wolf`, `resident`, `place`, `region`,
 `item`, `faction`, the lists `numbers`, `texts`, `wolves`, `residents` (up to 500 values), and `timer` (a moment: days
 since it started, on the `game` or `real` clock). Scopes: `story` (one value), `player` (one per wolf), `party` (one per
-party; a wolf in no known party is a party of one) and `world` (kept after the run, shared by every story of the world that
-declares the name with that type; `dm.story_world_vars`). A misspelt name is an error, not a new counter.
+party; a wolf in no known party is a party of one), `world` (kept after the run, shared by every story of the world that
+declares the name with that type; `dm.story_world_vars`) and, since doc 86's Phase 8, `realm` (one per wolf, kept after the
+run and shared by every story of the world that declares the name with that type; `dm.story_realm_vars`). A misspelt name
+is an error, not a new counter.
 
 Conditions add `compare` (two values: a constant, `{"var"}`, `{"field"}`, `{"count": list}`, `{"since": timer}`,
 `{"each": true}`, or `plus`/`minus`/`min`/`max` of two), `switch`, `in list`, `phase is`, `visit is`, `timer` (running,
@@ -172,7 +174,7 @@ A version 2 condition may read the world as it was when the event happened (Docs
 | --- | --- | --- |
 | `wolf here` | `who` | the wolf is in the world (signed in) |
 | `wolf in region`, `wolf in place`, `wolf in town`, `wolf indoors` | `who`, `region` / `place` / `town` / `is` | where the wolf stands now |
-| `count in region` | `region`, `op`, `value` | so many of the story's wolves stand in the region (StarCraft's Bring) |
+| `count in region` | `region`, `op`, `value`; `who`, `list` | so many of the story's wolves stand in the region (StarCraft's Bring); with `who: residents` and `list` (a story or world `residents` list), so many of its residents (doc 86, J6) |
 | `carries`, `coins` | `who`, `item`, `op`, `value` | what the wolf has in their pack (a marked or crafted item counts as its base item), their purse |
 | `standing`, `reputation` | `who`, `faction` or `town`, `op`, `value` | their Chapter's standing with a faction or House (-100..100); what a town's residents who know them think (liking less disliking) |
 | `wolf is` | `who`, `state` (`downed`, `hurt`, `wanted`, `held`), `is` | downed in a fight, carrying wounds or an injury, wanted by the watch, held in a gaol |
@@ -209,7 +211,8 @@ personal quests, stopping a scene) are each in the catalogue with their paramete
 all with an example. **What the game undoes when a run ends** (`story.stop`, `story.finish`, an ending phase): a door's lock
 as it was before the story first touched it (`door.lock`, `door.unlock`), held residents (`npc.hold`), residents sent along
 (`npc.follow`), strangers (`visitor.add`), mantles bound (`mantle.assign`), notices (`board.post`), the weather
-(`weather.set`) and the maps' markers (`story.ping`); journal notes stay, and everything given (items, coins, deeds, standing,
+(`weather.set`), the maps' markers (`story.ping`), a door held open to wolves (doc 86: a door a story unlocks or opens is
+open to wolves until the story closes or locks it, or ends, never one into a private home, which approval refuses), and since doc 86, Phase 5, a staged hunt not yet met (`hunt.stage`); journal notes stay, and everything given (items, coins, deeds, standing,
 warrants, relations, market events, prices, projects) stays. **The permission marks** in the catalogue drive every hosted
 check: `actsOnWolves` (`character.injury`, `story.area.damage`, `item.take`, `warrant.issue`) needs the owner or "may act on
 players' wolves"; `needsBuilder` (`faction.relation`, `standing.adjust`, and since Phase 10 `prices.reset`,
@@ -230,6 +233,414 @@ World variables (a type, a first value, a note; set and removed there with a rea
 `world-var`); a story declaring one as another type is refused at approval. The events Phase 8 left are watched too: `near
 resident` (names the resident), `purse crossed` (names the purse and the amount in `detail`), `standing crossed` (the faction
 and the number), `relation changed`, `mantle bound`, `mantle released`, `skill practised` (a whole step), `injury healed`.
+
+## Readiness and participation (doc 86, Phase 1a)
+
+**The audience counted.** A version 2 program may give `activeDays` (1 to 120 game days, 18 when not given): a wolf of the
+story is **active** when seen (the actor of any event) within that many game days. Values add `{"audience": "all" | "active"
+| "online"}` (the story's wolves, the active ones, those signed in now: unknown until the world's facts say who is online,
+and the program then watches the `wolves` facts), `{"times": [a, b]}` and `{"div": [a, b]}` (floored toward zero; by 0, no
+value), and the share of the wolves who took part: `{"percent": {"list": <a story or world list of wolves>}, "of": "active"
+| "all" | "online"}` (0 to 100) or `{"among": …}` (how many), with `{"where": <a condition tested for each wolf, the wolf as
+$each>}` in place of the list. The condition `participation` (`list` or `where`, `of`, `percent` 1 to 100, `floor` and
+`cap` 1 to 5,000; `source` "list" or "where" for the workbench) is true when the wolves counted are at least
+max(min(floor, D), ⌈percent × D / 100⌉), then at most `cap`, never fewer than 1, where D is how many are active (or all, or
+online); false with D = 0, unknown with online not known. A `where` holds `compare`, `switch`, `in list`, `days since`,
+`quest is` and `objective is` (a wolf's own variables and quests read `of: "$each"`), groups, 3 deep and 8 conditions; no
+facts, event fields, loop values or counting inside. Counting is not allowed inside For each, nor more than one level deep in
+arithmetic. The runner keeps `state.seen` (each wolf's last game day, filled at launch from the world's log) and sends both
+twins the same counts and ids.
+
+**Readiness.** A version 2 phase may have `ready`: `{"all": [parts], "auto", "then", "slowAfterDays", "slowNeedsYou",
+"autoAfterDays"}` and then exactly one exit `{"on": "ready", "to": <phase>}` (no other fields; it has no acting wolf). Parts
+(1 to 8; `{"any": [2 to 4 parts], "label"}` one deep; each with an optional `label` of 80 characters): `{"participation":
+{"list" | "where"}, "of", "percent", "floor", "cap"}`, `{"minDays": 0-3650, "since": "phase" | "chapter"}` (held days not
+counted), `{"value": <number>, "atLeast": <number>}` (story and world values only), `{"test": <condition over the story's own
+state>}`, `{"missions": [this phase's missions]}`, `{"quest": <a story-scope quest>}`. Once every part is met it is ready for
+the visit (latched). `auto` (default false) takes the exit by itself, at once or at the `then` moment (`{"on": "day begins" |
+"hour" | "season begins" | "festival" | "dm signal", "match"}`); otherwise it waits for the command `advance` (`{"when": "now"
+| "then", "anyway": bool}`), or `autoAfterDays` after it became ready. `slowAfterDays` raises the `slow` alert (needs you with
+`slowNeedsYou`). The runner measures it at most once a tick and at least once a game hour into `state.ready` (and the last 20
+changes into `state.readyLog`); a held run is not measured, and its held days (`state.heldDays`) never count. Moving onto a new
+version keeps the moment it was met when the phase and its Readiness are unchanged. Rehearsal cases may add `audience` (the
+counts) and `activeWolves`, and among their events the steps `{"check": "ready", "met": bool}` and `{"advance": "now" |
+"anyway" | "then"}`; the review lists `uncoveredReady`.
+
+## Talk, rumours, figures, holds and purses (doc 86, Phase 1b)
+
+**Talk memory.** `talk.remember {scope, town?, npc?, player?, key, value, days, keep?}` and `talk.forget {scope, town?, npc?,
+player?, key}` (game orders, target the run): `scope` `realm` (no other part), `town` (with `town`), `npc` (with `npc`) or
+`pair` (with `npc` and `player`, which must be `$actor` in a participant trigger or `$each` in For each over wolves, or a
+quest's reward; never at a phase's opening). `key` is `[a-z][a-z0-9_]{0,39}`, `value` `[a-z0-9_]{1,40}`, `days` 1 to 365. The
+game keeps them apart from talk's own memory (64 an owner, 16 a pair; 8,192 and 20,000 in all; the soonest to go first),
+recalls them as `world.mem.<key>` (the realm's, then the town's over it, then talk's own), `self.mem.<key>` and `pair.mem.<key>`
+(talk's own of the pair over it), saves them with the checkpoint (`people.storyMemory`), and forgets a run's when it ends
+unless `keep`. **Rumours.** `belief.plant {subject, claim, town, count 1-50, confidence 10-90, claimKind?}` (target the
+subject): `count` residents of the town (alive, with a home, not the subject; ordered by the run's seed) believe the claim
+with the kind `story.rumour` (Data/Talk/claims.json: "#x.name# #claim.text#") or, with `claimKind: "story.cleared"`, its
+clearing (believed as "never <claim>"). The claim is a phrase that follows a name: a small letter first, 120 characters, no
+`#`, brackets or ids (a word with `_`, one that mixes letters and digits, or one that starts `wolf-`: the same rule in
+`story_program.claim_has_id` and the game). **Figures.** `figure.set {figure, role, npc | player | name, title?, known: realm | region | house,
+region?, house?, about?}` and `figure.clear {figure}` (needs a builder): the runner writes `live.figures` (as the Dungeon
+Master's Figures panel does: `story_runner.write_figure`), keeps the row it replaced in the run's history (`entry.figure`),
+and sends `voice.sync`; the op `figure-undo {history}` puts it back. **Holds.** `npc.spare {npc, lasts: run | campaign}`,
+`npc.unspare {npc}`, and `npc.protect`'s `lasts` (`ever`, the default and the mark it always was; `run`; `campaign`): the
+runner sends the run (and its campaign); the game keeps each resident's owners (`people.storyHolds`), skips a spared one in
+old age, counts a protected one as protected, drops a run's owners when it ends and a campaign's on `story.campaign_end`
+(sent once when the campaign ends; the op `campaign-release {campaign}` sends it for an act stopped early). `lasts:
+campaign` is refused unless the story is approved as a chapter. **Choices for a list of wolves.** `npc.offer` with a `player`
+offered again under the same id adds that wolf (`players`, up to 5,000; the words and reply the latest; who picked it kept).
+**Told to residents.** A `player` (later `realm`) variable of type number, switch or text may have `"talk": true` (at most 8):
+each wolf's stored value goes with their journal as `talk` (`{name: value}`: digits, `yes`/`no`, or text of `[a-z0-9_]{1,40}`;
+other text is kept, not told, noted once), and the window knows it as `player.story.<name>`; each quest view as
+`player.quest.<program id>/<quest id>` (the game keeps the program's id from `story.phase` and `story.quests`). **Purses.**
+`till:job:<founder>` (and `till:<founder>`, mapped to it) pays from a business's till. At approval every purse a program
+names (rewards, grants, `purse crossed`) must be an account of the world's latest checkpoint (a warning while it has none);
+`town:<id>:works|watch|church` is refused. **Approval also checks** a quest's objective targets and items, its `board`
+(one of the world's notice boards), and that every resident named (speaker, giver, subject, face, cast, objective target) has
+a place and is alive (a face, `like`, only warns; `npc.kill` of the dead only warns; a `death` filter may name the dead).
+
+## Values, fills and objectives (doc 86, Phase 2)
+
+**Values in effects.** A version 2 trigger's effect (and a quest's reward) may give a parameter the catalogue marks
+`"operand": true` (`int`, `wolf`, `resident`, `place`, `item`, `faction`, `town`; never `npc.line` or `story.start`) a value
+instead of a literal: `{"var"}` (a variable of the parameter's kind or a text; `of: "$actor" | "$each"` for a wolf's own),
+`{"field"}` (a wolf: `actor`, `target`; a resident: `target`, `item`; a place: `cell`, `target`; an item: `item`; a faction:
+`target`, `detail`; a town: `actor`, `target`, `detail`), `{"each": true}`, arithmetic, `{"audience"}`, a share, or
+`{"purse": "<purse>"}` (the pennies a purse holds, from the world's facts: the story watches `purses` and the game reports
+`{"purses": {<purse>: cash}}`; `check_purse` and approval's account check apply). Both engines work it out as the effect is
+queued (`story_triggers.resolve_effect`, `Dispatch2::resolve`, the specs sent as the request's `effectSpecs`): a number is
+floored and kept to the parameter's `min`..`max`, a `nonzero` 0 sends nothing; an id must be a non-empty text. A missing
+value sends nothing, noted in the firing ("skipped: <param> has no value"). A reward's are worked out when it is given, the
+credited wolf as `$actor` (no `field`, no loop; with no value it is left out and noted in the state's `rewardNotes`).
+Approval passes a value to the game, which refuses an id it does not know. A phase's entry effects stay literal.
+
+**Fills.** In a version 2 story, a text parameter the catalogue marks `"fills": true` (`story.tell.text`, `board.post.text`,
+`journal.note.text`, `npc.speak.text`, `deed.award.detail`), a quest's `summary` and objective `label`, and an offer's `say`
+and `thanks` may hold `{name}` (a declared variable, not a list or a timer; the story's or the world's) and `{name.of}` (a
+wolf's own: the acting wolf's, or the looped wolf's inside For each over wolves; never in an offer's words, the same for
+every wolf); `{{` and `}}` are braces; a lone brace is refused. A number fills as its digits, a switch as `yes`/`no`, a text
+as it is, and a `wolf`, `resident`, `place`, `item` or `faction` as a token `{@w:<id>}`, `{@r:..}`, `{@p:..}`, `{@i:..}`,
+`{@f:..}` that the game turns into the name (`Game::fillStoryNames`, cutting at the limit on a word) where it applies the
+words: told, pinned, noted, spoken, a deed's words, the quest views and offers. The length is checked with every fill at its
+widest (a number 11, a switch 3, a text 200, a wolf's name 24, another name 40). A phase's entry effects take no fills.
+
+**Goals and trackers.** An objective's `goal` may be a number value (no event field, no loop), read when a copy starts and
+kept in the copy (`objectives.<id>.goal`, 1 to 1,000,000; unknown: unreachable until known); `"goalLive": true` (story
+scope) reads it again as the copy is credited and after each firing, never below `n`, completing at once when `n` reaches
+it. A shown number's `showOf` names another number the same wolf can read: the tracker row carries `goal` ("a / b" and a bar
+in the client). A `player` number with `show` may `mirror` `{key: <a player text>, names: {<value>: <world number>}}` (1 to
+16 names): its value is the world number its wolf's `key` names (0 when none), computed when read, never stored or set.
+
+**Filters.** A filter's value may be a text, `{"starts": "<1 to 120 characters>"}` or `{"in": [1 to 32 texts]}`
+(`story_program.match_one`, `matchOne` in the native twin; the gift item rule inside both), in triggers, exits,
+prerequisites, missions, a quest's objectives and fail rules, and a Readiness's `then`. The `needsMatch` fields of a watched
+event stay exact words. The condition `field` takes `op` `starts` and `in` (a list) on the event's text fields.
+
+**Objectives.** `where`: `{"cells": [1 to 16]}` or `{"region": <a region of the story>}` (tile inside the rectangle; no
+tile: by its cell; no place: never). `credit`: `actor` (default), `target` (`stall sale`, `vouch`, `told the wardens`,
+`vouched to the wardens`), `present` (every cohort wolf in the event's cell, from the facts' `wolves`; 500 at most; events with
+a `cell` field; the program then watches its wolves); a copy gains once from one event. `camp cleared`, `caravan arrives`,
+`ship lost`, `ship docks`, `project built` and `festival` are mission events; the last five require `credit: "present"`.
+`trade done` has `cell`. A quest's `join.again` (1 to 365 game days) makes every ending wait that long for the same wolf
+(`story_quests.again`; done: the later of it and the repeat's gap).
+
+**The moon.** `calendar is` with `what: "moon"` (`new`, `waxing`, `full`, `waning`, the octant of its name), the world facts'
+`moon`, and the watched event `moon` (`detail` the quarter, `quantity` the day of its round), which is also a Readiness `then`.
+
+**Camps and the prefix.** A top-level `"prefix"` (2 to 8 small letters). `story.area.spawn` and `bandits.call` take an
+optional `camp` (`[a-z0-9_]{3,30}`, beginning with the prefix and `_`; a program that names a camp must declare its prefix):
+the camp is `camp_story_<camp>`; a second spawn of the name while it stands joins it; once cleared the name makes a new
+one. Approval accepts an objective's `camp_story_<name>` only for a name the program spawns.
+
+## Ranks, titles, thanks and words (doc 86, Phase 3)
+
+**Rank.** The action `{"do": "rank", "var": <a number each wolf keeps (player or realm)>, "top": <1 to 500, or a number value>, "into": <a story or
+world list of wolves>, "over": "participants" | "list", "list": <a story or world list of wolves>, "min": <a number value>}`
+clears `into` and puts there the wolves of `over` with a stored number (at least `min`), highest first, ties by `fnv(seed + "|"
++ wolf)`, the first `top`. Not inside For each; a value of `top` or `min` not known changes nothing ("skipped: rank has no
+value"). Both engines (`story_triggers.rank`, `Dispatch2::rank`).
+
+**Tally.** The value `{"tally": {"sum": <a number each wolf keeps (player or realm)>, "where": <a text or switch each wolf keeps>, "is": <its value>, "over":
+"participants" | {"list": <a story or world list of wolves>}}}` (every part optional; `where` and `is` together): over every
+wolf of `over` (no 500 cap), those whose `where` is `is` (by its first value when unset), their `sum` added (0 when unset), or
+counted without `sum`. Not inside For each or a test for each wolf; one level deep in arithmetic (`story_triggers.tally`,
+`Dispatch2::tally`).
+
+**Rewards by share.** A quest of scope `story` or `party` may say `"credit": "share"` (and `"creditMin": 1 to 1,000,000`): the
+copy keeps `shares` (`{wolf: n}`, what each wolf's progress added to its objectives: a counted event's gain, an
+`objective.progress`, the rest of an `objective.complete`), and each reward is given for each credited wolf with
+`{"share": true}` that wolf's amount (only in that quest's `rewards` and `bonus`); a wolf below `creditMin` (1 when not given: a wolf who
+added nothing) gets no reward.
+
+**Titles, greetings and doubt** (game orders, never undone when the run ends): `title.give` (`player`, `title` 60 one line,
+no `#` or ids, fills; `known` `realm` or `town` with `town`; `days` 0 for good to 365) keeps up to 8 titles on the
+character record (`{title, known: "realm" | "town:<id>", by: <program>, run, since, until}`; renewed when given again; a
+ninth drops the oldest that lapses, else the oldest), writes a deed ("was named <title>", source `story`) and the event
+`title given` (`actor` the wolf, `target` the run, `item` where it is known, `detail` the title); the talk facts
+`player.titled` and `player.title` (the newest known where the resident lives). `title.take` (`player`, `title` optional)
+takes back this program's (its title filled as it was given). A title renewed writes no second deed. `npc.greet` (`npc`, `player` a wolf of the story, `text` 200 with fills and `#symbols#`, `days`
+1 to 28, 7 when not given; in a quest's rewards `npc` is the giver when left out) is the resident's opening line in that
+wolf's next Talk window with them (other entries keep their own line, and it waits), once, through their voice
+(`Game::inVoice`; a symbol it cannot fill there is left out), kept in the checkpoint (`storyGreets`; one a pair, 20,000 in all). `belief.forget` (`subject`,
+`claimKind` one of the claims a story may put to rest, `town` optional, `share` 10 to 100) multiplies each holder's belief
+of that kind about the subject by `1 - share/100` and forgets it at 5% (`World::doubt`). A phase's `npc.line` is said
+through the speaker's voice too (its `#symbols#` fill in their dialect).
+
+**Words.** `tools/story_words.py` (approval's world checks, the Problems list, `story_author` op `words`, and its CLI) reads
+every word field (every text parameter of the catalogue) and refuses what `Data/Storylines/words.json` forbids, ids in
+speech, unknown `#symbols#` (or any in words not said in a voice: `npc.speak`, a scene's lines, and every word no resident
+says), stray brackets and unclosed `#`, lengths past their limit with fills at their widest, and a face banner
+that quotes a resident; it warns of another dialect's phrases in a resident's words (their `live.npc_voice` origin and
+accent), a face banner, `npc.speak` to a wolf, a clearing that begins "never", and a fact symbol (`#player.title#`) in a
+story's words.
+
+## Stories that talk to each other (doc 86, Phase 4)
+
+**News for other stories.** The story effect `story.notify` (`signal` a story signal name, `player` a wolf or none, `amount`
+-1,000,000 to 1,000,000 (a value), `story` a program id or none) is queued in the run's `notices` (5,000 at most). After the
+run's tick (and after a console command's save) the runner tells it, 200 a tick at most (the rest wait in the state), to
+every other live run whose program has a trigger or exit on `story notified` whose `match.detail` takes the signal, or only
+to the runs of `story` when it is named: a `story-event` command in each one's inbox (`story_runner.tell_notices`), taken
+between two of its events as the fact `{kind: "story notified", actor: <wolf>, target: <sender's program id>, item:
+<sender's run>, detail: <signal>, quantity: <amount>}`. A trigger on it needs `match.detail` (exact words). It may name the
+acting wolf from any trigger (it only names them). Approval warns of a `story` no release of the world has (approved,
+running, paused or held).
+
+**A world variable changed.** When `world_save` writes a world variable that changed, every other live run whose program
+declares it (the same name, the world scope, the same type) and listens for `variable changed` with `match.target` the
+name is told (`story_runner.tell_changes`): `{kind: "variable changed", target: <name>, detail: <the value as words: a
+number's digits, a switch's yes or no, a list's items>, quantity: <a number, a switch's 1 or 0, a list's length>, item: <the
+run that changed it>}`. A telling not yet taken is brought up to date instead of a second (one a variable a story, the
+latest value). A run never hears its own writes. A trigger on it needs `match.target`, a world variable the story declares.
+
+**The month, a post, a Gift.** The watched event `month begins` (`detail` and `quantity` the month's number in the year,
+`calendar::monthOfYear`: 28-day months, the 365th day in the 13th) is a Readiness `then` moment too. `succession` (`actor`
+the new holder, `target` the one before, `detail` "<post title>: <how>") is the careers book's own event. The world's facts
+gain `residents[id].post` (the title of the post they hold, "" for none) for `resident has` with `"what": "post"`, and
+`wolves[id].gift` (`{tier: normal | gifted | quickened, family}`) for the condition `wolf has` (`what` tier or family;
+`value` checked: a tier, or a playable family of `Data/Gifts/families.json`, or "" for a normal wolf's). Both engines.
+
+**Quests.** A quest may have:
+- `requires`: a condition tree (`compare`, `switch`, `in list`, `days since`, `quest is`, `objective is`, `phase is` in
+  `all`, `any`, `not`; 4 deep, 12 conditions; no event field but `{"field": "actor"}`, the wolf tested; no loop values, no
+  world facts: no purse, not `audience: online` or a share of the wolves online), the wolf as `$actor`. Read
+  when the offers are sent: one that reads the wolf's own (`of: "$actor"`, `{"field": "actor"}`, a player or party variable, a quest's
+  copy not the story's) is worked out for each wolf of the story and the offer goes with `players` (those it holds for); one that
+  reads only the story's own is a gate (false: the offer goes with `players: []`, so the copies under way keep its words
+  while under way, its hand-in and its thanks). Taking it (accepted at the giver or the board,
+  `quest.offer`, `quest.start`) checks it for that wolf ("Not yet."). The results are part of the journal's fingerprint.
+- `offer.during` (300, fills and `#symbols#`) and `offer.duringAsk` (120; "About <title>..." when not given): while the
+  wolf's copy is `active`, the giver's hub has that choice, whose node `@story:<run>:during:<quest>` says `during` in the
+  giver's voice. The offer the game is sent carries both.
+- `closure`: `"line"` (or `true`) or `"side"`: a quest of scope `player` or `party`, taken `once`; at most 4 a program. A
+  `line` requires (`requires`, `quest is ... done`, not under a `not`; under an `any`, in every branch) another quest of
+  the program and is required done by none; a `side`
+  only in a program approved as a campaign chapter (`story_runner.world_checks`). Done, it adds for each wolf with credit the
+  runner's own order `story.closure` (target the wolf; `{run, story: <program id>, quest, kind, title}`) to the rewards;
+  the game writes one social receipt `story_closure`, session `quest:<program>/<quest>` (3 social:
+  `Data/Progression/standing.json` `storyQuests`), once a quest and at most 4 a program for one wolf (a fifth is applied
+  and pays nothing), which `closedStories` counts. Never undone.
+
+The story effect `quest.withdraw` (`quest`, `player`) takes an offered quest back from one wolf: out of `questOffers`, and
+into the run's `withdrawn` (`{quest: [wolves]}`), which the offer the game is sent carries as `except`; a copy already taken
+is untouched, and `quest.offer` to that wolf clears it.
+
+The dialogue window puts a resident's story choices in this order: hand-ins, offers, the words while under way, choices,
+each in story order. In a resident's own tree, what the hub's nine have no room for goes under `about`, and the hub has a
+way there; only what `about` has no room for either is left out (`RATW_STORY` in the game's log, once a resident a day).
+
+## Howls, crowds and the wild (doc 86, Phase 5)
+
+**Howls.** The watched events `howled` (`actor` the wolf or resident, `cell` and the tile, `item` the town (`townFor`) or
+`wild`, `detail` the chorus id, `quantity` the howlers so far) and `chorus closed` (`actor` the one who began it, `quantity`
+how many howled in it, residents too, `item` and `detail` as for `howled`, the tile of the first howl), both mission events.
+The effect `npc.howl` (`npc`, a value) is the game order `npc.howl` (target the resident; `Game::residentHowl`): refused for a
+resident dead, down, in a fight, away, or within the howl's rest (`Data/Social/social.json` `howl.cooldown`, as a wolf's).
+Not undone.
+
+**Residents counted in a region.** `count in region` takes `who` (`wolves`, the default, or `residents`) and, exactly with
+`residents`, `list`: a `residents` variable of the `story` or `world` scope. It counts the list's distinct residents whose facts
+say alive and inside the region; none of them in the facts (a list not empty): unknown. `story_program.watch_of` gives such a
+story's watch the `residents` section and `residentLists` (the runner's, never sent); `story_runner.watch_now` sends the
+lists' members (as the run's state has them, a world list as loaded) among the watch's `residents`, with the phase, and
+`resend_watch` sends the game order `story.watch` (`{watch, visit}`, target the run) after a tick or a console command's
+save whenever they changed (`state.watchSent`, a digest of what was sent). Both engines.
+
+**A staged hunt.** The effect `hunt.stage` (`region` the story's, `species` an id of `Data/Wild/animals.json`, `count` 1 to
+3, `minutes` 1 to 1,440) is the game order `hunt.stage` (target the run; the region's bounds in the payload). The game keeps
+it in the story's `held.hunts` (8 at most; `{region, cell, x1, y1, x2, y2, species, count, until}`, `until` in world
+seconds). A wolf's `hunt` inside the rectangle (the wolf's tile), before `until`, adds the animals to what the ground gives
+(`World::startHunt`'s `staged`) and uses the entry up; `tickStoryWorld` drops lapsed ones and `endStoryWorld` the rest
+(`UNDONE_AT_END`). Any wolf's hunt there meets it, of the story's audience or not. A staged animal is met on ground too
+built up or bare for game of its own (`WildHere::wild`: outdoors and in no town); never in a town or indoors. The kill is an
+ordinary `hunted` (target the species), recorded at the killer's tile in the arena, so an objective on it names the region's cell in `where`, not the
+region. Approval warns of an animal whose `habitats` the region's ground has none of, of a region indoors
+(`story_runner.region_ground`), and of one in a town (a market town as last saved, not a plain Country community). The workbench's species picker reads
+`refs.species` (`static_refs`).
+
+## A story's own items (doc 86, Phase 6)
+
+**`item.give` with a tag.** Optional `tag` (the new parameter type `tag`: `[a-z0-9_]{1,32}`), `name` (up to 60
+characters, one line, no `#`, brackets or fills; only with a `tag`) and `keep` (`true`: it outlasts the run; only with a
+`tag`). The item is a plain one of the catalogue (no `~` or `@`), and one `item^tag` is given with one `name` and one `keep`
+everywhere in the program (`story_program._check_tags`; 64 kinds at most). The runner's order is `item.give` (target the
+wolf) with `item` the game's id `<base>^<hash8>.<tag>` (`story_program.tagged_item`: `hash8` the first 8 hex digits of the
+SHA-256 of the program's `id`), `name`, `keep`, `run` and `visit`. The game (`Game::storyItemGiven`, `storyItemHeld`)
+refuses a malformed id, a story not running or a name that is not one line of 60; once the goods are made (a full pack
+refused names nothing), it keeps the name in `storyItemNames_` (the checkpoint's `storyItemNames`; 4,000 at most) and,
+unless `keep`, lists the id in the run's `held.tags`. `endStoryWorld`
+takes every unit of those out of every account and off the ground (`World::takeBackItems`, `Society::takeAll`), forgets
+their names and tells the wolves who held one. A kept one keeps its name.
+
+**Naming it.** A filter's `item` (any event; the catalogue says so for `gift`, `gift again`, `item picked up`, `item
+dropped`, and an `in` list's values) and a `carries` condition's `item` take `<base>^<tag>`. `story_program.expand_tags`
+gives the program those in the game's form wherever it is read (`effective_phase`, `story_quests.index`, `watch_of`), so
+both twins and the game's facts see one id; a rehearsal's events and facts and the console's What if are put in that form
+too (`own_items`). An author never writes the hashed form or a `starts` with `^` (refused); an `item^tag` the program never
+gives is warned of (`program_warnings`: only an earlier version's could match it). A gift filter (`gift`, `gift again`) naming no mark (`letter`) takes a story's own item as a kind of its
+base, as it takes `~` and `@` kinds; other events' filters match exactly; one naming a mark takes only that story's. The
+facts count it under its own id when the watch names it, and under its base when the watch names that, both at once.
+
+**In the game.** `items::baseOf` stops at `^` as at `~` and `@`; `items::good` finds its base; it is never a wearable or a
+blade, has no wear (`World::durabilityOf` 0), is no kind of its base for making, eating or paying (`Society::kindsHeld`), and
+is refused by a shop (`Society::stagedQuote`), a stall (`list`) and a town project's hand-in: "That belongs to a story."
+`Society::itemName` (every name the world shows: the pack's record the client reads, trades, gifts) gives its story's name.
+
+## Foes and strangers (doc 86, Phase 7)
+
+**`foe.add`** `{foe, name, cell, x, y, strength, band, stance, minutes, like?, description?}`: `foe` the new parameter type
+`foe` (`[a-z0-9][a-z0-9_-]{2,39}`, never beginning `npc-`), `strength` `tough` / `fierce` / `champion`, `band` 0 to 8 (an operand: a value worked
+out as it fires), `stance` `waits` / `hunts`, `minutes` 1 to 1,440. One `foe` is one foe in the whole program: brought with
+one `name` and one `strength` everywhere (`story_program._check_foes`). **`foe.leave`** `{foe}` names one the program
+brings. **`foe.outlaw`** `{npc, minutes, strength?, band?, lethal?}` (`needsBuilder`): 1 to 720 minutes, 0 to 6 followers.
+The runner's orders are `foe.add` and `foe.leave` (target the foe's id) and `foe.outlaw` (target the resident), with `run`
+and `visit` (`WORLD_ORDERS`); approval checks `foe.add`'s tile (`check_tile`) and `like`, and `foe.outlaw`'s resident.
+The events `foe downed`, `foe defeated` (`quantity` the wolves who fought it; `measures` none) and `foe fled` (`item`
+`time` or `fled`) are in the group fights, `target` the foe's id (a resident's for `foe.outlaw`); `program_warnings`
+warns of one read for a foe the program never brings. Both `foe.add` and `foe.outlaw` are undone at the end
+(`UNDONE_AT_END`).
+
+**In the game** (`Core/RatwStoryFoes.cpp`, `Core/RatwGameStoryWorld.cpp`). A foe is a story camp `foe_<8 hex of the
+run>_<foe>` (`Game::storyFoeCampId`; a resident made one is `npc-<resident>`) in `roads_.camps`, skipped by the roads'
+daily round, the gathering of camps, `tendCamp` and the checkpoint's load; its leader `road:<camp>:0` (or the resident)
+and followers `road:<camp>:1..` are road folk of kind `foe`, in person while they last. `World::campOf` returns the camp
+for them (so setting on one is the camp's fight: no assault), `startBattle` brings the Watch on duty in on the wolves'
+side, `temperamentOf` makes them aggressive with `Data/Storylines/foes.json`'s skill and flee, `hurtFighter` scales a
+blow by 20 / its hp, `downFighter` raises `foe downed` / `foe defeated` (once) and breaks the band, `leaveArena` marks a
+leader who runs (`foe fled`, fled), and `finishBattle` (`foeFightEnds`) robs nobody, clears no camp, carries the downed
+off, and gets a beaten resident up again (or, `lethal`, kills them). `tendStoryFoes` (every half second) starts a
+waiting foe's fight with a wolf within 6 tiles of its ground and a hunting one's with the nearest within 12, ends one out
+of time (`foe fled`, time) and lets a beaten one go. The story keeps each in `held.foes` (camp: what makes it again);
+`tickStoryWorld` makes one again after a restart while its time lasts, drops one gone, and holds a resident beaten and
+not killed (`held.npcs`); `endStoryWorld` takes them all away, even mid-fight, with no event. `SIM_FOES` names a trial
+table in place of `foes.json` (for `foe_sim`).
+
+Since the review: every foe event carries the run's mark in `coins` (`foes::runMark`, FNV-1a of the run id, the camp id's 8
+hex digits; `story_program.foe_mark`), and the runner gives a foe event only to the run whose mark it is, as two runs may
+name a foe alike. A story camp asks no purse (no bandit encounter, nothing to pay), robs no wagon, has no bounty posted
+on it, is never patrolled or cleared by the Watch, and is never talked of as bandits. A resident made a foe is held where
+they were made one (`sceneHold`), is held by no other story and joins no party, and is taken out of a fight and stood up
+if the story ends mid-fight. A foe a restart cannot make again is `foe fled` (time). `tickStoryWorld` keeps `left`,
+`fighting` and `endsAt` (Unix seconds) with each in `held.foes`; the runner reads them from `game.storylines`
+(`foes_now`, `status`'s `foes`) for the console's Foes panel, whose Send away is the command `foe` (`{do: "leave", foe}`:
+`foe.leave`, a resident's camp by `npc-<resident>`).
+
+**A stranger in a scene.** A scene's cast entry may be `{"id": "<role>", "visitor": "<visitor id>"}` beside `npc` and
+`selector` (exactly one; `story_scenes.validate`), a stranger the same program brings with `visitor.add`
+(`story_program._check_strangers` refuses one it never brings; `program_warnings` warns of one brought only in a later
+phase than a `scene.play` of it). The game (`Game::startCinematic`) resolves it to the stranger the run holds
+(`held.visitors`), in their own panel with their `like` face; one not in the world fails the scene: `scene failed` with
+`item` "a stranger is not here".
+
+## Across acts and the crown (doc 86, Phase 8)
+
+**Realm variables.** A variable of scope `realm` is each wolf's own (read `of` `$actor` or `$each`, shown, told to residents,
+ranked by, tallied, a mirror's key, as `player`), kept in `dm.story_realm_vars(world_id, name, wolf, type, value, run,
+updated_at)` (migration 0081). The runner (`story_runner.realm_load`, `realm_join`, `realm_save`, beside `world_load` and
+`world_save`) reads the cohort's values into `counters.realm` at launch, at each turn only the rows changed since the run's
+cursor (`state.realmSeen`, a time, read again from two minutes before it), and a wolf's when they join
+(`story_quests.JOINED`); it writes the changed wolf-name pairs at the end of the turn. A row kept under another type is not
+read; approval (`realm_clash`) refuses a declaration of another type than a kept row or another live story's, and needs
+0081. Realm values are never carried (`_carried`) and are read afresh after a move onto a new version. A rehearsal case
+may give `realm`: `{wolf: {name: value}}`, what each wolf brings with them. Ops: `realm-vars` `{name?, wolf?}` and
+`realm-var` `{name, wolf, value, reason}` (audited `story.realm-var`; the owner or "may steer campaigns").
+
+**`npc.post`** `{npc, post}` (`needsBuilder`; the runner's single-key order, target the resident, payload `{post}`): `post`
+is the new parameter type `post`, `job:<founder>`, checked at approval against `dm.story_posts` (migration 0080: a view of
+the last checkpoint's `society.careers.positions` with each post's title and role from its founder) and refused for a
+`guard` post; `refs().posts` lists them by title with their holder. The game's `Society::swapPost` (through
+`World::postResident`) takes the post from its holder (`lastHolder`, vacant since today), takes the resident out of the
+post they held (vacant since today), gives them this one, and records `succession` (detail `<title>: by the story`).
+Lasting.
+
+**`npc.sentence`** `{npc, place, days}` (`needsBuilder`; a world order, target the resident, with `run` and `visit`):
+`place` an interior a link reaches (approval), `days` 1 to 28. The game (`Game::applyStorySentence`) refuses a protected,
+dead, fighting, away, foe or already sentenced resident and one another story holds; it moves them to the open tile nearest
+the room's middle, holds them there (`sceneHold`), and keeps `storySentences_[npc] = {place, by: the program id, run, x, y,
+began, until, days, pace}` in the checkpoint (`people.storySentences`), never in the run's `held`. `tendSentences` (from
+`tickStoryWorld`, every half second) puts them back if they are moved, after a restart too, and ends the sentence at
+`until` (`sentence served`, item `served`). While sentenced no other story holds them (`heldByAnotherStory`) and no party
+takes them (`whyNotJoin`). Events `sentence begun` and `sentence served` (group town; `actor` the resident, `cell` the
+place, `quantity` the days or the whole days served, `target` the run, `detail` the program id). Ops: `sentences` (from the
+checkpoint) and `sentence-release` `{npc, reason}` (queues the game's `npc.unsentence`: `sentence served`, item
+`released`; audited `story.sentence-release`).
+
+## Casting, queues, paws and House purses (doc 86, Phase 9)
+
+**`cast.pick`** `{var, job?, town?, faction?, quarter?, notIn?, near?}` (`story`, `v2`; at least one of job, town, faction,
+quarter; `var` a `resident` variable of the story, `notIn` a `residents` list of the story or the world; `town` may be a
+value): the story's own effect (`story_quests.CAST_EFFECTS`). `Run.cast` builds a request (with the near wolf's tile from the
+event's facts and a seed) and answers it at once through `story_quests.CASTER`: the runner sets it (`story_runner.world_caster`,
+in `tick_run` and `take_commands`) to `cast_pick`, a query of `dm.story_residents` with `live.npcs`, `dm.story_posts` (0080),
+`live.npc_voice`, `live.npc_state`, `live.faction_members` and `live.faction_claims`; a rehearsal sets it to the case's
+`cast` (`{var: [resident, ...]}`, the first not left out). Where nothing answers (What if) the request waits in
+`state.castRequests` and is answered before the next fact (`story_program.advance`). The answer writes the variable and
+follows the fact with the story's own **`cast chosen`** (`target` the resident, `detail` the variable, `actor` the near wolf)
+or **`cast failed`** (`detail`); `state.castLog` keeps the last 20. Approval checks the town and the House.
+
+**A giver from a variable**: a quest's `giver` may be `{"var": "<resident variable of the story>"}`. `giver_of` reads it each
+time the offers are worked out (no offer while it holds nobody), a copy keeps the giver it began with (`c.giver`) for its
+hand-in, its journal view and a reward's greeting, and the offers add an entry closed to new takers (`players: []`) at a
+copy's own giver when the variable has moved on. `references()` skips it.
+
+**`rewardLimit`** `{perDay: 1-1000, scope: "quest" | "purse"}` on a quest that pays coin: its `character.grant` rewards stop
+after `perDay` a game day (`state.rewardLimits`, by the quest or `purse:<purse>`), the reward given without its coin and a
+note in `rewardNotes`. Where the program declares them, each coin paid is added to the world number `coin_<purse>_day`
+and none is paid while the world switch `coin_<purse>_ok` is off (`story_quests.purse_counter`: `town:ridgemere` is
+`ridgemere`, `till:job:rm_eleanor_saltcot` is `till_eleanor_saltcot`).
+
+**`npc.queue`** `{npc, town}` (`needsBuilder`; the runner's single-key order, target the resident, payload `{town}`):
+approval refuses a resident with a place (home or work) in `dm.story_residents` and an unknown town. The game's
+`Society::queueResident` (through `World::queueResident`) keeps `careers.queued[town]` (saved with the careers); at a vacancy
+of that town's that pays, at its eight days, `tendCareers` sends for the first in line (`arrivalFor` with `only`, of any
+class) before the city's wolves and the Country's choice ("first in line, by a story"); one placed since or now past working
+age leaves the line, and one with no home in reach keeps their place while the next is tried. Lasting.
+
+**Mantles given back** (C15): `held.mantles` is `{npc: the mantle worn before, or ""}` (and `held.mantleHow`, how it was
+bound); an older save's list is read as `{npc: ""}`. `endStoryWorld`, and the story's own `mantle.release`, call
+`Game::putBackMantle`: the mantle before bound again (`assignMantle` with its `how`), or the story's released.
+`held.mantleBound` keeps what the story bound last: it is put back only while the resident still wears that (one the DM
+bound since is left as it is), and where another live story bound over it (its "before" is this story's mantle),
+`Game::handOnStoryMantle` gives that story this one's "before" instead, so the end of both leaves what was worn before either.
+
+**A paw at a resident's work** (SQ3): `World::lendAPaw` to a resident at their own post (`besideWorkAt`: not farm work or a
+bench) starts the activity `beside` (`Data/Together/patterns.json`, `at` post): beats by the clock, no practice, no
+`lendPaw`, no coin; its end records `together` (actor the wolf, target the resident, item `beside`, quantity the beats),
+once a game day for the pair.
+
+**House purses** (M3): a purse `house:<faction>` (or `house:<name>` for `house_<name>`) is the account `purse:<faction>`
+(a new facility prefix, staged, never topped up), filled once a game day by `Game::tendHousePurses` from the tills of the
+posts whose work cell the House claims first (`HouseShare` 10% of what a till holds over `HouseTillFloat` 80, the purse at
+most `HousePurseMost` 2,500). Behind the world switch `storyHousePurses` (the game's `story.house_purses on|off`, the
+owner's op `house-purses`, audited; kept in the checkpoint as `people.storyHousePurses`, with the day the Houses last took
+their share as `people.storyHousePurseDay`, so a restart or off-and-on the same day takes none again; the world packager
+drops both, so a world given away starts off): off, nothing moves, the purse maps to no account, and approval refuses
+`house:` purses. The console's read `house-purses-state` gives the switch as last saved and each House's purse.
+
+**The `story` topic** (T6): `Data/Talk/topics.json`'s `story` (news, base 2.2); the director weighs it once for each prefix
+of a live story's realm memory keys (`Game::storyTopicsChanged` → `World::setStoryTopics`), only when the library has
+`talk.story` scenes; `topic.story` is the prefix.
 
 ## Writing a program
 

@@ -1,0 +1,2064 @@
+# The Ninth Howl: rumours, villain hints and warnings between residents (cast-and-talk.md §4, §5.1; doc 86 §6.4-6.6).
+# Generated from the same source as the window's gossip lines in dialogue/resident.tree (talk library part 2). Every
+# rule is gated on the campaign's talk memory (world.mem.nh_*: C8 talk.remember, or the DM by hand until C8 lands) and
+# the speaker's own dialect, so the test town never says them and the scorecards don't move. Rumours ride talk.news and
+# talk.gossip, villain hints talk.gossip, warnings talk.news and talk.bandits. No names (roles, or a figure once C9 or
+# the DM's save_figure sets it); no line dates the Moot (decisions §6.4).
+
+rule nh_grace_plain_1
+when concept=talk.news|talk.gossip self.from=ridgemere world.mem.nh_debts=grace
+does tell.news
+cooldown 1d
+say The factors gave a moon's grace. Generous of them, they say. It only means the interest runs a month longer.
+
+rule nh_grace_coldwater_1
+when concept=talk.news|talk.gossip self.from=coldwater world.mem.nh_debts=grace
+does tell.news
+cooldown 1d
+say A moon's grace from the factors, eh? Like letting a fish run with the hook still in. Deep and dark, it comes in all the same.
+
+rule nh_grace_larkfield_1
+when concept=talk.news|talk.gossip self.from=larkfield world.mem.nh_debts=grace
+does tell.news
+cooldown 1d
+say A moon's grace on every note, #address#. Fair price, they call it. Weigh the interest, then tell me it's fair.
+
+rule nh_grace_southmeadow_1
+when concept=talk.news|talk.gossip self.from=southmeadow world.mem.nh_debts=grace
+does tell.news
+cooldown 1d
+say The factors gave the debtors a moon's grace. Chaff and promises, #address#. The note's still due, only later.
+
+rule nh_grace_mirebridge_1
+when concept=talk.news|talk.gossip self.from=mirebridge|fenshore world.mem.nh_debts=grace
+does tell.news
+cooldown 1d
+say A moon's grace, no? Boggy sort of grace. The water's still rising, only slower.
+
+rule nh_grace_saltwell_1
+when concept=talk.news|talk.gossip self.from=saltwell world.mem.nh_debts=grace
+does tell.news
+cooldown 1d
+say The factors gave a moon's grace, #address#. A grace you pay interest on is not a grace. It is a longer leash.
+
+rule nh_grace_oakhaven_1
+when concept=talk.news|talk.gossip self.from=oakhaven world.mem.nh_debts=grace
+does tell.news
+cooldown 1d
+say A moon's grace on the notes, mm? Bark and branch, the rot keeps working under the bark.
+
+rule nh_grace_frosthollow_1
+when concept=talk.news|talk.gossip self.from=frosthollow world.mem.nh_debts=grace
+does tell.news
+cooldown 1d
+say The factors gave a moon's grace. Dead rock talk. The note weighs the same, only colder.
+
+rule nh_king_plain_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=king|moot_called self.from=ridgemere
+does tell.news
+cooldown 1d
+say The old King's gone up to the Bright One. And they say the one keeping the Palace lamp still walks his Sump round.
+
+rule nh_king_plain_2
+when concept=talk.gossip world.mem.nh_stage=king|moot_called self.from=ridgemere
+does tell.gossip
+cooldown 1d
+say There's a camp on the Oakhaven road that won't starve out. Somebody's feeding it.
+
+rule nh_king_plain_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=king|moot_called self.from=ridgemere
+does tell.news
+cooldown 1d
+say The notice on the Oakhaven board was signed with a grey paw-mark. Nobody signs like that who means well.
+
+rule nh_moot_called_plain_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot_called self.from=ridgemere
+does tell.news
+cooldown 1d
+say A Moot! Blood and bread, I never thought I'd see one called.
+
+rule nh_moot_called_plain_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot_called self.from=ridgemere world.mem.nh_purse=greatly
+does tell.news
+cooldown 1d
+say The Counting House paid for the old King's wake. Fine wake. Long account.
+
+rule nh_moot_called_plain_3
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot_called self.from=ridgemere world.mem.nh_purse=household
+does tell.news
+cooldown 1d
+say The Queen's household paid for the wake from its own purse, they say. Bright One bless a house that pays its way.
+
+rule nh_king_coldwater_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=king|moot_called self.from=coldwater
+does tell.news
+cooldown 1d
+say A patrolman keeping the Palace lamp, eh? Still water runs strange in the city.
+
+rule nh_king_coldwater_2
+when concept=talk.gossip world.mem.nh_stage=king|moot_called self.from=coldwater
+does tell.gossip
+cooldown 1d
+say Wet ash on the wind from the Alder Mere side. That's no fisher's fire, eh?
+
+rule nh_king_coldwater_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=king|moot_called self.from=coldwater
+does tell.news
+cooldown 1d
+say Don't take the Oakhaven road alone. Something's camped under the oaks, eh?
+
+rule nh_king_coldwater_4
+when concept=talk.news|talk.gossip world.mem.nh_stage=king|moot_called self.from=coldwater world.mem.nh_willa=alone
+does tell.news
+cooldown 1d
+say Our carter walked home alone. Nobody came for her. Muddied, that.
+
+rule nh_moot_called_coldwater_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot_called self.from=coldwater
+does tell.news
+cooldown 1d
+say A Moot, eh? The old folk speak of one. Said it was the only time the city asked the lake anything.
+
+rule nh_king_larkfield_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=king|moot_called self.from=larkfield
+does tell.news
+cooldown 1d
+say A Watch guard keeping the Palace lamp? By the market cross, the Houses will have that weighed and short-weighed by Marketday.
+
+rule nh_king_larkfield_2
+when concept=talk.gossip world.mem.nh_stage=king|moot_called self.from=larkfield
+does tell.gossip
+cooldown 1d
+say Somebody's buying the Oakhaven road off the carters. Fair price? Not to the carters.
+
+rule nh_king_larkfield_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=king|moot_called self.from=larkfield
+does tell.news
+cooldown 1d
+say Wagons to the Sound Road go in pairs now. Scales and silver, I'd not send one alone.
+
+rule nh_king_larkfield_4
+when concept=talk.news|talk.gossip world.mem.nh_stage=king|moot_called self.from=larkfield
+does tell.news
+cooldown 1d
+say The market beam weighs light, some say. Weights and measures, and the factors still want paying by the new moon.
+
+rule nh_moot_called_larkfield_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot_called self.from=larkfield
+does tell.news
+cooldown 1d
+say A Moot! Every town a voice. That's the first fair market the city's ever held.
+
+rule nh_king_southmeadow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=king|moot_called self.from=southmeadow
+does tell.news
+cooldown 1d
+say The old King's gone up, they say. Sheaf and sickle, I hope the next one likes apples.
+
+rule nh_king_southmeadow_2
+when concept=talk.gossip world.mem.nh_stage=king|moot_called self.from=southmeadow
+does tell.gossip
+cooldown 1d
+say Carters say the Oakhaven road's got a toll on it now, and no tollhouse.
+
+rule nh_king_southmeadow_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=king|moot_called self.from=southmeadow
+does tell.news
+cooldown 1d
+say Don't send a cart north alone, neighbour. They wait for the lone ones.
+
+rule nh_moot_called_southmeadow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot_called self.from=southmeadow
+does tell.news
+cooldown 1d
+say A Moot of every town? Ripe days for talkers, then.
+
+rule nh_king_mirebridge_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=king|moot_called self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say That lamp-keeper's got fen in his mouth, I hear. Talks like the old ones on the boardwalk, no?
+
+rule nh_king_mirebridge_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=king|moot_called self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say Mirebridge-born, they say, the wolf with the lamp. Dark One's mire, the drowned get a king at last.
+
+rule nh_king_mirebridge_3
+when concept=talk.gossip world.mem.nh_stage=king|moot_called self.from=mirebridge|fenshore
+does tell.gossip
+cooldown 1d
+say Grey paw-marks on the Oakhaven board, no? Boggy business, signing with a paw.
+
+rule nh_king_mirebridge_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=king|moot_called self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say Keep off the Oakhaven road alone, #address#. Something's sitting on it.
+
+rule nh_king_saltwell_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=king|moot_called self.from=saltwell
+does tell.news
+cooldown 1d
+say The Summons reached the well, #address#. The well remembers who drew from it. We will see whether the city does.
+
+rule nh_king_saltwell_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=king|moot_called self.from=saltwell
+does tell.news
+cooldown 1d
+say A guard keeping the Palace lamp. In the oasis we would say: a well is kept by whoever draws the water.
+
+rule nh_king_saltwell_3
+when concept=talk.gossip world.mem.nh_stage=king|moot_called self.from=saltwell
+does tell.gossip
+cooldown 1d
+say Caravans say the north road has a keeper who is not the Watch. By salt and water, I mistrust a keeper with no face.
+
+rule nh_king_saltwell_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=king|moot_called self.from=saltwell
+does tell.news
+cooldown 1d
+say Caravans that walk the north road alone come in short, #address#. Walk in company, or wait for one.
+
+rule nh_king_oakhaven_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=king|moot_called self.from=oakhaven
+does tell.news
+cooldown 1d
+say Slow news, the city. A king gone up a fortnight before the Sound Road hears it, mm?
+
+rule nh_king_oakhaven_2
+when concept=talk.gossip world.mem.nh_stage=king|moot_called self.from=oakhaven
+does tell.gossip
+cooldown 1d
+say Grey paw-mark on our board. Proper strange. Wolves who sign with a paw don't sign with a name.
+
+rule nh_king_oakhaven_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=king|moot_called self.from=oakhaven
+does tell.news
+cooldown 1d
+say Don't walk the Oakhaven road alone. Bark and branch, we've lost a wagon already.
+
+rule nh_king_oakhaven_4
+when concept=talk.news|talk.gossip world.mem.nh_stage=king|moot_called self.from=oakhaven world.mem.nh_logger=believed
+does tell.news
+cooldown 1d
+say Still a thief, the logger, if you ask the store. I don't ask the store, mm?
+
+rule nh_king_frosthollow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=king|moot_called self.from=frosthollow
+does tell.news
+cooldown 1d
+say Patrolman keeping the Palace lamp. Deep strange. Keep your lamp lit, they say. Well, someone is.
+
+rule nh_king_frosthollow_2
+when concept=talk.gossip world.mem.nh_stage=king|moot_called self.from=frosthollow
+does tell.gossip
+cooldown 1d
+say Somebody's paying carters for their days. In Frosthollow we call that buying a road.
+
+rule nh_king_frosthollow_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=king|moot_called self.from=frosthollow
+does tell.news
+cooldown 1d
+say Don't take the Pass Road alone, #address#. Lamps where there's no house.
+
+rule nh_moot_called_frosthollow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot_called self.from=frosthollow
+does tell.news
+cooldown 1d
+say A Moot. The city remembered the valley. Lamp and pick, it'll forget again by spring.
+
+rule nh_reckoning_plain_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=reckoning self.from=ridgemere
+does tell.news
+cooldown 1d
+say Chalk on the doors in the Sump. The Counting House wants every debtor's howl for the Moot.
+
+rule nh_reckoning_plain_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=reckoning self.from=ridgemere world.mem.nh_debts=eased
+does tell.news
+cooldown 1d
+say A wolf of the road worked off a neighbour's note and asked nothing back. That's the Sump I remember.
+
+rule nh_reckoning_plain_3
+when concept=talk.gossip world.mem.nh_stage=reckoning self.from=ridgemere
+does tell.gossip
+cooldown 1d
+say The Counting House master gives every debtor a moon's grace. Grace, he calls it.
+
+rule nh_reckoning_plain_4
+when concept=talk.gossip world.mem.nh_stage=reckoning self.from=ridgemere world.figure_villain
+does tell.gossip
+cooldown 1d
+say #world.figure_villain# gives every debtor a moon's grace. Grace, he calls it.
+
+rule nh_reckoning_plain_5
+when concept=talk.news|talk.bandits world.mem.nh_stage=reckoning self.from=ridgemere
+does tell.news
+cooldown 1d
+say Don't sign anything the clerks bring round. Chalk washes off. Ink doesn't.
+
+rule nh_reckoning_plain_6
+when concept=talk.news|talk.gossip world.mem.nh_stage=reckoning self.from=ridgemere world.mem.nh_debts=called
+does tell.news
+cooldown 1d
+say They called in every note at the new moon. Half the Sump's howl belongs to the Counting House now.
+
+rule nh_reckoning_plain_7
+when concept=talk.news|talk.gossip world.mem.nh_stage=reckoning self.from=ridgemere world.mem.nh_ledger=shown
+does tell.news
+cooldown 1d
+say A ledger went to the Antechamber, and the Sump's doubled debts are struck. Bright One keep whoever carried it.
+
+rule nh_reckoning_plain_8
+when concept=talk.news|talk.gossip world.mem.nh_stage=reckoning self.from=ridgemere world.mem.nh_ledger=ash
+does tell.news
+cooldown 1d
+say Somebody burned a Counting House ledger, they say. Ash doesn't testify, but it doesn't lie either.
+
+rule nh_reckoning_plain_9
+when concept=talk.news|talk.gossip world.mem.nh_stage=reckoning self.from=ridgemere world.mem.nh_loan=taken
+does tell.news
+cooldown 1d
+say The Crown took the Counting House's loan. Every small note paid, and the Crown in the book instead.
+
+rule nh_reckoning_plain_10
+when concept=talk.news|talk.gossip world.mem.nh_stage=reckoning self.from=ridgemere world.mem.nh_loan=refused
+does tell.news
+cooldown 1d
+say The Queen's household turned down the Counting House's loan. The notes stand, but the Crown's its own.
+
+rule nh_reckoning_coldwater_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=reckoning self.from=coldwater
+does tell.news
+cooldown 1d
+say Factors chalking doors in the city, eh? Out here we'd call that marking a net that isn't yours.
+
+rule nh_reckoning_coldwater_2
+when concept=talk.gossip world.mem.nh_stage=reckoning self.from=coldwater
+does tell.gossip
+cooldown 1d
+say Counting House pennies at the carters' yard. Deep and dark, those coins swim upstream.
+
+rule nh_reckoning_coldwater_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=reckoning self.from=coldwater
+does tell.news
+cooldown 1d
+say Don't lend your wagon days to a guard with his badge cut off, eh?
+
+rule nh_reckoning_larkfield_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=reckoning self.from=larkfield
+does tell.news
+cooldown 1d
+say Short-weighed, the lot of it. Fair price to you, they say, and the scale's got a thumb on it.
+
+rule nh_reckoning_larkfield_2
+when concept=talk.gossip world.mem.nh_stage=reckoning self.from=larkfield
+does tell.gossip
+cooldown 1d
+say The Counting House lends with one paw and weighs with the other. Weights and measures, I know a cheat's scale.
+
+rule nh_reckoning_larkfield_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=reckoning self.from=larkfield
+does tell.news
+cooldown 1d
+say If a clerk asks you to sign for a neighbour, read it twice and sign nothing.
+
+rule nh_reckoning_southmeadow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=reckoning self.from=southmeadow
+does tell.news
+cooldown 1d
+say Notes due at the new moon? Chaff and promises, #address#.
+
+rule nh_reckoning_southmeadow_2
+when concept=talk.gossip world.mem.nh_stage=reckoning self.from=southmeadow
+does tell.gossip
+cooldown 1d
+say The Counting House master wants every howl in the realm. Blight take him, he can't carry a tune.
+
+rule nh_reckoning_southmeadow_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=reckoning self.from=southmeadow
+does tell.news
+cooldown 1d
+say Don't let them chalk your door, neighbour. Scrub it before the moon's up.
+
+rule nh_reckoning_mirebridge_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=reckoning self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say Owe a House a penny and they own your boots. Lucky we go barefoot in the fens, no?
+
+rule nh_reckoning_mirebridge_2
+when concept=talk.gossip world.mem.nh_stage=reckoning self.from=mirebridge|fenshore
+does tell.gossip
+cooldown 1d
+say A clerk in the city smells of smoke. Fen-sure, some fires aren't for warming.
+
+rule nh_reckoning_mirebridge_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=reckoning self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say Don't take the House's coin for your howl, #address#. Mirebridge sold its say once, and look where it got us.
+
+rule nh_reckoning_saltwell_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=reckoning self.from=saltwell
+does tell.news
+cooldown 1d
+say A loan the borrower cannot refuse is not a loan, #address#. It is a leash.
+
+rule nh_reckoning_saltwell_2
+when concept=talk.gossip world.mem.nh_stage=reckoning self.from=saltwell
+does tell.gossip
+cooldown 1d
+say The master of the Counting House has never once been thirsty. That is how you know a dangerous wolf.
+
+rule nh_reckoning_saltwell_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=reckoning self.from=saltwell
+does tell.news
+cooldown 1d
+say Do not pledge your voice for coin, #address#. The well remembers who drew from it.
+
+rule nh_reckoning_oakhaven_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=reckoning self.from=oakhaven
+does tell.news
+cooldown 1d
+say They chalk doors in the city, mm? We'd mark a tree that way before we felled it.
+
+rule nh_reckoning_oakhaven_2
+when concept=talk.gossip world.mem.nh_stage=reckoning self.from=oakhaven
+does tell.gossip
+cooldown 1d
+say Bark and branch, a lender who wants your howl wants your whole tree.
+
+rule nh_reckoning_oakhaven_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=reckoning self.from=oakhaven
+does tell.news
+cooldown 1d
+say Don't sell your wagon days, old root. You'll want the road back.
+
+rule nh_reckoning_frosthollow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=reckoning self.from=frosthollow
+does tell.news
+cooldown 1d
+say Captain's quiet. Too quiet. Dead rock talk, that note on the mine.
+
+rule nh_reckoning_frosthollow_2
+when concept=talk.gossip world.mem.nh_stage=reckoning self.from=frosthollow
+does tell.gossip
+cooldown 1d
+say The Counting House rider comes up the Pass Road. Lamp and pick, somebody wants his letters lost.
+
+rule nh_reckoning_frosthollow_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=reckoning self.from=frosthollow
+does tell.news
+cooldown 1d
+say If the mine captain offers you a share in anything, count your claws after.
+
+rule nh_reckoning_frosthollow_4
+when concept=talk.news|talk.gossip world.mem.nh_stage=reckoning self.from=frosthollow world.mem.nh_seam=crooked
+does tell.news
+cooldown 1d
+say The quota's met, they say, with ore that isn't ours. Black seam. Somebody'll pay for that.
+
+rule nh_signals_plain_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=signals self.from=ridgemere
+does tell.news
+cooldown 1d
+say Somebody's gathering the lists of who pays the Watch. Mind whose name you say aloud in a taproom.
+
+rule nh_signals_plain_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=press
+does tell.news
+cooldown 1d
+say It's printed. The whole list, on every board. Half the Watch can't meet your eye.
+
+rule nh_signals_plain_3
+when concept=talk.news|talk.gossip world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=sold
+does tell.news
+cooldown 1d
+say The lists went to the Counting House, they say. The sergeant's on the Harbour Gate now. Funny, that.
+
+rule nh_signals_plain_4
+when concept=talk.news|talk.gossip world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=captain
+does tell.news
+cooldown 1d
+say The Watch Captain burned the lists in front of the sergeants, they say. Nobody on them pays twice now.
+
+rule nh_signals_plain_5
+when concept=talk.news|talk.gossip world.mem.nh_stage=signals self.from=ridgemere world.mem.nh_lists=lost
+does tell.news
+cooldown 1d
+say The Watch lists went into the river, they say. Half the Watch slept easy that night.
+
+rule nh_signals_plain_6
+when concept=talk.gossip world.mem.nh_stage=signals self.from=ridgemere
+does tell.gossip
+cooldown 1d
+say Three Houses on every list, they say. One on none. Ask yourself why it needn't pay.
+
+rule nh_signals_plain_7
+when concept=talk.news|talk.bandits world.mem.nh_stage=signals self.from=ridgemere
+does tell.news
+cooldown 1d
+say The Cinder Gate looks away for a grey paw-mark. Don't trust that gate after dark.
+
+rule nh_signals_coldwater_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=signals self.from=coldwater
+does tell.news
+cooldown 1d
+say Lamps on the downs, two long and one short. That's no fisher's light, eh?
+
+rule nh_signals_coldwater_2
+when concept=talk.gossip world.mem.nh_stage=signals self.from=coldwater
+does tell.gossip
+cooldown 1d
+say A captain in grey taking a mark a wagon, eh? Deep and dark, that's a toll with no tollhouse.
+
+rule nh_signals_coldwater_3
+when concept=talk.gossip world.mem.nh_stage=signals self.from=coldwater world.figure_villain world.mem.nh_captain=named
+does tell.gossip
+cooldown 1d
+say #world.figure_villain#, they're calling him. Keeps the roads, he says. Keeps them shut.
+
+rule nh_signals_coldwater_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=signals self.from=coldwater
+does tell.news
+cooldown 1d
+say The camp above Glasswater comes back in threes. Don't go in alone, eh?
+
+rule nh_signals_larkfield_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=signals self.from=larkfield
+does tell.news
+cooldown 1d
+say A Watch you can buy is a scale you can lean on. Scales and silver, I'd like to see that list.
+
+rule nh_signals_larkfield_2
+when concept=talk.gossip world.mem.nh_stage=signals self.from=larkfield
+does tell.gossip
+cooldown 1d
+say Two long and one short. Somebody's selling our wagon days, and the price is a lamp on a hill.
+
+rule nh_signals_larkfield_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=signals self.from=larkfield
+does tell.news
+cooldown 1d
+say Don't buy a list from the fish hall. It's short-weighed paper.
+
+rule nh_signals_southmeadow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=signals self.from=southmeadow
+does tell.news
+cooldown 1d
+say The fish-hall wolf sells papers, and they smell of fish oil. Blight take it, don't pay her a penny.
+
+rule nh_signals_southmeadow_2
+when concept=talk.gossip world.mem.nh_stage=signals self.from=southmeadow
+does tell.gossip
+cooldown 1d
+say Somebody in grey keeps the roads now, they say. Wormy sort of keeping.
+
+rule nh_signals_southmeadow_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=signals self.from=southmeadow
+does tell.news
+cooldown 1d
+say If you see two long and one short, don't wait to count again.
+
+rule nh_signals_mirebridge_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=signals self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say In the fens the Watch never came at all, so nobody paid. Boggy sort of honesty, no?
+
+rule nh_signals_mirebridge_2
+when concept=talk.gossip world.mem.nh_stage=signals self.from=mirebridge|fenshore
+does tell.gossip
+cooldown 1d
+say Grey paw-marks on every board now. Fen-sure, he's proud of it.
+
+rule nh_signals_mirebridge_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=signals self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say A lamp you can't see the house behind is a lamp you don't follow.
+
+rule nh_signals_saltwell_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=signals self.from=saltwell
+does tell.news
+cooldown 1d
+say A Watch that is paid by a House guards that House's well, not yours, #address#.
+
+rule nh_signals_saltwell_2
+when concept=talk.gossip world.mem.nh_stage=signals self.from=saltwell
+does tell.gossip
+cooldown 1d
+say A road kept by no one is kept for someone, #address#. Ask who the grey keeper keeps it for.
+
+rule nh_signals_saltwell_3
+when concept=talk.gossip world.mem.nh_stage=signals self.from=saltwell world.mem.nh_captain=named
+does tell.gossip
+cooldown 1d
+say Caravans called him the keeper with no face. Now he has a name, they say, and a grey cloak.
+
+rule nh_signals_saltwell_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=signals self.from=saltwell
+does tell.news
+cooldown 1d
+say Do not buy secrets that smell of fish, #address#. Sweet water does not smell of anything.
+
+rule nh_signals_oakhaven_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=signals self.from=oakhaven
+does tell.news
+cooldown 1d
+say Rot starts under the bark, mm? You don't see it till the tree's down.
+
+rule nh_signals_oakhaven_2
+when concept=talk.gossip world.mem.nh_stage=signals self.from=oakhaven
+does tell.gossip
+cooldown 1d
+say A captain of the roads with no road of his own. Windthrown sort of wolf, mm?
+
+rule nh_signals_oakhaven_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=signals self.from=oakhaven
+does tell.news
+cooldown 1d
+say Don't walk under a lit knoll, old root. They're watching from up there.
+
+rule nh_signals_frosthollow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=signals self.from=frosthollow
+does tell.news
+cooldown 1d
+say A harness turned up on the Pass Road, old and sooty. Deep strange.
+
+rule nh_signals_frosthollow_2
+when concept=talk.gossip world.mem.nh_stage=signals self.from=frosthollow
+does tell.gossip
+cooldown 1d
+say Somebody's lighting lamps on our ridges and it isn't us. Lamp and pick, I'd like a word with him.
+
+rule nh_signals_frosthollow_3
+when concept=talk.gossip world.mem.nh_stage=signals self.from=frosthollow world.figure_villain world.mem.nh_captain=named
+does tell.gossip
+cooldown 1d
+say #world.figure_villain#, they're saying. Knows the dark like a good seam.
+
+rule nh_signals_frosthollow_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=signals self.from=frosthollow
+does tell.news
+cooldown 1d
+say If you hear two long and one short from a ridge, #address#, you're already seen.
+
+rule nh_howls_plain_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=howls self.from=ridgemere
+does tell.news
+cooldown 1d
+say Eight towns howling at dusk and one silent. The old folk say the ninth was the loudest.
+
+rule nh_howls_plain_2
+when concept=talk.gossip world.mem.nh_stage=howls self.from=ridgemere
+does tell.gossip
+cooldown 1d
+say The Counting House is buying howls, they say. A penny a throat. Ask yourself what a bought Moot sounds like.
+
+rule nh_howls_plain_3
+when concept=talk.gossip world.mem.nh_stage=howls self.from=ridgemere world.mem.nh_relay=ran|broke
+does tell.gossip
+cooldown 1d
+say The ridge howled back two long and one short on the relay night. That wasn't ours.
+
+rule nh_howls_plain_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=howls self.from=ridgemere
+does tell.news
+cooldown 1d
+say The Counting House says a bought howl still counts. Buy yours back if you sold it.
+
+rule nh_howls_plain_5
+when concept=talk.news|talk.gossip world.mem.nh_stage=howls self.from=ridgemere world.mem.nh_cough=tended
+does tell.news
+cooldown 1d
+say The King's daughter climbed the Hundred Steps without stopping. Somebody sat with her.
+
+rule nh_howls_coldwater_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=howls self.from=coldwater
+does tell.news
+cooldown 1d
+say A gathering howl? We've one for the drowned, one for a catch and one for supper, and I'd not swear which, eh?
+
+rule nh_howls_coldwater_2
+when concept=talk.gossip world.mem.nh_stage=howls self.from=coldwater
+does tell.gossip
+cooldown 1d
+say Somebody wants the old howls lost, eh? Deep and dark, a Moot with no howl can't sit.
+
+rule nh_howls_coldwater_3
+when concept=talk.gossip world.mem.nh_stage=howls self.from=coldwater world.mem.nh_relay=ran|broke
+does tell.gossip
+cooldown 1d
+say False howls off the ridge, two long and one short. Deep and dark, he even steals our singing.
+
+rule nh_howls_coldwater_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=howls self.from=coldwater
+does tell.news
+cooldown 1d
+say Don't howl the burying one at a wedding. It's been done. It was awful, eh?
+
+rule nh_howls_larkfield_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=howls self.from=larkfield
+does tell.news
+cooldown 1d
+say Larkfield's howl goes up at the end like a price. Scales and silver, it's the best one.
+
+rule nh_howls_larkfield_2
+when concept=talk.gossip world.mem.nh_stage=howls self.from=larkfield
+does tell.gossip
+cooldown 1d
+say A howl from the ridge, they say, and it wasn't from any town. Somebody's put a price on our song.
+
+rule nh_howls_larkfield_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=howls self.from=larkfield
+does tell.news
+cooldown 1d
+say If you've sold your howl to the Counting House, buy it back. It's worth more than a note.
+
+rule nh_howls_southmeadow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=howls self.from=southmeadow
+does tell.news
+cooldown 1d
+say Our gathering howl? Blight take it, I've only ever known the harvest one.
+
+rule nh_howls_southmeadow_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=howls self.from=southmeadow world.mem.nh_howl=found
+does tell.news
+cooldown 1d
+say A good harvest of a night! Half the vale came out to howl.
+
+rule nh_howls_southmeadow_3
+when concept=talk.gossip world.mem.nh_stage=howls self.from=southmeadow
+does tell.gossip
+cooldown 1d
+say Somebody chiselled a name off the Sunfields stone. Wormy business, that.
+
+rule nh_howls_southmeadow_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=howls self.from=southmeadow
+does tell.news
+cooldown 1d
+say Don't sing at the stone of a night unless the sky's clear. The cellar hand says so, and she's odd but right.
+
+rule nh_howls_mirebridge_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=howls self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say Ninth howl's gone under, #address#. Mirebridge got drowned, and the drowned don't howl. Or do they, no?
+
+rule nh_howls_mirebridge_2
+when concept=talk.gossip world.mem.nh_stage=howls self.from=mirebridge|fenshore
+does tell.gossip
+cooldown 1d
+say The Houses struck Mirebridge off the rolls. Struck it off so the Moot could never sit, they say.
+
+rule nh_howls_mirebridge_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=howls self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say Don't sing the drowned howl on the boardwalk of a night. The old ones don't like it.
+
+rule nh_howls_saltwell_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=howls self.from=saltwell
+does tell.news
+cooldown 1d
+say The old one at the salt pans keeps the well's roll, #address#. Every caravan that ever drank is in it.
+
+rule nh_howls_saltwell_2
+when concept=talk.gossip world.mem.nh_stage=howls self.from=saltwell
+does tell.gossip
+cooldown 1d
+say A howl that answers from a ridge with no town under it is a mirage, #address#. Do not follow it.
+
+rule nh_howls_saltwell_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=howls self.from=saltwell
+does tell.news
+cooldown 1d
+say Do not hurry an old wolf's song. Saltwell begins nothing in a hurry.
+
+rule nh_howls_oakhaven_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=howls self.from=oakhaven
+does tell.news
+cooldown 1d
+say Our howl's slow and it climbs, like good bark. Come by the square at dusk, mm?
+
+rule nh_howls_oakhaven_2
+when concept=talk.gossip world.mem.nh_stage=howls self.from=oakhaven
+does tell.gossip
+cooldown 1d
+say Somebody's teaching false howls from the ridges, mm? Rotten at the root, that.
+
+rule nh_howls_oakhaven_3
+when concept=talk.gossip world.mem.nh_stage=howls self.from=oakhaven world.mem.nh_relay=ran|broke
+does tell.gossip
+cooldown 1d
+say False howls on the relay night, they say. Somebody's got lamps and a throat.
+
+rule nh_howls_oakhaven_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=howls self.from=oakhaven
+does tell.news
+cooldown 1d
+say The relay night wants a wolf at every post. One gap and it limps, mm?
+
+rule nh_howls_frosthollow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=howls self.from=frosthollow
+does tell.news
+cooldown 1d
+say In Frosthollow the warning howl goes low, so it carries down the shafts. The gathering one's lower still.
+
+rule nh_howls_frosthollow_2
+when concept=talk.gossip world.mem.nh_stage=howls self.from=frosthollow
+does tell.gossip
+cooldown 1d
+say Deepvein wolves knew a howl too, once. Nobody's heard it since the deep winter.
+
+rule nh_howls_frosthollow_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=howls self.from=frosthollow
+does tell.news
+cooldown 1d
+say Don't go onto Highmere alone, #address#. The ice keeps what it takes.
+
+rule nh_howls_frosthollow_4
+when concept=talk.news|talk.gossip world.mem.nh_stage=howls self.from=frosthollow world.mem.nh_silver=greatly
+does tell.news
+cooldown 1d
+say The silver went to the Counting House. Black seam. The mine's charter is a Greatly note now.
+
+rule nh_letters_plain_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=letters self.from=ridgemere
+does tell.news
+cooldown 1d
+say Someone's carrying every letter for the Grayrock lord out to his road at last. Forty of them.
+
+rule nh_letters_plain_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=letters self.from=ridgemere world.mem.nh_grayrock=home
+does tell.news
+cooldown 1d
+say The Grayrock lady walked out to the Wharf gate. Didn't even put her hood up.
+
+rule nh_letters_plain_3
+when concept=talk.gossip world.mem.nh_stage=letters self.from=ridgemere
+does tell.gossip
+cooldown 1d
+say Some of those letters are toll receipts, they say, signed with a grey paw. Grayrock pays the roads to stay shut.
+
+rule nh_letters_plain_4
+when concept=talk.gossip world.mem.nh_stage=letters self.from=ridgemere world.mem.nh_toll=cried
+does tell.gossip
+cooldown 1d
+say The herald cried a Grayrock toll receipt on the square. The Sump cheered. The Wharf didn't.
+
+rule nh_letters_plain_5
+when concept=talk.news|talk.bandits world.mem.nh_stage=letters self.from=ridgemere
+does tell.news
+cooldown 1d
+say Fell wants the Rainward Hills, and Fell's green is on the wolves driving stakes. Mind the cut.
+
+rule nh_letters_coldwater_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=letters self.from=coldwater
+does tell.news
+cooldown 1d
+say Bounders in green on the Oakhaven road, eh? Fishers don't drive stakes into the ground.
+
+rule nh_letters_coldwater_2
+when concept=talk.gossip world.mem.nh_stage=letters self.from=coldwater
+does tell.gossip
+cooldown 1d
+say Green cloaks and grey lamps, together. Deep and dark, who's paying whom?
+
+rule nh_letters_coldwater_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=letters self.from=coldwater
+does tell.news
+cooldown 1d
+say Black cloaks on the Pass Road, eh? Wardens, they say. Fair winds to whoever they've come for.
+
+rule nh_letters_larkfield_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=letters self.from=larkfield
+does tell.news
+cooldown 1d
+say Fell wants the hills. Fell wants everything with a price on it, #address#.
+
+rule nh_letters_larkfield_2
+when concept=talk.gossip world.mem.nh_stage=letters self.from=larkfield
+does tell.gossip
+cooldown 1d
+say Grayrock pays one mark a wagon on the High Road. Scales and silver, to whom?
+
+rule nh_letters_larkfield_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=letters self.from=larkfield
+does tell.news
+cooldown 1d
+say Don't take a Fell errand without reading it. Fellhall has more rooms than doors.
+
+rule nh_letters_southmeadow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=letters self.from=southmeadow
+does tell.news
+cooldown 1d
+say A lord who's never home is like a vine never pruned. All runners, no grapes, #address#.
+
+rule nh_letters_southmeadow_2
+when concept=talk.gossip world.mem.nh_stage=letters self.from=southmeadow
+does tell.gossip
+cooldown 1d
+say Fell's green cloaks are driving stakes in Oakhaven's cut. Blight take them.
+
+rule nh_letters_southmeadow_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=letters self.from=southmeadow
+does tell.news
+cooldown 1d
+say Don't trust a wager in the Fell distillery. The house always drinks first.
+
+rule nh_letters_mirebridge_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=letters self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say Forty letters and not one answered. In the fens we'd call that a very wet postbag, no?
+
+rule nh_letters_mirebridge_2
+when concept=talk.gossip world.mem.nh_stage=letters self.from=mirebridge|fenshore
+does tell.gossip
+cooldown 1d
+say Grey paw-marks on the lord's toll receipts. Boggy coin, that.
+
+rule nh_letters_mirebridge_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=letters self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say Don't step between Fell and Oakhaven, #address#. Both sides have axes.
+
+rule nh_letters_saltwell_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=letters self.from=saltwell
+does tell.news
+cooldown 1d
+say The well remembers who drew from it. The lord has drawn for six years and never come back to the well.
+
+rule nh_letters_saltwell_2
+when concept=talk.gossip world.mem.nh_stage=letters self.from=saltwell
+does tell.gossip
+cooldown 1d
+say A House that pays the roads to stay shut buys a thirst for everyone else.
+
+rule nh_letters_saltwell_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=letters self.from=saltwell
+does tell.news
+cooldown 1d
+say Black cloaks on the Pass Road, #address#. If you carry a Gift, carry it quietly.
+
+rule nh_letters_oakhaven_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=letters self.from=oakhaven
+does tell.news
+cooldown 1d
+say Walk the bounds with us? Mark every ninth cedar and the old boundary stone, mm?
+
+rule nh_letters_oakhaven_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=letters self.from=oakhaven world.mem.nh_hills=oakhaven
+does tell.news
+cooldown 1d
+say Good bark, those wolves. The cut's ours yet. Root well.
+
+rule nh_letters_oakhaven_3
+when concept=talk.news|talk.gossip world.mem.nh_stage=letters self.from=oakhaven world.mem.nh_hills=fell
+does tell.news
+cooldown 1d
+say Fell's hills now. Windthrown, the lot of us. Oakhaven howls against Fell at the Moot.
+
+rule nh_letters_oakhaven_4
+when concept=talk.gossip world.mem.nh_stage=letters self.from=oakhaven
+does tell.gossip
+cooldown 1d
+say Wolves in Fell green on the cut, and the Captain's lamps behind them. Same paws, different cloaks, mm?
+
+rule nh_letters_oakhaven_5
+when concept=talk.news|talk.bandits world.mem.nh_stage=letters self.from=oakhaven
+does tell.news
+cooldown 1d
+say Don't argue with a bounder alone, old root. They come in threes.
+
+rule nh_letters_frosthollow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=letters self.from=frosthollow
+does tell.news
+cooldown 1d
+say Three black cloaks came down the Pass on Stoneday. Didn't take their boots off at the Pass House. Deep strange.
+
+rule nh_letters_frosthollow_2
+when concept=talk.gossip world.mem.nh_stage=letters self.from=frosthollow
+does tell.gossip
+cooldown 1d
+say The Captain's bounders wear Fell green in the west, they say. Grey up here. Same wolves.
+
+rule nh_letters_frosthollow_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=letters self.from=frosthollow
+does tell.news
+cooldown 1d
+say Don't lie to a black cloak, cousin. Don't tell them more than's true, either.
+
+rule nh_lights_plain_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=lights self.from=ridgemere
+does tell.news
+cooldown 1d
+say The Houses are at each other's throats, and a black cloak sits in the Antechamber listening to all of it.
+
+rule nh_lights_plain_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=lights self.from=ridgemere world.mem.nh_quarrel=fell_timber
+does tell.news
+cooldown 1d
+say The Timberland works burned in the night. Every smith in the Cinders swears it wasn't them.
+
+rule nh_lights_plain_3
+when concept=talk.news|talk.gossip world.mem.nh_stage=lights self.from=ridgemere world.mem.nh_quarrel=houses_greatly
+does tell.news
+cooldown 1d
+say There's a run on the Greatly Bank. The masons have walked off the Yard.
+
+rule nh_lights_plain_4
+when concept=talk.news|talk.gossip world.mem.nh_stage=lights self.from=ridgemere world.mem.nh_quarrel=greatly_grayrock
+does tell.news
+cooldown 1d
+say Grayrock's closed the Wharf to Greatly stone. The Wharf's idle and the Yard's shouting.
+
+rule nh_lights_plain_5
+when concept=talk.news|talk.gossip world.mem.nh_stage=lights self.from=ridgemere world.mem.nh_quarrel=against_crown
+does tell.news
+cooldown 1d
+say The Council wants the lamp-keeper gone before the Moot sits. Petitions on every desk.
+
+rule nh_lights_plain_6
+when concept=talk.gossip world.mem.nh_stage=lights self.from=ridgemere
+does tell.gossip
+cooldown 1d
+say A black cloak at the Antechamber, and every House shouting. Somebody's glad of the noise.
+
+rule nh_lights_plain_7
+when concept=talk.news|talk.bandits world.mem.nh_stage=lights self.from=ridgemere
+does tell.news
+cooldown 1d
+say Cudgels in House colours on the roads out of the city. Walk round them.
+
+rule nh_lights_coldwater_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=lights self.from=coldwater
+does tell.news
+cooldown 1d
+say Houses at each other in the city and lights in the fens. A good season to mend nets, eh?
+
+rule nh_lights_coldwater_2
+when concept=talk.gossip world.mem.nh_stage=lights self.from=coldwater
+does tell.gossip
+cooldown 1d
+say Lamp oil in the reeds. Deep and dark, the same lamps as on the ridges.
+
+rule nh_lights_coldwater_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=lights self.from=coldwater
+does tell.news
+cooldown 1d
+say Don't follow a warm light in the fens, neighbour. Cold ones only, they say.
+
+rule nh_lights_larkfield_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=lights self.from=larkfield
+does tell.news
+cooldown 1d
+say A black cloak on the Fen Road, and the price of a room on the Long River just doubled.
+
+rule nh_lights_larkfield_2
+when concept=talk.gossip world.mem.nh_stage=lights self.from=larkfield
+does tell.gossip
+cooldown 1d
+say Plunder up the river by night. Weights and measures, somebody's fencing the Captain's take.
+
+rule nh_lights_larkfield_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=lights self.from=larkfield
+does tell.news
+cooldown 1d
+say Don't buy cheap wool from a fen boat. You'll be buying it twice.
+
+rule nh_lights_southmeadow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=lights self.from=southmeadow
+does tell.news
+cooldown 1d
+say Fen boats on the Long River by night, no lamps lit. Blight take them, a Larkholm carter lost a cart of honey.
+
+rule nh_lights_southmeadow_2
+when concept=talk.gossip world.mem.nh_stage=lights self.from=southmeadow
+does tell.gossip
+cooldown 1d
+say The Captain's southern company wades the fens with float lamps. Wormy trick.
+
+rule nh_lights_southmeadow_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=lights self.from=southmeadow
+does tell.news
+cooldown 1d
+say If you walk the fens by night, take a friend and a lamp you won't light.
+
+rule nh_lights_mirebridge_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=lights self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say Lights in the reeds every night now, no? The old ones say the drowned want their names said.
+
+rule nh_lights_mirebridge_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=lights self.from=mirebridge|fenshore here.weather=fog
+does tell.news
+cooldown 1d
+say Dry feet. Mizzle's up. If you see a light, follow it, but only the cold ones, no?
+
+rule nh_lights_mirebridge_3
+when concept=talk.news|talk.gossip world.mem.nh_stage=lights self.from=mirebridge|fenshore world.mem.nh_lights=laid
+does tell.news
+cooldown 1d
+say Dark marsh and dry feet. The priest from the city said every name.
+
+rule nh_lights_mirebridge_4
+when concept=talk.news|talk.gossip world.mem.nh_stage=lights self.from=mirebridge|fenshore world.mem.nh_lights=turned
+does tell.news
+cooldown 1d
+say They used the drowned for bait. Dark One's mire, we'll pay for that.
+
+rule nh_lights_mirebridge_5
+when concept=talk.gossip world.mem.nh_stage=lights self.from=mirebridge|fenshore
+does tell.gossip
+cooldown 1d
+say Float lamps in the reeds, fen-sure. The drowned never needed lamps to walk.
+
+rule nh_lights_mirebridge_6
+when concept=talk.news|talk.bandits world.mem.nh_stage=lights self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say The potter's post went to a carpenter and the boardwalks whisper. Ask the records before you whisper too.
+
+rule nh_lights_saltwell_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=lights self.from=saltwell
+does tell.news
+cooldown 1d
+say In the old way, #address#, you bring bread and salt to a House at war. Even a House needs to eat.
+
+rule nh_lights_saltwell_2
+when concept=talk.gossip world.mem.nh_stage=lights self.from=saltwell
+does tell.gossip
+cooldown 1d
+say Lights in the fens, fire in the city, cudgels on the roads. A mirage of three, and one paw behind it.
+
+rule nh_lights_saltwell_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=lights self.from=saltwell
+does tell.news
+cooldown 1d
+say Do not hide a Gift from the black cloak and then use it in the open, #address#.
+
+rule nh_lights_oakhaven_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=lights self.from=oakhaven
+does tell.news
+cooldown 1d
+say The Houses are windthrown in a row this season, mm? One falls and takes the next.
+
+rule nh_lights_oakhaven_2
+when concept=talk.gossip world.mem.nh_stage=lights self.from=oakhaven
+does tell.gossip
+cooldown 1d
+say Cudgels in House colours at the Rainward camps. Proper strange that a House needs a camp.
+
+rule nh_lights_oakhaven_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=lights self.from=oakhaven
+does tell.news
+cooldown 1d
+say Don't take sides in the city's quarrel, old root. Take bread.
+
+rule nh_lights_frosthollow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=lights self.from=frosthollow
+does tell.news
+cooldown 1d
+say Lights in the fens, fire in the city. Black seam of a season.
+
+rule nh_lights_frosthollow_2
+when concept=talk.gossip world.mem.nh_stage=lights self.from=frosthollow
+does tell.gossip
+cooldown 1d
+say The Captain's company's gone south to the fens. Cold iron, we're glad and we're not.
+
+rule nh_lights_frosthollow_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=lights self.from=frosthollow
+does tell.news
+cooldown 1d
+say One howl from the Pass to the Waste, the black cloak wants. Our post's first. Don't let it be our fault.
+
+rule nh_harvest_plain_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=harvest self.from=ridgemere
+does tell.news
+cooldown 1d
+say Every wolf who can stand is at the Larkfield ford. The city's quiet as a crypt.
+
+rule nh_harvest_plain_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=harvest self.from=ridgemere world.mem.nh_ford=held
+does tell.news
+cooldown 1d
+say They held the Larkfield ford three nights. Blood and bread, I'd have liked to see it.
+
+rule nh_harvest_plain_3
+when concept=talk.news|talk.gossip world.mem.nh_stage=harvest self.from=ridgemere world.mem.nh_ford=burned
+does tell.news
+cooldown 1d
+say The ford burned, and Larkfield's houses with it. The realm will be short of bread before spring.
+
+rule nh_harvest_plain_4
+when concept=talk.gossip world.mem.nh_stage=harvest self.from=ridgemere
+does tell.gossip
+cooldown 1d
+say The Counting House is buying Longmead grain at siege price. Somebody always profits.
+
+rule nh_harvest_plain_5
+when concept=talk.news|talk.bandits world.mem.nh_stage=harvest self.from=ridgemere
+does tell.news
+cooldown 1d
+say Wolves carrying sacks from Longmead to the Counting House. Don't be one.
+
+rule nh_harvest_coldwater_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=harvest self.from=coldwater
+does tell.news
+cooldown 1d
+say The Captain's at the ford, eh? Then the downs are quiet. Fair catch, for once.
+
+rule nh_harvest_coldwater_2
+when concept=talk.gossip world.mem.nh_stage=harvest self.from=coldwater
+does tell.gossip
+cooldown 1d
+say Lamp-black at the ford too, they say. Same lamps as on our ridges.
+
+rule nh_harvest_coldwater_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=harvest self.from=coldwater
+does tell.news
+cooldown 1d
+say If the ford burns, the whole realm's short of bread. Help it hold, neighbour.
+
+rule nh_harvest_larkfield_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=harvest self.from=larkfield
+does tell.news
+cooldown 1d
+say Every sack in Longmead's gone to the ford walls. Scales and silver, I never thought I'd see grain for a rampart.
+
+rule nh_harvest_larkfield_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=harvest self.from=larkfield world.mem.nh_ford=burned
+does tell.news
+cooldown 1d
+say Short-weighed, all of it. The year, the bread, the lot.
+
+rule nh_harvest_larkfield_3
+when concept=talk.gossip world.mem.nh_stage=harvest self.from=larkfield
+does tell.gossip
+cooldown 1d
+say The Captain's companies took the Downs Road barns. Weights and measures, he's counted our grain before we have.
+
+rule nh_harvest_larkfield_4
+when concept=talk.gossip world.mem.nh_stage=harvest self.from=larkfield world.mem.nh_captain=parley
+does tell.gossip
+cooldown 1d
+say The Captain parleyed at the truce lamp. A wolf with a reason, and a reason's worse than a price.
+
+rule nh_harvest_larkfield_5
+when concept=talk.news|talk.bandits world.mem.nh_stage=harvest self.from=larkfield
+does tell.news
+cooldown 1d
+say Don't cross the ford after dark unless you're standing it, #address#. Both banks are watching.
+
+rule nh_harvest_larkfield_6
+when concept=talk.news|talk.bandits world.mem.nh_stage=harvest self.from=larkfield world.mem.nh_truce=broken
+does tell.news
+cooldown 1d
+say Somebody struck under the truce lamp. Weights and measures, the whole Downs is talking.
+
+rule nh_harvest_southmeadow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=harvest self.from=southmeadow
+does tell.news
+cooldown 1d
+say Every cart in the vale's gone north with something for the ford. Sheaf and sickle, the press house is empty.
+
+rule nh_harvest_southmeadow_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=harvest self.from=southmeadow world.mem.nh_runner=came
+does tell.news
+cooldown 1d
+say The runner came at midnight, howling the new howl. We knew it! Sheaf and sickle, we went.
+
+rule nh_harvest_southmeadow_3
+when concept=talk.gossip world.mem.nh_stage=harvest self.from=southmeadow
+does tell.gossip
+cooldown 1d
+say The Captain's companies took every barn on the Downs Road. Wormy wolves.
+
+rule nh_harvest_southmeadow_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=harvest self.from=southmeadow
+does tell.news
+cooldown 1d
+say Don't wait for a runner if you see smoke from the ford. Go.
+
+rule nh_harvest_mirebridge_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=harvest self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say The river company comes up through the reeds. Boggy fighting, that.
+
+rule nh_harvest_mirebridge_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=harvest self.from=mirebridge|fenshore world.mem.nh_sloe=turned
+does tell.news
+cooldown 1d
+say Fen boats bringing grain upriver now, no? Not plunder. That's new.
+
+rule nh_harvest_mirebridge_3
+when concept=talk.gossip world.mem.nh_stage=harvest self.from=mirebridge|fenshore
+does tell.gossip
+cooldown 1d
+say The Captain's a Deepvein wolf, they say, from the high valley. Long way to come for a ford, no?
+
+rule nh_harvest_mirebridge_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=harvest self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say Keep off the Long River banks by night. They're all fighting there.
+
+rule nh_harvest_saltwell_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=harvest self.from=saltwell
+does tell.news
+cooldown 1d
+say Salt and water for the wolves at the ford, #address#. The well gives to those who stand.
+
+rule nh_harvest_saltwell_2
+when concept=talk.gossip world.mem.nh_stage=harvest self.from=saltwell
+does tell.gossip
+cooldown 1d
+say A captain who parleys has a grievance, not a greed. By salt and water, that is harder to buy off.
+
+rule nh_harvest_saltwell_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=harvest self.from=saltwell
+does tell.news
+cooldown 1d
+say Do not leave the pool unwatched while the south is fighting.
+
+rule nh_harvest_oakhaven_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=harvest self.from=oakhaven
+does tell.news
+cooldown 1d
+say Half the cut's gone south to the ford, mm? The cedars can wait. Wheat can't.
+
+rule nh_harvest_oakhaven_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=harvest self.from=oakhaven world.mem.nh_captain=parley
+does tell.news
+cooldown 1d
+say Old Oak, a captain who parleys. That's a wolf with a reason, mm?
+
+rule nh_harvest_oakhaven_3
+when concept=talk.gossip world.mem.nh_stage=harvest self.from=oakhaven
+does tell.gossip
+cooldown 1d
+say Deepvein, they say. Turned out in the deep winter. Rotten thing to do to a wolf, mm?
+
+rule nh_harvest_oakhaven_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=harvest self.from=oakhaven
+does tell.news
+cooldown 1d
+say Don't go to the ford without bandages, old root.
+
+rule nh_harvest_frosthollow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=harvest self.from=frosthollow
+does tell.news
+cooldown 1d
+say The Captain's a Deepvein wolf. Lamp and pick, I could have told you. Nobody shared oil with Deepvein.
+
+rule nh_harvest_frosthollow_2
+when concept=talk.gossip world.mem.nh_stage=harvest self.from=frosthollow
+does tell.gossip
+cooldown 1d
+say Deepvein. The deep winter. The mine house door. Black seam, we all knew.
+
+rule nh_harvest_frosthollow_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=harvest self.from=frosthollow
+does tell.news
+cooldown 1d
+say Don't say Deepvein in the Lamp and Pick unless you mean it.
+
+rule nh_bell_plain_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=bell self.from=ridgemere
+does tell.news
+cooldown 1d
+say Everyone's asking what the Chancellor wept over in the Rain Hall. Turns out half the city saw him do it.
+
+rule nh_bell_plain_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=bell self.from=ridgemere world.mem.nh_writ=read
+does tell.news
+cooldown 1d
+say The old King wrote it down: the Sump's own peace-keeper keeps the lamp until a Moot. So it was no accident.
+
+rule nh_bell_plain_3
+when concept=talk.news|talk.gossip world.mem.nh_stage=bell self.from=ridgemere world.mem.nh_oskar=confessed
+does tell.news
+cooldown 1d
+say The Chancellor stood before the Council and said it all. The Counting House's debt, the order, the lot.
+
+rule nh_bell_plain_4
+when concept=talk.news|talk.gossip world.mem.nh_stage=bell self.from=ridgemere world.mem.nh_bell=lost
+does tell.news
+cooldown 1d
+say They lost the bell through the ice. The Upper Mere kept it. Some say that's where it belongs.
+
+rule nh_bell_plain_5
+when concept=talk.gossip world.mem.nh_stage=bell self.from=ridgemere
+does tell.gossip
+cooldown 1d
+say The Counting House master told the Chancellor to lose it, they whisper. Lose a King's writ!
+
+rule nh_bell_plain_6
+when concept=talk.news|talk.bandits world.mem.nh_stage=bell self.from=ridgemere
+does tell.news
+cooldown 1d
+say An old rag-mill hand is selling what she saw. Get there before she gets to the City Office.
+
+rule nh_bell_coldwater_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=bell self.from=coldwater
+does tell.news
+cooldown 1d
+say Hear that? Under the ice. Bright One's tide, it's ringing.
+
+rule nh_bell_coldwater_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=bell self.from=coldwater world.mem.nh_bell=rung
+does tell.news
+cooldown 1d
+say Net and line, they raised it! Green as a pike and loud as a gale, eh?
+
+rule nh_bell_coldwater_3
+when concept=talk.news|talk.gossip world.mem.nh_stage=bell self.from=coldwater world.mem.nh_mere=still
+does tell.news
+cooldown 1d
+say The whole mere's still. I've never seen it so. Calm water to her.
+
+rule nh_bell_coldwater_4
+when concept=talk.gossip world.mem.nh_stage=bell self.from=coldwater
+does tell.gossip
+cooldown 1d
+say The black cloak watches the mere all day. Deep and dark, what's she looking for?
+
+rule nh_bell_coldwater_5
+when concept=talk.news|talk.bandits world.mem.nh_stage=bell self.from=coldwater
+does tell.news
+cooldown 1d
+say Don't walk the black lane on the ice, neighbour. It never freezes, and nobody says why.
+
+rule nh_bell_larkfield_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=bell self.from=larkfield
+does tell.news
+cooldown 1d
+say A writ lost for a debt. That's the dearest paper ever bought in Ridgemere, #address#.
+
+rule nh_bell_larkfield_2
+when concept=talk.gossip world.mem.nh_stage=bell self.from=larkfield
+does tell.gossip
+cooldown 1d
+say The Counting House hid the old King's writ. Weights and measures, there's a cheat's scale for you.
+
+rule nh_bell_larkfield_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=bell self.from=larkfield
+does tell.news
+cooldown 1d
+say Don't go out on the Upper Mere ice alone, #address#. Weights and measures, ice doesn't bargain.
+
+rule nh_bell_larkfield_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=bell self.from=larkfield world.mem.nh_ford=burned
+does tell.news
+cooldown 1d
+say Send bread to Larkfield before you send iron to the bell.
+
+rule nh_bell_southmeadow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=bell self.from=southmeadow
+does tell.news
+cooldown 1d
+say The old King wanted all of us to choose? Sheaf and sickle, I'd best think what I'll say.
+
+rule nh_bell_southmeadow_2
+when concept=talk.gossip world.mem.nh_stage=bell self.from=southmeadow
+does tell.gossip
+cooldown 1d
+say Somebody bought a King's writ with a debt. Wormy, wormy business.
+
+rule nh_bell_southmeadow_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=bell self.from=southmeadow
+does tell.news
+cooldown 1d
+say Don't go out on the Upper Mere ice unless the skipper says it holds.
+
+rule nh_bell_mirebridge_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=bell self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say Our bell, under all that ice. Mud and eels, I'd walk the whole Long River to hear it, no?
+
+rule nh_bell_mirebridge_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=bell self.from=mirebridge|fenshore world.mem.nh_oskar=fled
+does tell.news
+cooldown 1d
+say The Chancellor ran down the Fen Road and stopped where Mirebridge used to stand. Even the drowned didn't want him, no?
+
+rule nh_bell_mirebridge_3
+when concept=talk.gossip world.mem.nh_stage=bell self.from=mirebridge|fenshore
+does tell.gossip
+cooldown 1d
+say The Houses struck us off the rolls and hid the King's writ. Same paws, fen-sure.
+
+rule nh_bell_mirebridge_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=bell self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say Don't stamp on the ice when you listen, #address#. The bell's not the only thing under it.
+
+rule nh_bell_mirebridge_5
+when concept=talk.news|talk.bandits world.mem.nh_stage=bell self.from=mirebridge|fenshore world.mem.nh_bell=cracked
+does tell.news
+cooldown 1d
+say They rang it cracked. Don't laugh. It's still ours.
+
+rule nh_bell_saltwell_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=bell self.from=saltwell
+does tell.news
+cooldown 1d
+say A King writes "let the realm choose", and the Houses hide it in the dark. The Houses hid it, #address#, not the King.
+
+rule nh_bell_saltwell_2
+when concept=talk.gossip world.mem.nh_stage=bell self.from=saltwell
+does tell.gossip
+cooldown 1d
+say A Chancellor weeping over a paper means someone made him hold it.
+
+rule nh_bell_saltwell_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=bell self.from=saltwell
+does tell.news
+cooldown 1d
+say A pup who calls water is a gift and a danger, #address#. Do not hide her carelessly.
+
+rule nh_bell_oakhaven_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=bell self.from=oakhaven
+does tell.news
+cooldown 1d
+say Old Oak. The old King planted something deep before he fell, mm? Now we see the shoot.
+
+rule nh_bell_oakhaven_2
+when concept=talk.gossip world.mem.nh_stage=bell self.from=oakhaven
+does tell.gossip
+cooldown 1d
+say The Counting House paid for a writ to be lost. Rotten at the root, mm?
+
+rule nh_bell_oakhaven_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=bell self.from=oakhaven
+does tell.news
+cooldown 1d
+say Don't trust a sale of secrets on the Sump Stairs. Somebody's paying both ends.
+
+rule nh_bell_frosthollow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=bell self.from=frosthollow
+does tell.news
+cooldown 1d
+say Our iron's in the bell's yoke. Cold iron for a cold bell. Lamp and pick.
+
+rule nh_bell_frosthollow_2
+when concept=talk.gossip world.mem.nh_stage=bell self.from=frosthollow
+does tell.gossip
+cooldown 1d
+say On the Moot night the Pass is his, the notice says. The Captain writes like he means it.
+
+rule nh_bell_frosthollow_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=bell self.from=frosthollow
+does tell.news
+cooldown 1d
+say Nobody goes down alone, and nobody comes up without counting the others.
+
+rule nh_moot_plain_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot self.from=ridgemere
+does tell.news
+cooldown 1d
+say Every town's sending its howl to the Moot. Ours goes to whoever kept the peace best.
+
+rule nh_moot_plain_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot self.from=ridgemere world.mem.nh_moot=midwinter
+does tell.news
+cooldown 1d
+say The Midwinter Moot! Every post on the Line wants a keeper, and every keeper wants a coat.
+
+rule nh_moot_plain_3
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot self.from=ridgemere world.mem.nh_moot=nine_howls
+does tell.news
+cooldown 1d
+say The Moot of the Nine Howls, they're calling it. Nine towns, one night, one howl.
+
+rule nh_moot_plain_4
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot self.from=ridgemere world.mem.nh_dagfinn=stands
+does tell.news
+cooldown 1d
+say The lamp-keeper will stand at the Moot. A Sump wolf, standing!
+
+rule nh_moot_plain_5
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot self.from=ridgemere world.mem.nh_dagfinn=steps
+does tell.news
+cooldown 1d
+say The lamp-keeper's stepping back, they say, and asking the Moot to choose. A Sump wolf who doesn't want a crown.
+
+rule nh_moot_plain_6
+when concept=talk.gossip world.mem.nh_stage=moot self.from=ridgemere
+does tell.gossip
+cooldown 1d
+say The Counting House master says he's already counted his voices. Make sure he's counted wrong.
+
+rule nh_moot_plain_7
+when concept=talk.news|talk.bandits world.mem.nh_stage=moot self.from=ridgemere
+does tell.news
+cooldown 1d
+say The Captain says the Pass is his on the Moot night. If the north arm fails, the trunk starts short.
+
+rule nh_moot_coldwater_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot self.from=coldwater world.mem.nh_bell=rung|cracked
+does tell.news
+cooldown 1d
+say The big thing's going to the city for the Moot. It rang once on the road, they say. On its own.
+
+rule nh_moot_coldwater_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot self.from=coldwater world.mem.nh_moot=midwinter
+does tell.news
+cooldown 1d
+say A Midwinter Moot, eh? The mere's froze hard, and a howl carries over ice.
+
+rule nh_moot_coldwater_3
+when concept=talk.gossip world.mem.nh_stage=moot self.from=coldwater
+does tell.gossip
+cooldown 1d
+say The Counting House has bought howls. A bought howl's a muddied one, eh?
+
+rule nh_moot_coldwater_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=moot self.from=coldwater
+does tell.news
+cooldown 1d
+say If the howl stops at the mere post, it's not over. The next post can take it from two back, eh?
+
+rule nh_moot_larkfield_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot self.from=larkfield
+does tell.news
+cooldown 1d
+say Our voice to the Moot is bought by deeds, not silver. Scales and silver, that's a market I like.
+
+rule nh_moot_larkfield_2
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot self.from=larkfield world.mem.nh_moot=midwinter
+does tell.news
+cooldown 1d
+say A Midwinter Moot. Weights and measures, the coldest market the realm's ever held.
+
+rule nh_moot_larkfield_3
+when concept=talk.gossip world.mem.nh_stage=moot self.from=larkfield
+does tell.gossip
+cooldown 1d
+say Bought howls go to the Purse, three at most. Weights and measures, that's three too many.
+
+rule nh_moot_larkfield_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=moot self.from=larkfield
+does tell.news
+cooldown 1d
+say Don't go to the Moot empty-pawed. Bring oil for a post.
+
+rule nh_moot_southmeadow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot self.from=southmeadow
+does tell.news
+cooldown 1d
+say Southmeadow's voice is ready. A windfall of a Moot, #address#.
+
+rule nh_moot_southmeadow_2
+when concept=talk.gossip world.mem.nh_stage=moot self.from=southmeadow
+does tell.gossip
+cooldown 1d
+say The Counting House would crown a debt if it could. Blight take it.
+
+rule nh_moot_southmeadow_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=moot self.from=southmeadow
+does tell.news
+cooldown 1d
+say If the pool's silent, we can still take the howl from two back. Don't give up on it.
+
+rule nh_moot_mirebridge_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say Mirebridge has a voice again, no? Dry feet to every wolf who carried it.
+
+rule nh_moot_mirebridge_2
+when concept=talk.gossip world.mem.nh_stage=moot self.from=mirebridge|fenshore world.mem.nh_lights=faded
+does tell.gossip
+cooldown 1d
+say The Council would cast our voice if we're silent. The Council struck us off. Boggy justice.
+
+rule nh_moot_mirebridge_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=moot self.from=mirebridge|fenshore
+does tell.news
+cooldown 1d
+say The crossing post's out in the open. Don't stand it alone if there are cudgels about.
+
+rule nh_moot_saltwell_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot self.from=saltwell
+does tell.news
+cooldown 1d
+say Stand by the pool when the night falls, #address#. Saltwell starts the south road's howl.
+
+rule nh_moot_saltwell_2
+when concept=talk.gossip world.mem.nh_stage=moot self.from=saltwell
+does tell.gossip
+cooldown 1d
+say A crown bought with debts is a well with salt in it, #address#.
+
+rule nh_moot_saltwell_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=moot self.from=saltwell
+does tell.news
+cooldown 1d
+say If Saltwell is late, the whole south arm is late. Do not be late, #address#.
+
+rule nh_moot_oakhaven_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot self.from=oakhaven
+does tell.news
+cooldown 1d
+say A handful of wolves and one voice. That's a lot of shade for a small grove, mm?
+
+rule nh_moot_oakhaven_2
+when concept=talk.gossip world.mem.nh_stage=moot self.from=oakhaven
+does tell.gossip
+cooldown 1d
+say The Counting House would buy every voice in the grove, mm? Rotten at the root.
+
+rule nh_moot_oakhaven_3
+when concept=talk.gossip world.mem.nh_stage=moot self.from=oakhaven world.mem.nh_hills=fell
+does tell.gossip
+cooldown 1d
+say Oakhaven howls against whoever Fell backs. The hills went to Fell, and we've long roots.
+
+rule nh_moot_oakhaven_4
+when concept=talk.news|talk.bandits world.mem.nh_stage=moot self.from=oakhaven
+does tell.news
+cooldown 1d
+say If the road post goes quiet, the square can't carry. Fill both, old root.
+
+rule nh_moot_frosthollow_1
+when concept=talk.news|talk.gossip world.mem.nh_stage=moot self.from=frosthollow
+does tell.news
+cooldown 1d
+say Frosthollow starts the howl at the Pass. Lamp and pick, we'll be heard.
+
+rule nh_moot_frosthollow_2
+when concept=talk.gossip world.mem.nh_stage=moot self.from=frosthollow
+does tell.gossip
+cooldown 1d
+say The Captain's band gathers at the Pass the night before. Cold iron, there'll be a fight.
+
+rule nh_moot_frosthollow_3
+when concept=talk.news|talk.bandits world.mem.nh_stage=moot self.from=frosthollow
+does tell.news
+cooldown 1d
+say If the Pass falls silent, the north arm's two posts short. Don't let it, #address#.
+
+rule nh_after_plain_1
+when concept=talk.news|talk.gossip self.from=ridgemere world.mem.nh_crown=ottilie
+does tell.news
+cooldown 1d
+say Bright One keep the Queen. And the lamp-keeper beside her, bless his flat feet.
+
+rule nh_after_plain_2
+when concept=talk.news|talk.gossip self.from=ridgemere world.mem.nh_crown=lamp
+does tell.news
+cooldown 1d
+say A Sump wolf at the lamp, by the realm's own howl. Blood and bread, I howled for him.
+
+rule nh_after_plain_3
+when concept=talk.news|talk.gossip self.from=ridgemere world.mem.nh_crown=regency
+does tell.news
+cooldown 1d
+say No crown at all, and a Moot every year. I'll believe it when it sits twice.
+
+rule nh_after_plain_4
+when concept=talk.news|talk.gossip self.from=ridgemere world.mem.nh_crown=regency world.mem.nh_moot=midwinter
+does tell.news
+cooldown 1d
+say No crown at all, and a Moot every Midwinter. I'll believe it when it sits twice.
+
+rule nh_after_plain_5
+when concept=talk.news|talk.gossip self.from=ridgemere world.mem.nh_crown=bought
+does tell.news
+cooldown 1d
+say The Counting House has the realm now. They call it a Protectorate. I call it a debt with a crown on.
+
+rule nh_after_plain_6
+when concept=talk.news|talk.gossip self.from=ridgemere world.mem.nh_concord=answers
+does tell.news
+cooldown 1d
+say The black cloak tore the Keeping at the Bay Light. The Wardens are going home.
+
+rule nh_after_plain_7
+when concept=talk.news|talk.gossip self.from=ridgemere world.mem.nh_concord=bends
+does tell.news
+cooldown 1d
+say Wardens in every silent town by spring. We were too quiet, somewhere.
+
+rule nh_after_plain_8
+when concept=talk.news|talk.gossip self.from=ridgemere world.mem.nh_captain=turned
+does tell.news
+cooldown 1d
+say The Grey Captain went back over the Pass with the coin. To fetch the Deepvein families down, they say.
+
+rule nh_after_plain_9
+when concept=talk.news|talk.gossip self.from=ridgemere world.mem.nh_captain=beaten
+does tell.news
+cooldown 1d
+say They held the Grey Captain a day in the Keep's cells and judged him at the Moot's end. It's on the Market Square board.
+
+rule nh_after_coldwater_1
+when concept=talk.news|talk.gossip self.from=coldwater world.mem.nh_howl=ran
+does tell.news
+cooldown 1d
+say We answered, eh? Glasswater answered! A howl over the water.
+
+rule nh_after_coldwater_2
+when concept=talk.news|talk.gossip self.from=coldwater world.mem.nh_crown=ottilie
+does tell.news
+cooldown 1d
+say A Queen who coughs in the damp. She'll want a lake wolf's soup. Calm water.
+
+rule nh_after_coldwater_3
+when concept=talk.news|talk.gossip self.from=coldwater world.mem.nh_crown=lamp
+does tell.news
+cooldown 1d
+say The lamp-keeper's a fen wolf. Close enough to the lake. Fair catch.
+
+rule nh_after_coldwater_4
+when concept=talk.news|talk.gossip self.from=coldwater world.mem.nh_crown=regency
+does tell.news
+cooldown 1d
+say A Moot every year, eh? The city asking the lake what it thinks. Deep and dark, I'll get used to it.
+
+rule nh_after_coldwater_5
+when concept=talk.news|talk.gossip self.from=coldwater world.mem.nh_crown=bought
+does tell.news
+cooldown 1d
+say Bought, eh? Muddied water all the way up.
+
+rule nh_after_coldwater_6
+when concept=talk.news|talk.gossip self.from=coldwater world.mem.nh_concord=holds
+does tell.news
+cooldown 1d
+say One black cloak at the Grey Gull till spring. Fair winds to her.
+
+rule nh_after_larkfield_1
+when concept=talk.news|talk.gossip self.from=larkfield world.mem.nh_howl=ran
+does tell.news
+cooldown 1d
+say Larkfield answered on the dot. Sold, to the realm.
+
+rule nh_after_larkfield_2
+when concept=talk.news|talk.gossip self.from=larkfield world.mem.nh_crown=ottilie
+does tell.news
+cooldown 1d
+say A Queen who carries her own petitions. That's full weight.
+
+rule nh_after_larkfield_3
+when concept=talk.news|talk.gossip self.from=larkfield world.mem.nh_crown=lamp
+does tell.news
+cooldown 1d
+say A patrolman king. By the market cross, the Houses are still weighing it.
+
+rule nh_after_larkfield_4
+when concept=talk.news|talk.gossip self.from=larkfield world.mem.nh_crown=regency
+does tell.news
+cooldown 1d
+say No crown, and a market of voices every year. Fair price.
+
+rule nh_after_larkfield_5
+when concept=talk.news|talk.gossip self.from=larkfield world.mem.nh_crown=bought
+does tell.news
+cooldown 1d
+say Short-weighed realm. The Counting House kept the scales.
+
+rule nh_after_larkfield_6
+when concept=talk.news|talk.gossip self.from=larkfield world.mem.nh_captain=beaten
+does tell.news
+cooldown 1d
+say They led the Grey Captain down the Pass Road. Weights and measures, there'll be a judging worth watching.
+
+rule nh_after_southmeadow_1
+when concept=talk.news|talk.gossip self.from=southmeadow world.mem.nh_howl=ran
+does tell.news
+cooldown 1d
+say Ripe days. We howled the burying howl by mistake and nobody minded.
+
+rule nh_after_southmeadow_2
+when concept=talk.news|talk.gossip self.from=southmeadow world.mem.nh_crown=ottilie
+does tell.news
+cooldown 1d
+say A Queen! Sheaf and sickle, I'll plant her an apple tree.
+
+rule nh_after_southmeadow_3
+when concept=talk.news|talk.gossip self.from=southmeadow world.mem.nh_crown=lamp
+does tell.news
+cooldown 1d
+say The lamp-keeper's king. Good harvest to him.
+
+rule nh_after_southmeadow_4
+when concept=talk.news|talk.gossip self.from=southmeadow world.mem.nh_crown=regency
+does tell.news
+cooldown 1d
+say A Moot every year. More talk than a harvest dance, and longer.
+
+rule nh_after_southmeadow_5
+when concept=talk.news|talk.gossip self.from=southmeadow world.mem.nh_crown=bought
+does tell.news
+cooldown 1d
+say Blight take it. Bought, like a cart of chaff.
+
+rule nh_after_southmeadow_6
+when concept=talk.news|talk.gossip self.from=southmeadow world.mem.nh_concord=answers
+does tell.news
+cooldown 1d
+say The Wardens left by the Pass. A good harvest of a night.
+
+rule nh_after_mirebridge_1
+when concept=talk.news|talk.gossip self.from=mirebridge|fenshore world.mem.nh_bell=rung
+does tell.news
+cooldown 1d
+say Our bell rang the Moot in. Fen-sure, the drowned heard it.
+
+rule nh_after_mirebridge_2
+when concept=talk.news|talk.gossip self.from=mirebridge|fenshore world.mem.nh_crown=lamp
+does tell.news
+cooldown 1d
+say A Mirebridge wolf with the Palace lamp. Dry feet, the drowned have a king.
+
+rule nh_after_mirebridge_3
+when concept=talk.news|talk.gossip self.from=mirebridge|fenshore world.mem.nh_crown=ottilie
+does tell.news
+cooldown 1d
+say A Queen, and the lamp-keeper beside her. Fen-sure, he'll keep her feet dry.
+
+rule nh_after_mirebridge_4
+when concept=talk.news|talk.gossip self.from=mirebridge|fenshore world.mem.nh_crown=regency
+does tell.news
+cooldown 1d
+say A Moot every year, and Mirebridge has a voice in every one. Mud and eels!
+
+rule nh_after_mirebridge_5
+when concept=talk.news|talk.gossip self.from=mirebridge|fenshore world.mem.nh_crown=bought
+does tell.news
+cooldown 1d
+say Bought. Boggy. We'll howl louder at the next Moot, no?
+
+rule nh_after_mirebridge_6
+when concept=talk.news|talk.gossip self.from=mirebridge|fenshore world.mem.nh_lights=faded
+does tell.news
+cooldown 1d
+say The Council spoke for us at the Moot. The drowned won't forgive that.
+
+rule nh_after_saltwell_1
+when concept=talk.news|talk.gossip self.from=saltwell world.mem.nh_howl=ran
+does tell.news
+cooldown 1d
+say The howl came out of the dark to the oasis, #address#, and we sent it on. The well remembers.
+
+rule nh_after_saltwell_2
+when concept=talk.news|talk.gossip self.from=saltwell world.mem.nh_crown=ottilie
+does tell.news
+cooldown 1d
+say A Queen who answers petitions. Peace on her house.
+
+rule nh_after_saltwell_3
+when concept=talk.news|talk.gossip self.from=saltwell world.mem.nh_crown=lamp
+does tell.news
+cooldown 1d
+say A keeper of the peace with the lamp. By salt and water, that is what the old King meant.
+
+rule nh_after_saltwell_4
+when concept=talk.news|talk.gossip self.from=saltwell world.mem.nh_crown=regency
+does tell.news
+cooldown 1d
+say The realm draws from the Moot each year, like a well. Good.
+
+rule nh_after_saltwell_5
+when concept=talk.news|talk.gossip self.from=saltwell world.mem.nh_crown=bought
+does tell.news
+cooldown 1d
+say A crown bought with debt is a brackish crown, #address#.
+
+rule nh_after_saltwell_6
+when concept=talk.news|talk.gossip self.from=saltwell world.mem.nh_concord=holds
+does tell.news
+cooldown 1d
+say A black cloak at the Grey Gull, they say. Let her drink, and go in peace.
+
+rule nh_after_oakhaven_1
+when concept=talk.news|talk.gossip self.from=oakhaven world.mem.nh_howl=ran
+does tell.news
+cooldown 1d
+say A Moot night to remember, mm? It came through the cedars slow and climbing.
+
+rule nh_after_oakhaven_2
+when concept=talk.news|talk.gossip self.from=oakhaven world.mem.nh_crown=ottilie
+does tell.news
+cooldown 1d
+say A Queen, mm? Root well, Majesty.
+
+rule nh_after_oakhaven_3
+when concept=talk.news|talk.gossip self.from=oakhaven world.mem.nh_crown=lamp
+does tell.news
+cooldown 1d
+say The lamp-keeper keeps it. Proper.
+
+rule nh_after_oakhaven_4
+when concept=talk.news|talk.gossip self.from=oakhaven world.mem.nh_crown=regency
+does tell.news
+cooldown 1d
+say No crown. A council of everyone. Old Oak, that's a big grove.
+
+rule nh_after_oakhaven_5
+when concept=talk.news|talk.gossip self.from=oakhaven world.mem.nh_crown=bought
+does tell.news
+cooldown 1d
+say Bought. Rotten at the root. We'll grow round it.
+
+rule nh_after_oakhaven_6
+when concept=talk.news|talk.gossip self.from=oakhaven world.mem.nh_concord=answers
+does tell.news
+cooldown 1d
+say The black cloaks went back over the Pass. Shade on the realm.
+
+rule nh_after_frosthollow_1
+when concept=talk.news|talk.gossip self.from=frosthollow world.mem.nh_howl=ran
+does tell.news
+cooldown 1d
+say Held the Pass post. Cold iron and warm hearts, the both of it.
+
+rule nh_after_frosthollow_2
+when concept=talk.news|talk.gossip self.from=frosthollow world.mem.nh_crown=bought
+does tell.news
+cooldown 1d
+say Bought, then. Black seam. At the next Moot, we howl deeper.
+
+rule nh_after_frosthollow_3
+when concept=talk.news|talk.gossip self.from=frosthollow world.mem.nh_captain=turned
+does tell.news
+cooldown 1d
+say Deepvein's coming down in spring, they say. We'll share the oil this time.
+
+rule nh_after_frosthollow_4
+when concept=talk.news|talk.gossip self.from=frosthollow world.mem.nh_captain=dead
+does tell.news
+cooldown 1d
+say No quarter at the Pass. Lamp and pick, I'd rather we'd given one.
+
+rule nh_after_frosthollow_5
+when concept=talk.news|talk.gossip self.from=frosthollow world.mem.nh_captain=fled
+does tell.news
+cooldown 1d
+say The Captain went over the Pass with his coin. He'll be back. They come back for what they're owed.
+
+rule nh_after_frosthollow_6
+when concept=talk.news|talk.gossip self.from=frosthollow world.mem.nh_captain=beaten
+does tell.news
+cooldown 1d
+say They took the Captain down to the city's cells. Lamp and pick, I hope they judged him fair.
+
+rule nh_after_frosthollow_7
+when concept=talk.news|talk.gossip self.from=frosthollow world.mem.nh_crown=ottilie|lamp|regency
+does tell.news
+cooldown 1d
+say The realm howled from the Pass to the Bay Light. Deep quiet after. Then the bell.

@@ -3,7 +3,7 @@
 // wolves, and which once-only triggers have fired; with Phase 2's edits (set a counter; fire, move or cancel a timer;
 // start one the program starts), each a command that asks first.
 import {useState} from 'react';
-import {changeText, dueText, nameOf, valueText, type ControlVariable, type Now, type RunDetail, type TimelineItem, type Value} from '../../lib/campaigns';
+import {changeText, dueText, memoryOwnerText, nameOf, valueText, type ControlVariable, type Now, type RunDetail, type TimelineItem, type Value} from '../../lib/campaigns';
 import type {SteerFn} from './Steer';
 
 export function StatePanel({detail, names, now, items, steer, busy = false}: {detail: RunDetail; names: Record<string, string>; now: Now; items: TimelineItem[];
@@ -30,7 +30,7 @@ export function StatePanel({detail, names, now, items, steer, busy = false}: {de
         return '';
     };
     const first = (r: ControlVariable): Value => r.initial ?? (r.type === 'switch' ? false : r.type === 'timer' ? null : r.type && r.type !== 'number' ? (['numbers', 'texts', 'wolves', 'residents'].includes(r.type) ? [] : '') : 0);
-    const personal = (r: ControlVariable) => r.scope === 'player' || r.scope === 'party';
+    const personal = (r: ControlVariable) => r.scope === 'player' || r.scope === 'party' || r.scope === 'realm';   // (Doc 86, J2: realm too.)
     const ownerOf = (r: ControlVariable, w: string) => r.scope === 'party' ? state.parties?.[w] ?? w : w;
     const valueOf = (r: ControlVariable, w = ''): Value => {
         const store = personal(r) ? (stores[r.scope] as Record<string, Record<string, Value>> | undefined)?.[ownerOf(r, w)] : (stores[r.scope] as Record<string, Value> | undefined);
@@ -64,7 +64,7 @@ export function StatePanel({detail, names, now, items, steer, busy = false}: {de
             setEditing(r.scope + r.key); setWolf('');
             setValue(now === undefined || now === null ? '' : typeof now === 'boolean' ? (now ? 'on' : 'off') : Array.isArray(now) ? now.join(', ') : String(now));
         }}>✎</button>);
-    const SCOPE: Record<string, string> = {story: 'story', world: 'the world', player: 'each wolf', party: 'each party'};
+    const SCOPE: Record<string, string> = {story: 'story', world: 'the world', player: 'each wolf', party: 'each party', realm: 'each wolf, across stories'};
     const timers = Object.entries(state.timers ?? {}).sort((a, b) => (a[1].clock ?? 'game').localeCompare(b[1].clock ?? 'game') || a[1].at - b[1].at);
     const exits = detail.listening.filter(l => l.source === 'exit' && (l.players !== undefined || l.percent !== undefined));
     const fired = [...Object.entries(state.fired ?? {}).map(([k, v]) => ({k, v, scope: 'this visit'})),
@@ -80,7 +80,7 @@ export function StatePanel({detail, names, now, items, steer, busy = false}: {de
                     let shownValue: string;
                     if (personal(r)) {
                         const owners = Object.entries((stores[r.scope] ?? {}) as Record<string, Record<string, Value>>).filter(([, c]) => r.key in c);
-                        const rest = r.scope === 'player' ? state.cohort.length - owners.length : 0;
+                        const rest = r.scope === 'player' || r.scope === 'realm' ? state.cohort.length - owners.length : 0;
                         shownValue = owners.slice(0, 6).map(([id, c]) => `${nameOf(names, id)} ${valueText(c[r.key], r.type, names)}`).join(' · ')
                             + (owners.length > 6 ? ` · ${owners.length - 6} more` : '') + (rest > 0 ? `${owners.length ? ' · ' : ''}(${rest} at ${valueText(first(r), r.type, names)})` : '');
                     } else shownValue = valueText(valueOf(r), r.type, names);
@@ -119,6 +119,10 @@ export function StatePanel({detail, names, now, items, steer, busy = false}: {de
             return <li key={e.index}>to {e.to} when {e.on}: {votes.length} of {needed} ({votes.map(v => nameOf(names, v)).join(', ') || 'nobody yet'})</li>;
         })}</ul></>}
         {fired.length > 0 && <><h3>Fired once already</h3><ul>{fired.map(f => <li key={f.scope + f.k}>{f.k} ({f.scope}): {f.v.map(w => (w === '*' ? 'for everyone' : nameOf(names, w))).join(', ')}</li>)}</ul></>}
+        {(detail.memory?.length ?? 0) > 0 && <><h3>What residents remember</h3><table className="dm-table"><thead><tr><th>Who</th><th>What</th><th>Days left</th><th>After the story</th></tr></thead>
+            <tbody>{detail.memory!.map(m => <tr key={m.owner + '#' + m.key}><td>{memoryOwnerText(m.owner, names)}</td><td>{m.key} = {m.value}</td>
+                <td>{m.daysLeft == null ? 'for good' : m.daysLeft}</td><td>{m.keep ? 'kept' : 'taken back'}</td></tr>)}</tbody></table>
+            <p className="hint">As the game last saved it: residents' lines gated on world.mem, self.mem and pair.mem play while it lasts.</p></>}
         <p className="hint">The audience: {state.cohort.length} wolves, fixed when it was published.</p>
     </div>;
 }

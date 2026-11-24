@@ -2776,8 +2776,58 @@ void World::transition(Entity& a, const Door& d)
     }
 }
 
+void World::setStoryOpenDoors(const std::set<std::string>& ids)
+{
+    storyOpenDoors_.clear();
+    for (const auto& id : ids)
+        if (const auto it = doors_.find(id); it != doors_.end() && !privateHome(it->second))
+        {
+            storyOpenDoors_.insert(id);
+            if (!it->second.linkedDoor.empty())
+                storyOpenDoors_.insert(it->second.linkedDoor);
+        }
+}
+
+bool World::privateHome(const Door& d) const
+{
+    // (The interior behind it: the side that is indoors, with every room its stairs, passages and inner doors reach
+    // without going out of doors (none of those is ever locked to wolves): a lodging house's empty ground floor is the
+    // way into the homes above it, and a shop's flat is up the stairs from its work.)
+    const auto* there = cell(d.targetCell);
+    const auto* here = cell(d.cellId);
+    const std::string inside = there && !there->outdoors ? d.targetCell : here && !here->outdoors ? d.cellId : std::string();
+    if (inside.empty())
+        return false;
+    std::set<std::string> rooms{inside};
+    for (std::vector<std::string> todo{inside}; !todo.empty();)
+    {
+        const auto room = todo.back();
+        todo.pop_back();
+        for (const auto* p : doorsIn(room))
+            if (const auto* next = cell(p->targetCell); next && !next->outdoors && rooms.insert(p->targetCell).second)
+                todo.push_back(p->targetCell);
+    }
+    bool home = false;
+    for (const auto& r : society_.authored().residents)
+    {
+        if (rooms.count(r.work.cell))
+            return false;
+        home = home || rooms.count(r.home.cell);
+    }
+    for (const auto& position : society_.positions())
+        if (rooms.count(position.work.cell))
+            return false;
+    // (A resident who has moved house lives where their life says.)
+    for (const auto& [id, life] : society_.state().residents)
+        home = home || rooms.count(life.homeCell);
+    return home;
+}
+
 bool World::playerDoorLocked(const Door& d) const
 {
+    // (A door a live story holds open, doc 86: open to wolves while it holds it.)
+    if (!storyOpenDoors_.empty() && storyOpenDoors_.count(d.id))
+        return false;
     // The authored city and cn_ community interiors share the same public-door
     // rule.  The outward door remains usable when a shop's shift ends.
     if ((d.cellId.rfind("w_ridgemere_", 0) != 0 && d.targetCell.rfind("cn_", 0) != 0) ||
@@ -3536,6 +3586,8 @@ void World::tendOldAge()
             continue;
         if (const auto* spec = society_.spec(id); spec && spec->protectedNpc)
             continue;
+        if (storySpared_.count(id))
+            continue;                               // (A story spares them: doc 86, C11.)
         // A year's chance by age (doc 64, Phase 8: Gompertz, doc 63's model): DeathA * e^(DeathB * age), and more for
         // the very young; about 1% at forty, 7% at sixty, 15% at seventy, a third at eighty. A day's share of it.
         const double yearly = std::min(1., Society::DeathA * std::exp(Society::DeathB * e.age) + (e.age < 5 ? Society::InfantDeath : 0.));
@@ -3881,6 +3933,35 @@ Result World::appointResident(const std::string& positionId, const std::string& 
         return {false, note.detail, resident};
     careerNotes({note});
     return {true, note.detail, resident};
+}
+
+Result World::postResident(const std::string& positionId, const std::string& resident)
+{
+    const auto* e = entity(resident);
+    if (!e || !e->npc || e->dead)
+        return {false, "No such resident (living) to take it.", resident};
+    const auto note = society_.swapPost(positionId, resident, careerWorld(), calendarDays_);
+    if (note.kind == "refused")
+        return {false, note.detail, resident};
+    if (note.kind == "held")
+        return {true, e->name + " holds that post already.", resident};
+    careerNotes({note});
+    const auto* p = society_.position(positionId);
+    return {true, e->name + " takes the post " + (p ? p->title : positionId) + ".", resident};
+}
+
+Result World::queueResident(const std::string& resident, const std::string& town)
+{
+    if (std::none_of(towns_.begin(), towns_.end(), [&](const auto& t) { return t.id == town; }))
+        return {false, "No such town: " + town + ".", resident};
+    const auto note = society_.queueResident(resident, town);
+    if (note.kind == "refused")
+        return {false, note.detail, resident};
+    const auto* r = society_.unplaced(resident);
+    const auto name = r ? r->name : resident;
+    if (note.kind == "held")
+        return {true, name + " is in line there already.", resident};   // (Not always first: the newest a story names is.)
+    return {true, name + " is first in line for the next post that falls vacant in " + town + ".", resident};
 }
 
 Result World::apprenticeResident(const std::string& positionId, const std::string& youth)
@@ -6034,6 +6115,7 @@ void World::tick(double dt)
     tendDowned(elapsed);                            // Down, out of a fight: the timer, getting up, being tended.
     restPlayers(elapsed);                           // Lying or sitting still: rest (doc 38).
     tendBattles(elapsed);                           // Turns in the arenas (RatwBattle.cpp).
+    tendStoryFoes();                                // A story's foes: their hunt, their time, a beaten one gone (doc 86, C10).
     tendHunts();                                    // Game wandering into hunts, and gone from them (RatwHunt.cpp).
     tendJoints(elapsed);                            // Wolves working together: who has left, joints ended (doc 53).
     if (!occasions_.empty())

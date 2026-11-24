@@ -1,7 +1,9 @@
 // Hunting and foraging (Docs/Design/41-hunting-and-foraging.md): a hunt is a fight against game found by the ground,
 // the game lives only in its hunt, the hardest blow decides the yield and fire spoils it, kills press on a place, only
 // friends may join, and foraging gives the ground's goods until a patch is picked over.
+#include "test_purse.h"
 #include "RatwCrime.h"
+#include "RatwGame.h"
 #include "RatwItems.h"
 #include "RatwWild.h"
 #include "RatwWorld.h"
@@ -9,13 +11,17 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cmath>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <unistd.h>
 
 using namespace ratw;
+namespace fs = std::filesystem;
 namespace
 {
 int checks = 0;
@@ -26,8 +32,10 @@ void expect(bool condition, const std::string& message)
         throw std::runtime_error(message);
 }
 
+#include "town_fixture.h"
+
 // One wild cell, 80 by 60: woodland and grass with scrub, a stream of shallows, and a resident so there is an economy.
-World wilds()
+std::map<std::string, std::string> wildsFiles()
 {
     std::ostringstream cell;
     cell << "id: wilds\nname: The Wilds\ndescription: Woods and meadow.\nworld: 0 0 0\nsize: 80 60\noutdoors: true\n"
@@ -48,6 +56,12 @@ World wilds()
         "\"average\" \"piebald\" 4 3 0 8 1 8 17 \"-\" 30 0 1 \"wilds\" 5.5 5.5 \"wilds\" 6.5 5.5 \"wilds\" 7.5 5.5\n"
         "resident \"wren\" \"Wren\" \"merchant\" \"weaver at Greywool\" \"A weaver.\" \"Hello.\" 40 \"timber\" \"female\" "
         "\"average\" \"piebald\" 4 3 0 8 1 8 17 \"-\" 30 0 1 \"wilds\" 10.5 10.5 \"wilds\" 12.5 10.5 \"wilds\" 12.5 10.5\n";
+    return files;
+}
+
+World wilds()
+{
+    const auto files = wildsFiles();
     World w;
     const auto loaded = w.loadWorldFiles(files, "wilds");
     expect(loaded.ok, "the wilds load: " + loaded.message);
@@ -442,6 +456,146 @@ void noseAndMarks()
         }
         expect(found, "a keen nose knows the weaver's work on the gardener");
     }
+}
+// Doc 86, L1: animals a story staged join the line-up the ground gives (an unknown one refused), and a hunt on ground that
+// gives nothing still meets them.
+void aStagedAnimal()
+{
+    auto w = wilds();
+    hunter(w, "player-ada");
+    expect(!w.startHunt("player-ada", {}, {"dragon"}).ok, "an unknown animal is refused");
+    const auto r = w.startHunt("player-ada", {}, {"ibex", "ibex"});
+    expect(r.ok, "a hunt with two staged ibex: " + r.message);
+    auto& b = huntOf(w, "player-ada");
+    int ibex = 0, other = 0;
+    for (const auto& id : animalsIn(w, b))
+        (w.animalOf(id) == "ibex" ? ibex : other) += 1;
+    expect(ibex == 2, "the two ibex are in the arena (they never live on this ground): " + std::to_string(ibex));
+    expect(r.message.find(wild::speciesById("ibex")->name) != std::string::npos, "and the hunter is told of them: " + r.message);
+    (void)other;
+    // (After review: a yard too built up or bare for any game of its own still meets a story's animal, out in the world;
+    // indoors, never.)
+    const auto bare = [](bool outdoors) {
+        auto files = wildsFiles();
+        auto& cell = files["cells/wilds.cell"];
+        const auto grid = cell.find("grid:\n") + 6;
+        for (auto i = grid; i < cell.size(); ++i)
+            if (cell[i] != '\n')
+                cell[i] = '.';
+        if (!outdoors)
+        {
+            cell.replace(cell.find("outdoors: true"), 14, "outdoors: false");
+            cell.erase(cell.find("wind: "), cell.find("lighting:") - cell.find("wind: "));
+        }
+        World w;
+        const auto loaded = w.loadWorldFiles(files, "wilds");
+        expect(loaded.ok, "the yard loads: " + loaded.message);
+        hunter(w, "player-ada");
+        return w;
+    };
+    {
+        auto w = bare(true);
+        const auto none = w.startHunt("player-ada");
+        expect(!none.ok && none.message.find("too built up or bare") != std::string::npos, "a bare yard gives no game: " + none.message);
+        const auto met = w.startHunt("player-ada", {}, {"ibex"});
+        expect(met.ok, "but a story's ibex is met there: " + met.message);
+        int ibex = 0, others = 0;
+        for (const auto& id : animalsIn(w, huntOf(w, "player-ada")))
+            (w.animalOf(id) == "ibex" ? ibex : others) += 1;
+        expect(ibex == 1 && others == 0, "the ibex alone: " + std::to_string(ibex) + " and " + std::to_string(others));
+    }
+    {
+        auto w = bare(false);
+        const auto indoors = w.startHunt("player-ada", {}, {"ibex"});
+        expect(!indoors.ok && indoors.message.find("go out into the wild") != std::string::npos, "never indoors: " + indoors.message);
+    }
+}
+
+// Doc 86, L1, through the game: a story's hunt.stage held with the story; the next hunt begun inside its region meets the
+// animals, once; a hunt outside the region does not, and leaves the stage waiting; it lapses after its minutes of the
+// world's clock, and goes when the story ends.
+void stagedHuntsThroughTheGame()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-staged-hunt-" + std::to_string(::getpid()));
+    fs::remove_all(root);
+    fs::create_directories(root / "cells");
+    fs::create_directories(root / "seams");
+    // (The same world as an export folder, version 3: its cells found by the folder, so the manifest names none.)
+    auto files = wildsFiles();
+    auto manifest = files["world.ratw"];
+    manifest.replace(0, manifest.find('\n') + 1, "RATW_WORLD 3\n");
+    manifest.replace(manifest.find("cell \"wilds\""), manifest.find("territory") - manifest.find("cell \"wilds\""), "area \"wilds\"\n");
+    files["world.ratw"] = manifest;
+    for (const auto& [path, text] : files)
+        std::ofstream(root / path) << text;
+    std::ofstream(root / "seams" / "wilds") << "";
+    {
+        Town t(root.string(), root.string() + ".json");
+        auto& w = t.g.world();
+        int n = 0;
+        const auto in = [&](Client& c, const char* id, double x, double y) {
+            c.id = ++n;
+            t.g.connect(&c);
+            t.g.command(&c, cmd({{"type", "hello"}, {"id", id}, {"name", id}}));
+            auto* e = w.entity(c.entityId);
+            expect(e != nullptr, std::string("in the world: ") + id);
+            e->cellId = "wilds";
+            e->position = {x, y};
+        };
+        in(t.ash, "ash", 20.5, 20.5);
+        in(t.bo, "bo", 24.5, 22.5);
+        in(t.cy, "cy", 64.5, 50.5);
+        t.run(3);
+        const std::string run = "world-staged-hunt";
+        auto phase = parsed(R"({"title":"Old Brown","phase":"wait","journal":"Something big is in the woods.","visit":1,
+                               "regions":[{"id":"woods","cell":"wilds","x1":10,"y1":10,"x2":40,"y2":40}]})");
+        auto players = json::Value::array();
+        players.push(t.ash.entityId);
+        phase.set("players", players);
+        auto r = t.g.applyDmAct({"1", "story.phase", run, "dm", json::dump(phase)});
+        expect(r.ok, "the story opens: " + r.message);
+        int k = 10;
+        const std::string woods = R"("region":{"id":"woods","cell":"wilds","x1":10,"y1":10,"x2":40,"y2":40})";
+        const auto stage = [&](const std::string& more) {
+            return t.g.applyDmAct({std::to_string(++k), "hunt.stage", run, "dm", "{\"run\":\"" + run + "\",\"visit\":1," + more + "}"});
+        };
+        const auto hunts = [&]() { return t.g.storylineBook().find(run)->held.array("hunts").size(); };
+        const auto staged = [&](Client& c) {
+            const auto* b = w.battleOf(c.entityId);
+            int ibex = 0;
+            if (b)
+                for (const auto& f : b->fighters)
+                    ibex += w.animalOf(f.id) == "ibex";
+            return ibex;
+        };
+        expect(!stage(woods + R"(,"species":"dragon","count":1,"minutes":30)").ok, "an unknown animal is refused");
+        expect(!stage(R"("region":{"id":"elsewhere","cell":"wilds","x1":0,"y1":0,"x2":5,"y2":5},"species":"ibex","count":1,"minutes":30)").ok,
+               "a region not the story's is refused");
+        expect(!stage(woods + R"(,"species":"ibex","count":4,"minutes":30)").ok, "at most three");
+        r = stage(woods + R"(,"species":"ibex","count":2,"minutes":30)");
+        expect(r.ok && hunts() == 1, "two ibex wait in the woods: " + r.message);
+        // Cy, outside the region: her hunt (if the ground gives one) has none, and the stage waits.
+        t.g.command(&t.cy, cmd({{"type", "hunt"}}));
+        expect(staged(t.cy) == 0 && hunts() == 1, "a hunt outside the region meets no staged animal");
+        // Ash, inside: both ibex join the line-up; the stage is used up.
+        t.g.command(&t.ash, cmd({{"type", "hunt"}}));
+        expect(w.battleOf(t.ash.entityId) && staged(t.ash) == 2, "Ash's hunt in the woods meets the two ibex: " + std::to_string(staged(t.ash)));
+        expect(hunts() == 0, "one hunt a stage");
+        // Bo, inside next: none.
+        t.g.command(&t.bo, cmd({{"type", "hunt"}}));
+        expect(staged(t.bo) == 0, "the next hunt there meets none");
+        // It lapses after its minutes of the world's clock.
+        expect(stage(woods + R"(,"species":"ibex","count":1,"minutes":1)").ok && hunts() == 1, "one more, for a minute");
+        t.run(62);
+        expect(hunts() == 0, "lapsed, unmet");
+        // And goes when the story ends.
+        expect(stage(woods + R"(,"species":"ibex","count":1,"minutes":30)").ok && hunts() == 1, "one more, for half an hour");
+        expect(t.g.applyDmAct({"90", "story.stop", run, "dm", "{}"}).ok, "the story stops");
+        expect(hunts() == 0, "the run's stages go with it");
+        expect(!stage(woods + R"(,"species":"ibex","count":1,"minutes":30)").ok, "a story not running stages nothing");
+    }
+    fs::remove_all(root);
+    fs::remove(root.string() + ".json");
 }
 } // namespace
 
@@ -896,6 +1050,8 @@ int main()
         tracks();
         gearWearsAndMends();
         noseAndMarks();
+        aStagedAnimal();
+        stagedHuntsThroughTheGame();
     }
     catch (const std::exception& error)
     {

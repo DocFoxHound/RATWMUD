@@ -442,7 +442,13 @@ PEOPLE_EMPTY = ('accounts', 'profiles', 'safety', 'friends', 'requests', 'inbox'
                 'starTallies', 'stars', 'books', 'ties', 'vouches', 'evenings', 'storytellers', 'storytellerLog',
                 'credits')
 PEOPLE_PRUNE = ('deeds', 'nicknames', 'troublesHeard', 'troublesSolved', 'troublesResting', 'protectedMarks', 'loans',
-                'holds')
+                'holds',
+                # (Doc 86: the stories' holds on residents, what residents remember, the greetings waiting, the stories' own
+                # items' names, the residents a story sentenced; a player's entries go.)
+                'storyHolds', 'storyMemory', 'storyGreets', 'storyItemNames', 'storySentences')
+# (Doc 86, M3, after review: the world switch for House purses, and the day they last took their share, go: a world given
+# to someone else starts with House purses off, until its own economy check is approved and its owner turns them on.)
+PEOPLE_RESET = ('storyHousePurses', 'storyHousePurseDay')
 
 
 def people_lodgings(people, st, section):
@@ -521,10 +527,10 @@ PEOPLE_SPECIAL = {'lodgings': people_lodgings, 'stalls': people_stalls, 'documen
 
 def strip_people(doc, key, st):
     people = doc[key]
-    unknown = sorted(set(people) - set(PEOPLE_EMPTY) - set(PEOPLE_PRUNE) - set(PEOPLE_SPECIAL))
+    unknown = sorted(set(people) - set(PEOPLE_EMPTY) - set(PEOPLE_PRUNE) - set(PEOPLE_SPECIAL) - set(PEOPLE_RESET))
     if unknown:
         raise PackageError(f'The save\'s people section has parts the strip doesn\'t know: {", ".join(unknown)}. '
-                           'Add them to tools/world_package.py (PEOPLE_EMPTY, PEOPLE_PRUNE or PEOPLE_SPECIAL).')
+                           'Add them to tools/world_package.py (PEOPLE_EMPTY, PEOPLE_PRUNE, PEOPLE_SPECIAL or PEOPLE_RESET).')
     # (Letters first: a caravan carrying one and the escrow follow them.)
     for name in ('documents', 'lodgings', 'stalls', 'projects', 'storylines'):
         if name in people:
@@ -536,6 +542,8 @@ def strip_people(doc, key, st):
     for name in PEOPLE_PRUNE:
         if name in people:
             people[name] = prune(people[name], st, key)
+    for name in PEOPLE_RESET:
+        people.pop(name, None)
 
 
 def strip_careers(careers, st, section):

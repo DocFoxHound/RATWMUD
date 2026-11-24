@@ -277,7 +277,7 @@ void Game::tendMantles()
     }
 }
 
-Result Game::assignMantle(const std::string& npc, const std::string& mantle)
+Result Game::assignMantle(const std::string& npc, const std::string& mantle, const std::string& how)
 {
     auto& society = world_.society();
     const auto* e = world_.entity(npc);
@@ -287,7 +287,7 @@ Result Game::assignMantle(const std::string& npc, const std::string& mantle)
     MantleBinding was;
     if (const auto* b = society.mantleOf(npc))
         was = *b;
-    if (!society.bindMantle(npc, mantle, "dm", world_.calendarDays(), why))
+    if (!society.bindMantle(npc, mantle, how.empty() ? std::string("dm") : how, world_.calendarDays(), why))
         return {false, why, npc};
     const auto* b = society.mantleOf(npc);
     std::string problem;

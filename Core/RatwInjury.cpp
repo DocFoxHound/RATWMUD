@@ -486,6 +486,8 @@ std::string World::injurerWords(const std::string& by) const
         return "";
     if (!a->npc)
         return "another wolf";
+    if (storyFoeOf(by))
+        return "a foe";                             // (Doc 86, C10.)
     if (const_cast<World*>(this)->campOf(by))
         return "a bandit";
     return "a resident";

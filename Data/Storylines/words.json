@@ -1,0 +1,22 @@
+{
+ "about": "Doc 86, V2 (tools/story_words.py; the Editor's Problems list): words a story may never say, each a whole word in any case, with what to say instead. The world has wolves (their young are pups), two powers only (the Bright One and the Dark One), and private messages (never tells).",
+ "forbidden": {
+  "dog": "wolf (their young: pups)",
+  "dogs": "wolves (their young: pups)",
+  "doggy": "wolf",
+  "puppy": "pup",
+  "puppies": "pups",
+  "god": "the Bright One (or, malevolently, the Dark One)",
+  "gods": "the Bright One and the Dark One",
+  "goddess": "the Bright One",
+  "deity": "the Bright One or the Dark One",
+  "deities": "the Bright One and the Dark One"
+ },
+ "phrases": {
+  "send a tell": "send a private message",
+  "sent a tell": "sent a private message",
+  "a tell from": "a private message from",
+  "your tells": "your private messages",
+  "private tell": "private message"
+ }
+}

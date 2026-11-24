@@ -231,6 +231,14 @@
     }
    }
   },
+  "story": {
+   "news": true,
+   "kinds": {
+    "_": {
+     "base": 2.2
+    }
+   }
+  },
   "player": {
    "kinds": {
     "_": {
