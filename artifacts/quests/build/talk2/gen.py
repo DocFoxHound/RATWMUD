@@ -206,7 +206,7 @@ a : Somebody's carrying the Grayrock lord's letters out to his road. All forty. 
 b[quarter=wharf|sump] : Forty letters. Not one answered in six years. | He'll read them or he won't.
 b[from=oakhaven] : And Fell's stakes in our cut, mm? Somebody walk those bounds. | Mark every ninth cedar, mm?
 b : The lord's coming home, they say. | Home? That I'll believe when I see it.
-a : We'll see. | The Bright One keep the letters dry.
+a : #bc_we_will_see# | The Bright One keep the letters dry.
 
 scene nh_s6_lights
 when topic=news world.mem.nh_lights=walking
