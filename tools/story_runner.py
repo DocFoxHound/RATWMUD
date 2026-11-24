@@ -309,6 +309,10 @@ def phase9_references(conn, world, e):
 OBJECTIVE_TARGETS = {'conversation': 'character', 'gift': 'character', 'gift again': 'character', 'near resident': 'resident',
                      'enter place': 'place', 'camp cleared': 'camp', 'bandit falls': 'camp'}
 NAMED_RESIDENT_KEYS = ('npc', 'giver', 'from', 'like', 'subject')
+# (The events whose "item" field is something other than an item, as the catalogue has it: "dialogue choice"'s is the
+# resident, "quest accepted"'s the giver. Only an item's is checked against the item catalogue.)
+NOT_ITEM_FIELDS = {e['id']: True for e in rules.CATALOGUE['events']
+                   if (e.get('fields') or {}).get('item', {}).get('type') not in (None, 'item')}
 ALIVE_WARNED = ('npc.kill',)   # (They may die before the effect runs: the game refuses it then.)
 DEAD_WANTED = ('npc.revive',)   # (Brings back the dead: one alive is a warning, the game refuses it then.)
 UNPLACED_WANTED = ('npc.queue',)   # (Doc 86, J7: one with no place yet; one placed is refused.)
@@ -609,6 +613,8 @@ def world_checks(conn, world, program, chapters=False):
                 if isinstance(cell, str) and cell not in cells and not conn.execute(
                         'SELECT 1 FROM world.areas WHERE world_id=%s AND id=%s', (world, cell)).fetchone():
                     add(path, at, f'Unknown cell in this world for "where": {cell}')
+        if NOT_ITEM_FIELDS.get(o.get('on')):
+            continue   # (The event's "item" names a resident, a run, a choice's text...: not an item of the catalogue.)
         for item in rules.match_values(m.get('item')):
             if item and re.split('[~@^]', item, maxsplit=1)[0] not in items:
                 add(path, at, f'No item "{item}" in the item catalogue: this objective could never be done.')

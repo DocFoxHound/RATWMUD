@@ -264,6 +264,10 @@ class InTheWorld(unittest.TestCase):
                 q = copy.deepcopy(p)
                 q['quests'][0]['objectives'] = [{'id': 'a', 'label': 'Do it.', **o}]
                 self.assertRaisesRegex(ValueError, words, self.refs, q)
+        # (A "dialogue choice"'s item is the resident, never an item of the catalogue.)
+        q = copy.deepcopy(p)
+        q['quests'][0]['objectives'] = [{'id': 'a', 'label': 'Do it.', 'on': 'dialogue choice', 'match': {'item': 'rm111', 'detail': 'ask'}}]
+        self.refs(q)
 
     def test_the_new_effects_towns_and_a_campaigns_hold(self):
         self.assertRaisesRegex(ValueError, 'Unknown town', self.refs, program([fx('talk.remember', **{**REMEMBER, 'town': 'atlantis'})]))
