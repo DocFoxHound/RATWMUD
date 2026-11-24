@@ -2500,7 +2500,7 @@ void World::tendGiftSenses()
     giftSensesAt_ = time_;
     for (const auto& [id, folk] : folk_)
     {
-        if (folk.kind != "bandit")
+        if (folk.kind != "bandit" && folk.kind != "foe")
             continue;
         const auto* bandit = entity(id);
         if (!bandit || bandit->dead || inBattle(id))

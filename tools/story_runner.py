@@ -228,7 +228,7 @@ def phase9_references(conn, world, e):
     if kind in ('item.take', 'item.place'):
         rules.require(e['item'] in {item['id'] for item in json.loads((DATA / 'Items/items.json').read_text())['items']},
                       'Unknown item: ' + e['item'])
-    if kind in ('story.ping', 'item.place', 'visitor.add'):
+    if kind in ('story.ping', 'item.place', 'visitor.add', 'foe.add'):
         check_tile(conn, world, e['cell'], e['x'], e['y'])
     if kind.startswith('door.'):
         rules.require(conn.execute(
@@ -1145,6 +1145,8 @@ WORLD_ORDERS = {
     'title.give': 'player', 'title.take': 'player', 'npc.greet': 'npc', 'belief.forget': 'subject',
     # (Doc 86, L1: an animal waiting for the next hunt in one of the story's regions; the game holds it for the run.)
     'hunt.stage': None,
+    # (Doc 86, C10: a story's foe, by the story's id for it, and a resident made a foe for a while.)
+    'foe.add': 'foe', 'foe.leave': 'foe', 'foe.outlaw': 'npc',
 }
 
 
@@ -3405,7 +3407,7 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
 # after, in the command's row and in dm.audit. A command can release only what was approved (5.1, rule 4): it fires a
 # trigger the program has, enters a phase it has, sets a counter it names; nothing adds a trigger or changes a rule.
 
-RUNNER_VERSION = 'doc86-phase6'
+RUNNER_VERSION = 'doc86-phase7'
 COMMAND_KINDS = ('hold', 'resume', 'stop', 'signal', 'fire', 'enable', 'disable', 'enter', 'set', 'timer', 'mission',
                  'order', 'tell', 'scene', 'migrate', 'objective', 'quest', 'participant', 'advance')
 # Flow commands move the story (dispatch a fact, run actions, open a visit, send the journal): they wait while the run is

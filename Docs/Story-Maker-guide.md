@@ -721,6 +721,52 @@ captain, the high priest, the hero or the villain (`#world.figure_villain#` in t
 or among a House. A resident, a wolf (by their name at that moment) or a name only. A figure stays after the story; the
 run's timeline keeps the row it replaced, and **Undo this figure…** there puts it back.
 
+### Foes
+
+**Bring a foe** (`foe.add`) puts a named enemy and up to 8 followers on a tile for 1 to 1,440 minutes: `tough`, `fierce` or
+`champion` (how strong each is lives in `Data/Storylines/foes.json`), waiting (`waits`: it holds its ground and fights a wolf
+who comes within 6 tiles of it) or hunting (`hunts`: it goes for the nearest wolf within 12). It may look like a resident
+(`like`: their looks, and their description if it has none of its own).
+
+```json
+{"kind": "foe.add", "foe": "captain", "name": "The Grey Captain", "cell": "w_pass_3_2", "x": 14, "y": 9, "strength": "champion",
+ "band": {"min": [8, {"div": [{"audience": "active"}, 2]}]}, "stance": "waits", "minutes": 120, "like": "cty_stone_sunton"}
+{"on": "foe defeated", "match": {"target": "captain"}, "to": "the-pass-held"}
+```
+
+- Setting on a foe is **no crime**, and the Watch on duty in the place takes the **wolves' side**.
+- When the leader falls their band **breaks and runs**: `foe defeated` (once; its `quantity` is how many wolves fought them,
+  in all of their fights), and the foe is gone with their band once the fight is over. Each follower brought down is
+  `foe downed`. Nobody is robbed and no camp is cleared: a foe is not a bandit camp, and never counted with the world's.
+- When their minutes run out, or their leader breaks off a fight and runs, it is `foe fled` (`item`: `time` or `fled`).
+- **Send away** (`foe.leave`) takes them away with no event (not while they fight).
+- A foe's id is the story's own (3 to 40 small letters, digits, `-` and `_`); a foe event's `target` is that id. One id is
+  one foe: brought with one name and one strength wherever the story brings them.
+
+**Make a resident a foe** (`foe.outlaw`; a builder's on a hosted world) lets the wolves fight a resident for 1 to 720
+minutes, with 0 to 6 followers, without a crime, the Watch on the wolves' side. Never a protected resident, the dead, one
+down, in a fight, away with a party, or held by another story. Beaten (`foe defeated`, target the resident's id) they are
+downed, got up again where they lie when the fight is over, and **held until the story ends**; never killed, unless the
+story says they may die (`"lethal": true`: then `death` follows the fight). Afterwards they are themselves again, their
+bonds untouched.
+
+**The population rule**: foes are never residents and never stay. They are not saved; the story keeps what makes them again
+after a restart while their time lasts, and its end takes them all away (no event). Their followers are strangers who go
+with them.
+
+How strong the kinds are was tuned by combat simulations (`build-core/foe_sim`, doc 86, Phase 7): see
+`Docs/Design/86-quests-and-the-ninth-howl.md`, "Phase 7 as built", for the bar and where the table stands.
+
+### Strangers in scenes
+
+A scene's cast may name a **stranger the same story brings** with "Bring a stranger": `{"id": "captain", "visitor":
+"grey-captain"}`, beside a named resident (`npc`) or a selector. The stranger speaks in **their own panel** in the dialogue
+window, with the face they were given (`like`). Bring them before the scene plays: if they are not in the world when it
+starts (never brought, sent away, or gone), the scene fails (`scene failed`, `item` "a stranger is not here"). Approval
+refuses a stranger the story never brings, and warns when it brings them only in a later phase than the scene is played.
+A face banner (`story.tell` with `from`) is never a stranger's: a resident's or a stranger's words reach a wolf only in the
+dialogue window.
+
 ## 9. Rehearsing
 
 A rehearsal case is a made-up audience and a list of events with game days, and what should come of it: the phases in
@@ -869,6 +915,8 @@ takes back what the story held, as it was before the story first touched it. Wha
 | `weather.set` | the weather goes back to the season's (it also runs out by itself after its hours) |
 | `story.ping` | the map markers go (they also run out by themselves) |
 | `hunt.stage` | an animal no hunt has met yet goes (it also lapses after its minutes) |
+| `foe.add` | the foe and their band go, even mid-fight, with no event (they also go when their time runs out: `foe fled`) |
+| `foe.outlaw` | the resident is themselves again, and one beaten and held by the story is released |
 | `item.give` with a `tag` | every unit of the story's own item is taken back from every pack, purse and the ground, unless `keep` (then it **stays**, with its name) |
 | `npc.spare`, `npc.protect` with `lasts: run` | the resident is no longer spared, or protected, by this run (another story's hold stays) |
 | `npc.spare`, `npc.protect` with `lasts: campaign` | **stay** until the campaign ends (or an admin lets go of its holds) |
@@ -912,6 +960,10 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | A story's item is not taken by a shop | its mark | "That belongs to a story.": an item given with a `tag` is never sold; give a plain one for the wolves to sell. |
 | A gift of the story's letter does nothing | the filter | Name it `letter^watch_list` (the item, `^`, its mark), as the `item.give` gives it; a plain `letter` filter takes any letter. |
 | `npc.howl` was refused | the order | "howled a moment ago": a resident's voice rests as a wolf's does; "dead", "down", "in a fight". |
+| A foe is never set upon | the foe's stance and tile | A waiting foe fights only a wolf within 6 tiles of the ground it holds, a hunting one the nearest within 12; neither starts on a wolf who is down or just out of a fight. |
+| `foe.leave` was refused | the order | "That foe is fighting": they go when the fight is over, or when their time runs out. |
+| `foe.outlaw` was refused | the order | protected, dead, down, in a fight, away with a party, held by another story, or a foe already. |
+| A scene with a stranger failed | the scene's `item` | "a stranger is not here": bring them (`visitor.add`) before the scene plays, and not just its minutes before. |
 | A count of residents is always unknown | the world's facts | None of the list's residents is in the facts yet: the list was empty when the phase began and the game has not been told again (is the runner running?). |
 | Problems in the draft | Story Creator → **Problems** | Every problem at once with **Go**, and the world's warnings (a signal nothing hears, a counter nothing sets, an id the world lacks). |
 
@@ -949,6 +1001,8 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | A staged hunt | 1 to 3 animals, 1 to 1,440 minutes; 8 a story at once; one hunt each |
 | A resident's howl | one a howl's rest (as a wolf's); residents counted in a region: a list of 500 |
 | A story's own items | a mark of 1 to 32 of `a-z0-9_`, a name of 60 characters; 64 kinds a story; 4,000 named in the world |
+| Foes | 8 a story at once; 0 to 8 followers (a resident made a foe: 0 to 6); 1 to 1,440 minutes (a resident: 720); an id of 3 to 40 |
+| A scene's cast | 16 roles: residents, selectors or strangers the story brings |
 
 <!-- reference:begin (made by tools/story_guide.py from Data/Storylines/trigger-catalogue.json: do not edit by hand) -->
 
@@ -958,7 +1012,7 @@ Made from the trigger catalogue (`Data/Storylines/trigger-catalogue.json`), the 
 
 ### Events
 
-216 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
+219 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
 
 #### Story engine
 
@@ -1235,7 +1289,7 @@ The typed words are never logged.
 
 <a id="event-scene-failed"></a>**`scene failed`**: A scene fails (has a tile)
 
-An embedded scene could not go on (marked failed) and ended.
+An embedded scene could not go on (marked failed) and ended; item says why where it is known ("a stranger is not here": a stranger cast in it the story has not brought, or sent away).
 
 | Field | Holds | Left out means |
 |---|---|---|
@@ -1244,6 +1298,7 @@ An embedded scene could not go on (marked failed) and ended.
 | `cell` | where that wolf is (place) | anywhere |
 | `detail` | the scene's cue (cue) | any cue |
 | `quantity` | the visit (the run's visit number) (number) |  |
+| `item` | why, where it is known (a stranger is not here) (text) | any |
 
 ```json
 {"id": "when-scene-failed", "on": "scene failed", "actions": [{"do": "note", "text": "A scene fails"}]}
@@ -2239,6 +2294,52 @@ An injury of a wolf healed with rest: the injury in words. Written only while a 
 
 ```json
 {"id": "when-injury-healed", "on": "injury healed", "actions": [{"do": "note", "text": "A wolf's injury heals"}]}
+```
+
+<a id="event-foe-downed"></a>**`foe downed`**: A foe's follower falls (mission evidence, has a tile)
+
+A follower of a story's foe is downed (target the foe's id; a resident's id for a resident made a foe).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | who landed the last blow (character) | anyone |
+| `target` | the foe (foe) | any foe |
+| `cell` | where (place) | anywhere |
+| `detail` | the follower's name (text) | any |
+
+```json
+{"id": "when-foe-downed", "on": "foe downed", "actions": [{"do": "note", "text": "A foe's follower falls"}]}
+```
+
+<a id="event-foe-defeated"></a>**`foe defeated`**: A foe is beaten (mission evidence, has a tile)
+
+A story's foe (or a resident made one) is downed: actor landed the last blow, target is the foe's id (a resident's id for foe.outlaw), detail their name, quantity how many wolves fought them. Once a foe: their band breaks and runs.
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | who landed the last blow (character) | anyone |
+| `target` | the foe (foe) | any foe |
+| `cell` | where (place) | anywhere |
+| `detail` | their name (text) | any |
+| `quantity` | wolves who fought (number) |  |
+
+```json
+{"id": "when-foe-defeated", "on": "foe defeated", "actions": [{"do": "note", "text": "A foe is beaten"}]}
+```
+
+<a id="event-foe-fled"></a>**`foe fled`**: A foe gets away (has a tile)
+
+A story's foe broke off a fight and fled, or their time ran out (detail: their name; item: fled or time). They are gone with their band.
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `target` | the foe (foe) | any foe |
+| `cell` | where (place) | anywhere |
+| `item` | fled or time (text) | either |
+| `detail` | their name (text) | any |
+
+```json
+{"id": "when-foe-fled", "on": "foe fled", "actions": [{"do": "note", "text": "A foe gets away"}]}
 ```
 
 #### Bandits and the roads
@@ -5553,7 +5654,7 @@ Reads: Go to the phase **muster**
 
 ### Effects
 
-86 world effects, each one action `{"do": "effect", "effect": {...}}` (or, for a phase, one of what it sends as it opens). Each becomes an order the game applies and may refuse, with a receipt, except the story's own. On any effect the game applies, `ifRefused` says what the story does when it is refused: `pause` (the default), `skip`, or `when here` (an effect to one wolf, held until they are next in the world, `waitDays` 1 to 90).
+89 world effects, each one action `{"do": "effect", "effect": {...}}` (or, for a phase, one of what it sends as it opens). Each becomes an order the game applies and may refuse, with a receipt, except the story's own. On any effect the game applies, `ifRefused` says what the story does when it is refused: `pause` (the default), `skip`, or `when here` (an effect to one wolf, held until they are next in the world, `waitDays` 1 to 90).
 
 #### Telling the wolves
 
@@ -6508,6 +6609,64 @@ Reads: The next hunt in **square** meets **1** **bear** (for **120** minutes)
 
 ```json
 {"do": "effect", "effect": {"kind": "hunt.stage", "region": "square", "species": "bear", "count": 1, "minutes": 120}}
+```
+
+#### Foes
+
+<a id="effect-foe-add"></a>**`foe.add`**: Bring a foe (undone at the end)
+
+A named enemy who can be fought and beaten: wolves may set on them without a crime, the Watch on duty in the place helps the wolves, and their followers break and run when they fall ('foe defeated'). A waiting foe holds its ground and fights a wolf who comes within 6 tiles; a hunting one goes for the nearest wolf within 12. They come and go: never a resident, never saved, gone when the story ends (no event) or their time runs out, or when they break off a fight ('foe fled'). How strong each kind is: Data/Storylines/foes.json.
+
+Reads: **The Grey Captain** (**captain**), a **champion** foe with **4** followers, comes to **greyfen-square, 12, 9** for **120** minutes, looking like **rm111**, and **holds the ground**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `foe` | their id | foe |
+| `name` | their name | text; up to 60 characters |
+| `cell` | the place | place |
+| `x` | tile x | int; 0 to 4095 |
+| `y` | tile y | int; 0 to 4095 |
+| `strength` | how strong | choice; one of: `tough`, `fierce`, `champion`; default "tough" |
+| `band` | followers | int; 0 to 8 |
+| `stance` | what they do | choice; one of: `waits`, `hunts`; default "waits" |
+| `minutes` | minutes | int; 1 to 1440 |
+| `like` | looking like (a resident) | resident; optional |
+| `description` | how they look | text; up to 200 characters; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "foe.add", "foe": "captain", "name": "The Grey Captain", "cell": "greyfen-square", "x": 12, "y": 9, "strength": "champion", "band": 4, "stance": "waits", "minutes": 120, "like": "rm111"}}
+```
+
+<a id="effect-foe-leave"></a>**`foe.leave`**: A foe leaves
+
+The story's foe and their band go (no event). Not while they fight: then refused, and they go when the fight is over or their time runs out.
+
+Reads: **captain** and their followers leave
+
+| Parameter | What | Kind |
+|---|---|---|
+| `foe` | their id | foe |
+
+```json
+{"do": "effect", "effect": {"kind": "foe.leave", "foe": "captain"}}
+```
+
+<a id="effect-foe-outlaw"></a>**`foe.outlaw`**: Make a resident a foe (needs a builder, undone at the end)
+
+A resident (never a protected one, the dead, one down, in a fight, away, or held by another story) may be fought for a while without a crime, the Watch on the wolves' side. Beaten ('foe defeated', target the resident), they are downed, got up again where they lie when the fight is over and held until the story ends, never killed unless the story says so (then 'death' follows). When the minutes pass, or the story ends, they are themselves again. Their followers are strangers who go with them.
+
+Reads: **rm113** turns on the wolves with **1** followers for **60** minutes (**tough**); killed if beaten
+
+| Parameter | What | Kind |
+|---|---|---|
+| `npc` | the resident | resident |
+| `minutes` | minutes | int; 1 to 720 |
+| `strength` | how strong | choice; one of: `tough`, `fierce`, `champion`; optional |
+| `band` | followers | int; 0 to 6; optional |
+| `lethal` | may die | bool; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "foe.outlaw", "npc": "rm113", "minutes": 60, "strength": "tough", "band": 1}}
 ```
 
 #### Towns, markets and factions

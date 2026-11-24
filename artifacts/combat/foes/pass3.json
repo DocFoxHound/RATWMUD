@@ -1,0 +1,30 @@
+{
+ "about": "Trial table, pass 3 (doc 86, C10t).",
+ "tuned": "",
+ "follower": {
+  "skill": 52,
+  "strength": 55,
+  "hp": 42,
+  "flee": 55
+ },
+ "tough": {
+  "skill": 60,
+  "strength": 60,
+  "hp": 48,
+  "flee": 25
+ },
+ "fierce": {
+  "skill": 70,
+  "strength": 68,
+  "hp": 60,
+  "flee": 30
+ },
+ "champion": {
+  "skill": 80,
+  "strength": 75,
+  "hp": 40,
+  "flee": 0
+ },
+ "followerName": "one of {name}'s band",
+ "followerLook": "Hard-faced and armed, at their leader's back."
+}

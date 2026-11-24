@@ -965,5 +965,51 @@ class Phase3Ranks(unittest.TestCase):
         self.assertEqual(native['counters'], state['counters'], 'both twins agree')
 
 
+class Phase7Foes(unittest.TestCase):
+    """Doc 86, Phase 7 (C10, T3): the Grey Captain at the Pass (story_v2_samples.FOES): a stranger brought to the parley and
+    cast in its scene, a champion foe with a band from the wolves about, a resident made a foe, the foe events in a
+    rehearsal in both twins; a foe that gets away loses the Pass; what validation refuses."""
+
+    def review(self, p=None, native=True):
+        p = copy.deepcopy(p or samples.FOES)
+        if native:
+            return rules.review(p)
+        with patch('story_native.interpreter', return_value=None):
+            return rules.review(p)
+
+    def test_the_pass_rehearses_clean_in_both_twins(self):
+        native, python = self.review(), self.review(native=False)
+        self.assertTrue(native['passed'] and not native['uncovered'], native)
+        self.assertEqual(native, python)
+        held = native['tests'][0]
+        self.assertEqual(held['path'], ['parley', 'pass', 'held'])
+        self.assertEqual(held['counters']['story'], {'band-down': 2, 'fought': 3})
+        self.assertEqual(native['tests'][1]['path'], ['parley', 'pass', 'lost'])
+
+    def test_a_foe_of_another_or_the_turncoat_does_not_win_the_pass(self):
+        p = copy.deepcopy(samples.FOES)
+        case = p['tests'][0]
+        case['events'] = [e if e.get('kind') != 'foe defeated' or e.get('target') != 'captain' else {**e, 'target': 'hakon'} for e in case['events']]
+        case['expect'] = ['parley', 'pass']
+        for key in ('expectVariables', 'expectEffects'):
+            case.pop(key, None)
+        report = self.review(p)
+        self.assertTrue(report['passed'], report['tests'][0])
+        self.assertEqual(report['tests'][0]['path'], ['parley', 'pass'])
+        self.assertTrue([w for w in rules.program_warnings(samples.FOES) if 'never brings' in w['text']] == [])
+
+    def test_what_validation_refuses(self):
+        p = copy.deepcopy(samples.FOES)
+        p['scenes'][0]['cast'][0]['visitor'] = 'hakon'
+        self.assertRaisesRegex(ValueError, 'the stranger hakon .* is one the story brings', rules.validate, p)
+        p = copy.deepcopy(samples.FOES)
+        p['phases'][1]['effects'].append({'kind': 'foe.leave', 'foe': 'hakon'})
+        self.assertRaisesRegex(ValueError, 'names a foe the story brings', rules.validate, p)
+        p = copy.deepcopy(samples.FOES)
+        p['phases'][1]['effects'].append({**samples.CAPTAIN, 'band': 2, 'strength': 'fierce'})
+        self.assertRaisesRegex(ValueError, 'one name and one strength', rules.validate, p)
+        self.assertIn('foe.outlaw', rules.BUILDER_EFFECTS)
+
+
 if __name__ == '__main__':
     unittest.main()

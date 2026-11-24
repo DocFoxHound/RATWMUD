@@ -50,7 +50,7 @@ void Game::refreshStoryWatch()
         // (Doc 85, Phase 9: the live stories holding something in the world, for tickStoryWorld.)
         if (s.source == "storykeeper" && s.live() && s.held.isObject() &&
             (s.held.object("npcs").size() || s.held.object("doors").size() || s.held.object("weather").size() || s.held.array("pings").size() ||
-             s.held.array("hunts").size()))   // (Doc 86, L1: staged hunts, lapsing.)
+             s.held.array("hunts").size() || s.held.object("foes").size()))   // (Doc 86, L1 and C10: staged hunts, foes.)
             storiesHolding_.insert(id);
         if (s.source != "storykeeper" || !s.live() || !s.watch.isObject())
             continue;

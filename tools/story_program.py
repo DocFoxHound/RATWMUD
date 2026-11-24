@@ -522,6 +522,8 @@ def _param_ok(param, v, regions):
         return isinstance(v, str) and v in animal_habitats()   # (Doc 86, L1: an animal of Data/Wild/animals.json.)
     if kind == 'tag':
         return isinstance(v, str) and TAG.fullmatch(v) is not None   # (Doc 86, J9: a story's own mark on an item.)
+    if kind == 'foe':
+        return isinstance(v, str) and FOE_ID.fullmatch(v) is not None   # (Doc 86, C10: a foe's id, given by the story.)
     return identifier(v) or (kind == 'wolf' and v == '$actor')
 
 
@@ -551,6 +553,7 @@ def animal_ground():
 TALK_KEY = re.compile(r'[a-z][a-z0-9_]{0,39}')
 TALK_VALUE = re.compile(r'[a-z0-9_]{1,40}')
 FIGURE_ID = re.compile(r'[a-z0-9_]{3,40}')
+FOE_ID = re.compile(r'[a-z0-9][a-z0-9_-]{2,39}')
 CAMP_NAME = re.compile(r'[a-z0-9_]{3,30}')
 PREFIX = re.compile(r'[a-z]{2,8}')
 TALK_SCOPES = {'realm': (), 'town': ('town',), 'npc': ('npc',), 'pair': ('npc', 'player')}
@@ -699,7 +702,8 @@ BUILDER_EFFECTS = frozenset(e['id'] for e in CATALOGUE['effects'] if e.get('need
 # Effects whose world change the game undoes when the run ends (a door's lock, a hold, a stranger, a mantle, a notice,
 # the weather, a marker): the catalogue's help says so.
 UNDONE_AT_END = ('door.lock', 'door.unlock', 'npc.hold', 'npc.follow', 'visitor.add', 'mantle.assign', 'board.post', 'weather.set',
-                 'story.ping', 'hunt.stage')   # (Doc 86, L1: an animal not yet met lapses with the story.)
+                 'story.ping', 'hunt.stage',   # (Doc 86, L1: an animal not yet met lapses with the story.)
+                 'foe.add', 'foe.outlaw')      # (Doc 86, C10: a foe goes, a resident made one is themselves again.)
 
 
 def region_index(program):
@@ -1567,8 +1571,85 @@ def validate(p):
     _check_graph(p, ids)
     _check_camps(p)
     _check_tags(p)
+    _check_foes(p)
+    _check_strangers(p)
     _check_tests(p)
     return p
+
+
+FOE_EVENTS = ('foe downed', 'foe defeated', 'foe fled')
+
+
+def _effect_nodes(p, kinds):
+    """Every effect of the given kinds anywhere in a program (a rehearsal's left out), in order."""
+    out = []
+    def visit(node):
+        if isinstance(node, list):
+            for x in node:
+                visit(x)
+        elif isinstance(node, dict):
+            if node.get('kind') in kinds and isinstance(node.get('kind'), str):
+                out.append(node)
+            for v in node.values():
+                visit(v)
+    visit({k: v for k, v in p.items() if k != 'tests'})
+    return out
+
+
+def _match_sites(p):
+    """Every rule of a program with an event and its filters (triggers, exits, objectives), with its path; a rehearsal's
+    left out."""
+    out = []
+    def visit(node, path):
+        if isinstance(node, list):
+            for i, x in enumerate(node):
+                visit(x, f'{path}[{i}]')
+        elif isinstance(node, dict):
+            if isinstance(node.get('on'), str):
+                out.append((path, node))
+            for k, v in node.items():
+                visit(v, f'{path}.{k}' if path else k)
+    visit({k: v for k, v in p.items() if k != 'tests'}, '')
+    return out
+
+
+def scene_strangers(p):
+    """Doc 86, T3: the strangers cast in a program's scenes, (scene id, role, visitor id), in order."""
+    return [(s.get('id'), role.get('id'), role['visitor']) for s in p.get('scenes', []) or [] if isinstance(s, dict)
+            for role in s.get('cast', []) or [] if isinstance(role, dict) and isinstance(role.get('visitor'), str)]
+
+
+def _check_strangers(p):
+    """Doc 86, T3: a stranger cast in a scene is one the same story brings ("Bring a stranger")."""
+    brought = {e.get('visitor') for e in _effect_nodes(p, ('visitor.add',))}
+    for scene, role, visitor in scene_strangers(p):
+        require(visitor in brought, f'Scene {scene}: the stranger {visitor} ({role}) is one the story brings with "Bring a stranger".')
+
+
+def foes_of(p):
+    """Doc 86, C10: the foes a program brings ({foe id: its foe.add}, the first) and the residents it makes foes (their ids,
+    where given outright): what a foe event's target may name."""
+    added, outlaws = {}, set()
+    for e in _effect_nodes(p, ('foe.add', 'foe.outlaw')):
+        if e['kind'] == 'foe.add' and isinstance(e.get('foe'), str):
+            added.setdefault(e['foe'], e)
+        elif e['kind'] == 'foe.outlaw' and isinstance(e.get('npc'), str):
+            outlaws.add(e['npc'])
+    return added, outlaws
+
+
+def _check_foes(p):
+    """Doc 86, C10: a foe's id names one foe in the whole program (one name, one strength wherever it is brought), and a foe
+    sent away is one the program brings."""
+    seen = {}
+    for e in _effect_nodes(p, ('foe.add',)):
+        if not isinstance(e.get('foe'), str):
+            continue
+        how = (e.get('name'), e.get('strength', 'tough'))
+        require(seen.setdefault(e['foe'], how) == how,
+                f'The foe {e["foe"]} is one foe: bring them with one name and one strength everywhere in the story.')
+    for e in _effect_nodes(p, ('foe.leave',)):
+        require(e.get('foe') in seen, f'"A foe leaves" names a foe the story brings ("Bring a foe"): {e.get("foe")}')
 
 
 def _check_tags(p):
@@ -1936,6 +2017,33 @@ def program_warnings(p):
             out.append({'level': 'warning', 'path': path, 'at': {'kind': 'program'},
                         'text': f'Nothing in this story gives {item} ("Give a wolf an item" of {item.split("^")[0]} with the mark '
                                 f'{item.split("^")[1]}): only one an earlier version of the story gave could match it.'})
+    # (Doc 86, T3: a scene played in a phase before any that brings its stranger: the scene fails there.)
+    strangers = {}
+    for scene, role, visitor in scene_strangers(p):
+        strangers.setdefault(scene, []).append(visitor)
+    if strangers:
+        first = {}
+        for i, ph in enumerate(p.get('phases', [])):
+            for e in _effect_nodes(ph, ('visitor.add',)) if isinstance(ph, dict) else ():
+                first.setdefault(e.get('visitor'), i)
+        for e in _effect_nodes({k: v for k, v in p.items() if k not in ('phases', 'tests')}, ('visitor.add',)):
+            first[e.get('visitor')] = -1   # (Brought by a campaign trigger or a quest: in any phase.)
+        for i, ph in enumerate(p.get('phases', [])):
+            for e in _effect_nodes(ph, ('scene.play',)) if isinstance(ph, dict) else ():
+                for visitor in strangers.get(e.get('scene'), ()):
+                    if first.get(visitor, i + 1) > i:
+                        out.append({'level': 'warning', 'path': f'phases[{i}]', 'at': {'kind': 'program'},
+                                    'text': f'Scene {e.get("scene")} casts the stranger {visitor}, whom the story brings only in a later '
+                                            'phase: played here, the scene fails ("a stranger is not here").'})
+    # (Doc 86, C10: a foe event read for a foe the story never brings, nor a resident it makes one, never matches its foes.)
+    added, outlaws = foes_of(p)
+    for path, rule in _match_sites(p):
+        if rule.get('on') in FOE_EVENTS:
+            for target in match_values(rule.get('match', {}).get('target')):
+                if target not in added and target not in outlaws:
+                    out.append({'level': 'warning', 'path': path, 'at': {'kind': 'program'},
+                                'text': f'"{rule["on"]}" is read for {target}, a foe this story never brings ("Bring a foe") '
+                                        'nor a resident it makes one.'})
     if p.get('version') == 2:
         used = variable_uses(p)
         for i, d in enumerate(p.get('variables', [])):

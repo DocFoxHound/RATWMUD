@@ -6036,6 +6036,7 @@ void World::tick(double dt)
     tendDowned(elapsed);                            // Down, out of a fight: the timer, getting up, being tended.
     restPlayers(elapsed);                           // Lying or sitting still: rest (doc 38).
     tendBattles(elapsed);                           // Turns in the arenas (RatwBattle.cpp).
+    tendStoryFoes();                                // A story's foes: their hunt, their time, a beaten one gone (doc 86, C10).
     tendHunts();                                    // Game wandering into hunts, and gone from them (RatwHunt.cpp).
     tendJoints(elapsed);                            // Wolves working together: who has left, joints ended (doc 53).
     if (!occasions_.empty())

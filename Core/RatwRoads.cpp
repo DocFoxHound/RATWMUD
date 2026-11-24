@@ -1454,8 +1454,8 @@ void World::roadsDaily()
     // Bandits: hunger grows; starving camps dwindle and scatter; where a road has none, some gather now and then.
     for (auto& camp : roads_.camps)
     {
-        if (!camp.active)
-            continue;
+        if (!camp.active || storyFoeCamp(camp.id))
+            continue;                               // (Doc 86, C10: a story's foe never hungers, scatters or is capped.)
         camp.hunger = std::min(100.0, camp.hunger + 8);
         if (camp.hunger >= 100)
             camp.strength -= .5;
@@ -1470,7 +1470,8 @@ void World::roadsDaily()
     // camp's strength is capped by the world's rule: D14.)
     const double strongest = std::clamp(double(society_.rule("campStrengthMost")), 2.0, 20.0);
     for (auto& camp : roads_.camps)
-        camp.strength = std::min(camp.strength, strongest);
+        if (!storyFoeCamp(camp.id))
+            camp.strength = std::min(camp.strength, strongest);
     if (today % 7 == 0)
         for (std::size_t r = 0; r < roadRoutes_.size(); ++r)
         {
@@ -1479,7 +1480,7 @@ void World::roadsDaily()
                 if (!marketIndex_.count(cellId))
                     wild.push_back(cellId);
             const bool held = std::any_of(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& b) {
-                return b.active && std::find(wild.begin(), wild.end(), b.cell) != wild.end();
+                return b.active && !storyFoeCamp(b.id) && std::find(wild.begin(), wild.end(), b.cell) != wild.end();
             });
             const auto* farTown = roadMarketOf(roadRoutes_[r].back());
             const std::string far = farTown ? farTown->id : std::string();
@@ -1487,7 +1488,7 @@ void World::roadsDaily()
                 continue;
             const auto& cellId = wild[roll(far + std::to_string(r), today) % wild.size()];
             if (std::any_of(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& b) { return b.cell == cellId && b.active; }))
-                continue;
+                continue;                           // (A story's foe there too: none gathers beside it, and it is never erased.)
             if (!campMayGather(cellId))
                 continue;                           // (No camp gathers within two cells of a watch post: doc 57.)
             roads_.camps.erase(std::remove_if(roads_.camps.begin(), roads_.camps.end(),
@@ -1573,10 +1574,15 @@ void World::roadsDaily()
 BanditCamp* World::campOf(const std::string& banditId)
 {
     const auto f = folk_.find(banditId);
-    if (f == folk_.end() || f->second.kind != "bandit")
+    // (Doc 86, C10: a story's foe and its band are a camp's too; so is a resident made a foe, while they are one.)
+    std::string of = f != folk_.end() && (f->second.kind == "bandit" || f->second.kind == "foe") ? f->second.of : std::string();
+    if (of.empty() && f == folk_.end() && !storyFoes_.empty())
+        if (const auto* foe = storyFoeOf(banditId))
+            of = foe->spec.camp;
+    if (of.empty())
         return nullptr;
     for (auto& camp : roads_.camps)
-        if (camp.id == f->second.of)
+        if (camp.id == of)
             return &camp;
     return nullptr;
 }
@@ -1720,7 +1726,7 @@ bool World::hostile(const std::string& id) const
 {
     const auto f = folk_.find(id);
     const auto* e = entity(id);
-    return f != folk_.end() && f->second.kind == "bandit" && e && !e->dead && e->downedLeft <= 0;
+    return f != folk_.end() && (f->second.kind == "bandit" || f->second.kind == "foe") && e && !e->dead && e->downedLeft <= 0;
 }
 
 std::int64_t World::banditDemand(const std::string& player) const
@@ -1745,6 +1751,8 @@ std::vector<std::pair<std::string, std::string>> World::takeNotices(bool* moved,
 
 void World::tendCamp(BanditCamp& camp, const std::set<std::string>& stage)
 {
+    if (storyFoeCamp(camp.id))
+        return;                                     // (Doc 86, C10: a story's foe is in person while it lasts: tendStoryFoes.)
     std::vector<std::string> mine;
     for (const auto& [id, f] : folk_)
         if (f.kind == "bandit" && f.of == camp.id)

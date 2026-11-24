@@ -260,7 +260,8 @@ READY = {
 
 def all_samples():
     return [copy.deepcopy(LEDGER), copy.deepcopy(FLOW), copy.deepcopy(READY), copy.deepcopy(TALK), copy.deepcopy(VALUES),
-            copy.deepcopy(THANKS), copy.deepcopy(LINE), copy.deepcopy(HOWLS), copy.deepcopy(LETTERS)]
+            copy.deepcopy(THANKS), copy.deepcopy(LINE), copy.deepcopy(HOWLS), copy.deepcopy(LETTERS),
+            copy.deepcopy(FOES)]
 
 
 # ----- Doc 85, Phase 6: quests (tools/test_story_quests.py; both twins' parity, tools/test_story_native.py)
@@ -889,3 +890,82 @@ LETTERS = {
              {'phase': 'carry', **THANKS_WRIT, 'player': ASH, 'reward': 'deliver'}]},
     ],
 }
+
+
+# Doc 86, Phase 7 (C10, T3): foes and strangers. The Grey Captain, a stranger who looks like rm111, is brought to the parley
+# and speaks there in his own panel (a scene cast entry for a visitor); the parley over, he holds the Pass as a champion foe
+# with a band that grows with the wolves who are about (min(8, active / 2)), and the turncoat rm113 is made a foe beside
+# him for an hour, never killed. Each of the band brought down is counted (foe downed); the Captain beaten (foe defeated,
+# the wolves who fought him its quantity) wins the Pass; if he gets away (foe fled), the Pass is lost.
+PASS = {'id': 'pass', 'cell': 'grey', 'x1': 2, 'y1': 2, 'x2': 9, 'y2': 9}
+PARLEY = {'format': 'ratw-scene', 'version': 1, 'id': 'parley', 'title': 'The parley at the Pass', 'visibility': 'public', 'lockMovement': False,
+          'area': {'cell': 'grey', 'x1': 2, 'y1': 2, 'x2': 9, 'y2': 9},
+          'cast': [{'id': 'captain', 'visitor': 'grey-captain'}, {'id': 'desmond', 'npc': 'rm112'}], 'start': 'terms',
+          'beats': [{'id': 'terms', 'type': 'line', 'speaker': 'captain', 'text': 'Give us the Pass by nightfall and no one hangs.', 'seconds': 8,
+                     'next': 'answer'},
+                    {'id': 'answer', 'type': 'line', 'speaker': 'desmond', 'text': 'Then you will have to take it from the wolves.', 'seconds': 8}]}
+CAPTAIN = {'kind': 'foe.add', 'foe': 'captain', 'name': 'The Grey Captain', 'cell': 'grey', 'x': 5, 'y': 5, 'strength': 'champion',
+           'band': {'min': [8, {'div': [{'audience': 'active'}, 2]}]}, 'stance': 'waits', 'minutes': 120, 'like': 'rm111'}
+TURNCOAT = {'kind': 'foe.outlaw', 'npc': 'rm113', 'minutes': 60, 'strength': 'tough', 'band': 1}
+
+FOES = {
+    'format': 'ratw-story-program', 'version': 2, 'id': 'v2-grey-pass', 'title': 'The Grey Captain at the Pass',
+    'audience': {'kind': 'players', 'players': [ASH, BIRCH, ELM]}, 'start': 'parley', 'regions': [PASS], 'scenes': [PARLEY],
+    'variables': [
+        {'id': 'band-down', 'type': 'number', 'scope': 'story', 'show': "The Captain's band brought down"},
+        {'id': 'fought', 'type': 'number', 'scope': 'story', 'note': 'How many wolves fought the Captain.'},
+    ],
+    'phases': [
+        {'id': 'parley', 'journal': 'The Grey Captain comes under a white flag to the Pass.',
+         'effects': [{'kind': 'visitor.add', 'visitor': 'grey-captain', 'name': 'The Grey Captain', 'cell': 'grey', 'x': 4, 'y': 4,
+                      'minutes': 30, 'like': 'rm111'},
+                     {'kind': 'scene.play', 'scene': 'parley', 'cue': 'parley', 'player': 'world'}],
+         'exits': [{'on': 'scene finished', 'match': {'detail': 'parley'}, 'to': 'pass'},
+                   {'on': 'scene failed', 'match': {'detail': 'parley'}, 'to': 'pass'}],
+         # (The Captain and the turncoat come as the parley ends: a trigger's effects may work out a value, the band.)
+         'triggers': [{'id': 'muster', 'on': 'scene finished', 'match': {'detail': 'parley'},
+                       'actions': [{'do': 'effect', 'effect': CAPTAIN}, {'do': 'effect', 'effect': TURNCOAT}]},
+                      {'id': 'muster-anyway', 'on': 'scene failed', 'match': {'detail': 'parley'},
+                       'actions': [{'do': 'effect', 'effect': CAPTAIN}, {'do': 'effect', 'effect': TURNCOAT}]}]},
+        {'id': 'pass', 'journal': 'The parley is over. The Captain holds the Pass, and the turncoat stands with him.',
+         'effects': [{'kind': 'visitor.leave', 'visitor': 'grey-captain'}],
+         'exits': [{'on': 'foe defeated', 'match': {'target': 'captain'}, 'to': 'held'},
+                   {'on': 'foe fled', 'match': {'target': 'captain'}, 'to': 'lost'}],
+         'triggers': [
+             {'id': 'downed', 'on': 'foe downed', 'match': {'target': 'captain'}, 'actions': [{'do': 'add', 'var': 'band-down', 'value': 1}]},
+             {'id': 'beaten', 'on': 'foe defeated', 'match': {'target': 'captain'},
+              'actions': [{'do': 'set', 'var': 'fought', 'value': {'field': 'quantity'}}]},
+             {'id': 'turncoat', 'on': 'foe defeated', 'match': {'target': 'rm113'},
+              'actions': [{'do': 'note', 'text': 'The turncoat is down, and held.'}]},
+         ]},
+        {'id': 'held', 'journal': 'The Captain is beaten and his band scattered: the Pass is held.', 'effects': [], 'exits': []},
+        {'id': 'lost', 'journal': 'The Captain got away over the Pass.', 'effects': [], 'exits': []},
+    ],
+    'tests': [
+        {'name': 'The parley, then the Pass: two of the band down, the turncoat beaten, the Captain beaten by three', 'cohort': [ASH, BIRCH, ELM],
+         'events': [
+             quest_fact(6, 'arrival', 0.1, ASH), quest_fact(7, 'arrival', 0.11, BIRCH), quest_fact(8, 'arrival', 0.12, ELM),
+             quest_fact(1, 'scene finished', 0.2, '', target='world-run', detail='parley'),
+             quest_fact(2, 'foe downed', 0.3, ASH, target='captain', cell='grey', x=5, y=6, detail="one of The Grey Captain's band"),
+             quest_fact(3, 'foe downed', 0.31, BIRCH, target='captain', cell='grey', x=6, y=6, detail="one of The Grey Captain's band"),
+             quest_fact(4, 'foe defeated', 0.32, ELM, target='rm113', cell='grey', x=4, y=6, detail='the turncoat', quantity=1),
+             quest_fact(5, 'foe defeated', 0.35, ASH, target='captain', cell='grey', x=5, y=5, detail='The Grey Captain', quantity=3),
+         ], 'expect': ['parley', 'pass', 'held'],
+         'expectVariables': {'story': {'band-down': 2, 'fought': 3}},
+         'expectEffects': [
+             {'phase': 'parley', 'kind': 'visitor.add', 'visitor': 'grey-captain', 'name': 'The Grey Captain', 'cell': 'grey', 'x': 4, 'y': 4,
+              'minutes': 30, 'like': 'rm111'},
+             {'phase': 'parley', 'kind': 'scene.play', 'scene': 'parley', 'cue': 'parley', 'player': 'world'},
+             # (Three wolves about: a band of min(8, 3 / 2), one.)
+             {'phase': 'parley', 'kind': 'foe.add', 'foe': 'captain', 'name': 'The Grey Captain', 'cell': 'grey', 'x': 5, 'y': 5,
+              'strength': 'champion', 'band': 1, 'stance': 'waits', 'minutes': 120, 'like': 'rm111'},
+             {'phase': 'parley', 'kind': 'foe.outlaw', 'npc': 'rm113', 'minutes': 60, 'strength': 'tough', 'band': 1},
+             {'phase': 'pass', 'kind': 'visitor.leave', 'visitor': 'grey-captain'}]},
+        {'name': 'The Captain gets away: the Pass is lost', 'cohort': [ASH, BIRCH, ELM],
+         'events': [
+             quest_fact(1, 'scene failed', 0.2, '', target='world-run', detail='parley', item='a stranger is not here'),
+             quest_fact(2, 'foe fled', 0.5, '', target='captain', cell='grey', x=5, y=5, item='fled', detail='The Grey Captain'),
+         ], 'expect': ['parley', 'pass', 'lost']},
+    ],
+}
+

@@ -16,6 +16,8 @@
 #include <cmath>
 #include <set>
 
+#include <cstdio>
+
 namespace ratw::game
 {
 namespace
@@ -71,7 +73,8 @@ bool Game::storyWorldOrder(const std::string& kind)
     static const std::set<std::string> kinds{"journal.note", "story.ping",  "item.take",    "item.place",  "warrant.issue",
                                              "warrant.clear", "npc.hold",   "npc.release",  "npc.follow",  "npc.unfollow",
                                              "door.lock",    "door.unlock", "door.open",    "door.close",  "board.post",
-                                             "weather.set",  "scene.stop",  "hunt.stage"};
+                                             "weather.set",  "scene.stop",  "hunt.stage",   "foe.add",     "foe.leave",
+                                             "foe.outlaw"};
     return kinds.count(kind) > 0;
 }
 
@@ -452,7 +455,112 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
         return {true, "The next hunt in " + regionId + " meets " + std::to_string(count) + " " + species->name + " (for " +
                           std::to_string(minutes) + " minutes).", run};
     }
+    // ------------------------------------------------------------------------------ foes (doc 86, C10)
+    if (kind == "foe.add" || kind == "foe.outlaw")
+    {
+        // A foe, or a resident made one for a while: kept with the story (held.foes, by camp), so a restart makes it again
+        // and the story's end takes it away. The game itself (RatwStoryFoes.cpp) fights it, ends it on time, and lets a
+        // beaten one go.
+        const bool outlaw = kind == "foe.outlaw";
+        const auto camp = storyFoeCampId(run, outlaw ? "npc-" + target : target);
+        auto& foes = section(*story, "foes");
+        if (foes.has(camp) && world_.storyFoe(camp))
+            return {false, outlaw ? "That resident is a foe already." : "That foe is already here.", target};
+        if (!outlaw && foes.size() >= 8)
+            return {false, "A story brings at most 8 foes at once.", run};
+        if (outlaw && heldByAnotherStory(target, run))
+            return {false, "Another story holds this resident.", target};
+        const int minutes = whole(p, "minutes", 1, outlaw ? 720 : 1440);
+        if (minutes < 1)
+            return {false, outlaw ? "A resident is a foe for 1 to 720 minutes." : "A foe stays 1 to 1440 minutes.", target};
+        const int band = p.has("band") ? whole(p, "band", 0, outlaw ? 6 : 8) : 0;
+        if (band < 0)
+            return {false, outlaw ? "A resident made a foe has 0 to 6 followers." : "A foe has 0 to 8 followers.", target};
+        auto kept = Value::object();
+        kept.add("kind", kind);
+        kept.add("foe", target);
+        kept.add("until", world_.time() + minutes * 60.0);
+        kept.add("strength", p.string("strength", "tough"));
+        kept.add("band", band);
+        if (outlaw)
+            kept.add("lethal", p.boolean("lethal"));
+        else
+        {
+            kept.add("name", p.string("name"));
+            kept.add("description", p.string("description"));
+            kept.add("like", p.string("like"));
+            kept.add("cell", p.string("cell"));
+            kept.add("x", p.number("x", -1));
+            kept.add("y", p.number("y", -1));
+            kept.add("stance", p.string("stance", "waits"));
+        }
+        auto made = storyFoeFrom(*story, camp, kept);
+        if (!made.ok)
+            return made;
+        foes.set(camp, std::move(kept));
+        changed();
+        saveSoon();
+        return made;
+    }
+    if (kind == "foe.leave")
+    {
+        auto& foes = section(*story, "foes");
+        const auto camp = storyFoeCampId(run, target);
+        if (!foes.has(camp))
+            return {false, "This story brought no such foe.", target};
+        if (world_.storyFoe(camp) && !world_.endStoryFoe(camp, {}))
+            return {false, "That foe is fighting: they go when the fight is over.", target};
+        foes.erase(camp);
+        changed();
+        saveSoon();
+        return {true, "The foe and their followers leave.", target};
+    }
     return {false, "Unknown story effect.", target};
+}
+
+std::string Game::storyFoeCampId(const std::string& run, const std::string& foe)
+{
+    // foe_<8 hex digits of the run>_<the story's id for it>: never two runs' foes the same, the same after a restart.
+    std::uint32_t h = 2166136261u;
+    for (const unsigned char c : run)
+        h = (h ^ c) * 16777619u;
+    char hex[9];
+    std::snprintf(hex, sizeof hex, "%08x", h);
+    return "foe_" + std::string(hex) + "_" + foe;
+}
+
+Result Game::storyFoeFrom(storylines::Storyline& story, const std::string& camp, const Value& kept)
+{
+    World::StoryFoeSpec spec;
+    spec.camp = camp;
+    spec.run = story.id;
+    spec.foe = kept.string("foe");
+    spec.tier = kept.string("strength", "tough");
+    spec.band = int(kept.number("band"));
+    spec.until = kept.number("until");
+    if (kept.string("kind") == "foe.outlaw")
+    {
+        spec.npc = spec.foe;
+        spec.lethal = kept.boolean("lethal");
+        return world_.outlawResident(spec);
+    }
+    spec.name = fillStoryNames(kept.string("name"), 60);
+    spec.description = kept.string("description");
+    spec.cell = kept.string("cell");
+    spec.x = kept.number("x", -1);
+    spec.y = kept.number("y", -1);
+    spec.stance = kept.string("stance", "waits");
+    if (const auto like = kept.string("like"); !like.empty())
+    {
+        const auto* look = world_.entity(like);
+        if (!look || !look->npc || look->transient)
+            return {false, "A foe looks like a resident: no such resident " + like + ".", spec.foe};
+        spec.look = *look->appearance;
+        spec.hasLook = true;
+        if (spec.description.empty())
+            spec.description = look->description;
+    }
+    return world_.addStoryFoe(spec);
 }
 
 Result Game::storyHunt(const std::string& wolf)
@@ -650,6 +758,8 @@ void Game::endStoryWorld(storylines::Storyline& story)
         releaseCompanions();
     for (const auto& v : h.array("visitors"))
         world_.sendVisitorAway(v.asString());
+    for (const auto& [camp, j] : h.object("foes").fields())   // (Doc 86, C10: its foes go, even mid-fight, with no event.)
+        world_.endStoryFoe(camp, {}, true);
     for (const auto& npc : h.array("mantles"))
         releaseMantle(npc.asString());
     for (const auto& id : h.array("notices"))
@@ -743,6 +853,33 @@ void Game::tickStoryWorld(double dt)
                 *hunts = std::move(kept);
                 touched = true;
             }
+        }
+        if (auto* foes = s->held.find("foes"); foes && foes->size())
+        {
+            // (Doc 86, C10: a foe gone in this run of the world is let go of; one a restart lost is made again while its
+            // time lasts; a resident made a foe and beaten, not killed, is held until the story ends.)
+            std::vector<std::string> done;
+            for (const auto& [camp, j] : foes->fields())
+            {
+                if (world_.storyFoe(camp))
+                    continue;
+                const auto how = world_.storyFoeEndedHow(camp);
+                if (how == "beaten" && j.string("kind") == "foe.outlaw" && !j.boolean("lethal"))
+                    if (auto* e = world_.entity(j.string("foe")); e && !e->dead)
+                    {
+                        auto& holds = section(*s, "npcs");
+                        if (!holds.has(e->id))
+                            holds.set(e->id, e->pace);
+                        if (!e->sceneDirected && !world_.inBattle(e->id) && e->leaderId.empty())
+                            world_.sceneHold(e->id, true, e->pace);
+                        e->activity = "kept here by a story";
+                    }
+                if (world_.storyFoeEnded(camp) || j.number("until") <= world_.time() || !storyFoeFrom(*s, camp, j).ok)
+                    done.push_back(camp);
+            }
+            for (const auto& camp : done)
+                foes->erase(camp);
+            touched = touched || !done.empty();
         }
         if (auto* pings = s->held.find("pings"); pings && pings->size())
         {

@@ -1522,6 +1522,8 @@ class Game
         bool keep = false;                          // (Kept after its run ends, until `until`.)
     };
     const std::map<std::string, std::map<std::string, StoryMemo>>& storyMemory() const { return storyMemory_; }
+    // Doc 86, C10: the camp a story's foe is (foe_<8 hex of the run>_<its id>; a resident made one is npc-<resident>).
+    static std::string storyFoeCampId(const std::string& run, const std::string& foe);
     const std::map<std::string, std::string>& storyItemNames() const { return storyItemNames_; }   // (Doc 86, J9.)
     // Doc 86, Phase 3 (for tests and the window): a story's greeting waiting for one wolf at one resident (C5), and the title a
     // resident uses for a wolf: the newest one known where the resident lives ("" none; C4).
@@ -2685,6 +2687,8 @@ class Game
     std::set<std::string> storiesHolding_;              // Live world stories with something held (refreshStoryWatch).
     double storyWorldAccumulator_ = 0;
     bool heldByAnotherStory(const std::string& npc, const std::string& run) const;
+    // Doc 86, C10: a story's foe made (again, after a restart) from what the story keeps of it (its held.foes entry).
+    Result storyFoeFrom(storylines::Storyline& story, const std::string& camp, const json::Value& kept);
     void noteStoryHeld(const json::Value& payload, const char* key, const std::string& id);   // (A stranger, a mantle.)
     // Doc 86, Phase 1b (RatwGameStoryWorld.cpp): residents a story spares from old age or protects for a while (C11), and
     // what residents remember and come to believe from a story (C8, T7).

@@ -5,7 +5,7 @@
 import {createContext, useContext, useMemo, useState} from 'react';
 import {MapView} from '../MapView';
 import {surfaceFor} from '../../lib/surface';
-import {allActions, countersOf, figuresOf, fillsOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, widestFilled, REF_KIND, ownItemsHere, signalsOf, storyItemsOf, tagsOf, talkKeysOf, talkValuesOf, visitorsOf, type CatEvent, type CatItem, type Condition, type Operand, type Param,
+import {allActions, countersOf, figuresOf, fillsOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, widestFilled, REF_KIND, ownItemsHere, signalsOf, storyItemsOf, tagsOf, talkKeysOf, talkValuesOf, visitorsOf, foesOf, type CatEvent, type CatItem, type Condition, type Operand, type Param,
     type Program, type Slot} from '../../lib/workbench';
 import {useBench} from './context';
 import {ConditionNode} from './TriggerView';
@@ -270,6 +270,9 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
     else if (type === 'tag') body = <NamePicker names={tagsOf(program)} value={slot.value} pick={v => one(v.toLowerCase())} noun="story mark (watch_list)" pattern={/^[A-Za-z0-9_]{1,32}$/}/>;
     // (Phase 9: a stranger the story brings, by the id it gives them.)
     else if (type === 'visitor') body = <NamePicker names={visitorsOf(program)} value={slot.value} pick={one} noun="stranger's id"/>;
+    // (Doc 86, C10: a foe the story brings, by the id it gives them; a foe event's target may also be a resident made one.)
+    else if (type === 'foe') body = <NamePicker names={foesOf(program).map(f => f.id)} value={slot.value} pick={v => one(v.toLowerCase())} noun="foe's id"
+        pattern={/^[A-Za-z0-9][A-Za-z0-9_-]{2,39}$/}/>;
     else if (type === 'objective') {
         const q = (program.quests ?? []).find(x => x.id === slot.param?.quest);
         body = q ? <SearchList options={q.objectives.map(o => ({id: o.id, name: o.label, hint: (o.optional ? 'optional' : '') + (o.hidden ? ' hidden' : '')}))}

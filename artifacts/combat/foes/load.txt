@@ -1,0 +1,80 @@
+# The load pass (doc 86, C10t): world_check on an export of Ridgemere 3 (world_build.py export, build 82, read only),
+# six game hours (0:00-6:00, a siege night), --no-births --no-talk-ledger --fast --no-check, 8 threads, the closest table
+# (pass 4: SIM_FOES=artifacts/combat/foes/pass4.json), each beside the same run without foes. 2026-11-24
+
+## --players 20 (no foes)
+  slowest World::tick after the first minute (tick 1224): 14.7753 ms = streaming 8.16374, schedules 6.15651 (12 route searches), movement 0.29387, separation 0.156281, views 0.004861
+  after the first minute: p99 2.08724 ms, p99.9 5.69451 ms, worst 16.8267 ms (first minute worst 62.7803 ms; worst tick 10)
+783 residents, 20 players, 72000 ticks from 0:00 to 6:00 (67.0238 s of work): mean 0.930887 ms, p99 2.24891 ms, p99.9 7.38769 ms, worst 62.7803 ms; 723 residents moved; at most 742 places in memory; 8 threads
+  without loading a place: p99 2.20024 ms, p99.9 6.96085 ms, worst 37.3869 ms (197 ticks loaded places)
+(wall 73 s)
+
+## --players 20 --foes 2:fierce:8:hunts
+  2 foes (fierce, band 8, hunts) brought, 20 players sent after them
+  slowest World::tick after the first minute (tick 3010): 11.706 ms = streaming 6.55247, schedules 4.60458 (5 route searches), movement 0.471459, separation 0.070623, views 0.006882
+  after the first minute: p99 9.85533 ms, p99.9 12.9715 ms, worst 23.0508 ms (first minute worst 63.9107 ms; worst tick 10)
+798 residents, 20 players, 72000 ticks from 0:00 to 6:00 (256.305 s of work): mean 3.55979 ms, p99 9.90142 ms, p99.9 13.1186 ms, worst 63.9107 ms; 732 residents moved; at most 730 places in memory; 8 threads
+  foes: 7 fights with them (1.16667 a game hour); 0 beaten, 0 fled, 0 out of time; 26 wolves downed; 0 fights left open once their foe was gone
+  without loading a place: p99 9.86373 ms, p99.9 13.0622 ms, worst 63.9107 ms (115 ticks loaded places)
+(wall 264 s)
+
+## --players 100 (no foes)
+  slowest World::tick after the first minute (tick 1222): 15.3415 ms = streaming 7.53679, schedules 6.34558 (6 route searches), movement 0.759077, separation 0.220806, views 0.479239
+  after the first minute: p99 7.92658 ms, p99.9 11.0243 ms, worst 21.6441 ms (first minute worst 81.475 ms; worst tick 10)
+786 residents, 100 players, 72000 ticks from 0:00 to 6:00 (329.224 s of work): mean 4.57256 ms, p99 8.08918 ms, p99.9 12.7732 ms, worst 81.475 ms; 723 residents moved; at most 781 places in memory; 8 threads
+  without loading a place: p99 8.02395 ms, p99.9 11.3166 ms, worst 45.9645 ms (292 ticks loaded places)
+(wall 338 s)
+
+## --players 100 --foes 6:fierce:8:hunts
+  6 foes (fierce, band 8, hunts) brought, 100 players sent after them
+  slowest World::tick after the first minute (tick 1219): 15.6535 ms = streaming 0.051747, schedules 14.8303 (0 route searches), movement 0.377447, separation 0.378879, views 0.015157
+  after the first minute: p99 26.2781 ms, p99.9 33.3645 ms, worst 69.308 ms (first minute worst 109.436 ms; worst tick 303)
+809 residents, 100 players, 72000 ticks from 0:00 to 6:00 (992.88 s of work): mean 13.79 ms, p99 26.7039 ms, p99.9 35.5138 ms, worst 109.436 ms; 732 residents moved; at most 749 places in memory; 8 threads
+  foes: 12 fights with them (2 a game hour); 1 beaten, 0 fled, 0 out of time; 100 wolves downed; 0 fights left open once their foe was gone
+  without loading a place: p99 26.569 ms, p99.9 35.4358 ms, worst 109.436 ms (165 ticks loaded places)
+(wall 1004 s)
+
+## --players 250 (no foes)
+  slowest World::tick after the first minute (tick 3020): 22.2868 ms = streaming 20.7978, schedules 0.201677 (3 route searches), movement 0.904109, separation 0.19798, views 0.185245
+  after the first minute: p99 14.9913 ms, p99.9 18.3378 ms, worst 49.4893 ms (first minute worst 120.377 ms; worst tick 0)
+789 residents, 250 players, 72000 ticks from 0:00 to 6:00 (790.713 s of work): mean 10.9821 ms, p99 15.6208 ms, p99.9 21.0301 ms, worst 120.377 ms; 724 residents moved; at most 794 places in memory; 8 threads
+  without loading a place: p99 15.4183 ms, p99.9 19.3174 ms, worst 52.5147 ms (231 ticks loaded places)
+(wall 801 s)
+
+## --players 250 --foes 6:fierce:8:hunts
+  6 foes (fierce, band 8, hunts) brought, 250 players sent after them
+  slowest World::tick after the first minute (tick 1223): 15.3905 ms = streaming 7.73756, schedules 6.49488 (0 route searches), movement 0.579964, separation 0.543607, views 0.034441
+  after the first minute: p99 66.8716 ms, p99.9 82.4239 ms, worst 126.172 ms (first minute worst 321.073 ms; worst tick 281)
+798 residents, 250 players, 72000 ticks from 0:00 to 6:00 (2821.1 s of work): mean 39.182 ms, p99 68.0364 ms, p99.9 88.1641 ms, worst 321.073 ms; 724 residents moved; at most 749 places in memory; 8 threads
+  foes: 5 fights with them (0.833333 a game hour); 3 beaten, 0 fled, 0 out of time; 79 wolves downed; 0 fights left open once their foe was gone
+  without loading a place: p99 67.6469 ms, p99.9 87.8137 ms, worst 321.073 ms (160 ticks loaded places)
+(wall 2833 s)
+DONE
+
+## --players 20 --foes 2:fierce:8:hunts --foes-crowd-only (the same crowds, no foe)
+  2 places of foes (crowd only, no foe brought: fierce, band 8, hunts) brought, 20 players sent after them
+  slowest World::tick after the first minute (tick 6610): 11.2443 ms = streaming 0.013238, schedules 11.0753 (6 route searches), movement 0.128333, separation 0.023235, views 0.004163
+  after the first minute: p99 9.40639 ms, p99.9 12.0383 ms, worst 20.1373 ms (first minute worst 62.9955 ms; worst tick 10)
+780 residents, 20 players, 72000 ticks from 0:00 to 6:00 (234.408 s of work): mean 3.25567 ms, p99 9.46082 ms, p99.9 12.211 ms, worst 62.9955 ms; 723 residents moved; at most 730 places in memory; 8 threads
+  foes: 0 fights with them (0 a game hour); 0 beaten, 0 fled, 0 out of time; 0 wolves downed; 0 fights left open once their foe was gone
+  without loading a place: p99 9.4276 ms, p99.9 12.0457 ms, worst 62.9955 ms (114 ticks loaded places)
+(wall 242 s)
+
+## --players 100 --foes 6:fierce:8:hunts --foes-crowd-only (the same crowds, no foe)
+  6 places of foes (crowd only, no foe brought: fierce, band 8, hunts) brought, 100 players sent after them
+  slowest World::tick after the first minute (tick 1223): 15.2715 ms = streaming 8.18297, schedules 6.35246 (0 route searches), movement 0.346532, separation 0.372434, views 0.017088
+  after the first minute: p99 23.4507 ms, p99.9 29.0535 ms, worst 37.8981 ms (first minute worst 88.5992 ms; worst tick 10)
+783 residents, 100 players, 72000 ticks from 0:00 to 6:00 (896.603 s of work): mean 12.4528 ms, p99 23.6719 ms, p99.9 29.6538 ms, worst 88.5992 ms; 723 residents moved; at most 750 places in memory; 8 threads
+  foes: 0 fights with them (0 a game hour); 0 beaten, 0 fled, 0 out of time; 0 wolves downed; 0 fights left open once their foe was gone
+  without loading a place: p99 23.5738 ms, p99.9 29.2822 ms, worst 87.7391 ms (161 ticks loaded places)
+(wall 907 s)
+
+## --players 250 --foes 6:fierce:8:hunts --foes-crowd-only (the same crowds, no foe)
+  6 places of foes (crowd only, no foe brought: fierce, band 8, hunts) brought, 250 players sent after them
+  slowest World::tick after the first minute (tick 1223): 15.8005 ms = streaming 8.20895, schedules 6.45279 (0 route searches), movement 0.488958, separation 0.520748, views 0.129079
+  after the first minute: p99 64.6114 ms, p99.9 72.9507 ms, worst 89.2341 ms (first minute worst 147.978 ms; worst tick 0)
+782 residents, 250 players, 72000 ticks from 0:00 to 6:00 (2584.53 s of work): mean 35.8963 ms, p99 65.1117 ms, p99.9 75.553 ms, worst 147.978 ms; 723 residents moved; at most 750 places in memory; 8 threads
+  foes: 0 fights with them (0 a game hour); 0 beaten, 0 fled, 0 out of time; 0 wolves downed; 0 fights left open once their foe was gone
+  without loading a place: p99 65.0084 ms, p99.9 75.1266 ms, worst 147.978 ms (163 ticks loaded places)
+(wall 2597 s)
+DONE2

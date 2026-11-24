@@ -183,7 +183,7 @@ const v2: Record<string, Program> = JSON.parse(execFileSync('python3', ['-c',
 const ledger = v2['v2-ledger'];
 
 test('version 2: the samples and the 108 programs made version 2 are shown by the workbench, every nested action a sentence', () => {
-    assert.equal(Object.keys(v2).length, 117);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road; Phase 3: the oil drive; Phase 4: the lamp line; Phase 5: Old Brown at the tarn; Phase 6: the watch list.)
+    assert.equal(Object.keys(v2).length, 118);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road; Phase 3: the oil drive; Phase 4: the lamp line; Phase 5: Old Brown at the tarn; Phase 6: the watch list; Phase 7: the Grey Captain at the Pass.)
     let nested = 0;
     for (const [name, p] of Object.entries(v2)) {
         assert.ok(editable(p), name);
@@ -698,3 +698,34 @@ test('doc 86, Phase 6: the watch list in words; a story\'s own items offered by 
         tests: [{events: [{kind: 'item.give', item: 'bread', tag: 'nope'}]}]} as unknown as Program;
     assert.deepEqual(storyItemsOf(deep).map(s => s.id), ['letter^watch_list', 'rope^coil', 'writ^thanks'], 'not a rehearsal\'s');
 });
+
+// ------------------------------------------------------------------------------------------- foes and strangers (doc 86, Phase 7)
+
+import {foesOf} from './workbench.ts';
+
+test('doc 86, Phase 7: the Grey Captain in words; a foe named as the story names them; a new foe and one sent away', () => {
+    const p = v2['v2-grey-pass'];
+    assert.ok(editable(p));
+    const ns = namesOf(null, p);
+    assert.deepEqual(foesOf(p), [{id: 'captain', name: 'The Grey Captain'}]);
+    assert.equal(ns.foe.captain, 'The Grey Captain (captain)');
+    const muster = triggersOf(p, 0).find(t => t.id === 'muster')!;
+    const words = plain(actionParts(cat, muster.actions[0], ns));
+    assert.equal(words, '“The Grey Captain” (The Grey Captain (captain)), a champion foe with the smaller of 8 and (how many wolves are active ÷ 2, whole) followers, comes to grey (5, 5) for 120 minutes, looking like rm111, and holds the ground');
+    assert.match(plain(actionParts(cat, muster.actions[1], ns)), /turns on the wolves with 1 followers for 60 minutes \(tough\)/);
+    const beaten = triggersOf(p, 1).find(t => t.id === 'beaten')!;
+    assert.match(plain(eventParts(cat, beaten, ns)), /beats/);
+    assert.equal(cat.effects.find(e => e.id === 'foe.add')!.params!.find(x => x.key === 'foe')!.type, 'foe');
+    assert.equal(cat.events.find(e => e.id === 'foe defeated')!.fields.target.type, 'foe');
+    // (A new foe: an id of the story's own; one sent away: the first the story brings. Both pass the checks.)
+    const fresh = newEffect(cat, 'foe.add', p);
+    assert.equal(fresh.foe, 'foe-2');
+    assert.equal(newEffect(cat, 'foe.leave', p).foe, 'captain');
+    const q = structuredClone(p);
+    q.phases[1].triggers!.push({id: 'fresh', on: 'arrival', audience: 'participant', actions: [{do: 'effect', effect: {...fresh, name: 'Hakon', cell: 'grey'}},
+        {do: 'effect', effect: newEffect(cat, 'foe.leave', p)}]});
+    const found = JSON.parse(execFileSync('python3', ['-c', "import json, sys\nsys.path.insert(0, 'tools')\nimport story_program as P\n"
+        + "print(json.dumps([x for x in P.problems(json.loads(sys.stdin.read())) if x['level'] == 'error']))"], {cwd: repo, input: JSON.stringify(q)}).toString());
+    assert.deepEqual(found, []);
+});
+

@@ -51,6 +51,11 @@ EXAMPLE = {
     'figure.clear': {'figure': 'ford_villain'},
     # (Doc 86, Phase 5: the bear at the tarn.)
     'hunt.stage': {'region': 'square', 'species': 'bear', 'count': 1, 'minutes': 120},
+    # (Doc 86, Phase 7: the Grey Captain at the Pass, and a turncoat.)
+    'foe.add': {'foe': 'captain', 'name': 'The Grey Captain', 'cell': 'greyfen-square', 'x': 12, 'y': 9, 'strength': 'champion', 'band': 4,
+                'stance': 'waits', 'minutes': 120, 'like': 'rm111'},
+    'foe.leave': {'foe': 'captain'},
+    'foe.outlaw': {'npc': 'rm113', 'minutes': 60, 'strength': 'tough', 'band': 1},
 }
 GROUP_NOTES = {
     'flow': 'Version 2 only. Nested lists of actions: up to 24 actions in a trigger counting nested ones, three deep.',

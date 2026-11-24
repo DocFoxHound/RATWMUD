@@ -110,6 +110,7 @@ EFFECT_WORDS = {
     'character.grant': [('reason', 'reason', None, None)], 'standing.adjust': [('reason', 'reason', None, None)],
     'faction.relation': [('reason', 'reason', None, None)],
     'item.give': [('name', 'name', None, 60)],   # (Doc 86, J9: a story's own item's name, shown in the pack.)
+    'foe.add': [('name', 'name', None, 60), ('description', 'look', None, None)],   # (Doc 86, C10: a foe's name and looks.)
 }
 # Said as written, never in a voice: a resident's words aloud (npc.speak) fill no #symbols#.
 UNVOICED = frozenset({'npc.speak'})

@@ -77,10 +77,16 @@ GOOD = {
     'belief.forget': {'subject': 'rm111', 'claimKind': 'story.rumour', 'town': 'greyfen', 'share': 50},
     # (Doc 86, Phase 5: an animal for the next hunt in a story region.)
     'hunt.stage': {'region': 'gate', 'species': 'bear', 'count': 1, 'minutes': 120},
+    # (Doc 86, Phase 7: a story's foe, sent away, and a resident made one.)
+    'foe.add': {'foe': 'grey-captain', 'name': 'The Grey Captain', 'cell': 'gate', 'x': 3, 'y': 2, 'strength': 'champion', 'band': 4,
+                'stance': 'waits', 'minutes': 60, 'like': 'rm111'},
+    'foe.leave': {'foe': 'grey-captain'},
+    'foe.outlaw': {'npc': 'rm113', 'minutes': 30, 'strength': 'tough', 'band': 2},
 }
 PHASE1B_ORDERS = ('talk.remember', 'talk.forget', 'belief.plant')
 PHASE3_ORDERS = ('title.give', 'title.take', 'npc.greet', 'belief.forget')
 PHASE5_ORDERS = ('hunt.stage',)   # (Doc 86, L1: an animal for the next hunt in a region.)
+PHASE7_ORDERS = ('foe.add', 'foe.leave', 'foe.outlaw')   # (Doc 86, C10: foes.)
 
 
 def program(effects=(), entry=(), audience=None):
@@ -108,7 +114,7 @@ def effect(kind, **more):
 class Catalogue(unittest.TestCase):
     def test_the_new_effects_are_in_the_catalogue_with_typed_parameters_and_sentences(self):
         ids = [e['id'] for e in CAT['effects']]
-        self.assertEqual(len(ids), 86)   # (Phase 10's story.start, the story's own: not a game order; doc 86 Phase 1b's 7, Phase 3's 4,
+        self.assertEqual(len(ids), 89)   # (Doc 86 Phase 7's three foe effects. Phase 10's story.start, the story's own: not a game order; doc 86 Phase 1b's 7, Phase 3's 4,
         self.assertNotIn('story.start', runner.WORLD_ORDERS)   # Phase 4's story.notify and quest.withdraw, the story's own too.)
         for kind in ('story.notify', 'quest.withdraw'):
             self.assertNotIn(kind, runner.WORLD_ORDERS)
@@ -121,7 +127,8 @@ class Catalogue(unittest.TestCase):
                 self.assertIn(item['group'], {g['id'] for g in CAT['actionGroups']})
                 for p in item['params']:
                     self.assertIn(p['type'], CAT['types'])
-        self.assertEqual(set(NEW) - {'story.tracker'} | set(PHASE1B_ORDERS) | set(PHASE3_ORDERS) | set(PHASE5_ORDERS), set(runner.WORLD_ORDERS),
+        self.assertEqual(set(NEW) - {'story.tracker'} | set(PHASE1B_ORDERS) | set(PHASE3_ORDERS) | set(PHASE5_ORDERS) | set(PHASE7_ORDERS),
+                         set(runner.WORLD_ORDERS),
                          'every game order has its mapping')
         self.assertIn('story.tracker', quests.STORY_EFFECTS, 'the tracker is the story\'s own')
 
@@ -138,7 +145,8 @@ class Catalogue(unittest.TestCase):
         self.assertEqual(rules.WOLF_EFFECTS, {'character.injury', 'story.area.damage', 'item.take', 'warrant.issue'})
         # (Doc 85, Phase 10: the economy's effects need a builder or the owner too: prices and projects.)
         self.assertEqual(rules.BUILDER_EFFECTS, {'faction.relation', 'standing.adjust', 'prices.reset', 'project.complete', 'project.cancel',
-                                                 'figure.set', 'figure.clear'})   # (Doc 86, C9: the realm's figures.)
+                                                 'figure.set', 'figure.clear',   # (Doc 86, C9: the realm's figures.)
+                                                 'foe.outlaw'})   # (Doc 86, C10: a resident made a foe.)
         self.assertEqual(studio.STORY_WOLF_KINDS, rules.WOLF_EFFECTS)
         self.assertEqual(runner.WOLF_EFFECTS, rules.WOLF_EFFECTS)
         p = program([effect('item.take')])
@@ -206,7 +214,8 @@ class Orders(unittest.TestCase):
     """The game order each becomes: its own name, what it acts on as the target, the run and its visit in the payload."""
 
     def order(self, e, actor='player-ash'):
-        phase = rules.phases_of(rules.validate(program([e])))[0]
+        # (A foe sent away is one the story brings: doc 86, C10.)
+        phase = rules.phases_of(rules.validate(program([effect('foe.add'), e] if e['kind'] == 'foe.leave' else [e])))[0]
         return runner.world_order(e, actor, 'world-run', 3, phase)
 
     def test_each_order(self):
@@ -247,6 +256,45 @@ class Orders(unittest.TestCase):
         # (A glyph under two grounds is the first's, as the game reads animals.json: w is water, not mud.)
         self.assertEqual(rules.animal_ground()['w'], 'water')
         self.assertEqual(rules.animal_ground()['D'], 'mud')
+
+    def test_foes(self):
+        # (Doc 86, C10: the orders, by the story's id for the foe and the resident made one; the checks; undone at the end; a
+        # resident made a foe needs a builder.)
+        self.assertEqual(self.order(effect('foe.add'))[:2], ('foe.add', 'grey-captain'))
+        self.assertEqual(self.order(effect('foe.add'))[2], {'name': 'The Grey Captain', 'cell': 'gate', 'x': 3, 'y': 2, 'strength': 'champion',
+                                                             'band': 4, 'stance': 'waits', 'minutes': 60, 'like': 'rm111', 'run': 'world-run',
+                                                             'visit': 3})
+        self.assertEqual(self.order(effect('foe.leave'))[:2], ('foe.leave', 'grey-captain'))
+        self.assertEqual(self.order(effect('foe.outlaw'))[1:], ('rm113', {'minutes': 30, 'strength': 'tough', 'band': 2, 'run': 'world-run', 'visit': 3}))
+        rules.validate(program([effect('foe.add'), effect('foe.leave'), effect('foe.outlaw', lethal=True)]))
+        rules.validate(program([effect('foe.add', band={'min': [8, {'div': [{'audience': 'active'}, 2]}]})]))   # (C1a: a band from the crowd.)
+        for bad in ({'foe': 'Grey Captain'}, {'foe': 'gc'}, {'band': 9}, {'strength': 'mighty'}, {'stance': 'roams'}, {'minutes': 1441},
+                    {'name': ''}, {'x': 5000}):
+            with self.subTest(bad=bad):
+                self.assertRaisesRegex(ValueError, 'invalid foe.add', rules.validate, program([effect('foe.add', **bad)]))
+        for bad in ({'band': 7}, {'minutes': 721}):
+            with self.subTest(bad=bad):
+                self.assertRaisesRegex(ValueError, 'invalid foe.outlaw', rules.validate, program([effect('foe.outlaw', **bad)]))
+        self.assertRaisesRegex(ValueError, 'one name and one strength', rules.validate,
+                               program([effect('foe.add'), effect('foe.add', name='The Captain')]))
+        self.assertRaisesRegex(ValueError, 'names a foe the story brings', rules.validate, program([effect('foe.leave', foe='hakon')]))
+        self.assertEqual(rules.BUILDER_EFFECTS & set(PHASE7_ORDERS), {'foe.outlaw'})
+        self.assertFalse(rules.WOLF_EFFECTS & set(PHASE7_ORDERS))
+        self.assertLessEqual({'foe.add', 'foe.outlaw'}, set(rules.UNDONE_AT_END))
+        self.assertIn('foe', rules.CATALOGUE['types'])
+        # (A foe event read for a foe the story never brings is warned of; one it brings, or a resident it makes one, is not.)
+        p = program([effect('foe.add'), effect('foe.outlaw')])
+        p['phases'][0]['triggers'].append({'id': 'beaten', 'on': 'foe defeated', 'match': {'target': 'grey-captain'},
+                                            'actions': [{'do': 'note', 'text': 'x'}]})
+        p['phases'][0]['triggers'].append({'id': 'held', 'on': 'foe defeated', 'match': {'target': 'rm113'},
+                                            'actions': [{'do': 'note', 'text': 'x'}]})
+        rules.validate(p)
+        self.assertFalse([w for w in rules.program_warnings(p) if 'foe this story never brings' in w['text']])
+        p['phases'][0]['triggers'].append({'id': 'other', 'on': 'foe fled', 'match': {'target': 'hakon'}, 'actions': [{'do': 'note', 'text': 'x'}]})
+        warned = [w for w in rules.program_warnings(p) if 'foe this story never brings' in w['text']]
+        self.assertEqual(len(warned), 1)
+        self.assertIn('hakon', warned[0]['text'])
+        self.assertTrue(warned[0]['path'].startswith('phases[0].triggers[3]'), warned[0]['path'])
 
     def test_a_storys_own_item_is_given_by_the_games_id(self):
         # (Doc 86, J9: item.give with a tag: the item by the id the game keeps it under, its name, kept or not, and the run

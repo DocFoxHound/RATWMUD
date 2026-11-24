@@ -548,3 +548,14 @@ second pass's counter table are as they were.
 - **One on one in a Trance** still wins nearly every fight (the 2:1 floor, the user's call on 2026-10-06).
 - Tests: `magic_tests` 261 checks (new: a side's Trance by the odds, the floor alone, deeper grown, deeper among Fire's
   friends, no fatigue from a Trance that gave nothing); all 67 suites pass.
+
+## Appendix: a story's foes (doc 86, C10t, 2026-11-24)
+
+The foes a story brings (`foe.add`, `foe.outlaw`: tough, fierce, champion and their followers, `Data/Storylines/foes.json`)
+were run against a bar of their own with `build-core/foe_sim` (the real fight rules, level_sim's wolves and play), four
+passes at up to 2,000 fights a row: the records are `artifacts/combat/foes/pass1.txt` to `pass4.txt`, the bar and the
+result in doc 86's "Phase 7 as built". The bar was not passed (4 of its 17 rows at the closest table, pass 4's), because
+the fight rules decide most rows by numbers and by a wolf getting up again, not by a foe's strength; `foes.json` keeps
+the starting table until the user decides. The Quickened rows: a fierce foe with four followers against two seasoned wolves
+and a Quickened veteran, 92–100% at every table (the bar: at most 85%); a champion alone against one Quickened veteran,
+62.8% on the starting table, 16.9% once the champion's hp is 40 (the bar: at most 35%).

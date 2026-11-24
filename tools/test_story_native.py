@@ -485,5 +485,48 @@ class StoryItemParity(ValuesParity):
                 self.assertEqual(n(after), want)
 
 
+class FoeParity(ValuesParity):
+    """Doc 86, Phase 7 (C10): the foe events (foe downed, foe defeated with the wolves who fought, foe fled with fled or
+    time) matched on the foe's id, a resident made a foe's, and their quantity and item read, alike in both twins; a band
+    worked out from the wolves who are about (C1a) in a foe.add, alike."""
+
+    def program(self):
+        add = lambda n: [{'do': 'add', 'var': 'n', 'value': n}]
+        band = {'kind': 'foe.add', 'foe': 'captain', 'name': 'The Grey Captain', 'cell': 'grey', 'x': 5, 'y': 5, 'strength': 'champion',
+                'band': {'min': [8, {'div': [{'field': 'quantity'}, 2]}]}, 'stance': 'waits', 'minutes': 60}
+        return {'format': 'ratw-story-program', 'version': 2, 'id': 'parity7', 'title': 'Foes in both twins', 'start': 'a',
+                'audience': {'kind': 'open'}, 'variables': [{'id': 'n', 'type': 'number', 'scope': 'story'},
+                                                             {'id': 'fought', 'type': 'number', 'scope': 'story'}],
+                'phases': [{'id': 'a', 'journal': 'Foes.', 'effects': [], 'exits': [], 'triggers': [
+                    {'id': 'down', 'on': 'foe downed', 'match': {'target': 'captain'}, 'actions': add(1)},
+                    {'id': 'beaten', 'on': 'foe defeated', 'match': {'target': 'captain'},
+                     'actions': [{'do': 'set', 'var': 'fought', 'value': {'field': 'quantity'}}, *add(10)]},
+                    {'id': 'turncoat', 'on': 'foe defeated', 'match': {'target': {'in': ['rm113', 'rm114']}}, 'actions': add(100)},
+                    {'id': 'away', 'on': 'foe fled', 'match': {'target': 'captain', 'item': 'fled'}, 'actions': add(1000)},
+                    {'id': 'late', 'on': 'foe fled', 'match': {'item': 'time'}, 'actions': add(10000)},
+                    {'id': 'muster', 'on': 'deed', 'actions': [{'do': 'effect', 'effect': band}]},
+                ]}],
+                'tests': [{'name': 'x', 'cohort': [], 'events': [], 'expect': ['a']}]}
+
+    def test_every_form_matches(self):
+        base = {'phase': 'a', 'entered': 0, 'visits': 1, 'votes': {}, 'actor': '', 'seed': 's', 'began': 0, 'cohort': [self.ASH], 'counters': {}}
+        n = lambda after: after.get('counters', {}).get('story', {}).get('n', 0)
+        for event, want in ((('foe downed', 'captain', '', 0), 1), (('foe downed', 'hakon', '', 0), 0), (('foe defeated', 'captain', '', 3), 10),
+                            (('foe defeated', 'rm113', '', 1), 100), (('foe fled', 'captain', 'fled', 0), 1000),
+                            (('foe fled', 'captain', 'time', 0), 10000), (('foe fled', 'hakon', 'fled', 0), 0)):
+            kind, target, item, quantity = event
+            with self.subTest(event=event):
+                after, _ = self.both(base, {'kind': kind, 'id': 1, 'actor': self.ASH, 'target': target, 'item': item, 'quantity': quantity,
+                                            'cell': 'grey', 'x': 5, 'y': 5, 'detail': 'The Grey Captain'})
+                self.assertEqual(n(after), want)
+                if kind == 'foe defeated' and target == 'captain':
+                    self.assertEqual(after['counters']['story']['fought'], 3)
+        for quantity, band in ((0, 0), (5, 2), (40, 8)):
+            with self.subTest(band=band):
+                after, _ = self.both(base, {'kind': 'deed', 'id': 1, 'actor': self.ASH, 'quantity': quantity})
+                effects = [e for e in after.get('triggerEffects', []) if e.get('kind') == 'foe.add']
+                self.assertEqual([e['band'] for e in effects], [band])
+
+
 if __name__ == '__main__':
     unittest.main()

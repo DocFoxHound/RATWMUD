@@ -269,6 +269,19 @@ export function storyItemsOf(p: Program): {id: string; item: string; tag: string
  *  ("carries"); never an effect's own item (item.give, item.take, item.place, a region's item), which the game refuses. */
 export const ownItemsHere = (slot: Pick<Slot, 'param'>) => !slot.param || slot.param.own === true;
 export const tagsOf = (p: Program) => [...new Set(storyItemsOf(p).map(s => s.tag))].sort();
+/** Doc 86, C10: the foes a program brings (foe.add, anywhere but a rehearsal), by the ids it gives them, with their names. */
+export function foesOf(p: Program): {id: string; name: string}[] {
+    const out = new Map<string, string>();
+    const visit = (node: unknown): void => {
+        if (Array.isArray(node)) { node.forEach(visit); return; }
+        if (!node || typeof node !== 'object') return;
+        const e = node as Record<string, unknown>;
+        if (e.kind === 'foe.add' && typeof e.foe === 'string' && e.foe && !out.has(e.foe)) out.set(e.foe, typeof e.name === 'string' ? e.name : '');
+        for (const v of Object.values(e)) visit(v);
+    };
+    for (const [k, v] of Object.entries(p)) if (k !== 'tests') visit(v);
+    return [...out].map(([id, name]) => ({id, name})).sort((a, b) => a.id.localeCompare(b.id));
+}
 /** Phase 9: the strangers (visitor.add) a program brings, by the ids it gives them. */
 export function visitorsOf(p: Program): string[] {
     const out = new Set<string>();
@@ -297,6 +310,8 @@ export function namesOf(refs: Refs | null, program?: Program | null): Names {
         out.objective = Object.fromEntries((program.quests ?? []).flatMap(q => q.objectives.map(o => [o.id, o.label || o.id])));
         // (Doc 86, J9: the story's own items by the name it gives them, "the story's letter" when it gives none.)
         out.item = {...out.item};
+        // (Doc 86, C10: a foe by the name the story gives them.)
+        out.foe = Object.fromEntries(foesOf(program).map(f => [f.id, f.name ? `${f.name} (${f.id})` : f.id]));
         for (const s of storyItemsOf(program)) out.item[s.id] = s.name ? `“${s.name}” (the story's ${out.item[s.item] ?? s.item})` : `the story's ${out.item[s.item] ?? s.item} (${s.tag})`;
     }
     out.purse = purseNames(refs);
@@ -1267,6 +1282,8 @@ export function newEffect(cat: Catalogue, kind: string, p: Program): Effect {
         else if (param.type === 'bool') e[param.key] = true;
         else if (param.type === 'variable') e[param.key] = (p.variables ?? []).find(v => v.show && (param.of ?? []).includes(v.type))?.id ?? '';
         else if (param.type === 'visitor') e[param.key] = 'stranger-' + ((visitorsOf(p).length) + 1);
+        // (Doc 86, C10: a new foe's id of the story's own; one sent away, the first it brings.)
+        else if (param.type === 'foe') e[param.key] = kind === 'foe.add' ? 'foe-' + (foesOf(p).length + 1) : foesOf(p)[0]?.id ?? '';
         else e[param.key] = '';
     }
     if (kind === 'scene.play' && p.scenes?.[0]?.visibility === 'public') e.player = 'world';

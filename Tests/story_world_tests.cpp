@@ -10,6 +10,7 @@
 #include "RatwItems.h"
 #include "RatwStorylines.h"
 #include "RatwWorld.h"
+#include "battle_play.h"
 
 #include <algorithm>
 #include <cmath>
@@ -802,6 +803,116 @@ void phase6Items()
     fs::remove_all(root);
     fs::remove(save);
 }
+
+// Doc 86, C10 (Core/RatwGameStoryWorld.cpp, RatwStoryFoes.cpp): a story's foe brought and kept with the story (held.foes),
+// its refusals, sent away; a resident made a foe; both made again after a restart while their time lasts; a resident made
+// a foe and beaten held until the story ends; the story's end takes every foe away with no event.
+void phase7Foes()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyworld-7-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    const auto world = writeDoors(root);
+    const auto run = std::string("world-foes");
+    const auto camp = game::Game::storyFoeCampId(run, "captain"), outlaw = game::Game::storyFoeCampId(run, "npc-u1");
+    {
+        Town t(world, save);
+        auto& w = t.g.world();
+        t.enter(t.ash, 1, "ash", "Ash", 0, 8.5);
+        auto phase = parsed(R"({"title":"The Pass","phase":"pass","journal":"The Captain holds the Pass.","visit":1})");
+        auto players = json::Value::array();
+        players.push(t.ash.entityId);
+        phase.set("players", players);
+        expect(t.g.applyDmAct({"900", "story.phase", run, "dm", json::dump(phase)}).ok, "the story opens");
+        int n = 900;
+        const auto order = [&](const std::string& kind, const std::string& target, std::string payload) {
+            auto p = parsed(payload.empty() ? "{}" : payload);
+            if (!p.has("run")) p.set("run", run);
+            if (!p.has("visit")) p.set("visit", 1);
+            return t.g.applyDmAct({std::to_string(++n), kind, target, "dm", json::dump(p)});
+        };
+        auto& book = t.g.storylineBook();
+        const auto foes = [&]() -> const json::Value& { return book.find(run)->held["foes"]; };
+        const std::string captain = R"({"name":"The Grey Captain","cell":"c_2_0","x":8,"y":8,"strength":"champion","band":3,"stance":"waits","minutes":60,"like":"u2"})";
+
+        // ---- refusals.
+        expect(!order("foe.add", "captain", R"({"name":"x","cell":"c_2_0","x":8,"y":8,"minutes":60,"run":"world-nothing"})").ok, "of a story running");
+        expect(!order("foe.add", "captain", R"({"name":"The Captain","cell":"c_2_0","x":8,"y":8,"minutes":0})").ok, "1 to 1440 minutes");
+        expect(!order("foe.add", "captain", R"({"name":"The Captain","cell":"c_2_0","x":8,"y":8,"minutes":60,"band":9})").ok, "0 to 8 followers");
+        expect(!order("foe.add", "captain", R"({"name":"The Captain","cell":"c_2_0","x":8,"y":8,"minutes":60,"strength":"mighty"})").ok,
+               "tough, fierce or champion");
+        expect(!order("foe.add", "captain", R"({"name":"The Captain","cell":"c_2_0","x":8,"y":8,"minutes":60,"like":"nobody"})").ok,
+               "looking like a resident there is");
+        expect(!order("foe.add", "Bad Id", R"({"name":"The Captain","cell":"c_2_0","x":8,"y":8,"minutes":60})").ok, "an id of small letters");
+        expect(!order("foe.leave", "captain", "").ok, "sending away one the story never brought");
+        expect(!foes().size() && w.storyFoes().empty(), "nothing made, nothing held");
+
+        // ---- brought: in the world, looking like u2, kept with the story.
+        auto r = order("foe.add", "captain", captain);
+        expect(r.ok, "the Captain comes: " + r.message);
+        const auto* lead = w.entity("road:" + camp + ":0");
+        expect(lead && lead->name == "The Grey Captain" && lead->appearance->baseColor == w.entity("u2")->appearance->baseColor &&
+                   w.entity("road:" + camp + ":3") && foes().has(camp) && foes()[camp].string("kind") == "foe.add",
+               "the Captain and three followers, held by the story");
+        expect(!order("foe.add", "captain", captain).ok, "once");
+        expect(order("foe.leave", "captain", "").ok && !w.entity("road:" + camp + ":0") && !foes().has(camp) && !w.storyFoe(camp),
+               "sent away: gone, no longer held");
+        expect(order("foe.add", "captain", captain).ok, "and back");
+
+        // ---- a resident made a foe (u1), with one follower; never one protected.
+        r = order("foe.outlaw", "u1", R"({"minutes":30,"strength":"champion","band":1})");
+        expect(r.ok && foes().has(outlaw) && w.storyFoeOf("u1") && w.entity("road:" + outlaw + ":1"), "u1 turns on the wolves: " + r.message);
+        expect(!order("foe.outlaw", "u1", R"({"minutes":30})").ok, "once");
+        expect(!order("foe.outlaw", "u2", R"({"minutes":721})").ok, "1 to 720 minutes");
+        t.run(1);
+        expect(foes().has(camp) && foes().has(outlaw), "both kept while they last");
+        t.g.save();
+    }
+    {
+        // ---- a restart: both made again from what the story keeps.
+        Town t(world, save);
+        auto& w = t.g.world();
+        t.run(1);
+        expect(w.entity("road:" + camp + ":0") && w.entity("road:" + camp + ":0")->name == "The Grey Captain" && w.storyFoeOf("u1"),
+               "after a restart the Captain and u1 are foes again");
+        auto& book = t.g.storylineBook();
+        // ---- u1 beaten (not killed): held until the story ends.
+        auto* u1 = w.entity("u1");
+        auto& ada = w.addPlayer("ada-7", "Ada");
+        ada.cellId = u1->cellId;
+        ada.position = {u1->position.x + 1, u1->position.y};
+        ada.fightingSkill = 150;
+        u1->leaderId.clear();
+        std::vector<WorldEvent> seen;
+        w.setEventWatcher([&](const WorldEvent& e) { seen.push_back(e); });
+        const auto attacked = w.attack("ada-7", "u1");
+        expect(attacked.ok && w.battleOf("ada-7") && w.battleOf("ada-7")->incident.empty(), "set on, no crime: " + attacked.message);
+        // (u1 a champion, who never runs, badly hurt already; his follower barely standing: he is downed.)
+        u1->hurt = 85;
+        for (const auto& f : w.battleOf("ada-7")->fighters)
+            if (f.id != "u1" && w.storyFoeOf(f.id))
+                w.entity(f.id)->hurt = 95;
+        for (int i = 0; i < 6000 && w.inBattle("ada-7"); ++i)
+        {
+            test::takeGround(w, "ada-7");
+            test::playTurn(w, "ada-7");
+            t.g.tick(.1);
+        }
+        t.run(2);
+        const bool beaten = std::any_of(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "foe defeated" && e.target == "u1"; });
+        const bool ran = std::any_of(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "foe fled" && e.target == "u1"; });
+        expect(beaten && !ran, "u1 beaten");
+        expect(!u1->dead && book.find(run)->held["npcs"].has("u1") && u1->sceneDirected, "beaten, not killed, u1 is held by the story");
+        expect(!book.find(run)->held["foes"].has(outlaw) && !w.storyFoeOf("u1"), "and u1 is a foe no more");
+        // ---- the story ends: the Captain goes, with no event.
+        seen.clear();
+        expect(t.g.applyDmAct({"990", "story.stop", run, "dm", "{}"}).ok, "the story stops");
+        expect(!w.entity("road:" + camp + ":0") && !w.storyFoe(camp) && !book.find(run)->held.has("foes") && !u1->sceneDirected,
+               "the Captain gone, u1 let go");
+        expect(std::none_of(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "foe fled"; }), "with no event");
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
 } // namespace
 
 int main()
@@ -813,6 +924,7 @@ int main()
         phase2Names();
         phase3Thanks();
         phase6Items();
+        phase7Foes();
     }
     catch (const std::exception& error)
     {

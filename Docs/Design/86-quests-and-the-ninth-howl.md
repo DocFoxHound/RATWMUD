@@ -1886,3 +1886,196 @@ gains three optional parameters, and there is one new parameter type (`tag`, 50 
 - **Going live** on `ratw_ridgemere3` needs no migration; the game server restarted from this branch, the story runner from
   this branch with the rebuilt `libratw_story.so` (the gift filter's split is in both twins), the Editor released from it.
   The client needs no change.
+
+## Phase 7 as built
+
+**Phase 7 as built** (2026-11-24, branch `r3-nh-p7`, on `r3-nh-p6` at `8af298f5`). Engine spec items C10 (foes), C10t (tuning
+the foes by simulation) and T3 (strangers in scenes). **No migration**: a foe lives in the world while it lasts and in the
+story's `held.foes` (the story book), so a restart makes it again; nothing new is written to the world database. Three new
+effects (89 in all: `foe.add`, `foe.leave`, `foe.outlaw`, a new effect group Foes), three new events (219: `foe downed`,
+`foe defeated`, `foe fled`, group fights; `foe downed` and `foe defeated` mission events, 74), one new parameter type
+(`foe`, 51 types), a new data file (`Data/Storylines/foes.json`), and `scene failed` gains `item` (why, where it is known).
+- **C10: foes in the game** (`Core/RatwStoryFoes.cpp/.h`, new). `World::addStoryFoe` makes a story camp `foe_<8 hex of the
+  run>_<foe>` (`Game::storyFoeCampId`, FNV-1a of the run id, so the same after a restart) in `roads_.camps`, a leader
+  `road:<camp>:0` and 0 to 8 followers `road:<camp>:1..` ("one of <name>'s band", from `foes.json`), road folk of a new
+  kind `foe`, in person (never offstage) for their minutes; `like` gives the leader the resident's looks (and words, with
+  no description). `World::outlawResident` makes a resident the leader of such a camp for 1 to 720 minutes with 0 to 6
+  followers, refused for one protected, dead, down, in a fight, away with a party (or nowhere), or a foe already (the
+  Game adds held by another story). `World::campOf` returns the camp for a foe's folk and for a resident made a foe, so
+  `startBattle` takes the camp's path: no assault, no warrant; and against a story camp the Watch on duty in the cell
+  (`guardOnDuty`) comes in on the wolves' side. `temperamentOf` makes a foe aggressive with its kind's skill and flee;
+  `hurtFighter` scales a blow against one by 20 / its hp (`foes::hurtScale`: `RoadFolk.hp` was never read by the fight, so
+  hp is a foe's toughness against blows, 20 an ordinary bandit's). `downFighter` raises `foe downed` for a follower
+  (never `bandit falls`) and, for the leader (`foeLeader`: `:0`, or the resident), `foe defeated` once (`quantity` the
+  wolves who fought it, in this fight and earlier ones), and breaks the band (each runs); a foe down never dies of its
+  wounds (it is carried off after the fight), except a resident made a foe with `lethal`. `leaveArena` marks a leader who
+  breaks off (`fled`) and the band runs with it. `finishBattle` for a story camp (`foeFightEnds`) robs nobody and clears
+  no camp, remembers who fought, carries the downed and the fled of a beaten or fled foe off (`removeRoadFolk`), gets a
+  beaten resident up where they lie (`standUp`, 25 health) or, `lethal`, kills them (`death` follows). `tendStoryFoes`
+  (from `World::tick`, every half second) ends a foe out of time (`foe fled`, item `time`), lets a beaten one go (no
+  event) and a fled one (`foe fled`, item `fled`), never while one of them is in a fight (so no fight is left open), keeps
+  the band by its leader, starts a waiting foe's fight with a wolf within 6 tiles of its ground (and walks it back to that
+  ground) and a hunting one's with the nearest wolf within 12 (a fight starts from up to 12 tiles: doc 40), never with a
+  wolf down, in a fight or just out of one. A story camp is skipped by the roads' daily round (hunger, scattering, the
+  strength cap), never holds a road against a new camp gathering, never makes bandits in person (`tendCamp`), is not
+  loaded from a checkpoint (`RatwCheckpoint.cpp`), and Danger Sense feels a foe as it feels a bandit; an injury from one is
+  "a foe"'s. `World::endStoryFoe(camp, why, evenInAFight)` lets one go (with `foe fled` when `why` is given).
+- **C10: the story's side** (`Core/RatwGameStoryWorld.cpp`). `foe.add`, `foe.leave` and `foe.outlaw` are world orders
+  (`storyWorldOrder`; `story_runner.WORLD_ORDERS`: target the foe's id, or the resident). `applyStoryWorld` checks the
+  minutes (1 to 1,440; a resident 720) and band (0 to 8; 6), 8 foes a story at once, and keeps each in `held.foes` (the
+  camp: what makes it again) once the world has made it (`storyFoeFrom`; the name through `fillStoryNames`); `foe.leave`
+  is refused while the foe fights. `tickStoryWorld` makes one again after a restart while its time lasts, drops one the
+  world let go, and holds a resident beaten and not killed (`held.npcs`, as `npc.hold`: released at the run's end);
+  `endStoryWorld` takes every foe away, even mid-fight, with no event; `refreshStoryWatch` counts a story holding foes.
+- **C10: checks** (`tools/story_program.py`). The type `foe` is `[a-z0-9][a-z0-9_-]{2,39}`; one foe id is one foe in the
+  whole program (one name and one strength wherever it is brought: `_check_foes`); `foe.leave` names a foe the program
+  brings; `foe.outlaw` needs a builder (`needsBuilder`, `BUILDER_EFFECTS`); `foe.add` and `foe.outlaw` are undone at the
+  end (`UNDONE_AT_END`); `program_warnings` warns of a foe event read for a foe the program never brings nor a resident
+  it makes one (`foes_of`, `_match_sites`). Approval checks `foe.add`'s tile (`check_tile`) and its `like` resident, and
+  `foe.outlaw`'s resident, as any. `band` is an operand (C1a's band from the wolves present). The story words check
+  reads a foe's name and looks (`story_words.EFFECT_WORDS`). Rehearsal facts may be foe events (no change was needed).
+  No change to either twin: the foe events are ordinary events, matched on `target`, `item`, `detail` and `quantity`
+  alike (`test_story_native.FoeParity`).
+- **T3: strangers in scenes**. A scene's cast entry may be `{"id": "<role>", "visitor": "<visitor id>"}` beside `npc` and
+  `selector` (exactly one: `story_scenes.validate`, and the game's `validScene`); the program must bring that stranger
+  (`visitor.add`: `_check_strangers` refuses one it never brings; `program_warnings` warns of one brought only in a later
+  phase than a `scene.play` of it). `Game::startCinematic` resolves the role to the stranger the run holds
+  (`held.visitors`), in their own panel in the dialogue window with their `like` face, as a resident speaker; one not in
+  the world (never brought, sent away, gone) fails the scene: `scene failed` with `item` "a stranger is not here" (the
+  detail stays the cue, so a scene's exits still match). `story.tell from_visitor` is not built (spec §0.5).
+- **C10t: the tools.** `Tests/foe_sim.cpp` (new CMake target `foe_sim`, not a test; ctest `foe_sim_smoke` runs `foe_sim
+  foes 20`) runs real fights on the real rules in a World of their own each (the demo world's yard): the foe (or a
+  resident of the demo world made one) with its band, the wolves a few strides off, the first setting on the leader and
+  the rest joining; it includes `level_sim.cpp` (its `main` renamed) for level_sim's wolves, side syntax and play,
+  Gifts included. Rows read `foe <strength> band <n|scaled> vs <wolves> [guards <g>] [outlaw]` (`3*plain@seasoned+`
+  for three; the spec's `plain@seasoned+` is read as level_sim's `plain+@seasoned`); guards are the Watch's skill (70),
+  iron sword and leather kit, played as the wolves are (the sim has no town to post them from). Per row: the wolves' win
+  % with its Wilson 95% interval, wolves downed (per fight and per win) and hurt, fight seconds (median, p90),
+  leader-first %, the band broken within 5 s %, foe fled %, `foe defeated` once %, and for the bar PASS or MISS; suites
+  `foes` (the bar), `band`, `guards`, `quick`, `outlaw`, `scaled`, `all`; `row "<row>" [fights]`; `SIM_FOES` (a trial
+  table: read by `foes::` in the game too, so a pass never edits `Data/`), `SIM_SEED`, `SIM_THREADS`; 2,000 fights a row,
+  500 past 8 wolves. `world_check --foes K[:strength[:band[:stance]]]` brings K foes through `World::addStoryFoe` to the K
+  outdoor cells with the most residents at the start and sends the players after them (each walks to its foe and, in a
+  fight, plays battle_play's turn), and reports the fights a game hour, foes beaten and fled, wolves downed and the fights
+  left open once their foe was gone (`--foes-crowd-only` sends the same crowds to the same places with no foe, the
+  control the load rows are read against); `sim_fast_tests` runs `--players 2 --foes 1` on its small town (and refuses a foe
+  of no such strength).
+- **C10t: the passes** (records in `artifacts/combat/foes/pass1.txt` to `pass4.txt`, the trial tables `pass2.json` to
+  `pass4.json`). The wolves' win %, the bar's rows (a `*` inside its band):
+
+  | Row | Band | Pass 1 | Pass 2 | Pass 3 | Pass 4 |
+  |---|---|---|---|---|---|
+  | follower 1 v 1, new bare | 50–65 | 99.3 | 16.9 | 71.0 | 37.3 |
+  | follower 1 v 1, seasoned armed | 75–90 | 100 | 84.5* | 99.2 | 94.8 |
+  | tough band 0, one seasoned | 25–40 | 99.9 | 35.9* | 35.9* | 35.9* |
+  | tough band 2, three seasoned | 85–95 | 100 | 31.1 | 62.8 | 43.0 |
+  | tough band 2, three new bare | 50–70 | 88.2 | 0.1 | 0.3 | 0.1 |
+  | fierce band 4, three seasoned | 50–65 | 18.4 | 0.0 | 0.0 | 0.0 |
+  | fierce band 4, five seasoned | 80–92 | 100 | 74.9 | 98.0 | 86.4* |
+  | the same + 2 guards | +8–15 points | +0 | +25 | +2 | +14* |
+  | fierce band 4, two seasoned + a Quickened veteran | ≤ 85 | 100 | 92.1 | 99.9 | 97.0 |
+  | champion band 8, five seasoned | 25–45 | 33.7* | 0.1 | 0.1 | 0.0 |
+  | champion band 8, eight seasoned + 2 guards | 70–85 | 100 | 99.6 | 100 | 100 |
+  | champion band 0, one Quickened veteran | ≤ 35 | 62.8 | 16.9* | 16.9* | 16.9* |
+  | fierce scaled, 4 / 8 / 12 / 16 wolves | 60–85 | 100 all | 94 / 100s | 100 all | 98.6 / 100s |
+  | outlaw tough, three seasoned (never killed: 100%) | 85–95 | 100 | 33.5 | 65.4 | 43.4 |
+  | leader down: band broke within 5 s, `foe defeated` once | ≥ 95%, 100% | 100, 100 | 100, 100 | 100, 100 | 100, 100 |
+  | fight length median: tough, fierce, champion | 20–60, 40–120, 90–240 s | 100, 79*, 117* | 147, 146, 122* | 147, 142, 118* | 147, 152, 117* |
+
+  The tables (skill / strength / hp / flee): pass 1 the spec's starting table (follower 52/55/16/35, tough 60/60/20/25,
+  fierce 70/68/24/15, champion 80/75/30/0); pass 2 hp, one knob a strength (follower 42, tough 48, fierce 60, champion
+  40); pass 3 flee (follower 35 to 55, fierce 15 to 30; tough and champion unchanged); pass 4 hp again (follower 52,
+  fierce 70). Skill came first by the spec's order, but probes at 400 fights showed it all but inert (a tough alone
+  against one seasoned armed wolf: 99.9% at skill 60, 99.2% at 100 and 130 with hp 20), so pass 2 took hp (each pass's
+  record says why it changed what it did). **The bar was not passed after pass 4, so no pass 5 was run and nothing was
+  accepted** (the stop rule): `Data/Storylines/foes.json` keeps the starting table with `"tuned": ""`, and the closest
+  table is pass 4's (`artifacts/combat/foes/pass4.json`: 4 of the 17 rows, both leader rules and the champion's length).
+  **Why it cannot pass by `foes.json` alone** (for the user, spec C10t rule 5): the fight rules decide most rows by
+  numbers, not by a foe's strength. A side that outnumbers the other wins nearly always (the band suite: fierce band 2
+  against one seasoned wolf 0%, against three 100%; band 4 against three 0–18%, against five 100%; band 8 against five
+  58%, against eight 100%), and a wolf downed gets up again and fights on (doc 38) while a foe does not, so every crowd row
+  (scaled 4–16, eight with guards) sits at 94–100% whatever the table, and the rows where the foes have the numbers sit
+  near 0. The two one-on-one follower rows want 15–35 points between a new bare wolf and a seasoned armed one; the game
+  gives 50–65 points at every follower table tried (`pass2.txt`'s probes), so one of the two always misses. And the bar's
+  party rows (tough band 2 against three, 85–95%) want followers far weaker than the one-on-one rows want them. The
+  fight lengths are the fight's pace (turns and bars, doc 33), 100–150 s for every tough table. Changing these is a fight
+  rule (`RatwBattle.cpp`: the outnumbering, the get-up, the foes' targeting), which the spec puts out of this phase's
+  scope; the user decides (the bar, the closest table, or a rule change).
+- **C10t: the load pass** (`artifacts/combat/foes/load.txt`): run on the closest table although the 1 v 1 and party rows
+  did not pass (to have the load rows before the user decides), on an export of Ridgemere 3 (`world_build.py export`,
+  build 82, read only), six game hours from midnight, `--no-births --no-talk-ledger --fast --no-check`, 8 threads, each
+  beside the same run without foes: tick time over the six hours (ms), the players spread over the world (as
+  `world_check` places them), the same crowds the foes draw with no foe (`--foes-crowd-only`, added for this), and with
+  the foes:
+
+  | Players, foes | Spread: mean / p99 | Crowds, no foe: mean / p99 | With foes: mean / p99 | Over the crowds (p99) | Fights; beaten; downed; left open |
+  |---|---|---|---|---|---|
+  | 20, `2:fierce:8:hunts` | 0.93 / 2.25 | 3.26 / 9.46 | 3.56 / 9.90 | +4.6% | 7; 0; 26; 0 |
+  | 100, `6:fierce:8:hunts` | 4.57 / 8.09 | 12.45 / 23.67 | 13.79 / 26.70 | +12.8% | 12; 1; 100; 0 |
+  | 250, `6:fierce:8:hunts` | 10.98 / 15.62 | 35.90 / 65.11 | 39.18 / 68.04 | +4.5% | 5; 3; 79; 0 |
+
+  No fight was ever left open once its foe was gone. The foes themselves (their tending and their fights) cost 4.5% to
+  12.8% of p99 over the same crowds without them: inside the bar's 10% at 20 and 250 players, just over it at 100 (mean
+  +10.7%). Against the spread run, the bar's literal comparison, every row is far over (p99 4.4 times at 20, 3.3 at 100,
+  4.4 at 250), but that is the crowding: a profile of the 100-player foes run (`perf`) spends 29% in `World::observe`
+  and 10% in `World::snapshot` (and 19% copying for them), each player's sight and view of a crowd of forty, not the
+  foes or their fights. At 250 the crowds alone are over the server's 50 ms tick (p99 65 ms), foes or not: forty wolves
+  at one place is the cost to watch, not the foe. The 20-player row is well inside the tick budget (p99 9.9 ms). The
+  wolves here (battle_play's scripted bites, new wolves) mostly lose to a fierce foe with eight followers: these rows
+  measure the cost, not who wins.
+- **Workbench and console** (`Editor/`): the `foe` picker (`foesOf`, a `NamePicker` with the id's pattern), a new foe's
+  id of the story's own (`foe-<n>`) and a foe sent away the first the story brings (`newEffect`), a foe named by the
+  name the story gives (`namesOf`: "The Grey Captain (captain)"); the scene editor's "Cast from" gains "A stranger the
+  story brings" (`CastRole.visitor`), and the preview names them.
+- **Guide and format**: `Docs/Story-Maker-guide.md` §8 "Foes" (with the population rule: foes are never residents and
+  never stay) and "Strangers in scenes", §14 two rows, §15 four rows, §16 two rows; the reference regenerated
+  (`story_guide.py --write`; `--check` passes; `foe.add`, `foe.leave` and `foe.outlaw` have examples).
+  `Docs/story-programs.md` gains "Foes and strangers". `RUNNER_VERSION` is `doc86-phase7`.
+- **Sample** `story_v2_samples.FOES` ("The Grey Captain at the Pass", `v2-grey-pass`, in `all_samples()`, so both twins run
+  it): the Captain, a stranger looking like rm111, is brought to the parley and cast in its scene; as it ends (or fails)
+  he holds the Pass as a champion foe with a band of min(8, active / 2) and the turncoat rm113 is made a foe beside him;
+  two of the band brought down are counted, the turncoat beaten notes it, the Captain beaten by three wins the Pass; a
+  second case, the Captain fled, loses it. It rehearses clean in both twins: nothing uncovered.
+- **Tests**: `Tests/battle_tests.cpp` (`foefights::storyFoes`, in Greyfen with the Watch on patrol: refusals; the band
+  of the foe's camp, as strong as `foes.json` says; set on, no assault and no warrant, the guard on duty on the wolf's
+  side, the band in it; `foe defeated` once with the story's id, the name and the one wolf who fought, followers `foe
+  downed` and never `bandit falls`, no `death`, and once over the foe, band and camp gone and nobody robbed; time out is
+  `foe fled` (time) and they are gone; a hunting foe comes for a wolf, is never ended by time mid-fight and is sent away
+  mid-fight with no event, the fight ending; a resident made a foe: a protected one and one away refused, a tough one who
+  breaks off is `foe fled` (fled) and herself again, a champion downed not killed and up again after, `lethal` killed
+  with `death`, the dead refused), `Tests/story_world_tests.cpp` (`phase7Foes`: through the game, the orders' refusals,
+  the Captain brought looking like u2 and held, sent away and back, u1 made a foe; both made again after a restart; u1
+  beaten and held by the story; the story's end takes the Captain away with no event and lets u1 go),
+  `Tests/storyline_tests.cpp` (`strangerInAScene`: the Captain speaks in his own panel with u2's face; a stranger never
+  brought, and one sent away, fail the scene with "a stranger is not here"), `Tests/sim_fast_tests.cpp` (`world_check
+  --players 2 --foes 1` completes with no fight left open; a foe of no such strength refused), ctest `foe_sim_smoke`,
+  `test_story_effects` (the orders and their payloads, the band from a value, the checks, the builder flag, undone at
+  the end, the warning on a foe event; the world's references with a throwaway database), `test_story_scenes`
+  (`StrangersInScenes`: the cast form; the stranger the story brings, and brought only later warned of),
+  `test_story_v2` (`Phase7Foes`: the Pass in both twins; another foe's beating does not win it; what validation refuses),
+  `test_story_native` (`FoeParity`: the foe events and the band, alike in both twins), `test_story_catalogue`,
+  `test_story_drafts` (the counts), `workbench.test.ts` (118 programs; the Captain in words; a new foe and one sent away
+  pass the checks).
+- **Run**: the whole `ctest` (122 tests: all pass; `talk_scorecard_quick` failed once under `-j10` and passes alone, a timing test, untouched here; `pg_client` skipped as ever), with `battle_tests`, `story_world_tests`, `storyline_tests`, `sim_fast_tests` and `foe_sim_smoke` among them; every story Python suite but the scene, siege and facts live ones (with the local PostgreSQL: the tests' own throwaway `ratw_test_*` databases and `RATW_STORY_TEST_DSN` on a throwaway migrated one, dropped after); `story_guide.py --check`; the Editor's tests (`npm test`: 78 and 151, `workbench.test.ts` and `guide.test.ts` among them) and `tsc --noEmit`; a scratch Ridgemere 3 server from this branch (`tools/scratch.sh ridgemere3`: restores the save and listens; stopped after). All OK.
+- **Left or changed, and why**: (1) The bar is not passed (above); `foes.json` keeps the starting table, the closest
+  table is pass 4's, and the user decides. (2) The console's "Foes" panel per run (alive, followers left, time left, Send
+  away) is **not built**: the console reads the checkpoint and the runner's own tables, and the game's story book (where
+  `held.foes` lives) is not in either, so the panel needs a new read path from the game; the run's timeline already shows
+  each `foe.add` / `foe.leave` order and the foe events, and a story sends a foe away with `foe.leave`. (3) The spec's
+  `World::storyOutlaws_` is the same story-foe registry (`storyFoes_`, by camp) with the resident as its leader; the
+  spec's `BanditCamp.story` flag is the camp id's prefix `foe_` (`World::storyFoeCamp`), which needs no change to the
+  checkpoint's camp format. (4) A foe is in person for its minutes (never offstage, as a stranger is), not made in person
+  only when someone is near as a bandit camp is; it is not saved, and a restart makes it again with its whole band. (5)
+  `hp` was never read by the fight for road folk, so it became a foe's toughness against blows (20 / hp). (6) A waiting
+  foe's "aggro" is 6 tiles of the ground it holds, a hunting one's 12 tiles of itself; both start the fight at once (a
+  fight starts from 12 tiles), rather than walking up first. A resident made a foe never seeks a fight (they go about
+  their day; set on, they fight). (7) The `foe defeated` quantity counts the wolves who fought the foe in all its fights,
+  not just the last. (8) A beaten foe and its band are let go once the fight is over (the band runs at the leader's fall
+  and leaves the fight then), not when out of sight. (9) The talk test for a stranger in a scene is in
+  `storyline_tests.cpp`, where the scene-panel cases are (`talk_tests.cpp` has none). (10) `SIM_FOES` is read by the game
+  too (a test hook, unset in play). (11) The load pass ran though its condition (the 1 v 1 and party rows passing) was
+  not met, to give the user the numbers.
+- **Going live** on `ratw_ridgemere3` needs no migration; the game server restarted from this branch (the foes, the
+  battle changes, the stranger in a scene), the story runner from this branch (`WORLD_ORDERS`, the checks; the native
+  library needs no change but is rebuilt as usual), the Editor released from it. The client needs no change: a foe is a
+  road folk entity with a name and looks, and a stranger's panel is a resident speaker's.

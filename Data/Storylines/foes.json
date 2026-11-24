@@ -1,0 +1,10 @@
+{
+  "about": "A story's foes (doc 86, C10): how strong each kind is, read by the game for foe.add and foe.outlaw. skill is the fighting skill, strength the body's, hp how much a blow is worth against them (20 is an ordinary bandit's: a blow does 20/hp of its damage), flee the health (0-100) under which they run. Tuned by foe_sim against the bar of engine-spec C10t.",
+  "tuned": "",
+  "follower": {"skill": 52, "strength": 55, "hp": 16, "flee": 35},
+  "tough": {"skill": 60, "strength": 60, "hp": 20, "flee": 25},
+  "fierce": {"skill": 70, "strength": 68, "hp": 24, "flee": 15},
+  "champion": {"skill": 80, "strength": 75, "hp": 30, "flee": 0},
+  "followerName": "one of {name}'s band",
+  "followerLook": "Hard-faced and armed, at their leader's back."
+}

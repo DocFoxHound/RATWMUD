@@ -1557,6 +1557,46 @@ class World
     // spawn while it stands and made again once cleared.
     Result storyBandits(const std::string& cellId, int x1, int y1, int x2, int y2, int count, const std::string& name = {});
     Result namedStoryCamp(const std::string& name, const std::string& cellId, Vec2 at, int count, const std::string& near);
+    // Doc 86, C10: a story's foes (RatwStoryFoes.cpp). A foe is a story camp (foe_<run8>_<foe>) with a named leader
+    // (road:<camp>:0, or a resident made a foe for a while: foe.outlaw) and up to 8 followers (road:<camp>:1..): set on
+    // without a crime, the Watch on duty on the wolves' side, the band breaking when the leader falls. Never counted with
+    // the world's camps and never saved: the story keeps what makes it again after a restart (the game's held.foes).
+    struct StoryFoeSpec
+    {
+        std::string camp, foe, run, name, description, cell, tier = "tough", stance = "waits";
+        std::string npc;                                     // foe.outlaw: the resident (the leader), else empty.
+        Appearance look;
+        bool hasLook = false, lethal = false;
+        double x = -1, y = -1, until = 0;                    // (until: world seconds.)
+        int band = 0;
+    };
+    struct StoryFoe
+    {
+        StoryFoeSpec spec;
+        bool beaten = false, fled = false;
+        double beatenAt = -1;
+        std::set<std::string> fought;                        // Wolves who fought it, in any of its fights.
+    };
+    Result addStoryFoe(const StoryFoeSpec& spec);
+    Result outlawResident(const StoryFoeSpec& spec);
+    // The foe goes, with its band: why "" (sent away, the story's end: no event), "time" or "fled" ('foe fled'). Not while
+    // one of them is in a fight (false then, and when there is no such foe).
+    bool endStoryFoe(const std::string& camp, const std::string& why, bool evenInAFight = false);
+    const StoryFoe* storyFoe(const std::string& camp) const;
+    const std::map<std::string, StoryFoe>& storyFoes() const { return storyFoes_; }
+    bool storyFoeEnded(const std::string& camp) const { return foesEnded_.count(camp) > 0; }
+    // How it ended in this run of the world: "beaten", "fled", "time" or "" (sent away); empty too if it never did.
+    std::string storyFoeEndedHow(const std::string& camp) const
+    {
+        const auto found = foesEnded_.find(camp);
+        return found == foesEnded_.end() ? std::string() : found->second;
+    }
+    static bool storyFoeCamp(const std::string& camp) { return camp.rfind("foe_", 0) == 0; }
+    const StoryFoe* storyFoeOf(const std::string& id) const;   // The foe `id` leads or follows (an outlaw resident too).
+    bool foeLeader(const std::string& id) const;
+    bool foeInFight(const std::string& camp) const;            // One of its band (or its leader) in a fight now.
+    // Ground a foe (or anyone) can stand on, off any doorway (for tests and foe_sim to place them).
+    bool openGround(const std::string& cellId, Vec2 p) const { return standable(cellId, p) && !nearPortal(cellId, p, 1); }
     std::int64_t banditDemand(const std::string& player) const; // What bandits are asking of them now (0: nothing).
     // Things that happened to a player that no action of theirs answered (a bandit's blow, say), since the last
     // call: (player, words), oldest first. The host shows them to the player. `moved`: whether any of them speaks of coins
@@ -2371,6 +2411,12 @@ class World
         double enteredAt = 0;               // When it came into its cell (a wagon stuck that long is moved on).
     };
     std::map<std::string, RoadFolk> folk_;
+    std::map<std::string, StoryFoe> storyFoes_;     // Doc 86, C10: a story's foes, by camp (RatwStoryFoes.cpp).
+    std::map<std::string, std::string> foesEnded_;  // Foes gone in this run of the world, and how (beaten, fled, time, "").
+    double foesTendedAt_ = -1;
+    void tendStoryFoes();
+    void foeFightEnds(Battle& b);
+    void dropStoryFoe(const std::string& camp, const std::string& how);
     std::map<std::string, double> visitors_;   // Temporary folk (addVisitor): when each leaves, in world seconds.
     std::set<std::string> storyVisitors_;      // Those a storyteller brought (doc 58).
     // Bandits who have stopped a player: asking (a demand) until they pay, get clear, or it comes to blows.

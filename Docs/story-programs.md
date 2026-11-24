@@ -504,6 +504,42 @@ blade, has no wear (`World::durabilityOf` 0), is no kind of its base for making,
 is refused by a shop (`Society::stagedQuote`), a stall (`list`) and a town project's hand-in: "That belongs to a story."
 `Society::itemName` (every name the world shows: the pack's record the client reads, trades, gifts) gives its story's name.
 
+## Foes and strangers (doc 86, Phase 7)
+
+**`foe.add`** `{foe, name, cell, x, y, strength, band, stance, minutes, like?, description?}`: `foe` the new parameter type
+`foe` (`[a-z0-9][a-z0-9_-]{2,39}`), `strength` `tough` / `fierce` / `champion`, `band` 0 to 8 (an operand: a value worked
+out as it fires), `stance` `waits` / `hunts`, `minutes` 1 to 1,440. One `foe` is one foe in the whole program: brought with
+one `name` and one `strength` everywhere (`story_program._check_foes`). **`foe.leave`** `{foe}` names one the program
+brings. **`foe.outlaw`** `{npc, minutes, strength?, band?, lethal?}` (`needsBuilder`): 1 to 720 minutes, 0 to 6 followers.
+The runner's orders are `foe.add` and `foe.leave` (target the foe's id) and `foe.outlaw` (target the resident), with `run`
+and `visit` (`WORLD_ORDERS`); approval checks `foe.add`'s tile (`check_tile`) and `like`, and `foe.outlaw`'s resident.
+The events `foe downed`, `foe defeated` (`quantity` the wolves who fought it; `measures` none) and `foe fled` (`item`
+`time` or `fled`) are in the group fights, `target` the foe's id (a resident's for `foe.outlaw`); `program_warnings`
+warns of one read for a foe the program never brings. Both `foe.add` and `foe.outlaw` are undone at the end
+(`UNDONE_AT_END`).
+
+**In the game** (`Core/RatwStoryFoes.cpp`, `Core/RatwGameStoryWorld.cpp`). A foe is a story camp `foe_<8 hex of the
+run>_<foe>` (`Game::storyFoeCampId`; a resident made one is `npc-<resident>`) in `roads_.camps`, skipped by the roads'
+daily round, the gathering of camps, `tendCamp` and the checkpoint's load; its leader `road:<camp>:0` (or the resident)
+and followers `road:<camp>:1..` are road folk of kind `foe`, in person while they last. `World::campOf` returns the camp
+for them (so setting on one is the camp's fight: no assault), `startBattle` brings the Watch on duty in on the wolves'
+side, `temperamentOf` makes them aggressive with `Data/Storylines/foes.json`'s skill and flee, `hurtFighter` scales a
+blow by 20 / its hp, `downFighter` raises `foe downed` / `foe defeated` (once) and breaks the band, `leaveArena` marks a
+leader who runs (`foe fled`, fled), and `finishBattle` (`foeFightEnds`) robs nobody, clears no camp, carries the downed
+off, and gets a beaten resident up again (or, `lethal`, kills them). `tendStoryFoes` (every half second) starts a
+waiting foe's fight with a wolf within 6 tiles of its ground and a hunting one's with the nearest within 12, ends one out
+of time (`foe fled`, time) and lets a beaten one go. The story keeps each in `held.foes` (camp: what makes it again);
+`tickStoryWorld` makes one again after a restart while its time lasts, drops one gone, and holds a resident beaten and
+not killed (`held.npcs`); `endStoryWorld` takes them all away, even mid-fight, with no event. `SIM_FOES` names a trial
+table in place of `foes.json` (for `foe_sim`).
+
+**A stranger in a scene.** A scene's cast entry may be `{"id": "<role>", "visitor": "<visitor id>"}` beside `npc` and
+`selector` (exactly one; `story_scenes.validate`), a stranger the same program brings with `visitor.add`
+(`story_program._check_strangers` refuses one it never brings; `program_warnings` warns of one brought only in a later
+phase than a `scene.play` of it). The game (`Game::startCinematic`) resolves it to the stranger the run holds
+(`held.visitors`), in their own panel with their `like` face; one not in the world fails the scene: `scene failed` with
+`item` "a stranger is not here".
+
 ## Writing a program
 
 The portable format is `ratw-story-program`, version 1. A program has an ID, title, audience, opening phase, phases and rehearsal cases. The examples under `Data/Storylines/programs/` are complete programs. The catalogue returned by the author API lists every supported event and the fields of each effect.

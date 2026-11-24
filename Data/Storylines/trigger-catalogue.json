@@ -114,6 +114,10 @@
    "label": "Places and regions"
   },
   {
+   "id": "foes",
+   "label": "Foes"
+  },
+  {
    "id": "economy",
    "label": "Towns, markets and factions"
   },
@@ -180,7 +184,8 @@
   "figure": "A figure's id (live.figures): lower-case letters, digits and _, 3 to 40.",
   "camp": "A story camp's name: lower-case letters, digits and _, 3 to 30, beginning with the story's prefix (nh_, sq_, mq_, lq_, st_); the camp is camp_story_<name>.",
   "species": "An animal of Data/Wild/animals.json (its id).",
-  "tag": "A story's own mark on an item (small letters, digits and _, up to 32): the item is the story's, named as the story names it, and taken back when the run ends unless kept."
+  "tag": "A story's own mark on an item (small letters, digits and _, up to 32): the item is the story's, named as the story names it, and taken back when the run ends unless kept.",
+  "foe": "A story's foe, by the id the story gives it (letters, digits, - and _); for a resident made a foe, the resident's id."
  },
  "trigger": {
   "once": {
@@ -478,7 +483,7 @@
    "group": "scenes",
    "title": "A scene fails",
    "sentence": "Scene {detail} fails",
-   "help": "An embedded scene could not go on (marked failed) and ended.",
+   "help": "An embedded scene could not go on (marked failed) and ended; item says why where it is known (\"a stranger is not here\": a stranger cast in it the story has not brought, or sent away).",
    "fields": {
     "actor": {
      "type": "wolf",
@@ -503,6 +508,11 @@
     "quantity": {
      "type": "number",
      "label": "the visit (the run's visit number)"
+    },
+    "item": {
+     "type": "text",
+     "label": "why, where it is known (a stranger is not here)",
+     "any": "any"
     }
    },
    "tile": true
@@ -6921,6 +6931,103 @@
    "watch": true
   },
   {
+   "id": "foe downed",
+   "group": "fights",
+   "title": "A foe's follower falls",
+   "sentence": "{actor} brings down one of {target}'s band ({detail})",
+   "help": "A follower of a story's foe is downed (target the foe's id; a resident's id for a resident made a foe).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who landed the last blow",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "foe",
+     "label": "the foe",
+     "any": "any foe"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the follower's name",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "mission": true
+  },
+  {
+   "id": "foe defeated",
+   "group": "fights",
+   "title": "A foe is beaten",
+   "sentence": "{actor} beats {detail}",
+   "help": "A story's foe (or a resident made one) is downed: actor landed the last blow, target is the foe's id (a resident's id for foe.outlaw), detail their name, quantity how many wolves fought them. Once a foe: their band breaks and runs.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who landed the last blow",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "foe",
+     "label": "the foe",
+     "any": "any foe"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "their name",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "wolves who fought"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": []
+  },
+  {
+   "id": "foe fled",
+   "group": "fights",
+   "title": "A foe gets away",
+   "sentence": "{detail} gets away",
+   "help": "A story's foe broke off a fight and fled, or their time ran out (detail: their name; item: fled or time). They are gone with their band.",
+   "fields": {
+    "target": {
+     "type": "foe",
+     "label": "the foe",
+     "any": "any foe"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "fled or time",
+     "any": "either"
+    },
+    "detail": {
+     "type": "text",
+     "label": "their name",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
    "id": "story started",
    "group": "story",
    "title": "Another story starts",
@@ -11708,6 +11815,185 @@
      "min": 1,
      "max": 1440,
      "default": 60
+    }
+   ]
+  },
+  {
+   "id": "foe.add",
+   "group": "foes",
+   "title": "Bring a foe",
+   "sentence": "{name} ({foe}), a {strength} foe with {band} followers, comes to {cell,x,y} for {minutes} minutes, looking like {like} {description}, and {stance}",
+   "help": "A named enemy who can be fought and beaten: wolves may set on them without a crime, the Watch on duty in the place helps the wolves, and their followers break and run when they fall ('foe defeated'). A waiting foe holds its ground and fights a wolf who comes within 6 tiles; a hunting one goes for the nearest wolf within 12. They come and go: never a resident, never saved, gone when the story ends (no event) or their time runs out, or when they break off a fight ('foe fled'). How strong each kind is: Data/Storylines/foes.json.",
+   "params": [
+    {
+     "key": "foe",
+     "type": "foe",
+     "label": "their id"
+    },
+    {
+     "key": "name",
+     "type": "text",
+     "label": "their name",
+     "max": 60
+    },
+    {
+     "key": "cell",
+     "type": "place",
+     "label": "the place",
+     "part": "tile",
+     "operand": true
+    },
+    {
+     "key": "x",
+     "type": "int",
+     "label": "tile x",
+     "min": 0,
+     "max": 4095,
+     "part": "tile",
+     "operand": true
+    },
+    {
+     "key": "y",
+     "type": "int",
+     "label": "tile y",
+     "min": 0,
+     "max": 4095,
+     "part": "tile",
+     "operand": true
+    },
+    {
+     "key": "strength",
+     "type": "choice",
+     "label": "how strong",
+     "values": [
+      "tough",
+      "fierce",
+      "champion"
+     ],
+     "default": "tough"
+    },
+    {
+     "key": "band",
+     "type": "int",
+     "label": "followers",
+     "min": 0,
+     "max": 8,
+     "operand": true
+    },
+    {
+     "key": "stance",
+     "type": "choice",
+     "label": "what they do",
+     "values": [
+      "waits",
+      "hunts"
+     ],
+     "words": {
+      "waits": "holds the ground",
+      "hunts": "comes for the nearest wolf"
+     },
+     "default": "waits"
+    },
+    {
+     "key": "minutes",
+     "type": "int",
+     "label": "minutes",
+     "min": 1,
+     "max": 1440,
+     "operand": true
+    },
+    {
+     "key": "like",
+     "type": "resident",
+     "label": "looking like (a resident)",
+     "optional": true,
+     "words": {
+      "": "a stranger"
+     }
+    },
+    {
+     "key": "description",
+     "type": "text",
+     "label": "how they look",
+     "max": 200,
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    }
+   ]
+  },
+  {
+   "id": "foe.leave",
+   "group": "foes",
+   "title": "A foe leaves",
+   "sentence": "{foe} and their followers leave",
+   "help": "The story's foe and their band go (no event). Not while they fight: then refused, and they go when the fight is over or their time runs out.",
+   "params": [
+    {
+     "key": "foe",
+     "type": "foe",
+     "label": "their id"
+    }
+   ]
+  },
+  {
+   "id": "foe.outlaw",
+   "group": "foes",
+   "title": "Make a resident a foe",
+   "needsBuilder": true,
+   "sentence": "{npc} turns on the wolves with {band} followers for {minutes} minutes ({strength}); killed if beaten: {lethal}",
+   "help": "A resident (never a protected one, the dead, one down, in a fight, away, or held by another story) may be fought for a while without a crime, the Watch on the wolves' side. Beaten ('foe defeated', target the resident), they are downed, got up again where they lie when the fight is over and held until the story ends, never killed unless the story says so (then 'death' follows). When the minutes pass, or the story ends, they are themselves again. Their followers are strangers who go with them.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "operand": true
+    },
+    {
+     "key": "minutes",
+     "type": "int",
+     "label": "minutes",
+     "min": 1,
+     "max": 720
+    },
+    {
+     "key": "strength",
+     "type": "choice",
+     "label": "how strong",
+     "values": [
+      "tough",
+      "fierce",
+      "champion"
+     ],
+     "optional": true,
+     "words": {
+      "": "tough"
+     }
+    },
+    {
+     "key": "band",
+     "type": "int",
+     "label": "followers",
+     "min": 0,
+     "max": 6,
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": "no"
+     }
+    },
+    {
+     "key": "lethal",
+     "type": "bool",
+     "label": "may die",
+     "optional": true,
+     "words": {
+      "true": "yes",
+      "false": "no",
+      "": "no"
+     }
     }
    ]
   },
