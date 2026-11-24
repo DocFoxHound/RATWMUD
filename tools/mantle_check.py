@@ -222,6 +222,11 @@ def window_facts(talk: Path = TALK) -> dict[str, set]:
                 pr = [int(x.split('=')[1]) for x in toks if x.startswith('priority=') and x.split('=')[1].isdigit()]
                 if pr and pr[0] >= 10:
                     continue
+                # (A line for one named resident, or for what a story had one resident remember (doc 86's cast and
+                # debtors): it reports for that resident alone, whose mantle line the game stands aside for it anyway
+                # (yieldToTree negates its first fact, self.id or self.mem), so no mantle writer names its case.)
+                if any(x.startswith(('self.id=', 'self.mem.')) for x in toks):
+                    continue
                 for k in crit_keys(' '.join(toks)):
                     if k not in COSMETIC:
                         out.setdefault(node, set()).add(k)
