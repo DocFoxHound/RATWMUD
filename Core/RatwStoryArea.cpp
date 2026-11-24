@@ -1,4 +1,5 @@
 #include "RatwGame.h"
+#include "RatwItems.h"
 #include "RatwStoryRegion.h"
 #include "RatwNames.h"
 
@@ -110,12 +111,18 @@ Result Game::applyStoryReward(const std::string& kind, const std::string& wolf, 
         const int quantity = countField(payload, "quantity", 20);
         if (!quantity || !itemValid(good))
             return {false, "Give a known item, 1 to 20 of it.", wolf};
+        std::string name;
+        if (items::storyTagged(good))   // (Doc 86, J9: a story's own item, named, and taken back when the run ends unless kept.)
+            if (auto refused = storyItemGiven(wolf, good, payload, name); !refused.ok)
+                return refused;
         if (!world_.society().canCreate(wolf, good, quantity))
         {
             tellActedOn(wolf, "You have no room to carry " + std::to_string(quantity) + " " + Society::itemName(good) + ".");
             return {false, "Their pack is full.", wolf};
         }
         world_.society().create(wolf, good, quantity, "dm grant: story reward");
+        if (items::storyTagged(good))
+            storyItemHeld(good, payload);
         recordCharacters(Economy, {wolf});
         tellActedOn(wolf, "You receive " + std::to_string(quantity) + " " + Society::itemName(good) + ".");
         return {true, "Gave " + std::to_string(quantity) + " " + Society::itemName(good) + ".", wolf};

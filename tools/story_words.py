@@ -109,6 +109,7 @@ EFFECT_WORDS = {
     'project.post': [('title', 'title', None, None)], 'warrant.issue': [('reason', 'reason', None, None)],
     'character.grant': [('reason', 'reason', None, None)], 'standing.adjust': [('reason', 'reason', None, None)],
     'faction.relation': [('reason', 'reason', None, None)],
+    'item.give': [('name', 'name', None, 60)],   # (Doc 86, J9: a story's own item's name, shown in the pack.)
 }
 # Said as written, never in a voice: a resident's words aloud (npc.speak) fill no #symbols#.
 UNVOICED = frozenset({'npc.speak'})

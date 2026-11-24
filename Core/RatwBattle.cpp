@@ -3578,6 +3578,16 @@ Result World::placeOnGround(const std::string& cellId, int x, int y, const std::
     return {true, "Left on the ground.", ground_.back().id};
 }
 
+std::map<std::string, int> World::takeBackItems(const std::set<std::string>& items)
+{
+    if (items.empty())
+        return {};
+    ground_.erase(std::remove_if(ground_.begin(), ground_.end(), [&](const GroundItem& g) { return items.count(g.item) > 0; }),
+                  ground_.end());
+    // (Nothing of it is held in the mouth, worn or worn down: it is never a blade, a wearable or gear that wears.)
+    return society_.takeAll(items, "story: taken back");
+}
+
 Result World::takeItem(const std::string& id, const std::string& groundId)
 {
     auto* e = entity(id);
@@ -3595,7 +3605,8 @@ Result World::takeItem(const std::string& id, const std::string& groundId)
     ground_.erase(it);
     if (!e->npc && storyListens("item picked up"))
         recordEvent({"item picked up", id, {}, e->cellId, 0, 0, item, 1, 0, {}});
-    return {true, "You pick up the " + item + ".", {}};
+    // (A story's own item by the name its story gave it: doc 86, J9.)
+    return {true, "You pick up the " + (items::storyTagged(item) ? std::string(Society::itemName(item)) : item) + ".", {}};
 }
 
 void World::dropItem(Battle& b, BattleFighter& f)

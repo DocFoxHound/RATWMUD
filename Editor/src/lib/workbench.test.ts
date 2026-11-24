@@ -183,7 +183,7 @@ const v2: Record<string, Program> = JSON.parse(execFileSync('python3', ['-c',
 const ledger = v2['v2-ledger'];
 
 test('version 2: the samples and the 108 programs made version 2 are shown by the workbench, every nested action a sentence', () => {
-    assert.equal(Object.keys(v2).length, 116);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road; Phase 3: the oil drive; Phase 4: the lamp line; Phase 5: Old Brown at the tarn.)
+    assert.equal(Object.keys(v2).length, 117);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road; Phase 3: the oil drive; Phase 4: the lamp line; Phase 5: Old Brown at the tarn; Phase 6: the watch list.)
     let nested = 0;
     for (const [name, p] of Object.entries(v2)) {
         assert.ok(editable(p), name);
@@ -660,4 +660,27 @@ test('doc 86, Phase 5 after review: once residents are counted the list is asked
     assert.deepEqual(countWho(picked), picked);
     const other = {test: 'in list', list: 'crew'};
     assert.equal(countWho(other), other);
+});
+
+import {storyItemsOf, tagsOf} from './workbench.ts';
+test('doc 86, Phase 6: the watch list in words; a story\'s own items offered by item^tag and named as the story names them', () => {
+    const p = v2['v2-watch-list'];
+    assert.ok(editable(p));
+    const ns = namesOf(null, p);
+    assert.deepEqual(storyItemsOf(p), [
+        {id: 'letter^watch_list', item: 'letter', tag: 'watch_list', name: 'The watch list', keep: false},
+        {id: 'writ^thanks', item: 'writ', tag: 'thanks', name: "The warden's writ of thanks", keep: true}]);
+    assert.deepEqual(tagsOf(p), ['thanks', 'watch_list']);
+    const ts = triggersOf(p, 0);
+    const list = ts.find(t => t.id === 'list')!;
+    assert.match(plain(actionParts(cat, list.actions[0], ns)), /^Give the acting wolf 1 letter watch_list “The watch list”/);
+    const writ = p.quests![0].rewards![0];
+    assert.match(plain(itemParts(cat.effects.find(e => e.id === 'item.give')!, writ as Record<string, unknown>, ns)), /kept after the story/);
+    const seen = allConditions(ts.find(t => t.id === 'seen')!).find(c => c.test === 'carries')!;
+    assert.match(plain(conditionParts(cat, seen, ns)), /carries at least 1 “The watch list” \(the story's letter\)/);
+    assert.match(plain(eventParts(cat, ts.find(t => t.id === 'any')!, ns)), /gives letter to/);
+    // (A plain item.give hides the story's parts; the catalogue's tag parameter is its own type, for its picker.)
+    const plainGive = {kind: 'item.give', player: '$actor', item: 'rope', quantity: 2};
+    assert.equal(plain(itemParts(cat.effects.find(e => e.id === 'item.give')!, plainGive, ns)), 'Give the acting wolf 2 rope');
+    assert.equal(cat.effects.find(e => e.id === 'item.give')!.params!.find(x => x.key === 'tag')!.type, 'tag');
 });

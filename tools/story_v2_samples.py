@@ -260,7 +260,7 @@ READY = {
 
 def all_samples():
     return [copy.deepcopy(LEDGER), copy.deepcopy(FLOW), copy.deepcopy(READY), copy.deepcopy(TALK), copy.deepcopy(VALUES),
-            copy.deepcopy(THANKS), copy.deepcopy(LINE), copy.deepcopy(HOWLS)]
+            copy.deepcopy(THANKS), copy.deepcopy(LINE), copy.deepcopy(HOWLS), copy.deepcopy(LETTERS)]
 
 
 # ----- Doc 85, Phase 6: quests (tools/test_story_quests.py; both twins' parity, tools/test_story_native.py)
@@ -830,5 +830,62 @@ HOWLS = {
          'expectEffects': [
              {'phase': 'gather', 'kind': 'npc.howl', 'npc': 'rm112'},
              {'phase': 'gather', 'kind': 'hunt.stage', 'region': 'tarn', 'species': 'bear', 'count': 1, 'minutes': 120}]},
+    ],
+}
+
+
+# Doc 86, Phase 6 (J9): a story's own items. The clerk gives the wolf who asks the watch list, a letter marked watch_list and
+# called "The watch list" (taken back when the run ends); a wolf carrying it is counted; only that letter, given to the
+# warden, does the quest (a plain letter is not it), and the warden's thanks is a writ the wolf keeps after the story.
+WATCH_LIST = {'kind': 'item.give', 'player': '$actor', 'item': 'letter', 'quantity': 1, 'tag': 'watch_list', 'name': 'The watch list'}
+THANKS_WRIT = {'kind': 'item.give', 'player': '$actor', 'item': 'writ', 'quantity': 1, 'tag': 'thanks', 'name': "The warden's writ of thanks",
+               'keep': True}
+
+
+def carrying(wolf, n):
+    return {'wolves': {wolf: {'cell': 'grey', 'x': 3, 'y': 3, 'indoors': False, 'town': 'greyfen', 'party': '', 'partySize': 1,
+                              'carries': {'letter^watch_list': n} if n else {}, 'coins': 0}}}
+
+
+LETTERS = {
+    'format': 'ratw-story-program', 'version': 2, 'id': 'v2-watch-list', 'title': 'The watch list',
+    'audience': {'kind': 'players', 'players': [ASH, BIRCH]}, 'start': 'carry',
+    'variables': [
+        {'id': 'carried', 'type': 'switch', 'scope': 'story', 'note': 'A wolf was seen carrying the watch list.'},
+        {'id': 'letters', 'type': 'number', 'scope': 'story', 'note': 'Letters of any kind given to the warden.'},
+    ],
+    'quests': [
+        {'id': 'deliver', 'title': 'The watch list', 'giver': 'rm111', 'handIn': False,
+         'offer': {'say': '#greet# Take this list to the warden at the gate, and to no one else.'},
+         'objectives': [{'id': 'hand', 'label': 'Give the watch list to the warden.', 'on': 'gift',
+                         'match': {'item': 'letter^watch_list', 'target': 'rm112'}}],
+         'rewards': [THANKS_WRIT]},
+    ],
+    'phases': [
+        {'id': 'carry', 'journal': 'The clerk has a list for the warden at the gate.', 'effects': [],
+         'exits': [{'on': 'quest completed', 'to': 'done', 'match': {'detail': 'deliver'}}],
+         'triggers': [
+             {'id': 'list', 'on': 'quest accepted', 'audience': 'participant', 'match': {'detail': 'deliver'}, 'actions': [{'do': 'effect', 'effect': WATCH_LIST}]},
+             {'id': 'seen', 'on': 'deed', 'audience': 'participant',
+              'if': {'test': 'carries', 'item': 'letter^watch_list', 'op': '>=', 'value': 1},
+              'actions': [{'do': 'turn on', 'var': 'carried'}]},
+             {'id': 'any', 'on': 'gift', 'match': {'item': 'letter', 'target': 'rm112'}, 'actions': [{'do': 'add', 'var': 'letters', 'value': 1}]},
+         ]},
+        {'id': 'done', 'journal': 'The warden has the watch list.', 'effects': [], 'exits': []},
+    ],
+    'tests': [
+        {'name': 'The list is given, carried, and only it does the quest; the writ of thanks is kept', 'cohort': [ASH, BIRCH],
+         'events': [
+             quest_fact(1, 'quest accepted', 0.1, ASH, item='rm111', detail='deliver'),
+             {**quest_fact(2, 'deed', 0.2, BIRCH, detail='Walked the wall'), 'facts': carrying(BIRCH, 0)},
+             {**quest_fact(3, 'deed', 0.3, ASH, detail='Walked the wall'), 'facts': carrying(ASH, 1)},
+             quest_fact(4, 'gift', 0.4, ASH, target='rm112', item='letter', quantity=1),
+             quest_fact(5, 'gift', 0.5, ASH, target='rm112', item='letter^watch_list', quantity=1),
+         ], 'expect': ['carry', 'done'],
+         'expectQuests': {'deliver': {ASH: 'done'}},
+         'expectVariables': {'story': {'carried': True, 'letters': 2}},
+         'expectEffects': [
+             {'phase': 'carry', **WATCH_LIST, 'player': ASH},
+             {'phase': 'carry', **THANKS_WRIT, 'player': ASH, 'reward': 'deliver'}]},
     ],
 }

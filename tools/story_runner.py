@@ -459,7 +459,7 @@ def world_checks(conn, world, program, chapters=False):
                         'SELECT 1 FROM world.areas WHERE world_id=%s AND id=%s', (world, cell)).fetchone():
                     add(path, at, f'Unknown cell in this world for "where": {cell}')
         for item in rules.match_values(m.get('item')):
-            if item and re.split('[~@]', item, maxsplit=1)[0] not in items:
+            if item and re.split('[~@^]', item, maxsplit=1)[0] not in items:
                 add(path, at, f'No item "{item}" in the item catalogue: this objective could never be done.')
     # V1.3: a quest's notice board is one of the world's boards (its market towns).
     boards = [(qi, q) for qi, q in enumerate(program.get('quests', []) or []) if isinstance(q.get('board'), str)]
@@ -1044,6 +1044,12 @@ def order_of(conn, world, run, who, state, effect, phase):
         return 'voice.sync', effect['figure'], {'story': run}
     if kind in WORLD_ORDERS:
         return world_order(effect, state['actor'], run, state['visits'], phase)
+    if kind == 'item.give' and 'tag' in effect:
+        # (Doc 86, J9: the story's own item, by the id the game keeps it under, named, and the run that takes it back.)
+        k, target, payload = action({k: v for k, v in effect.items() if k not in ('tag', 'name', 'keep')}, state['actor'])
+        payload.update(item=rules.tagged_item(phase.get('_storyId', ''), effect['item'], effect['tag']), run=run, visit=state['visits'],
+                       **({'name': effect['name']} if effect.get('name') else {}), **({'keep': True} if effect.get('keep') else {}))
+        return k, target, payload
     return action(effect, state['actor'])
 
 
@@ -3399,7 +3405,7 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
 # after, in the command's row and in dm.audit. A command can release only what was approved (5.1, rule 4): it fires a
 # trigger the program has, enters a phase it has, sets a counter it names; nothing adds a trigger or changes a rule.
 
-RUNNER_VERSION = 'doc86-phase5'
+RUNNER_VERSION = 'doc86-phase6'
 COMMAND_KINDS = ('hold', 'resume', 'stop', 'signal', 'fire', 'enable', 'disable', 'enter', 'set', 'timer', 'mission',
                  'order', 'tell', 'scene', 'migrate', 'objective', 'quest', 'participant', 'advance')
 # Flow commands move the story (dispatch a fact, run actions, open a visit, send the journal): they wait while the run is
@@ -5172,6 +5178,7 @@ def what_if(conn, world, run, fact):
     copy = json.loads(json.dumps(state))
     trace = []
     fact.update(_now_facts(conn, world, wants_facts(program)))   # (Doc 85, Phase 8: as if it happened now, in the world as it is.)
+    fact = rules.own_items(program, fact)   # (Doc 86, J9: a story's own item named item^tag, as the game names it.)
     if fact['kind'] == rules.triggers.SIGNAL:
         moved = rules.dispatch(program, phase, copy, fact, day, trace, elapsed)
     else:
@@ -5509,7 +5516,7 @@ def reference_problems(conn, world, program):
             if not character(actor):
                 add(path, at, f'No wolf or resident "{actor}" in this world: this never matches.', False)
         for item in rules.match_values(filters.get('item')):
-            if __import__('re').split('[~@]', item, maxsplit=1)[0] not in items:
+            if __import__('re').split('[~@^]', item, maxsplit=1)[0] not in items:
                 add(path, at, f'No item "{item}" in the item catalogue: this never matches.', False)
     # (Doc 86, Phase 1b: purses, quest objectives and boards, residents placed and alive, the new effects' towns: V1, SQ2.)
     for c in world_checks(conn, world, program, chapters=None):   # (None: whether it is a chapter is known at approval.)

@@ -7,6 +7,7 @@ tools/test_story_native.py."""
 
 import copy
 import json
+import re
 import unittest
 from unittest.mock import patch
 
@@ -704,6 +705,101 @@ class Phase5Howls(unittest.TestCase):
         w = rules.watch_of(samples.HOWLS)
         self.assertEqual(set(w['events']) & {'howled', 'chorus closed', 'night falls', 'hunted'}, {'howled', 'chorus closed', 'night falls'})
         self.assertEqual(w['residentLists'], ['crew'])
+
+
+class Phase6Items(unittest.TestCase):
+    """Doc 86, Phase 6 (J9): the watch list (story_v2_samples.LETTERS): a story's own letter given, carried and delivered,
+    matched as letter^watch_list in a rehearsal in both twins; a plain letter, or another story's, is not it; and what
+    approval refuses."""
+
+    def review(self, events=None, native=True):
+        p = copy.deepcopy(samples.LETTERS)
+        if events is not None:
+            case = p['tests'][0]
+            case['events'] = events(case['events'])
+            for key in ('expectQuests', 'expectVariables', 'expectEffects'):
+                case.pop(key, None)
+            case['expect'] = ['carry']
+        if native:
+            return rules.review(p)
+        with patch('story_native.interpreter', return_value=None):
+            return rules.review(p)
+
+    def test_the_watch_list_rehearses_clean_in_both_twins(self):
+        native, python = self.review(), self.review(native=False)
+        self.assertTrue(native['passed'] and not native['uncovered'], native)
+        self.assertEqual(native, python)
+
+    def test_a_plain_letter_or_another_storys_is_not_the_list(self):
+        theirs = rules.tagged_item('another-story', 'letter', 'watch_list')
+        for item in ('letter', theirs, 'letter~fine'):
+            with self.subTest(item=item):
+                report = self.review(lambda ev: [*ev[:4], {**ev[4], 'item': item}])
+                self.assertTrue(report['passed'], report['tests'][0])
+                self.assertEqual(report['tests'][0]['quests'], {'deliver': {samples.ASH: 'active'}})
+        # (The game's own id of this story's list is the list, as the author's item^tag is.)
+        mine = rules.tagged_item('v2-watch-list', 'letter', 'watch_list')
+        report = self.review(lambda ev: [*ev[:4], {**ev[4], 'item': mine}])
+        self.assertEqual(report['tests'][0]['quests'], {'deliver': {samples.ASH: 'done'}})
+
+    def test_carrying_none_is_not_carrying(self):
+        report = self.review(lambda ev: [ev[0], {**ev[2], 'facts': samples.carrying(samples.ASH, 0)}])
+        self.assertEqual(report['tests'][0]['counters'].get('story', {}).get('carried', False), False, report['tests'][0])
+
+    def test_the_hashed_form_is_the_games(self):
+        mine = rules.tagged_item('v2-watch-list', 'letter', 'watch_list')
+        self.assertRegex(mine, r'^letter\^[0-9a-f]{8}\.watch_list$')
+        self.assertEqual(mine, 'letter^' + rules.tag_hash('v2-watch-list') + '.watch_list')
+        p = copy.deepcopy(samples.LETTERS)
+        x = rules.expand_tags(p)
+        self.assertIsNot(x, p)
+        self.assertEqual(p['quests'][0]['objectives'][0]['match']['item'], 'letter^watch_list', 'the author\'s program is untouched')
+        self.assertEqual(x['quests'][0]['objectives'][0]['match']['item'], mine)
+        phase = rules.effective_phase(p, p['phases'][0])
+        seen = next(t for t in phase['triggers'] if t['id'] == 'seen')
+        self.assertEqual(seen['if']['item'], mine)
+        self.assertEqual(next(t for t in phase['triggers'] if t['id'] == 'any')['match']['item'], 'letter', 'a plain filter stays plain')
+        self.assertEqual(rules.quests.index(p)['deliver']['objectives'][0]['match']['item'], mine)
+        self.assertIn(mine, rules.watch_of(p)['items'])
+        plain = copy.deepcopy(samples.HOWLS)
+        self.assertIs(rules.expand_tags(plain), plain, 'a program with no story items is read as it is')
+        self.assertEqual(rules.story_items(p), {
+            'letter^watch_list': {'name': 'The watch list', 'keep': False, 'item': mine},
+            'writ^thanks': {'name': "The warden's writ of thanks", 'keep': True, 'item': rules.tagged_item('v2-watch-list', 'writ', 'thanks')}})
+
+    def test_what_approval_refuses(self):
+        def program(edit):
+            p = copy.deepcopy(samples.LETTERS)
+            edit(p)
+            return p
+        give = lambda p: p['phases'][0]['triggers'][0]['actions'][0]['effect']
+        cases = [
+            (lambda p: give(p).pop('tag'), 'is for a story\'s own item'),
+            (lambda p: give(p).update(tag='Watch List'), 'invalid item.give.tag'),
+            (lambda p: give(p).update(tag='x' * 33), 'invalid item.give.tag'),
+            (lambda p: give(p).update(item='letter~fine'), 'invalid item.give.item'),
+            (lambda p: give(p).update(name='The #list#'), 'one line of words'),
+            (lambda p: give(p).update(name='x' * 61), 'invalid item.give.name'),
+            (lambda p: p['quests'][0]['rewards'].append({**samples.THANKS_WRIT, 'keep': False}), 'one name, and kept or not'),
+            (lambda p: p['quests'][0]['objectives'][0]['match'].update(item='letter^Watch'), 'named <item>^<mark>'),
+            (lambda p: p['quests'][0]['objectives'][0]['match'].update(item=rules.tagged_item('v2-watch-list', 'letter', 'watch_list')),
+             'named <item>^<mark>'),
+            (lambda p: p['phases'][0]['triggers'][1]['if'].update(item='letter^'), 'Name the item'),
+        ]
+        for edit, words in cases:
+            with self.subTest(words=words):
+                with self.assertRaisesRegex(ValueError, re.escape(words) if '<' in words else words):
+                    rules.validate(program(edit))
+        rules.validate(program(lambda p: give(p).pop('name')))   # (A story's own item may go unnamed: it shows as its base.)
+
+    def test_its_name_is_world_text(self):
+        # (The name is shown in the pack: the story words check reads it as every text a wolf reads.)
+        import story_words
+        self.assertEqual(story_words.check(copy.deepcopy(samples.LETTERS)), [])
+        p = copy.deepcopy(samples.LETTERS)
+        p['phases'][0]['triggers'][0]['actions'][0]['effect']['name'] = 'The dog list'
+        found = story_words.check(p)
+        self.assertTrue(found and found[0]['blocks'] and found[0]['path'].endswith('.name'), found)
 
 
 def _many(actions, n, counters, variables=(), native=False, seed='seed-1'):

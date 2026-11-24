@@ -27,6 +27,8 @@ std::string lowerName(std::string s)
 
 int World::durabilityOf(const std::string& item)
 {
+    if (items::storyTagged(item))
+        return 0;                                   // (A story's own item never wears: doc 86, J9.)
     if (const auto* worn = items::wearable(item))
         return worn->durability;
     const auto* good = items::good(item);

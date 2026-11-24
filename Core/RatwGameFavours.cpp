@@ -212,6 +212,8 @@ bool Game::lendCommand(Connection* c, const json::Value& j, Result& result)
     const auto* t = world_.entity(target);
     if (!t || t->npc)
         result = {false, "Lend to whom? (To another player.)", target};
+    else if (items::storyTagged(item))
+        result = {false, "That belongs to a story.", target};   // (Doc 86, J9: given, never lent: the story may take it back.)
     else if (const auto why = giveRefusal(me, target, item, quantity, 0); !why.empty())
         result = {false, why, target};
     else
@@ -334,7 +336,7 @@ void Game::tendLoans()
         }
         if (back < it->quantity)
         {
-            const auto* good = items::good(it->item.substr(0, it->item.find('~')));
+            const auto* good = items::good(items::baseOf(it->item));
             const std::int64_t owed = (good && good->price > 0 ? good->price : 1) * (it->quantity - back);
             world_.bonds().addOwed(it->lender, it->borrower, owed, world_.calendarDays());
             world_.bonds().change(it->lender, it->borrower, {0, -10, 0, 0, 0}, world_.calendarDays());

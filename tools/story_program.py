@@ -109,7 +109,126 @@ def match_ok(m, keys=None):
 
 
 def _gift_base(actual, expected, gift):
-    return re.split('[~@]', actual, maxsplit=1)[0] if gift and not any(mark in expected for mark in '~@') else actual
+    # (Doc 86, J9: a story's own item, base^hash.tag, is a kind of its base too: a filter that names no mark or tag takes it.)
+    return re.split('[~@^]', actual, maxsplit=1)[0] if gift and not any(mark in expected for mark in '~@^') else actual
+
+
+# ------------------------------------------------------------------------------------- doc 86, J9: a story's own items
+# item.give with a tag makes the story's own item: its id is <base>^<hash8>.<tag>, the hash the first 8 hex digits of the
+# SHA-256 of the program's id, so two stories' tags never meet. An author writes <base>^<tag> (letter^watch_list) in a
+# filter's item and in "carries"; expand_tags gives a program those in the hashed form, as effective_phase, the quests'
+# index and the watch read it, so neither twin ever sees the short form and the author never sees the hash.
+TAG = re.compile(r'[a-z0-9_]{1,32}')
+TAGGED_SHORT = re.compile(r'([a-z0-9_]{1,40})\^([a-z0-9_]{1,32})')
+TAGGED_FULL = re.compile(r'([a-z0-9_]{1,40})\^([0-9a-f]{8})\.([a-z0-9_]{1,32})')
+TAGGED_MOST = 64   # (Kinds of the story's own item a program may give.)
+
+
+def tag_hash(program_id):
+    return hashlib.sha256(str(program_id).encode('utf-8')).hexdigest()[:8]
+
+
+def tagged_item(program_id, base, tag):
+    """The game's id of a story's own item: letter^ab12cd34.watch_list."""
+    return f'{base}^{tag_hash(program_id)}.{tag}'
+
+
+def item_ok(v):
+    """An item a condition or a filter names: an id, or a story's own as base^tag (or, as expand_tags leaves it, hashed)."""
+    return isinstance(v, str) and (identifier(v) or TAGGED_SHORT.fullmatch(v) is not None or TAGGED_FULL.fullmatch(v) is not None)
+
+
+def _expand_value(pid, v):
+    if isinstance(v, str):
+        m = TAGGED_SHORT.fullmatch(v)
+        return tagged_item(pid, m[1], m[2]) if m else v
+    if isinstance(v, dict) and isinstance(v.get('in'), list):
+        out = [_expand_value(pid, x) for x in v['in']]
+        return {**v, 'in': out} if out != v['in'] else v
+    return v
+
+
+def _expand(pid, node):
+    """The node with every `item` naming a story's own item in its short form put in the hashed form; the same object
+    where nothing changed (copied only along the way to a change)."""
+    if isinstance(node, list):
+        out = [_expand(pid, x) for x in node]
+        return out if any(a is not b for a, b in zip(out, node)) else node
+    if not isinstance(node, dict):
+        return node
+    changed = {}
+    for k, v in node.items():
+        x = _expand_value(pid, v) if k == 'item' else _expand(pid, v)
+        if x is not v:
+            changed[k] = x
+    return {**node, **changed} if changed else node
+
+
+_EXPANDED = {}   # id(program) -> (program, expanded, {id(phase): expanded phase}): a program is expanded once while it is kept
+
+
+def expand_tags(p):
+    """The program as the runner and both twins read it: a story's own items in the hashed form (doc 86, J9). The program
+    itself when it names none."""
+    if not isinstance(p, dict):
+        return p
+    hit = _EXPANDED.get(id(p))
+    if hit is not None and hit[0] is p:
+        return hit[1]
+    x = _expand(p.get('id', ''), p)
+    phases = {}
+    if x is not p and isinstance(p.get('phases'), list) and isinstance(x.get('phases'), list):
+        phases = {id(a): b for a, b in zip(p['phases'], x['phases'])}
+    if len(_EXPANDED) >= 64:
+        _EXPANDED.clear()
+    _EXPANDED[id(p)] = (p, x, phases)
+    return x
+
+
+def expanded_phase(p, phase):
+    """One phase of a program as expand_tags gives it (a phase made up beside the program is expanded on its own)."""
+    x = expand_tags(p)
+    if x is p:
+        return phase
+    found = _EXPANDED[id(p)][2].get(id(phase))
+    return found if found is not None else _expand(p.get('id', ''), phase)
+
+
+def own_items(p, node):
+    """A made-up fact (a rehearsal's event or facts, the console's What if) naming a story's own item as its author would,
+    item^tag, in the game's form: an `item` and the keys of a wolf's `carries` (doc 86, J9)."""
+    pid = p.get('id', '') if isinstance(p, dict) else ''
+    if isinstance(node, list):
+        return [own_items(p, x) for x in node]
+    if not isinstance(node, dict):
+        return node
+    out = {}
+    for k, v in node.items():
+        if k == 'item':
+            out[k] = _expand_value(pid, v)
+        elif k == 'carries' and isinstance(v, dict):
+            out[k] = {_expand_value(pid, item): n for item, n in v.items()}
+        else:
+            out[k] = own_items(p, v)
+    return out
+
+
+def story_items(p):
+    """Doc 86, J9: the story's own items a program gives, {base^tag: {"name", "keep", "item"}} (item: the game's id)."""
+    out = {}
+    def visit(node):
+        if isinstance(node, list):
+            for x in node:
+                visit(x)
+        elif isinstance(node, dict):
+            if node.get('kind') == 'item.give' and isinstance(node.get('tag'), str) and isinstance(node.get('item'), str):
+                key = node['item'] + '^' + node['tag']
+                out.setdefault(key, {'name': node.get('name', ''), 'keep': bool(node.get('keep')),
+                                     'item': tagged_item(p.get('id', ''), node['item'], node['tag'])})
+            for v in node.values():
+                visit(v)
+    visit(p)
+    return out
 
 
 def match_one(expected, actual, gift=False):
@@ -386,6 +505,8 @@ def _param_ok(param, v, regions):
         return isinstance(v, str) and CAMP_NAME.fullmatch(v) is not None   # (Doc 86, L2; its prefix is checked with the program's.)
     if kind == 'species':
         return isinstance(v, str) and v in animal_habitats()   # (Doc 86, L1: an animal of Data/Wild/animals.json.)
+    if kind == 'tag':
+        return isinstance(v, str) and TAG.fullmatch(v) is not None   # (Doc 86, J9: a story's own mark on an item.)
     return identifier(v) or (kind == 'wolf' and v == '$actor')
 
 
@@ -541,6 +662,15 @@ def validate_effect(effect, pid, regions=None, scenes=None, operand=None):
         require(('town' in effect) == (effect.get('known', 'realm') == 'town'), f'{pid}: a title known in a town names the town, and only then.')
     if kind == 'npc.greet':
         require(effect['text'].strip() == effect['text'] and '\n' not in effect['text'], f'{pid}: a greeting is one line.')
+    if kind == 'item.give':
+        # (Doc 86, J9: a story's own item: a name and "kept" go with a tag; its base is a plain item, no make or maker's mark.)
+        require('tag' in effect or ('name' not in effect and 'keep' not in effect),
+                f'{pid}: a name, or keeping it after the story, is for a story\'s own item: give it a story mark (tag).')
+        require('tag' not in effect or (isinstance(effect['item'], str) and TAGGED_SHORT.fullmatch(effect['item'] + '^' + effect['tag'])),
+                f'{pid}: a story\'s own item is a plain item (no ~ or @) with a mark of small letters, digits and _, up to 32.')
+        require('name' not in effect or (effect['name'].strip() == effect['name'] and '\n' not in effect['name']
+                                         and not any(ch in effect['name'] for ch in '#[]{}')),
+                f'{pid}: a story item\'s name is one line of words, with no #symbols#, brackets or fills.')
     if kind in ('visitor.add', 'visitor.leave'):
         require(re.fullmatch(r'[a-z0-9][a-z0-9_-]{2,39}', effect['visitor']) is not None,
                 f'{pid}: a stranger\'s id is 3 to 40 small letters, digits, - and _.')
@@ -569,6 +699,11 @@ def variables_of(program):
 
 
 def effective_phase(program, phase):
+    # (Doc 86, J9: a story's own items named in their hashed form, as both twins and the game see them.)
+    phase = expanded_phase(program, phase)
+    program = expand_tags(program)
+    if isinstance(program.get('id'), str):
+        phase = {**phase, '_storyId': program['id']}   # (Doc 86, J9: whose the story's own items given in this phase are.)
     if program.get('version') == 2:
         phase = {**phase, '_v': 2, '_vars': variables_of(program),
                  '_activeDays': program.get('activeDays', triggers.ACTIVE_DAYS)}
@@ -1416,8 +1551,37 @@ def validate(p):
     _check_start(p, ids)
     _check_graph(p, ids)
     _check_camps(p)
+    _check_tags(p)
     _check_tests(p)
     return p
+
+
+def _check_tags(p):
+    """Doc 86, J9: each of the story's own items is given one way (one name, kept or not) and named rightly where it is read."""
+    seen = {}
+    def visit(node):
+        if isinstance(node, list):
+            for x in node:
+                visit(x)
+            return
+        if not isinstance(node, dict):
+            return
+        if node.get('kind') == 'item.give' and isinstance(node.get('tag'), str) and isinstance(node.get('item'), str):
+            key = node['item'] + '^' + node['tag']
+            how = (node.get('name', ''), bool(node.get('keep')))
+            require(seen.setdefault(key, how) == how, f'The story\'s own item {key} is given with one name, and kept or not, everywhere.')
+        for k, v in node.items():
+            if k == 'item' and isinstance(v, str) and '^' in v:
+                require(TAGGED_SHORT.fullmatch(v) is not None, f'A story\'s own item is named <item>^<mark> (letter^watch_list): {v}')
+            elif k == 'item' and isinstance(v, dict) and isinstance(v.get('in'), list):
+                for x in v['in']:
+                    require(not isinstance(x, str) or '^' not in x or TAGGED_SHORT.fullmatch(x),
+                            f'A story\'s own item is named <item>^<mark> (letter^watch_list): {x}')
+            else:
+                visit(v)
+    # (A rehearsal's events and expected effects are the game's facts and orders: they may name the hashed form.)
+    visit({k: v for k, v in p.items() if k != 'tests'})
+    require(len(seen) <= TAGGED_MOST, f'A story gives at most {TAGGED_MOST} kinds of its own items.')
 
 
 def camps_of(p):
@@ -2155,6 +2319,7 @@ def watch_of(p):
     story.phase: the sections of the world's facts its conditions read (and which items, factions, towns, residents,
     places and relations), and the watched events its triggers, exits, missions and quests listen for. {} for a story
     that asks nothing: it costs the game nothing."""
+    p = expand_tags(p)   # (Doc 86, J9: the game counts a story's own item under the id it gave it.)
     conditions, listened, weather_cells, anywhere = [], set(), set(), False
     rules_ = [*p.get('triggers', [])]
     for ph in p.get('phases', []):
@@ -2289,8 +2454,9 @@ def check_world_facts(f):
                         'Facts: a wolf\'s gift is its tier and family, as words.')
             for key in ('carries', 'standing', 'reputation'):
                 if isinstance(v, dict) and key in v:
-                    require(all(identifier(i) and type(n) in (int, float) and type(n) is not bool for i, n in v[key].items()),
-                            f'Facts: {key} are numbers by id.')
+                    # (Doc 86, J9: a story's own item is carried under its own id, letter^ab12cd34.watch_list.)
+                    require(all((item_ok(i) if key == 'carries' else identifier(i)) and type(n) in (int, float) and type(n) is not bool
+                                for i, n in v[key].items()), f'Facts: {key} are numbers by id.')
     world = f.get('world', {})
     require(isinstance(world, dict) and set(world) <= set(WORLD_FACTS) and all(_typed(v, WORLD_FACTS[k]) for k, v in world.items()),
             'Facts: the world has day, hour, minute, weekday, season, period, dayOfSeason, year, moon.')
@@ -2342,6 +2508,7 @@ def _play_case(p, case, step=None):
     visit_credits, trace = [], []
     elapsed = 0
     world = case.get('facts')   # (Doc 85, Phase 8: the world's facts, as a case states them; None: no facts at all.)
+    world = own_items(p, world) if world is not None else None   # (Doc 86, J9: item^tag as the game names it.)
     counting = counts_audience(p)
     checks, ready_seen = [], set()
     if counting:
@@ -2391,6 +2558,7 @@ def _play_case(p, case, step=None):
         )
         elapsed = ev.get('elapsedDays', elapsed)
         last_day = ev['day']
+        ev = own_items(p, ev)   # (Doc 86, J9: a story's own item, as the author names it, in the game's form.)
         if 'facts' in ev:
             world = merge_facts(world, ev['facts'])
             ev = {k: v for k, v in ev.items() if k != 'facts'}

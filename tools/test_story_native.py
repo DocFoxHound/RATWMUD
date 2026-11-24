@@ -444,5 +444,46 @@ class CrowdParity(ValuesParity):
         self.assertEqual(after['counters']['story']['crew'], ['rm112', 'rm113', 'rm114'])
 
 
+class StoryItemParity(ValuesParity):
+    """Doc 86, Phase 6 (J9): a story's own item named item^tag in a gift's filter, an "item picked up" filter and "carries",
+    expanded to the game's id as the phase is built; the base filter takes it as a kind of letter; another story's tag,
+    a plain letter and a crafted one are told apart; both twins alike."""
+
+    def program(self):
+        add = lambda n: [{'do': 'add', 'var': 'n', 'value': n}]
+        return {'format': 'ratw-story-program', 'version': 2, 'id': 'parity6', 'title': 'Story items in both twins', 'start': 'a',
+                'audience': {'kind': 'open'}, 'variables': [{'id': 'n', 'type': 'number', 'scope': 'story'}],
+                'phases': [{'id': 'a', 'journal': 'Items.', 'effects': [], 'exits': [], 'triggers': [
+                    {'id': 'own', 'on': 'gift', 'match': {'item': 'letter^watch_list'}, 'actions': add(1)},
+                    {'id': 'base', 'on': 'gift', 'match': {'item': 'letter'}, 'actions': add(10)},
+                    {'id': 'one_of', 'on': 'gift', 'match': {'item': {'in': ['rope', 'letter^watch_list']}}, 'actions': add(100)},
+                    {'id': 'picked', 'on': 'item picked up', 'match': {'item': 'letter^watch_list'}, 'actions': add(1000)},
+                    {'id': 'carry', 'on': 'deed', 'if': {'test': 'carries', 'item': 'letter^watch_list', 'op': '>=', 'value': 1}, 'actions': add(10000)},
+                    {'id': 'plain', 'on': 'deed', 'if': {'test': 'carries', 'item': 'letter', 'op': '>=', 'value': 1}, 'actions': add(100000)},
+                ]}],
+                'tests': [{'name': 'x', 'cohort': [], 'events': [], 'expect': ['a']}]}
+
+    def test_every_form_matches(self):
+        mine = story_program.tagged_item('parity6', 'letter', 'watch_list')
+        theirs = story_program.tagged_item('another-story', 'letter', 'watch_list')
+        self.assertRegex(mine, r'^letter\^[0-9a-f]{8}\.watch_list$')
+        self.assertNotEqual(mine, theirs)
+        base = {'phase': 'a', 'entered': 0, 'visits': 1, 'votes': {}, 'actor': '', 'seed': 's', 'began': 0, 'cohort': [self.ASH], 'counters': {}}
+        n = lambda after: after.get('counters', {}).get('story', {}).get('n', 0)
+        for item, want in ((mine, 111), (theirs, 10), ('letter', 10), ('letter~fine', 10), ('rope', 100), ('letter^watch_list', 10)):
+            with self.subTest(gift=item):
+                after, _ = self.both(base, {'kind': 'gift', 'id': 1, 'actor': self.ASH, 'target': 'rm111', 'item': item, 'quantity': 1})
+                self.assertEqual(n(after), want)
+        for item, want in ((mine, 1000), (theirs, 0)):
+            with self.subTest(picked=item):
+                after, _ = self.both(base, {'kind': 'item picked up', 'id': 1, 'actor': self.ASH, 'item': item, 'quantity': 1})
+                self.assertEqual(n(after), want)
+        wolf = lambda carries: {'facts': {'wolves': {self.ASH: {'cell': 'grey', 'x': 1, 'y': 1, 'carries': carries}}}}
+        for carries, want in (({mine: 1}, 10000), ({theirs: 1, 'letter': 2}, 100000), ({mine: 1, 'letter': 1}, 110000), ({}, 0)):
+            with self.subTest(carries=carries):
+                after, _ = self.both(base, {'kind': 'deed', 'id': 1, 'actor': self.ASH, **wolf(carries)})
+                self.assertEqual(n(after), want)
+
+
 if __name__ == '__main__':
     unittest.main()

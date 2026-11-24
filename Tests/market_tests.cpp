@@ -149,6 +149,16 @@ void everyGoodHasADepthGroup()
 
 void thePieces()
 {
+    // (Doc 86, J9: every split of an item's id stops at a story's mark as at a make or a maker's.)
+    expect(items::baseOf("letter^ab12cd34.watch_list") == "letter" && items::baseOf("hide~fine") == "hide" &&
+               items::baseOf("sword~masterwork@sorrel") == "sword" && items::baseOf("rope") == "rope",
+           "baseOf stops at ^, ~ and @");
+    expect(items::qualityOf("letter^ab12cd34.watch_list") == 1 && items::makerOf("letter^ab12cd34.watch_list").empty() &&
+               !items::qualityApplies("letter^ab12cd34.watch_list") && items::withQuality("letter^ab12cd34.watch_list", 2) == items::withQuality("letter", 2),
+           "a story's own item has no make or maker; a make of it is its base's");
+    expect(items::good("letter^ab12cd34.watch_list") == items::good("letter") && items::good("letter") &&
+               !items::wearable("cloak^ab12cd34.relic") && World::durabilityOf("rope^ab12cd34.knot") == 0 && World::durabilityOf("rope") >= 0,
+           "found as its base, never worn, never wearing down");
     // The arithmetic: decay exact at any step, the clamp, NaN read 1, half-lives by keeping.
     expect(near(market::decayed(.4, 0, 2, 2), .2) && near(market::decayed(.4, 0, 1, 2) * std::pow(.5, .5), .2, 1e-12),
            "decay: half at the half-life, the same in two steps");

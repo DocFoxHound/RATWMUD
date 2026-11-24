@@ -7,6 +7,7 @@
 #include "test_purse.h"
 #include "RatwClaims.h"
 #include "RatwGame.h"
+#include "RatwItems.h"
 #include "RatwStorylines.h"
 #include "RatwWorld.h"
 
@@ -667,6 +668,124 @@ void phase3Thanks()
     fs::remove(save);
 }
 
+
+// Doc 86, J9 (Core/RatwGameStoryWorld.cpp, RatwStoryArea.cpp): a story's own items. A tagged item.give names its item and
+// lists it in the run's held.tags (a kept one not); the pack shows the name; a gift of it to a resident is a gift of that
+// id; no shop takes it; the facts count it under its own id when the watch names it, and as its base otherwise; the run's
+// end takes every unit back from every purse and the ground, the kept one staying with its name through a save.
+void phase6Items()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyworld-6-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    const auto world = writeDoors(root);
+    const auto run = std::string("world-letters");
+    const std::string list = "letter^ab12cd34.watch_list", writ = "writ^ab12cd34.thanks";
+    {
+        Town t(world, save);
+        auto& w = t.g.world();
+        auto& s = w.society();
+        t.enter(t.ash, 1, "ash", "Ash", 0, 8.5);
+        t.enter(t.bo, 2, "bo", "Bo", 0, 10.5);
+        const auto ash = t.ash.entityId;
+        std::vector<WorldEvent> seen;
+        w.setEventWatcher([&](const WorldEvent& e) { seen.push_back(e); });
+        auto phase = parsed(R"({"title":"The watch list","phase":"carry","journal":"A list for the warden.","visit":1,"program":"v2-watch-list",
+            "watch":{"facts":["wolves"],"items":["letter","letter^ab12cd34.watch_list"]}})");
+        auto players = json::Value::array();
+        players.push(ash);
+        players.push(t.bo.entityId);
+        phase.set("players", players);
+        expect(t.g.applyDmAct({"700", "story.phase", run, "dm", json::dump(phase)}).ok, "the story opens");
+        int n = 700;
+        const auto give = [&](const std::string& wolf, const std::string& payload) {
+            return t.g.applyDmAct({std::to_string(++n), "item.give", wolf, "dm", payload});
+        };
+        auto& book = t.g.storylineBook();
+        const auto tags = [&]() -> const json::Value& { return book.find(run)->held["tags"]; };
+
+        // ---- refusals: no running story, a malformed id, a base that is no plain item, a name of more than one line.
+        expect(!give(ash, R"({"item":"letter^ab12cd34.watch_list","quantity":1})").ok, "a story's own item needs its running story");
+        expect(!give(ash, R"({"item":"letter^watch_list","quantity":1,"run":"world-letters"})").ok, "the short form is the author's, not the game's");
+        expect(!give(ash, R"({"item":"letter~fine^ab12cd34.x","quantity":1,"run":"world-letters"})").ok, "a plain item's");
+        expect(!give(ash, R"({"item":"letter^ab12cd34.watch_list","quantity":1,"run":"world-letters","name":"two\nlines"})").ok, "one line");
+        expect(!give(ash, R"({"item":"letter^ab12cd34.watch_list","quantity":1,"run":"world-nothing","name":"x"})").ok, "of a story running");
+        expect(Society::stock(*s.account(ash), list) == 0 && !tags().size() && !items::storyItemName(list), "nothing given, named or held");
+
+        // ---- given, named, held; a kept one given and named, not held.
+        auto r = give(ash, R"({"item":"letter^ab12cd34.watch_list","quantity":2,"name":"The watch list","run":"world-letters","visit":1})");
+        expect(r.ok && Society::stock(*s.account(ash), list) == 2 && contains(t.ash.said(), "The watch list"), "Ash is given the list: " + r.message);
+        expect(t.g.storyItemNames().at(list) == "The watch list" && std::string(Society::itemName(list)) == "The watch list" &&
+                   tags().size() == 1 && tags().items()[0].asString() == list, "named, and held by the run");
+        r = give(ash, R"({"item":"writ^ab12cd34.thanks","quantity":1,"name":"The warden's writ of thanks","keep":true,"run":"world-letters","visit":1})");
+        expect(r.ok && Society::stock(*s.account(ash), writ) == 1 && tags().size() == 1, "the writ is given, kept after the story: " + r.message);
+        expect(give(t.bo.entityId, R"({"item":"letter","quantity":1})").ok, "Bo has a plain letter");
+        t.run(.5);
+        bool shown = false;
+        for (const auto& i : t.ash.snapshots.back().array("inventory"))
+            if (i.string("id") == list)
+                shown = i.string("name") == "The watch list" && !i.has("condition") && !i.boolean("blade");
+        expect(shown, "Ash's pack shows it by its name, with no wear");
+
+        // ---- the facts: under its own id where the watch names it; a plain letter as itself.
+        json::Value facts;
+        std::string error;
+        expect(json::parse(t.g.storyFactsJson(), facts, error), "the facts: " + error);
+        expect(facts["wolves"][ash]["carries"].number(list) == 2 && facts["wolves"][ash]["carries"].number("letter") == 0 &&
+                   facts["wolves"][t.bo.entityId]["carries"].number("letter") == 1, "the list under its own id, Bo's letter as a letter: " +
+               json::dump(facts["wolves"]));
+
+        // ---- never lent (the story may take it back while it is out).
+        t.ash.said();
+        t.g.command(&t.ash, cmd({{"type", "lend"}, {"target", t.bo.entityId}, {"item", list}, {"quantity", 1}, {"days", 2}}));
+        expect(contains(t.ash.said(), "That belongs to a story."), "a story's own item is not lent");
+
+        // ---- no shop takes it.
+        auto* um = w.entity("um");
+        const auto keep = [&] {
+            um->cellId = w.entity(ash)->cellId;
+            um->position = {w.entity(ash)->position.x + 1, w.entity(ash)->position.y};
+            w.stop("um");
+        };
+        keep();
+        const auto quote = s.quote(ash, "um", list, 1, false);
+        expect(!quote.ok && quote.message == "That belongs to a story.", "no shop buys it: " + quote.message);
+        keep();
+        t.g.command(&t.ash, cmd({{"type", "trade"}, {"target", "um"}, {"item", list}, {"quantity", 1}, {"buy", false}}));
+        expect(Society::stock(*s.account(ash), list) == 2, "nor takes it in trade");
+
+        // ---- a gift of it to a resident: the gift's item is that id; one more lies on the ground.
+        auto* u1 = w.entity("u1");
+        t.place(t.ash, 0, u1->position.x + .6, u1->position.y);
+        w.entity(ash)->cellId = u1->cellId;
+        seen.clear();
+        t.g.command(&t.ash, cmd({{"type", "give"}, {"target", "u1"}, {"item", list}, {"quantity", 1}}));
+        const auto gift = std::find_if(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "gift" || e.kind == "gift again"; });
+        expect(gift != seen.end() && gift->item == list && gift->target == "u1" && Society::stock(*s.account("u1"), list) == 1,
+               "u1 is given the list, the gift's item its own id: " + t.ash.said());
+        const auto ground = w.groundItems().size();
+        expect(w.placeOnGround(cellId(0), 5, 5, list).ok && w.groundItems().size() == ground + 1, "and one lies on the ground");
+
+        // ---- the run ends: every unit taken back, the kept writ stays with its name.
+        t.ash.said();
+        expect(t.g.applyDmAct({std::to_string(++n), "story.stop", run, "dm", "{}"}).ok, "the story stops");
+        expect(Society::stock(*s.account(ash), list) == 0 && Society::stock(*s.account("u1"), list) == 0 &&
+                   std::none_of(w.groundItems().begin(), w.groundItems().end(), [&](const GroundItem& g) { return g.item == list; }) &&
+                   Society::stock(*s.account(t.bo.entityId), "letter") == 1,
+               "taken back from Ash, from u1 and off the ground; Bo's plain letter stays");
+        expect(contains(t.ash.said(), "gone with it") && !t.g.storyItemNames().count(list) && !items::storyItemName(list), "Ash told; its name let go");
+        expect(Society::stock(*s.account(ash), writ) == 1 && std::string(Society::itemName(writ)) == "The warden's writ of thanks", "the writ kept, named");
+        expect(!book.find(run)->held.has("tags"), "nothing is held");
+        t.g.save();
+    }
+    items::nameStoryItem(writ, "");
+    {
+        Town t(world, save);
+        expect(t.g.storyItemNames().count(writ) && std::string(Society::itemName(writ)) == "The warden's writ of thanks",
+               "the kept writ's name comes back with the save");
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
 } // namespace
 
 int main()
@@ -677,6 +796,7 @@ int main()
         phase1b();
         phase2Names();
         phase3Thanks();
+        phase6Items();
     }
     catch (const std::exception& error)
     {

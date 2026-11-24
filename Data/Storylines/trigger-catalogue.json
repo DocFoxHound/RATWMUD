@@ -179,7 +179,8 @@
   "talkvalue": "A talk memory value: lower-case letters, digits and _, up to 40.",
   "figure": "A figure's id (live.figures): lower-case letters, digits and _, 3 to 40.",
   "camp": "A story camp's name: lower-case letters, digits and _, 3 to 30, beginning with the story's prefix (nh_, sq_, mq_, lq_, st_); the camp is camp_story_<name>.",
-  "species": "An animal of Data/Wild/animals.json (its id)."
+  "species": "An animal of Data/Wild/animals.json (its id).",
+  "tag": "A story's own mark on an item (small letters, digits and _, up to 32): the item is the story's, named as the story names it, and taken back when the run ends unless kept."
  },
  "trigger": {
   "once": {
@@ -711,7 +712,7 @@
     }
    },
    "tile": true,
-   "notes": "A trigger on 'gift' also fires on 'gift again'. A gift's item filter matches the base item, so a marked or crafted rope counts as rope (unless the filter names marks with ~ or @).",
+   "notes": "A trigger on 'gift' also fires on 'gift again'. A gift's item filter matches the base item, so a marked or crafted rope counts as rope (unless the filter names marks with ~ or @). A story's own item is named item^tag (letter^watch_list): only that story's.",
    "mission": true,
    "measures": [
     "quantity",
@@ -755,7 +756,7 @@
     }
    },
    "tile": true,
-   "notes": "Item filter matches the base item, as for gift.",
+   "notes": "Item filter matches the base item, as for gift (a story's own item as item^tag).",
    "mission": true,
    "measures": [
     "quantity",
@@ -6270,7 +6271,7 @@
     },
     "item": {
      "type": "item",
-     "label": "the item",
+     "label": "the item (a story's own as item^tag)",
      "any": "anything"
     },
     "cell": {
@@ -6305,7 +6306,7 @@
     },
     "item": {
      "type": "item",
-     "label": "the item",
+     "label": "the item (a story's own as item^tag)",
      "any": "anything"
     },
     "cell": {
@@ -7729,7 +7730,7 @@
    "facts": true,
    "title": "A wolf carries an item",
    "sentence": "{who} carries {op} {value} {item}",
-   "help": "How many of an item the wolf has in their pack (marked or crafted ones count as their base item). Unknown for a wolf away.",
+   "help": "How many of an item the wolf has in their pack (marked or crafted ones count as their base item, and so does a story's own item; name a story's own as item^tag, letter^watch_list, to count only it). Unknown for a wolf away.",
    "params": [
     {
      "key": "who",
@@ -10916,8 +10917,8 @@
    "id": "item.give",
    "group": "wolves",
    "title": "Give a wolf an item",
-   "sentence": "Give {player} {quantity} {item}",
-   "help": "An item into one wolf's pack; a full pack is refused and the wolf told.",
+   "sentence": "Give {player} {quantity} {item} {tag} {name} {keep}",
+   "help": "An item into one wolf's pack; a full pack is refused and the wolf told. With a story mark (tag) it is the story's own item: shown by the name given (called), never sold to a shop or a stall, never used up in making or wear, and taken back from every pack, purse and the ground when the run ends unless kept after the story. Filters and \"carries\" name it as item^tag (letter^watch_list).",
    "params": [
     {
      "key": "player",
@@ -10938,6 +10939,35 @@
      "min": 1,
      "max": 20,
      "operand": true
+    },
+    {
+     "key": "tag",
+     "type": "tag",
+     "label": "a story mark",
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "name",
+     "type": "text",
+     "label": "called",
+     "max": 60,
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "keep",
+     "type": "bool",
+     "label": "kept after the story",
+     "optional": true,
+     "words": {
+      "true": "kept after the story",
+      "false": "taken back at the end"
+     }
     }
    ]
   },

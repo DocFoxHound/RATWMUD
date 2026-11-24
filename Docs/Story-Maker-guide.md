@@ -578,6 +578,32 @@ holds at most 8 at once. Approval warns (it does not refuse) when the animal liv
 on open water"), when the region is indoors, or when it is in a town (no hunt begins there). Stage it when the wolves are about to go out
 (at dusk, when a quest is taken): an animal no hunt meets is gone after its minutes.
 
+### Story items
+
+**A story's own item** is an `item.give` with a story mark (`tag`: small letters, digits and `_`, up to 32), a name
+(`name`, up to 60 characters, shown in the pack, the trade window and gifts) and, if it should outlast the story, `keep`:
+
+```json
+{"kind": "item.give", "player": "$actor", "item": "letter", "quantity": 1, "tag": "watch_list", "name": "The watch list"}
+{"id": "hand", "label": "Give the watch list to the warden.", "on": "gift", "match": {"item": "letter^watch_list", "target": "rm112"}}
+{"test": "carries", "item": "letter^watch_list", "op": ">=", "value": 1}
+```
+
+It is a letter (it weighs what a letter weighs), but it is the story's: no shop or stall takes it ("That belongs to a
+story."), it is never built with, made into something or used up as a letter, and it never wears. Name it in a filter
+(`gift`, `gift again`, `item picked up`, `item dropped`) or in "carries" as `item^tag`: `letter^watch_list` is this
+story's list and nothing else, not a plain letter and not another story's list of the same mark. A plain `letter` filter
+or "carries letter" still counts it as a letter, as it counts a fine or a marked one. Give it from a plain item (no `~`
+make or `@` maker's mark), with one name, and kept or not, wherever the story gives it. The base is checked against the
+item catalogue at approval as any item.
+
+When the run ends, every one not kept is taken back: out of every pack, from a resident it was given to, and off the
+ground; the wolves who carried it are told it is gone with the story. A kept one stays with its name (a writ of
+thanks, a token). The game keeps the item under an id with the story's own mark in it (`letter^ab12cd34.watch_list`, the
+eight letters and digits made from the story's id), so two stories' lists never meet; rehearsals, What if and the
+workbench take `letter^watch_list` as you write it. A new version of the same story reads the items an earlier one gave;
+a different story (another chapter of a campaign) does not: give the next chapter its own.
+
 ## 8. The world's facts and watched events
 
 A condition marked **reads the world's facts** asks about the world as of the event: where a wolf is (region, place, town,
@@ -838,6 +864,7 @@ takes back what the story held, as it was before the story first touched it. Wha
 | `weather.set` | the weather goes back to the season's (it also runs out by itself after its hours) |
 | `story.ping` | the map markers go (they also run out by themselves) |
 | `hunt.stage` | an animal no hunt has met yet goes (it also lapses after its minutes) |
+| `item.give` with a `tag` | every unit of the story's own item is taken back from every pack, purse and the ground, unless `keep` (then it **stays**, with its name) |
 | `npc.spare`, `npc.protect` with `lasts: run` | the resident is no longer spared, or protected, by this run (another story's hold stays) |
 | `npc.spare`, `npc.protect` with `lasts: campaign` | **stay** until the campaign ends (or an admin lets go of its holds) |
 | `talk.remember` | the residents forget it, unless `keep` (then it lasts its days) |
@@ -877,6 +904,8 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | A quest is not offered to a wolf | the quest's **Only for wolves who…** | It holds for that wolf? (A chain: is the quest before it done for them?) Taken back from them (`quest.withdraw`)? Too many stories at one giver: see "Many stories at one resident". |
 | A chapter never hears a pack | the pack's Timeline and the chapter's trigger | `story.notify`'s news name and the chapter's `"match": {"detail": ...}` the same words; a named `story` is the chapter's id, and it is running. |
 | A staged animal never shows | the hunt's place | The hunt must begin inside the region (the wolf's tile), within the minutes, and only the first hunt there meets it, whoever begins it. Hunts begin only outdoors, never in a town. |
+| A story's item is not taken by a shop | its mark | "That belongs to a story.": an item given with a `tag` is never sold; give a plain one for the wolves to sell. |
+| A gift of the story's letter does nothing | the filter | Name it `letter^watch_list` (the item, `^`, its mark), as the `item.give` gives it; a plain `letter` filter takes any letter. |
 | `npc.howl` was refused | the order | "howled a moment ago": a resident's voice rests as a wolf's does; "dead", "down", "in a fight". |
 | A count of residents is always unknown | the world's facts | None of the list's residents is in the facts yet: the list was empty when the phase began and the game has not been told again (is the runner running?). |
 | Problems in the draft | Story Creator → **Problems** | Every problem at once with **Go**, and the world's warnings (a signal nothing hears, a counter nothing sets, an id the world lacks). |
@@ -914,6 +943,7 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | A resident's hub | 9 choices; what doesn't fit goes under Ask about... (9 more) |
 | A staged hunt | 1 to 3 animals, 1 to 1,440 minutes; 8 a story at once; one hunt each |
 | A resident's howl | one a howl's rest (as a wolf's); residents counted in a region: a list of 500 |
+| A story's own items | a mark of 1 to 32 of `a-z0-9_`, a name of 60 characters; 64 kinds a story; 4,000 named in the world |
 
 <!-- reference:begin (made by tools/story_guide.py from Data/Storylines/trigger-catalogue.json: do not edit by hand) -->
 
@@ -1846,7 +1876,7 @@ A character gives goods or coins to another, the first gift of the game day betw
 | `quantity` | how many (number) |  |
 | `coins` | coins given (number) |  |
 
-A trigger on 'gift' also fires on 'gift again'. A gift's item filter matches the base item, so a marked or crafted rope counts as rope (unless the filter names marks with ~ or @).
+A trigger on 'gift' also fires on 'gift again'. A gift's item filter matches the base item, so a marked or crafted rope counts as rope (unless the filter names marks with ~ or @). A story's own item is named item^tag (letter^watch_list): only that story's.
 
 ```json
 {"id": "when-gift", "on": "gift", "match": {"item": "rope"}, "actions": [{"do": "note", "text": "A gift is given"}]}
@@ -1865,7 +1895,7 @@ A character gives to the same receiver again on a game day it has already given 
 | `quantity` | how many (number) |  |
 | `coins` | coins given (number) |  |
 
-Item filter matches the base item, as for gift.
+Item filter matches the base item, as for gift (a story's own item as item^tag).
 
 ```json
 {"id": "when-gift-again", "on": "gift again", "match": {"item": "rope"}, "actions": [{"do": "note", "text": "Another gift the same day"}]}
@@ -1969,7 +1999,7 @@ A wolf picked up something lying on the ground (what was knocked loose in a figh
 | Field | Holds | Left out means |
 |---|---|---|
 | `actor` | the wolf (wolf) | any wolf |
-| `item` | the item (item) | anything |
+| `item` | the item (a story's own as item^tag) (item) | anything |
 | `cell` | where (place) | anywhere |
 | `quantity` | how many (number) | any |
 
@@ -1984,7 +2014,7 @@ A wolf's held item fell to the ground (knocked loose in a fight). Written only w
 | Field | Holds | Left out means |
 |---|---|---|
 | `actor` | the wolf (wolf) | any wolf |
-| `item` | the item (item) | anything |
+| `item` | the item (a story's own as item^tag) (item) | anything |
 | `cell` | where (place) | anywhere |
 | `detail` | how (text) | any |
 
@@ -4693,7 +4723,7 @@ Reads: **at least** **1** stand in **square**
 
 <a id="condition-carries"></a>**`carries`**: A wolf carries an item (v2, reads the world's facts)
 
-How many of an item the wolf has in their pack (marked or crafted ones count as their base item). Unknown for a wolf away.
+How many of an item the wolf has in their pack (marked or crafted ones count as their base item, and so does a story's own item; name a story's own as item^tag, letter^watch_list, to count only it). Unknown for a wolf away.
 
 Reads: **$actor** carries **at least** **1** **rope**
 
@@ -6156,7 +6186,7 @@ Reads: Pay **$actor** **12** pennies from **town:greyfen**: **the carter thanks 
 
 <a id="effect-item-give"></a>**`item.give`**: Give a wolf an item
 
-An item into one wolf's pack; a full pack is refused and the wolf told.
+An item into one wolf's pack; a full pack is refused and the wolf told. With a story mark (tag) it is the story's own item: shown by the name given (called), never sold to a shop or a stall, never used up in making or wear, and taken back from every pack, purse and the ground when the run ends unless kept after the story. Filters and "carries" name it as item^tag (letter^watch_list).
 
 Reads: Give **$actor** **1** **rope**
 
@@ -6165,6 +6195,9 @@ Reads: Give **$actor** **1** **rope**
 | `player` | the wolf | wolf |
 | `item` | the item | item |
 | `quantity` | how many | int; 1 to 20 |
+| `tag` | a story mark | tag; optional |
+| `name` | called | text; up to 60 characters; optional |
+| `keep` | kept after the story | bool; optional |
 
 ```json
 {"do": "effect", "effect": {"kind": "item.give", "player": "$actor", "item": "rope", "quantity": 1}}

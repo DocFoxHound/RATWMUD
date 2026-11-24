@@ -5,7 +5,7 @@
 import {createContext, useContext, useMemo, useState} from 'react';
 import {MapView} from '../MapView';
 import {surfaceFor} from '../../lib/surface';
-import {allActions, countersOf, figuresOf, fillsOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, widestFilled, REF_KIND, signalsOf, talkKeysOf, talkValuesOf, visitorsOf, type CatEvent, type CatItem, type Condition, type Operand, type Param,
+import {allActions, countersOf, figuresOf, fillsOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, widestFilled, REF_KIND, signalsOf, storyItemsOf, tagsOf, talkKeysOf, talkValuesOf, visitorsOf, type CatEvent, type CatItem, type Condition, type Operand, type Param,
     type Program, type Slot} from '../../lib/workbench';
 import {useBench} from './context';
 import {ConditionNode} from './TriggerView';
@@ -50,7 +50,9 @@ export function useOptions(type: string): Option[] {
         if (type === 'purse') return Object.entries(purseNames(refs)).map(([id, name]) => ({id, name, group: id.startsWith('till:') ? 'Tills' : 'Town treasuries'}));
         const kind = REF_KIND[type];
         const list = kind ? (refs?.[kind] as Option[] | undefined) ?? [] : [];
-        if (type === 'item') return (refs?.items ?? []).map(i => ({id: i.id, name: i.name, group: i.category}));
+        // (Doc 86, J9: the story's own items first, as filters and "carries" name them: letter^watch_list.)
+        if (type === 'item') return [...storyItemsOf(program).map(s => ({id: s.id, name: s.name || `${s.item} (${s.tag})`, group: "The story's own",
+            hint: s.keep ? 'kept after the story' : 'taken back at the end'})), ...(refs?.items ?? []).map(i => ({id: i.id, name: i.name, group: i.category}))];
         if (type === 'resident') return (refs?.residents ?? []).map(r => ({id: r.id, name: r.name, hint: r.work || r.home}));
         if (type === 'place') return (refs?.places ?? []).map(p => ({id: p.id, name: p.name, hint: p.kind + (p.town ? ' · ' + p.town : '')}));
         // (Doc 86, L1: an animal for a staged hunt, with the ground it lives on.)
@@ -122,9 +124,9 @@ function TextPicker({param, value, pick}: {param?: Param; value: unknown; pick: 
         <button type="submit" disabled={!text.trim() || widest > max}>Use</button></form>;
 }
 
-function NamePicker({names, value, pick, noun}: {names: string[]; value: unknown; pick: (v: string) => void; noun: string}) {
+function NamePicker({names, value, pick, noun, pattern}: {names: string[]; value: unknown; pick: (v: string) => void; noun: string; pattern?: RegExp}) {
     const [text, setText] = useState('');
-    const ok = /^[A-Za-z0-9_][A-Za-z0-9_.:-]{0,79}$/.test(text);
+    const ok = (pattern ?? /^[A-Za-z0-9_][A-Za-z0-9_.:-]{0,79}$/).test(text);
     return <div className="wb-search-list">
         <div className="wb-options">{names.map(n => <button key={n} type="button" aria-pressed={n === value} onClick={() => pick(n)}><span>{n}</span></button>)}
             {!names.length && <p className="hint">This story has no {noun} yet.</p>}</div>
@@ -263,6 +265,8 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
     else if (type === 'talkkey') body = <NamePicker names={talkKeysOf(program)} value={slot.value} pick={v => one(v.toLowerCase())} noun="memory key (nh_stage)"/>;
     else if (type === 'talkvalue') body = <NamePicker names={talkValuesOf(program)} value={slot.value} pick={v => one(v.toLowerCase())} noun="value (reckoning)"/>;
     else if (type === 'figure') body = <NamePicker names={figuresOf(program)} value={slot.value} pick={v => one(v.toLowerCase())} noun="figure's id"/>;
+    // (Doc 86, J9: a story's own mark on an item; the item is then letter^<mark> in filters and "carries".)
+    else if (type === 'tag') body = <NamePicker names={tagsOf(program)} value={slot.value} pick={v => one(v.toLowerCase())} noun="story mark (watch_list)" pattern={/^[A-Za-z0-9_]{1,32}$/}/>;
     // (Phase 9: a stranger the story brings, by the id it gives them.)
     else if (type === 'visitor') body = <NamePicker names={visitorsOf(program)} value={slot.value} pick={one} noun="stranger's id"/>;
     else if (type === 'objective') {

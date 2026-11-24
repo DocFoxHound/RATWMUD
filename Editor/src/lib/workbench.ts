@@ -245,6 +245,20 @@ export function effectValuesOf(p: Program, kinds: string[], key: string): string
 export const talkKeysOf = (p: Program) => effectValuesOf(p, ['talk.remember', 'talk.forget'], 'key');
 export const talkValuesOf = (p: Program) => effectValuesOf(p, ['talk.remember'], 'value');
 export const figuresOf = (p: Program) => effectValuesOf(p, ['figure.set', 'figure.clear'], 'figure');
+/** Doc 86, J9: the story's own items a program gives (item.give with a tag), as a filter or "carries" names them
+ *  (letter^watch_list), with the name it gives them and the base item. */
+export function storyItemsOf(p: Program): {id: string; item: string; tag: string; name: string; keep: boolean}[] {
+    const out = new Map<string, {id: string; item: string; tag: string; name: string; keep: boolean}>();
+    const effects = [...p.phases.flatMap(ph => ph.effects ?? []), ...(p.quests ?? []).flatMap(q => [...(q.rewards ?? []), ...(q.bonus ?? [])]),
+        ...[...(p.triggers ?? []), ...p.phases.flatMap(ph => ph.triggers ?? [])].flatMap(t => allActions(t.actions).flatMap(({a}) => a.do === 'effect' ? [a.effect] : []))];
+    for (const e of effects)
+        if (e.kind === 'item.give' && typeof e.item === 'string' && typeof e.tag === 'string' && e.tag) {
+            const id = `${e.item}^${e.tag}`;
+            if (!out.has(id)) out.set(id, {id, item: e.item, tag: e.tag, name: typeof e.name === 'string' ? e.name : '', keep: e.keep === true});
+        }
+    return [...out.values()].sort((a, b) => a.id.localeCompare(b.id));
+}
+export const tagsOf = (p: Program) => [...new Set(storyItemsOf(p).map(s => s.tag))].sort();
 /** Phase 9: the strangers (visitor.add) a program brings, by the ids it gives them. */
 export function visitorsOf(p: Program): string[] {
     const out = new Set<string>();
@@ -271,6 +285,9 @@ export function namesOf(refs: Refs | null, program?: Program | null): Names {
         // (Phase 6: quests by title, their objectives by label.)
         out.quest = Object.fromEntries((program.quests ?? []).map(q => [q.id, q.title || q.id]));
         out.objective = Object.fromEntries((program.quests ?? []).flatMap(q => q.objectives.map(o => [o.id, o.label || o.id])));
+        // (Doc 86, J9: the story's own items by the name it gives them, "the story's letter" when it gives none.)
+        out.item = {...out.item};
+        for (const s of storyItemsOf(program)) out.item[s.id] = s.name ? `“${s.name}” (the story's ${out.item[s.item] ?? s.item})` : `the story's ${out.item[s.item] ?? s.item} (${s.tag})`;
     }
     out.purse = purseNames(refs);
     return out;

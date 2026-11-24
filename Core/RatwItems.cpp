@@ -584,6 +584,8 @@ bool load(std::string* error)
 const Item* wearable(const std::string& id)
 {
     const auto& index = catalog().wearIndex;
+    if (storyTagged(id))
+        return nullptr;                             // (A story's own item is carried, never worn: doc 86, J9.)
     const auto found = index.find(unmarked(id));
     return found == index.end() ? nullptr : found->second;
 }
@@ -668,14 +670,15 @@ std::vector<std::string> wearablesSold(const Business& business)
 const Item* good(const std::string& id)
 {
     const auto& index = catalog().goodIndex;
-    const auto mark = id.find('@');                 // (Most ids carry no maker's mark: no copy to look them up.)
+    // (Most ids carry no maker's mark: no copy to look them up. A story's own item is its base: doc 86, J9.)
+    const auto mark = id.find_first_of("@^");
     const auto found = mark == std::string::npos ? index.find(id) : index.find(id.substr(0, mark));
     return found == index.end() ? nullptr : found->second;
 }
 
 const Item* blade(const std::string& id)
 {
-    const auto* g = good(id);
+    const auto* g = storyTagged(id) ? nullptr : good(id);   // (A story's own item is never a blade in the paw: doc 86, J9.)
     return g && g->weapon.kind == "blade" ? g : nullptr;
 }
 
@@ -686,7 +689,39 @@ const char* tierName(int tier)
 
 std::string baseOf(const std::string& id)
 {
-    return id.substr(0, id.find_first_of("~@"));
+    return id.substr(0, id.find_first_of("~@^"));
+}
+
+bool storyTagged(const std::string& id)
+{
+    return id.find('^') != std::string::npos;
+}
+
+namespace
+{
+std::unordered_map<std::string, std::string>& storyNames()
+{
+    static std::unordered_map<std::string, std::string> names;   // (The game's storyItemNames_, as every name is shown.)
+    return names;
+}
+} // namespace
+
+void nameStoryItem(const std::string& id, const std::string& name)
+{
+    if (!storyTagged(id))
+        return;
+    if (name.empty())
+        storyNames().erase(id);
+    else
+        storyNames()[id] = name;
+}
+
+const std::string* storyItemName(const std::string& id)
+{
+    if (!storyTagged(id))
+        return nullptr;
+    const auto found = storyNames().find(id);
+    return found == storyNames().end() ? nullptr : &found->second;
 }
 
 std::string unmarked(const std::string& id)
@@ -750,7 +785,7 @@ double qualityPrice(int quality)
 
 bool qualityApplies(const std::string& base)
 {
-    return base != "herbs" && base != "meal" && base != "water" && base.find_first_of("~@") == std::string::npos;
+    return base != "herbs" && base != "meal" && base != "water" && base.find_first_of("~@^") == std::string::npos;
 }
 
 std::vector<std::string> goodsSold(const Business& business, int maxPrice)

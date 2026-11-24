@@ -1775,3 +1775,85 @@ effects' own).
 - **Going live** on `ratw_ridgemere3` needs no migration; the game server restarted from this branch (`npc.howl`, the howl
   events, `hunt.stage` and the staged hunt, `story.watch`), the story runner from this branch with the rebuilt
   `libratw_story.so` (a residents count needs both twins), the Editor released from it. The client needs no change.
+
+## Phase 6 as built
+
+**Phase 6 as built** (2026-11-23, branch `r3-nh-p6`, on `r3-nh-p5` at `b1ebf76e`). Engine spec item J9, tagged story items.
+**No migration**: the names live in the game's checkpoint (`storyItemNames`), what a run must take back in its `held.tags`
+(the story book), and the items themselves in the purses as any good. No new effect or event (86 effects, 216 events): `item.give`
+gains three optional parameters, and there is one new parameter type (`tag`, 50 types).
+- **The id.** A story's own item is `<base>^<hash8>.<tag>` (`letter^ab12cd34.watch_list`): `hash8` is the first 8 hex digits
+  of the SHA-256 of the program's `id` (`story_program.tag_hash`, `tagged_item`), so two stories' marks never meet and a new
+  version of the same story reads what an earlier one gave. An author writes `letter^watch_list` in a filter's `item` (an
+  `in` list's values too) and in `carries`; `story_program.expand_tags` gives the program in the hashed form wherever it is
+  read (`effective_phase`, which also stamps the phase with `_storyId`; `story_quests.index`; `watch_of`), and `own_items`
+  does the same for a rehearsal's events and facts and the console's What if. Neither twin ever sees the short form, and an
+  author never writes the hashed one (refused). The expansion is cached per program object, and a program with no tagged
+  item is read as it is.
+- **Matching (both twins).** `_gift_base` (Python) and `giftBase` (`RatwStoryTriggers.cpp`) split on `^` as on `~` and `@`:
+  a filter that names no mark (`letter`) takes a story's own letter as a kind of letter; one naming a mark takes only that
+  story's. `carries` reads the facts by key, so the hashed id counts only it, a plain `letter` its base. `story_triggers`
+  accepts an item `base^tag` (`story_program.item_ok`); `check_world_facts` takes a hashed id in a wolf's `carries`.
+- **Checks** (`story_program.validate_effect`, `_check_tags`): the tag is `[a-z0-9_]{1,32}`; `name` (one line of 60, no
+  `#`, brackets or fills) and `keep` only with a `tag`; the base a plain item (no `~` or `@`); one `item^tag` is given with
+  one name and one `keep` everywhere in the program; 64 kinds at most; an `item` with `^` anywhere but a rehearsal is the
+  short form. Approval checks the base against the item catalogue as before (`reference_problems`, `world_checks` split on
+  `^` too). The story words check (V2, `story_words.EFFECT_WORDS`) reads the name, as every text a wolf reads.
+- **The order.** `story_runner.order_of` sends a tagged `item.give` as `item.give` (target the wolf) with the hashed `item`,
+  `name`, `keep`, `run` and `visit`; an untagged one is the order it always was. `RUNNER_VERSION` is `doc86-phase6`.
+- **The game** (`Core/RatwStoryArea.cpp`, `Core/RatwGameStoryWorld.cpp`). `applyStoryReward`'s `item.give` calls
+  `Game::storyItemGiven` for a tagged id: it refuses a malformed id (a short form, a base with a make, a base not in the
+  catalogue), a story not running, a name that is not one line of 60, and more than 4,000 names in the world; it keeps the
+  name in `storyItemNames_` and in `items::nameStoryItem` (the table `Society::itemName` reads, so the pack, trades, gifts
+  and messages show it). After the goods are made, `storyItemHeld` lists the id in the run's `held.tags` unless `keep`.
+  `endStoryWorld` takes every unit of those out of every account (`Society::takeAll`: wolves, residents, tills, stalls,
+  letters on the road) and off the ground (`World::takeBackItems`), forgets their names and tells each wolf who held one
+  ("What the story ... gave you to carry is gone with it."). A kept one stays with its name, saved and loaded with the
+  checkpoint (`storyTalkSave` / `storyTalkLoad`).
+- **The sweep** (`Core/RatwItems.cpp/.h`). `items::baseOf`, `qualityApplies` and the facts' `baseItem` stop at `^`; the sites
+  that split by hand (`tendLoans`, `makersScent`, `giftWorthThanks`) now call `baseOf`. `items::good` finds the base;
+  `items::storyTagged` says whether an id is a story's own. Such an item is never a wearable or a blade, has no wear
+  (`World::durabilityOf` 0, so the pack shows no condition), is no kind of its base for making, eating or paying
+  (`Society::kindsHeld` returns only itself, asked by its own id), and is refused by a shop (`Society::stagedQuote`), a stall
+  (`list`), a town project's hand-in and a loan: "That belongs to a story." Picking it up off the ground names it as its story does.
+- **Facts.** `storyFactsJson` counts a carried story item under its own id when the watch names it (the watch's `items` is
+  the expanded list), and under its base otherwise, as before.
+- **Workbench** (`Editor/`): `storyItemsOf` / `tagsOf` read the program's tagged gives; the item picker offers "The story's
+  own" first (as `letter^watch_list`, named, with kept or taken back); the new `tag` picker (`NamePicker` with a pattern);
+  `namesOf` names a story's own item as `“The watch list” (the story's Letter)`. `item.give` reads "Give the acting wolf 1
+  letter watch_list “The watch list” kept after the story".
+- **Guide and format**: `Docs/Story-Maker-guide.md` §7 "Story items", §14 a row, §15 two rows, §16 a row; the reference
+  regenerated (`story_guide.py --write`; `--check` passes); the catalogue's notes on `gift`, `gift again`, `item picked up`,
+  `item dropped` and `carries` say how to name a story's own item. `Docs/story-programs.md` gains "A story's own items".
+- **Sample** `story_v2_samples.LETTERS` ("The watch list", `v2-watch-list`, in `all_samples()`): the wolf who takes the
+  clerk's quest is given the watch list (a letter, taken back at the end); a wolf carrying it is counted, one carrying none
+  not; a plain letter given to the warden counts as a letter but does not do the quest, the watch list does; the warden's
+  thanks is a writ kept after the story. It rehearses clean in both twins: nothing uncovered.
+- **Tests**: `Tests/market_tests.cpp` (`baseOf` with `^`, `~`, `@`; no make or maker; found as its base, never worn or
+  wearing down), `Tests/shops_tests.cpp` (`aStorysOwnItem`: no shop quotes or takes it, the plain hide still sells, not a
+  kind of hide for making or paying, unnamed it shows as its base, named by its story's name, `takeAll`),
+  `Tests/story_world_tests.cpp` (`phase6Items`: refusals, given and named and held, a kept writ not held, the pack's name
+  with no wear, the facts under its own id and a plain letter as a letter, never lent, no shop, a gift to a resident is
+  that id, one on the ground, the run's end takes it back from the wolf, the resident and the ground and tells the wolf, the
+  kept writ's name through a save), `test_story_v2` (`Phase6Items`: the sample in both twins, a plain letter, another story's
+  and a crafted one are not the list, the game's id is, carrying none, the expansion, what validation refuses, the name read
+  by the words check), `test_story_native` (`StoryItemParity`: gift, `in` list, `item picked up` and `carries` alike in both
+  twins over this story's, another story's, plain and crafted letters), `test_story_effects` (the order's payload, kept and
+  not, the plain order unchanged, the catalogue's parameters), `workbench.test.ts` (117 programs; the watch list in words;
+  the story's items and marks; a plain give hides the new parts).
+- **Run**: `market_tests`, `shops_tests`, `story_world_tests` and the whole `ctest`; every story Python suite but the scene,
+  siege and facts live ones (with the local PostgreSQL: the tests' own throwaway `ratw_test_*` databases and
+  `RATW_STORY_TEST_DSN` on a throwaway migrated one, dropped after); `story_guide.py --check`; the Editor's tests and `tsc
+  --noEmit`. All OK.
+- **Left or changed, and why**: the spec's "the client pack test: the name shown" is the server's: the client already shows
+  each pack row's `name` (and the stall and trade lists theirs), so it needs no change, and the pack is drawn into the DOM,
+  which the client's unit tests do not have; `story_world_tests` checks the snapshot's pack row instead. The spec's
+  `Game::storyItemNames_` is kept and also mirrored into the items table `Society::itemName` reads (a static function, which
+  every name shown goes through). A loan of a story's own item is refused too (the spec did not say): a run's end taking back
+  a lent item would charge the borrower for it. A story's own item is never a kind of its base for using up (making, eating,
+  paying, building), which is what "can't be crafted from" needs; asked for by its own id it is there. Taking back reaches
+  every account, so a letter on the road with one inside loses it; nothing else is touched. A kept item's name lasts as long
+  as the world keeps it (4,000 names at most); a name is forgotten only when its run takes the item back.
+- **Going live** on `ratw_ridgemere3` needs no migration; the game server restarted from this branch, the story runner from
+  this branch with the rebuilt `libratw_story.so` (the gift filter's split is in both twins), the Editor released from it.
+  The client needs no change.

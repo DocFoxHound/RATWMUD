@@ -248,6 +248,30 @@ class Orders(unittest.TestCase):
         self.assertEqual(rules.animal_ground()['w'], 'water')
         self.assertEqual(rules.animal_ground()['D'], 'mud')
 
+    def test_a_storys_own_item_is_given_by_the_games_id(self):
+        # (Doc 86, J9: item.give with a tag: the item by the id the game keeps it under, its name, kept or not, and the run
+        # that takes it back; a plain item.give is the order it always was.)
+        import story_v2_samples as samples
+        p = copy.deepcopy(samples.LETTERS)
+        rules.validate(p)
+        phase = rules.effective_phase(p, p['phases'][0])
+        state = {'actor': 'player-ash', 'visits': 2, 'phase': 'carry'}
+        kind, target, payload = runner.order_of(None, 'w', 'world-run', 'martin', state, samples.WATCH_LIST, phase)
+        self.assertEqual((kind, target), ('item.give', 'player-ash'))
+        self.assertEqual(payload, {'item': rules.tagged_item('v2-watch-list', 'letter', 'watch_list'), 'quantity': 1, 'name': 'The watch list',
+                                   'run': 'world-run', 'visit': 2})
+        kind, target, payload = runner.order_of(None, 'w', 'world-run', 'martin', state, {**samples.THANKS_WRIT, 'reward': 'deliver'}, phase)
+        self.assertEqual(payload, {'item': rules.tagged_item('v2-watch-list', 'writ', 'thanks'), 'quantity': 1,
+                                   'name': "The warden's writ of thanks", 'keep': True, 'run': 'world-run', 'visit': 2})
+        plain = {'kind': 'item.give', 'player': '$actor', 'item': 'rope', 'quantity': 2}
+        self.assertEqual(runner.order_of(None, 'w', 'world-run', 'martin', state, plain, phase), ('item.give', 'player-ash', {'item': 'rope', 'quantity': 2}))
+        self.assertEqual(rules.tag_hash('v2-watch-list'), rules.tagged_item('v2-watch-list', 'x', 'y')[2:10])
+        self.assertIn('tag', rules.CATALOGUE['types'])
+        params = {q['key']: q for q in rules.EFFECT_PARAMS['item.give']}
+        self.assertEqual((params['tag']['type'], params['name']['type'], params['keep']['type']), ('tag', 'text', 'bool'))
+        self.assertTrue(all(params[k].get('optional') for k in ('tag', 'name', 'keep')))
+        self.assertNotIn('item.give', rules.UNDONE_AT_END, 'only a story\'s own item is taken back, and only unless kept: said in its help')
+
     def test_the_tracker_is_hidden_and_shown_again_by_the_story(self):
         p = rules.validate(program([effect('story.tracker')]))
         state = {'counters': {'story': {'ropes': 2}}}

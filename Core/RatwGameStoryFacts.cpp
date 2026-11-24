@@ -10,6 +10,7 @@
 #include "RatwGame.h"
 
 #include "RatwCalendar.h"
+#include "RatwItems.h"
 
 #include <algorithm>
 #include <cmath>
@@ -30,7 +31,7 @@ constexpr double NearTiles = 3;         // within this many tiles,
 constexpr double ApartTiles = 5;        // and not again until they have been further apart than this.
 constexpr double WorldSeconds = 2;      // Purses, standing, stances and mantles, looked at this often.
 
-std::string baseItem(const std::string& item) { return item.substr(0, item.find_first_of("~@")); }
+std::string baseItem(const std::string& item) { return item.substr(0, item.find_first_of("~@^")); }
 } // namespace
 
 // Doc 86, J4: the moon in four, by the octant its name has (calendar::calendarAt's moonName): new, waxing, full, waning.
@@ -155,7 +156,10 @@ std::string Game::storyFactsJson()
                 std::map<std::string, double> held;
                 if (purse)
                     for (const auto& [item, n] : purse->stock)
-                        if (n > 0 && w.items.count(baseItem(item)))
+                        // (Doc 86, J9: a story's own item under its own id when the watch names it, else as its base.)
+                        if (n > 0 && w.items.count(item) && items::storyTagged(item))
+                            held[item] += n;
+                        else if (n > 0 && w.items.count(baseItem(item)))
                             held[baseItem(item)] += n;
                 for (const auto& [item, n] : held)
                     carries.add(item, n);

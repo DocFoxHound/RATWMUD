@@ -127,6 +127,37 @@ void shopsHoldTheirStock()
     expect(s.realBalanced(), "real money is balanced");
 }
 
+// Doc 86, J9: a story's own item (hide^ab12cd34.trophy) is its story's: no shop buys it, nothing is made of it or eats
+// it as its base, it never wears, and it shows by the name its story gave it.
+void aStorysOwnItem()
+{
+    auto s = town();
+    s.addPlayer("player-ada");
+    const std::string mine = "hide^ab12cd34.trophy";
+    expect(items::storyTagged(mine) && !items::storyTagged("hide~fine") && items::good(mine) == items::good("hide") &&
+               itemValid(mine) && !items::wearable(mine) && !items::blade("sword^ab12cd34.relic") && items::blade("sword"),
+           "a kind of its base, never worn or wielded");
+    expect(s.create("player-ada", mine, 1, "test: a story gave it") && s.create("player-ada", "hide", 1, "test: hunted"),
+           "carried beside a plain hide");
+    const auto refused = s.quote("player-ada", "tanner", mine, 1, false);
+    expect(!refused.ok && refused.message == "That belongs to a story.", "no shop buys it: " + refused.message);
+    expect(!s.trade("player-ada", "tanner", mine, 1, false).ok && Society::stock(*s.account("player-ada"), mine) == 1, "nor takes it");
+    expect(s.quote("player-ada", "tanner", "hide", 1, false).ok, "the plain hide still sells");
+    const auto& a = *s.account("player-ada");
+    expect(Society::stockAll(a, "hide") == 1 && Society::kindsHeld(a, "hide") == std::vector<std::string>{"hide"} &&
+               Society::stockAll(a, mine) == 1, "nothing made or paid with hide takes the story's own; asked by name, it is there");
+    expect(s.destroy("player-ada", "hide", 1, "test: used up") && Society::stock(a, mine) == 1, "using up hide leaves it");
+    expect(std::string(Society::itemName(mine)) == std::string(Society::itemName("hide")), "unnamed, it shows as its base");
+    items::nameStoryItem(mine, "The hide of Old Brown");
+    expect(std::string(Society::itemName(mine)) == "The hide of Old Brown" && std::string(Society::itemName("hide")) != "The hide of Old Brown",
+           "named, it shows by its story's name");
+    items::nameStoryItem(mine, "");
+    expect(!items::storyItemName(mine), "and the name can be let go");
+    const auto taken = s.takeAll({mine}, "test: the story ended");
+    expect(taken.size() == 1 && taken.at("player-ada") == 1 && !s.account("player-ada")->stock.count(mine) &&
+               Society::stock(*s.account("player-ada"), "hide") == 0, "taken back, every unit, out of every account");
+}
+
 // No cap on what a single piece costs (the user, 2026-10-30): a dear price is paid when the buyer can pay; only a total
 // that would overflow is refused.
 void noCapOnAPiece()
@@ -239,6 +270,7 @@ int main()
     {
         theCatalogue();
         shopsHoldTheirStock();
+        aStorysOwnItem();
         noCapOnAPiece();
         residentsGoAboutTheirDays();
         anOlderSaveLoads();

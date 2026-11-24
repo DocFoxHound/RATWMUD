@@ -232,6 +232,8 @@ bool Game::projectCommand(Connection* c, const Value& j, Result& result)
         const int wanted = need == p->needs.end() ? 0 : std::max(0, need->second - projectHas(*p, base));
         if (apart > HandInReach)
             result = {false, "Hand it in at the site.", {}};
+        else if (items::storyTagged(item))
+            result = {false, "That belongs to a story.", {}};   // (Doc 86, J9: never built with.)
         else if (wanted <= 0)
             result = {false, "It doesn't want that.", {}};
         else if (quantity < 1 || held < 1)

@@ -281,7 +281,7 @@ void Game::makersScent(const std::string& buyer, const std::string& seller, cons
     const auto* business = spec ? items::businessFor(spec->workLabel) : nullptr;
     if (!business || quantity <= 0)
         return;
-    const auto base = item.substr(0, item.find('~'));
+    const auto base = items::baseOf(item);
     for (const auto* craft : items::craftsFor(business->id))
         for (const auto& [made, n] : craft->out)
             if (made == base || made == item)

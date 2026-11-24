@@ -995,6 +995,8 @@ class Society
     // Goods taken out of the world (doc 85, Phase 9: a story's item.take): `quantity` of the item, any kind of it (the
     // plainest first), or nothing when the account holds fewer. Never money.
     bool destroy(const std::string& account, const std::string& item, int quantity, const std::string& reason);
+    // Doc 86, J9: every unit of these items (a story's own) out of every account there is; how many came out of each.
+    std::map<std::string, int> takeAll(const std::set<std::string>& items, const std::string& reason);
     bool merchant(const std::string& id) const;
     // A smith: a merchant whose trade is the forge (its work says "smith" or "forge"; the demo's Ash). A smith deals in
     // swords.

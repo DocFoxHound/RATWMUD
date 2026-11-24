@@ -44,8 +44,8 @@ static bool compare(const Value& left, const std::string& op, const Value& right
 // the gift item rule (the base id unless a mark is given) applies inside both. The twin of story_program.match_one.
 static std::string giftBase(const std::string& actual, const std::string& expected, bool gift)
 {
-    if (!gift || expected.find_first_of("~@") != std::string::npos) return actual;
-    return actual.substr(0, actual.find_first_of("~@"));
+    if (!gift || expected.find_first_of("~@^") != std::string::npos) return actual;
+    return actual.substr(0, actual.find_first_of("~@^"));   // (Doc 86, J9: a story's own item is a kind of its base.)
 }
 
 static bool matchOne(const Value& expected, const std::string& actual, bool gift)

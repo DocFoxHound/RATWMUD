@@ -731,7 +731,8 @@ def _check_fact_condition(c, phase, each):
             require(rules.identifier(c[key]) and c[key] in phase.get('_regions', {}), 'Unknown story region.')
     for key in ('place', 'town', 'faction', 'other', 'npc', 'item'):
         if key in c and not (kind == 'in party with' and key == 'other'):
-            require(rules.identifier(c[key]), f'Name the {key}.')
+            # (Doc 86, J9: an item may be a story's own, item^tag.)
+            require(rules.item_ok(c[key]) if key == 'item' else rules.identifier(c[key]), f'Name the {key}.')
     if kind == 'in party with':
         _check_who(c['other'], each, 'the other wolf')
     if 'is' in c:

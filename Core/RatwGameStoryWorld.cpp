@@ -562,6 +562,63 @@ std::string Game::storyStoryline(const std::string& wolf, const std::string& tem
     return {};
 }
 
+// ------------------------------------------------------------------------------------ doc 86, J9: a story's own items
+namespace
+{
+constexpr std::size_t StoryItemNamesMost = 4000;    // (Names the world keeps for stories' own items, kept ones included.)
+
+bool tagWord(const std::string& s, std::size_t most)
+{
+    return !s.empty() && s.size() <= most &&
+           std::all_of(s.begin(), s.end(), [](char c) { return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_'; });
+}
+
+// <base>^<8 hex>.<tag>, the base a plain item of the catalogue (story_program.tagged_item makes it).
+bool storyItemId(const std::string& id)
+{
+    const auto caret = id.find('^');
+    if (caret == std::string::npos || id.size() < caret + 11 || id[caret + 9] != '.')
+        return false;
+    const auto base = id.substr(0, caret), hash = id.substr(caret + 1, 8), tag = id.substr(caret + 10);
+    return tagWord(base, 40) && tagWord(tag, 32) && items::good(base) &&
+           std::all_of(hash.begin(), hash.end(), [](char c) { return (c >= 'a' && c <= 'f') || (c >= '0' && c <= '9'); });
+}
+} // namespace
+
+Result Game::storyItemGiven(const std::string& wolf, const std::string& item, const Value& payload, std::string& name)
+{
+    if (!storyItemId(item))
+        return {false, "A story's own item is a plain item with the story's mark.", wolf};
+    const auto* story = storylines_.find(payload.string("run"));
+    if (!story || story->kind != "world" || story->source != "storykeeper" || !story->live())
+        return {false, "That story is not running.", wolf};
+    name = payload.string("name");
+    if (!name.empty() && (!oneLine(name, 60) || name.find_first_of("#[]{}") != std::string::npos))
+        return {false, "A story item's name is one line of up to 60 characters.", wolf};
+    if (!name.empty() && !storyItemNames_.count(item) && storyItemNames_.size() >= StoryItemNamesMost)
+        return {false, "The world keeps the names of " + std::to_string(StoryItemNamesMost) + " story items at most.", wolf};
+    if (!name.empty())
+    {
+        storyItemNames_[item] = name;
+        items::nameStoryItem(item, name);
+    }
+    return {true, {}, wolf};
+}
+
+void Game::storyItemHeld(const std::string& item, const Value& payload)
+{
+    // (Kept after the story: it stays with its name. Otherwise the run takes every unit of it back when it ends.)
+    auto* story = storylines_.find(payload.string("run"));
+    if (!story || payload.boolean("keep"))
+        return;
+    auto& tags = section(*story, "tags", true);
+    if (!listed(tags, item))
+        tags.push(item);
+    storylines_.touch();
+    record(StoryBook);
+    saveSoon();
+}
+
 void Game::endStoryWorld(storylines::Storyline& story)
 {
     // (Doc 86, C11 and C8: its holds on residents let go; what it had residents remember forgotten, unless it was kept.)
@@ -604,6 +661,27 @@ void Game::endStoryWorld(storylines::Storyline& story)
             world_.useSeasonalWeather(cell);
         else if (parseWeather(j.string("was"), was))
             world_.setWeather(cell, was);
+    }
+    // (Doc 86, J9: its own items not kept, taken back from every purse and the ground; the wolves who carried them told.)
+    std::set<std::string> tags;
+    for (const auto& t : h.array("tags"))
+        if (t.isString() && items::storyTagged(t.asString()))
+            tags.insert(t.asString());
+    if (!tags.empty())
+    {
+        std::vector<std::string> told;
+        for (const auto& [account, n] : world_.takeBackItems(tags))
+            if (n > 0 && playerAccountId(account))
+                told.push_back(account);
+        for (const auto& item : tags)
+        {
+            storyItemNames_.erase(item);
+            items::nameStoryItem(item, "");
+        }
+        record(Economy);
+        recordCharacters(Economy, told);
+        for (const auto& wolf : told)
+            tellActedOn(wolf, "What the story \"" + story.title + "\" gave you to carry is gone with it.");
     }
     // (Its notes stay in the journal, with the story; everything else it held is gone.)
     auto kept = Value::object();
@@ -1053,6 +1131,10 @@ void Game::storyTalkSave(Value& root) const
     }
     root.add("storyMemory", std::move(memory));
     storyGreetsSave(root);                          // (Doc 86, C5: the greetings waiting.)
+    auto names = Value::object();                   // (Doc 86, J9: the stories' own items' names.)
+    for (const auto& [item, name] : storyItemNames_)
+        names.add(item, name);
+    root.add("storyItemNames", std::move(names));
 }
 
 void Game::storyTalkLoad(const Value& saved)
@@ -1078,6 +1160,15 @@ void Game::storyTalkLoad(const Value& saved)
             }
     }
     storyGreetsLoad(saved);
+    for (const auto& [item, _] : storyItemNames_)
+        items::nameStoryItem(item, "");
+    storyItemNames_.clear();
+    for (const auto& [item, name] : saved.object("storyItemNames").fields())
+        if (storyItemNames_.size() < StoryItemNamesMost && storyItemId(item) && name.isString() && oneLine(name.asString(), 60))
+        {
+            storyItemNames_[item] = name.asString();
+            items::nameStoryItem(item, name.asString());
+        }
     sparedChanged();
 }
 

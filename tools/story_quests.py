@@ -483,6 +483,7 @@ def check_quests(p):
 
 
 def index(p):
+    p = rules.expand_tags(p)   # (Doc 86, J9: an objective on a story's own item names it as the game does.)
     return {q['id']: q for q in p.get('quests', []) if isinstance(q, dict) and isinstance(q.get('id'), str)}
 
 

@@ -1425,6 +1425,9 @@ class World
     // Something left on the ground for whoever finds it (doc 85, Phase 9: a story's item.place): made into the ground's
     // account and laid at the tile, to be picked up as a fight's ground is.
     Result placeOnGround(const std::string& cellId, int x, int y, const std::string& item);
+    // Doc 86, J9: a story's own items taken back as its run ends: out of every purse (wolves', residents', tills, stalls,
+    // letters on the road) and off the ground. How many came out of each account (the ground's under GroundAccount).
+    std::map<std::string, int> takeBackItems(const std::set<std::string>& items);
     // Wearing (doc 35, Phase 4): putting on a wearable one owns, at a wear slot or (jewellery) a fur spot (`where`
     // empty: the first free place it fits), and taking it off again (`item` picks a piece at a fur spot). Not in a
     // fight. How many of an item one wears (or holds), and letting go of what the purse no longer has.
