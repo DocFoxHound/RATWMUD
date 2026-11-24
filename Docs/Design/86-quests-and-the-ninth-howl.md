@@ -2162,7 +2162,7 @@ Residents, both `needsBuilder`), two new events (221 in the catalogue's list, 21
   read twice is harmless: the run's own writes were saved at its last turn's end); a row of another type is not read; a
   wolf who left is let go of. `realm_save` writes only the wolf-name pairs that changed against what was loaded, stamped
   `clock_timestamp()`. `realm_join` reads a wolf's rows when they join: `story_quests.add_wolf` calls the hooks in
-  `story_quests.JOINED`, which `tick_run` sets for its run (and the console's participant add calls it directly). They ride
+  `story_quests.JOINED`, which `tick_run` sets for its run and `Steer.take` for a command (after review). They ride
   on `world_load`/`world_save` (which now return a `_Loaded`: the world snapshot with the realm one as `.realm`), so every
   path that reads or steers a run (a tick, a command, What if, Explain) has the values. `realm_clash` (from
   `references()`): needs 0081, and refuses a declaration of another type than the wolves keep a name as, or than another
@@ -2263,3 +2263,34 @@ Residents, both `needsBuilder`), two new events (221 in the catalogue's list, 21
   orders and checks; the native library rebuilt as usual: the realm scope is in it), the Editor released from it (the
   pickers, Per wolf, Sentences). The client needs no change: a realm tracker is a tracker, and a sentenced resident is a
   resident held where they are.
+
+**Phase 8 after review** (2026-11-24, on `19c914e3`). The review found one bug and two gaps, all fixed with tests, two nits
+(one fixed) and one older gap (fixed).
+- **A wolf a command takes in has their realm values read then.** Only `tick_run` set the `JOINED` hook, and only the
+  console's participant add read a joining wolf itself, so a wolf taken in by a quest given by hand, or by a
+  `participant.add` from a trigger fired by hand, a signal or a story event, joined with nothing read. At the next turn
+  the cursor passed their older row by, the story started them from the first value, and its write lost what they kept
+  (reproduced: Birch keeping 10 ended at 1). Now `Steer.take` sets the hook for every command (the participant add uses
+  it too), and as a safety net `realm_load` reads whole, whatever the cursor, every wolf of the cohort with nothing
+  loaded (a wolf who keeps no value is read again each turn: one small query). `test_story_v2_runner` (`RealmVariables`:
+  Birch, kept an hour before, taken in by a trigger fired by hand, read at once and added to, 11; a wolf put in the cohort
+  unread is read whole at the next load).
+- **A campaign's chapters agree on each realm name's type.** Each chapter was checked alone, so with no value kept yet
+  Act I's number and Act II's text both passed, and the clash showed only when Act II failed to start at Act I's end.
+  `approve_campaign` refuses it ("Chapter 2 declares nh_voice (realm) as a text; chapter 1 declares it as a number"). And
+  `realm_save`'s upsert no longer rewrites a kept row's type: a row of another type is left as it is. `realm_clash` still
+  reads only live runs, not approvals never published (an old unused ticket would block a declaration for good).
+  `test_story_campaigns` (`AcrossActs`).
+- **The workbench shows "whose" for a realm variable** (`workbench.ts`: realm is a wolf's own with player and party), so
+  an author can pick the looped wolf's inside For each, as approval asks of a per-wolf test. `workbench.test.ts`.
+- **Nits.** The rank and tally refusals say "a number (a text or switch) each wolf keeps (player or realm)", as does
+  `Docs/story-programs.md`. "Release now" still checks the last checkpoint (its refusal says "as the world was last
+  saved"; the panel lists only those), left as it is.
+- **Older, not this phase's: the world packager.** `strip_people` refused any save written since Phase 1b, which holds
+  `storyHolds`, `storyMemory`, `storyGreets`, `storyItemNames` and now `storySentences`; all five are in `PEOPLE_PRUNE`
+  (a player's entries go). `test_world_package` (the fixture holds them, with a player's greeting and memory pruned).
+- **Run**: every story Python suite but the live ones (with the local PostgreSQL, the tests' own
+  `ratw_test_*` databases, dropped after), `test_world_package`, `story_guide.py --check`, the Editor's tests (78 and 154)
+  and `tsc --noEmit`. No C++ changed. **Two failures found, not caused here**: `test_world_package`'s end-to-end
+  `test_the_planted_players_are_stripped` (12 accounts closed, not 8) and `test_a_hostile_package_is_refused_before_anything_is_written`
+  ("written before the checks") fail the same way at `19c914e3` with this change taken out; the other 51 pass.

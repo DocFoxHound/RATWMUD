@@ -481,10 +481,10 @@ def _check_tally(t, phase):
     if 'sum' in t:
         d = _decl(phase, t['sum'], ('number',), 'number')
         require(d['scope'] in OWN and 'mirror' not in d, f'"{t["sum"]}" is not a number each wolf keeps: a tally adds up '
-                                                         'a player number.')
+                                                         'a number each wolf keeps (player or realm).')
     if 'where' in t:
         d = _decl(phase, t['where'], ('text', 'switch'), 'text or switch')
-        require(d['scope'] in OWN, f'"{t["where"]}" is not each wolf\'s own: a tally reads a player text or switch.')
+        require(d['scope'] in OWN, f'"{t["where"]}" is not each wolf\'s own: a tally reads a text or switch each wolf keeps (player or realm).')
         ok = type(t['is']) is bool if d['type'] == 'switch' else isinstance(t['is'], str) and len(t['is']) <= TEXT_MAX
         require(ok, f'"{t["where"]}" is a {d["type"]}: the tally\'s value is ' + ('on or off.' if d['type'] == 'switch' else 'a text.'))
     over = t.get('over', 'participants')
@@ -849,7 +849,7 @@ def _check_action_v2(a, cx, address, depth, each, last):
         shape(a, ('do', 'var', 'top', 'into'), ('over', 'list', 'min'))
         require(each is None, 'Rank is not allowed inside For each: rank first, then loop over the list.')
         d = _decl(phase, a['var'], ('number',), 'number')
-        require(d['scope'] in OWN and 'mirror' not in d, f'"{a["var"]}" is not a number each wolf keeps: rank by a player number.')
+        require(d['scope'] in OWN and 'mirror' not in d, f'"{a["var"]}" is not a number each wolf keeps: rank by a number each wolf keeps (player or realm).')
         require(operand_type(a['top'], phase) == 'number' and (not _num(a['top']) or 1 <= a['top'] <= RANK_MAX),
                 f'How many: 1 to {RANK_MAX}, or a number value.')
         require('min' not in a or operand_type(a['min'], phase) == 'number', 'At least: a number, or a number value.')

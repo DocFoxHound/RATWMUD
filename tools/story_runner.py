@@ -1587,7 +1587,12 @@ def realm_load(conn, world, program, state):
     fresh = not isinstance(seen, (int, float)) or isinstance(seen, bool)
     store = {} if fresh else {w: v for w, v in counters.get('realm', {}).items() if w in cohort}
     latest = None if fresh else seen
-    for name, wolf, kind, value, at in _realm_rows(conn, world, names, cohort, None if fresh else seen):
+    rows = _realm_rows(conn, world, names, cohort, None if fresh else seen)
+    if not fresh:
+        # (A wolf in the cohort with nothing loaded is read whole, whatever the cursor: one who joined where no hook read
+        # them stays right. A wolf who keeps no value is read again each turn, which costs one small query.)
+        rows += _realm_rows(conn, world, names, cohort - set(store))
+    for name, wolf, kind, value, at in rows:
         if names[name]['type'] == kind:
             store.setdefault(wolf, {})[name] = value
         latest = at if latest is None else max(latest, at)
@@ -1627,8 +1632,8 @@ def realm_save(conn, world, run, program, state, loaded):
                 conn.execute(
                     """INSERT INTO dm.story_realm_vars(world_id,name,wolf,type,value,run,updated_at)
                        VALUES (%s,%s,%s,%s,%s::jsonb,%s,clock_timestamp())
-                       ON CONFLICT (world_id,name,wolf) DO UPDATE SET type=excluded.type,value=excluded.value,run=excluded.run,
-                       updated_at=excluded.updated_at""",
+                       ON CONFLICT (world_id,name,wolf) DO UPDATE SET value=excluded.value,run=excluded.run,
+                       updated_at=excluded.updated_at WHERE dm.story_realm_vars.type=excluded.type""",
                     (world, name, wolf, names[name]['type'], json.dumps(v), run))
                 loaded.setdefault(wolf, {})[name] = json.loads(json.dumps(v))
 
@@ -1767,6 +1772,14 @@ def approve_campaign(conn, world, who, data):
         programs.append(rules.validate(ch['program']))
     ids = [p['id'] for p in programs]
     rules.require(len(set(ids)) == len(ids), 'Every chapter is a different story.')
+    # (Doc 86, J2: every chapter reads each wolf's realm values alike, so the chapters agree on each name's type now; with no
+    # value kept yet, realm_clash alone would only find it when a later chapter failed to start.)
+    realm = {}
+    for n, p in enumerate(programs):
+        for name, d in sorted(_realm_names(p).items()):
+            first = realm.setdefault(name, (n, d['type']))
+            rules.require(first[1] == d['type'], f'Chapter {n + 1} declares {name} (realm) as a {d["type"]}; chapter '
+                          f'{first[0] + 1} declares it as a {first[1]}.')
     warnings = []
     for n, p in enumerate(programs):
         _check_chapter(p, set(ids), p['id'])
@@ -4576,9 +4589,8 @@ class Steer:
         before = len(self.state['cohort'])
         if do == 'add':
             _require(wolf not in self.state['cohort'], f'{wolf} is in the story already.')
+            # (Their realm values are read as they join: take's JOINED hook, doc 86 J2.)
             _require(quests.add_wolf(self.program, self.state, wolf), 'The story has all the wolves it can take (its cap).')
-            if isinstance(self.world_loaded, _Loaded):
-                realm_join(self.conn, self.world, self.program, self.state, self.world_loaded.realm, wolf)   # (Doc 86, J2.)
             if not self.state.get('playerRows') and quests.relevant(self.program):
                 self.state['playerRows'] = True
             text = f'{wolf} taken into the story; the game is told.'
@@ -4754,6 +4766,19 @@ class Steer:
 
     # --- the whole
     def take(self):
+        # (Doc 86, J2: a wolf a command takes into the story, by hand or by a story effect a fired trigger, a signal, a story
+        # event or a quest given sends, has their realm values read then, as one joining at a tick has.)
+        def joined(state, wolf):
+            if state is self.state and isinstance(self.world_loaded, _Loaded):
+                realm_join(self.conn, self.world, self.program, state, self.world_loaded.realm, wolf)
+
+        quests.JOINED.append(joined)
+        try:
+            return self._take()
+        finally:
+            quests.JOINED.remove(joined)
+
+    def _take(self):
         if self.kind in INTERNAL_COMMANDS and 'moveReceipt' in self.state:
             raise Wait()   # (A story event waits for a move to settle: it is about the world, not a version.)
         _require(self.kind in INTERNAL_COMMANDS or self.digest == self.run_digest, 'Made against another version of the story.')

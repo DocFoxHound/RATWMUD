@@ -442,7 +442,10 @@ PEOPLE_EMPTY = ('accounts', 'profiles', 'safety', 'friends', 'requests', 'inbox'
                 'starTallies', 'stars', 'books', 'ties', 'vouches', 'evenings', 'storytellers', 'storytellerLog',
                 'credits')
 PEOPLE_PRUNE = ('deeds', 'nicknames', 'troublesHeard', 'troublesSolved', 'troublesResting', 'protectedMarks', 'loans',
-                'holds')
+                'holds',
+                # (Doc 86: the stories' holds on residents, what residents remember, the greetings waiting, the stories' own
+                # items' names, the residents a story sentenced; a player's entries go.)
+                'storyHolds', 'storyMemory', 'storyGreets', 'storyItemNames', 'storySentences')
 
 
 def people_lodgings(people, st, section):

@@ -361,16 +361,28 @@ def realm_program(pid, kind='number', step=1):
     }
 
 
+def bring_program():
+    """A story of Ash alone that takes Birch in when its trigger "bring" is fired by hand."""
+    p = realm_program('realm-bring')
+    p['audience'] = {'kind': 'players', 'players': [ASH]}
+    p['phases'][0]['triggers'].append({'id': 'bring', 'on': 'conversation', 'audience': 'participant', 'match': {'target': 'rm113'},
+                                       'actions': [{'do': 'effect', 'effect': {'kind': 'participant.add', 'player': BIRCH}}]})
+    p['tests'][0]['cohort'] = [ASH]
+    return p
+
+
 @unittest.skipUnless(database_available(), 'local PostgreSQL required')
 class RealmVariables(unittest.TestCase):
     setUpClass = classmethod(console.ConsoleReads.setUpClass.__func__)
     tearDownClass = classmethod(console.ConsoleReads.tearDownClass.__func__)
     fact, launch, answer, tick = console.ConsoleReads.fact, console.ConsoleReads.launch, console.ConsoleReads.answer, console.ConsoleReads.tick
+    one, send, taken, steer, answer_all = (steering.Steering.one, steering.Steering.send, steering.Steering.taken,
+                                           steering.Steering.steer, steering.Steering.answer_all)
 
     def setUp(self):
         console.ConsoleReads.setUp(self)
         self.examples = {**self.examples, **{p['id']: p for p in (realm_program('realm-a'), realm_program('realm-b', step=2),
-                                                                   realm_program('realm-c'))}}
+                                                                   realm_program('realm-c'), bring_program())}}
 
     def kept(self, wolf=ASH):
         row = self.conn.execute("SELECT value FROM dm.story_realm_vars WHERE world_id=%s AND name='p_voice' AND wolf=%s",
@@ -417,6 +429,40 @@ class RealmVariables(unittest.TestCase):
         # A third story launched now has each wolf's value from the start.
         c = self.launch('realm-c')
         self.assertEqual(self.realm_of(c), {ASH: {'p_voice': 13}})
+
+    def keep(self, wolf, value, hours=0):
+        self.conn.execute(
+            "INSERT INTO dm.story_realm_vars(world_id,name,wolf,type,value,updated_at) VALUES (%s,'p_voice',%s,'number',%s::jsonb,"
+            "now() - make_interval(hours => %s))", (self.world, wolf, json.dumps(value), hours))
+
+    def test_a_wolf_a_command_takes_in_has_their_kept_value_read_then(self):
+        # (After review: a wolf joining from the console, here by a trigger fired by hand that takes them in, was never
+        # read, as only a tick's turn read a joining wolf; the run's cursor then never reached their older row, and its
+        # next write lost what they kept.)
+        self.keep(ASH, 5)
+        self.keep(BIRCH, 10, hours=1)
+        self.launch('realm-bring')
+        self.answer()
+        self.assertEqual(self.realm_of(self.run_id), {ASH: {'p_voice': 5}})
+        status, result = self.steer('fire', {'trigger': 'bring', 'actor': ASH, 'check': False})
+        self.assertEqual(status, 'done', result)
+        self.assertEqual(self.realm_of(self.run_id), {ASH: {'p_voice': 5}, BIRCH: {'p_voice': 10}}, 'read as they join')
+        self.answer_all()
+        self.fact('conversation', BIRCH, 'rm111')
+        self.tick()
+        self.assertEqual(self.kept(BIRCH), 11, 'what Birch kept, added to; never started again from nothing')
+        self.assertEqual(self.kept(ASH), 5)
+
+    def test_a_wolf_who_joined_unread_is_read_whole_at_the_next_turn(self):
+        # (The safety net: a cohort wolf with nothing loaded is read whatever the cursor says.)
+        self.keep(ASH, 5)
+        self.keep(BIRCH, 10, hours=1)
+        self.launch('realm-bring')
+        self.answer()
+        state = self.conn.execute('SELECT state FROM dm.story_releases WHERE id=%s', (self.run_id,)).fetchone()[0]
+        state['cohort'] = sorted(state['cohort'] + [BIRCH])
+        runner.world_load(self.conn, self.world, bring_program(), state)
+        self.assertEqual(state['counters']['realm'], {ASH: {'p_voice': 5}, BIRCH: {'p_voice': 10}})
 
     def test_a_type_clash_is_refused(self):
         self.launch('realm-a')

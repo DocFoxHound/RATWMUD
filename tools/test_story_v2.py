@@ -918,7 +918,7 @@ class Phase3Ranks(unittest.TestCase):
         self.assertIn('top', state['counters'].get('story', {}))   # (A wolf's own value read for the acting wolf: 0, so 1.)
 
     def test_rank_checks(self):
-        bad = [({'do': 'rank', 'var': 'n', 'top': 3, 'into': 'top'}, 'rank by a player number'),
+        bad = [({'do': 'rank', 'var': 'n', 'top': 3, 'into': 'top'}, 'rank by a number each wolf keeps'),
                ({'do': 'rank', 'var': 'p_voice', 'top': 0, 'into': 'top'}, 'How many: 1 to 500'),
                ({'do': 'rank', 'var': 'p_voice', 'top': 3, 'into': 'p_backs'}, 'list of wolves'),
                ({'do': 'rank', 'var': 'p_voice', 'top': 3, 'over': 'list', 'into': 'top'}, 'name the list'),
@@ -941,7 +941,7 @@ class Phase3Ranks(unittest.TestCase):
                 self.assertEqual(state['counters']['story']['total'], want)
 
     def test_tally_checks(self):
-        bad = [({'tally': {'sum': 'n'}}, 'a player number'), ({'tally': {'where': 'p_backs'}}, 'name both, or neither'),
+        bad = [({'tally': {'sum': 'n'}}, 'a number each wolf keeps'), ({'tally': {'where': 'p_backs'}}, 'name both, or neither'),
                ({'tally': {'where': 'p_backs', 'is': True}}, 'is a text'), ({'tally': {'where': 'p_voice', 'is': 3}}, 'text or switch'),
                ({'tally': {'over': {'list': 'p_backs'}}}, 'list of wolves'), ({'plus': [{'plus': [{'tally': {}}, 1]}, 1]}, 'one level deep'),
                ({'tally': {'sum': 'p_voice', 'among': 1}}, '')]

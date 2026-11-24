@@ -739,6 +739,13 @@ test('doc 86, Phase 8: the Moot Night in words; a realm variable renamed in a ca
     assert.equal(plain(actionParts(cat, then[0], ns)), 'rm111 takes the post job:rm112; whoever held it gives it up');
     assert.equal(plain(actionParts(cat, then[1], ns)), 'rm113 is held at grey-cells for 7 days');
     assert.match(plain(actionParts(cat, chorus.actions[0], ns)), /nh_voice/);
+    // (After review: a realm variable is a wolf's own, so its "whose" slot is shown, and the looped wolf's can be picked.)
+    const whose = (a: Record<string, unknown>) => actionParts(cat, a as unknown as Action, ns)
+        .find((x): x is Extract<typeof x, {slot: string}> => 'slot' in x && x.slot === 'of')!;
+    const each = whose({do: 'add', var: 'nh_voice', value: 1, of: '$each'});
+    assert.ok(!each.hidden && !each.empty, JSON.stringify(each));
+    assert.equal(each.shown, "the looped wolf's");
+    assert.equal(whose({do: 'add', var: 'nh_voice', value: 1}).shown, "the acting wolf's");
     assert.equal(cat.effects.find(e => e.id === 'npc.post')!.params!.find(x => x.key === 'post')!.type, 'post');
     assert.equal(cat.variables!.scopes.realm.startsWith("each wolf's own, kept after the story"), true);
     for (const id of ['sentence begun', 'sentence served']) assert.ok(plain(eventParts(cat, {id: 'x', on: id, actions: []}, ns)).length > 0, id);

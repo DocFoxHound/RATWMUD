@@ -354,13 +354,13 @@ one. Approval accepts an objective's `camp_story_<name>` only for a name the pro
 
 ## Ranks, titles, thanks and words (doc 86, Phase 3)
 
-**Rank.** The action `{"do": "rank", "var": <a player number>, "top": <1 to 500, or a number value>, "into": <a story or
+**Rank.** The action `{"do": "rank", "var": <a number each wolf keeps (player or realm)>, "top": <1 to 500, or a number value>, "into": <a story or
 world list of wolves>, "over": "participants" | "list", "list": <a story or world list of wolves>, "min": <a number value>}`
 clears `into` and puts there the wolves of `over` with a stored number (at least `min`), highest first, ties by `fnv(seed + "|"
 + wolf)`, the first `top`. Not inside For each; a value of `top` or `min` not known changes nothing ("skipped: rank has no
 value"). Both engines (`story_triggers.rank`, `Dispatch2::rank`).
 
-**Tally.** The value `{"tally": {"sum": <a player number>, "where": <a player text or switch>, "is": <its value>, "over":
+**Tally.** The value `{"tally": {"sum": <a number each wolf keeps (player or realm)>, "where": <a text or switch each wolf keeps>, "is": <its value>, "over":
 "participants" | {"list": <a story or world list of wolves>}}}` (every part optional; `where` and `is` together): over every
 wolf of `over` (no 500 cap), those whose `where` is `is` (by its first value when unset), their `sum` added (0 when unset), or
 counted without `sum`. Not inside For each or a test for each wolf; one level deep in arithmetic (`story_triggers.tally`,

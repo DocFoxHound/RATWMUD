@@ -435,6 +435,28 @@ class AcrossActs(unittest.TestCase):
                                   (self.world, ASH)).fetchone()
         self.assertEqual(voice, (4, second), "Act II's write, kept after Act I's")
 
+    def test_chapters_that_keep_one_realm_name_as_two_types_are_refused_together(self):
+        # (After review: with no value kept yet, each chapter passed alone, and the clash showed only when Act II failed to
+        # start at Act I's end.)
+        other = json.loads(json.dumps(ACT_TWO))
+        other['variables'] = [{'id': 'nh_voice', 'type': 'text', 'scope': 'realm'}]
+        other['phases'][0]['triggers'] = [{'id': 'stand', 'on': 'conversation', 'audience': 'participant', 'match': {'target': 'rm112'},
+                                           'actions': [{'do': 'set', 'var': 'nh_voice', 'value': 'loud'}]}]
+        other['tests'] = [{'name': 'Loud', 'cohort': sorted(WOLVES), 'events': [
+            {'id': 'a', 'kind': 'conversation', 'day': 1, 'actor': ASH, 'target': 'rm112'}], 'expect': ['turn'],
+            'expectVariables': {'realm': {ASH: {'nh_voice': 'loud'}}}}]
+        self.assertTrue(rules.review(other)['passed'])
+        self.assertEqual(self.conn.execute('SELECT count(*) FROM dm.story_realm_vars WHERE world_id=%s', (self.world,)).fetchone()[0], 0)
+        self.assertRaisesRegex(ValueError, r'Chapter 2 declares nh_voice \(realm\) as a text; chapter 1 declares it as a number',
+                               self.approve, ACT_ONE, other, cid='ninth-howl')
+        # (A run's write never retypes a value another story keeps.)
+        self.conn.execute("INSERT INTO dm.story_realm_vars(world_id,name,wolf,type,value) VALUES (%s,'nh_voice',%s,'number','3')",
+                          (self.world, ASH))
+        state = {'cohort': [ASH], 'counters': {'realm': {ASH: {'nh_voice': 'loud'}}}}
+        runner.realm_save(self.conn, self.world, 'world-x', other, state, {})
+        self.assertEqual(self.conn.execute("SELECT type,value FROM dm.story_realm_vars WHERE world_id=%s AND wolf=%s AND name='nh_voice'",
+                                           (self.world, ASH)).fetchone(), ('number', 3))
+
 
 @unittest.skipUnless(database_available(), 'local PostgreSQL required')
 class HostedCampaigns(unittest.TestCase):

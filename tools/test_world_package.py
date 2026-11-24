@@ -148,7 +148,13 @@ def save(**extra):
                                  'gifts': [{'who': WOLF, 'coins': 3}, {'who': 'wren', 'coins': 2}]}],
                    'storylines': [{'id': 's1', 'owner': WOLF}, {'id': 's2', 'owner': '', 'authorAccount': 'ashley'},
                                   {'id': 's3', 'owner': '', 'participants': [{'id': WOLF}, {'id': 'wren'}]}],
-                   'deeds': [{'wolf': WOLF}], 'protectedMarks': {'wren': True}},
+                   'deeds': [{'wolf': WOLF}], 'protectedMarks': {'wren': True},
+                   # (Doc 86: the stories' sections storyTalkSave writes, a player's entries in them.)
+                   'storyHolds': {'spare': {'wren': ['run:world-1']}}, 'storyGreets': {'wren': {WOLF: {'text': 'Well met.'}}},
+                   'storyMemory': {'wren': {'nh_stage': {'value': 'waking', 'until': -1, 'run': 'world-1'}},
+                                   WOLF: {'nh_debt': {'value': 'owed', 'until': -1, 'run': 'world-1'}}},
+                   'storyItemNames': {'item^nh_horn': 'the Ninth Horn'},
+                   'storySentences': {'bram': {'place': 'grey-cells', 'run': 'world-1', 'until': 12, 'days': 7}}},
         'weather': {'cell': 1}, 'festivals': [],
     }
     doc.update(extra)
@@ -365,6 +371,12 @@ class StripTest(unittest.TestCase):
         self.assertEqual([s['id'] for s in people['storylines']], ['s3'])
         self.assertEqual(people['storylines'][0]['participants'], [{'id': 'wren'}])
         self.assertEqual(people['protectedMarks'], {'wren': True})
+        # (Doc 86's sections kept, without the players: a greeting waiting for one, and what one remembers, go.)
+        self.assertEqual(people['storyGreets'], {'wren': {}})
+        self.assertEqual(list(people['storyMemory']), ['wren'])
+        self.assertEqual(people['storyHolds'], {'spare': {'wren': ['run:world-1']}})
+        self.assertEqual(people['storyItemNames'], {'item^nh_horn': 'the Ninth Horn'})
+        self.assertEqual(people['storySentences']['bram']['place'], 'grey-cells')
         self.assertEqual(d['chapters'], {'next': 2, 'chapters': []})
 
     def test_a_section_with_fixed_fields_keeps_no_player_in_them(self):

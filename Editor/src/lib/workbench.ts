@@ -503,7 +503,7 @@ export function itemParts(item: CatItem, record: Record<string, unknown>, names:
         const type = param?.type ?? 'text';
         if (type === 'whose') {   // (Shown only before a variable of each wolf or party.)
             const name = record.var ?? record.list;
-            const personal = ['player', 'party'].includes(names['var-scope']?.[String(name)] ?? '');
+            const personal = ['player', 'party', 'realm'].includes(names['var-scope']?.[String(name)] ?? '');
             const text = personal ? (param?.words?.[String(value ?? '$actor')] ?? "the acting wolf's") : '';
             return {keys, type, label: param?.label ?? keys[0], value, param, shown: text, empty: !personal, hidden: !personal} as Omit<Slot, 'slot'>;
         }
