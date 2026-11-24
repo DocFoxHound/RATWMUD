@@ -168,6 +168,18 @@ void worldEffects()
         auto other = parsed(R"({"title":"Another","phase":"a","journal":"Another story.","visit":1})");
         other.set("players", players);
         expect(t.g.applyDmAct({"5", "story.phase", "world-other", "dm", json::dump(other)}).ok, "another story opens");
+        {
+            // (End of slice, doc 86: a story that holds nothing yet holds a resident first. Making the hold's sections
+            // added a field after the first was taken by reference, which moved it: the hold was written to freed memory,
+            // and on Ridgemere 3 the server crashed.)
+            auto third = parsed(R"({"title":"A third","phase":"a","journal":"A third story.","visit":1})");
+            third.set("players", players);
+            expect(t.g.applyDmAct({"5", "story.phase", "world-third", "dm", json::dump(third)}).ok, "a third story opens");
+            expect(t.g.applyDmAct({"5", "npc.hold", "r1", "dm", R"({"run":"world-third","visit":1})"}).ok &&
+                       book.find("world-third")->held["npcs"].has("r1") && book.find("world-third")->held["follow"].isArray(),
+                   "its first order, a hold, is kept: " + json::dump(book.find("world-third")->held));
+            expect(t.g.applyDmAct({"5", "npc.release", "r1", "dm", R"({"run":"world-third","visit":1})"}).ok, "and let go");
+        }
         expect(!t.g.applyDmAct({"6", "npc.speak", "u1", "dm", R"({"run":"world-other","visit":1,"cue":"x","text":"Hello."})"}).ok,
                "another story cannot direct a resident this one holds");
         expect(!t.g.applyDmAct({"6", "npc.hold", "u1", "dm", R"({"run":"world-other","visit":1})"}).ok, "nor hold them");
@@ -769,7 +781,8 @@ void phase6Items()
         const auto gave = t.ash.said();
         expect(gift != seen.end() && gift->item == list && gift->target == "u1" && Society::stock(*s.account("u1"), list) == 1,
                "u1 is given the list, the gift's item its own id: " + gave);
-        expect(contains(gave, "the watch list") && !contains(gave, "1 the watch list") && !contains(gave, "the the"), "said as \"the watch list\": " + gave);
+        // (" 1 the": a count before the name, not the end of "Neighbour u1 the watch list", the line as it is told.)
+        expect(contains(gave, "the watch list") && !contains(gave, " 1 the watch list") && !contains(gave, "the the"), "said as \"the watch list\": " + gave);
         // (Nor eaten, for all a story's bread is bread underneath.)
         expect(!Society::edible("bread^ab12cd34.offering") && Society::edible("bread") && Society::nourishment("bread^ab12cd34.offering") == 0,
                "a story's own food is never eaten");

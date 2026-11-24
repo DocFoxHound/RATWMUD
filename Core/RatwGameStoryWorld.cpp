@@ -235,6 +235,9 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
         auto* e = world_.entity(target);
         if (!e || !e->npc || !world_.society().resident(target))
             return {false, "No such resident.", target};
+        // (Both made first: making one adds a field to what the story holds, which may move the other.)
+        section(*story, "npcs");
+        section(*story, "follow", true);
         auto& holds = section(*story, "npcs");
         auto& follow = section(*story, "follow", true);
         if (kind == "npc.hold")
@@ -1051,7 +1054,7 @@ void Game::tickStoryWorld(double dt)
         {
             // (Doc 86, C10: a foe gone in this run of the world is let go of; one a restart lost is made again while its
             // time lasts; a resident made a foe and beaten, not killed, is held until the story ends.)
-            std::vector<std::string> done;
+            std::vector<std::string> done, beatenHeld;
             std::vector<std::pair<std::string, Value>> seen;   // (What the console's Foes panel shows, where it changed.)
             for (const auto& [camp, j] : foes->fields())
             {
@@ -1079,14 +1082,7 @@ void Game::tickStoryWorld(double dt)
                 const auto how = world_.storyFoeEndedHow(camp);
                 if (how == "beaten" && j.string("kind") == "foe.outlaw" && !j.boolean("lethal"))
                     if (auto* e = world_.entity(j.string("foe")); e && !e->dead)
-                    {
-                        auto& holds = section(*s, "npcs");
-                        if (!holds.has(e->id))
-                            holds.set(e->id, e->pace);
-                        if (!e->sceneDirected && !world_.inBattle(e->id) && e->leaderId.empty())
-                            world_.sceneHold(e->id, true, e->pace);
-                        e->activity = "kept here by a story";
-                    }
+                        beatenHeld.push_back(e->id);   // (Held after the loop: a new "npcs" would move `foes` under it.)
                 if (world_.storyFoeEnded(camp))
                     done.push_back(camp);
                 else if (j.number("until") <= world_.time() || !storyFoeFrom(*s, camp, j).ok)
@@ -1107,6 +1103,16 @@ void Game::tickStoryWorld(double dt)
             for (const auto& camp : done)
                 foes->erase(camp);
             touched = touched || !done.empty() || !seen.empty();
+            for (const auto& id : beatenHeld)
+                if (auto* e = world_.entity(id))
+                {
+                    auto& holds = section(*s, "npcs");
+                    if (!holds.has(id))
+                        holds.set(id, e->pace);
+                    if (!e->sceneDirected && !world_.inBattle(id) && e->leaderId.empty())
+                        world_.sceneHold(id, true, e->pace);
+                    e->activity = "kept here by a story";
+                }
         }
         if (auto* pings = s->held.find("pings"); pings && pings->size())
         {
