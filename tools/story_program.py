@@ -524,6 +524,8 @@ def _param_ok(param, v, regions):
         return isinstance(v, str) and TAG.fullmatch(v) is not None   # (Doc 86, J9: a story's own mark on an item.)
     if kind == 'foe':
         return isinstance(v, str) and FOE_ID.fullmatch(v) is not None   # (Doc 86, C10: a foe's id, given by the story.)
+    if kind == 'post':
+        return isinstance(v, str) and POST_ID.fullmatch(v) is not None  # (Doc 86, C14: checked against the world at approval.)
     return identifier(v) or (kind == 'wolf' and v == '$actor')
 
 
@@ -553,7 +555,8 @@ def animal_ground():
 TALK_KEY = re.compile(r'[a-z][a-z0-9_]{0,39}')
 TALK_VALUE = re.compile(r'[a-z0-9_]{1,40}')
 FIGURE_ID = re.compile(r'[a-z0-9_]{3,40}')
-FOE_ID = re.compile(r'(?!npc-)[a-z0-9][a-z0-9_-]{2,39}')   # (npc-<resident> is a resident made a foe's camp.)
+FOE_ID = re.compile(r'(?!npc-)[a-z0-9][a-z0-9_-]{2,39}')
+POST_ID = re.compile(r'job:[A-Za-z0-9_][A-Za-z0-9_.-]{0,79}')   # (Doc 86, C14: a careers post, job:<its founder>.)   # (npc-<resident> is a resident made a foe's camp.)
 CAMP_NAME = re.compile(r'[a-z0-9_]{3,30}')
 PREFIX = re.compile(r'[a-z]{2,8}')
 TALK_SCOPES = {'realm': (), 'town': ('town',), 'npc': ('npc',), 'pair': ('npc', 'player')}
@@ -1453,7 +1456,7 @@ def _check_variable(d, names, regions):
     shape(d, ('id', 'type', 'scope'), ('initial', 'note', 'show', 'clock', 'talk', 'showOf', 'mirror'))
     require(identifier(d['id']) and d['id'] not in names, 'Give every variable a unique name.')
     require(d['type'] in triggers.VAR_TYPES and d['scope'] in triggers.SCOPES,
-            'A variable has a type (' + ', '.join(triggers.VAR_TYPES) + ') and a scope (story, player, party, world).')
+            'A variable has a type (' + ', '.join(triggers.VAR_TYPES) + ') and a scope (story, player, party, world, realm).')
     require('clock' not in d or (d['type'] == 'timer' and d['clock'] in ('game', 'real')), "A timer variable's clock is game or real.")
     require('note' not in d or word(d['note'], 300), "A variable's note is up to 300 characters.")
     require('show' not in d or (word(d['show'], 60) and d['type'] in ('number', 'switch', 'timer')),
@@ -1513,7 +1516,7 @@ def _check_mirror(d, by):
     require(not d.get('talk'), f'"{d["id"]}": a mirror is not told to residents (talk): it holds no value of its own.')
     shape(m, ('key', 'names'))
     key = by.get(m['key'])
-    require(key is not None and key['type'] == 'text' and key['scope'] == 'player' and 'mirror' not in key,
+    require(key is not None and key['type'] == 'text' and key['scope'] in triggers.OWN and 'mirror' not in key,
             f'"{d["id"]}" mirrors by a text of each wolf: "{m["key"]}" is not one.')
     names = m['names']
     require(isinstance(names, dict) and 1 <= len(names) <= MIRROR_NAMES, f'"{d["id"]}" mirrors 1 to {MIRROR_NAMES} world numbers.')
@@ -2391,11 +2394,22 @@ def _check_case(p, case):
             # make.)
             'audience',
             'activeWolves',
+            # (Doc 86, J2: what each wolf holds of the story's realm variables at the start, as an earlier story left it.)
+            'realm',
         ),
     )
     require('audience' not in case or (isinstance(case['audience'], dict) and set(case['audience']) <= set(triggers.AUDIENCES)
                                        and all(integer(v, 0, 1_000_000) for v in case['audience'].values())),
             'A case\'s audience gives the counts: {"all": n, "active": n, "online": n}.')
+    if 'realm' in case:
+        decls = {d['id']: d for d in p.get('variables', []) if d.get('scope') == 'realm'}
+        given = case['realm']
+        require(isinstance(given, dict) and all(identifier(w) and isinstance(v, dict) for w, v in given.items()),
+                'A case\'s realm values are {wolf: {name: value}}.')
+        for wolf, values in given.items():
+            for name, v in values.items():
+                require(name in decls and decls[name]['type'] != 'timer' and _initial_ok(decls[name]['type'], v, set(region_index(p))),
+                        f'A case\'s realm value names a realm variable the story declares, with a value of its type: {name}.')
     require('activeWolves' not in case or (isinstance(case['activeWolves'], list) and len(case['activeWolves']) <= quests.AUDIENCE_CAP
                                            and all(identifier(w) for w in case['activeWolves'])),
             'The active wolves are a list of wolves.')
@@ -2415,7 +2429,7 @@ def _check_case(p, case):
             'abandoned or none.')
     require('expectVariables' not in case or (isinstance(case['expectVariables'], dict)
                                               and set(case['expectVariables']) <= set(triggers.SCOPES)),
-            'Expected variables are listed by scope (story, player, party, world).')
+            'Expected variables are listed by scope (story, player, party, world, realm).')
     require(
         word(case['name'], 100)
         and isinstance(case['cohort'], list)
@@ -2672,6 +2686,12 @@ def _play_case(p, case, step=None):
         state['rolls'] = list(case['rolls'])
     if case.get('parties'):
         state['parties'] = dict(case['parties'])
+    if case.get('realm'):
+        # (Doc 86, J2: each wolf's realm values as an earlier story kept them; the runner reads them from dm.story_realm_vars.)
+        members = set(case['cohort'])
+        realm = {w: dict(v) for w, v in json.loads(json.dumps(case['realm'])).items() if w in members and v}
+        if realm:
+            state.setdefault('counters', {})['realm'] = realm
     path, intended, last_day, seen = [], [], 0, {}
     visit_credits, trace = [], []
     elapsed = 0
@@ -3227,15 +3247,21 @@ def migration(old, new, state, land=None, run='', began=None):
         state['counters'] = out
     else:
         state.pop('counters', None)
+    state.pop('realmSeen', None)   # (Doc 86, J2: each wolf's realm values are read afresh for the new version's names.)
     for (sc, n), d in sorted(db.items()):
         if (sc, n) not in da and not any(nn == n for _, nn in da) and not any(x.get('renamed') and x['key'] == n for x in kept):
             if sc == 'world':
                 added.append({'what': 'variable', 'key': n, 'scope': sc, 'why': 'kept by the world: this story reads what the world holds.'})
+            elif sc == 'realm':
+                added.append({'what': 'variable', 'key': n, 'scope': sc, 'why': 'kept for each wolf across stories: this story reads '
+                                                                               'what each wolf holds.'})
             else:
                 added.append({'what': 'variable', 'key': n, 'scope': sc, 'why': 'new: it starts at its first value.'})
     for (sc, n), d in sorted(db.items()):
         if sc == 'world' and (sc, n) in da and da[(sc, n)]['type'] != d['type']:
             warn.append(f'World variable {n} is a {d["type"]} now: a value the world keeps as a {da[(sc, n)]["type"]} is not read by this story.')
+        if sc == 'realm' and (sc, n) in da and da[(sc, n)]['type'] != d['type']:
+            warn.append(f'Realm variable {n} is a {d["type"]} now: a value a wolf keeps as a {da[(sc, n)]["type"]} is not read by this story.')
 
     # ---- timers: kept while their signal still has a listener
     heard_here = _story_signals_heard(landing)

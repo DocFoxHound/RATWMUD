@@ -58,6 +58,11 @@ export function useOptions(type: string, own = false): Option[] {
         if (type === 'place') return (refs?.places ?? []).map(p => ({id: p.id, name: p.name, hint: p.kind + (p.town ? ' · ' + p.town : '')}));
         // (Doc 86, L1: an animal for a staged hunt, with the ground it lives on.)
         if (type === 'species') return (refs?.species ?? []).map(a => ({id: a.id, name: a.name, hint: (a.habitats ?? []).join(', ')}));
+        // (Doc 86, C14: a post by its title, with who holds it now; the resident's name where the world gives one.)
+        if (type === 'post') {
+            const named = Object.fromEntries((refs?.residents ?? []).map(r => [r.id, r.name]));
+            return (refs?.posts ?? []).map(p => ({id: p.id, name: p.title, hint: p.holder ? 'held by ' + (named[p.holder] ?? p.holder) : 'standing empty'}));
+        }
         return list;
     }, [type, refs, program, own]);
 }
@@ -115,7 +120,7 @@ function TextPicker({param, value, pick}: {param?: Param; value: unknown; pick: 
         <label>{param?.label ?? 'Words'}<textarea autoFocus rows={2} maxLength={max} value={text} onChange={e => setText(e.target.value)}/>
             <small className={widest > max * 0.9 ? 'warn' : ''}>{text.length} / {max}{used.length > 0 && ` · up to ${widest} once filled`}</small></label>
         {fills && vars.length > 0 && <div className="wb-chips"><span>Fill in:</span>{vars.map(v => {
-            const own = v.scope === 'player' || v.scope === 'party';
+            const own = v.scope === 'player' || v.scope === 'party' || v.scope === 'realm';
             const token = '{' + v.id + (own ? '.of' : '') + '}';
             return <button key={v.id} type="button" title={own ? "the acting (or looped) wolf's own" : undefined} onClick={() => setText(text + token)}>
                 <u>{token}</u></button>;
@@ -183,7 +188,7 @@ function OperandPicker({slot, pick}: {slot: Slot; pick: (v: Operand) => void}) {
         {(!kind || kind === 'text') && <form className="wb-enter" onSubmit={e => { e.preventDefault(); pick(text); }}>
             <label>A text<input value={text} maxLength={200} onChange={e => setText(e.target.value)}/></label><button type="submit">Use</button></form>}
         {vars.length > 0 && <div className="wb-chips"><span>A variable:</span>{vars.map(v => <button key={v.id} type="button" onClick={() => pick({var: v.id})}>{v.id}</button>)}
-            {vars.some(v => v.scope === 'player' || v.scope === 'party') && <small className="hint">(a wolf's own: the acting wolf's)</small>}</div>}
+            {vars.some(v => v.scope === 'player' || v.scope === 'party' || v.scope === 'realm') && <small className="hint">(a wolf's own: the acting wolf's)</small>}</div>}
         {fields.length > 0 && <div className="wb-chips"><span>{offer ? 'The wolf:' : "The event's:"}</span>{fields.map(f => <button key={f} type="button" onClick={() => pick({field: f})}>{offer ? 'the one it is offered to' : f}</button>)}</div>}
         {(!kind || kind === 'number') && lists.length > 0 && <div className="wb-chips"><span>How many in:</span>{lists.map(v => <button key={v.id} type="button" onClick={() => pick({count: v.id})}>{v.id}</button>)}</div>}
         {(!kind || kind === 'number') && timers.length > 0 && <div className="wb-chips"><span>Days since:</span>{timers.map(v => <button key={v.id} type="button" onClick={() => pick({since: v.id})}>{v.id}</button>)}</div>}
@@ -193,7 +198,7 @@ function OperandPicker({slot, pick}: {slot: Slot; pick: (v: Operand) => void}) {
             {num !== '' && Number.isFinite(n) && <button type="button" onClick={() => pick({max: [n, {times: [{audience: 'active'}, 2]}]})}>{n}, or 2 for each active wolf</button>}</div>}
         {(!kind || kind === 'number') && isV2(program) && <div className="wb-chips"><span>Over every wolf (doc 86, tally):</span>
             <button type="button" onClick={() => pick({tally: {}})}>how many wolves the story has</button>
-            {(program.variables ?? []).filter(v => v.type === 'number' && v.scope === 'player' && !v.mirror).map(v =>
+            {(program.variables ?? []).filter(v => v.type === 'number' && (v.scope === 'player' || v.scope === 'realm') && !v.mirror).map(v =>
                 <button key={v.id} type="button" onClick={() => pick({tally: {sum: v.id}})}>every wolf's {v.id}, added up</button>)}
             <small className="hint">(only some wolves, or over a list: edited in Source)</small></div>}
         {(!kind || kind === 'number') && !offer && (program.quests ?? []).some(q => q.credit === 'share') && <div className="wb-chips"><span>In a reward by share:</span>

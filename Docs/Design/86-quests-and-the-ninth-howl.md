@@ -2136,3 +2136,130 @@ effects (89 in all: `foe.add`, `foe.leave`, `foe.outlaw`, a new effect group Foe
   `RATW_STORY_TEST_DSN` on a throwaway migrated database (dropped after); `story_guide.py --check`; the Editor's tests
   (`npm test`) and `tsc --noEmit`. Going live is as above, with the Editor released for the Foes panel and the story
   runner restarted for the foe events' marks and the `foe` command.
+
+## Phase 8 as built
+
+**Phase 8 as built** (2026-11-24, branch `r3-nh-p8`, on `r3-nh-p7` at `4e4357b7`). Engine spec items J2 (realm variables),
+C14 (`npc.post`, the crown's change) and L4 (`npc.sentence`, a hold that outlives the run). **Two migrations**, as the spec
+numbers them: **0080** (`dm.story_posts`, D5's post list) and **0081** (`dm.story_realm_vars`); both applied to a
+throwaway migrated database, never to `ratw_ridgemere3`. Two new effects (91 in all: `npc.post`, `npc.sentence`, group
+Residents, both `needsBuilder`), two new events (221 in the catalogue's list, 218 a story may name: `sentence begun`,
+`sentence served`, group Town life), one new parameter type (`post`), a fifth variable scope (`realm`).
+- **J2: the scope, in both twins** (`tools/story_triggers.py`, `Core/RatwStoryTriggers.cpp`). `SCOPES` gains `realm`;
+  `PERSONAL` (a wolf's or party's own) holds it, and a new `OWN = ('player', 'realm')` is what one value per wolf means:
+  `var_store` and `Dispatch2::store`/`writable` keep it in `counters.realm[wolf]` as `player` is kept, so it is read `of`
+  `$actor` or `$each`, set, added to, listed, timed, compared and tested for each wolf like a player value; `rank` and
+  `tally` (and their checks) take a number, text or switch of either own scope and read the store of the variable's own
+  scope (a tally's `sum` and `where` each their own); a mirror's `key` may be a realm text; N2's told values, the journal's
+  trackers (`story_quests.trackers`, `talk_map`, `talk_unsaid`) and the timeline's before and after (`_values`, `_diff`)
+  read it. The native request already carries the whole `counters`, so no widening was needed. `test_story_native`
+  (`RealmParity`: added to, compared of the actor and of each, ranked, tallied with a player text's `where`, in a For each,
+  a mirror keyed by a realm text, a wolf not in the story).
+- **J2: the runner** (`tools/story_runner.py`). `realm_load` reads the cohort's rows for the declared names into
+  `counters.realm` the first time (at `launch`, and after a move onto a new version, which drops `realmSeen`), then at each
+  turn only the rows whose `updated_at` is past the run's cursor (`state.realmSeen`, epoch seconds), read again from
+  `REALM_OVERLAP` (120 s) before it so a row another transaction stamped earlier but committed later is not missed (a row
+  read twice is harmless: the run's own writes were saved at its last turn's end); a row of another type is not read; a
+  wolf who left is let go of. `realm_save` writes only the wolf-name pairs that changed against what was loaded, stamped
+  `clock_timestamp()`. `realm_join` reads a wolf's rows when they join: `story_quests.add_wolf` calls the hooks in
+  `story_quests.JOINED`, which `tick_run` sets for its run (and the console's participant add calls it directly). They ride
+  on `world_load`/`world_save` (which now return a `_Loaded`: the world snapshot with the realm one as `.realm`), so every
+  path that reads or steers a run (a tick, a command, What if, Explain) has the values. `realm_clash` (from
+  `references()`): needs 0081, and refuses a declaration of another type than the wolves keep a name as, or than another
+  live story of the world declares it. `_carried` never carries realm (nothing to carry). The console: ops `realm-vars`
+  (`{name?, wolf?}`: the values newest first, 200 at most, and the names the world's stories declare with who declares
+  them) and `realm-var` (`{name, wolf, value, reason}`, the owner or "may steer campaigns", audited `story.realm-var`).
+  A rehearsal case may give `realm`: `{wolf: {name: value}}`, what each wolf brings with them from an earlier act
+  (checked against the declarations; the workbench's rename follows it).
+- **C14: the crown's change**. `Society::swapPost` (`Core/RatwCareers.cpp`; `World::postResident`): unlike `appoint` it takes
+  a held post (the holder becomes `lastHolder`, the post never vacant), takes the resident out of any post they held (vacant
+  since today, `lastHolder` them), keeps their skill at least what an appointment gives, and notes `succession` (actor the
+  new holder, target the one before, detail `<title>: by the story`); refused for a `guard` post ("The watch chooses its
+  own"), no such post, the dead or no resident; a post they hold already is no change (`held`, so an order sent again after
+  a restart is no refusal). The game's `npc.post` order (`RatwGame.cpp`, payload `{post}`; the runner's single-key
+  `action()`), recorded with the economy and saved soon. Lasting. Approval: the post in `dm.story_posts` and not the
+  Watch's; `refs().posts` (by title, with the holder; the guard posts left out) for the workbench's new `post` picker.
+  `Tests/careers_tests.cpp` (`theCrownsChange`: Dagfinn's "reigning at the Great Palace" to Ottilie, Dagfinn with no post,
+  Ottilie's books vacant since the day, a succession note, no money moved, the guard's post refused).
+- **0080: `dm.story_posts`** is a **view**, not the table D5 suggested: the last checkpoint's `society.careers.positions`
+  (`id`, `holder`, `lastHolder`) joined to each post's founder (`live.npcs`, or a profession slot's character) for its title
+  (the founder's work label: `Society::buildPositions`) and role. A view is "refreshed with every checkpoint" by being one,
+  needs no writer (the game role writes no `dm` table), and never depends on a live server. Read only against Ridgemere 3
+  (the view's query, not the view: nothing was created there) it lists 705 posts, 14 of the Watch, every one titled;
+  "reigning at the Great Palace" is `job:rm_gunnar_harrowgate` (its founder dead), held by `rmx_dagfinn_thornham`.
+- **L4: a sentence** (`Core/RatwGameStoryWorld.cpp`). `npc.sentence` is a world order (`WORLD_ORDERS`: target the
+  resident, with the run). `Game::applyStorySentence` refuses a resident protected, dead, in a fight or down, away (with a
+  party, or nowhere), a foe, held by another story, or serving a sentence already (the same order again is no change); a
+  place not indoors; 1 to 28 days. It moves them to the open tile nearest the room's middle (`World::teleport`, tried
+  outward), holds them (`sceneHold`), says "held at <room>", and keeps `storySentences_[npc] = {place, by: the program id
+  (the storyline's `templateId`), run, x, y, began, until, days, pace}`, saved with the checkpoint (`people.storySentences`,
+  `storyTalkSave`/`storyTalkLoad`), **never in `Storyline::held`**, so `endStoryWorld` leaves it. `tendSentences` (from
+  `tickStoryWorld`, every half second, before the stories and even when no story holds anything) puts one moved away back
+  on their tile (after a restart too), never pulling them out of a fight, and at `until` calls `endSentence(npc, "served")`:
+  the hold let go (unless a live story still holds them), they walk home on their own day, and `sentence served` (item
+  `served`, quantity the whole days held). A dead one's sentence is dropped with no event. While sentenced,
+  `heldByAnotherStory` counts it (so no other story's hold, follow, walk or foe takes them) and `whyNotJoin` refuses a party
+  ("They are serving a sentence."). `sentence begun` carries the resident (actor), the run (target), the place (cell), the
+  tile, the days (quantity) and the program id (detail). The console: op `sentences` (from the checkpoint, with days left by
+  its clock) and `sentence-release` (`{npc, reason}`: queues the game's new `npc.unsentence`, which ends it with item
+  `released`; the owner or "may steer campaigns"; audited `story.sentence-release`). Approval: the place an interior a link
+  reaches (`world.interiors`, `world.links`).
+- **Workbench and console** (`Editor/`): the scope chip "each wolf, across stories" in Variables (and told to residents,
+  a tally's sum and the "a wolf's own" hint take realm); the `post` picker (`REF_KIND.post`, `refs.posts`: the title, "held by
+  <name>" or "standing empty"); the run's state panel shows realm values per wolf; **World variables…** gains the tabs
+  **The world's** and **Per wolf** (`RealmVarsPanel`: filter by name and wolf, ✎ Set… with a reason, the names the stories
+  declare, the hand changes); the Campaigns list gains **Sentences…** (`SentencesPanel`: "Ilse Coalley, held at The Keep,
+  the cells by lq-wreckers-light: 4.3 of 7 days left", Release now… with a reason). The render smoke has both panels.
+- **Guide and format**: `Docs/Story-Maker-guide.md` §4 "Across campaigns: realm variables" (and four ways of carrying
+  state), §6 the fifth scope and the Per wolf tab, §8 "Lasting changes: the crown's change and a sentence" (with Ridgemere
+  3's ids), §13 the builder's effects and the two steering rights, §14 three rows (both effects and a realm value stay),
+  §15 two rows, §16 two rows; the reference regenerated (`story_guide.py --write`; `--check` passes; both effects have
+  examples, `post` a sample). `Docs/story-programs.md` gains "Across acts and the crown". `RUNNER_VERSION` is
+  `doc86-phase8`.
+- **Sample** `story_v2_samples.CROWN` ("The Moot Night", `v2-moot-night`, in `all_samples()`, so both twins run it): each
+  wolf's `nh_voice` and `nh_pledge` (realm) come from the acts before (the case's `realm`); a wolf who howls adds to their
+  own voice; when the chorus closes with three or more, the loudest is ranked and the voices pledged to Coldwater tallied;
+  six of them, and rm111 takes the post rm112 held and rm113 serves a week in the cells; a second case, new wolves pledged to
+  nobody, and the Moot refuses. It rehearses clean in both twins: nothing uncovered.
+- **Tests**: `test_story_v2_runner` (`RealmVariables`, on a throwaway database: two runs adding 1 and 2 to one wolf's value
+  every turn keep both, whichever takes its turn first; the console sets a value, refuses a wrong type and a name nobody
+  keeps, lists it with its readers and audits it, and a run reads it at its next turn; a third run launched after has the
+  value from the start; a type clash against a kept row and against another live story refused; a row of another type not
+  read), `test_story_campaigns` (`AcrossActs`: a campaign whose Act I sets each wolf's voice and pledge and whose Act II,
+  which carries nothing, reads them: Ash, who pledged, is heard, Elm, who never spoke in Act I, is not; Act II's write kept
+  after Act I's), `test_story_effects` (the orders and payloads; approval refuses an unknown post, the Watch's post, a
+  sentence outdoors and one in a room nothing reaches; the posts in `refs`; the sentences listed from a checkpoint and
+  Release now queued and audited), `test_story_v2` (`Phase8AcrossActs`: the Moot in both twins, what a wolf brings decides
+  it, what validation refuses), `test_story_native` (`RealmParity`), `test_story_catalogue`, `test_story_drafts` (the
+  counts), `Tests/careers_tests.cpp` (`theCrownsChange`), `Tests/story_world_tests.cpp` (`phase8Sentences`, through the
+  game: the refusals; sentenced upstairs with the program's id and `sentence begun`; held against another story and a
+  party; still held when the story ends, put back when moved; after a restart still held, on the sixth day still, served on
+  the seventh and let go with `sentence served`; Release now with item `released`; `npc.post` takes the stall from its
+  keeper with a succession, by the story; the same orders sent again are no change), `workbench.test.ts` (119 programs; the
+  Moot in words; a realm variable renamed in a case's realm values and expected values; a new post and sentence pass the
+  checks), `campaigns.test.ts` (a sentence in words).
+- **Run**: the whole `ctest` (122: all pass but `talk_scorecard_quick` under `-j8`, which passes alone, the timing test
+  noted in Phase 7; and, with the database settings, the eight `_pg` tests the first run skipped, all pass; `pg_client`
+  skipped as ever); every story Python suite but the scene, siege and facts live ones, with the local PostgreSQL (the
+  tests' own `ratw_test_*` databases, and `RATW_STORY_TEST_DSN` on a throwaway database migrated through 0081, dropped
+  after); `story_guide.py --check`; the Editor's tests (`npm test`: 78 and 154), `tsc --noEmit` and `npm run smoke`; a
+  scratch Ridgemere 3 server from this branch (`tools/scratch.sh ridgemere3`: restored the save, listened, answered; stopped
+  after). **A flake found, not caused here**: `story_world_tests` run six at once fails now and then at Phase 6's check
+  "said as the watch list" (a client's line read before it is said); Phase 7's build at `4e4357b7` fails the same way, and
+  every run alone passes.
+- **Left or changed, and why**: (1) `dm.story_posts` is a view of the checkpoint, not a table refreshed by the game (above).
+  (2) The spec's per-tick reload "since the run's cursor" reads two minutes before the cursor as well: timestamps alone can
+  miss a row committed out of order, and reading a row again is harmless. (3) The console's Per wolf tab sets a value; it
+  does not remove one (a removed row could not be told to a run reading by its cursor; set the first value instead). (4)
+  Realm values ride in the run's state (`counters.realm`, as world values do) between turns, which the cursor needs; they
+  are the shared store's copy, not the truth. (5) A chapter started in the same turn as the one that ends before it reads the
+  other's last changes at its own first turn, before any of its triggers fire (the ending run saves after it starts the
+  next). (6) `npc.post` and `npc.sentence` sent again are no change rather than a refusal, so a batch item applied again
+  after a restart never pauses the run. (7) A sentenced resident moved away is put back by teleport to their tile, not
+  walked, and their pace is restored when let go. (8) "Release now" is the console's `sentence-release` and the game's new
+  `npc.unsentence`, which the spec did not name. (9) Realm timers are allowed (a moment is the world's day either way).
+- **Going live** on `ratw_ridgemere3` needs migrations 0080 and 0081 (the user's to apply); the game server restarted from
+  this branch (the crown's change, the sentences in the checkpoint), the story runner from it (realm variables, the new
+  orders and checks; the native library rebuilt as usual: the realm scope is in it), the Editor released from it (the
+  pickers, Per wolf, Sentences). The client needs no change: a realm tracker is a tracker, and a sentenced resident is a
+  resident held where they are.

@@ -1726,6 +1726,33 @@ Result Game::applyDmAct(std::vector<PgValue> row)
     }
     else if (kind == "npc.howl")
         outcome = residentHowl(target);   // (Doc 86, J5: a resident a story asks to howl, RatwGameHowl.cpp.)
+    else if (kind == "npc.post")
+    {
+        // Doc 86, C14: a post given to a resident by a story in one step, whoever held it (lasting; payload {post}).
+        json::Value payload;
+        std::string problem;
+        const auto post = row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject()
+                              ? payload.string("post") : std::string();
+        if (!world_.society().resident(target))
+            outcome = {false, "No such resident.", target};
+        else if (post.empty())
+            outcome = {false, "Name the post.", target};
+        else
+        {
+            outcome = world_.postResident(post, target);
+            if (outcome.ok)
+            {
+                record(Economy);
+                saveSoon();
+            }
+        }
+    }
+    else if (kind == "npc.unsentence")
+    {
+        // Doc 86, L4: the console's "Release now" for a resident a story sentenced ("sentence served", item "released").
+        outcome = endSentence(target, "released") ? Result{true, "Let go: they walk home.", target}
+                                                  : Result{false, "That resident is serving no sentence.", target};
+    }
     else if (kind == "story.watch")
     {
         // Doc 86, J6: what a running story asks the game to tell it, sent again when the residents it counts change.

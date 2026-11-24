@@ -340,19 +340,20 @@ struct Dispatch2
     const Value* store(const std::string& scope, const std::string& wolf) const
     {
         static const Value Empty = Value::object();
-        const bool personal = scope == "player" || scope == "party";
+        // (Doc 86, J2: `realm` is each wolf's own as `player` is; the runner loads it into counters.realm.)
+        const bool personal = scope == "player" || scope == "party" || scope == "realm";
         if (personal && !member(wolf)) return nullptr;
         const auto& byScope = state["counters"][scope];
         if (!personal) return byScope.isObject() ? &byScope : &Empty;
-        const auto* own = byScope.find(scope == "player" ? wolf : partyOf(wolf));
+        const auto* own = byScope.find(scope == "party" ? partyOf(wolf) : wolf);
         return own ? own : &Empty;
     }
 
     Value* writable(const std::string& scope, const std::string& wolf)
     {
-        const bool personal = scope == "player" || scope == "party";
+        const bool personal = scope == "player" || scope == "party" || scope == "realm";
         if (personal && !member(wolf)) return nullptr;
-        const auto owner = scope == "player" ? wolf : partyOf(wolf);
+        const auto owner = scope == "party" ? partyOf(wolf) : wolf;
         auto& byScope = obj(obj(state, "counters"), scope);
         return personal ? &obj(byScope, owner) : &byScope;
     }
@@ -462,20 +463,23 @@ struct Dispatch2
     {
         const auto& over = t["over"];
         const auto wolves = wolvesOf(over.isObject() ? over["list"] : Value());
-        const auto& players = state["counters"]["player"];
         const bool where = t.has("where"), sum = t.has("sum");
         const auto whereName = t.string("where"), sumName = t.string("sum");
+        // (Doc 86, J2: each wolf's own values, of the scope each variable read is declared in: player or realm.)
+        const auto& wheres = state["counters"][where ? decls[whereName].string("scope", "player") : std::string("player")];
+        const auto& sums = state["counters"][sum ? decls[sumName].string("scope", "player") : std::string("player")];
         const Value blank = where ? initialOf(decls[whereName]) : Value();
         double total = 0;
         for (const auto& w : wolves)
         {
-            const auto* own = players.isObject() ? players.find(w) : nullptr;
             if (where)
             {
+                const auto* own = wheres.isObject() ? wheres.find(w) : nullptr;
                 const Value v = own && own->has(whereName) ? (*own)[whereName] : blank;
                 if (!(v == t["is"])) continue;
             }
             if (!sum) { total += 1; continue; }
+            const auto* own = sums.isObject() ? sums.find(w) : nullptr;
             if (own && own->has(sumName) && (*own)[sumName].isNumber()) total += (*own)[sumName].asNumber();
         }
         return Value(total);
@@ -494,8 +498,8 @@ struct Dispatch2
         }
         const auto n = std::size_t(std::clamp(std::floor(top->asNumber()), 1.0, double(RankMost)));
         const auto wolves = wolvesOf(a.string("over", "participants") == "list" ? a["list"] : Value());
-        const auto& players = state["counters"]["player"];
         const auto name = a.string("var"), seed = state.string("seed");
+        const auto& players = state["counters"][decls[name].string("scope", "player")];   // (Doc 86, J2: player or realm.)
         std::vector<std::tuple<double, std::uint64_t, std::string>> found;
         for (const auto& w : wolves)
         {

@@ -91,6 +91,7 @@ PHASE6 = (*rules.quests.STORY_EFFECTS, 'character.grant', 'item.give', 'standing
 PHASE9 = tuple(runner.WORLD_ORDERS) + ('story.tracker',)
 # (Doc 86, Phase 1b's: residents spared, figures, talk memory and rumours (tools/test_story_talk.py); npc.protect's `lasts`.)
 PHASE1B = ('npc.spare', 'npc.unspare', 'figure.set', 'figure.clear', 'npc.protect')
+PHASE8 = ('npc.post',)   # (Doc 86, C14: new, with a post the hand-written checks never had.)
 
 
 class CatalogueShape(unittest.TestCase):
@@ -128,7 +129,7 @@ class CatalogueShape(unittest.TestCase):
         self.assertEqual(len(ids), len(set(ids)))
         # (160, Phase 6's 11 quest and party events, Phase 8's 24, Phase 10's 10; doc 86's moon, title given; Phase 4's story notified,
         # variable changed, month begins, succession; Phase 5's howled and chorus closed.)
-        self.assertEqual(len(rules.EVENTS), 216)   # (Doc 86, Phase 7: foe downed, foe defeated, foe fled.)
+        self.assertEqual(len(rules.EVENTS), 218)   # (Doc 86, Phase 7: foe downed, foe defeated, foe fled; Phase 8: sentence begun, served.)
         self.assertEqual(set(ids) - set(rules.EVENTS), {triggers.SIGNAL, rules.MISSION_GATE, rules.READY_EXIT})   # (Doc 86: the ready exit.)
         for e in CAT['events']:
             with self.subTest(event=e['id']):
@@ -155,7 +156,7 @@ class CatalogueShape(unittest.TestCase):
         self.assertEqual(set(dos), {'set', 'add', 'emit', 'schedule', 'cancel', 'effect', 'enter', *triggers.FLOW_V2, *triggers.STATE_V2})
         self.assertEqual(len({a['id'] for a in CAT['actions']}), len(CAT['actions']))
         self.assertTrue(all(a.get('nest') for a in CAT['actions'] if a.get('do', a['id']) in ('if', 'each', 'random')))
-        self.assertEqual(len(CAT['effects']), 89)   # (Doc 86, Phase 7: foe.add, foe.leave, foe.outlaw.)   # (25, Phase 6's 14, Phase 9's 31, Phase 10's story.start, doc 86 Phase 1b's 7, Phase 3's 4, Phase 4's 2,
+        self.assertEqual(len(CAT['effects']), 91)   # (Doc 86, Phase 7: foe.add, foe.leave, foe.outlaw; Phase 8: npc.post, npc.sentence.)   # (25, Phase 6's 14, Phase 9's 31, Phase 10's story.start, doc 86 Phase 1b's 7, Phase 3's 4, Phase 4's 2,
         # Phase 5's npc.howl and hunt.stage.)
         for item in [*CAT['conditions'], *CAT['actions'], *CAT['effects']]:
             with self.subTest(item=item['id']):
@@ -209,7 +210,7 @@ class CatalogueShape(unittest.TestCase):
                 'skill': 'craft', 'market': 'grey', 'detail': 'Held the ford.', 'project': 'well', 'title': 'A new well', 'scene': 'oath'}
         compared = 0
         for kind, keys in rules.EFFECTS.items():
-            if kind == 'scene.play' or kind in PHASE6 or kind in PHASE9 or kind in PHASE1B:
+            if kind == 'scene.play' or kind in PHASE6 or kind in PHASE9 or kind in PHASE1B or kind in PHASE8:
                 continue   # (Needs an embedded scene: both run the same checks after the loop. Phase 6's are new: below.)
             keys = tuple(k for k in keys if k != 'camp')   # (Doc 86, L2: optional, and the hand-written checks had none.)
             base = {'kind': kind, **{k: good[k] for k in keys}}

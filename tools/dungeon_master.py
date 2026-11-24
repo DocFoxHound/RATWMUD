@@ -2783,6 +2783,23 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                                 raise DMError("Changing the world's variables on this world needs its owner, or the owner's "
                                               '"may steer campaigns" for your account.', 403)
                             result = story_runner.world_var(conn, world, who['username'], data)
+                        elif op == 'realm-vars':   # (Doc 86, J2: each wolf's realm values, by name and wolf; a read.)
+                            result = {**story_runner.realm_vars(conn, world, data.get('name'), data.get('wolf')),
+                                      'audit': story_runner.realm_var_audit(conn, world)}
+                        elif op == 'realm-var':
+                            # (Setting a wolf's realm value steers every story that reads it, as a world variable does.)
+                            if hosted and who['role'] != 'owner' and not who.get('maySteerCampaigns'):
+                                raise DMError("Changing the wolves' realm values on this world needs its owner, or the owner's "
+                                              '"may steer campaigns" for your account.', 403)
+                            result = story_runner.realm_var(conn, world, who['username'], data)
+                        elif op == 'sentences':   # (Doc 86, L4: the residents stories sentenced; a read.)
+                            result = {'sentences': story_runner.sentences(conn, world)}
+                        elif op == 'sentence-release':
+                            # (Doc 86, L4: "Release now": steering, as letting go of a campaign's holds is.)
+                            if hosted and who['role'] != 'owner' and not who.get('maySteerCampaigns'):
+                                raise DMError("Letting a sentenced resident go on this world needs its owner, or the owner's "
+                                              '"may steer campaigns" for your account.', 403)
+                            result = story_runner.release_sentence(conn, world, who['username'], data)
                         elif op == 'campaign-release':
                             # (Doc 86, C11: an act stopped early lets go of the residents it held for its campaign: steering.)
                             if hosted and who['role'] != 'owner' and not who.get('maySteerCampaigns'):

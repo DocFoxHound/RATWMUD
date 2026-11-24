@@ -510,3 +510,14 @@ test('doc 86, C10: the Foes panel in words, and Send away in the audit', () => {
         'rider, tough, a band of 1');
     assert.equal(foeCommandLine('foe', {do: 'leave', foe: 'rm113'}, names), 'sent Tamsin away');
 });
+
+// ----- Doc 86, Phase 8: a sentence in the Campaigns console's Sentences list.
+import {sentenceLine} from './campaigns.ts';
+
+test('doc 86, Phase 8: a sentence in words, with the days left', () => {
+    const s = {npc: 'rm_ilse_coalley', name: 'Ilse Coalley', place: 'r2_the_keep_down', placeName: 'The Keep, below', by: 'lq-wreckers-light',
+        run: 'world-1', days: 7, began: 60, until: 67, left: 4.25};
+    assert.equal(sentenceLine(s), 'Ilse Coalley, held at The Keep, below by lq-wreckers-light: 4.3 of 7 days left');
+    assert.equal(sentenceLine({...s, left: 0}), 'Ilse Coalley, held at The Keep, below by lq-wreckers-light: served (let go at the next moment)');
+    assert.equal(sentenceLine({...s, placeName: '', by: '', days: 1, left: 1}), 'Ilse Coalley, held at r2_the_keep_down by world-1: 1 of 1 day left');
+});

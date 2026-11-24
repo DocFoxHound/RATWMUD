@@ -3885,6 +3885,21 @@ Result World::appointResident(const std::string& positionId, const std::string& 
     return {true, note.detail, resident};
 }
 
+Result World::postResident(const std::string& positionId, const std::string& resident)
+{
+    const auto* e = entity(resident);
+    if (!e || !e->npc || e->dead)
+        return {false, "No such resident (living) to take it.", resident};
+    const auto note = society_.swapPost(positionId, resident, careerWorld(), calendarDays_);
+    if (note.kind == "refused")
+        return {false, note.detail, resident};
+    if (note.kind == "held")
+        return {true, e->name + " holds that post already.", resident};
+    careerNotes({note});
+    const auto* p = society_.position(positionId);
+    return {true, e->name + " takes the post " + (p ? p->title : positionId) + ".", resident};
+}
+
 Result World::apprenticeResident(const std::string& positionId, const std::string& youth)
 {
     const auto note = society_.apprenticeTo(positionId, youth, careerWorld(), calendarDays_);

@@ -357,6 +357,85 @@ class Campaigns(unittest.TestCase):
         self.assertEqual(do(do='remove', name='best')['after'], None)
 
 
+# ----- Doc 86, J2 (Phase 8): Act I sets each wolf's realm value, Act II (a chapter that carries nothing) reads it: realm
+# values are never carried; they are each wolf's own, kept for the realm.
+ACT_ONE = {
+    'format': 'ratw-story-program', 'version': 2, 'id': 'act-one', 'title': 'Act I: the chalk night',
+    'audience': {'kind': 'players', 'players': sorted(WOLVES)}, 'start': 'chalk',
+    'variables': [{'id': 'nh_voice', 'type': 'number', 'scope': 'realm', 'show': 'Your voice'},
+                  {'id': 'nh_pledge', 'type': 'text', 'scope': 'realm'}, {'id': 'marks', 'type': 'number', 'scope': 'story'}],
+    'phases': [{'id': 'chalk', 'journal': 'Chalk the doors.', 'effects': [], 'exits': [], 'triggers': [
+        {'id': 'mark', 'on': 'conversation', 'audience': 'participant', 'match': {'target': 'rm111'}, 'actions': [
+            {'do': 'add', 'var': 'nh_voice', 'value': 3}, {'do': 'set', 'var': 'nh_pledge', 'value': 'coldwater'},
+            {'do': 'add', 'var': 'marks', 'value': 1},
+            {'do': 'if', 'if': {'test': 'compare', 'left': {'var': 'marks'}, 'op': '>=', 'right': 2},
+             'then': [fx('story.start', story='act-two', audience='same', carry=False, when='ended'),
+                      {'do': 'finish', 'outcome': 'success', 'text': 'The doors are chalked.'}]}]}]}],
+    'tests': [{'name': 'Two marks', 'cohort': sorted(WOLVES), 'events': [
+        {'id': 'a', 'kind': 'conversation', 'day': 1, 'actor': ASH, 'target': 'rm111'},
+        {'id': 'b', 'kind': 'conversation', 'day': 1.1, 'actor': BIRCH, 'target': 'rm111'}],
+        'expect': ['chalk'], 'expectOutcome': 'success', 'expectChapters': ['act-two'],
+        'expectVariables': {'realm': {ASH: {'nh_voice': 3, 'nh_pledge': 'coldwater'}}}}],
+}
+ACT_TWO = {
+    'format': 'ratw-story-program', 'version': 2, 'id': 'act-two', 'title': 'Act II: the Turn',
+    'audience': {'kind': 'players', 'players': sorted(WOLVES)}, 'start': 'turn',
+    'variables': [{'id': 'nh_voice', 'type': 'number', 'scope': 'realm'}, {'id': 'nh_pledge', 'type': 'text', 'scope': 'realm'},
+                  {'id': 'heard', 'type': 'wolves', 'scope': 'story'}],
+    'phases': [{'id': 'turn', 'journal': 'Stand at the Turn.', 'effects': [], 'exits': [], 'triggers': [
+        {'id': 'stand', 'on': 'conversation', 'audience': 'participant', 'match': {'target': 'rm112'},
+         'if': {'test': 'all', 'conditions': [
+             {'test': 'compare', 'left': {'var': 'nh_voice', 'of': '$actor'}, 'op': '>=', 'right': 3},
+             {'test': 'compare', 'left': {'var': 'nh_pledge', 'of': '$actor'}, 'op': '=', 'right': 'coldwater'}]},
+         'actions': [{'do': 'list add', 'var': 'heard', 'value': {'field': 'actor'}}, {'do': 'add', 'var': 'nh_voice', 'value': 1}]}]}],
+    'tests': [{'name': 'Ash pledged in Act I', 'cohort': sorted(WOLVES), 'realm': {ASH: {'nh_voice': 3, 'nh_pledge': 'coldwater'}},
+               'events': [{'id': 'a', 'kind': 'conversation', 'day': 1, 'actor': ASH, 'target': 'rm112'},
+                          {'id': 'b', 'kind': 'conversation', 'day': 1.1, 'actor': ELM, 'target': 'rm112'}],
+               'expect': ['turn'], 'expectVariables': {'story': {'heard': [ASH]}, 'realm': {ASH: {'nh_voice': 4}}}}],
+}
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL required')
+class AcrossActs(unittest.TestCase):
+    setUpClass = classmethod(console.ConsoleReads.setUpClass.__func__)
+    tearDownClass = classmethod(console.ConsoleReads.tearDownClass.__func__)
+    fact, answer, tick = console.ConsoleReads.fact, console.ConsoleReads.answer, console.ConsoleReads.tick
+    answer_all, settle = steering.Steering.answer_all, steering.Steering.settle
+    release, runs_of, approve = Campaigns.release, Campaigns.runs_of, Campaigns.approve
+
+    def setUp(self):
+        console.ConsoleReads.setUp(self)
+
+    def test_both_acts_rehearse(self):
+        for p in (ACT_ONE, ACT_TWO):
+            self.assertTrue(rules.review(p)['passed'], p['id'])
+
+    def test_act_one_sets_each_wolfs_realm_value_and_act_two_reads_it(self):
+        out = self.approve(ACT_ONE, ACT_TWO, cid='ninth-howl')
+        first = runner.publish(self.conn, self.world, out['ticket'])['run']
+        self.settle()
+        self.fact('conversation', ASH, 'rm111')
+        self.tick()
+        self.fact('conversation', BIRCH, 'rm111')
+        self.tick()
+        self.settle()
+        self.assertEqual(self.release(first)[0], 'complete')
+        kept = dict(((w, n), v) for w, n, v in self.conn.execute(
+            'SELECT wolf,name,value FROM dm.story_realm_vars WHERE world_id=%s', (self.world,)))
+        self.assertEqual(kept, {(ASH, 'nh_voice'): 3, (ASH, 'nh_pledge'): 'coldwater', (BIRCH, 'nh_voice'): 3, (BIRCH, 'nh_pledge'): 'coldwater'})
+        [second] = self.runs_of('act-two')
+        self.assertNotIn('realm', runner._carried(ACT_ONE, ACT_TWO, self.release(first)[1]), 'never carried: kept for the realm')
+        self.fact('conversation', ASH, 'rm112')
+        self.fact('conversation', ELM, 'rm112')
+        self.tick()
+        state = self.release(second)[1]
+        self.assertEqual(state['counters']['story']['heard'], [ASH], 'Ash pledged in Act I; Elm never spoke there')
+        self.assertEqual(state['counters']['realm'][ASH]['nh_voice'], 4)
+        voice = self.conn.execute("SELECT value,run FROM dm.story_realm_vars WHERE world_id=%s AND wolf=%s AND name='nh_voice'",
+                                  (self.world, ASH)).fetchone()
+        self.assertEqual(voice, (4, second), "Act II's write, kept after Act I's")
+
+
 @unittest.skipUnless(database_available(), 'local PostgreSQL required')
 class HostedCampaigns(unittest.TestCase):
     """The route on a hosted world: a campaign whose chapters change the economy needs a builder; the world's variables

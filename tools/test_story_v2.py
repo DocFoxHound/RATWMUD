@@ -965,6 +965,59 @@ class Phase3Ranks(unittest.TestCase):
         self.assertEqual(native['counters'], state['counters'], 'both twins agree')
 
 
+class Phase8AcrossActs(unittest.TestCase):
+    """Doc 86, Phase 8 (J2, C14, L4): the Moot Night (story_v2_samples.CROWN): each wolf's voice and pledge brought from the
+    acts before (a case's realm values), added to, ranked and tallied; the crown's change and a sentence when enough
+    voices are pledged; in both twins; what validation refuses."""
+
+    def review(self, p=None, native=True):
+        p = copy.deepcopy(p or samples.CROWN)
+        if native:
+            return rules.review(p)
+        with patch('story_native.interpreter', return_value=None):
+            return rules.review(p)
+
+    def test_the_moot_rehearses_clean_in_both_twins(self):
+        native, python = self.review(), self.review(native=False)
+        self.assertTrue(native['passed'] and not native['uncovered'], native)
+        self.assertEqual(native, python)
+        crowned = native['tests'][0]
+        self.assertEqual(crowned['path'], ['moot', 'crowned'])
+        self.assertEqual(crowned['counters']['realm']['player-ash'], {'nh_voice': 4, 'nh_pledge': 'coldwater'})
+        self.assertEqual([e['kind'] for e in crowned['effects']], ['npc.post', 'npc.sentence'])
+        self.assertEqual(native['tests'][1]['path'], ['moot', 'refused'])
+
+    def test_what_a_wolf_brings_decides_it(self):
+        p = copy.deepcopy(samples.CROWN)
+        p['tests'][0]['realm']['player-ash']['nh_pledge'] = 'larkfield'
+        report = self.review(p)
+        self.assertFalse(report['passed'])
+        self.assertEqual(report['tests'][0]['path'], ['moot', 'refused'], 'only Birch pledged to Coldwater: 2 voices')
+
+    def test_what_validation_refuses(self):
+        p = copy.deepcopy(samples.CROWN)
+        p['tests'][0]['realm']['player-ash']['p_other'] = 1
+        self.assertRaisesRegex(ValueError, 'names a realm variable the story declares', rules.review, p)
+        p = copy.deepcopy(samples.CROWN)
+        p['tests'][0]['realm']['player-ash']['nh_voice'] = 'loud'
+        self.assertRaisesRegex(ValueError, 'with a value of its type', rules.review, p)
+        p = copy.deepcopy(samples.CROWN)
+        p['variables'].append({'id': 'kings', 'type': 'wolves', 'scope': 'realm'})
+        p['phases'][0]['triggers'][1]['actions'][0]['into'] = 'kings'
+        self.assertRaisesRegex(ValueError, 'Rank into a list of wolves of the story or the world', rules.validate, p)
+        p = copy.deepcopy(samples.CROWN)
+        p['phases'][0]['triggers'][1]['actions'][2]['then'][0]['effect']['post'] = 'the throne'
+        self.assertRaisesRegex(ValueError, 'invalid npc.post', rules.validate, p)
+        for days in (0, 29):
+            p = copy.deepcopy(samples.CROWN)
+            p['phases'][0]['triggers'][1]['actions'][2]['then'][1]['effect']['days'] = days
+            self.assertRaisesRegex(ValueError, 'invalid npc.sentence', rules.validate, p)
+        self.assertIn('npc.post', rules.BUILDER_EFFECTS)
+        self.assertIn('npc.sentence', rules.BUILDER_EFFECTS)
+        self.assertNotIn('npc.post', rules.UNDONE_AT_END)
+        self.assertNotIn('npc.sentence', rules.UNDONE_AT_END)
+
+
 class Phase7Foes(unittest.TestCase):
     """Doc 86, Phase 7 (C10, T3): the Grey Captain at the Pass (story_v2_samples.FOES): a stranger brought to the parley and
     cast in its scene, a champion foe with a band from the wolves about, a resident made a foe, the foe events in a

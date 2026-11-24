@@ -261,7 +261,7 @@ READY = {
 def all_samples():
     return [copy.deepcopy(LEDGER), copy.deepcopy(FLOW), copy.deepcopy(READY), copy.deepcopy(TALK), copy.deepcopy(VALUES),
             copy.deepcopy(THANKS), copy.deepcopy(LINE), copy.deepcopy(HOWLS), copy.deepcopy(LETTERS),
-            copy.deepcopy(FOES)]
+            copy.deepcopy(FOES), copy.deepcopy(CROWN)]
 
 
 # ----- Doc 85, Phase 6: quests (tools/test_story_quests.py; both twins' parity, tools/test_story_native.py)
@@ -969,3 +969,66 @@ FOES = {
     ],
 }
 
+
+
+# ----- Doc 86, Phase 8: across acts and the crown (tools/test_story_v2.py; both twins, tools/test_story_native.py). The
+# Moot Night: each wolf's voice and pledge come from the acts before (realm variables, J2: a case gives what each wolf
+# brings); each wolf who howls at the Moot adds to their own voice; when the chorus closes with three or more, the loudest
+# is ranked and the voices pledged to Coldwater are tallied. Enough of them, and the crown changes hands (C14, npc.post:
+# rm111 takes the post rm112 held) and the wreckers' lamp-keeper serves a week in the Watch's cells (L4, npc.sentence);
+# too few, and the Moot refuses.
+CROWN = {
+    'format': 'ratw-story-program', 'version': 2, 'id': 'v2-moot-night', 'title': 'The Moot Night',
+    'audience': {'kind': 'players', 'players': [ASH, BIRCH, ELM]}, 'start': 'moot',
+    'variables': [
+        {'id': 'nh_voice', 'type': 'number', 'scope': 'realm', 'show': 'Your voice in the Moot'},
+        {'id': 'nh_pledge', 'type': 'text', 'scope': 'realm', 'talk': True},
+        {'id': 'voices', 'type': 'number', 'scope': 'story', 'show': 'Voices raised at the Moot'},
+        {'id': 'loudest', 'type': 'wolves', 'scope': 'story'},
+        {'id': 'for-coldwater', 'type': 'number', 'scope': 'story', 'note': "The voices of the wolves pledged to Coldwater."},
+    ],
+    'phases': [
+        {'id': 'moot', 'journal': 'The Moot sits tonight. Raise your voice with the others.', 'effects': [], 'exits': [],
+         'triggers': [
+             {'id': 'howl', 'on': 'howled', 'audience': 'participant', 'once': 'player',
+              'actions': [{'do': 'add', 'var': 'nh_voice', 'value': 1}, {'do': 'add', 'var': 'voices', 'value': 1}]},
+             {'id': 'chorus', 'on': 'chorus closed', 'if': {'test': 'field', 'field': 'quantity', 'op': '>=', 'value': 3}, 'actions': [
+                 {'do': 'rank', 'var': 'nh_voice', 'top': 1, 'into': 'loudest'},
+                 {'do': 'set', 'var': 'for-coldwater', 'value': {'tally': {'sum': 'nh_voice', 'where': 'nh_pledge', 'is': 'coldwater'}}},
+                 {'do': 'if', 'if': {'test': 'compare', 'left': {'var': 'for-coldwater'}, 'op': '>=', 'right': 5},
+                  'then': [{'do': 'effect', 'effect': {'kind': 'npc.post', 'npc': 'rm111', 'post': 'job:rm112'}},
+                           {'do': 'effect', 'effect': {'kind': 'npc.sentence', 'npc': 'rm113', 'place': 'grey-cells', 'days': 7}},
+                           {'do': 'enter', 'phase': 'crowned'}],
+                  'else': [{'do': 'enter', 'phase': 'refused'}]}]},
+         ]},
+        {'id': 'crowned', 'journal': 'The Moot has spoken: the crown passes, and the lamp-keeper goes to the cells for a week.',
+         'effects': [], 'exits': []},
+        {'id': 'refused', 'journal': 'Too few voices: the Moot will not name a new ruler tonight.', 'effects': [], 'exits': []},
+    ],
+    'tests': [
+        {'name': 'Pledged in the acts before: the crown passes', 'cohort': [ASH, BIRCH, ELM],
+         'realm': {ASH: {'nh_voice': 3, 'nh_pledge': 'coldwater'}, BIRCH: {'nh_voice': 1, 'nh_pledge': 'coldwater'},
+                   ELM: {'nh_pledge': 'larkfield'}},
+         'events': [
+             quest_fact(1, 'arrival', 0.1, ASH), quest_fact(2, 'arrival', 0.11, BIRCH), quest_fact(3, 'arrival', 0.12, ELM),
+             quest_fact(4, 'howled', 0.2, ASH, cell='grey', item='greyfen', detail='moot'),
+             quest_fact(5, 'howled', 0.21, BIRCH, cell='grey', item='greyfen', detail='moot'),
+             quest_fact(6, 'howled', 0.22, ELM, cell='grey', item='greyfen', detail='moot'),
+             quest_fact(7, 'howled', 0.23, ASH, cell='grey', item='greyfen', detail='moot'),
+             quest_fact(8, 'chorus closed', 0.25, ASH, cell='grey', item='greyfen', detail='moot', quantity=3),
+         ], 'expect': ['moot', 'crowned'],
+         'expectVariables': {'story': {'voices': 3, 'loudest': [ASH], 'for-coldwater': 6},
+                             'realm': {ASH: {'nh_voice': 4}, BIRCH: {'nh_voice': 2}, ELM: {'nh_voice': 1}}},
+         'expectEffects': [
+             {'phase': 'moot', 'kind': 'npc.post', 'npc': 'rm111', 'post': 'job:rm112'},
+             {'phase': 'moot', 'kind': 'npc.sentence', 'npc': 'rm113', 'place': 'grey-cells', 'days': 7}]},
+        {'name': 'New wolves, pledged to nobody: the Moot refuses', 'cohort': [ASH, BIRCH, ELM],
+         'events': [
+             quest_fact(1, 'howled', 0.2, ASH, cell='grey', item='greyfen', detail='moot'),
+             quest_fact(2, 'howled', 0.21, BIRCH, cell='grey', item='greyfen', detail='moot'),
+             quest_fact(3, 'chorus closed', 0.25, ASH, cell='grey', item='greyfen', detail='moot', quantity=3),
+         ], 'expect': ['moot', 'refused'],
+         'expectVariables': {'story': {'voices': 2, 'for-coldwater': 0}},
+         'expectEffects': []},
+    ],
+}

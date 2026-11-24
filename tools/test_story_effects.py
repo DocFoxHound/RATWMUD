@@ -82,11 +82,15 @@ GOOD = {
                 'stance': 'waits', 'minutes': 60, 'like': 'rm111'},
     'foe.leave': {'foe': 'grey-captain'},
     'foe.outlaw': {'npc': 'rm113', 'minutes': 30, 'strength': 'tough', 'band': 2},
+    # (Doc 86, Phase 8: a post given in one step (C14), a resident sentenced past the story's end (L4).)
+    'npc.post': {'npc': 'rm111', 'post': 'job:rm112'},
+    'npc.sentence': {'npc': 'rm113', 'place': 'cells', 'days': 7},
 }
 PHASE1B_ORDERS = ('talk.remember', 'talk.forget', 'belief.plant')
 PHASE3_ORDERS = ('title.give', 'title.take', 'npc.greet', 'belief.forget')
 PHASE5_ORDERS = ('hunt.stage',)   # (Doc 86, L1: an animal for the next hunt in a region.)
 PHASE7_ORDERS = ('foe.add', 'foe.leave', 'foe.outlaw')   # (Doc 86, C10: foes.)
+PHASE8_ORDERS = ('npc.sentence',)   # (Doc 86, L4: a sentence; C14's npc.post is the resident's own order, not a world order.)
 
 
 def program(effects=(), entry=(), audience=None):
@@ -114,7 +118,7 @@ def effect(kind, **more):
 class Catalogue(unittest.TestCase):
     def test_the_new_effects_are_in_the_catalogue_with_typed_parameters_and_sentences(self):
         ids = [e['id'] for e in CAT['effects']]
-        self.assertEqual(len(ids), 89)   # (Doc 86 Phase 7's three foe effects. Phase 10's story.start, the story's own: not a game order; doc 86 Phase 1b's 7, Phase 3's 4,
+        self.assertEqual(len(ids), 91)   # (Doc 86 Phase 7's three foe effects. Phase 10's story.start, the story's own: not a game order; doc 86 Phase 1b's 7, Phase 3's 4,
         self.assertNotIn('story.start', runner.WORLD_ORDERS)   # Phase 4's story.notify and quest.withdraw, the story's own too.)
         for kind in ('story.notify', 'quest.withdraw'):
             self.assertNotIn(kind, runner.WORLD_ORDERS)
@@ -127,7 +131,7 @@ class Catalogue(unittest.TestCase):
                 self.assertIn(item['group'], {g['id'] for g in CAT['actionGroups']})
                 for p in item['params']:
                     self.assertIn(p['type'], CAT['types'])
-        self.assertEqual(set(NEW) - {'story.tracker'} | set(PHASE1B_ORDERS) | set(PHASE3_ORDERS) | set(PHASE5_ORDERS) | set(PHASE7_ORDERS),
+        self.assertEqual(set(NEW) - {'story.tracker'} | set(PHASE1B_ORDERS) | set(PHASE3_ORDERS) | set(PHASE5_ORDERS) | set(PHASE7_ORDERS) | set(PHASE8_ORDERS),
                          set(runner.WORLD_ORDERS),
                          'every game order has its mapping')
         self.assertIn('story.tracker', quests.STORY_EFFECTS, 'the tracker is the story\'s own')
@@ -146,7 +150,8 @@ class Catalogue(unittest.TestCase):
         # (Doc 85, Phase 10: the economy's effects need a builder or the owner too: prices and projects.)
         self.assertEqual(rules.BUILDER_EFFECTS, {'faction.relation', 'standing.adjust', 'prices.reset', 'project.complete', 'project.cancel',
                                                  'figure.set', 'figure.clear',   # (Doc 86, C9: the realm's figures.)
-                                                 'foe.outlaw'})   # (Doc 86, C10: a resident made a foe.)
+                                                 'foe.outlaw',    # (Doc 86, C10: a resident made a foe.)
+                                                 'npc.post', 'npc.sentence'})   # (Doc 86, C14 and L4: posts and sentences.)
         self.assertEqual(studio.STORY_WOLF_KINDS, rules.WOLF_EFFECTS)
         self.assertEqual(runner.WOLF_EFFECTS, rules.WOLF_EFFECTS)
         p = program([effect('item.take')])
@@ -350,6 +355,13 @@ class InTheWorld(unittest.TestCase):
                           (self.world, self.world))
         self.conn.execute("""INSERT INTO world.links(world_id,id,name,kind,open,a_area,a_x,a_y,b_area,b_x,b_y)
                              VALUES (%s,'inn','The inn door','door',false,'gate',5,1,'inn',1,1)""", (self.world,))
+        # (Doc 86, L4: the Watch's cells, indoors, down the stairs from the gate; and a store room nothing reaches.)
+        self.conn.execute("INSERT INTO world.areas(world_id,id,kind) VALUES (%s,'cells','interior'),(%s,'sealed','interior')", (self.world, self.world))
+        self.conn.execute("""INSERT INTO world.interiors(world_id,id,name,width,height,glyphs)
+                             VALUES (%s,'cells','The cells',4,4,%s),(%s,'sealed','A sealed room',4,4,%s)""",
+                          (self.world, '.' * 16, self.world, '.' * 16))
+        self.conn.execute("""INSERT INTO world.links(world_id,id,name,kind,open,a_area,a_x,a_y,b_area,b_x,b_y)
+                             VALUES (%s,'cells_stair','The stair down','stairs',true,'gate',2,2,'cells',1,1)""", (self.world,))
         self.conn.execute('SET LOCAL ROLE ratw_dm')
 
     def approve(self, p):
@@ -375,6 +387,38 @@ class InTheWorld(unittest.TestCase):
         refs = runner.refs(self.conn, self.world)
         self.assertEqual(refs['doors'], [{'id': 'link_inn_a', 'name': 'The inn door', 'cell': 'gate'}])
         self.assertEqual(refs['mantles'], [])
+
+    def test_posts_and_sentences_are_checked_against_the_world(self):
+        # (Doc 86, C14: a post of the careers book as last saved (dm.story_posts, 0080), never the Watch's; L4: a sentence
+        # served indoors, somewhere a way leads in.)
+        self.conn.execute('RESET ROLE')
+        self.conn.execute("""UPDATE game.checkpoints SET payload=%s WHERE world_id=%s""", (json.dumps({'calendarDays': 10, 'society': {'careers': {
+            'positions': {'job:rm112': {'holder': 'rm112'}, 'job:rm119': {'holder': 'rm119', 'lastHolder': ''}, 'job:rm113': {'holder': ''}}}},
+            'people': {'storySentences': {'rm113': {'place': 'cells', 'by': 'long-night', 'run': 'r1', 'days': 7, 'began': 8, 'until': 15}}}}),
+            self.world))
+        self.conn.execute("UPDATE live.npcs SET role='guard',work_label='keeping the gate' WHERE world_id=%s AND id='rm119'", (self.world,))
+        self.conn.execute("UPDATE live.npcs SET work_label='keeping the inn' WHERE world_id=%s AND id='rm112'", (self.world,))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+        crown = {'kind': 'npc.post', 'npc': 'rm111', 'post': 'job:rm112'}
+        self.approve(program([crown, effect('npc.sentence')]))
+        for e, words in [({**crown, 'post': 'job:rm999'}, 'Unknown post'), ({**crown, 'post': 'job:rm119'}, 'the watch chooses its own'),
+                         ({**effect('npc.sentence'), 'place': 'gate'}, 'served indoors'),
+                         ({**effect('npc.sentence'), 'place': 'sealed'}, 'no way in'), ({**crown, 'npc': 'rm999'}, 'Unknown npc')]:
+            with self.subTest(words=words):
+                self.assertRaisesRegex(ValueError, words, self.approve, program([e]))
+        posts = runner.refs(self.conn, self.world)['posts']
+        self.assertEqual(posts, [{'id': 'job:rm113', 'name': 'job:rm113', 'title': 'job:rm113', 'holder': ''},
+                                 {'id': 'job:rm112', 'name': 'keeping the inn', 'title': 'keeping the inn', 'holder': 'rm112'}],
+                         "by title (an unknown founder's by its id), never the Watch's")
+        self.assertEqual(runner.action(crown, 'player-ash'), ('npc.post', 'rm111', {'post': 'job:rm112'}))
+        [held] = runner.sentences(self.conn, self.world)
+        self.assertEqual((held['npc'], held['name'], held['placeName'], held['left'], held['by']), ('rm113', 'Tamsin', 'The cells', 5, 'long-night'))
+        out = runner.release_sentence(self.conn, self.world, 'martin', {'npc': 'rm113', 'reason': 'served long enough'})
+        order = self.conn.execute('SELECT kind,target_id FROM dm.actions WHERE id=%s', (out['receipt'],)).fetchone()
+        self.assertEqual(order, ('npc.unsentence', 'rm113'))
+        self.assertRaisesRegex(ValueError, 'serving no sentence', runner.release_sentence, self.conn, self.world, 'martin',
+                               {'npc': 'rm111', 'reason': 'served long enough'})
+        self.assertTrue(self.conn.execute("SELECT 1 FROM dm.audit WHERE action='story.sentence-release' AND target='rm113'").fetchone())
 
     def test_a_hunt_staged_in_a_town_is_warned_of(self):
         # (Doc 86, L1, after review: no hunt begins in a town, as the game has its towns, two or more with a market.)

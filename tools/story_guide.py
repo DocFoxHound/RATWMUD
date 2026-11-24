@@ -30,6 +30,7 @@ SAMPLE = {
     'signal': 'gate-opens', 'counter': 'ropes', 'variable': 'ropes', 'trigger': 'count-rope', 'quest': 'axle', 'objective': 'ask',
     'purse': 'town:greyfen', 'offer': 'ask-about-the-ford', 'door': 'link_inn_door_a', 'mantle': 'ferryman', 'visitor': 'stranger-1',
     'story': 'the-crossing', 'notice': 'notice-1', 'contract': 'contract-1', 'letter': 'letter-1', 'run': 'world-…',
+    'post': 'job:rm112',
 }
 TEXT = {'text': 'The bells ring for the ford.', 'words': 'the ford is open again', 'reason': 'for the ford', 'detail': 'Kept the ford.',
         'label': 'The ford', 'name': 'The Pale Rider', 'title': 'The ford is open'}
@@ -56,6 +57,9 @@ EXAMPLE = {
                 'stance': 'waits', 'minutes': 120, 'like': 'rm111'},
     'foe.leave': {'foe': 'captain'},
     'foe.outlaw': {'npc': 'rm113', 'minutes': 60, 'strength': 'tough', 'band': 1},
+    # (Doc 86, Phase 8: the crown's change, and a week in the Watch's cells.)
+    'npc.post': {'npc': 'rm111', 'post': 'job:rm112'},
+    'npc.sentence': {'npc': 'rm113', 'place': 'greyfen-cells', 'days': 7},
 }
 GROUP_NOTES = {
     'flow': 'Version 2 only. Nested lists of actions: up to 24 actions in a trigger counting nested ones, three deep.',

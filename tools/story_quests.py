@@ -531,6 +531,11 @@ def _party(state, wolf):
     return triggers.party_of(state, wolf)
 
 
+# (Doc 86, J2: called with (state, wolf) when a wolf joins a run: the runner reads their realm values then. Set by the
+# runner while a run is ticked or steered; empty offline, where a rehearsal's realm values are the case's own.)
+JOINED = []
+
+
 def add_wolf(p, state, wolf):
     """Takes a wolf into the run's audience; False when it is full (its cap)."""
     cohort = state['cohort']
@@ -540,6 +545,8 @@ def add_wolf(p, state, wolf):
     if len(cohort) >= cap_of(p) or not rules.identifier(wolf):
         return False
     cohort.insert(i, wolf)
+    for hook in JOINED:
+        hook(state, wolf)
     return True
 
 
@@ -1393,8 +1400,8 @@ def trackers(p, state, wolf):
             v = triggers.mirror_value(d, x, wolf=wolf)
             return 0 if v is triggers.MISSING else v
         scope = d['scope']
-        if scope == 'player':
-            store = counters.get('player', {}).get(wolf, {})
+        if scope in triggers.OWN:   # (Doc 86, J2: a realm value is the wolf's own too.)
+            store = counters.get(scope, {}).get(wolf, {})
         elif scope == 'party':
             store = counters.get('party', {}).get(_party(state, wolf), {})
         else:
@@ -1417,9 +1424,10 @@ def talk_map(p, state, wolf):
     out = {}
     if p.get('version') != 2:
         return out
-    own = state.get('counters', {}).get('player', {}).get(wolf, {})
+    counters = state.get('counters', {})
     for d in p.get('variables', []):
-        if d.get('talk') and d['scope'] == 'player' and d['id'] in own:
+        own = counters.get(d['scope'], {}).get(wolf, {}) if d['scope'] in triggers.OWN else {}
+        if d.get('talk') and d['id'] in own:
             v = rules.talk_value(d, own[d['id']])
             if v is not None:
                 out[d['id']] = v
@@ -1428,9 +1436,12 @@ def talk_map(p, state, wolf):
 
 def talk_unsaid(p, state, wolf):
     """The `talk` values a wolf holds that no line could test (a text with spaces or capitals): stored, never told."""
-    own = state.get('counters', {}).get('player', {}).get(wolf, {}) if p.get('version') == 2 else {}
-    return [d['id'] for d in p.get('variables', []) if d.get('talk') and d['scope'] == 'player' and d['id'] in own
-            and rules.talk_value(d, own[d['id']]) is None]
+    counters = state.get('counters', {}) if p.get('version') == 2 else {}
+
+    def own(d):
+        return counters.get(d['scope'], {}).get(wolf, {}) if d['scope'] in triggers.OWN else {}
+    return [d['id'] for d in p.get('variables', []) if d.get('talk') and d['id'] in own(d)
+            and rules.talk_value(d, own(d)[d['id']]) is None]
 
 
 def journal(p, state, wolf, facts=None):

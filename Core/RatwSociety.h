@@ -753,6 +753,10 @@ class Society
     // the watch). "refused" notes, or what changed.
     CareerNote appoint(const std::string& positionId, const std::string& resident, const CareerWorld& world, double day);
     CareerNote apprenticeTo(const std::string& positionId, const std::string& youth, const CareerWorld& world, double day);
+    // Doc 86, C14 (`npc.post`): a post given to a resident by a story, in one step, taken or not: whoever held it is left
+    // without it (lastHolder, vacant since `day`, for the vacancy rules), the resident leaves any post they held; never the
+    // watch's. A "succession" note (how: "by the story"), "held" (they hold it already: no change), or "refused". Lasting.
+    CareerNote swapPost(const std::string& positionId, const std::string& resident, const CareerWorld& world, double day);
     void addPlayer(const std::string& id);
     const EconomyAccount* account(const std::string& id) const;
     std::int64_t cash(const std::string& id) const     // An account's money (0 for none).

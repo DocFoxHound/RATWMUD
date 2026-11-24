@@ -93,6 +93,7 @@ def references(conn, world, program, chapters=False):
                                        (world, sorted(names))):
             rules.require(kind == names[name]['type'], f'The world declares {name} as {kind}; this story declares it as '
                           f'{names[name]["type"]}.')
+    realm_clash(conn, world, program)   # (Doc 86, J2.)
     for r in program.get('regions', []):
         check_tile(conn, world, r['cell'], r['x2'], r['y2'])
     if any(ph.get('triggers') for ph in rules.phases_of(program)):
@@ -251,6 +252,19 @@ def phase9_references(conn, world, e):
     if kind == 'storyline.tick':
         rules.require(e['template'] in {t['id'] for t in json.loads((DATA / 'Storylines/templates.json').read_text())['templates']
                                         if t.get('source') == 'dm'}, 'Unknown DM quest template.')
+    if kind == 'npc.post':
+        # (Doc 86, C14: a post of the careers book as the world was last saved (dm.story_posts, 0080); never the Watch's.)
+        rules.require(conn.execute("SELECT to_regclass('dm.story_posts')").fetchone()[0],
+                      'Apply migration 0080 before approving a story that gives a resident a post.')
+        row = conn.execute('SELECT role FROM dm.story_posts WHERE world_id=%s AND id=%s', (world, e['post'])).fetchone()
+        rules.require(row, 'Unknown post in this world: ' + e['post'])
+        rules.require(row[0] != 'guard', f'{e["post"]} is the Watch\'s: the watch chooses its own.')
+    if kind == 'npc.sentence':
+        # (Doc 86, L4: a place indoors with a way in: an interior some link reaches.)
+        rules.require(conn.execute('SELECT 1 FROM world.interiors WHERE world_id=%s AND id=%s', (world, e['place'])).fetchone(),
+                      f'A sentence is served indoors: {e["place"]} is no interior of this world.')
+        rules.require(conn.execute('SELECT 1 FROM world.links WHERE world_id=%s AND %s IN (a_area,b_area) LIMIT 1',
+                                   (world, e['place'])).fetchone(), f'{e["place"]} has no way in (no door or stairs reach it).')
 
 
 # ----- doc 86, Phase 1b (engine spec V1 and SQ2): what approval checks that it missed. Each check gives where it is, its
@@ -784,6 +798,7 @@ def launch(conn, world, run, program, who, cohort=None, carried=None, chapter_of
         _carry_into(program, state, carried)
     if chapter_of:
         state['chapterOf'] = chapter_of
+    realm_load(conn, world, program, state)   # (Doc 86, J2: the cohort's realm values, read once at launch.)
     if quests.relevant(program):
         # (Doc 85, Phase 6: each wolf's own state in dm.story_player_state; the game has the opening audience with the
         # first phase.)
@@ -818,6 +833,7 @@ def action(effect, actor):
         'npc.spare': 'npc',     # (Doc 86, C11.)
         'npc.unspare': 'npc',
         'npc.howl': 'npc',      # (Doc 86, J5: a resident howls.)
+        'npc.post': 'npc',      # (Doc 86, C14: a post given in one step, whoever held it; lasting.)
         'npc.revive': 'npc',
         'character.injury': 'player',
         'ship.storm': 'ship',
@@ -1127,6 +1143,40 @@ def release_campaign(conn, world, who, campaign):
     return {'campaign': campaign, 'receipt': queue(conn, who, 'story.campaign_end', campaign, {'by': who})}
 
 
+def sentences(conn, world):
+    """Doc 86, L4: the residents the world's stories sentenced, as the world was last saved (people.storySentences), with
+    days left by its clock: [{npc, name, place, placeName, by, run, days, began, until, left}]."""
+    row = conn.execute("SELECT payload::jsonb->'people'->'storySentences', (payload::jsonb->>'calendarDays')::float8 FROM game.checkpoints "
+                       'WHERE world_id=%s', (world,)).fetchone()
+    held = row[0] if row and isinstance(row[0], dict) else {}
+    today = row[1] if row and row[1] is not None else 0
+    places = dict(conn.execute('SELECT id,name FROM world.interiors WHERE world_id=%s AND id=ANY(%s)',
+                               (world, sorted({s.get('place', '') for s in held.values() if isinstance(s, dict)}))).fetchall()) if held else {}
+    named = dict(conn.execute('SELECT id,name FROM dm.story_residents WHERE world_id=%s AND id=ANY(%s)', (world, sorted(held))).fetchall()) if held else {}
+    out = []
+    for npc, s in sorted(held.items()):
+        if not isinstance(s, dict):
+            continue
+        until = s.get('until') or 0
+        out.append({'npc': npc, 'name': named.get(npc, npc), 'place': s.get('place', ''), 'placeName': places.get(s.get('place', ''), s.get('place', '')),
+                    'by': s.get('by', ''), 'run': s.get('run', ''), 'days': s.get('days', 0), 'began': s.get('began'), 'until': until,
+                    'left': max(0.0, round(until - today, 2))})
+    return out
+
+
+def release_sentence(conn, world, who, data):
+    """The console's "Release now" (doc 86, L4): the game lets a sentenced resident go at once ("sentence served",
+    released). Audited `story.sentence-release`."""
+    npc = data.get('npc')
+    reason = _reason(data.get('reason'))
+    rules.require(isinstance(npc, str) and any(s['npc'] == npc for s in sentences(conn, world)),
+                  'That resident is serving no sentence (as the world was last saved).')
+    receipt = queue(conn, who, 'npc.unsentence', npc, {'by': who})
+    conn.execute('INSERT INTO dm.audit (at, action, target, detail, who) VALUES (extract(epoch from now()), %s, %s, %s, %s)',
+                 ('story.sentence-release', npc, f'Released {npc} now. Reason: "{reason}"'[:2000], who))
+    return {'npc': npc, 'receipt': receipt}
+
+
 # Doc 85, Phase 9: the new world effects, each the game order of its own name. The target is what it acts on (a wolf, a
 # resident, a door, a place, a town, a market, a stranger, or the run for the story's own lines), and every payload carries
 # the run and its visit: the game keeps what it must undo when the run ends (a lock, a hold, a stranger, a mantle, a notice,
@@ -1147,6 +1197,8 @@ WORLD_ORDERS = {
     'hunt.stage': None,
     # (Doc 86, C10: a story's foe, by the story's id for it, and a resident made a foe for a while.)
     'foe.add': 'foe', 'foe.leave': 'foe', 'foe.outlaw': 'npc',
+    # (Doc 86, L4: a resident held at a place for days, past the run's end: the game keeps it, never in the run's held.)
+    'npc.sentence': 'npc',
 }
 
 
@@ -1426,13 +1478,24 @@ def _world_names(program):
     return {n: d for n, d in rules.variables_of(program).items() if d['scope'] == 'world'} if program.get('version') == 2 else {}
 
 
+class _Loaded(dict):
+    """The world values as loaded (by name), and each wolf's realm values as loaded (`realm`, doc 86 J2: {wolf: {name:
+    value}}, None when the story declares none), to save only what changed."""
+    realm = None
+
+
 def world_load(conn, world, program, state):
     """The world's values of the variables a version 2 story declares in the `world` scope, into the run's state (a value
-    kept under another type by another story is not read: it has its first value here). The values as loaded, to save
-    only what changed."""
+    kept under another type by another story is not read: it has its first value here), and the cohort's `realm` values
+    (realm_load). The values as loaded, to save only what changed."""
+    realm = realm_load(conn, world, program, state)
     names = _world_names(program)
     if not names or not conn.execute("SELECT to_regclass('dm.story_world_vars')").fetchone()[0]:
-        return None
+        if realm is None:
+            return None
+        out = _Loaded()
+        out.realm = realm
+        return out
     rows = conn.execute('SELECT name,type,value FROM dm.story_world_vars WHERE world_id=%s AND name=ANY(%s)',
                         (world, sorted(names))).fetchall()
     store = {name: value for name, kind, value in rows if names[name]['type'] == kind}
@@ -1443,13 +1506,16 @@ def world_load(conn, world, program, state):
         counters.pop('world', None)
         if not counters:
             state.pop('counters')
-    return json.loads(json.dumps(store))
+    out = _Loaded(json.loads(json.dumps(store)))
+    out.realm = realm
+    return out
 
 
 def world_save(conn, world, run, program, state, loaded):
-    """Writes back the world variables a tick or a command changed."""
+    """Writes back the world variables a tick or a command changed (and each wolf's realm values: realm_save)."""
     if loaded is None:
         return
+    realm_save(conn, world, run, program, state, loaded.realm if isinstance(loaded, _Loaded) else None)
     names = _world_names(program)
     now = state.get('counters', {}).get('world', {})
     changed = {}
@@ -1463,6 +1529,108 @@ def world_save(conn, world, run, program, state, loaded):
             changed[name] = (names[name]['type'], now[name])
     if changed:
         tell_changes(conn, world, run, changed)
+
+
+# ----- realm variables (doc 86, J2: the `realm` scope, each wolf's own, kept after a run ends in dm.story_realm_vars and
+# shared by every story of the world that declares the name with the same type)
+
+REALM_OVERLAP = 120   # (Seconds read again before the cursor: a row another transaction stamped earlier but committed later.)
+
+
+def _realm_names(program):
+    return {n: d for n, d in rules.variables_of(program).items() if d['scope'] == 'realm'} if program.get('version') == 2 else {}
+
+
+def _realm_table(conn):
+    return conn.execute("SELECT to_regclass('dm.story_realm_vars')").fetchone()[0] is not None
+
+
+def _realm_rows(conn, world, names, wolves, since=None):
+    if not wolves:
+        return []
+    return conn.execute(
+        'SELECT name,wolf,type,value,extract(epoch from updated_at)::float8 FROM dm.story_realm_vars WHERE world_id=%s '
+        'AND name=ANY(%s) AND wolf=ANY(%s)' + (' AND updated_at > to_timestamp(%s)' if since is not None else ''),
+        (world, sorted(names), sorted(wolves), *([since - REALM_OVERLAP] if since is not None else []))).fetchall()
+
+
+def realm_clash(conn, world, program):
+    """Approval's check of a story's realm variables (doc 86, J2): the table is there, and no wolf's value and no other live
+    story of the world holds one of its names as another type (every story reads each wolf's values alike)."""
+    names = _realm_names(program)
+    if not names:
+        return
+    rules.require(_realm_table(conn), 'Apply migration 0081 before approving a story with realm variables.')
+    for name, kind in conn.execute('SELECT DISTINCT name,type FROM dm.story_realm_vars WHERE world_id=%s AND name=ANY(%s)',
+                                   (world, sorted(names))):
+        rules.require(kind == names[name]['type'], f'The wolves keep {name} as a {kind} (realm); this story declares it as '
+                      f'a {names[name]["type"]}.')
+    for title, other in conn.execute(
+            """SELECT program->>'title',program FROM dm.story_releases WHERE world_id=%s AND program->>'id'<>%s
+               AND status IN ('running','paused','held','stopping')""", (world, program.get('id', ''))):
+        theirs = _realm_names(other) if isinstance(other, dict) else {}
+        for name in sorted(set(names) & set(theirs)):
+            rules.require(theirs[name]['type'] == names[name]['type'], f'"{title}" keeps {name} as a {theirs[name]["type"]} '
+                          f'(realm); this story declares it as a {names[name]["type"]}.')
+
+
+def realm_load(conn, world, program, state):
+    """Each wolf's realm values into counters.realm: the whole cohort's the first time (at launch, or a version moved onto),
+    then only the rows changed since the run's cursor (`realmSeen`, a time; a little before it again). A value kept under
+    another type is not read; a wolf who leaves is let go of. The values as loaded ({wolf: {name: value}}), or None."""
+    names = _realm_names(program)
+    if not names or not state or not _realm_table(conn):
+        return None
+    counters = state.setdefault('counters', {})
+    cohort = set(state.get('cohort', ()))
+    seen = state.get('realmSeen')
+    fresh = not isinstance(seen, (int, float)) or isinstance(seen, bool)
+    store = {} if fresh else {w: v for w, v in counters.get('realm', {}).items() if w in cohort}
+    latest = None if fresh else seen
+    for name, wolf, kind, value, at in _realm_rows(conn, world, names, cohort, None if fresh else seen):
+        if names[name]['type'] == kind:
+            store.setdefault(wolf, {})[name] = value
+        latest = at if latest is None else max(latest, at)
+    if store:
+        counters['realm'] = store
+    else:
+        counters.pop('realm', None)
+    if not counters:
+        state.pop('counters')
+    state['realmSeen'] = latest if latest is not None else (seen if not fresh else 0)
+    return json.loads(json.dumps(store))
+
+
+def realm_join(conn, world, program, state, loaded, wolf):
+    """A wolf who joins a running story: their realm values read then (doc 86, J2), into the state and what was loaded."""
+    if loaded is None:
+        return
+    names = _realm_names(program)
+    if not names:
+        return
+    for name, _, kind, value, _at in _realm_rows(conn, world, names, {wolf}):
+        if names[name]['type'] == kind:
+            state.setdefault('counters', {}).setdefault('realm', {}).setdefault(wolf, {})[name] = value
+            loaded.setdefault(wolf, {})[name] = json.loads(json.dumps(value))
+
+
+def realm_save(conn, world, run, program, state, loaded):
+    """Writes back each wolf's realm values a tick or a command changed (only the changed wolf-name pairs)."""
+    if loaded is None:
+        return
+    names = _realm_names(program)
+    now = state.get('counters', {}).get('realm', {})
+    for wolf in sorted(now):
+        for name in sorted(n for n in now[wolf] if n in names):
+            v = now[wolf][name]
+            if v != loaded.get(wolf, {}).get(name, rules.triggers.MISSING):
+                conn.execute(
+                    """INSERT INTO dm.story_realm_vars(world_id,name,wolf,type,value,run,updated_at)
+                       VALUES (%s,%s,%s,%s,%s::jsonb,%s,clock_timestamp())
+                       ON CONFLICT (world_id,name,wolf) DO UPDATE SET type=excluded.type,value=excluded.value,run=excluded.run,
+                       updated_at=excluded.updated_at""",
+                    (world, name, wolf, names[name]['type'], json.dumps(v), run))
+                loaded.setdefault(wolf, {})[name] = json.loads(json.dumps(v))
 
 
 def _value_words(kind, v):
@@ -1926,6 +2094,71 @@ def world_var_audit(conn, world, limit=60):
         "SELECT at,target,detail,who FROM dm.audit WHERE action='story.world-var' ORDER BY sequence DESC LIMIT %s", (limit,))]
 
 
+# ----- realm variables in the console (doc 86, J2: World variables' "per wolf" tab)
+
+REALM_VARS_LIMIT = 200
+
+
+def realm_vars(conn, world, name=None, wolf=None, limit=REALM_VARS_LIMIT):
+    """Each wolf's realm values (filtered by name and wolf, newest first, up to `limit`), and the realm names the world's
+    stories declare, with the stories that declare each."""
+    if not _realm_table(conn):
+        return {'values': [], 'names': [], 'realm': False}
+    users = {}
+    for rid, program, status in conn.execute(
+            """SELECT id,program,status FROM dm.story_releases WHERE world_id=%s AND status IN ('running','paused','held','stopping','approved')""",
+            (world,)):
+        for n, d in _realm_names(program).items():
+            users.setdefault(n, []).append({'run': rid, 'story': program.get('id'), 'title': program.get('title'), 'type': d['type'],
+                                            'status': status})
+    where, args = 'world_id=%s', [world]
+    if isinstance(name, str) and name:
+        where, args = where + ' AND name=%s', [*args, name]
+    if isinstance(wolf, str) and wolf:
+        where, args = where + ' AND wolf=%s', [*args, wolf]
+    limit = max(1, min(REALM_VARS_LIMIT, int(limit) if isinstance(limit, int) and not isinstance(limit, bool) else REALM_VARS_LIMIT))
+    rows = conn.execute(f'SELECT name,wolf,type,value,run,updated_at FROM dm.story_realm_vars WHERE {where} '
+                        'ORDER BY updated_at DESC,name,wolf LIMIT %s', (*args, limit)).fetchall()
+    kept = dict(conn.execute('SELECT name,count(*) FROM dm.story_realm_vars WHERE world_id=%s GROUP BY name', (world,)).fetchall())
+    values = [{'name': r[0], 'wolf': r[1], 'type': r[2], 'value': r[3], 'run': r[4], 'updatedAt': _iso(r[5])} for r in rows]
+    names_ = [{'name': n, 'type': (users.get(n) or [{}])[0].get('type'), 'wolves': kept.get(n, 0), 'stories': users.get(n, [])}
+              for n in sorted(set(users) | set(kept))]
+    return {'values': values, 'names': names_, 'realm': True}
+
+
+def realm_var(conn, world, who, data):
+    """Set one wolf's realm value (op `realm-var`: {name, wolf, value, reason}); audited `story.realm-var`. A live story reads
+    the new value at its next turn (its cursor)."""
+    rules.require(_realm_table(conn), 'Apply migration 0081 to keep realm variables.')
+    name, wolf = data.get('name'), data.get('wolf')
+    rules.require(isinstance(name, str) and WORLD_VAR_NAME.match(name) is not None, 'A realm variable has a short name.')
+    rules.require(rules.identifier(wolf) and conn.execute('SELECT 1 FROM game.characters WHERE world_id=%s AND key=%s',
+                                                          (world, wolf)).fetchone() is not None, 'There is no such wolf in this world.')
+    reason = _reason(data.get('reason'))
+    row = conn.execute('SELECT type,value FROM dm.story_realm_vars WHERE world_id=%s AND name=%s AND wolf=%s FOR UPDATE',
+                       (world, name, wolf)).fetchone()
+    declared = next((n for n in realm_vars(conn, world, name=name, limit=1)['names'] if n['name'] == name), None)
+    kind = row[0] if row else (declared or {}).get('type')
+    rules.require(kind is not None, f'No story declares {name} in the realm, and no wolf keeps it.')
+    rules.require(kind in WORLD_VAR_TYPES, f'A {kind} is set by its story, not here.')
+    value = data.get('value')
+    rules.require(_world_var_ok(kind, value), f'Not a value for {kind}.')
+    conn.execute(
+        """INSERT INTO dm.story_realm_vars(world_id,name,wolf,type,value,run,updated_at) VALUES (%s,%s,%s,%s,%s::jsonb,NULL,clock_timestamp())
+           ON CONFLICT (world_id,name,wolf) DO UPDATE SET value=excluded.value,run=NULL,updated_at=excluded.updated_at""",
+        (world, name, wolf, kind, json.dumps(value)))
+    before = row[1] if row else None
+    text = f'{name} for {wolf}: {json.dumps(before)} → {json.dumps(value)}.'
+    conn.execute('INSERT INTO dm.audit (at, action, target, detail, who) VALUES (extract(epoch from now()), %s, %s, %s, %s)',
+                 ('story.realm-var', f'{name}/{wolf}', f'{text} Reason: "{reason}"'[:2000], who))
+    return {'text': text, 'before': {'value': before}, 'after': {'value': value}, **realm_vars(conn, world, name=name)}
+
+
+def realm_var_audit(conn, world, limit=60):
+    return [{'at': r[0], 'name': r[1], 'detail': r[2], 'who': r[3]} for r in conn.execute(
+        "SELECT at,target,detail,who FROM dm.audit WHERE action='story.realm-var' ORDER BY sequence DESC LIMIT %s", (limit,))]
+
+
 # ----- each wolf's own state (doc 85, 3.6 and Phase 6: dm.story_player_state, migration 0075)
 # A story with quests or an open audience keeps what belongs to one wolf (their variables, their copies of quests, their
 # own ending, what their journal was last told) in one row per wolf, out of the release's one JSON, so a run can hold
@@ -2154,9 +2387,16 @@ def tick_run(conn, world, run, clock):
     """One run's turn: returns what it is left waiting on, "game" (an order it sent), "more" (events still to read)
     or None."""
     holder = {}
+
+    def joined(state, wolf):   # (Doc 86, J2: a wolf who joins has their realm values read then.)
+        if state is holder.get('state') and holder.get('loaded') is not None:
+            realm_join(conn, world, holder['program'], state, holder['loaded'].realm, wolf)
+
+    quests.JOINED.append(joined)
     try:
         _tick_run(conn, world, run, clock, holder)
     finally:
+        quests.JOINED.remove(joined)
         if holder.get('loaded') is not None:
             world_save(conn, world, run, holder['program'], holder['state'], holder['loaded'])
         if holder.get('state') and holder.get('who') and watch(holder['program']).get('residentLists') and conn.execute(
@@ -3426,7 +3666,7 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
 # after, in the command's row and in dm.audit. A command can release only what was approved (5.1, rule 4): it fires a
 # trigger the program has, enters a phase it has, sets a counter it names; nothing adds a trigger or changes a rule.
 
-RUNNER_VERSION = 'doc86-phase7'
+RUNNER_VERSION = 'doc86-phase8'
 COMMAND_KINDS = ('hold', 'resume', 'stop', 'signal', 'fire', 'enable', 'disable', 'enter', 'set', 'timer', 'mission',
                  'order', 'tell', 'scene', 'migrate', 'objective', 'quest', 'participant', 'advance', 'foe')
 # Flow commands move the story (dispatch a fact, run actions, open a visit, send the journal): they wait while the run is
@@ -3606,6 +3846,7 @@ def _values(state, actor):
         'world': counters.get('world', {}),
         'player': counters.get('player', {}).get(actor, {}) if actor else {},
         'party': counters.get('party', {}).get(party, {}) if actor else {},
+        'realm': counters.get('realm', {}).get(actor, {}) if actor else {},   # (Doc 86, J2.)
         'timers': {k: t['at'] for k, t in state.get('timers', {}).items()},
         'actor': actor,
     }))
@@ -3613,13 +3854,13 @@ def _values(state, actor):
 
 def _diff(before, after, decls=None):
     out = []
-    for scope in ('story', 'world', 'player', 'party'):
+    for scope in ('story', 'world', 'player', 'party', 'realm'):
         for key in sorted(set(before.get(scope, {})) | set(after.get(scope, {}))):
             first = rules.triggers.initial(decls[key]) if decls and key in decls else 0
             a, b = before.get(scope, {}).get(key, first), after.get(scope, {}).get(key, first)
             if a != b:
                 out.append({'what': 'counter', 'scope': scope, 'key': key, 'before': a, 'after': b,
-                            **({'wolf': after['actor']} if scope in ('player', 'party') else {}),
+                            **({'wolf': after['actor']} if scope in ('player', 'party', 'realm') else {}),
                             **({'type': decls[key]['type']} if decls and key in decls else {})})
     for key in sorted(set(before['timers']) | set(after['timers'])):
         a, b = before['timers'].get(key), after['timers'].get(key)
@@ -3757,7 +3998,8 @@ def _may_release(program, kind, payload, may):
     rules.require(may.get('relations', True) or 'faction.relation' not in kinds,
                   'This story changes faction relations: only a builder or the owner may move it on (5.7).')
     rules.require(may.get('relations', True) or not (kinds & BUILDER_EFFECTS),
-                  'This story changes standing with a faction, the economy or the realm\'s figures: only a builder or the owner may move it on (5.7).')
+                  'This story changes standing with a faction, the economy, the realm\'s figures, its posts or its sentences: only a '
+                  'builder or the owner may move it on (5.7).')
     rules.require(may.get('wolves', True) or not (kinds & WOLF_EFFECTS),
                   'This story can hurt players\' wolves: moving it on needs "may act on players\' wolves" (5.7).')
 
@@ -4144,7 +4386,7 @@ class Steer:
 
     def do_set(self):
         key, scope, value = self.payload['key'], self.payload['scope'], self.payload['value']
-        wolf = self.cohort(self.payload.get('player', ''), required=scope in ('player', 'party'))
+        wolf = self.cohort(self.payload.get('player', ''), required=scope in rules.triggers.PERSONAL)
         if self.program.get('version') == 2:
             store = rules.triggers.var_store(self.state, scope, wolf, True)
             was = store.get(key, rules.triggers.initial(rules.variables_of(self.program)[key]))
@@ -4335,6 +4577,8 @@ class Steer:
         if do == 'add':
             _require(wolf not in self.state['cohort'], f'{wolf} is in the story already.')
             _require(quests.add_wolf(self.program, self.state, wolf), 'The story has all the wolves it can take (its cap).')
+            if isinstance(self.world_loaded, _Loaded):
+                realm_join(self.conn, self.world, self.program, self.state, self.world_loaded.realm, wolf)   # (Doc 86, J2.)
             if not self.state.get('playerRows') and quests.relevant(self.program):
                 self.state['playerRows'] = True
             text = f'{wolf} taken into the story; the game is told.'
@@ -5637,6 +5881,10 @@ def refs(conn, world):
     # resident may take up.)
     out['doors'] = [{'id': 'link_' + r[0] + '_a', 'name': r[1] or r[0], 'cell': r[2]} for r in conn.execute(
         "SELECT id,name,a_area FROM world.links WHERE world_id=%s AND kind='door' ORDER BY name,id LIMIT %s", (world, REFS_LIMIT))]
+    # (Doc 86, C14: the careers book's posts as last saved (0080), by title, with who holds each; never the Watch's.)
+    out['posts'] = [{'id': r[0], 'name': r[1], 'title': r[1], 'holder': r[2] or ''} for r in conn.execute(
+        "SELECT id,title,holder FROM dm.story_posts WHERE world_id=%s AND role<>'guard' ORDER BY title,id LIMIT %s", (world, REFS_LIMIT))] \
+        if conn.execute("SELECT to_regclass('dm.story_posts')").fetchone()[0] else []
     out['mantles'] = [{'id': r[0], 'name': r[1] or r[0]} for r in conn.execute(
         "SELECT id,title FROM live.mantles WHERE world_id=%s AND state<>'retired' ORDER BY title,id", (world,))] \
         if conn.execute("SELECT to_regclass('live.mantles')").fetchone()[0] else []

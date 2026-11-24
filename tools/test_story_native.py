@@ -485,6 +485,62 @@ class StoryItemParity(ValuesParity):
                 self.assertEqual(n(after), want)
 
 
+class RealmParity(RankParity):
+    """Doc 86, Phase 8 (J2): the realm scope, each wolf's own as player is, read and written alike in both twins: added to,
+    compared "of" the acting wolf and of each, ranked by, tallied (a realm sum where a player text says), in a For each,
+    and in a mirror's key; a wolf not in the story has none."""
+
+    def program(self):
+        variables = [{'id': 'r_voice', 'type': 'number', 'scope': 'realm'}, {'id': 'p_backs', 'type': 'text', 'scope': 'player'},
+                     {'id': 'r_town', 'type': 'text', 'scope': 'realm'}, {'id': 'r_sworn', 'type': 'switch', 'scope': 'realm'},
+                     {'id': 'n', 'type': 'number', 'scope': 'story'}, {'id': 'top', 'type': 'wolves', 'scope': 'story'},
+                     {'id': 'sums', 'type': 'numbers', 'scope': 'story'}, {'id': 'loud', 'type': 'wolves', 'scope': 'story'},
+                     {'id': 'v_grey', 'type': 'number', 'scope': 'world'}, {'id': 'v_cold', 'type': 'number', 'scope': 'world'},
+                     {'id': 'p_howl', 'type': 'number', 'scope': 'player', 'show': 'Your town', 'mirror': {'key': 'r_town', 'names':
+                                                                                                             {'greyfen': 'v_grey', 'coldwater': 'v_cold'}}}]
+        tallies = [{'sum': 'r_voice'}, {'sum': 'r_voice', 'where': 'p_backs', 'is': 'lamp'}, {'where': 'r_sworn', 'is': True},
+                   {'where': 'r_town', 'is': 'greyfen'}]
+        actions = [{'do': 'add', 'var': 'r_voice', 'value': 2},
+                   {'do': 'if', 'if': {'test': 'compare', 'left': {'var': 'r_voice', 'of': '$actor'}, 'op': '>=', 'right': 5},
+                    'then': [{'do': 'turn on', 'var': 'r_sworn'}]},
+                   *[{'do': 'list add', 'var': 'sums', 'value': {'plus': [{'tally': t}, k * 1000]}} for k, t in enumerate(tallies)],
+                   {'do': 'list add', 'var': 'sums', 'value': {'var': 'p_howl', 'of': '$actor'}},
+                   {'do': 'rank', 'var': 'r_voice', 'top': 2, 'into': 'top'},
+                   {'do': 'each', 'over': 'participants', 'actions': [
+                       {'do': 'if', 'if': {'test': 'compare', 'left': {'var': 'r_voice', 'of': '$each'}, 'op': '>', 'right': 3},
+                        'then': [{'do': 'list add', 'var': 'loud', 'value': {'each': True}}]}]},
+                   {'do': 'set', 'var': 'n', 'value': {'tally': {'sum': 'r_voice'}}}]
+        return {'format': 'ratw-story-program', 'version': 2, 'id': 'parity8', 'title': 'The realm in both twins', 'start': 'a',
+                'audience': {'kind': 'open'}, 'variables': variables,
+                'phases': [{'id': 'a', 'journal': 'Realm.', 'effects': [], 'exits': [], 'triggers': [
+                    {'id': 'all', 'on': 'conversation', 'audience': 'participant', 'actions': actions}]}],
+                'tests': [{'name': 'x', 'cohort': [], 'events': [], 'expect': ['a']}]}
+
+    def states(self):
+        A, B, E = self.ASH, self.BIRCH, self.ELM
+        base = {'phase': 'a', 'entered': 0, 'visits': 1, 'votes': {}, 'actor': '', 'seed': 's', 'began': 0, 'cohort': [A, B, E]}
+        yield 'kept by earlier stories', {**base, 'counters': {'realm': {A: {'r_voice': 4, 'r_town': 'greyfen'}, B: {'r_voice': 9, 'r_sworn': True,
+                                                                                                                   'r_town': 'coldwater'}},
+                                                               'player': {A: {'p_backs': 'lamp'}, E: {'p_backs': 'lamp'}},
+                                                               'world': {'v_grey': 3, 'v_cold': 8}}}, None
+        yield 'nothing kept', {**base, 'counters': {}}, None
+        yield 'the actor not in the story', {**base, 'cohort': [B, E], 'counters': {'realm': {A: {'r_voice': 4}, B: {'r_voice': 1}}}}, None
+
+    def test_every_form_matches(self):
+        for name, state, _ in self.states():
+            with self.subTest(state=name):
+                after, trace = self.both(state, {'kind': 'conversation', 'id': 1, 'actor': self.ASH, 'target': 'rm111'})
+                if self.ASH in state['cohort']:
+                    self.assertEqual(after['counters']['realm'][self.ASH]['r_voice'], state['counters'].get('realm', {}).get(self.ASH, {}).get('r_voice', 0) + 2)
+        after, _ = self.both(next(self.states())[1], {'kind': 'conversation', 'id': 1, 'actor': self.ASH, 'target': 'rm111'})
+        story = after['counters']['story']
+        self.assertEqual(story['top'], [self.BIRCH, self.ASH])
+        self.assertEqual(story['n'], 15)
+        self.assertEqual(sorted(story['loud']), sorted([self.ASH, self.BIRCH]))
+        self.assertEqual(story['sums'], [15, 1006, 2002, 3001, 3])
+        self.assertTrue(after['counters']['realm'][self.ASH]['r_sworn'])
+
+
 class FoeParity(ValuesParity):
     """Doc 86, Phase 7 (C10): the foe events (foe downed, foe defeated with the wolves who fought, foe fled with fled or
     time) matched on the foe's id, a resident made a foe's, and their quantity and item read, alike in both twins; a band

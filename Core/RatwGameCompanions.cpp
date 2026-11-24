@@ -58,6 +58,8 @@ std::string Game::whyNotJoin(const std::string& npcId) const
         return "They are already travelling with someone.";
     if (world_.storyFoeOf(npcId))
         return "They are set against the wolves just now.";   // (Doc 86, C10: a resident a story made a foe.)
+    if (storySentences_.count(npcId))
+        return "They are serving a sentence.";               // (Doc 86, L4.)
     // Those who keep the town running stay at it: traders, the Watch, and the cook, keeper and forager; unless Atlas
     // marks them free to travel with a party.
     const auto* spec = world_.society().spec(npcId);

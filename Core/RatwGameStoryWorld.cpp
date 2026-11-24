@@ -75,7 +75,7 @@ bool Game::storyWorldOrder(const std::string& kind)
                                              "warrant.clear", "npc.hold",   "npc.release",  "npc.follow",  "npc.unfollow",
                                              "door.lock",    "door.unlock", "door.open",    "door.close",  "board.post",
                                              "weather.set",  "scene.stop",  "hunt.stage",   "foe.add",     "foe.leave",
-                                             "foe.outlaw"};
+                                             "foe.outlaw",   "npc.sentence"};
     return kinds.count(kind) > 0;
 }
 
@@ -87,6 +87,9 @@ bool Game::heldByAnotherStory(const std::string& npc, const std::string& run) co
                 return true;
     // (Doc 86, C10: a resident another story made a foe is that story's while they are one.)
     if (const auto* foe = world_.storyFoeOf(npc); foe && foe->spec.npc == npc && foe->spec.run != run)
+        return true;
+    // (Doc 86, L4: and one another story sentenced, while they serve it, even after that story has ended.)
+    if (const auto s = storySentences_.find(npc); s != storySentences_.end() && s->second.run != run)
         return true;
     return false;
 }
@@ -510,6 +513,8 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
         saveSoon();
         return made;
     }
+    if (kind == "npc.sentence")
+        return applyStorySentence(*story, target, p);   // (Doc 86, L4: lasting; never in held.)
     if (kind == "foe.leave")
     {
         auto& foes = section(*story, "foes");
@@ -810,9 +815,12 @@ void Game::endStoryWorld(storylines::Storyline& story)
 
 void Game::tickStoryWorld(double dt)
 {
-    if (storiesHolding_.empty() || (storyWorldAccumulator_ += dt) < .5)
+    if ((storiesHolding_.empty() && storySentences_.empty()) || (storyWorldAccumulator_ += dt) < .5)
         return;
     storyWorldAccumulator_ = 0;
+    tendSentences();                                // (Doc 86, L4: they outlive every story, so before the stories.)
+    if (storiesHolding_.empty())
+        return;
     bool touched = false;
     for (const auto& run : std::vector<std::string>(storiesHolding_.begin(), storiesHolding_.end()))
     {
@@ -1077,6 +1085,138 @@ void Game::dropStoryHolds(const std::string& owner)
     }
 }
 
+// ------------------------------------------------------------------------- sentences (doc 86, L4: npc.sentence)
+
+Result Game::applyStorySentence(const storylines::Storyline& story, const std::string& npc, const Value& p)
+{
+    // Taken to a place indoors and kept there for the days (1 to 28), past the story's end; their post and home kept.
+    auto* e = world_.entity(npc);
+    if (!e || !e->npc || e->transient || !world_.society().resident(npc))
+        return {false, "No such resident.", npc};
+    if (isProtected(npc))
+        return {false, "That resident is protected: no story sentences them.", npc};
+    if (e->dead)
+        return {false, "That resident has died.", npc};
+    if (world_.inBattle(npc) || e->downedLeft > 0)
+        return {false, "That resident is in a fight.", npc};
+    if (!e->leaderId.empty() || parties_.companion(npc) || !world_.cell(e->cellId))
+        return {false, "That resident is away.", npc};
+    if (const auto s = storySentences_.find(npc); s != storySentences_.end())
+    {
+        // (The same order sent again, as after a restart mid-batch: no change, no refusal.)
+        if (s->second.run == story.id && s->second.place == p.string("place") && s->second.days == whole(p, "days", 1, 28))
+            return {true, e->name + " is held there already.", npc};
+        return {false, "That resident is serving a sentence already.", npc};
+    }
+    if (world_.storyFoeOf(npc))
+        return {false, "That resident is a foe just now.", npc};
+    if (heldByAnotherStory(npc, story.id))
+        return {false, "Another story holds this resident.", npc};
+    const int days = whole(p, "days", 1, 28);
+    if (days < 1)
+        return {false, "A sentence is 1 to 28 days.", npc};
+    const auto place = p.string("place");
+    const auto* room = !place.empty() && world_.ensureLoaded(place).ok ? world_.cell(place) : nullptr;
+    if (!room || room->outdoors)
+        return {false, "A sentence is served in a place indoors.", npc};
+    // (The tile they are kept on: the open one nearest the room's middle that they can stand on.)
+    std::vector<std::pair<int, int>> tiles;
+    for (int y = 0; y < room->height; ++y)
+        for (int x = 0; x < room->width; ++x)
+            if (const auto* t = room->tile(x, y); t && !t->solid)
+                tiles.push_back({x, y});
+    const double mx = room->width / 2.0, my = room->height / 2.0;
+    std::stable_sort(tiles.begin(), tiles.end(), [&](const auto& a, const auto& b) {
+        return std::hypot(a.first + .5 - mx, a.second + .5 - my) < std::hypot(b.first + .5 - mx, b.second + .5 - my);
+    });
+    Result moved{false, "Nobody can stand in that place.", npc};
+    for (const auto& [x, y] : tiles)
+        if ((moved = world_.teleport(npc, place, x + .5, y + .5)).ok)
+            break;
+    if (!moved.ok)
+        return {false, "Nobody can stand in that place.", npc};
+    StorySentence s;
+    s.place = place;
+    s.by = story.templateId.empty() ? story.id : story.templateId;
+    s.run = story.id;
+    s.x = e->position.x;
+    s.y = e->position.y;
+    s.began = world_.calendarDays();
+    s.until = s.began + days;
+    s.days = days;
+    s.pace = e->pace;
+    storySentences_[npc] = s;
+    if (!e->sceneDirected)
+        world_.sceneHold(npc, true, e->pace);
+    e->activity = "held at " + room->name;
+    world_.recordEvent({"sentence begun", npc, story.id, place, 0, 0, {}, days, 0, s.by, int(s.x), int(s.y)});
+    saveSoon();
+    return {true, e->name + " is held at " + room->name + " for " + std::to_string(days) + (days == 1 ? " day." : " days."), npc};
+}
+
+bool Game::endSentence(const std::string& npc, const std::string& why)
+{
+    const auto found = storySentences_.find(npc);
+    if (found == storySentences_.end())
+        return false;
+    const auto s = found->second;
+    storySentences_.erase(found);
+    if (auto* e = world_.entity(npc); e && e->npc)
+    {
+        // (Let go unless a story holds them still: they walk home on their own day.)
+        bool still = false;
+        for (const auto& id : storiesHolding_)
+            if (const auto* st = storylines_.find(id); st && st->live() && st->held.isObject() &&
+                                                       (st->held["npcs"].has(npc) || st->sceneOrders.count(npc)))
+                still = true;
+        if (!still && !e->dead)
+            world_.sceneHold(npc, false, s.pace);
+        if (e->activity.rfind("held at ", 0) == 0)
+            e->activity.clear();
+    }
+    const int served = int(std::floor(std::max(0.0, world_.calendarDays() - s.began)));
+    world_.recordEvent({"sentence served", npc, s.run, s.place, 0, 0, why, std::min(served, s.days), 0, s.by, int(s.x), int(s.y)});
+    saveSoon();
+    return true;
+}
+
+void Game::tendSentences()
+{
+    if (storySentences_.empty())
+        return;
+    const double today = world_.calendarDays();
+    std::vector<std::string> done, dead;
+    for (const auto& [npc, s] : storySentences_)
+    {
+        auto* e = world_.entity(npc);
+        if (!e || !e->npc || e->dead)
+        {
+            dead.push_back(npc);
+            continue;
+        }
+        if (today >= s.until)
+        {
+            done.push_back(npc);
+            continue;
+        }
+        // (Kept there: after a restart, or once out of a fight; never pulled out of one.)
+        if (world_.inBattle(npc) || e->downedLeft > 0 || e->sceneDirected && e->cellId == s.place)
+            continue;
+        if (e->cellId != s.place && !world_.teleport(npc, s.place, s.x, s.y).ok)
+            continue;
+        world_.sceneHold(npc, true, s.pace);
+        if (const auto* room = world_.cell(s.place))
+            e->activity = "held at " + room->name;
+    }
+    for (const auto& npc : done)
+        endSentence(npc, "served");
+    for (const auto& npc : dead)
+    {
+        storySentences_.erase(npc);   // (The dead keep their own place: no event.)
+        saveSoon();
+    }
+}
+
 Result Game::applyStoryHold(const std::string& kind, const std::string& npc, const Value& p)
 {
     // npc.spare / npc.unspare, and npc.protect / npc.unprotect with `lasts` run or campaign: the payload's run (and its
@@ -1312,10 +1452,31 @@ void Game::storyTalkSave(Value& root) const
     for (const auto& [item, name] : storyItemNames_)
         names.add(item, name);
     root.add("storyItemNames", std::move(names));
+    auto sentences = Value::object();               // (Doc 86, L4: the residents a story sentenced.)
+    for (const auto& [npc, s] : storySentences_)
+    {
+        auto j = Value::object();
+        j.add("place", s.place);
+        j.add("by", s.by);
+        j.add("run", s.run);
+        j.add("x", s.x);
+        j.add("y", s.y);
+        j.add("began", s.began);
+        j.add("until", s.until);
+        j.add("days", s.days);
+        j.add("pace", s.pace);
+        sentences.add(npc, std::move(j));
+    }
+    root.add("storySentences", std::move(sentences));
 }
 
 void Game::storyTalkLoad(const Value& saved)
 {
+    storySentences_.clear();
+    for (const auto& [npc, j] : saved.object("storySentences").fields())
+        if (npc.size() <= 80 && j.isObject() && !j.string("place").empty() && j.number("until") > 0)
+            storySentences_[npc] = {j.string("place"), j.string("by"), j.string("run"), j.number("x"), j.number("y"),
+                                    j.number("began"), j.number("until"), int(j.number("days")), int(j.number("pace"))};
     storyHolds_.clear();
     for (const auto& [kind, npcs] : saved.object("storyHolds").fields())
         if (kind == "spare" || kind == "protect")

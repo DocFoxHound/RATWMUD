@@ -30,7 +30,7 @@ export function StatePanel({detail, names, now, items, steer, busy = false}: {de
         return '';
     };
     const first = (r: ControlVariable): Value => r.initial ?? (r.type === 'switch' ? false : r.type === 'timer' ? null : r.type && r.type !== 'number' ? (['numbers', 'texts', 'wolves', 'residents'].includes(r.type) ? [] : '') : 0);
-    const personal = (r: ControlVariable) => r.scope === 'player' || r.scope === 'party';
+    const personal = (r: ControlVariable) => r.scope === 'player' || r.scope === 'party' || r.scope === 'realm';   // (Doc 86, J2: realm too.)
     const ownerOf = (r: ControlVariable, w: string) => r.scope === 'party' ? state.parties?.[w] ?? w : w;
     const valueOf = (r: ControlVariable, w = ''): Value => {
         const store = personal(r) ? (stores[r.scope] as Record<string, Record<string, Value>> | undefined)?.[ownerOf(r, w)] : (stores[r.scope] as Record<string, Value> | undefined);
@@ -64,7 +64,7 @@ export function StatePanel({detail, names, now, items, steer, busy = false}: {de
             setEditing(r.scope + r.key); setWolf('');
             setValue(now === undefined || now === null ? '' : typeof now === 'boolean' ? (now ? 'on' : 'off') : Array.isArray(now) ? now.join(', ') : String(now));
         }}>✎</button>);
-    const SCOPE: Record<string, string> = {story: 'story', world: 'the world', player: 'each wolf', party: 'each party'};
+    const SCOPE: Record<string, string> = {story: 'story', world: 'the world', player: 'each wolf', party: 'each party', realm: 'each wolf, across stories'};
     const timers = Object.entries(state.timers ?? {}).sort((a, b) => (a[1].clock ?? 'game').localeCompare(b[1].clock ?? 'game') || a[1].at - b[1].at);
     const exits = detail.listening.filter(l => l.source === 'exit' && (l.players !== undefined || l.percent !== undefined));
     const fired = [...Object.entries(state.fired ?? {}).map(([k, v]) => ({k, v, scope: 'this visit'})),
@@ -80,7 +80,7 @@ export function StatePanel({detail, names, now, items, steer, busy = false}: {de
                     let shownValue: string;
                     if (personal(r)) {
                         const owners = Object.entries((stores[r.scope] ?? {}) as Record<string, Record<string, Value>>).filter(([, c]) => r.key in c);
-                        const rest = r.scope === 'player' ? state.cohort.length - owners.length : 0;
+                        const rest = r.scope === 'player' || r.scope === 'realm' ? state.cohort.length - owners.length : 0;
                         shownValue = owners.slice(0, 6).map(([id, c]) => `${nameOf(names, id)} ${valueText(c[r.key], r.type, names)}`).join(' · ')
                             + (owners.length > 6 ? ` · ${owners.length - 6} more` : '') + (rest > 0 ? `${owners.length ? ' · ' : ''}(${rest} at ${valueText(first(r), r.type, names)})` : '');
                     } else shownValue = valueText(valueOf(r), r.type, names);

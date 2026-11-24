@@ -344,5 +344,101 @@ class Readiness(ReadyFixture, unittest.TestCase):
         self.assertEqual(self.ready()['parts'][0]['count'], len(self.state()['seen']))
 
 
+
+# ----- Doc 86, J2 (Phase 8): realm variables, each wolf's own, kept in dm.story_realm_vars (migration 0081) and shared by
+# every story of the world that declares the name.
+def realm_program(pid, kind='number', step=1):
+    act = {'do': 'add', 'var': 'p_voice', 'value': step} if kind == 'number' else {'do': 'turn on', 'var': 'p_voice'}
+    return {
+        'format': 'ratw-story-program', 'version': 2, 'id': pid, 'title': 'Voices of ' + pid,
+        'audience': {'kind': 'players', 'players': sorted(WOLVES)}, 'start': 'open',
+        'variables': [{'id': 'p_voice', 'type': kind, 'scope': 'realm', 'show': 'Your voice'}],
+        'phases': [{'id': 'open', 'journal': 'Lend your voice.', 'effects': [], 'exits': [], 'triggers': [
+            {'id': 'voice', 'on': 'conversation', 'audience': 'participant', 'actions': [act]}]}],
+        'tests': [{'name': 'A voice', 'cohort': sorted(WOLVES),
+                   'events': [{'id': 'a', 'kind': 'conversation', 'day': 1, 'actor': ASH, 'target': 'rm111'}], 'expect': ['open'],
+                   'expectVariables': {'realm': {ASH: {'p_voice': step if kind == 'number' else True}}}}],
+    }
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL required')
+class RealmVariables(unittest.TestCase):
+    setUpClass = classmethod(console.ConsoleReads.setUpClass.__func__)
+    tearDownClass = classmethod(console.ConsoleReads.tearDownClass.__func__)
+    fact, launch, answer, tick = console.ConsoleReads.fact, console.ConsoleReads.launch, console.ConsoleReads.answer, console.ConsoleReads.tick
+
+    def setUp(self):
+        console.ConsoleReads.setUp(self)
+        self.examples = {**self.examples, **{p['id']: p for p in (realm_program('realm-a'), realm_program('realm-b', step=2),
+                                                                   realm_program('realm-c'))}}
+
+    def kept(self, wolf=ASH):
+        row = self.conn.execute("SELECT value FROM dm.story_realm_vars WHERE world_id=%s AND name='p_voice' AND wolf=%s",
+                                (self.world, wolf)).fetchone()
+        return row and row[0]
+
+    def realm_of(self, run):
+        state = self.conn.execute('SELECT state FROM dm.story_releases WHERE id=%s', (run,)).fetchone()[0]
+        return state.get('counters', {}).get('realm', {})
+
+    def test_the_rehearsal_reads_and_writes_a_wolfs_realm_value(self):
+        self.assertTrue(rules.review(realm_program('realm-a'))['passed'])
+
+    def test_two_runs_add_to_one_value_and_a_third_reads_it(self):
+        a = self.launch('realm-a')
+        self.answer()
+        b = self.launch('realm-b')
+        self.answer()
+        self.fact('conversation', ASH, 'rm111')
+        self.tick()
+        self.assertEqual(self.kept(), 3, 'one adds 1, the other 2: both kept, neither lost')
+        self.fact('conversation', ASH, 'rm111')
+        self.tick()
+        self.assertEqual(self.kept(), 6, "each run reads the other's write before it adds again")
+        # (The runs take their turns one after the other, in either order: the second read the first's write.)
+        self.assertEqual(sorted(self.realm_of(r)[ASH]['p_voice'] for r in (a, b)) in ([4, 6], [5, 6]), True)
+        self.assertEqual(self.kept(BIRCH), None, 'nothing kept for a wolf who never spoke')
+        # (Set from the console, for one wolf, with a reason and audited: a run reads it at its next turn.)
+        out = runner.realm_var(self.conn, self.world, 'martin', {'name': 'p_voice', 'wolf': ASH, 'value': 10, 'reason': 'a test of the console'})
+        self.assertEqual((out['before'], out['after']), ({'value': 6}, {'value': 10}))
+        self.assertRaisesRegex(ValueError, 'Not a value for number', runner.realm_var, self.conn, self.world, 'martin',
+                               {'name': 'p_voice', 'wolf': ASH, 'value': 'loud', 'reason': 'a test of the console'})
+        self.assertRaisesRegex(ValueError, 'no wolf keeps it', runner.realm_var, self.conn, self.world, 'martin',
+                               {'name': 'p_other', 'wolf': ASH, 'value': 1, 'reason': 'a test of the console'})
+        listing = runner.realm_vars(self.conn, self.world, name='p_voice')
+        self.assertEqual([(v['wolf'], v['value']) for v in listing['values']], [(ASH, 10)])
+        self.assertEqual({s['story'] for s in listing['names'][0]['stories']}, {'realm-a', 'realm-b'})
+        self.assertEqual(runner.realm_var_audit(self.conn, self.world)[0]['detail'].split(' Reason')[0], f'p_voice for {ASH}: 6 → 10.')
+        self.fact('conversation', ASH, 'rm111')
+        self.tick()
+        self.assertEqual(self.kept(), 13)
+        self.assertIn(sorted(self.realm_of(r)[ASH]['p_voice'] for r in (a, b)), ([11, 13], [12, 13]),
+                      "the first run to take its turn read the console's 10, then added its own")
+        # A third story launched now has each wolf's value from the start.
+        c = self.launch('realm-c')
+        self.assertEqual(self.realm_of(c), {ASH: {'p_voice': 13}})
+
+    def test_a_type_clash_is_refused(self):
+        self.launch('realm-a')
+        self.answer()
+        self.fact('conversation', ASH, 'rm111')
+        self.tick()
+        other = realm_program('realm-switch', kind='switch')
+        self.assertRaisesRegex(ValueError, r'The wolves keep p_voice as a number \(realm\)', runner.approve, self.conn, self.world, 'martin',
+                               other, rules.digest(other))
+        self.conn.execute("DELETE FROM dm.story_realm_vars WHERE world_id=%s", (self.world,))
+        self.assertRaisesRegex(ValueError, r'"Voices of realm-a" keeps p_voice as a number', runner.approve, self.conn, self.world, 'martin',
+                               other, rules.digest(other))
+        # (A value kept under another type is not read: the story starts from its first value.)
+        self.conn.execute("""INSERT INTO dm.story_realm_vars(world_id,name,wolf,type,value) VALUES (%s,'p_loud',%s,'text','"yes"')""",
+                          (self.world, ASH))
+        p = realm_program('realm-loud')
+        p['variables'][0]['id'] = 'p_loud'
+        p['phases'][0]['triggers'][0]['actions'][0]['var'] = 'p_loud'
+        state = rules.begin(p, sorted(WOLVES), 0)
+        runner.world_load(self.conn, self.world, p, state)
+        self.assertEqual(state.get('counters', {}).get('realm', {}), {})
+
+
 if __name__ == '__main__':
     unittest.main()

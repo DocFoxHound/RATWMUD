@@ -1023,6 +1023,8 @@ class World
     // A player's help with a resident's trouble (doc 57, 3): a vacant post given to a resident now, a youth apprenticed now
     // to a position's holder (Society::appoint, apprenticeTo), each logged as the careers' own notes are. ok, or why not.
     Result appointResident(const std::string& positionId, const std::string& resident);
+    // Doc 86, C14: a post given to a resident by a story, whoever held it (Society::swapPost); the note recorded.
+    Result postResident(const std::string& positionId, const std::string& resident);
     // Town projects standing (doc 57, Phase 4; the game hands them over when they change): what each does where, at its
     // strength (1; 0.5 worn under half; none at 0). A watch post counts +2 guards a strength against a raid in its cell
     // and the next, and no bandit camp gathers within two cells of it; a market cover keeps its town's stalls out in foul

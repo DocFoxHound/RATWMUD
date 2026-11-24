@@ -97,12 +97,25 @@ export interface WorldVar { name: string; type: string; value: Value | null; dec
     updatedBy?: string | null; updatedAt?: string | null; run?: string | null; unset?: boolean;
     stories: {run: string | null; story: string; title: string; type: string; status: string; campaign?: string}[] }
 export interface WorldVars { variables: WorldVar[]; declarations: boolean; audit?: {at: number; name: string; detail: string; who: string}[] }
+/** Doc 86, J2: each wolf's realm values (op realm-vars): newest first, and the realm names the world's stories declare. */
+export interface RealmValue { name: string; wolf: string; type: string; value: Value; run: string | null; updatedAt: string | null }
+export interface RealmVars { realm: boolean; values: RealmValue[]; names: {name: string; type: string | null; wolves: number;
+    stories: {run: string; story: string; title: string; type: string; status: string}[]}[]; audit?: {at: number; name: string; detail: string; who: string}[] }
+/** Doc 86, L4: a resident a story sentenced (op sentences), as the world was last saved. */
+export interface Sentence { npc: string; name: string; place: string; placeName: string; by: string; run: string; days: number;
+    began: number | null; until: number; left: number }
+/** A sentence in words: "Ilse Coalley, held at the Keep's cells by lq-wreckers-light: 4.5 of 7 days left". */
+export function sentenceLine(s: Sentence): string {
+    const left = s.left <= 0 ? 'served (let go at the next moment)' : `${+s.left.toFixed(1)} of ${s.days} day${s.days === 1 ? '' : 's'} left`;
+    return `${s.name}, held at ${s.placeName || s.place} by ${s.by || s.run}: ${left}`;
+}
 export interface Region { id: string; cell: string; x1: number; y1: number; x2: number; y2: number }
 export interface Timer { signal?: string; at: number; clock?: 'game' | 'real'; actor?: string; interval?: number; scope?: string }
 export interface RunState {
     phase: string; entered: number; cohort: string[]; votes: Record<string, string[]>; visits: number; actor: string; publishedAt?: number;
     /** The variables (version 1's counters): the story's and the world's, each wolf's and each party's (doc 85, 3.2). */
-    counters?: {story?: Record<string, Value>; world?: Record<string, Value>; player?: Record<string, Record<string, Value>>; party?: Record<string, Record<string, Value>>};
+    counters?: {story?: Record<string, Value>; world?: Record<string, Value>; player?: Record<string, Record<string, Value>>; party?: Record<string, Record<string, Value>>;
+        realm?: Record<string, Record<string, Value>>};
     timers?: Record<string, Timer>;
     fired?: Record<string, string[]>; campaignFired?: Record<string, string[]>; triggerEffects?: Effect[]; disabled?: string[];
     held?: {by: string; reason: string; at: number; cursor: number};
@@ -115,7 +128,7 @@ export interface RunState {
 /** A variable's value: a number, on or off, a text or id, a list, or (a timer) the day it started. */
 export type Value = number | boolean | string | (number | string)[] | null;
 /** A variable an admin may set (story_runner.variables): a version 2 story's declared ones, a version 1 story's counters. */
-export interface ControlVariable { key: string; scope: 'story' | 'player' | 'party' | 'world'; type?: string; initial?: Value; show?: string; note?: string; clock?: string }
+export interface ControlVariable { key: string; scope: 'story' | 'player' | 'party' | 'world' | 'realm'; type?: string; initial?: Value; show?: string; note?: string; clock?: string }
 /** A value in words: 3, on, Ash Greymantle, "rope, axle", since day 12.5. */
 export function valueText(v: Value | undefined, type: string | undefined, names: Record<string, string> = {}): string {
     if (v === undefined) return '';

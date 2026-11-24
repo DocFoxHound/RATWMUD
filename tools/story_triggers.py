@@ -29,8 +29,11 @@ VAR_TYPES = ('number', 'switch', 'text', 'wolf', 'resident', 'place', 'region', 
              'numbers', 'texts', 'wolves', 'residents', 'timer')
 LISTS = {'numbers': 'number', 'texts': 'text', 'wolves': 'wolf', 'residents': 'resident'}
 TEXTUAL = ('text', 'wolf', 'resident', 'place', 'region', 'item', 'faction')
-SCOPES = ('story', 'player', 'party', 'world')
-PERSONAL = ('player', 'party')
+SCOPES = ('story', 'player', 'party', 'world', 'realm')
+# (Doc 86, J2: `realm` is each wolf's own as `player` is, kept after the story in dm.story_realm_vars and shared by every story
+# of the world that declares the name; the runner loads it into counters.realm and saves what changed.)
+PERSONAL = ('player', 'party', 'realm')
+OWN = ('player', 'realm')   # (A wolf's own, one value per wolf: what rank, tally and a mirror's key read.)
 AMOUNTS = ('quantity', 'coins')
 EVENT_FIELDS = ('actor', 'target', 'cell', 'item', 'detail')
 LIST_MAX = 500           # Values in a list variable.
@@ -477,11 +480,11 @@ def _check_tally(t, phase):
     require(('where' in t) == ('is' in t), 'A tally counts the wolves whose variable (where) is a value (is): name both, or neither.')
     if 'sum' in t:
         d = _decl(phase, t['sum'], ('number',), 'number')
-        require(d['scope'] == 'player' and 'mirror' not in d, f'"{t["sum"]}" is not a number each wolf keeps: a tally adds up '
-                                                              'a player number.')
+        require(d['scope'] in OWN and 'mirror' not in d, f'"{t["sum"]}" is not a number each wolf keeps: a tally adds up '
+                                                         'a player number.')
     if 'where' in t:
         d = _decl(phase, t['where'], ('text', 'switch'), 'text or switch')
-        require(d['scope'] == 'player', f'"{t["where"]}" is not each wolf\'s own: a tally reads a player text or switch.')
+        require(d['scope'] in OWN, f'"{t["where"]}" is not each wolf\'s own: a tally reads a player text or switch.')
         ok = type(t['is']) is bool if d['type'] == 'switch' else isinstance(t['is'], str) and len(t['is']) <= TEXT_MAX
         require(ok, f'"{t["where"]}" is a {d["type"]}: the tally\'s value is ' + ('on or off.' if d['type'] == 'switch' else 'a text.'))
     over = t.get('over', 'participants')
@@ -846,7 +849,7 @@ def _check_action_v2(a, cx, address, depth, each, last):
         shape(a, ('do', 'var', 'top', 'into'), ('over', 'list', 'min'))
         require(each is None, 'Rank is not allowed inside For each: rank first, then loop over the list.')
         d = _decl(phase, a['var'], ('number',), 'number')
-        require(d['scope'] == 'player' and 'mirror' not in d, f'"{a["var"]}" is not a number each wolf keeps: rank by a player number.')
+        require(d['scope'] in OWN and 'mirror' not in d, f'"{a["var"]}" is not a number each wolf keeps: rank by a player number.')
         require(operand_type(a['top'], phase) == 'number' and (not _num(a['top']) or 1 <= a['top'] <= RANK_MAX),
                 f'How many: 1 to {RANK_MAX}, or a number value.')
         require('min' not in a or operand_type(a['min'], phase) == 'number', 'At least: a number, or a number value.')
@@ -1215,7 +1218,7 @@ def var_store(state, scope, wolf, write=False, members=None):
     if scope in PERSONAL:
         if wolf not in (state['cohort'] if members is None else members):
             return None
-        owner = wolf if scope == 'player' else party_of(state, wolf)
+        owner = party_of(state, wolf) if scope == 'party' else wolf
         if write:
             return state.setdefault('counters', {}).setdefault(scope, {}).setdefault(owner, {})
         return state.get('counters', {}).get(scope, {}).get(owner, {})
@@ -1395,15 +1398,17 @@ def tally(t, x):
         wolves = [w for w in (var_store(state, d['scope'], '') or {}).get(over['list'], initial(d)) if w in members]
     else:
         wolves = cohort
-    players = state.get('counters', {}).get('player', {})
     where, total = t.get('where'), 0
+    # (Doc 86, J2: each wolf's own values, of the scope each variable read is declared in: player or realm.)
+    counters = state.get('counters', {})
+    wheres = counters.get(x.vars[where]['scope'], {}) if where else {}
+    sums = counters.get(x.vars[t['sum']]['scope'], {}) if 'sum' in t else {}
     blank = initial(x.vars[where]) if where else None
     for w in wolves:
-        own = players.get(w, {})
-        if where is not None and own.get(where, blank) != t['is']:
+        if where is not None and wheres.get(w, {}).get(where, blank) != t['is']:
             continue
         if 'sum' in t:
-            v = own.get(t['sum'], 0)
+            v = sums.get(w, {}).get(t['sum'], 0)
             total += v if _num(v) else 0
         else:
             total += 1
@@ -1427,7 +1432,8 @@ def rank(a, x):
         wolves = [w for w in (var_store(state, d['scope'], '') or {}).get(a['list'], initial(d)) if w in members]
     else:
         wolves = cohort
-    players, name, seed = state.get('counters', {}).get('player', {}), a['var'], str(state.get('seed', ''))
+    name, seed = a['var'], str(state.get('seed', ''))
+    players = state.get('counters', {}).get(x.vars[name]['scope'] if name in x.vars else 'player', {})
     found = []
     for w in wolves:
         own = players.get(w)

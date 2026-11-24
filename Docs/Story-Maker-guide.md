@@ -161,9 +161,26 @@ with the latest value (`quantity` the number, `detail` the value as words, `item
 hears its own changes; two changes before it takes the first are one telling. Listen for it instead of looking at the
 variable on every hour.
 
-**Carrying state.** Three ways, from the lightest: `carry` (the next chapter's own variables start where the last left
-off), **world variables** (section 6: kept after a story ends, read by every story that declares them), and the audience
-(`same` or a list).
+**Carrying state.** Four ways, from the lightest: `carry` (the next chapter's own variables start where the last left
+off), **world variables** (section 6: kept after a story ends, read by every story that declares them), **realm
+variables** (each wolf's own, kept after a story ends: below), and the audience (`same` or a list).
+
+**Across campaigns: realm variables.** What one wolf did in Act I and Act II must still be known in Act III, whichever
+stories ran between, and a pack must be able to add to it beside the chapter. A variable of the **realm** scope is each
+wolf's own value (as `player` is), but kept after the story ends, in the world's own store, and shared by every story of
+the world that declares the same name and type: Act I declares `nh_voice` (realm, a number) and adds to it; Act II, a
+year later and approved on its own, declares `nh_voice` too and reads each wolf's value. It is never carried (there is
+nothing to carry: every story reads the one value). Each story reads its wolves' values when it starts, the ones another
+story changed since at each of its turns, and a wolf's when they join; it writes the ones it changed at the end of each
+turn. Two stories adding to the same wolf's value both count. A story declaring a realm name as another type than the
+wolves keep it, or than another live story declares it, is refused at approval.
+
+```json
+{"id": "nh_voice",  "type": "number", "scope": "realm", "show": "Your voice in the Moot"}
+{"id": "nh_pledge", "type": "text",   "scope": "realm", "talk": true}
+```
+
+A rehearsal case of a later act can give what each wolf brings with them: `"realm": {"player-ash": {"nh_voice": 3}}`.
 
 **Campaign-long holds.** A chapter may hold a resident for the **whole campaign**, not just its own run: **Spare a resident
 from old age** (`npc.spare`) and **Protect a resident** (`npc.protect`) take `"lasts": "campaign"`. The hold outlives the
@@ -259,7 +276,8 @@ A version 2 story declares every variable it uses: a misspelt name is an error, 
 
 - **Types:** `number`, `switch` (on or off), `text` (200 characters), references (`wolf`, `resident`, `place`, `region`,
   `item`, `faction`), lists (`numbers`, `texts`, `wolves`, `residents`: 500 values), and `timer` (a moment: "days since").
-- **Scopes:** `story` (one value), `player` (one per wolf), `party` (one per party taking part), and `world`.
+- **Scopes:** `story` (one value), `player` (one per wolf), `party` (one per party taking part), `world`, and `realm`
+  (one per wolf, kept after the story and shared by every story that declares it: section 4, "Across campaigns").
 - **Values** in a Set or a Compare: a constant, `{"var": "ropes"}`, an event field `{"field": "quantity"}`, `{"count":
   "mustered"}`, `{"since": "began"}`, `{"each": true}`, and a little arithmetic: `{"plus": [a, b]}`, `minus`, `min`, `max`,
   `times`, and `div` (floored toward zero; dividing by 0 gives no value, so nothing fires on it).
@@ -275,6 +293,10 @@ A version 2 story declares every variable it uses: a misspelt name is an error, 
   **declares** one for the world (a type, a first value, a note), **sets** its value and **removes** it, each with a reason,
   audited (`story.world-var`). A story that declares a world variable the world has declared as another type is refused
   at approval. A live story reads a new value at its next turn.
+- **Realm variables** (each wolf's own, across stories) behave as a wolf's own value everywhere: read `of` the acting wolf
+  or `$each`, shown as a tracker, told to residents, ranked by, tallied, a mirror's key. **Campaigns → World variables…**,
+  tab **Per wolf**, lists the values the wolves keep (filter by name and wolf) and the stories that declare each name; an
+  admin **sets** one wolf's value there, with a reason, audited (`story.realm-var`). A live story reads it at its next turn.
 
 ### Goals that scale
 
@@ -777,6 +799,38 @@ refuses a stranger the story never brings, and warns when it brings them only in
 A face banner (`story.tell` with `from`) is never a stranger's: a resident's or a stranger's words reach a wolf only in the
 dialogue window.
 
+### Lasting changes: the crown's change and a sentence
+
+Two effects change a resident's life past the story's end. Both need a builder or the owner on a hosted world, and
+neither is undone when the run ends.
+
+**The crown's change: Give a resident a post** (`npc.post`) gives a post of the careers book to a resident **in one step,
+whether someone holds it or not**: the resident leaves any post they held (it stands empty, for the vacancy rules to fill),
+and whoever held this one is left without it (they keep their home and their purse; succession may find them work later).
+The careers book notes it as a **succession** (`succession`, detail `<post>: by the story`), so a story listening for a
+post changing hands hears it. A post is named by its id, `job:<the resident who founded it>`; the workbench lists them by
+title with who holds each, as the world was last saved, and approval refuses one the world has not, and the Watch's posts
+(the watch chooses its own). The post keeps its founder's id after the founder is gone: on Ridgemere 3 "reigning at the
+Great Palace" is `job:rm_gunnar_harrowgate`, held by Dagfinn Thornham.
+
+```json
+{"kind": "npc.post", "npc": "rm_ottilie_harrowgate", "post": "job:rm_gunnar_harrowgate"}
+```
+
+**Sentence a resident** (`npc.sentence`) takes a resident to a place indoors (one a door or stairs lead into) and keeps them
+there for 1 to 28 days, **even after the story ends**: Ilse Coalley's week in the Watch cells outlasts the line that put her
+there. They keep their post and their home, and walk home when it is served. The game says **A resident is sentenced**
+(`sentence begun`: `actor` the resident, `cell` where, `quantity` the days, `detail` the story) and, on the last day, **A
+sentence is served** (`sentence served`, `item` `served`; `released` when an admin let them go early). Refused for a
+protected resident, the dead, one in a fight or away with a party, a foe, one held by another story, and one serving a
+sentence already; while they serve it no other story holds them and no party takes them along. The Campaigns console's
+**Sentences** lists who is held where, for how much longer, by which story, with **Release now…** (the owner, or "may steer
+campaigns", with a reason).
+
+```json
+{"kind": "npc.sentence", "npc": "rm_ilse_coalley", "place": "r2_the_keep_down", "days": 7}
+```
+
 ## 9. Rehearsing
 
 A rehearsal case is a made-up audience and a list of events with game days, and what should come of it: the phases in
@@ -897,12 +951,13 @@ Ranks are viewer, dm, builder, owner. In your own studio a Dungeon Master does e
 | See the Campaigns console | a Dungeon Master (it names wolves and where they are) |
 | Approve and publish a story, a campaign | a Dungeon Master, and the marks below for what it contains |
 | A story that **acts on wolves** (`character.injury`, `story.area.damage`, `item.take`, `warrant.issue`) | the owner, or "may act on players' wolves" |
-| A story that **needs a builder** (`faction.relation`, `standing.adjust`, since Phase 10 the economy's `prices.reset`, `project.complete`, `project.cancel`, and the realm's figures, `figure.set`, `figure.clear`) | a builder or the owner |
+| A story that **needs a builder** (`faction.relation`, `standing.adjust`, since Phase 10 the economy's `prices.reset`, `project.complete`, `project.cancel`, the realm's figures, `figure.set`, `figure.clear`, a resident made a foe, `foe.outlaw`, and the lasting changes to residents, `npc.post` and `npc.sentence`) | a builder or the owner |
 | Undo a figure a story set | a builder or the owner |
 | Let go of a campaign's holds | the owner, or "may steer campaigns" |
 | Steer a running story (every control) | the owner, or the owner's "may steer campaigns" for the account (My world, Editor accounts) |
 | A control that could release an effect marked above | also what approving it would need |
-| Declare, set or remove a world variable | the owner, or "may steer campaigns" |
+| Declare, set or remove a world variable; set a wolf's realm value | the owner, or "may steer campaigns" |
+| Release a sentenced resident now | the owner, or "may steer campaigns" |
 | Hold all; change the alert rules; grant "may steer campaigns" | the owner |
 
 The weather, notices, market events and the other effects need what the same act needs by hand on LIVE: a Dungeon Master.
@@ -935,6 +990,9 @@ takes back what the story held, as it was before the story first touched it. Wha
 | `title.give`, `npc.greet` | **stay**: a title lasts its days (or for good) until `title.take`; a greeting waits its days for its wolf |
 | a closure quest's finished Story | **stays**: a record of a finished story |
 | `npc.howl` | **stays**: the town remembers the howl a while, as any howl |
+| `npc.post` | **stays**: the crown's change (a post given, whoever held it) is the careers book's from then on |
+| `npc.sentence` | **stays**: the resident serves the days even after the story ends (`sentence served`), unless an admin presses **Release now** |
+| a realm variable | **stays**: each wolf's value is kept for every story that declares it |
 | `story.notify`, `quest.withdraw` | the story's own: news told is told; an offer taken back goes with the run |
 | `journal.note` | **stays**: the wolf's journal keeps it |
 | items given or placed, coins paid, deeds, standing, warrants, injuries, relations, market events, prices, projects, residents killed | **stay**: not a rollback |
@@ -954,6 +1012,8 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | A chapter did not start | the earlier chapter's Timeline | Its note says why: not a chapter of the campaign, already running, the audience empty. |
 | A watched event never comes | the trigger's filters | `near resident`, `purse crossed` and `standing crossed` need their names in the filters; the others need a live story listening (the watch list goes with each phase). |
 | A world variable reads its first value | Campaigns → World variables | A story declaring it as another type reads nothing of it; check the type. |
+| A realm value reads its first value | Campaigns → World variables → **Per wolf** | Is it kept for that wolf, and as the type this story declares? A value kept under another type is not read. A chapter started in the same turn another ends reads the other's last changes at its own first turn. |
+| A sentenced resident is not where the story put them | Campaigns → **Sentences** | Still serving? They are put back within a moment unless in a fight; a sentence served or released lets them walk home. |
 | It says ready but did not move | Overview → **Readiness** | `auto` is off: it waits for an admin. Press **Advance…** (or give it `autoAfterDays`). With `then` it waits for that moment ("Waiting for the next day"). A held run's clock is stopped. |
 | The share reads 0% | Readiness → the bar | No active wolves yet (none seen in the last `activeDays` game days), or the list is empty. Who is "online" is unknown until the world says (the story watches its wolves). |
 | A resident's memory line never plays | Variables & timers → **What residents remember** | Is the key there, with days left? A town's is that town's residents only; a pair's only for that wolf. The line's gate must match the key and value exactly. |
@@ -1013,6 +1073,8 @@ So a chapter that hands the world on should end before the next begins (`story.s
 | A story's own items | a mark of 1 to 32 of `a-z0-9_`, a name of 60 characters; 64 kinds a story; 4,000 named in the world |
 | Foes | 8 a story at once; 0 to 8 followers (a resident made a foe: 0 to 6); 1 to 1,440 minutes (a resident: 720); an id of 3 to 40 |
 | A scene's cast | 16 roles: residents, selectors or strangers the story brings |
+| A sentence | 1 to 28 days, indoors; one at a time a resident |
+| Realm variables | as any variable (64 a story); the console lists 200 values at a time |
 
 <!-- reference:begin (made by tools/story_guide.py from Data/Storylines/trigger-catalogue.json: do not edit by hand) -->
 
@@ -1022,7 +1084,7 @@ Made from the trigger catalogue (`Data/Storylines/trigger-catalogue.json`), the 
 
 ### Events
 
-219 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
+221 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
 
 #### Story engine
 
@@ -3886,6 +3948,39 @@ A resident took a post by the careers book's rules (a death, a retirement, a vac
 {"id": "when-succession", "on": "succession", "match": {"target": "rm111"}, "actions": [{"do": "note", "text": "A post changes hands"}]}
 ```
 
+<a id="event-sentence-begun"></a>**`sentence begun`**: A resident is sentenced (has a tile)
+
+A story sentenced a resident (Sentence a resident): actor the resident, cell where they are held, quantity the days, target the story's run, detail the story's id.
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | the resident (resident) | anyone |
+| `target` | the story's run (run) | any run |
+| `cell` | where they are held (place) | anywhere |
+| `detail` | the story that sentenced them (story) | any story |
+| `quantity` | days (number) |  |
+
+```json
+{"id": "when-sentence-begun", "on": "sentence begun", "actions": [{"do": "note", "text": "A resident is sentenced"}]}
+```
+
+<a id="event-sentence-served"></a>**`sentence served`**: A sentence is served (has a tile)
+
+A resident's sentence is over: item served (its last day came, even after the story ended) or released (by the Campaigns console's Release now); quantity the whole days they were held, target the run that sentenced them, detail its story's id. They walk home.
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | the resident (resident) | anyone |
+| `target` | the story's run (run) | any run |
+| `cell` | where they are held (place) | anywhere |
+| `item` | served or released (text) | either |
+| `detail` | the story that sentenced them (story) | any story |
+| `quantity` | days served (number) |  |
+
+```json
+{"id": "when-sentence-served", "on": "sentence served", "actions": [{"do": "note", "text": "A sentence is served"}]}
+```
+
 #### Fame, journal and tales
 
 <a id="event-storyline-objective"></a>**`storyline objective`**: A storyline objective is met (has a tile)
@@ -5664,7 +5759,7 @@ Reads: Go to the phase **muster**
 
 ### Effects
 
-89 world effects, each one action `{"do": "effect", "effect": {...}}` (or, for a phase, one of what it sends as it opens). Each becomes an order the game applies and may refuse, with a receipt, except the story's own. On any effect the game applies, `ifRefused` says what the story does when it is refused: `pause` (the default), `skip`, or `when here` (an effect to one wolf, held until they are next in the world, `waitDays` 1 to 90).
+91 world effects, each one action `{"do": "effect", "effect": {...}}` (or, for a phase, one of what it sends as it opens). Each becomes an order the game applies and may refuse, with a receipt, except the story's own. On any effect the game applies, `ifRefused` says what the story does when it is refused: `pause` (the default), `skip`, or `when here` (an effect to one wolf, held until they are next in the world, `waitDays` 1 to 90).
 
 #### Telling the wolves
 
@@ -5987,6 +6082,37 @@ Reads: **rm111** howls
 
 ```json
 {"do": "effect", "effect": {"kind": "npc.howl", "npc": "rm111"}}
+```
+
+<a id="effect-npc-post"></a>**`npc.post`**: Give a resident a post (needs a builder)
+
+A lasting change in the careers book, in one step: the resident leaves any post they hold and takes this one; the one before them is left without it, for the vacancy rules to look after ('succession' follows, detail '<post>: by the story'). Never the Watch's posts (the watch chooses its own). Never undone.
+
+Reads: **rm111** takes the post **job:rm112**; whoever held it gives it up
+
+| Parameter | What | Kind |
+|---|---|---|
+| `npc` | the resident | resident |
+| `post` | the post | post |
+
+```json
+{"do": "effect", "effect": {"kind": "npc.post", "npc": "rm111", "post": "job:rm112"}}
+```
+
+<a id="effect-npc-sentence"></a>**`npc.sentence`**: Sentence a resident (needs a builder)
+
+The resident is taken to the place (indoors) and kept there for the days, even after the story ends ('sentence begun', then 'sentence served' on the last day). They keep their post and their home, and walk home when it is served. Never a protected resident, the dead, one in a fight or away, or one serving a sentence already. The Campaigns console lists sentences, with Release now.
+
+Reads: **rm113** is held at **greyfen-cells** for **7** days
+
+| Parameter | What | Kind |
+|---|---|---|
+| `npc` | the resident | resident |
+| `place` | the place (an interior) | place |
+| `days` | days | int; 1 to 28 |
+
+```json
+{"do": "effect", "effect": {"kind": "npc.sentence", "npc": "rm113", "place": "greyfen-cells", "days": 7}}
 ```
 
 <a id="effect-npc-kill"></a>**`npc.kill`**: A resident dies

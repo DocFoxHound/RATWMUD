@@ -91,8 +91,10 @@ A program of `"version": 2` (Docs/Design/85-story-triggers-and-campaign-control.
 numbers, switches and timers) and a `note`. Types: `number`, `switch`, `text`, `wolf`, `resident`, `place`, `region`,
 `item`, `faction`, the lists `numbers`, `texts`, `wolves`, `residents` (up to 500 values), and `timer` (a moment: days
 since it started, on the `game` or `real` clock). Scopes: `story` (one value), `player` (one per wolf), `party` (one per
-party; a wolf in no known party is a party of one) and `world` (kept after the run, shared by every story of the world that
-declares the name with that type; `dm.story_world_vars`). A misspelt name is an error, not a new counter.
+party; a wolf in no known party is a party of one), `world` (kept after the run, shared by every story of the world that
+declares the name with that type; `dm.story_world_vars`) and, since doc 86's Phase 8, `realm` (one per wolf, kept after the
+run and shared by every story of the world that declares the name with that type; `dm.story_realm_vars`). A misspelt name
+is an error, not a new counter.
 
 Conditions add `compare` (two values: a constant, `{"var"}`, `{"field"}`, `{"count": list}`, `{"since": timer}`,
 `{"each": true}`, or `plus`/`minus`/`min`/`max` of two), `switch`, `in list`, `phase is`, `visit is`, `timer` (running,
@@ -549,6 +551,39 @@ if the story ends mid-fight. A foe a restart cannot make again is `foe fled` (ti
 phase than a `scene.play` of it). The game (`Game::startCinematic`) resolves it to the stranger the run holds
 (`held.visitors`), in their own panel with their `like` face; one not in the world fails the scene: `scene failed` with
 `item` "a stranger is not here".
+
+## Across acts and the crown (doc 86, Phase 8)
+
+**Realm variables.** A variable of scope `realm` is each wolf's own (read `of` `$actor` or `$each`, shown, told to residents,
+ranked by, tallied, a mirror's key, as `player`), kept in `dm.story_realm_vars(world_id, name, wolf, type, value, run,
+updated_at)` (migration 0081). The runner (`story_runner.realm_load`, `realm_join`, `realm_save`, beside `world_load` and
+`world_save`) reads the cohort's values into `counters.realm` at launch, at each turn only the rows changed since the run's
+cursor (`state.realmSeen`, a time, read again from two minutes before it), and a wolf's when they join
+(`story_quests.JOINED`); it writes the changed wolf-name pairs at the end of the turn. A row kept under another type is not
+read; approval (`realm_clash`) refuses a declaration of another type than a kept row or another live story's, and needs
+0081. Realm values are never carried (`_carried`) and are read afresh after a move onto a new version. A rehearsal case
+may give `realm`: `{wolf: {name: value}}`, what each wolf brings with them. Ops: `realm-vars` `{name?, wolf?}` and
+`realm-var` `{name, wolf, value, reason}` (audited `story.realm-var`; the owner or "may steer campaigns").
+
+**`npc.post`** `{npc, post}` (`needsBuilder`; the runner's single-key order, target the resident, payload `{post}`): `post`
+is the new parameter type `post`, `job:<founder>`, checked at approval against `dm.story_posts` (migration 0080: a view of
+the last checkpoint's `society.careers.positions` with each post's title and role from its founder) and refused for a
+`guard` post; `refs().posts` lists them by title with their holder. The game's `Society::swapPost` (through
+`World::postResident`) takes the post from its holder (`lastHolder`, vacant since today), takes the resident out of the
+post they held (vacant since today), gives them this one, and records `succession` (detail `<title>: by the story`).
+Lasting.
+
+**`npc.sentence`** `{npc, place, days}` (`needsBuilder`; a world order, target the resident, with `run` and `visit`):
+`place` an interior a link reaches (approval), `days` 1 to 28. The game (`Game::applyStorySentence`) refuses a protected,
+dead, fighting, away, foe or already sentenced resident and one another story holds; it moves them to the open tile nearest
+the room's middle, holds them there (`sceneHold`), and keeps `storySentences_[npc] = {place, by: the program id, run, x, y,
+began, until, days, pace}` in the checkpoint (`people.storySentences`), never in the run's `held`. `tendSentences` (from
+`tickStoryWorld`, every half second) puts them back if they are moved, after a restart too, and ends the sentence at
+`until` (`sentence served`, item `served`). While sentenced no other story holds them (`heldByAnotherStory`) and no party
+takes them (`whyNotJoin`). Events `sentence begun` and `sentence served` (group town; `actor` the resident, `cell` the
+place, `quantity` the days or the whole days served, `target` the run, `detail` the program id). Ops: `sentences` (from the
+checkpoint) and `sentence-release` `{npc, reason}` (queues the game's `npc.unsentence`: `sentence served`, item
+`released`; audited `story.sentence-release`).
 
 ## Writing a program
 

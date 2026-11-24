@@ -17,6 +17,7 @@ import type {MyWorld} from './dm/api';
 import {CampaignsTab, type CampaignsInitial} from './dm/CampaignsTab';
 import {GuideTab} from './dm/GuideTab';
 import {WorldVarsPanel} from './dm/campaigns/WorldVars';
+import {SentencesPanel} from './dm/campaigns/Sentences';
 import type {Campaign, Readiness} from './lib/campaigns';
 import type {Explained, MigrationReport, Order, Preview, Problems, RunDetail, RunRow, TimelineItem, Version} from './lib/campaigns';
 import {AskDialog, MovePanel} from './dm/campaigns/Steer';
@@ -334,6 +335,13 @@ export function renderAll(): Record<string, string> {
          stories: [{run: runningRow.run, story: 'winter-ferries', title: 'Ninety days on the winter ferries', type: 'number', status: 'running'}]},
         {name: 'bells', type: 'switch', value: true, declared: false, run: 'world-old', stories: []}],
         audit: [{at: 1763800000, name: 'ferries-run', detail: 'ferries-run: 3 → 4. Reason: "one more crossed at dawn"', who: 'martin'}]}} />);
+    // (Doc 86, Phase 8: each wolf's realm values, and the residents stories sentenced.)
+    out['Realm variables'] = renderToString(<WorldVarsPanel target="dev" names={names} mayChange realm={{realm: true, values: [
+        {name: 'nh_voice', wolf: 'player-ash', type: 'number', value: 4, run: runningRow.run, updatedAt: '2026-11-24T10:00:00Z'}],
+        names: [{name: 'nh_voice', type: 'number', wolves: 1, stories: [{run: runningRow.run, story: 'act-two', title: 'Act II: the Turn', type: 'number', status: 'running'}]}],
+        audit: [{at: 1763800000, name: 'nh_voice/player-ash', detail: 'nh_voice for player-ash: 3 → 4. Reason: "a howl the game missed"', who: 'martin'}]}} />);
+    out['Sentences'] = renderToString(<SentencesPanel target="dev" mayRelease initial={[{npc: 'rm_ilse_coalley', name: 'Ilse Coalley', place: 'r2_the_keep_down',
+        placeName: 'The Keep, below', by: 'lq-wreckers-light', run: 'world-1', days: 7, began: 60, until: 67, left: 4.25}]} />);
     out['Guide'] = renderToString(<GuideTab />);
     out['Guide (search)'] = renderToString(<GuideTab initialQuery="purse crossed" />);
     out['Story problems'] = renderToString(<ProblemsList found={problems} untried={['ferry-watch/begin-deep-freeze']} phases={['enrol', 'ferry-watch']} go={none} asking={false} />);

@@ -1594,6 +1594,51 @@ CareerNote Society::appoint(const std::string& positionId, const std::string& re
     return {"succession", resident, ps.lastHolder, p->title + ": spoken for"};
 }
 
+CareerNote Society::swapPost(const std::string& positionId, const std::string& resident, const CareerWorld& world, double day)
+{
+    // Doc 86, C14: as appoint, but a post someone holds is taken from them first (the crown's change).
+    const auto* p = position(positionId);
+    auto found = state_.careers.positions.find(positionId);
+    if (!p || found == state_.careers.positions.end())
+        return {"refused", resident, {}, "There is no such post."};
+    if (!state_.residents.count(resident) || (world.alive && !world.alive(resident)))
+        return {"refused", resident, {}, "No such resident (living) to take it."};
+    if (p->role == "guard")
+        return {"refused", resident, {}, "The watch chooses its own."};
+    auto& ps = found->second;
+    if (ps.holder == resident)
+        return {"held", resident, resident, "They hold that post already."};   // (No change: the order sent again is no refusal.)
+    std::string before = ps.holder;
+    if (!ps.holder.empty())
+    {
+        ps.lastHolder = ps.holder;
+        ps.holder.clear();
+        ps.vacantSince = day;
+    }
+    if (ps.apprentice == resident)
+        ps.apprentice.clear();
+    auto& c = state_.careers;
+    for (auto& [otherId, other] : c.positions)
+    {
+        if (otherId == positionId)
+            continue;
+        if (other.holder == resident)
+        {
+            other.holder.clear();
+            other.lastHolder = resident;
+            other.vacantSince = day;
+        }
+        if (other.apprentice == resident)
+            other.apprentice.clear();
+    }
+    ps.holder = resident;
+    ps.vacantSince = -1;
+    auto& known = c.skill[skillKey(resident, p->id)];
+    known = std::max({known, 10.0, .5 * familySkill(resident, skillFamily(p->title))});
+    forgetCareers();
+    return {"succession", resident, before.empty() ? ps.lastHolder : before, p->title + ": by the story"};
+}
+
 CareerNote Society::apprenticeTo(const std::string& positionId, const std::string& youth, const CareerWorld& world, double)
 {
     // Sponsoring an apprenticeship (doc 57, 3): begun now rather than at the weekly chance, under its rules.

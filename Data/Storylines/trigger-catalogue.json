@@ -185,7 +185,8 @@
   "camp": "A story camp's name: lower-case letters, digits and _, 3 to 30, beginning with the story's prefix (nh_, sq_, mq_, lq_, st_); the camp is camp_story_<name>.",
   "species": "An animal of Data/Wild/animals.json (its id).",
   "tag": "A story's own mark on an item (small letters, digits and _, up to 32): the item is the story's, named as the story names it, and taken back when the run ends unless kept.",
-  "foe": "A story's foe, by the id the story gives it (letters, digits, - and _); for a resident made a foe, the resident's id."
+  "foe": "A story's foe, by the id the story gives it (letters, digits, - and _); for a resident made a foe, the resident's id.",
+  "post": "A post in the careers book (its id, job:<the resident who founded it>), as the world was last saved."
  },
  "trigger": {
   "once": {
@@ -4632,6 +4633,79 @@
     }
    },
    "tile": false
+  },
+  {
+   "id": "sentence begun",
+   "group": "town",
+   "title": "A resident is sentenced",
+   "sentence": "{actor} is held at {cell} by {detail}",
+   "help": "A story sentenced a resident (Sentence a resident): actor the resident, cell where they are held, quantity the days, target the story's run, detail the story's id.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the resident",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story's run",
+     "any": "any run"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where they are held",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "story",
+     "label": "the story that sentenced them",
+     "any": "any story"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "days"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "sentence served",
+   "group": "town",
+   "title": "A sentence is served",
+   "sentence": "{actor} is let go from {cell} ({item})",
+   "help": "A resident's sentence is over: item served (its last day came, even after the story ended) or released (by the Campaigns console's Release now); quantity the whole days they were held, target the run that sentenced them, detail its story's id. They walk home.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the resident",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story's run",
+     "any": "any run"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where they are held",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "served or released",
+     "any": "either"
+    },
+    "detail": {
+     "type": "story",
+     "label": "the story that sentenced them",
+     "any": "any story"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "days served"
+    }
+   },
+   "tile": true
   },
   {
    "id": "promise",
@@ -9405,7 +9479,8 @@
       "number"
      ],
      "scope": [
-      "player"
+      "player",
+      "realm"
      ]
     },
     {
@@ -11518,6 +11593,55 @@
    ]
   },
   {
+   "id": "npc.post",
+   "group": "residents",
+   "title": "Give a resident a post",
+   "needsBuilder": true,
+   "sentence": "{npc} takes the post {post}; whoever held it gives it up",
+   "help": "A lasting change in the careers book, in one step: the resident leaves any post they hold and takes this one; the one before them is left without it, for the vacancy rules to look after ('succession' follows, detail '<post>: by the story'). Never the Watch's posts (the watch chooses its own). Never undone.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "operand": true
+    },
+    {
+     "key": "post",
+     "type": "post",
+     "label": "the post"
+    }
+   ]
+  },
+  {
+   "id": "npc.sentence",
+   "group": "residents",
+   "title": "Sentence a resident",
+   "needsBuilder": true,
+   "sentence": "{npc} is held at {place} for {days} days",
+   "help": "The resident is taken to the place (indoors) and kept there for the days, even after the story ends ('sentence begun', then 'sentence served' on the last day). They keep their post and their home, and walk home when it is served. Never a protected resident, the dead, one in a fight or away, or one serving a sentence already. The Campaigns console lists sentences, with Release now.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident",
+     "operand": true
+    },
+    {
+     "key": "place",
+     "type": "place",
+     "label": "the place (an interior)"
+    },
+    {
+     "key": "days",
+     "type": "int",
+     "label": "days",
+     "min": 1,
+     "max": 28
+    }
+   ]
+  },
+  {
    "id": "npc.kill",
    "group": "residents",
    "title": "A resident dies",
@@ -12896,7 +13020,8 @@
    "story": "the story's (one)",
    "player": "each wolf's own",
    "party": "each party's own",
-   "world": "the world's (kept after the story, shared by every story)"
+   "world": "the world's (kept after the story, shared by every story)",
+   "realm": "each wolf's own, kept after the story and shared by every story of the world that declares it"
   },
   "defaults": {
    "number": 0,

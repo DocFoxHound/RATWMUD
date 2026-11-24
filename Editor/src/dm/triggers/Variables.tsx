@@ -8,7 +8,9 @@ import {storyProgram, type Target} from '../api';
 import {useBench} from './context';
 
 const ID = /^[A-Za-z0-9_][A-Za-z0-9_.:-]{0,79}$/;
-const SCOPE_WORDS: Record<string, string> = {story: "the story's", player: "each wolf's", party: "each party's", world: "the world's"};
+// (Doc 86, J2: realm, each wolf's own across stories: kept after the story, shared by every story that declares it.)
+const SCOPE_WORDS: Record<string, string> = {story: "the story's", player: "each wolf's", party: "each party's", world: "the world's",
+    realm: "each wolf, across stories"};
 
 /** A first value typed in, as its type wants it (a list: values separated by commas). Undefined: none (the type's own). */
 function initialOf(type: string, text: string): unknown {
@@ -30,7 +32,8 @@ function Row({v, use, readOnly}: {v: Variable; use: (id: string) => void; readOn
         <div className="wb-var-head">
             {!readOnly && <button type="button" className="wb-fold" onClick={() => setOpen(!open)} aria-expanded={open} title="First value, label, note">{open ? '▾' : '▸'}</button>}
             <button type="button" className="link-button" onClick={() => use(v.id)} title="Where it is used">{v.id}</button>
-            <small>{types[v.type] ?? v.type} · {SCOPE_WORDS[v.scope] ?? v.scope}{v.initial !== undefined ? ` · starts ${Array.isArray(v.initial) ? v.initial.join(', ') : String(v.initial)}` : ''}
+            <small>{types[v.type] ?? v.type} · {v.scope === 'realm' ? <span className="wb-chip" title="Kept for each wolf after the story ends, and shared by every story of the world that declares it">each wolf, across stories</span>
+                : SCOPE_WORDS[v.scope] ?? v.scope}{v.initial !== undefined ? ` · starts ${Array.isArray(v.initial) ? v.initial.join(', ') : String(v.initial)}` : ''}
                 {v.show ? ` · shown as “${v.show}”` : ''}{v.showOf ? ` of ${v.showOf}` : ''}{v.mirror ? ` · mirrors ${v.mirror.key}` : ''}{v.talk ? ' · told to residents' : ''}{used ? ` · used ${used}×` : ' · unused'}</small>
             {!readOnly && <span className="wb-tools">
                 <button type="button" className="wb-mini" title="Rename everywhere" onClick={() => {
@@ -58,7 +61,7 @@ function Row({v, use, readOnly}: {v: Variable; use: (id: string) => void; readOn
                         && (x.scope === 'story' || x.scope === 'world' || x.scope === v.scope)).map(x => <option key={x.id} value={x.id}>{x.id}</option>)}</select></label>}
             {v.mirror && <p className="hint">Mirrors the world number named by each wolf's {v.mirror.key}: {Object.entries(v.mirror.names).map(([k, n]) => `${k} → ${n}`).join(', ')}
                 {' '}(never stored; edited in Source).</p>}
-            {v.scope === 'player' && ['number', 'switch', 'text'].includes(v.type) && <label title="Doc 86, N2: residents' lines in the dialogue window may test it as player.story.{name}">
+            {(v.scope === 'player' || v.scope === 'realm') && ['number', 'switch', 'text'].includes(v.type) && <label title="Doc 86, N2: residents' lines in the dialogue window may test it as player.story.{name}">
                 <input type="checkbox" checked={!!v.talk} onChange={e => put(e.target.checked ? {...v, talk: true} : without('talk'))}/>told to residents (player.story.{v.id})</label>}
             <label>Note<input value={v.note ?? ''} maxLength={300} placeholder="(for the author)"
                 onChange={e => put(e.target.value ? {...v, note: e.target.value} : without('note'), 'v:' + v.id + ':note')}/></label>
@@ -77,7 +80,7 @@ export function VariablesPanel({use, readOnly, target}: {use: (what: {type: stri
     const list = variablesOf(program);
     if (!v2) return <section className="wb-vars"><h4>Counters · {list.length}</h4>
         <ul>{list.map(c => <li key={c.scope + c.id}><button type="button" className="link-button" onClick={() => use({type: 'counter', id: c.id, scope: c.scope})}>{c.id}</button>
-            <small> {c.scope === 'player' ? "each wolf's" : "the story's"} number</small>
+            <small> {c.scope === 'player' || c.scope === 'realm' ? "each wolf's" : "the story's"} number</small>
             {!readOnly && <button type="button" className="wb-mini" title="Rename everywhere" onClick={() => {
                 const to = window.prompt(`Rename the counter "${c.id}" everywhere`, c.id)?.trim();
                 if (to && to !== c.id && ID.test(to)) edit(renameCounter(program, c.scope, c.id, to));

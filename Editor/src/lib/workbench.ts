@@ -166,7 +166,9 @@ export interface Case {name: string; cohort: string[]; events: Fact[]; expect: s
     /** Phase 6: each quest's copies as the case ends: {quest: {holder: status}} (a wolf id, "party:<id>" or "story"). */
     expectQuests?: Record<string, Record<string, string>>;
     /** Phase 8: the world's facts as the case begins. */
-    facts?: WorldFacts}
+    facts?: WorldFacts;
+    /** Doc 86, J2: what each wolf holds of the story's realm variables at the start, as an earlier story left it. */
+    realm?: Record<string, Record<string, unknown>>}
 /** A quest's objective (doc 85, 3.6): an event of a wolf with filters, a goal, what must come first, optional or hidden. */
 export interface QuestObjective {id: string; label: string; on: string; signal?: string; match?: Record<string, string>;
     goal?: number | Operand; measure?: 'count' | 'quantity' | 'coins'; after?: string[]; optional?: boolean; hidden?: boolean;
@@ -229,12 +231,14 @@ export interface Refs {
     tills?: {id: string; name: string}[];
     /** Doc 86, L1: the animals of Data/Wild/animals.json a story may stage for a hunt, with the ground they live on. */
     species?: {id: string; name: string; habitats?: string[]}[];
+    /** Doc 86, C14: the careers book's posts as last saved (job:<founder>), by title, with who holds each; never the Watch's. */
+    posts?: {id: string; name: string; title: string; holder: string}[];
 }
 /** The kinds a picker of a type lists (a `character` is a wolf or a resident). */
 export const REF_KIND: Record<string, keyof Refs> = {
     resident: 'residents', wolf: 'wolves', place: 'places', faction: 'factions', town: 'towns', market: 'markets', area: 'areas',
     ship: 'ships', item: 'items', template: 'templates', project: 'projects', door: 'doors', mantle: 'mantles', story: 'stories',
-    species: 'species',
+    species: 'species', post: 'posts',
 };
 /** Doc 86, Phase 1b: the values a program's effects give one parameter (talk memory's keys and values, figures' ids). */
 export function effectValuesOf(p: Program, kinds: string[], key: string): string[] {
@@ -1130,10 +1134,14 @@ export function renameVariable(p: Program, from: string, to: string): Program {
     })};
     const tests = out.tests.map(c => {
         const v = c.expectVariables as Record<string, Json> | undefined;
-        if (!v) return c;
         const rename = (o: Json) => from in o ? Object.fromEntries(Object.entries(o).map(([k, x]) => [k === from ? to : k, x])) : o;
-        return {...c, expectVariables: Object.fromEntries(Object.entries(v).map(([scope, o]) => [scope,
-            scope === 'player' || scope === 'party' ? Object.fromEntries(Object.entries(o).map(([w, x]) => [w, rename(x as Json)])) : rename(o)]))};
+        const byWolf = (o: Json) => Object.fromEntries(Object.entries(o).map(([w, x]) => [w, rename(x as Json)]));
+        // (Doc 86, J2: a case's realm values, by wolf, are renamed too.)
+        const realm = c.realm as Json | undefined;
+        const next = realm ? {...c, realm: byWolf(realm)} : c;
+        if (!v) return next;
+        return {...next, expectVariables: Object.fromEntries(Object.entries(v).map(([scope, o]) => [scope,
+            scope === 'player' || scope === 'party' || scope === 'realm' ? byWolf(o) : rename(o)]))};
     });
     return {...out, tests, variables: (out.variables ?? []).map(v => v.id === from ? {...v, id: to} : v)};
 }

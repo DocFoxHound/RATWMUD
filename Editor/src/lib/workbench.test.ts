@@ -10,7 +10,7 @@ import {fileURLToPath} from 'node:url';
 import {
     actionParts, buildTree, commit, conditionParts, editable, eventParts, exitParts, fragmentOf, historyOf, insertTriggers, moveTrigger, namesOf,
     pasteFragment, plain, pretty, readFragment, redo, refOfProblem, removeTriggers, renameCounter, renameSignal, renameTrigger, search, signalsOf,
-    countersOf, takenIds, triggersOf, undo, unique, usesOf, withEvent, type Catalogue, type Condition, type Program, type Ref,
+    countersOf, takenIds, triggersOf, undo, unique, usesOf, withEvent, type Action, type Catalogue, type Condition, type Program, type Ref,
 } from './workbench.ts';
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -183,7 +183,7 @@ const v2: Record<string, Program> = JSON.parse(execFileSync('python3', ['-c',
 const ledger = v2['v2-ledger'];
 
 test('version 2: the samples and the 108 programs made version 2 are shown by the workbench, every nested action a sentence', () => {
-    assert.equal(Object.keys(v2).length, 118);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road; Phase 3: the oil drive; Phase 4: the lamp line; Phase 5: Old Brown at the tarn; Phase 6: the watch list; Phase 7: the Grey Captain at the Pass.)
+    assert.equal(Object.keys(v2).length, 119);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road; Phase 3: the oil drive; Phase 4: the lamp line; Phase 5: Old Brown at the tarn; Phase 6: the watch list; Phase 7: the Grey Captain at the Pass; Phase 8: the Moot Night.)
     let nested = 0;
     for (const [name, p] of Object.entries(v2)) {
         assert.ok(editable(p), name);
@@ -729,3 +729,29 @@ test('doc 86, Phase 7: the Grey Captain in words; a foe named as the story names
     assert.deepEqual(found, []);
 });
 
+
+test('doc 86, Phase 8: the Moot Night in words; a realm variable renamed in a case; the crown\'s change and a sentence the checks accept', () => {
+    const p = v2['v2-moot-night'];
+    assert.ok(editable(p));
+    const ns = namesOf(null, p);
+    const chorus = triggersOf(p, 0).find(t => t.id === 'chorus')!;
+    const then = (chorus.actions[2] as {then: Action[]}).then;
+    assert.equal(plain(actionParts(cat, then[0], ns)), 'rm111 takes the post job:rm112; whoever held it gives it up');
+    assert.equal(plain(actionParts(cat, then[1], ns)), 'rm113 is held at grey-cells for 7 days');
+    assert.match(plain(actionParts(cat, chorus.actions[0], ns)), /nh_voice/);
+    assert.equal(cat.effects.find(e => e.id === 'npc.post')!.params!.find(x => x.key === 'post')!.type, 'post');
+    assert.equal(cat.variables!.scopes.realm.startsWith("each wolf's own, kept after the story"), true);
+    for (const id of ['sentence begun', 'sentence served']) assert.ok(plain(eventParts(cat, {id: 'x', on: id, actions: []}, ns)).length > 0, id);
+    // (A realm variable renamed: its uses, the case's realm values and the expected values follow.)
+    const renamed = renameVariable(p, 'nh_voice', 'nh_howl');
+    assert.equal(renamed.tests[0].realm!['player-ash'].nh_howl, 3);
+    assert.equal((renamed.tests[0].expectVariables as Record<string, Record<string, Record<string, number>>>).realm['player-ash'].nh_howl, 4);
+    // (A new post and a new sentence, as the workbench adds them, their slots filled, pass the checks.)
+    const q = structuredClone(p);
+    q.phases[1].triggers = [{id: 'more', on: 'arrival', audience: 'participant', actions: [
+        {do: 'effect', effect: {...newEffect(cat, 'npc.post', p), npc: 'rm112', post: 'job:rm113'}},
+        {do: 'effect', effect: {...newEffect(cat, 'npc.sentence', p), npc: 'rm112', place: 'grey-cells', days: 3}}]}];
+    const found = JSON.parse(execFileSync('python3', ['-c', "import json, sys\nsys.path.insert(0, 'tools')\nimport story_program as P\n"
+        + "print(json.dumps([x for x in P.problems(json.loads(sys.stdin.read())) if x['level'] == 'error']))"], {cwd: repo, input: JSON.stringify(q)}).toString());
+    assert.deepEqual(found, []);
+});

@@ -938,6 +938,130 @@ void phase7Foes()
     fs::remove_all(root);
     fs::remove(save);
 }
+// Doc 86, Phase 8: a sentence that outlives its story (L4, npc.sentence) and the crown's change (C14, npc.post), through the
+// game: the refusals; sentenced upstairs, kept there when the story ends, put back when moved, after a restart, and let go
+// on the seventh day (walking home); "Release now"; a post taken from its holder in one step.
+void phase8Sentences()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyworld-8-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    const auto world = writeDoors(root);
+    const auto run = std::string("world-wreckers");
+    int n = 2000;
+    {
+        Town t(world, save);
+        auto& w = t.g.world();
+        t.enter(t.ash, 1, "ash", "Ash", 0, 8.5);
+        auto players = json::Value::array();
+        players.push(t.ash.entityId);
+        const auto open = [&](const std::string& id, const std::string& program) {
+            auto phase = parsed(R"({"title":"The Wreckers' Light","phase":"cells","journal":"The Watch has her.","visit":1})");
+            phase.set("program", program);
+            phase.set("players", players);
+            return t.g.applyDmAct({std::to_string(++n), "story.phase", id, "dm", json::dump(phase)}).ok;
+        };
+        expect(open(run, "lq-wreckers-light") && open("world-other", "another"), "two stories open");
+        const auto order = [&](const std::string& kind, const std::string& target, std::string payload) {
+            auto p = parsed(payload.empty() ? "{}" : payload);
+            if (!p.has("run")) p.set("run", run);
+            if (!p.has("visit")) p.set("visit", 1);
+            return t.g.applyDmAct({std::to_string(++n), kind, target, "dm", json::dump(p)});
+        };
+        std::vector<WorldEvent> seen;
+        w.setEventWatcher([&](const WorldEvent& e) { seen.push_back(e); });
+
+        // ---- refusals.
+        expect(t.g.applyDmAct({std::to_string(++n), "npc.protect", "u2", "dm", "{}"}).ok, "a Dungeon Master protects u2");
+        auto r = order("npc.sentence", "u2", R"({"place":"c_up","days":7})");
+        expect(!r.ok && contains(r.message, "protected"), "a protected resident is never sentenced: " + r.message);
+        expect(!order("npc.sentence", "u1", R"({"place":"c_up","days":0})").ok && !order("npc.sentence", "u1", R"({"place":"c_up","days":29})").ok,
+               "1 to 28 days");
+        expect(!order("npc.sentence", "u1", R"({"place":")" + cellId(0) + R"(","days":7})").ok, "a place indoors");
+        expect(!order("npc.sentence", "u1", R"({"place":"nowhere","days":7})").ok, "a place there is");
+        expect(!order("npc.sentence", "nobody", R"({"place":"c_up","days":7})").ok, "a resident there is");
+        expect(!order("npc.sentence", "u1", R"({"place":"c_up","days":7,"run":"world-nothing"})").ok, "of a story running");
+        expect(t.g.storySentences().empty(), "nobody sentenced");
+
+        // ---- sentenced: upstairs, held, the story's program named.
+        r = order("npc.sentence", "u1", R"({"place":"c_up","days":7})");
+        auto* u1 = w.entity("u1");
+        expect(r.ok && u1->cellId == "c_up" && u1->sceneDirected && contains(u1->activity, "held at"), "u1 is held upstairs: " + r.message);
+        const auto& sentence = t.g.storySentences().at("u1");
+        expect(sentence.by == "lq-wreckers-light" && sentence.run == run && sentence.days == 7 && std::abs(sentence.until - sentence.began - 7) < 1e-9,
+               "the sentence names the story's program and lasts seven days");
+        const auto begun = std::find_if(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "sentence begun"; });
+        expect(begun != seen.end() && begun->actor == "u1" && begun->cell == "c_up" && begun->quantity == 7 && begun->target == run &&
+                   begun->detail == "lq-wreckers-light", "'sentence begun': the resident, the place, the days");
+        expect(!order("npc.sentence", "u1", R"({"place":"c_up","days":3})").ok, "once at a time");
+        r = order("npc.sentence", "u1", R"({"place":"c_up","days":7})");
+        expect(r.ok && t.g.storySentences().at("u1").until == sentence.until, "the same order again is no change: " + r.message);
+        r = order("npc.hold", "u1", R"({"run":"world-other"})");
+        expect(!r.ok && r.message == "Another story holds this resident.", "another story takes no hold of them: " + r.message);
+        r = order("npc.follow", "u1", R"({"player":")" + t.ash.entityId + "\"}");
+        expect(!r.ok && r.message == "They are serving a sentence.", "and they travel with nobody: " + r.message);
+        const auto post = w.society().jobOf("u1") ? w.society().jobOf("u1")->id : std::string();
+        expect(!post.empty(), "u1 keeps their post: " + post);
+
+        // ---- the story ends: still held.
+        expect(t.g.applyDmAct({std::to_string(++n), "story.stop", run, "dm", "{}"}).ok, "the story stops");
+        t.run(1);
+        expect(t.g.storySentences().count("u1") && u1->cellId == "c_up" && u1->sceneDirected, "u1 is still held when the story has ended");
+        // (Moved away, as a Dungeon Master might: put back.)
+        expect(w.teleport("u1", cellId(0), 5.5, 8.5).ok && u1->cellId == cellId(0), "u1 moved out");
+        t.run(1);
+        expect(u1->cellId == "c_up" && u1->sceneDirected, "and put back where the sentence keeps them");
+        t.g.save();
+    }
+    {
+        // ---- a restart: the sentence kept, and served on the seventh day.
+        Town t(world, save);
+        auto& w = t.g.world();
+        std::vector<WorldEvent> seen;
+        w.setEventWatcher([&](const WorldEvent& e) { seen.push_back(e); });
+        t.run(1);
+        auto* u1 = w.entity("u1");
+        expect(t.g.storySentences().count("u1") && t.g.storySentences().at("u1").place == "c_up" && u1->cellId == "c_up" && u1->sceneDirected,
+               "after a restart u1 is held upstairs still");
+        w.advanceCalendar(6.5);
+        t.run(1);
+        expect(t.g.storySentences().count("u1") && u1->sceneDirected, "on the sixth day still held");
+        w.advanceCalendar(.6);
+        t.run(1);
+        const auto served = std::find_if(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "sentence served"; });
+        expect(!t.g.storySentences().count("u1") && !u1->sceneDirected && served != seen.end() && served->actor == "u1" &&
+                   served->item == "served" && served->quantity == 7 && served->detail == "lq-wreckers-light",
+               "served after seven days: let go, 'sentence served'");
+
+        // ---- "Release now" (the console's), and the crown's change.
+        auto phase = parsed(R"({"title":"Again","phase":"one","journal":"Again.","visit":1,"program":"again"})");
+        auto players = json::Value::array();
+        players.push(t.ash.entityId);
+        phase.set("players", players);
+        expect(t.g.applyDmAct({std::to_string(++n), "story.phase", "world-again", "dm", json::dump(phase)}).ok, "a new story opens");
+        expect(t.g.applyDmAct({std::to_string(++n), "npc.sentence", "u3", "dm", R"({"run":"world-again","visit":1,"place":"c_up","days":2})"}).ok &&
+                   t.g.storySentences().count("u3"), "u3 sentenced");
+        seen.clear();
+        expect(t.g.applyDmAct({std::to_string(++n), "npc.unsentence", "u3", "dm", "{}"}).ok && !t.g.storySentences().count("u3") &&
+                   !w.entity("u3")->sceneDirected, "released now");
+        expect(std::any_of(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "sentence served" && e.item == "released"; }),
+               "with 'sentence served' (released)");
+        expect(!t.g.applyDmAct({std::to_string(++n), "npc.unsentence", "u3", "dm", "{}"}).ok, "nobody to release twice");
+
+        auto& soc = w.society();
+        const auto stall = soc.jobOf("um") ? soc.jobOf("um")->id : std::string();
+        seen.clear();
+        auto r = t.g.applyDmAct({std::to_string(++n), "npc.post", "u1", "dm", R"({"post":")" + stall + "\"}"});
+        expect(r.ok && soc.jobOf("u1") && soc.jobOf("u1")->id == stall && !soc.jobOf("um"), "u1 keeps the stall now, um nothing: " + r.message);
+        expect(std::any_of(seen.begin(), seen.end(), [](const WorldEvent& e) {
+                   return e.kind == "succession" && e.actor == "u1" && e.target == "um" && contains(e.detail, "by the story"); }),
+               "a succession, by the story");
+        expect(!t.g.applyDmAct({std::to_string(++n), "npc.post", "u1", "dm", R"({"post":"job:nobody"})"}).ok, "no such post");
+        expect(t.g.applyDmAct({std::to_string(++n), "npc.post", "u1", "dm", R"({"post":")" + stall + "\"}"}).ok, "sent again: no change, no refusal");
+        expect(!t.g.applyDmAct({std::to_string(++n), "npc.post", "nobody", "dm", R"({"post":")" + stall + "\"}"}).ok, "no such resident");
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
 } // namespace
 
 int main()
@@ -950,6 +1074,7 @@ int main()
         phase3Thanks();
         phase6Items();
         phase7Foes();
+        phase8Sentences();
     }
     catch (const std::exception& error)
     {

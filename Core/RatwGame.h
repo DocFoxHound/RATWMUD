@@ -1522,6 +1522,19 @@ class Game
         bool keep = false;                          // (Kept after its run ends, until `until`.)
     };
     const std::map<std::string, std::map<std::string, StoryMemo>>& storyMemory() const { return storyMemory_; }
+    // Doc 86, L4: a resident a story sentenced, held at a place indoors for a number of days, even after the story ends
+    // (never in Storyline::held, so endStoryWorld leaves it); saved with the checkpoint (people.storySentences).
+    struct StorySentence
+    {
+        std::string place, by, run;                 // by: the story's program id (its storyline's templateId), or the run.
+        double x = 0, y = 0;                        // The tile they are kept on.
+        double began = 0, until = 0;                // Calendar days.
+        int days = 0, pace = 0;
+    };
+    const std::map<std::string, StorySentence>& storySentences() const { return storySentences_; }
+    // Lets a sentenced resident go now (`why` the event's detail: "served" at its end, "released" by a Dungeon Master),
+    // with "sentence served". False when they are serving none.
+    bool endSentence(const std::string& npc, const std::string& why);
     // Doc 86, C10: the camp a story's foe is (foe_<8 hex of the run>_<its id>; a resident made one is npc-<resident>).
     static std::string storyFoeCampId(const std::string& run, const std::string& foe);
     const std::map<std::string, std::string>& storyItemNames() const { return storyItemNames_; }   // (Doc 86, J9.)
@@ -2700,6 +2713,9 @@ class Game
     // Doc 86, Phase 3 (RatwGameStoryWorld.cpp): a wolf named by a title (C4), a resident's words for one wolf the next time it
     // opens their window (C5), and a rumour put to rest (J8).
     std::map<std::string, std::map<std::string, StoryGreet>> storyGreets_;             // npc -> wolf -> greeting
+    std::map<std::string, StorySentence> storySentences_;                               // npc -> sentence (doc 86, L4)
+    Result applyStorySentence(const storylines::Storyline& story, const std::string& npc, const json::Value& payload);
+    void tendSentences();                           // Each held where sentenced (again after a restart); served at the end.
     Result applyStoryThanks(const std::string& kind, const std::string& target, const json::Value& payload);
     // Doc 86, J3 (RatwGameSocial.cpp): a story's closure quest done by a wolf counts as a finished Story (the Quickening's
     // closedStories): one receipt a quest, at most standing().storyQuestClosuresMost from one story's program id.

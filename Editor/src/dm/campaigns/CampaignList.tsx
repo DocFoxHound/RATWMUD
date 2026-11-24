@@ -3,6 +3,7 @@
 import {useState} from 'react';
 import {storyProgram, type Live, type Target} from '../api';
 import {CampaignCards, NewCampaign} from './Chapters';
+import {SentencesPanel} from './Sentences';
 import {WorldVarsPanel} from './WorldVars';
 import {ago, alertText, audienceText, filterRuns, hereCount, lastText, listCounts, questsText, readySummary, waitingOn, type Alert, type FramePerson, type ListFilter, type Overview} from '../../lib/campaigns';
 
@@ -44,7 +45,7 @@ export function CampaignList({overview, live, names, open, holdAll, target, mayR
     mayApprove?: boolean; maySteerWorld?: boolean}) {
     const [filter, setFilter] = useState<ListFilter>('all');
     const [ruling, setRuling] = useState(false);
-    const [panel, setPanel] = useState<'' | 'vars' | 'new'>('');
+    const [panel, setPanel] = useState<'' | 'vars' | 'new' | 'sentences'>('');
     if (!overview) return <p className="hint camp-pad">Loading the world's stories…</p>;
     const counts = listCounts(overview.runs);
     const people = live?.frame?.people as FramePerson[] | undefined;
@@ -56,11 +57,13 @@ export function CampaignList({overview, live, names, open, holdAll, target, mayR
             {holdAll && counts.running > 0 && <button className="camp-hold-all" onClick={holdAll}>⏸ Hold all…</button>}
             {target && mayRule && overview.thresholds && <button onClick={() => setRuling(r => !r)}>Alert rules…</button>}
             {target && <button className={panel === 'vars' ? 'on' : ''} onClick={() => setPanel(p => p === 'vars' ? '' : 'vars')}>World variables…</button>}
+            {target && <button className={panel === 'sentences' ? 'on' : ''} onClick={() => setPanel(p => p === 'sentences' ? '' : 'sentences')}>Sentences…</button>}
             {target && mayApprove && <button className={panel === 'new' ? 'on' : ''} onClick={() => setPanel(p => p === 'new' ? '' : 'new')}>New campaign…</button>}
             {!live?.frame && <span className="hint">Who is in the world: {live ? 'no positions yet (is the game server running?)' : 'connecting…'}</span>}
         </div>
         {ruling && target && overview.thresholds && <AlertRules target={target} thresholds={overview.thresholds} done={() => setRuling(false)} />}
         {panel === 'vars' && target && <WorldVarsPanel target={target} names={names} mayChange={!!maySteerWorld} />}
+        {panel === 'sentences' && target && <SentencesPanel target={target} mayRelease={!!maySteerWorld} />}
         {panel === 'new' && target && <NewCampaign target={target} done={run => { setPanel(''); if (run) open(run); }} />}
         <CampaignCards campaigns={overview.campaigns ?? []} open={open} runs={overview.runs} target={target} maySteer={!!maySteerWorld} />
         {overview.runs.length === 0 ? <p className="hint camp-pad">No world stories in this world yet. Write one in Story Creator, rehearse it, approve and publish it: it shows here.</p>
