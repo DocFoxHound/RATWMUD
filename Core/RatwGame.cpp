@@ -1751,7 +1751,7 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             outcome = world_.postResident(post, target);
             if (outcome.ok)
             {
-                record(Economy);
+                record(Careers | Economy);              // (The posts are journalled with the careers: a crash keeps the change.)
                 saveSoon();
             }
         }

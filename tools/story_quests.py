@@ -1293,7 +1293,7 @@ class Run:
             # (The fact's own actor: where the fact happened, as game.events has it; the caster finds the place's town.)
             request['at'] = {'cell': event['cell'], 'x': event.get('x') or 0, 'y': event.get('y') or 0}
         request['seed'] = hashlib.sha256(json.dumps([self.p.get('id', ''), effect['var'], state.get('visits', 0),
-                                                     len(state.get('castLog', []))]).encode()).hexdigest()[:16]
+                                                     state.get('castCount', len(state.get('castLog', [])))]).encode()).hexdigest()[:16]
         picker = CASTER.get()
         if picker is None:
             waiting = state.setdefault('castRequests', [])
@@ -1308,6 +1308,8 @@ class Run:
         state = self.state
         log = state.setdefault('castLog', [])
         log.append({'var': request['var'], 'chosen': chosen or '', 'day': self.day})
+        # (The castings counted apart from the log, which keeps the last 20: the next casting's seed always moves on.)
+        state['castCount'] = state.get('castCount', len(log) - 1) + 1
         del log[:-20]
         if chosen:
             triggers.var_store(state, 'story', None, write=True)[request['var']] = chosen

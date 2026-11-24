@@ -1067,7 +1067,7 @@ void Game::tickStoryWorld(double dt)
                         if (const auto* f = world_.entity("road:" + camp + ":" + std::to_string(i)); f && !f->dead && f->downedLeft <= 0)
                             ++left;
                     const bool fighting = world_.foeInFight(camp);
-                    const double endsAt = std::floor(now() + std::max(0.0, live->spec.until - world_.time()));
+                    const double endsAt = std::floor(now() + std::max(0.0, live->spec.until - world_.time()) / (speed_ > 0 ? speed_ : 1.0));   // (World seconds, run faster by --speed.)
                     if (!j.has("left") || int(j.number("left")) != left || j.boolean("fighting") != fighting ||
                         std::abs(j.number("endsAt") - endsAt) >= 60)
                     {
@@ -1600,6 +1600,13 @@ Result Game::applyStoryTalk(const std::string& kind, const std::string& target, 
     {
         storyMemoryWarnedDay_ = std::floor(world_.calendarDays());
         note("warn", "RATW_STORY_MEMORY full: the residents forgot the soonest-to-go of the stories' memories to remember " + key + ".");
+    }
+    // (End of slice, doc 86: the new memory may be the soonest to go, and the one the caps let go of. Said so, and not
+    // kept with the story; applied all the same, so the run goes on.)
+    if (const auto kept = storyMemory_.find(owner); kept == storyMemory_.end() || !kept->second.count(key))
+    {
+        saveSoon();
+        return {true, "Not remembered (" + owner + ": " + key + "): the residents' memory is full of ones that last longer.", target};
     }
     auto& held = section(*story, "memory", true);
     if (!listed(held, owner + "#" + key))

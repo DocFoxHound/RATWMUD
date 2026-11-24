@@ -2351,6 +2351,28 @@ void storyFoes()
     fightWren(outlaw);
     expect(count(seen, "foe defeated") == 1 && wren->dead && count(seen, "death") == 1, "killed if beaten: she dies of it");
     expect(!w.outlawResident(outlaw).ok, "and the dead are refused");
+    // (End of slice, doc 86: a resident made a foe who dies outside a fight, of old age or a Dungeon Master's word, is
+    // 'foe fled' (gone): the story hears it and never waits on them for ever.)
+    std::string other;
+    for (const auto& [id, e] : w.entities())
+        if (e.npc && !e.dead && id != "wren" && id != "sloe" && w.society().resident(id) && e.leaderId.empty() && other.empty())
+        {
+            auto as = spec(w, id, e.cellId, e.position, "tough", 0);
+            as.camp = "foe_0badf00d_npc-" + id;
+            as.npc = id;
+            if (w.outlawResident(as).ok)
+                other = id;
+        }
+    expect(!other.empty() && w.storyFoeOf(other), "another resident made a foe: " + other);
+    seen.clear();
+    w.setDead(other, true);
+    for (double t = 0; t < 2 && w.storyFoe("foe_0badf00d_npc-" + other); t += .1)
+        w.tick(.1);
+    for (auto& e : w.takeEvents())
+        seen.push_back(e);
+    const auto gone = std::find_if(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "foe fled"; });
+    expect(gone != seen.end() && gone->target == other && gone->item == "gone" && !w.storyFoe("foe_0badf00d_npc-" + other),
+           "dead outside a fight: 'foe fled' (gone), and let go of");
 }
 
 // After review (doc 86, Phase 7): a leader of the story's own who breaks off is 'foe fled' (fled); a story's foe asks no purse

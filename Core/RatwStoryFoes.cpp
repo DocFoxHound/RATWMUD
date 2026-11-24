@@ -454,9 +454,16 @@ void World::tendStoryFoes()
         if (fighting)
             continue;
         // (Fled first: a leader of the story's own who breaks off is carried off with the fight's end, so is gone by now.)
-        if (foe.beaten || (!foe.fled && (!lead || lead->dead)))
+        if (foe.beaten)
         {
             ending.push_back({camp, {}});
+            continue;
+        }
+        if (!foe.fled && (!lead || lead->dead))
+        {
+            // (Their leader gone or dead without being beaten (old age, a Dungeon Master, a story's npc.kill): the story
+            // hears "foe fled" (gone), so it never waits on them for ever.)
+            ending.push_back({camp, "gone"});
             continue;
         }
         if (foe.fled)

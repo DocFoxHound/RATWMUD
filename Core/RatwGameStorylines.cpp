@@ -1096,20 +1096,25 @@ Result Game::applyStoryCohort(storylines::Storyline& story, const Value& p)
 
 std::string Game::fillStoryNames(const std::string& text, std::size_t limit) const
 {
+    // Names filled in may make a line longer than its limit: it is cut at a word. Words of the story's own over the limit
+    // are never cut (End of slice, doc 86): they come back whole, for the caller's check to refuse as before the fills.
     std::string out;
-    std::size_t at = 0;
+    std::size_t at = 0, literal = 0;
     while (at < text.size())
     {
         const auto open = text.find("{@", at);
         const auto close = open == std::string::npos ? std::string::npos : text.find('}', open);
         if (open == std::string::npos || close == std::string::npos || open + 3 >= close || text[open + 3] != ':')
         {
-            out += text.substr(at, open == std::string::npos ? std::string::npos : open + 2 - at);
+            const auto part = text.substr(at, open == std::string::npos ? std::string::npos : open + 2 - at);
+            out += part;
+            literal += part.size();
             if (open == std::string::npos) break;
             at = open + 2;
             continue;
         }
         out += text.substr(at, open - at);
+        literal += open - at;
         const char kind = text[open + 2];
         const auto id = text.substr(open + 4, close - open - 4);
         std::string name;
@@ -1133,13 +1138,14 @@ std::string Game::fillStoryNames(const std::string& text, std::size_t limit) con
         else
         {
             out += text.substr(open, close + 1 - open);   // (Not a token the engines make: kept as written.)
+            literal += close + 1 - open;
             at = close + 1;
             continue;
         }
         out += name.empty() ? (kind == 'w' ? std::string("someone") : id) : name;
         at = close + 1;
     }
-    if (json::utf8Prefix(out, limit) == out)
+    if (json::utf8Prefix(out, limit) == out || literal > limit)
         return out;
     auto cut = json::utf8Prefix(out, limit);
     if (const auto space = cut.find_last_of(' '); space != std::string::npos && space > 0 && out[cut.size()] != ' ')

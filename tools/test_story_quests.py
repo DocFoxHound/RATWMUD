@@ -1121,6 +1121,25 @@ class Phase9Casting(unittest.TestCase):
         state, _ = cast_state(p, [fact(1, 'arrival', 0.1, ASH)], {'carter': ['rm201']})
         self.assertEqual(state['castLog'][-1]['chosen'], 'rm201')
 
+    def test_every_casting_has_its_own_seed_past_the_log_of_twenty(self):
+        """End of slice (review): the seed counted the casting log, which keeps the last 20, so from the 21st casting on
+        every one asked the same seed and got the same resident."""
+        p = casting()
+        p['phases'][0]['triggers'] = [{'id': 'again', 'on': 'deed', 'actions': [
+            {'do': 'effect', 'effect': {'kind': 'cast.pick', 'var': 'carter', 'job': 'carter', 'town': 'larkfield'}}]}]
+        rules.validate(p)
+        state = rules.begin(p, [], 0)
+        seeds = []
+        token = quests.CASTER.set(lambda r: seeds.append(r['seed']) or 'rm201')
+        try:
+            for i in range(30):
+                rules.advance(p, state, fact(i + 1, 'deed', 0.1 + i / 100, ASH), 0.1 + i / 100)
+        finally:
+            quests.CASTER.reset(token)
+        self.assertEqual(len(seeds), 30)
+        self.assertEqual(len(set(seeds)), 30, 'thirty castings, thirty seeds')
+        self.assertEqual((len(state['castLog']), state['castCount']), (20, 30))
+
     def test_a_casting_asked_where_nobody_answers_waits(self):
         p = casting()
         state = rules.begin(p, [], 0)

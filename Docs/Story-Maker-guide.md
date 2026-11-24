@@ -2503,13 +2503,13 @@ A story's foe (or a resident made one) is downed: actor landed the last blow, ta
 
 <a id="event-foe-fled"></a>**`foe fled`**: A foe gets away (has a tile)
 
-A story's foe broke off a fight and fled, or their time ran out (detail: their name; item: fled or time). They are gone with their band.
+A story's foe broke off a fight and fled, their time ran out, or they died or were gone outside a fight (detail: their name; item: fled, time or gone). They are gone with their band.
 
 | Field | Holds | Left out means |
 |---|---|---|
 | `target` | the foe (foe) | any foe |
 | `cell` | where (place) | anywhere |
-| `item` | fled or time (text) | either |
+| `item` | fled, time or gone (text) | any |
 | `detail` | their name (text) | any |
 
 ```json

@@ -7076,7 +7076,7 @@
    "group": "fights",
    "title": "A foe gets away",
    "sentence": "{detail} gets away",
-   "help": "A story's foe broke off a fight and fled, or their time ran out (detail: their name; item: fled or time). They are gone with their band.",
+   "help": "A story's foe broke off a fight and fled, their time ran out, or they died or were gone outside a fight (detail: their name; item: fled, time or gone). They are gone with their band.",
    "fields": {
     "target": {
      "type": "foe",
@@ -7090,8 +7090,8 @@
     },
     "item": {
      "type": "text",
-     "label": "fled or time",
-     "any": "either"
+     "label": "fled, time or gone",
+     "any": "any"
     },
     "detail": {
      "type": "text",

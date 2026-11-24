@@ -3910,7 +3910,7 @@ Result World::queueResident(const std::string& resident, const std::string& town
     const auto* r = society_.unplaced(resident);
     const auto name = r ? r->name : resident;
     if (note.kind == "held")
-        return {true, name + " is first in line there already.", resident};
+        return {true, name + " is in line there already.", resident};   // (Not always first: the newest a story names is.)
     return {true, name + " is first in line for the next post that falls vacant in " + town + ".", resident};
 }
 

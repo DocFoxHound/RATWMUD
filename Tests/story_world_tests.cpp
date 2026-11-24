@@ -409,6 +409,16 @@ void phase1b()
         const auto& mem = t.g.storyMemory();
         expect(mem.at("town:oakhaven").size() == 64 && !mem.at("town:oakhaven").count("k0") && mem.at("town:oakhaven").count("k69"),
                "a town keeps 64: the soonest gone first");
+        {
+            // (End of slice: one that would go soonest of all is the one let go of, and the order says so.)
+            const auto shortOne = order("talk.remember", run, R"({"scope":"town","town":"oakhaven","key":"brief","value":"v","days":1})");
+            const auto& keptHeld = t.g.storylineBook().find(run)->held["memory"];
+            const bool heldIt = keptHeld.isArray() && std::any_of(keptHeld.items().begin(), keptHeld.items().end(), [](const json::Value& v) {
+                return v.isString() && v.asString() == "town:oakhaven#brief";
+            });
+            expect(shortOne.ok && shortOne.message.rfind("Not remembered", 0) == 0 && !mem.at("town:oakhaven").count("brief") && !heldIt,
+                   "a memory the caps let go of at once is not remembered, and the story does not hold it: " + shortOne.message);
+        }
         const auto pairOwner = "pair:" + std::min(std::string("u1"), t.ash.entityId) + "|" + std::max(std::string("u1"), t.ash.entityId);
         for (int k = 0; k < 20; ++k)
             order("talk.remember", run, R"({"scope":"pair","npc":"u1","player":")" + t.ash.entityId + R"(","key":"p)" + std::to_string(k) +
@@ -509,10 +519,14 @@ void phase2Names()
         expect(filled == "Ash met " + u1->name + " at " + place->name + " with " + Society::itemName("rope") + ".", "the tokens are names: " + filled);
         expect(t.g.fillStoryNames("{@x:what} {@w:} {@ and {plain}", 300) == "{@x:what} someone {@ and {plain}",
                "what the engines do not make is kept as written; a wolf not known is someone: " + t.g.fillStoryNames("{@x:what} {@w:} {@ and {plain}", 300));
-        const auto cut = t.g.fillStoryNames("{@r:u1} walked the long road down to the ford and back again", 30);
-        expect(cut.size() <= 30 && cut.back() != ' ' && ("x " + u1->name + " walked the long road down to the ford and back again").find(cut) != std::string::npos &&
+        const auto cut = t.g.fillStoryNames("{@r:u1} and {@r:u1} and {@r:u1} walked", 30);
+        const auto whole = u1->name + " and " + u1->name + " and " + u1->name + " walked";
+        expect(whole.size() > 30 && cut.size() <= 30 && cut.back() != ' ' && whole.find(cut) == 0 &&
                    (cut.size() == 30 || cut.find(' ') != std::string::npos),
-               "cut at the limit on a word boundary: \"" + cut + "\"");
+               "names that make it too long: cut at the limit on a word boundary: \"" + cut + "\"");
+        // (End of slice: the story's own words over the limit are never cut, so the order's check refuses them.)
+        const auto own = t.g.fillStoryNames("{@r:u1} walked the long road down to the ford and back again", 30);
+        expect(own == u1->name + " walked the long road down to the ford and back again", "words over the limit come back whole: " + own);
         expect(t.g.fillStoryNames("No tokens here.", 300) == "No tokens here.", "words without tokens are as they were");
         // Told: the wolf hears the name; the quest's journal and the offer read names too.
         const auto run = std::string("world-names");

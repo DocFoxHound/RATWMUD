@@ -326,8 +326,7 @@ def cast_pick(conn, world, request):
     posts = has('dm.story_posts')
     voice = has('live.npc_voice')
     rows = conn.execute(
-        'SELECT r.id, r.home_area, r.work_area, coalesce(hc.region, hi.region, \'\'), '
-        + ('(SELECT p.title FROM dm.story_posts p WHERE p.world_id=r.world_id AND p.holder=r.id LIMIT 1)' if posts else 'NULL') + ', '
+        'SELECT r.id, r.home_area, r.work_area, coalesce(hc.region, hi.region, \'\'), NULL, '
         'n.work_label, ' + ('v.quarter' if voice else "''") + ', ' + ('coalesce(s.alive, true)' if alive else 'true') + ', '
         # (As text: an array of the domain ratw_id comes back as one string, not a list.)
         '(SELECT array_agg(m.faction_id::text) FROM live.faction_members m WHERE m.world_id=r.world_id AND m.npc_id=r.id), '
@@ -339,6 +338,13 @@ def cast_pick(conn, world, request):
         + ('LEFT JOIN live.npc_voice v ON v.world_id=r.world_id AND v.npc_id=r.id ' if voice else '')
         + ('LEFT JOIN live.npc_state s ON s.world_id=r.world_id AND s.npc_id=r.id ' if alive else '')
         + 'WHERE r.world_id=%s AND coalesce(r.home_area,\'\')<>\'\'', (world,)).fetchall()
+    # (The posts held, read once: dm.story_posts reads the whole checkpoint, which a subquery per resident read again for
+    # every one, half a minute on Ridgemere 3. A holder of two posts: the first by id.)
+    held = {}
+    if posts:
+        for holder, title in conn.execute('SELECT holder, title FROM dm.story_posts WHERE world_id=%s AND holder IS NOT NULL '
+                                          'ORDER BY id', (world,)):
+            held.setdefault(holder, title)
     left_out = set(request.get('notIn', ()))
     job = (request.get('job') or '').lower()
     at = dict(request.get('at') or {})
@@ -348,9 +354,10 @@ def cast_pick(conn, world, request):
         at['town'] = row[0] if row and row[0] else ''
     seed = request.get('seed', '')
     fits = []
-    for rid, home, work, town, title, label, quarter, living, members, claims, wx, wy, hx, hy in rows:
+    for rid, home, work, town, _, label, quarter, living, members, claims, wx, wy, hx, hy in rows:
         if not living or rid in left_out:
             continue
+        title = held.get(rid)
         if job and job not in (title or label or '').lower():
             continue
         if request.get('town') and town != request['town']:
