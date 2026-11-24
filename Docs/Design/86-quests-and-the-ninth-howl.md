@@ -2948,3 +2948,239 @@ content waves' were); nothing was approved, published or written to a world.
   `item.place` takes no story mark (the tufts, the tally, the float lamp, the stake), the clock-laid choices stay
   every wolf's, L3 objectives where a trigger credits more wolves than an objective would, C2 for the Long Run (its
   `contributors` is a whole number), C12a/J2 (no chapter to tell yet: waves B, H and I are not written), C14, L4, M3.
+
+---
+
+## The campaign as built
+
+**Built 2026-11-24** on branch `r3-nh-live`: waves **B, H and I** (the nine chapters) written and each reviewed once by
+its own pass (each chapter's `.notes.md` keeps its review), then this campaign check across all of them. Nothing was
+approved, published or written on `ratw_ridgemere3`, `ratw_dev` or `ratw_prod`; the approvals and the end-to-end ran on
+a throwaway copy, dropped after.
+
+### Files and counts
+
+Under `Data/Storylines/ridgemere3/ninth-howl/` (each chapter has its rehearsals inside; the generators the authors and
+reviewers used are outside the tree, so the JSON in the tree is the source now):
+
+| Ch | Program `ninth-howl.<n>` | Phases | Variables (of 64) | Campaign triggers | Most in a phase (of 64) | Quests | Rehearsals | Size |
+|---|---|---|---|---|---|---|---|---|
+| 1 | Where Is the King? | 3 | 64 | 54 | 60 | 5 | 6 | 214 KB |
+| 2 | By the New Moon | 5 | 64 | 44 | 63 | 6 | 7 | 288 KB |
+| 3 | Two Long, One Short | 4 | 63 | 46 | 58 | 10 | 16 | 292 KB |
+| 4 | The Nine Howls | 3 | 63 | 39 | 63 | 14 | 8 | 419 KB |
+| 5 | Letters for an Absent Lord | 2 | 64 | 48 | 64 | 13 | 7 | 290 KB |
+| 6 | The Lights in the Fen | 6 | 64 | 46 | 58 | 8 | 8 | 302 KB |
+| 7 | Harvest Under Arms | 4 | 64 | 28 | 63 | 10 | 10 | 393 KB |
+| 8 | The Bell and the Writ | 2 | 64 | 49 | 62 | 12 | 11 | 389 KB |
+| 9 | The Moot Night | 10 | 64 | 40 | 55 | 5 | 6 | 515 KB |
+
+- The acts: **Act I "The Lamp"** = Ch 1–3 (campaign `ninth-howl.act1`), **Act II "The Howls"** = Ch 4–6
+  (`ninth-howl.act2`), **Act III "The Moot Night"** = Ch 7–9 (`ninth-howl.act3`). Inside an act each chapter starts the
+  next (`story.start`, the same wolves, `carry`, when it has ended); an act's last chapter (3, 6) waits in its interlude
+  for the next act's first chapter to be published; Ch 9 starts none.
+- `world-vars.json`: **116** world variables (the 18 fallback lists of campaign §4.6 for an engine without realm
+  variables are gone: J2 landed, and nothing read them). `nh-purses.json` and `ninth-howl.cleanup.json` as in wave A.
+- Notes: `ninth-howl.{1,2,3,5,7,8,9}.notes.md` (Ch 4's and Ch 6's reviews are in their reports and below) and
+  `notes.md`.
+
+### The campaign check: across the chapters
+
+Scripts in the session's `/tmp/nhcc/` (out of the tree). What was compared, and what it found:
+
+- **Variables.** Every name across the 9 chapters, the 21 other programs and `world-vars.json`: one type and one
+  scope for every world and realm name; every world variable a program declares is in `world-vars.json` with its type.
+  The story and per-wolf names two chapters of one act share all have the same scope and type, so `carry` hands every
+  one of them on (the runner drops a mismatch without a word: `_carried`). Across an act boundary only the world and
+  realm values go on, and no chapter of Act II or III expects an Act I story or per-wolf value (the one name that
+  recurs, `p_town_view`, is worked out afresh by each chapter). The realm variables (`p_voice`, `p_howl`, `p_backs`,
+  `p_advice`, `p_marks`, `p_sides`, `p_saw_desmond`, `p_pledge_ch`, `p_back_ch`, `p_knows_df_letter`) are one type in
+  every chapter that declares them, as `campaign.approve` and approval's `realm_clash` require.
+- **Talk keys.** The ten values of the realm key `nh_stage` (`king`, `moot_called`, `reckoning`, `signals`, `howls`,
+  `letters`, `lights`, `harvest`, `bell`, `moot`) are each set by their chapter in order, and every value the library's
+  gates name (`world.mem.nh_stage=…`, 1,596 gates) is one of them; the world variable `nh_stage` is set to 1–9 by each
+  chapter's opening, and the stage pack's `stage_hour` follows it. `nh_check --all` reports no key read that no program
+  writes, and no memory written that no line reads.
+- **Givers.** At most two `npc.offer` per resident per chapter (decisions §1.3; the most is two, Lorn in Ch 3 and Fenwick
+  in Ch 4); no resident gives more than one pack quest; no two programs share an offer id, a scene id or a story item.
+  One quest id, `door`, is in both Ch 2 and Ch 9: a quest lives in its run, and the two never run together.
+- **Protection.** `ninth-howl.cleanup`'s 40 are exactly Ch 1's `nh_cast` and Ch 9's epilogue's unprotect list. The cleanup
+  needs no `npc.unspare`: a spare lasts the campaign, so stopping an act ends it, and one story cannot end another's.
+
+**Found and fixed** (the chapters' files, the library and one tool):
+
+1. **Act I kept running beside Act II.** Ch 3's last phase `end` left the campaign triggers on, so every lamp night,
+   Glasswater wave and deed rule of Ch 3 would have run on through the next act. It now has `campaignRules: false`.
+   And an act's run never finished at all, which also held Desmond Hollis for Act I for ever: Ch 5, 7 and 8 hold,
+   move into scenes and outlaw him, and a resident another live story holds refuses all of that
+   (`Game::heldByAnotherStory`). The act runs stay alive on purpose (their spares, `lasts: campaign`, keep the old cast
+   through Act II, which spares only its 24 Keepers; their talk not kept stays), and now:
+   - Ch 3 `end`: `act3_free` lets Desmond go when `ninth-howl.7` starts (Ch 4 and Ch 6 never hold him, so Act I's hold
+     is the one that keeps him in the cells through Act II), and `act_over` finishes the run when `ninth-howl.9` ends
+     (`story ended`, any ending);
+   - Ch 6 `ch6_end`: `act_over` the same;
+   - Ch 7: `desmond_again` lays the muster's hold on him again an hour in, since Act I may let go only after Ch 7's first
+     minute.
+2. **A howl out of doors in a country town is the wild's.** The game's town of a tile is the town's own region
+   (`World::townOf`), and a community's streets, green and square are the realm's region (greenholt, sunfields …), so
+   `chorus closed` and `howled` say `wild` there; only Ridgemere's streets are Ridgemere's. Ch 4 had three Keepers
+   (Southmeadow's, Frosthollow's, Oakhaven's logger) waiting on their squares at dusk, so those three howls could never
+   be found and The Scattered never finished. They now wait in their towns' inns (the Apple Tree, the Frozen Lantern,
+   the Acorn Inn; the labels and hand-ins say so), where a howl is the town's. The Well's Roll's howl is now "on the
+   Saltwell square" (`where` its post region). Ch 5's late howl counts a chorus under the town's roof or on its square
+   (its town regions), split into `late_howl` and `late_howl_b` for the action cap. Ch 9's review had already done the
+   same for the Moot; Ch 7's warnings were already by region.
+3. **Figures known nowhere.** Ch 7 named the Grey Captain (`nh_road_villain`) and the ford's hero (`nh_ford_hero`) as
+   known in `greenholt`, which no resident is from or stands in by name (`region:<from>` or `region:<here.region>`), and
+   `nh_road_villain` sorted before Ch 2's `nh_villain` anyway (the last known figure of a role wins). Now
+   `nh_villain_coldwater|larkfield|frosthollow` (Ch 3's, renamed Eskar of Deepvein) and `nh_hero_larkfield`.
+4. **The talk library.** The granary line for the dismissed guard was gated on `nh_desmond=mercy` (set at the hearing,
+   before the nights): now `redeemed`. His window choice "You saw the Chancellor weep" and his "Greatly pennies" line were
+   gated on `nh_desmond=held`, which Ch 7 always replaces: now `held|pillory|mercy|redeemed`. The `nh_lists=captain` line
+   (three places) said the lists "went to the grey captain"; `captain` is the Watch Captain who burns them: "The Watch
+   Captain burned the lists in front of the sergeants, they say. Nobody on them pays twice now."
+5. **Ch 1's stage key** lived 30 days, as long as the chapter's soft maximum, after which it waits for the admin: now 90.
+6. **The stage pack**: Vesper Greenholt (plain speech) said Frosthollow's "keep your lamp lit": "Mind your footing on the
+   high paths." (approval's voice warning).
+7. **The Campaigns console could not show Chapter 1** (found by the end-to-end): `story_runner.directed` added each
+   effect's `npc` to a set, and Ch 1's `npc.protect {"each": true}` is a dict, so every `status` read of the run failed
+   ("Malformed request"). Residents given by an operand are left out now (`test_story_console.DirectedResidents`).
+
+8. **Residents sent onto walls** (found by the end-to-end: Ch 2 paused in its first hour). The copy's game was asked to
+   move a resident to every tile any program names for `npc.move`, `npc.walk`, `visitor.add`, `foe.add`, `item.place`
+   and `npc.post` (164 tiles): 13 were refused, "No one can stand there", and each now names the nearest tile one can
+   stand on (never a door's): the Palace doors (Ch 1's Queen and herald, Ch 2's and Ch 4's Ottilie, Oda and Gerrit:
+   (52|55|81,145), the doors being at (51,146) and (80,146)), the Greatly House door (Ch 2's and Ch 4's Rosalind and
+   Edric: (173|176,190)), the Carters' Yard (Ch 2's Desmond, (176,35)), the Pass House stranger (Ch 5, (7,6)), the
+   Pass road stranger (Ch 8, 9_3 (6,21)), and three in the packs (`nh-pack.medium.north`'s Tristram and his foe at
+   4_4 (211|212,186), `lq-old-brown`'s foe at 11_5 (13,245), `lq-salt-road`'s walk to 13_12 (95,238)). Ch 1's
+   `cast_out` had skipped its two, so the Queen was never reached at the door. `nh_check` has no terrain to test this
+   with; the probe is the session's `/tmp/nhcc/e2e/probe_all.py`, run against a game on a copy.
+9. **A refused resident effect paused the run.** Ch 2 (32 effects) and Ch 3 (11) still had moves, holds, walks,
+   follows, greetings, items and doors without `ifRefused`, so a resident away, in a fight or dead stopped the chapter
+   for every wolf until the admin acted. They skip now, as Ch 4–9's already did. (`npc.offer` and `npc.line` take no
+   `ifRefused`; they pause as before.)
+
+**Left as the chapter reviews left them** (each in its notes): Southmeadow's Keeper reachable for pledges only while a
+pack holds her granary open; Oda's "how shall we pay" window line shown to every wolf; "three gossips" countable on one;
+Ch 5 never reads `p_knows_df_letter`; no chapter reads `nh_b_loan` or `nh_b_spy`, and Ch 3 neither `nh_b_ledger` nor
+`nh_debtors_freed`; Ch 9 neither `nh_b_ford` nor re-holds Desmond; a scar's +4 to a town's mark and the raise marks
+scaled by active wolves are not built; Oakhaven's howl quest is always given by Ulla (a giver from a variable would
+crash `nh_check`); the shop Keepers sing in their shops; `item.place` takes no story mark; walked residents stay put
+until their phase ends.
+
+### Approval on a copy of Ridgemere 3
+
+`ratw_ridgemere3` dumped read only into a throwaway `ratw_test_nhcamp_*`, migrated there through 0081 (0080 and 0081
+were the only new ones), the 116 world variables declared there with `nh_world_vars.py --apply`, then everything
+approved through the Dungeon Master tool's route (`POST /api/story-program`) by an owner account of the copy:
+**24 of 24 approved**: `nh-purses`, the seven packs, the eleven large lines, the stage pack and `ninth-howl.cleanup`
+(op `approve`), and the three acts (op `campaign.approve`, each chapter rehearsed and its references checked on the
+copy). The warnings: the stage pack's Vesper speaking Frosthollow's words (fixed, above); `lq-blight-and-boar`'s boar
+staged on crop and grass ("staged there all the same", as its notes accept); and, for Act II and III, that `p_howl`,
+`p_backs` and `p_advice` are told to residents by more than one approved chapter ("the newest run's value is the one
+they know": the same value, carried as a realm variable, so harmless). On a hosted world a builder or the owner
+approves (the figures and relations above).
+
+### The end-to-end of Act I
+
+On that copy (accounts and wolves taken out, as the slice's end-to-end did: a password server and a ticket save never
+mix): a game server from this branch at **60 times speed** (`--speed 60`, so a chapter's minimum game days pass in
+real minutes; `--dev-identity`, `--dev-tools` for `visit` and `grant`), the real story runner as its own process, the DM
+tool's route for every admin step, and three wolves (Ash, Birch, Cedar) on real game connections (the client's own
+`Connection`). Scripts in the session's `/tmp/nhcc/e2e/`, out of the tree. It ran twice: the first run found the wall
+tiles and the console's crash, the second ran on the fixed tiles.
+
+- **Published** `nh-purses`, `nh-pack.small.city`, the stage pack and Act I (its campaign ticket). **Chapter 1 opened**:
+  `nh_stage` 1; `npc.protect` and `npc.spare` (`lasts: campaign`) applied on all 40 of the cast; the Records Office and
+  Soup Kitchen doors open to wolves; the realm talk key `nh_stage = king` (90 days); the bells narration ("Bells toll from
+  the Palace. King Gunnar has gone up to the Bright One."); the stage pack moved from `quiet` to `s12` on hearing
+  "Story started: ninth-howl.1", and Winifred Cinderworth's window offered its stage quest "Baking for the wake?" while
+  Frida Netherby's stage-3 quest stayed shut. In the second run the Queen and the herald stood at the Palace doors at
+  hour 10 (`cast_out`, applied at (55,145) and (81,145)).
+- **A deed on the rungs.** Each wolf took the Summons in Brenna's window ("Is there word from the Palace?", "Give me one.
+  I'll carry it."; 8 tagged letters each) and gave one to Ridgemere's Keeper and two far towns' Keepers (9 `gift`
+  events). **Spark**: the voice ticked (realm `p_voice` 9, 8, 8), a deed for each first town ("carried the herald's
+  Summons to Saltwell", 12 deeds), greetings laid with Brenna and Cressida for each wolf. **Ember**: within the hour
+  Saltwell's strand passed its first step: the board post "Saltwell's howl is stirring. (signed) The Keeper of the
+  Saltwell howl." and the narration on its square (`nh_steps` `saltwell-1`); the third of the bar posted "The Summons
+  is on the roads." on all eight boards. **Blaze**: at the close (below).
+- **A side story closed.** Ash took the Queen's Purse in Oda's window, walked in at the Records Office door (`enter
+  place`), spoke to the clerk (a typed line: `conversation`), gave two bread and two herbs to a diner in the Soup
+  Kitchen, and handed it in to the Queen: the quest done, the deed "found the old household tolls for the Queen", and
+  **the closure counted**: "A finished Story: The Queen's Purse (3 social)." (`story.closure`, kind `side`).
+- **Participation moved Chapter 1 on.** All three wolves were in `ch1_did` (3 of 3 active; 30% with a floor of 3), and
+  at 10 game days in the chapter the run moved by itself (`auto`) to `ch1_closing`, its readiness "3 of 3 active wolves".
+- **The Word and Chapter 2.** The Herald's Word came at the next dusk at least three hours on. The bar was short (25 of
+  42 points), so the worse road played: the Council's notice and the herald's answer on all eight boards, the three
+  wolves named Lamp-bearers on the Ridgemere board, the figure `nh_ruler` (Dagfinn Thornham, keeper of the Palace lamp)
+  written to `live.figures`, the Moot called (`ch1_called`); half a game day later the chapter finished (success) and
+  **started Chapter 2 for the same three wolves**, their realm values loaded (`p_voice` 15, 8, 8); `nh_stage` 2; the
+  stage pack heard "Story started: ninth-howl.2" and "Story ended: ninth-howl.1".
+- **The admin's Advance.** On Chapter 2, not ready (no debtor freed, 0.02 of 12 days), the route's command `advance`
+  `{when: now, anyway: true}` with a reason: "Advanced to ch2_closing now anyway (not ready: 1 of 3 parts met) …",
+  audited (`story.advance`, by the owner, with the reason), and `nh_pushed` became `["ch2"]`. The Reckoning came at the
+  new moon ("THE RECKONING IS AT DUSK. The new moon rises on the Counting House's day, as it promised." and then "What it
+  found is on every board" on the boards), the chapter finished at `ch2_called` and **started Chapter 3** for the same
+  wolves: `nh_stage` 3 and the realm key `nh_stage = signals` (the keys went `king`, `moot_called`, `reckoning`,
+  `signals`). In the second run the closing first paused on an `npc.release` of a resident the chapter was not holding
+  (the Advance came between `cast_out` and `cast_in`): finding 9, fixed in the files after that copy's approval, so the
+  admin skipped the five refused orders from the console (command `order`, `skip`) and the chapter went on.
+- **The stage pack followed the stage.** It sat in `quiet` until `nh_stage` was 1, then in `s12`; when Chapter 3
+  started it moved to `s3`: Winifred's "Baking for the wake?" was gone from her window and Frida's "Is the yard selling
+  stone for the posts?" was in it. `nh-pack.small.city` ran beside it (its errands gated on stage 4 and 6 were not
+  reached).
+- **Found and fixed** by it: Chapter 2 paused in its first hour (Rosalind sent onto a wall: finding 8), every Campaigns
+  console read of Chapter 1 failed (finding 7), and a release with nothing to let go paused Chapter 2's closing (finding
+  9). The second run passed the first two on the fixed files; the third is fixed in the files committed.
+- **Approved again** after the last fixes, on a fresh copy migrated through 0081 with the world variables declared:
+  **24 of 24**, the same warnings.
+- **Not seen**: the full Blaze (the bar met: the herald's own Word, a post standing), a camp fought at Alder Mere, a
+  pledge at a Keeper, and anything of Chapter 3's play; the rehearsals cover those. The wolves were moved by the DM's
+  `character.move` and the dev `visit` (to reach residents across the realm in minutes), so the walking itself is not
+  what was tested.
+
+### Going live on Ridgemere 3, in order
+
+1. **This branch** merged into `ridgemere2` and pushed (the engine phases, the doors, the content and this campaign
+   check are one chain on `r3-nh-live`); the game server rebuilt and the laptop's world restarted
+   (`Saved/WorldAgent/run.sh`, port 7788; publishing a build restarts it); the story runner restarted
+   (`tools/story_runner.py --world ridgemere3`); the Editor and a client after 0.1.10 released from it.
+2. **Migrations 0080 and 0081** on `ratw_ridgemere3` (`world_db.migrate`; it is at 0079). Every chapter declares realm
+   variables, so no act approves without 0081.
+3. **DM preparation** (§10.1), before Act I:
+   - the allow-listed words (`tools/dialect_allow.json` is in the tree; T9);
+   - **declare the 116 world variables**: `python3 tools/nh_world_vars.py --apply --world ridgemere3 --who <account>
+     --reason "The Ninth Howl, doc 86 10.1"` (or Campaigns > World variables from `--steps`); `nh_grace` among them;
+   - the cast is protected and spared by Ch 1's setup (C11 landed: no authored `protected` flag to set);
+   - figures and talk keys are set by the chapters themselves (C8, C9 landed): nothing to seed by hand;
+   - `warden_order`, with Gorm Plankgate a ranked member, before Ch 5's close; `nh_b_tobias` and `nh_b_julian` are
+     declared with the rest;
+   - leave Dagfinn's post and proj-1 to proj-3 alone; re-post any Line project that lapsed.
+4. **Approvals**, by a builder or the owner on a hosted world (every chapter but Ch 4 sets a figure; Ch 2, 3, 5, 6, 8 and
+   9 move faction relations, Ch 7 outlaws a resident, `lq-wreckers-light` adjusts standing): `nh-purses`, published
+   first and left running; the seven packs, the eleven large lines and the stage pack, published (the stage pack sits in `quiet` until `nh_stage` is set); `ninth-howl.cleanup` approved, not published.
+5. **Act I** as one `campaign.approve` (`ninth-howl.act1`, "The Lamp": Ch 1, 2, 3), published from the Campaigns console.
+   It runs on by itself: each chapter moves on when ready (participation and time, `auto`), or when the admin presses
+   Advance (Advance anyway… before it is ready), and starts the next.
+6. **Act II** (`ninth-howl.act2`, "The Howls": Ch 4, 5, 6) when Act I waits in its interlude and the DM chooses; then
+   **Act III** (`ninth-howl.act3`, "The Moot Night": Ch 7, 8, 9) the same way. Act I's and Act II's runs stay in their
+   `end` phases (no rules running) until Ch 9 ends, then finish by themselves.
+7. **Running it** (§10.3): the Campaigns list once a real day; answer each "ready to push"; `ch<n>_auto` and
+   `ch<n>_wait_bar` on the Variables tab (or by the notices `nh_ch<n>_auto` / `nh_ch<n>_wait_bar`). With 5 wolves the
+   floor (2 or 3) is what counts. If an act must be abandoned: stop its run, and publish `ninth-howl.cleanup`.
+8. House purses stay off (M3's economy check has not been asked for).
+
+### The checks, as run at the commit
+
+- `python3 tools/nh_check.py --all` on `ratw_ridgemere3` (read only): **33 of 33 PASS**; its warnings are the known two
+  (the world has no 0081 yet, so references read the realm variables as per-wolf ones; Ch 1's Soup Kitchen door has
+  nobody working behind it). Every chapter's rehearsals pass with nothing uncovered.
+- `tools/story_words.py --stories Data/Storylines/ridgemere3`: 30 programs, 0 problems, offline and with the world's
+  voices (the dm role, read only). `tools/nh_world_vars.py`: 116 variables, PASS. `nh_check --talk` PASS; the talk
+  library regenerated from `artifacts/quests/build/talk2/` reproduces the tree exactly.
+- Python: `test_story_console` (with the new `DirectedResidents`), `test_story_campaigns`, `test_story_program`,
+  `test_story_words`, `test_story_effects`: all OK. ctest's talk tests, `dialogue_trees` and `story_trigger_parity`:
+  all pass but `talk_scorecard_quick`, the timing gate (B1L, a director look's 99th percentile) with the 60x server
+  beside it; alone it passes, two runs of two.
+- No C++ changed, so the slice's ctest stands.
