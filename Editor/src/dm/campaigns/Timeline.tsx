@@ -51,7 +51,7 @@ export function TimelineRow({item: i, names, events, now, onMap, undoFigure}: {i
             {event.cell && <><dt>where</dt><dd>{placeText(event, names)}</dd></>}
             {event.item && <><dt>item</dt><dd>{event.item}</dd></>}
             {!!event.quantity && <><dt>quantity</dt><dd>{event.quantity}</dd></>}
-            {!!event.coins && <><dt>coins</dt><dd>{event.coins}</dd></>}
+            {!!event.coins && !event.kind.startsWith('foe ') && <><dt>coins</dt><dd>{event.coins}</dd></>}
             {event.detail && <><dt>detail</dt><dd>{event.detail}</dd></>}
             <dt>when</dt><dd>day {event.day.toFixed(2)} · {new Date(event.at).toLocaleString()}</dd>
         </dl>}</li>;

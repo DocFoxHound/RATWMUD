@@ -9,6 +9,7 @@
 #include "RatwGame.h"
 #include "RatwItems.h"
 #include "RatwStorylines.h"
+#include "RatwStoryFoes.h"
 #include "RatwWorld.h"
 #include "battle_play.h"
 
@@ -863,6 +864,20 @@ void phase7Foes()
         expect(r.ok && foes().has(outlaw) && w.storyFoeOf("u1") && w.entity("road:" + outlaw + ":1"), "u1 turns on the wolves: " + r.message);
         expect(!order("foe.outlaw", "u1", R"({"minutes":30})").ok, "once");
         expect(!order("foe.outlaw", "u2", R"({"minutes":721})").ok, "1 to 720 minutes");
+        // (After review: while u1 is a foe no other story takes hold of him, and nobody's party takes him along, this story's
+        // nor a wolf's; a follower's strength is no foe's; a foe's id never begins npc-.)
+        auto other = parsed(R"({"title":"Another","phase":"x","journal":"Another story.","visit":1})");
+        other.set("players", players);
+        expect(t.g.applyDmAct({"950", "story.phase", "world-other", "dm", json::dump(other)}).ok, "another story opens");
+        r = order("npc.hold", "u1", R"({"run":"world-other"})");
+        expect(!r.ok && r.message == "Another story holds this resident.", "another story's hold of the foe refused: " + r.message);
+        r = order("npc.follow", "u1", R"({"player":")" + t.ash.entityId + "\"}");
+        expect(!r.ok && r.message == "They are set against the wolves just now.", "the foe follows no wolf: " + r.message);
+        expect(!order("foe.add", "hakon", R"({"name":"Hakon","cell":"c_2_0","x":9,"y":9,"minutes":60,"strength":"follower"})").ok,
+               "a follower's strength is no foe's");
+        expect(!order("foe.add", "npc-u2", R"({"name":"Hakon","cell":"c_2_0","x":9,"y":9,"minutes":60})").ok, "an id beginning npc- refused");
+        // (A rider for a minute, looking like u3: the restart below outlasts him.)
+        expect(order("foe.add", "rider", R"({"name":"The Rider","cell":"c_2_0","x":10,"y":10,"minutes":1})").ok, "a rider for a minute");
         t.run(1);
         expect(foes().has(camp) && foes().has(outlaw), "both kept while they last");
         t.g.save();
@@ -871,9 +886,17 @@ void phase7Foes()
         // ---- a restart: both made again from what the story keeps.
         Town t(world, save);
         auto& w = t.g.world();
+        std::vector<WorldEvent> lost;
+        w.setEventWatcher([&](const WorldEvent& e) { lost.push_back(e); });
+        for (int i = 0; i < 70; ++i)
+            w.tick(1);                                        // (The world on past the rider's minute before the story looks.)
         t.run(1);
         expect(w.entity("road:" + camp + ":0") && w.entity("road:" + camp + ":0")->name == "The Grey Captain" && w.storyFoeOf("u1"),
                "after a restart the Captain and u1 are foes again");
+        const auto rider = std::find_if(lost.begin(), lost.end(), [](const WorldEvent& e) { return e.kind == "foe fled" && e.target == "rider"; });
+        expect(rider != lost.end() && rider->item == "time" && rider->detail == "The Rider" &&
+                   rider->coins == std::int64_t(ratw::foes::runMark(run)) && !t.g.storylineBook().find(run)->held["foes"].has(game::Game::storyFoeCampId(run, "rider")),
+               "a foe a restart outlasted is 'foe fled' (time), with the run's mark: the story never waits on it");
         auto& book = t.g.storylineBook();
         // ---- u1 beaten (not killed): held until the story ends.
         auto* u1 = w.entity("u1");
@@ -898,7 +921,9 @@ void phase7Foes()
             t.g.tick(.1);
         }
         t.run(2);
-        const bool beaten = std::any_of(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "foe defeated" && e.target == "u1"; });
+        const bool beaten = std::any_of(seen.begin(), seen.end(), [&](const WorldEvent& e) {
+            return e.kind == "foe defeated" && e.target == "u1" && e.coins == std::int64_t(ratw::foes::runMark(run));
+        });
         const bool ran = std::any_of(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "foe fled" && e.target == "u1"; });
         expect(beaten && !ran, "u1 beaten");
         expect(!u1->dead && book.find(run)->held["npcs"].has("u1") && u1->sceneDirected, "beaten, not killed, u1 is held by the story");

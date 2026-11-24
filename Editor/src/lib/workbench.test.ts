@@ -711,8 +711,8 @@ test('doc 86, Phase 7: the Grey Captain in words; a foe named as the story names
     assert.equal(ns.foe.captain, 'The Grey Captain (captain)');
     const muster = triggersOf(p, 0).find(t => t.id === 'muster')!;
     const words = plain(actionParts(cat, muster.actions[0], ns));
-    assert.equal(words, '“The Grey Captain” (The Grey Captain (captain)), a champion foe with the smaller of 8 and (how many wolves are active ÷ 2, whole) followers, comes to grey (5, 5) for 120 minutes, looking like rm111, and holds the ground');
-    assert.match(plain(actionParts(cat, muster.actions[1], ns)), /turns on the wolves with 1 followers for 60 minutes \(tough\)/);
+    assert.equal(words, '“The Grey Captain” (captain), a champion foe with a band of the smaller of 8 and (how many wolves are active ÷ 2, whole), comes to grey (5, 5) for 120 minutes, looking like rm111, and holds the ground');
+    assert.match(plain(actionParts(cat, muster.actions[1], ns)), /turns on the wolves with a band of 1 for 60 minutes \(tough\)/);
     const beaten = triggersOf(p, 1).find(t => t.id === 'beaten')!;
     assert.match(plain(eventParts(cat, beaten, ns)), /beats/);
     assert.equal(cat.effects.find(e => e.id === 'foe.add')!.params!.find(x => x.key === 'foe')!.type, 'foe');

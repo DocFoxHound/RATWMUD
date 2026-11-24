@@ -507,7 +507,7 @@ is refused by a shop (`Society::stagedQuote`), a stall (`list`) and a town proje
 ## Foes and strangers (doc 86, Phase 7)
 
 **`foe.add`** `{foe, name, cell, x, y, strength, band, stance, minutes, like?, description?}`: `foe` the new parameter type
-`foe` (`[a-z0-9][a-z0-9_-]{2,39}`), `strength` `tough` / `fierce` / `champion`, `band` 0 to 8 (an operand: a value worked
+`foe` (`[a-z0-9][a-z0-9_-]{2,39}`, never beginning `npc-`), `strength` `tough` / `fierce` / `champion`, `band` 0 to 8 (an operand: a value worked
 out as it fires), `stance` `waits` / `hunts`, `minutes` 1 to 1,440. One `foe` is one foe in the whole program: brought with
 one `name` and one `strength` everywhere (`story_program._check_foes`). **`foe.leave`** `{foe}` names one the program
 brings. **`foe.outlaw`** `{npc, minutes, strength?, band?, lethal?}` (`needsBuilder`): 1 to 720 minutes, 0 to 6 followers.
@@ -532,6 +532,16 @@ of time (`foe fled`, time) and lets a beaten one go. The story keeps each in `he
 `tickStoryWorld` makes one again after a restart while its time lasts, drops one gone, and holds a resident beaten and
 not killed (`held.npcs`); `endStoryWorld` takes them all away, even mid-fight, with no event. `SIM_FOES` names a trial
 table in place of `foes.json` (for `foe_sim`).
+
+Since the review: every foe event carries the run's mark in `coins` (`foes::runMark`, FNV-1a of the run id, the camp id's 8
+hex digits; `story_program.foe_mark`), and the runner gives a foe event only to the run whose mark it is, as two runs may
+name a foe alike. A story camp asks no purse (no bandit encounter, nothing to pay), robs no wagon, has no bounty posted
+on it, is never patrolled or cleared by the Watch, and is never talked of as bandits. A resident made a foe is held where
+they were made one (`sceneHold`), is held by no other story and joins no party, and is taken out of a fight and stood up
+if the story ends mid-fight. A foe a restart cannot make again is `foe fled` (time). `tickStoryWorld` keeps `left`,
+`fighting` and `endsAt` (Unix seconds) with each in `held.foes`; the runner reads them from `game.storylines`
+(`foes_now`, `status`'s `foes`) for the console's Foes panel, whose Send away is the command `foe` (`{do: "leave", foe}`:
+`foe.leave`, a resident's camp by `npc-<resident>`).
 
 **A stranger in a scene.** A scene's cast entry may be `{"id": "<role>", "visitor": "<visitor id>"}` beside `npc` and
 `selector` (exactly one; `story_scenes.validate`), a stranger the same program brings with `visitor.add`

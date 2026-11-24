@@ -477,6 +477,32 @@ class RuntimeTests(unittest.TestCase):
         self.tick()
         self.assertEqual(self.status()['state']['counters'], {'story': {'submitted': 1, 'timeout': 1}})
 
+    def test_foe_events_go_to_the_run_whose_foe_it_was(self):
+        # (Doc 86, C10, after review: two runs may name a foe alike, so the game marks each foe event with the run whose foe
+        # it was, in `coins`: another run's "captain" moves nothing here.)
+        p = self.examples['foes'] = story_author.request({'op': 'draft', 'blank': True}, {})['program']
+        p['phases'][0]['triggers'] = [
+            {'id': kind.split()[1], 'on': kind, 'match': {'target': 'captain'},
+             'actions': [{'do': 'add', 'key': kind.split()[1], 'scope': 'story', 'value': 1}]}
+            for kind in ('foe downed', 'foe defeated', 'foe fled')
+        ]
+        self.launch('foes')
+        self.answer()
+        mine, other = rules.foe_mark(self.run), rules.foe_mark('another-run')
+        self.assertNotEqual(mine, other)
+        ash = self.cohort[0]
+        self.fact('foe downed', ash, 'captain', coins=other, detail='one of the band')
+        self.fact('foe defeated', ash, 'captain', quantity=1, coins=other, detail='The Grey Captain')
+        self.fact('foe fled', '', 'captain', item='fled', coins=other, detail='The Grey Captain')
+        self.fact('foe defeated', ash, 'captain', quantity=1, detail='The Grey Captain')   # (No mark: no run's.)
+        self.tick()
+        self.assertFalse(self.status()['state'].get('counters', {}).get('story'))
+        self.fact('foe downed', ash, 'captain', coins=mine, detail='one of the band')
+        self.fact('foe defeated', ash, 'captain', quantity=1, coins=mine, detail='The Grey Captain')
+        self.tick()
+        self.assertEqual(self.status()['state']['counters'], {'story': {'downed': 1, 'defeated': 1}})
+        self.assertEqual((rules.foe_mark(''), rules.foe_mark('a')), (0x811c9dc5, 0xe40c292c))   # (FNV-1a's, as the game's.)
+
     def test_scene_participant_is_verified_before_publication(self):
         import story_scenes
 

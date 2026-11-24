@@ -655,7 +655,7 @@ void World::talkTown(const std::string& who, std::map<std::string, std::string>&
     for (const auto& c : roads_.caravans)
         bandits |= c.status == "raided" && hereMarket && (c.from == hereMarket->id || c.to == hereMarket->id);
     for (const auto& camp : roads_.camps)
-        bandits |= camp.active && calendarDays_ - camp.lastRaid <= 3;
+        bandits |= camp.active && calendarDays_ - camp.lastRaid <= 3 && !storyFoeCamp(camp.id);
     facts["world.bandits"] = bandits ? "near" : "no";
     bool crime = false;
     for (const auto& i : crime_.incidents)
@@ -1211,7 +1211,7 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
         }
     }
     for (const auto& camp : roads_.camps)
-        if (camp.active && calendarDays_ - camp.lastRaid <= 3)
+        if (camp.active && calendarDays_ - camp.lastRaid <= 3 && !storyFoeCamp(camp.id))   // (Never a story's foe: doc 86.)
         {
             auto t = topic("bandits", H(book.score("bandits", "camp")), "camp|" + camp.id);
             t.talk["topic.kind"] = "camp";

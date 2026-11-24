@@ -9,6 +9,7 @@
 #include "RatwFame.h"
 #include "RatwItems.h"
 #include "RatwNames.h"
+#include "RatwStoryFoes.h"
 #include "RatwWild.h"
 
 #include <algorithm>
@@ -84,6 +85,9 @@ bool Game::heldByAnotherStory(const std::string& npc, const std::string& run) co
         if (id != run)
             if (const auto* s = storylines_.find(id); s && s->live() && s->held.isObject() && s->held["npcs"].has(npc))
                 return true;
+    // (Doc 86, C10: a resident another story made a foe is that story's while they are one.)
+    if (const auto* foe = world_.storyFoeOf(npc); foe && foe->spec.npc == npc && foe->spec.run != run)
+        return true;
     return false;
 }
 
@@ -462,6 +466,10 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
         // and the story's end takes it away. The game itself (RatwStoryFoes.cpp) fights it, ends it on time, and lets a
         // beaten one go.
         const bool outlaw = kind == "foe.outlaw";
+        if (!outlaw && target.rfind("npc-", 0) == 0)
+            return {false, "A foe's id never begins npc- (that is a resident made a foe).", target};
+        if (!foes::leaderKind(p.string("strength", "tough")))
+            return {false, "A foe is tough, fierce or champion.", target};
         const auto camp = storyFoeCampId(run, outlaw ? "npc-" + target : target);
         auto& foes = section(*story, "foes");
         if (foes.has(camp) && world_.storyFoe(camp))
@@ -521,11 +529,8 @@ Result Game::applyStoryWorld(const std::string& kind, const std::string& target,
 std::string Game::storyFoeCampId(const std::string& run, const std::string& foe)
 {
     // foe_<8 hex digits of the run>_<the story's id for it>: never two runs' foes the same, the same after a restart.
-    std::uint32_t h = 2166136261u;
-    for (const unsigned char c : run)
-        h = (h ^ c) * 16777619u;
     char hex[9];
-    std::snprintf(hex, sizeof hex, "%08x", h);
+    std::snprintf(hex, sizeof hex, "%08x", unsigned(foes::runMark(run)));
     return "foe_" + std::string(hex) + "_" + foe;
 }
 
@@ -859,10 +864,30 @@ void Game::tickStoryWorld(double dt)
             // (Doc 86, C10: a foe gone in this run of the world is let go of; one a restart lost is made again while its
             // time lasts; a resident made a foe and beaten, not killed, is held until the story ends.)
             std::vector<std::string> done;
+            std::vector<std::pair<std::string, Value>> seen;   // (What the console's Foes panel shows, where it changed.)
             for (const auto& [camp, j] : foes->fields())
             {
-                if (world_.storyFoe(camp))
+                if (const auto* live = world_.storyFoe(camp))
+                {
+                    // (Doc 86, C10: the followers standing, whether it fights now, and when its time runs out, in real
+                    // seconds: kept with the story, which the console reads.)
+                    int left = 0;
+                    for (int i = 1; i <= live->spec.band; ++i)
+                        if (const auto* f = world_.entity("road:" + camp + ":" + std::to_string(i)); f && !f->dead && f->downedLeft <= 0)
+                            ++left;
+                    const bool fighting = world_.foeInFight(camp);
+                    const double endsAt = std::floor(now() + std::max(0.0, live->spec.until - world_.time()));
+                    if (!j.has("left") || int(j.number("left")) != left || j.boolean("fighting") != fighting ||
+                        std::abs(j.number("endsAt") - endsAt) >= 60)
+                    {
+                        auto v = j;
+                        v.set("left", left);
+                        v.set("fighting", fighting);
+                        v.set("endsAt", endsAt);
+                        seen.emplace_back(camp, std::move(v));
+                    }
                     continue;
+                }
                 const auto how = world_.storyFoeEndedHow(camp);
                 if (how == "beaten" && j.string("kind") == "foe.outlaw" && !j.boolean("lethal"))
                     if (auto* e = world_.entity(j.string("foe")); e && !e->dead)
@@ -874,12 +899,26 @@ void Game::tickStoryWorld(double dt)
                             world_.sceneHold(e->id, true, e->pace);
                         e->activity = "kept here by a story";
                     }
-                if (world_.storyFoeEnded(camp) || j.number("until") <= world_.time() || !storyFoeFrom(*s, camp, j).ok)
+                if (world_.storyFoeEnded(camp))
                     done.push_back(camp);
+                else if (j.number("until") <= world_.time() || !storyFoeFrom(*s, camp, j).ok)
+                {
+                    // (Lost to a restart and not to be made again: its time ran out meanwhile, or its resident has died,
+                    // is down or away, or its ground is gone. The story hears it got away, never waits on it for ever.)
+                    const auto* who = world_.entity(j.string("foe"));
+                    WorldEvent ev{"foe fled", {}, j.string("foe"), j.string("cell", who ? who->cellId : std::string())};
+                    ev.item = "time";
+                    ev.coins = foes::runMark(s->id);
+                    ev.detail = j.string("kind") == "foe.outlaw" ? (who ? who->name : j.string("foe")) : fillStoryNames(j.string("name"), 60);
+                    world_.recordEvent(ev);
+                    done.push_back(camp);
+                }
             }
+            for (auto& [camp, v] : seen)
+                foes->set(camp, std::move(v));
             for (const auto& camp : done)
                 foes->erase(camp);
-            touched = touched || !done.empty();
+            touched = touched || !done.empty() || !seen.empty();
         }
         if (auto* pings = s->held.find("pings"); pings && pings->size())
         {

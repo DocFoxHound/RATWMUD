@@ -553,7 +553,7 @@ def animal_ground():
 TALK_KEY = re.compile(r'[a-z][a-z0-9_]{0,39}')
 TALK_VALUE = re.compile(r'[a-z0-9_]{1,40}')
 FIGURE_ID = re.compile(r'[a-z0-9_]{3,40}')
-FOE_ID = re.compile(r'[a-z0-9][a-z0-9_-]{2,39}')
+FOE_ID = re.compile(r'(?!npc-)[a-z0-9][a-z0-9_-]{2,39}')   # (npc-<resident> is a resident made a foe's camp.)
 CAMP_NAME = re.compile(r'[a-z0-9_]{3,30}')
 PREFIX = re.compile(r'[a-z]{2,8}')
 TALK_SCOPES = {'realm': (), 'town': ('town',), 'npc': ('npc',), 'pair': ('npc', 'player')}
@@ -1578,6 +1578,16 @@ def validate(p):
 
 
 FOE_EVENTS = ('foe downed', 'foe defeated', 'foe fled')
+
+
+def foe_mark(run):
+    """The run's mark on its foe events (`coins`: FNV-1a, 32 bits, of the run's id, the game's foes::runMark, the 8 hex
+    digits of the foe's camp): the runner gives a foe event only to the run whose foe it was, as two runs (of one quest, or
+    two stories) may name a foe alike."""
+    h = 2166136261
+    for c in str(run).encode('utf-8'):
+        h = ((h ^ c) * 16777619) & 0xFFFFFFFF
+    return h
 
 
 def _effect_nodes(p, kinds):

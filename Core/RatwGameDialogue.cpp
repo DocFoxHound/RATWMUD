@@ -681,7 +681,7 @@ void Game::dialogueRoleFacts(const std::string& playerId, const std::string& npc
     f["here.witnessed"] = std::to_string(witnessed);
     int camps = 0;
     for (const auto& camp : world_.roads().camps)
-        camps += camp.active;
+        camps += camp.active && !World::storyFoeCamp(camp.id);   // (A story's foe is no bandit camp: doc 86, C10.)
     f["here.camps"] = std::to_string(camps);
     {
         const auto* market = world_.roadMarketOf(npc->cellId);
@@ -1108,7 +1108,9 @@ void Game::dialogueOpen(Connection* c, const std::string& npcId, const std::stri
     }
     if (npc->transient)
     {
-        refuse("busy", world_.hostile(npcId) ? "They want your purse, not your conversation." : npc->name + " has nothing to say to you just now.");
+        refuse("busy", world_.storyFoeOf(npcId) ? "They want a fight, not your conversation."
+                       : world_.hostile(npcId) ? "They want your purse, not your conversation."
+                                               : npc->name + " has nothing to say to you just now.");
         return;
     }
     if (npc->cellId != player->cellId ||

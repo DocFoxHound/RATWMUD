@@ -327,6 +327,35 @@ class Steering(unittest.TestCase):
         self.assertEqual(self.one()['status'], 'running', 'it carries on without it')
         self.assertEqual(self.one()['alerts'], [])
 
+    # ---- foes (doc 86, C10, after review): the Foes panel's read, and Send away
+    def test_the_foes_panel_and_send_away(self):
+        import story_author
+        p = self.examples['outlaw'] = story_author.request({'op': 'draft', 'blank': True}, {})['program']
+        p['phases'][0]['triggers'] = [{'id': 'turn', 'on': 'arrival', 'actions': [{'do': 'effect', 'effect': {
+            'kind': 'foe.outlaw', 'npc': 'rm113', 'minutes': 30, 'strength': 'tough', 'band': 2}}]}]
+        self.launch('outlaw')
+        self.answer()
+        self.assertEqual(self.one()['foes'], [], 'none in the world yet')
+        # (The game keeps a foe with the story, held.foes, saved in game.storylines: what makes it again, and what it is now.)
+        camp = 'foe_%08x_npc-rm113' % rules.foe_mark(self.run_id)
+        held = {'foes': {camp: {'kind': 'foe.outlaw', 'foe': 'rm113', 'until': 999, 'strength': 'tough', 'band': 2, 'lethal': False,
+                                'left': 1, 'fighting': True, 'endsAt': 1900000000}}}
+        self.conn.execute('SET LOCAL ROLE ratw_game')
+        self.conn.execute('INSERT INTO game.storylines(world_id,key,position,data) VALUES (%s,%s,1,%s::jsonb)',
+                          (self.world, self.run_id, json.dumps({'id': self.run_id, 'held': held})))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+        self.assertEqual(self.one()['foes'], [{'camp': camp, 'foe': 'rm113', 'outlaw': True, 'name': '', 'strength': 'tough', 'band': 2,
+                                               'left': 1, 'fighting': True, 'endsAt': 1900000000}])
+        status, result = self.steer('foe', {'do': 'leave', 'foe': 'rm113'})
+        self.assertEqual(status, 'done', result)
+        receipt, target, payload = self.queued_orders('foe.leave')[-1]
+        self.assertEqual((target, payload), ('npc-rm113', {'run': self.run_id, 'visit': self.one()['visit']}), 'its camp, as foe.leave names it')
+        self.assertIn(receipt, [o['id'] for o in self.one()['orders']])
+        with self.assertRaisesRegex(ValueError, 'brings no such foe'):
+            self.send('foe', {'do': 'leave', 'foe': 'rm111'})
+        with self.assertRaisesRegex(ValueError, 'sent away'):
+            self.send('foe', {'do': 'stay', 'foe': 'rm113'})
+
     # ---- tell, scene
     def test_tell_the_wolves_and_a_scene_that_does_not_exist(self):
         self.ferries_in_watch()

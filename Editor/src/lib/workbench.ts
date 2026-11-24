@@ -614,7 +614,8 @@ export function refusable(cat: Catalogue, kind: string): boolean {
 export function effectParts(cat: Catalogue, e: Effect, names: Names): Part[] {
     const item = itemOf(cat.effects, e.kind);
     if (!item) return [{text: 'the world effect ' + e.kind}];
-    return itemParts(item, e, names);
+    // (Doc 86, C10: a foe brought reads by the name it is given and the id it is given beside, never its name twice.)
+    return itemParts(item, e, e.kind === 'foe.add' ? {...names, foe: {}} : names);
 }
 
 export function exitParts(cat: Catalogue, x: Exit, names: Names, phaseMissions: Mission[]): Part[] {

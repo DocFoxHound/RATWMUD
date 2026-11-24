@@ -602,7 +602,9 @@ Result World::startBattle(const std::string& attacker, const std::string& target
         b.camp = camp->id;
         const auto& player = campOf(target) ? attacker : target;
         auto enc = std::find_if(encounters_.begin(), encounters_.end(), [&](const Encounter& e) { return e.camp == camp->id; });
-        if (enc == encounters_.end())
+        if (storyFoeCamp(camp->id))
+            ;                                       // (Doc 86, C10: a story's foe asks no purse: no encounter, nothing to pay.)
+        else if (enc == encounters_.end())
             encounters_.push_back({camp->id, player, 0, time_, true});
         else
             enc->fighting = true;
@@ -2589,8 +2591,9 @@ void World::downFighter(Battle& b, BattleFighter& f, double overkill, double bas
         // wolves who fought it counted, and the band breaks and runs.
         auto& mine = storyFoes_[foe->spec.camp];
         const std::string who = mine.spec.npc.empty() ? mine.spec.foe : mine.spec.npc;
+        const std::int64_t mark = foes::runMark(mine.spec.run);   // (The run's mark: its foe, not another run's of that id.)
         if (!foeLeader(f.id))
-            recordEvent({"foe downed", by, who, b.cellId, 0, 0, {}, 0, 0, e->name, f.x, f.y});
+            recordEvent({"foe downed", by, who, b.cellId, 0, 0, {}, 0, mark, e->name, f.x, f.y});
         else if (!mine.beaten)
         {
             mine.beaten = true;
@@ -2600,7 +2603,7 @@ void World::downFighter(Battle& b, BattleFighter& f, double overkill, double bas
                 if (o.side != f.side)
                     if (const auto* oe = entity(o.id); oe && !oe->npc)
                         wolves.insert(o.id);
-            recordEvent({"foe defeated", by, who, b.cellId, 0, 0, {}, int(wolves.size()), 0, mine.spec.name, f.x, f.y});
+            recordEvent({"foe defeated", by, who, b.cellId, 0, 0, {}, int(wolves.size()), mark, mine.spec.name, f.x, f.y});
             if (mine.spec.npc.empty() || !mine.spec.lethal)
                 e->downedLeft = std::max(e->downedLeft, 1e6);   // (Carried off, or got up again, when the fight ends: never dies of it.)
             for (auto& o : b.fighters)
@@ -3340,6 +3343,13 @@ void World::tendDowned(double dt)
         }
         if (e.downedLeft <= 0 || inBattle(id))
             continue;
+        if (e.npc && e.downedLeft >= 1e5 && !storyFoeOf(id))
+        {
+            // (Doc 86, C10: a story's foe held down for the fight's end, with no fight and no foe now: a restart, say.
+            // They get up; nobody lies a lifetime in the road.)
+            standUp(e, battle::StruggleUpHealth);
+            continue;
+        }
         if (e.struggleUntil > 0 && time_ >= e.struggleUntil)
         {
             standUp(e, battle::StruggleUpHealth);

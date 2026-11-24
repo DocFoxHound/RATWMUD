@@ -2359,6 +2359,8 @@ def _tick_run(conn, world, run, clock, holder):
                 continue
             if fact['kind'] in rules.REGION_EVENTS and fact['detail'] != run:
                 continue
+            if fact['kind'] in rules.FOE_EVENTS and fact['coins'] != rules.foe_mark(run):
+                continue   # (Doc 86, C10: another run's foe, though it be named alike.)
             if fact['kind'] in quests.GAME_EVENTS and fact['target'] != run:
                 continue   # (Another story's quest or choice.)
             if fact['kind'] == quests.LEAVES:
@@ -3055,6 +3057,22 @@ def _program_ids(program):
     return ids
 
 
+def foes_now(conn, world, run):
+    """Doc 86, C10, the console's Foes panel: the foes a run has in the world now, as the game keeps them with the story
+    (game.storylines, held.foes, saved with the world: as of its last save): who, how strong, the followers standing of
+    the band, whether they fight, and when (Unix seconds) their time runs out."""
+    row = conn.execute("SELECT data->'held'->'foes' FROM game.storylines WHERE world_id=%s AND key=%s", (world, run)).fetchone()
+    out = []
+    for camp, j in sorted((row[0] or {}).items() if row and isinstance(row[0], dict) else []):
+        if not isinstance(j, dict):
+            continue
+        outlaw = j.get('kind') == 'foe.outlaw'
+        out.append({'camp': camp, 'foe': j.get('foe', ''), 'outlaw': outlaw, 'name': '' if outlaw else j.get('name', ''),
+                    'strength': j.get('strength', 'tough'), 'band': j.get('band', 0), 'left': j.get('left'),
+                    'fighting': bool(j.get('fighting')), 'endsAt': j.get('endsAt')})
+    return out
+
+
 def directed(program):
     """The residents a program directs or names (effects, guest voices, scene casts): marked on the console's map."""
     out = set()
@@ -3163,6 +3181,7 @@ def status(conn, world, run=None, before_visit=None, before_trigger=None, since=
         'orders': [{**o, 'visit': receipt_visits.get(i)} for i, o in sorted(orders.items(), reverse=True)],
         'missionsNow': rules.mission_snapshot(rules.phase_of(program, state), state) if state and mission_program else [],
         'directed': directed(program),
+        'foes': foes_now(conn, world, run) if any(rules.foes_of(program)) else [],   # (Doc 86, C10: the Foes panel.)
         'regions': program.get('regions', []),
         'phases': [{'id': p['id'], 'to': sorted({e['to'] for e in p['exits']} | {
             a['phase'] for t in [*rules.effective_phase(program, p).get('triggers', [])] for _, a in rules.triggers.walk(t['actions'])
@@ -3409,7 +3428,7 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
 
 RUNNER_VERSION = 'doc86-phase7'
 COMMAND_KINDS = ('hold', 'resume', 'stop', 'signal', 'fire', 'enable', 'disable', 'enter', 'set', 'timer', 'mission',
-                 'order', 'tell', 'scene', 'migrate', 'objective', 'quest', 'participant', 'advance')
+                 'order', 'tell', 'scene', 'migrate', 'objective', 'quest', 'participant', 'advance', 'foe')
 # Flow commands move the story (dispatch a fact, run actions, open a visit, send the journal): they wait while the run is
 # still sending a visit's orders, and are refused on a paused or held run that is part-way through sending.
 FLOW = ('signal', 'fire', 'enter', 'mission', 'objective', 'quest', 'participant', 'advance')
@@ -3648,7 +3667,7 @@ def _check_payload(program, kind, payload):
     rules.require(isinstance(payload, dict) and len(json.dumps(payload)) <= 4000, 'A small command, please.')
     known = {'force', 'catchUp', 'name', 'actor', 'trigger', 'check', 'phase', 'effects', 'key', 'scope', 'player',
              'value', 'do', 'days', 'signal', 'mission', 'receipt', 'to', 'region', 'text', 'scene', 'cue', 'version',
-             'quest', 'objective', 'amount', 'direction', 'event', 'when', 'anyway'}
+             'quest', 'objective', 'amount', 'direction', 'event', 'when', 'anyway', 'foe'}
     rules.require(set(payload) <= known, 'Unknown field in the command: ' + ', '.join(sorted(set(payload) - known)))
     phases = rules.phases_of(program)
     if kind == 'signal':
@@ -3714,6 +3733,11 @@ def _check_payload(program, kind, payload):
             rules.require(any(o['id'] == payload.get('objective') for o in q['objectives']), f'Quest {q["id"]} has no such objective.')
             if payload['do'] == 'progress':
                 rules.require(rules.integer(payload.get('amount'), 0, 1000000), 'Set the progress to a number (0 to the goal).')
+    elif kind == 'foe':
+        # (Doc 86, C10: the Foes panel's Send away, a foe the story brings or a resident it makes one.)
+        added, outlaws = rules.foes_of(program)
+        rules.require(payload.get('do') == 'leave', 'A foe is sent away.')
+        rules.require(payload.get('foe') in added or payload.get('foe') in outlaws, 'This story brings no such foe.')
     elif kind == 'participant':
         rules.require(payload.get('do') in ('add', 'remove'), 'Add a wolf, or remove one.')
         rules.require(rules.identifier(payload.get('player')), 'Choose a wolf.')
@@ -4323,6 +4347,17 @@ class Steer:
             self.state['cohortSent'] = [w for w in self.state['cohort'] if w != wolf] if do == 'add' else [*self.state['cohort'], wolf]
         self.state.pop('journalMark', None)
         return text, {'wolves': before}, {'wolves': len(self.state['cohort'])}
+
+    def do_foe(self):
+        """Doc 86, C10: send a foe away by hand (foe.leave, the order a story's own would send; for a resident made a foe,
+        its camp's name npc-<resident>). The game refuses it while the foe fights: the order says so, and it goes once the
+        fight is over or its time runs out."""
+        foe = self.payload['foe']
+        added, _ = rules.foes_of(self.program)
+        target = foe if foe in added else 'npc-' + foe
+        receipt = queue(self.conn, self.by, 'foe.leave', target, {'run': self.run, 'visit': self.state['visits']})
+        self.note_order(receipt)
+        return f'{foe} sent away (order #{receipt}).', {}, {'order': receipt}
 
     def do_order(self):
         receipt, do = self.payload['receipt'], self.payload['do']
@@ -5019,6 +5054,8 @@ def _step(phase, state, run, t, fact, fired_events):
         return {'verdict': 'other', 'text': 'a scene of another story or another visit'}
     if fact['kind'] in rules.REGION_EVENTS and fact.get('detail') != run:
         return {'verdict': 'other', 'text': "another story's region"}
+    if fact['kind'] in rules.FOE_EVENTS and fact.get('coins') != rules.foe_mark(run):
+        return {'verdict': 'other', 'text': "another story's foe"}
     if fact['kind'] == 'story phase' and fact.get('actor') == run:
         return {'verdict': 'other', 'text': "the story's own change of phase"}
     if _before_visit(state, fact):
@@ -5170,6 +5207,8 @@ def what_if(conn, world, run, fact):
         fact.update(target=run, quantity=state['visits'])     # (A made-up scene event is this story's, this visit's.)
     if fact['kind'] in rules.REGION_EVENTS:
         fact['detail'] = run
+    if fact['kind'] in rules.FOE_EVENTS:
+        fact['coins'] = rules.foe_mark(run)                   # (A made-up foe event is this run's foe's.)
     rules.require(not fact['actor'] or fact['actor'] in state['cohort'] or fact['kind'] != rules.triggers.SIGNAL,
                   'That wolf is not in this story.')
     phase = rules.phase_of(program, state)

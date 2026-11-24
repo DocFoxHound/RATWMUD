@@ -1574,6 +1574,8 @@ class World
     {
         StoryFoeSpec spec;
         bool beaten = false, fled = false;
+        bool holding = false;                                // foe.outlaw: the resident held where they were made one.
+        int pace = 0;                                        // (Their pace before, given back when the foe ends.)
         double beatenAt = -1;
         std::set<std::string> fought;                        // Wolves who fought it, in any of its fights.
     };

@@ -2058,18 +2058,16 @@ effects (89 in all: `foe.add`, `foe.leave`, `foe.outlaw`, a new effect group Foe
   pass the checks).
 - **Run**: the whole `ctest` (122 tests: all pass; `talk_scorecard_quick` failed once under `-j10` and passes alone, a timing test, untouched here; `pg_client` skipped as ever), with `battle_tests`, `story_world_tests`, `storyline_tests`, `sim_fast_tests` and `foe_sim_smoke` among them; every story Python suite but the scene, siege and facts live ones (with the local PostgreSQL: the tests' own throwaway `ratw_test_*` databases and `RATW_STORY_TEST_DSN` on a throwaway migrated one, dropped after); `story_guide.py --check`; the Editor's tests (`npm test`: 78 and 151, `workbench.test.ts` and `guide.test.ts` among them) and `tsc --noEmit`; a scratch Ridgemere 3 server from this branch (`tools/scratch.sh ridgemere3`: restores the save and listens; stopped after). All OK.
 - **Left or changed, and why**: (1) The bar is not passed (above); `foes.json` keeps the starting table, the closest
-  table is pass 4's, and the user decides. (2) The console's "Foes" panel per run (alive, followers left, time left, Send
-  away) is **not built**: the console reads the checkpoint and the runner's own tables, and the game's story book (where
-  `held.foes` lives) is not in either, so the panel needs a new read path from the game; the run's timeline already shows
-  each `foe.add` / `foe.leave` order and the foe events, and a story sends a foe away with `foe.leave`. (3) The spec's
+  table is pass 4's, and the user decides. (2) The console's "Foes" panel was left unbuilt here and built after review
+  (below). (3) The spec's
   `World::storyOutlaws_` is the same story-foe registry (`storyFoes_`, by camp) with the resident as its leader; the
   spec's `BanditCamp.story` flag is the camp id's prefix `foe_` (`World::storyFoeCamp`), which needs no change to the
   checkpoint's camp format. (4) A foe is in person for its minutes (never offstage, as a stranger is), not made in person
   only when someone is near as a bandit camp is; it is not saved, and a restart makes it again with its whole band. (5)
   `hp` was never read by the fight for road folk, so it became a foe's toughness against blows (20 / hp). (6) A waiting
   foe's "aggro" is 6 tiles of the ground it holds, a hunting one's 12 tiles of itself; both start the fight at once (a
-  fight starts from 12 tiles), rather than walking up first. A resident made a foe never seeks a fight (they go about
-  their day; set on, they fight). (7) The `foe defeated` quantity counts the wolves who fought the foe in all its fights,
+  fight starts from 12 tiles), rather than walking up first. A resident made a foe never seeks a fight (held where
+  they were made one since the review; set on, they fight). (7) The `foe defeated` quantity counts the wolves who fought the foe in all its fights,
   not just the last. (8) A beaten foe and its band are let go once the fight is over (the band runs at the leader's fall
   and leaves the fight then), not when out of sight. (9) The talk test for a stranger in a scene is in
   `storyline_tests.cpp`, where the scene-panel cases are (`talk_tests.cpp` has none). (10) `SIM_FOES` is read by the game
@@ -2079,3 +2077,62 @@ effects (89 in all: `foe.add`, `foe.leave`, `foe.outlaw`, a new effect group Foe
   battle changes, the stranger in a scene), the story runner from this branch (`WORLD_ORDERS`, the checks; the native
   library needs no change but is rebuilt as usual), the Editor released from it. The client needs no change: a foe is a
   road folk entity with a name and looks, and a stranger's panel is a resident speaker's.
+
+**Phase 7 after review** (2026-11-24, on `9720bcd6`). The review found three bugs and five gaps; all are fixed, with tests.
+- **A leader of the story's own who breaks off is `foe fled` (fled).** `tendStoryFoes` tested the leader gone before the
+  flight, and `foeFightEnds` carries a fled leader off, so a `foe.add` leader who ran ended with no event and as "" (only
+  a resident made a foe, never carried off, worked; foe_sim's "fled %" read 0.0% on every `foe.add` row of passes 1 to 4,
+  so pass 3's flee change showed nothing on those rows: the records stand as run). Now the flight is tested first.
+  `battle_tests` (`foefights::afterReview`): the Captain breaks off at the arena's edge, `foe fled` (fled), ended "fled".
+- **A story's foe asks no purse.** `startBattle` opened a bandit encounter for a story camp, which only the foe's end
+  closed, so after any fight it survived (a wolf downed or fled, a draw) the wolf was offered "pay" and `payBandits` took
+  half their purse into a loot account nobody drains. Now no encounter is opened for a story camp, and `banditDemand` and
+  `payBandits` refuse one. `battle_tests`: a draw with the Warden, nothing asked, nothing paid, no loot account.
+- **A story's foe is no bandit camp on the roads.** It robbed passing wagons (`caravanEntered`'s raids), had bounties
+  posted on it, was whittled down and cleared by the Watch's bounty patrols, cleared by a settled bounty
+  (`completeContract`), and called for escorts (`RatwTradeShow.cpp`). All four skip a story camp, as do the guard's
+  "bandits out on the roads" (`here.camps`) and the talk of bandits (`RatwAmbient.cpp`). `trade_show_tests`
+  (`aStoryFoeRobsNoWagon`): a strong, starving story camp in the road robs none of six wagons, no bounty, no loot account;
+  a bounty on it anyway is never patrolled, and settling it clears nothing.
+- **A resident made a foe keeps their ground** (`outlawResident`: `sceneHold` where they stand, "standing against the
+  wolves", their pace kept; held again after a fight where they stand; let go when the foe ends), so the band stays at
+  their back, instead of a shopkeeper going home to bed with their followers left in the shop. `battle_tests`: Wren made
+  a foe at 17:24 keeps her ground for half an hour with her follower beside her, and is let go when her time is up.
+- **No other story takes hold of a resident made a foe.** `heldByAnotherStory` counts a foe of another run, so another
+  story's `npc.hold`, `npc.follow`, `npc.walk` and `foe.outlaw` are refused; and `whyNotJoin` refuses a party ("They are
+  set against the wolves just now."): the story's own `npc.follow` and a wolf asking them along alike.
+  `story_world_tests` (`phase7Foes`).
+- **A story that ends mid-fight lets the resident go.** `dropStoryFoe` takes a resident made a foe out of the fight they
+  are in (as fled), stands them up if they are down (in the fight's last seconds after the leader's fall too, when no foe
+  is left to get them up), and lets go of the hold. `tendDowned` gets up anyone left lying with the foes' "until the
+  fight's end" mark (1e6 s) and no foe and no fight (a restart in that window). `battle_tests`: the story ends while Wren
+  fights, and while she lies beaten in the fight's last seconds.
+- **A foe event is the run's.** Its `target` is the story's id, which two runs (of one quest, or two stories) may share.
+  The game puts the run's mark in every foe event's `coins` (`foes::runMark`: FNV-1a of the run id, the 8 hex digits of
+  the foe's camp id; `coins` was 0 on these events and is not an event field a trigger may read), and the runner gives a
+  foe event only to the run whose mark it carries (`story_program.foe_mark`, in the event loop, as region events are
+  given by their run; "why has this one not fired?" says "another story's foe"; a made-up one in What if is this run's).
+  The twins need no change; the console's timeline does not show the mark. `test_story_program`
+  (`test_foe_events_go_to_the_run_whose_foe_it_was`), `battle_tests`, `story_world_tests`.
+- **The Foes panel** (C10's Workbench item). The game keeps with each foe in `held.foes` the followers standing (`left`),
+  whether it fights (`fighting`) and when its time runs out in real seconds (`endsAt`), written when they change
+  (`tickStoryWorld`). The story book is saved in `game.storylines`, which the runner reads (`story_runner.foes_now`,
+  `status`'s `foes`). The run's Orders tab lists them ("The Grey Captain (captain), champion, 2 of 4 followers standing,
+  about 30 minutes left · fighting now": `campaigns.foeLine`) with **Send away…**: a new command `foe` (`{do: "leave",
+  foe}`, a foe the program brings or a resident it makes one) that sends the game `foe.leave` (a resident's camp named
+  `npc-<resident>`). The game refuses it while the foe fights. `test_story_steering` (`test_the_foes_panel_and_send_away`),
+  `campaigns.test.ts`.
+- **The nits fixed**: a foe's id never begins `npc-` (a resident made a foe's camp: `FOE_ID`, and the game); the game
+  refuses a follower's strength in a direct `foe.add` order (`foes::leaderKind`); a foe a restart cannot make again (its
+  time ran out meanwhile; its resident dead, down or away; its ground gone) is `foe fled` (time), never dropped silently;
+  a foe is "a foe" to whoever looks at it (never "bandit") and wants "a fight, not your conversation"; the workbench reads
+  "“The Grey Captain” (captain), a champion foe with a band of 4" (no name twice), and both foe sentences say "a band of
+  N" (never "1 followers"; the guide's reference regenerated). **Not changed**: the stranger-id nit (a scene cast's
+  `visitor` and `visitor.add`'s id are checked by the same pattern in `story_program`, `[a-z0-9][a-z0-9_-]{2,39}`; only the
+  game's `validScene` is looser, and it refuses nothing a program may hold). The spec deviations the review lists stay as
+  disclosed above. The guide's §8 Foes says all of this.
+- **Run**: the whole `ctest` (122: all pass; `talk_scorecard_quick` failed once under `-j8` and passes alone, the timing
+  test noted above; `pg_client` skipped as ever); every story Python suite but the scene, siege and facts live ones, with
+  `RATW_STORY_TEST_DSN` on a throwaway migrated database (dropped after); `story_guide.py --check`; the Editor's tests
+  (`npm test`) and `tsc --noEmit`. Going live is as above, with the Editor released for the Foes panel and the story
+  runner restarted for the foe events' marks and the `foe` command.

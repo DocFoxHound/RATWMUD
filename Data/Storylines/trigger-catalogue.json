@@ -11822,7 +11822,7 @@
    "id": "foe.add",
    "group": "foes",
    "title": "Bring a foe",
-   "sentence": "{name} ({foe}), a {strength} foe with {band} followers, comes to {cell,x,y} for {minutes} minutes, looking like {like} {description}, and {stance}",
+   "sentence": "{name} ({foe}), a {strength} foe with a band of {band}, comes to {cell,x,y} for {minutes} minutes, looking like {like} {description}, and {stance}",
    "help": "A named enemy who can be fought and beaten: wolves may set on them without a crime, the Watch on duty in the place helps the wolves, and their followers break and run when they fall ('foe defeated'). A waiting foe holds its ground and fights a wolf who comes within 6 tiles; a hunting one goes for the nearest wolf within 12. They come and go: never a resident, never saved, gone when the story ends (no event) or their time runs out, or when they break off a fight ('foe fled'). How strong each kind is: Data/Storylines/foes.json.",
    "params": [
     {
@@ -11942,7 +11942,7 @@
    "group": "foes",
    "title": "Make a resident a foe",
    "needsBuilder": true,
-   "sentence": "{npc} turns on the wolves with {band} followers for {minutes} minutes ({strength}); killed if beaten: {lethal}",
+   "sentence": "{npc} turns on the wolves with a band of {band} for {minutes} minutes ({strength}); killed if beaten: {lethal}",
    "help": "A resident (never a protected one, the dead, one down, in a fight, away, or held by another story) may be fought for a while without a crime, the Watch on the wolves' side. Beaten ('foe defeated', target the resident), they are downed, got up again where they lie when the fight is over and held until the story ends, never killed unless the story says so (then 'death' follows). When the minutes pass, or the story ends, they are themselves again. Their followers are strangers who go with them.",
    "params": [
     {

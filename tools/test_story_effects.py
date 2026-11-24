@@ -268,7 +268,7 @@ class Orders(unittest.TestCase):
         self.assertEqual(self.order(effect('foe.outlaw'))[1:], ('rm113', {'minutes': 30, 'strength': 'tough', 'band': 2, 'run': 'world-run', 'visit': 3}))
         rules.validate(program([effect('foe.add'), effect('foe.leave'), effect('foe.outlaw', lethal=True)]))
         rules.validate(program([effect('foe.add', band={'min': [8, {'div': [{'audience': 'active'}, 2]}]})]))   # (C1a: a band from the crowd.)
-        for bad in ({'foe': 'Grey Captain'}, {'foe': 'gc'}, {'band': 9}, {'strength': 'mighty'}, {'stance': 'roams'}, {'minutes': 1441},
+        for bad in ({'foe': 'Grey Captain'}, {'foe': 'gc'}, {'foe': 'npc-rm113'}, {'strength': 'follower'}, {'band': 9}, {'strength': 'mighty'}, {'stance': 'roams'}, {'minutes': 1441},
                     {'name': ''}, {'x': 5000}):
             with self.subTest(bad=bad):
                 self.assertRaisesRegex(ValueError, 'invalid foe.add', rules.validate, program([effect('foe.add', **bad)]))

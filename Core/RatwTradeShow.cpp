@@ -629,7 +629,7 @@ void World::postDepartures(std::int64_t today)
                 if (std::size_t(route) < roadRoutes_.size())
                     for (const auto& cellId : roadRoutes_[std::size_t(route)])
                         camp = camp || std::any_of(roads_.camps.begin(), roads_.camps.end(),
-                                                   [&](const BanditCamp& k) { return k.active && k.cell == cellId; });
+                                                   [&](const BanditCamp& k) { return k.active && k.cell == cellId && !storyFoeCamp(k.id); });
                 if (camp && std::none_of(roads_.contracts.begin(), roads_.contracts.end(), [&](const Contract& k) {
                         return escortOn(k, a, c) && (k.status == "open" || k.status == "taken");
                     }))

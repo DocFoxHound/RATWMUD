@@ -112,6 +112,14 @@ std::string followerLook() { return table().followerLook; }
 std::string tuned() { return table().tuned; }
 std::string loadError() { return table().error; }
 
+std::uint32_t runMark(const std::string& run)
+{
+    std::uint32_t h = 2166136261u;
+    for (const unsigned char c : run)
+        h = (h ^ c) * 16777619u;
+    return h;
+}
+
 double hurtScale(const std::string& kind)
 {
     const auto* s = strength(kind);
@@ -315,6 +323,16 @@ Result World::outlawResident(const StoryFoeSpec& given)
         folk_[id].skill = follow->skill;
         e = entity(spec.npc);                       // (The map may have moved it.)
     }
+    // Held where they were made one while they are a foe (their day, their bed and their shop wait), the band at their back;
+    // let go when the foe ends. (One a scene or a story already holds stays as it is held.)
+    if (e && !e->sceneDirected)
+    {
+        auto& mine = storyFoes_[spec.camp];
+        mine.holding = true;
+        mine.pace = e->pace;
+        sceneHold(spec.npc, true, e->pace);
+        e->activity = "standing against the wolves";
+    }
     entitiesChanged();
     index_.dirty = true;
     return {true, names::capitalised(spec.name) + " turns on the wolves" +
@@ -324,6 +342,9 @@ Result World::outlawResident(const StoryFoeSpec& given)
 
 void World::dropStoryFoe(const std::string& camp, const std::string& how)
 {
+    StoryFoe was;
+    if (const auto* foe = storyFoe(camp))
+        was = *foe;
     std::vector<std::string> mine;
     for (const auto& [id, f] : folk_)
         if (f.of == camp && f.kind == "foe")
@@ -335,6 +356,29 @@ void World::dropStoryFoe(const std::string& camp, const std::string& how)
                        roads_.camps.end());
     storyFoes_.erase(camp);
     foesEnded_[camp] = how;
+    if (auto* e = was.spec.npc.empty() ? nullptr : entity(was.spec.npc))
+    {
+        // A resident made a foe is themselves again: out of any fight they are in (the story ended mid-fight: never left
+        // fighting as a plain resident, nor lying down for good), on their feet, and let go of the hold.
+        bool pulled = false;
+        if (auto* b = battleFor(e->id))
+            if (auto* f = b->fighter(e->id))
+            {
+                pulled = true;
+                f->status = "fled";
+                f->acting = false;
+                b->fled.insert(e->id);
+                leaveArena(*b, *f, false);
+            }
+        if (!e->dead && (e->downedLeft >= 1e5 || (pulled && e->downedLeft > 0)))
+            standUp(*e, 25);
+        if (was.holding)
+        {
+            sceneHold(e->id, false, was.pace);
+            if (e->activity == "standing against the wolves")
+                e->activity.clear();
+        }
+    }
     entitiesChanged();
 }
 
@@ -349,6 +393,7 @@ bool World::endStoryFoe(const std::string& camp, const std::string& why, bool ev
         const auto* lead = entity(foe->spec.npc.empty() ? folkId(camp, 0) : foe->spec.npc);
         WorldEvent ev{"foe fled", {}, foe->spec.npc.empty() ? foe->spec.foe : foe->spec.npc, lead ? lead->cellId : foe->spec.cell};
         ev.item = why;
+        ev.coins = foes::runMark(foe->spec.run);    // (The run's: another run's foe of the same id is not this one.)
         ev.detail = foe->spec.name;
         if (lead)
         {
@@ -408,7 +453,8 @@ void World::tendStoryFoes()
         Entity* lead = entity(s.npc.empty() ? folkId(camp, 0) : s.npc);
         if (fighting)
             continue;
-        if (foe.beaten || !lead || lead->dead)
+        // (Fled first: a leader of the story's own who breaks off is carried off with the fight's end, so is gone by now.)
+        if (foe.beaten || (!foe.fled && (!lead || lead->dead)))
         {
             ending.push_back({camp, {}});
             continue;
@@ -422,6 +468,11 @@ void World::tendStoryFoes()
         {
             ending.push_back({camp, "time"});
             continue;
+        }
+        if (foe.holding && !lead->sceneDirected && lead->leaderId.empty() && !lead->dead && lead->downedLeft <= 0)
+        {
+            sceneHold(lead->id, true, foe.pace);   // (Held again after a fight, where they stand now.)
+            lead->activity = "standing against the wolves";
         }
         // The band keeps by its leader; a hunting foe goes for the nearest wolf within 12 tiles, a waiting one for a wolf
         // who comes within 6 of where it stands. Never one down, in a fight, or just out of one.

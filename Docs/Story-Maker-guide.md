@@ -739,16 +739,26 @@ who comes within 6 tiles of it) or hunting (`hunts`: it goes for the nearest wol
   in all of their fights), and the foe is gone with their band once the fight is over. Each follower brought down is
   `foe downed`. Nobody is robbed and no camp is cleared: a foe is not a bandit camp, and never counted with the world's.
 - When their minutes run out, or their leader breaks off a fight and runs, it is `foe fled` (`item`: `time` or `fled`).
-- **Send away** (`foe.leave`) takes them away with no event (not while they fight).
-- A foe's id is the story's own (3 to 40 small letters, digits, `-` and `_`); a foe event's `target` is that id. One id is
-  one foe: brought with one name and one strength wherever the story brings them.
+  One a restart could not make again (its time ran out meanwhile, or its resident is gone) is `foe fled` (`time`) too, so
+  the story never waits on it.
+- **Send away** (`foe.leave`) takes them away with no event (not while they fight). The console does the same by hand: the
+  run's Orders tab lists its **Foes** (who, how strong, the followers still standing, the time left, fighting or not, as the
+  world last saved them) with **Send away…** beside each.
+- A foe's id is the story's own (3 to 40 small letters, digits, `-` and `_`, never beginning `npc-`); a foe event's
+  `target` is that id. One id is one foe: brought with one name and one strength wherever the story brings them. A foe
+  event is heard only by the run whose foe it was: two runs (of one quest, say) that both bring a "captain" never hear each
+  other's.
+- A foe is no bandit camp: it asks no purse (there is nothing to pay it), robs no wagon, has no bounty posted on it, and
+  the Watch never goes out after it.
 
 **Make a resident a foe** (`foe.outlaw`; a builder's on a hosted world) lets the wolves fight a resident for 1 to 720
 minutes, with 0 to 6 followers, without a crime, the Watch on the wolves' side. Never a protected resident, the dead, one
-down, in a fight, away with a party, or held by another story. Beaten (`foe defeated`, target the resident's id) they are
+down, in a fight, away with a party, or held by another story. While a foe they keep the ground where they were made one
+(their day, their shop and their bed wait), their band beside them; no other story takes hold of them and nobody's party
+takes them along. Beaten (`foe defeated`, target the resident's id) they are
 downed, got up again where they lie when the fight is over, and **held until the story ends**; never killed, unless the
 story says they may die (`"lethal": true`: then `death` follows the fight). Afterwards they are themselves again, their
-bonds untouched.
+bonds untouched. A story that ends while they fight takes them out of the fight, on their feet.
 
 **The population rule**: foes are never residents and never stay. They are not saved; the story keeps what makes them again
 after a restart while their time lasts, and its end takes them all away (no event). Their followers are strangers who go
@@ -6617,7 +6627,7 @@ Reads: The next hunt in **square** meets **1** **bear** (for **120** minutes)
 
 A named enemy who can be fought and beaten: wolves may set on them without a crime, the Watch on duty in the place helps the wolves, and their followers break and run when they fall ('foe defeated'). A waiting foe holds its ground and fights a wolf who comes within 6 tiles; a hunting one goes for the nearest wolf within 12. They come and go: never a resident, never saved, gone when the story ends (no event) or their time runs out, or when they break off a fight ('foe fled'). How strong each kind is: Data/Storylines/foes.json.
 
-Reads: **The Grey Captain** (**captain**), a **champion** foe with **4** followers, comes to **greyfen-square, 12, 9** for **120** minutes, looking like **rm111**, and **holds the ground**
+Reads: **The Grey Captain** (**captain**), a **champion** foe with a band of **4**, comes to **greyfen-square, 12, 9** for **120** minutes, looking like **rm111**, and **holds the ground**
 
 | Parameter | What | Kind |
 |---|---|---|
@@ -6655,7 +6665,7 @@ Reads: **captain** and their followers leave
 
 A resident (never a protected one, the dead, one down, in a fight, away, or held by another story) may be fought for a while without a crime, the Watch on the wolves' side. Beaten ('foe defeated', target the resident), they are downed, got up again where they lie when the fight is over and held until the story ends, never killed unless the story says so (then 'death' follows). When the minutes pass, or the story ends, they are themselves again. Their followers are strangers who go with them.
 
-Reads: **rm113** turns on the wolves with **1** followers for **60** minutes (**tough**); killed if beaten
+Reads: **rm113** turns on the wolves with a band of **1** for **60** minutes (**tough**); killed if beaten
 
 | Parameter | What | Kind |
 |---|---|---|

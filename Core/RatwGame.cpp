@@ -4768,7 +4768,7 @@ void Game::sendSnapshot(Connection* c, const Value* preparedScene)
         else if (e.transient && world_.hostile(e.id))
         {
             j.set("rel", "hostile");
-            j.set("why", "bandit");
+            j.set("why", world_.storyFoeOf(e.id) ? "a foe" : "bandit");   // (Doc 86, C10: a story's foe is no bandit.)
         }
         if (!e.npc)
             if (const auto portrait = visiblePortrait(e.id, id); !portrait.empty())
@@ -6836,7 +6836,8 @@ void Game::command(Connection* c, const std::string& raw)
             }
             if (npc->transient)
             {
-                system(c, world_.hostile(target)                 ? "They want your purse, not your conversation."
+                system(c, world_.storyFoeOf(target)              ? "They want a fight, not your conversation."
+                          : world_.hostile(target)              ? "They want your purse, not your conversation."
                           : world_.visitorLeaves(target) >= 0 ? npc->name + " has nothing to say to you just now."
                                                               : "The carters are too busy with the road to talk.");
                 return;

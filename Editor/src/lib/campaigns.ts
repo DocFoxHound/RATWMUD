@@ -128,7 +128,7 @@ export function valueText(v: Value | undefined, type: string | undefined, names:
 /** A value a firing or a command changed (the timeline's "watches 5 → 6"). */
 export interface Change { what: 'counter' | 'timer'; key: string; scope?: string; wolf?: string; before: Value; after: Value; type?: string }
 export type CommandKind = 'hold' | 'resume' | 'stop' | 'signal' | 'fire' | 'enable' | 'disable' | 'enter' | 'set' | 'timer' | 'mission' | 'order' | 'tell' | 'scene' | 'migrate'
-    | 'objective' | 'quest' | 'participant' | 'story-event' | 'advance';
+    | 'objective' | 'quest' | 'participant' | 'story-event' | 'advance' | 'foe';
 /** One thing a move onto a new version keeps, resets, defaults, drops or adds (story_program.migration), with why. */
 export interface MigrationLine {
     what: 'phase' | 'variable' | 'timer' | 'wait' | 'mission' | 'fired' | 'count' | 'off' | 'vote' | 'steps' | 'seed'; key: string;
@@ -181,6 +181,16 @@ export interface Firing {
     /** Doc 86, C9: a figure of the realm the story set or cleared, and the row it replaced (null: there was none). */
     figure?: {id: string; previous: Record<string, unknown> | null};
 }
+/** Doc 86, C10: one of a run's foes now (story_runner.foes_now): a foe it brought, or a resident it made one (outlaw). */
+export interface FoeNow { camp: string; foe: string; outlaw: boolean; name: string; strength: string; band: number; left?: number | null;
+    fighting: boolean; endsAt?: number | null }
+/** The Foes panel's words for one: who, how strong, the band standing, and the time left (as of the world's last save). */
+export function foeLine(f: FoeNow, names: Record<string, string>, nowSeconds: number): string {
+    const who = f.outlaw ? `${nameOf(names, f.foe)} (a resident made a foe)` : f.name ? `${f.name} (${f.foe})` : f.foe;
+    const band = !f.band ? 'no followers' : f.left === undefined || f.left === null ? `a band of ${f.band}` : `${f.left} of ${f.band} followers standing`;
+    const left = f.endsAt ? Math.max(0, Math.round((f.endsAt - nowSeconds) / 60)) : null;
+    return `${who}, ${f.strength}, ${band}${left === null ? '' : `, ${left === 0 ? 'its time all but up' : `about ${left} minute${left === 1 ? '' : 's'} left`}`}${f.fighting ? ' · fighting now' : ''}`;
+}
 export interface RunDetail extends RunRow {
     state: RunState | null; program?: Record<string, unknown> & {title: string; id: string}; approvedBy: string; cursor: number; now: Now;
     guestVoices: string[]; directions: {npc: string; visit: number; receipt: number; status: string}[]; signals: string[];
@@ -192,6 +202,8 @@ export interface RunDetail extends RunRow {
     quests?: QuestBoard[]; audience?: Audience; parties?: Record<string, string>;
     /** Phase 7: effects the game refused, held for their wolf until they are next in the world. */
     whenHere?: HeldForWolf[];
+    /** Doc 86, C10: the run's foes in the world, as the game last saved them (the Foes panel). */
+    foes?: FoeNow[];
     /** Phase 10: the campaign it is a chapter of; the chapters it waits to start, has started, and the one that started it. */
     campaign?: Campaign | null; chapterStarts?: ChapterStart[]; chaptersStarted?: {story: string; run?: string; refused?: string}[];
     chapterOf?: {campaign: string; from: string; story: string; chapter: number} | null;
@@ -564,7 +576,7 @@ const PRETTY: Record<CommandKind, string> = {
     disable: 'turned a trigger off', enter: 'went to a phase', set: 'set a variable', timer: 'changed a timer', mission: 'changed a mission',
     order: 'dealt with an order', tell: 'told the wolves', scene: 'started a scene', migrate: 'moved it onto a new version',
     objective: 'changed an objective', quest: 'changed a quest', participant: 'changed who takes part', 'story-event': 'heard of another story',
-    advance: 'advanced it (its Readiness)',
+    advance: 'advanced it (its Readiness)', foe: 'sent a foe away',
 };
 const OBJ_WORDS: Record<string, string> = {complete: 'completed', progress: 'added to', reveal: 'revealed', fail: 'failed', reset: 'reset'};
 const QUEST_WORDS: Record<string, string> = {give: 'gave', take: 'took away', complete: 'completed', fail: 'failed'};
@@ -595,6 +607,8 @@ export function commandLine(kind: CommandKind, payload: Record<string, unknown>,
         case 'advance': { const to = p.to ? ` to ${p.to}` : '';
             if (p.when === 'then') return `Advance${to} at ${p.thenWords ?? 'its next moment'}${p.anyway ? ' (anyway)' : ''}`;
             return p.anyway ? `Advance${to} now anyway${p.notReady ? ` (not ready: ${p.notReady})` : ''}` : `Advance${to} now (ready)`; }
+        // (Doc 86, C10: the Foes panel's Send away.)
+        case 'foe': return `sent ${nameOf(names, String(p.foe))} away`;
         default: return PRETTY[kind] ?? kind;
     }
 }

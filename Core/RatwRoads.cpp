@@ -449,7 +449,7 @@ Result World::completeContract(const std::string& contractId, const std::string&
         {
             if (c.kind == "bounty")
                 for (auto& camp : roads_.camps)
-                    if (camp.id == c.target)
+                    if (camp.id == c.target && !storyFoeCamp(camp.id))   // (A story's foe is never cleared so.)
                         camp.active = false;
             settleContract(c, "done", by);
             return {true, "Done: " + c.detail + ".", c.id};
@@ -1032,8 +1032,8 @@ void World::caravanEntered(Caravan& c, const Entity& wagon)
     for (auto& camp : roads_.camps)
     {
         // A camp that has just robbed someone lies low with its loot for a couple of days.
-        if (!camp.active || camp.cell != cellId || calendarDays_ - camp.lastRaid < 2)
-            continue;
+        if (!camp.active || camp.cell != cellId || calendarDays_ - camp.lastRaid < 2 || storyFoeCamp(camp.id))
+            continue;                               // (Doc 86, C10: a story's foe robs no wagon.)
         // Hungrier and stronger bandits are bolder; guards, and the carters' own caution, keep them off. Escorts
         // count only if they are there.
         int guards = c.guards;
@@ -1505,6 +1505,8 @@ void World::roadsDaily()
             continue;
         auto camp = std::find_if(roads_.camps.begin(), roads_.camps.end(), [&](const BanditCamp& b) { return b.id == k.target; });
         const auto* town = roadMarket(k.town);
+        if (camp != roads_.camps.end() && storyFoeCamp(camp->id))
+            continue;                               // (Doc 86, C10: the Watch never goes out after a story's foe.)
         if (camp == roads_.camps.end() || !camp->active)
         {
             settleContract(k, k.status == "taken" ? "expired" : "done", std::string());
@@ -1732,7 +1734,7 @@ bool World::hostile(const std::string& id) const
 std::int64_t World::banditDemand(const std::string& player) const
 {
     for (const auto& e : encounters_)
-        if (e.player == player && !e.creeping)       // (Creeping up, they haven't asked yet.)
+        if (e.player == player && !e.creeping && !storyFoeCamp(e.camp))   // (Creeping up, they haven't asked yet; a foe never asks.)
             return std::max<std::int64_t>(e.demand, e.fighting ? 1 : 0);
     return 0;
 }
@@ -2159,7 +2161,7 @@ Result World::payBandits(const std::string& player, const std::string& bandit)
     if (!p || p->npc || p->dead)
         return {false, "No such character.", {}};
     auto* enc = encounterWith(player);
-    if (!camp || !enc || enc->camp != camp->id)
+    if (!camp || !enc || enc->camp != camp->id || storyFoeCamp(camp->id))   // (Doc 86, C10: a story's foe is not paid off.)
         return {false, "Nobody is asking you for anything.", bandit};
     const auto* purse = society_.account(player);
     const std::int64_t cash = purse ? purse->cash : 0;

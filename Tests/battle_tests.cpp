@@ -2352,6 +2352,193 @@ void storyFoes()
     expect(count(seen, "foe defeated") == 1 && wren->dead && count(seen, "death") == 1, "killed if beaten: she dies of it");
     expect(!w.outlawResident(outlaw).ok, "and the dead are refused");
 }
+
+// After review (doc 86, Phase 7): a leader of the story's own who breaks off is 'foe fled' (fled); a story's foe asks no purse
+// and is never paid off; a resident made a foe is held where they were made one, their band beside them; a story that ends
+// mid-fight takes the resident out of it and on their feet; every foe event carries the run's mark.
+std::pair<int, int> farEdge(const Battle& b, const std::string& from)
+{
+    // The arena's edge tile farthest from everyone on the other side of `from`.
+    const auto* me = b.fighter(from);
+    std::pair<int, int> best{-1, -1};
+    int far = -1;
+    for (int y = b.y0; y < b.y0 + b.h; ++y)
+        for (int x = b.x0; x < b.x0 + b.w; ++x)
+        {
+            if (!b.onEdge(x, y))
+                continue;
+            int near = 1 << 20;
+            for (const auto& o : b.fighters)
+                if (o.side != me->side)
+                    near = std::min(near, std::max(std::abs(o.x - x), std::abs(o.y - y)));
+            if (near > far)
+                far = near, best = {x, y};
+        }
+    return best;
+}
+void ready(World& w, Entity& ada)
+{
+    for (int i = 0; i < 600 && w.inBattle("ada"); ++i)
+        w.tick(.1);
+    up(ada);
+    ada.stamina = 100;
+    for (int i = 0; i < 100; ++i)                             // (Finding her feet after the last fight.)
+        w.tick(.1);
+}
+void afterReview()
+{
+    auto w = greyfen();
+    std::vector<WorldEvent> seen;
+    w.takeEvents();
+    auto* sloe = w.entity("sloe");
+    sloe->leaderId = "test-frozen";
+    const auto cell = sloe->cellId;
+    const auto at = openNear(w, cell, sloe->position, 3);
+    const auto mark = std::int64_t(ratw::foes::runMark("world-run"));
+    auto& ada = w.addPlayer("ada", "Ada");
+    ada.cellId = cell;
+    ada.fightingSkill = 150;
+    for (const auto& [slot, item] : std::vector<std::pair<std::string, std::string>>{
+             {"body", "mail_coat"}, {"throat", "steel_gorget"}, {"head", "kettle_helm"}, {"paws", "splinted_greaves"}})
+        ada.worn[slot] = item;
+
+    // ---- a foe.add leader who breaks off: 'foe fled' (fled), the run's mark on it; the foe ended "fled".
+    auto s = spec(w, "captain", cell, at, "tough", 0);
+    expect(w.addStoryFoe(s).ok, "the Captain comes");
+    const std::string leader = "road:" + s.camp + ":0";
+    ada.position = openNear(w, cell, at, 1);
+    auto r = w.attack("ada", leader);
+    expect(r.ok, "Ada sets on the Captain: " + r.message);
+    {
+        auto* b = const_cast<Battle*>(w.battleOf("ada"));
+        auto* lf = b->fighter(leader);
+        const auto [ex, ey] = farEdge(*b, leader);
+        expect(ex >= 0, "an edge of the arena to run from");
+        lf->x = ex;
+        lf->y = ey;
+        lf->acting = true;                                    // (His turn, at the edge, nobody beside him: he goes.)
+        r = w.battleAct(leader, "flee");
+        expect(r.ok && lf->status == "fled", "the Captain breaks off: " + r.message);
+    }
+    for (double t = 0; t < 20 && (w.inBattle("ada") || w.storyFoe(s.camp)); t += .1)
+    {
+        w.tick(.1);
+        for (auto& e : w.takeEvents())
+            seen.push_back(e);
+    }
+    const auto fled = std::find_if(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "foe fled"; });
+    expect(fled != seen.end() && fled->target == "captain" && fled->item == "fled" && fled->coins == mark,
+           "'foe fled' (fled) for a leader of the story's own, with the run's mark");
+    expect(!w.storyFoe(s.camp) && w.storyFoeEndedHow(s.camp) == "fled" && !w.entity(leader), "and the foe ended fled, gone");
+
+    // ---- a story's foe asks no purse: after a fight it survives, nothing to pay and nobody to pay.
+    seen.clear();
+    ready(w, ada);
+    w.society().openAccount("ada");
+    auto warden = spec(w, "warden", cell, openNear(w, cell, at, 2), "champion", 0);
+    expect(w.addStoryFoe(warden).ok, "the Warden comes");
+    const std::string wardenId = "road:" + warden.camp + ":0";
+    ada.position = openNear(w, cell, {warden.x, warden.y}, 1);
+    r = w.attack("ada", wardenId);
+    expect(r.ok, "Ada sets on the Warden: " + r.message);
+    expect(w.banditDemand("ada") == 0, "no purse asked in the fight");
+    expect(w.endFightInDraw("ada").ok, "called a draw");
+    for (int i = 0; i < 600 && w.inBattle("ada"); ++i)
+        w.tick(.1);
+    expect(w.storyFoe(warden.camp) && w.entity(wardenId), "the Warden stands");
+    expect(w.banditDemand("ada") == 0, "and asks nothing of Ada");
+    r = w.payBandits("ada", wardenId);
+    expect(!r.ok && r.message == "Nobody is asking you for anything.", "a story's foe is never paid off: " + r.message);
+    expect(!w.society().account("bandits:" + warden.camp), "no loot account");
+    expect(w.endStoryFoe(warden.camp, {}), "sent away");
+
+    // ---- a story ends mid-fight: the resident made a foe is out of it, on their feet, let go; and between the leader's fall
+    // and the fight's end too (no foe then to get them up).
+    auto outlaw = spec(w, "wren", cell, at, "champion", 0);
+    outlaw.camp = "foe_0badf00d_npc-wren";
+    outlaw.npc = "wren";
+    auto* wren = w.entity("wren");
+    const auto playUntil = [&](const std::string& kind, double limit) {
+        test::takeGround(w, "ada");
+        for (double t = 0; t < limit; t += .1)
+        {
+            if (const auto* b = w.battleOf("ada"); b && !b->over)
+                test::playTurn(w, "ada");
+            w.tick(.1);
+            bool hit = false;
+            for (auto& e : w.takeEvents())
+            {
+                hit |= e.kind == kind;
+                seen.push_back(e);
+            }
+            if (hit || !w.inBattle("ada"))
+                return hit;
+        }
+        return false;
+    };
+    ready(w, ada);
+    wren->hurt = 0;
+    outlaw.until = w.time() + 3600;
+    expect(w.outlawResident(outlaw).ok, "Wren a foe");
+    expect(wren->sceneDirected && wren->activity == "standing against the wolves", "held where she stands while a foe");
+    ada.cellId = wren->cellId;
+    ada.position = openNear(w, wren->cellId, wren->position, 1);
+    r = w.attack("ada", "wren");
+    expect(r.ok, "Ada sets on Wren: " + r.message);
+    for (int i = 0; i < 30; ++i)
+        w.tick(.1);
+    expect(w.inBattle("wren"), "they fight");
+    expect(w.endStoryFoe(outlaw.camp, {}, true), "the story ends mid-fight");
+    expect(!w.battleOf("wren") && !w.storyFoeOf("wren") && wren->downedLeft <= 0 && !wren->dead && !wren->sceneDirected,
+           "Wren out of the fight, herself again, let go");
+    for (int i = 0; i < 600 && w.inBattle("ada"); ++i)
+        w.tick(.1);
+    expect(!w.inBattle("ada") && !wren->dead, "the fight ends, and nobody fights a plain resident on");
+    seen.clear();
+    ready(w, ada);
+    wren->hurt = 80;                                          // (Soon down.)
+    outlaw.until = w.time() + 3600;
+    expect(w.outlawResident(outlaw).ok, "Wren a foe again");
+    ada.cellId = wren->cellId;
+    ada.position = openNear(w, wren->cellId, wren->position, 1);
+    r = w.attack("ada", "wren");
+    expect(r.ok, "Ada sets on Wren again: " + r.message);
+    expect(playUntil("foe defeated", 900), "Wren is beaten");
+    const auto beaten = std::find_if(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "foe defeated"; });
+    expect(beaten->coins == mark, "'foe defeated' carries the run's mark");
+    expect(w.battleOf("wren") && wren->downedLeft >= 1e5, "down, the fight over and not yet finished");
+    expect(w.endStoryFoe(outlaw.camp, {}, true), "the story ends then");
+    expect(!w.battleOf("wren") && wren->downedLeft <= 0 && !wren->dead, "Wren on her feet, out of it: never lying down for good");
+    for (int i = 0; i < 600 && w.inBattle("ada"); ++i)
+        w.tick(.1);
+    // (One left lying so with no foe and no fight, a restart say, gets up.)
+    wren->downedLeft = 1e6;
+    w.tick(.5);
+    expect(wren->downedLeft <= 0 && !wren->dead, "nobody lies a lifetime in the road");
+
+    // ---- a resident made a foe at the end of her day keeps her ground, her band beside her, and goes home after.
+    auto evening = greyfen();
+    evening.setTimeOfDay(17.4);
+    evening.tick(1);
+    auto* her = evening.entity("wren");
+    auto late = spec(evening, "wren", her->cellId, her->position, "tough", 1);
+    late.camp = "foe_0badf00d_npc-wren";
+    late.npc = "wren";
+    late.until = evening.time() + 2400;
+    expect(evening.outlawResident(late).ok, "Wren a foe at the day's end");
+    const auto where = her->position;
+    const auto whereCell = her->cellId;
+    for (int i = 0; i < 1800; ++i)
+        evening.tick(1);
+    const auto* band = evening.entity("road:" + late.camp + ":1");
+    expect(her->cellId == whereCell && std::hypot(her->position.x - where.x, her->position.y - where.y) < 1.5 && her->sceneDirected,
+           "half an hour on, she keeps the ground where she was made a foe");
+    expect(band && band->cellId == her->cellId && std::hypot(band->position.x - her->position.x, band->position.y - her->position.y) < 4,
+           "her follower beside her");
+    for (int i = 0; i < 900 && evening.storyFoe(late.camp); ++i)
+        evening.tick(1);
+    expect(!evening.storyFoe(late.camp) && !her->sceneDirected && her->activity != "standing against the wolves", "her time up, she is let go");
+}
 } // namespace foefights
 
 int main()
@@ -2397,6 +2584,7 @@ int main()
         fightTally();
         devConsoleTeamFight();
         foefights::storyFoes();
+        foefights::afterReview();
     }
     catch (const std::exception& e)
     {

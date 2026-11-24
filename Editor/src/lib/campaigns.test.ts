@@ -497,3 +497,16 @@ test('doc 86, Phase 1b: who remembers, in words; undoing a figure', async () => 
     assert.equal(figureUndoText({id: 'nh_villain', previous: null}), 'Take the figure nh_villain away (there was none before)');
     assert.ok(figureUndoText({id: 'nh_villain', previous: {name: 'Old Brown', role: 'villain'}}).includes('Old Brown'));
 });
+
+import {commandLine as foeCommandLine, foeLine} from './campaigns.ts';
+
+test('doc 86, C10: the Foes panel in words, and Send away in the audit', () => {
+    const names = {rm113: 'Tamsin'};
+    assert.equal(foeLine({camp: 'foe_1_captain', foe: 'captain', outlaw: false, name: 'The Grey Captain', strength: 'champion', band: 4, left: 2,
+        fighting: true, endsAt: 1000 + 30 * 60}, names, 1000), 'The Grey Captain (captain), champion, 2 of 4 followers standing, about 30 minutes left · fighting now');
+    assert.equal(foeLine({camp: 'foe_1_npc-rm113', foe: 'rm113', outlaw: true, name: '', strength: 'tough', band: 0, fighting: false, endsAt: 900},
+        names, 1000), 'Tamsin (a resident made a foe), tough, no followers, its time all but up');
+    assert.equal(foeLine({camp: 'x', foe: 'rider', outlaw: false, name: '', strength: 'tough', band: 1, fighting: false}, names, 0),
+        'rider, tough, a band of 1');
+    assert.equal(foeCommandLine('foe', {do: 'leave', foe: 'rm113'}, names), 'sent Tamsin away');
+});
