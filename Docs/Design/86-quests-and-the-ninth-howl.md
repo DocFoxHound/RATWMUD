@@ -3184,3 +3184,19 @@ tiles and the console's crash, the second ran on the fixed tiles.
   all pass but `talk_scorecard_quick`, the timing gate (B1L, a director look's 99th percentile) with the 60x server
   beside it; alone it passes, two runs of two.
 - No C++ changed, so the slice's ctest stands.
+
+## Live on Ridgemere 3 (2026-11-24)
+
+- `r3-nh-live` merged into `ridgemere2` (`14d5067a`) and pushed; central deployed at `14d5067a`.
+- `ratw_ridgemere3` dumped first (`Saved/Backups/ridgemere3-before-0080-0081-20261124-133556.dump`), then migrations
+  0080 and 0081 applied. The server, the client and the Editor rebuilt; the laptop's world and its story runner restarted.
+- The 116 world variables declared (`nh_world_vars.py --apply`, by the DM account `ninth-howl`, an owner made for this;
+  its password is in the gitignored `Saved/Config/ninth-howl-dm.txt`, the tickets in `Saved/Config/ninth-howl-tickets.json`).
+- **Approved:** all 24 (`nh-purses`, 7 packs, 11 large lines, the stage pack, `ninth-howl.cleanup`, and the three acts as
+  campaigns). **Published and running:** `nh-purses`, the 7 packs, the 11 large lines, the stage pack (moved to `s12` as
+  Chapter 1 set `nh_stage`) and **Act I** (Chapter 1 in `ch1_main`). The game applied every effect, none refused.
+- **Waiting for the DM:** Act II and Act III (approved, not published; publish each from the Campaigns console when the
+  act before waits in its interlude); `ninth-howl.cleanup` (approved, published only to abandon an act); the
+  `warden_order` faction with Gorm Plankgate a ranked member, before Chapter 5 closes; a client and Editor release after
+  0.1.10 (the Campaigns console's readiness bars, foes panel and the new workbench pickers are in the desktop Editor only
+  then; the browser client and the laptop's DM tool already have them). House purses stay off (M3's economy check).
