@@ -1,0 +1,7793 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "lq-salt-road",
+ "title": "The Salt Road",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "variables": [
+  {
+   "id": "lq_coin",
+   "type": "number",
+   "scope": "player",
+   "note": "What this line has paid the wolf in all (35 at most)."
+  },
+  {
+   "id": "lq_thin",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf was last paid in kind (a thin purse); read by N2 later for the thin thanks."
+  },
+  {
+   "id": "road",
+   "type": "text",
+   "scope": "player",
+   "note": "The road of chapter 3 this wolf took ('' none yet)."
+  },
+  {
+   "id": "packed",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf did chapter 2 in a party: their road weighs one more."
+  },
+  {
+   "id": "helpers",
+   "type": "wolves",
+   "scope": "story",
+   "note": "Wolves who have helped the shared goal this visit (each grows the goal)."
+  },
+  {
+   "id": "reckon_called",
+   "type": "switch",
+   "scope": "story",
+   "note": "The first road was taken: the tally runs 3 game days."
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The realm's voice (campaign 4.1): packs add."
+  },
+  {
+   "id": "nh_threat",
+   "type": "number",
+   "scope": "world",
+   "initial": 30,
+   "note": "The bandit threat (campaign 4.1): packs lower it, never below 0."
+  },
+  {
+   "id": "nh_stage",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The Ninth Howl chapter now running (read only)."
+  },
+  {
+   "id": "coin_saltwell_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:saltwell (day cap 22); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_saltwell_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:saltwell is above its floor (nh-purses: off below 60, on at 80)."
+  },
+  {
+   "id": "coin_ridgemere_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:ridgemere (day cap 135); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_ridgemere_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:ridgemere is above its floor (nh-purses: off below 60, on at 80)."
+  },
+  {
+   "id": "nh_voice_saltwell",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Saltwell's strand of the realm's voice (campaign 4.1)."
+  },
+  {
+   "id": "lq_salt",
+   "type": "text",
+   "scope": "world",
+   "initial": "",
+   "note": "The Salt Road: '' before it began, raided while the raids go on, then board, bought or cart (the reckoning's road)."
+  },
+  {
+   "id": "lq_salt_sacks",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Sacks the salt wagon has brought through the Waste, in all."
+  },
+  {
+   "id": "goal",
+   "type": "number",
+   "scope": "story",
+   "initial": 6,
+   "note": "Sacks through the Waste the reckoning needs: 6, and 1 more for each wolf who rode."
+  },
+  {
+   "id": "sacks_through",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "show": "Salt through the Waste",
+   "note": "Sacks through the Waste this season."
+  },
+  {
+   "id": "rides",
+   "type": "number",
+   "scope": "player",
+   "note": "How often the wolf has ridden with the salt."
+  },
+  {
+   "id": "on_brackish",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf is on Brackish Wells now."
+  },
+  {
+   "id": "drove_off",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf has driven the raiders off the flats (Brackish Wells done): the wagon is offered."
+  },
+  {
+   "id": "raiders_done",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf was there when a band on the brine flats was broken (Brackish Wells' raiders): no more bands come for them."
+  },
+  {
+   "id": "riding",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf rides with the wagon now (Ride With the Salt under way)."
+  },
+  {
+   "id": "wagon_on",
+   "type": "switch",
+   "scope": "story",
+   "note": "The salt wagon runs (after the first raiders were driven off)."
+  },
+  {
+   "id": "rolling",
+   "type": "switch",
+   "scope": "story",
+   "note": "The salt wagon is on the road now."
+  },
+  {
+   "id": "wagon_last",
+   "type": "timer",
+   "scope": "story",
+   "note": "When the last wagon set out (or the first raiders were driven off)."
+  },
+  {
+   "id": "runs",
+   "type": "number",
+   "scope": "story",
+   "note": "Wagons run so far."
+  },
+  {
+   "id": "sacks",
+   "type": "number",
+   "scope": "story",
+   "initial": 3,
+   "note": "Sacks still on this wagon (3 at the yard and 1 more for each rider after the first; a stage lost costs one)."
+  },
+  {
+   "id": "loaded_n",
+   "type": "number",
+   "scope": "story",
+   "note": "Riders at the yard when this wagon loaded: each one after the first loads one more sack."
+  },
+  {
+   "id": "held",
+   "type": "number",
+   "scope": "story",
+   "note": "Stages of this wagon that held."
+  },
+  {
+   "id": "stage_held",
+   "type": "switch",
+   "scope": "story",
+   "note": "A band at the present stage was broken."
+  },
+  {
+   "id": "spawned_brine_flats",
+   "type": "switch",
+   "scope": "story",
+   "note": "A story band stands in brine_flats."
+  },
+  {
+   "id": "spawned_brine_flats_b",
+   "type": "switch",
+   "scope": "story",
+   "note": "A story band stands in brine_flats_b."
+  },
+  {
+   "id": "spawned_dune_road",
+   "type": "switch",
+   "scope": "story",
+   "note": "A story band stands in dune_road."
+  },
+  {
+   "id": "spawned_ochre_cut",
+   "type": "switch",
+   "scope": "story",
+   "note": "A story band stands in ochre_cut."
+  },
+  {
+   "id": "t_board",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for the Market Board road."
+  },
+  {
+   "id": "t_bought",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for the bought road."
+  },
+  {
+   "id": "t_cart",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for the cart road."
+  },
+  {
+   "id": "restitution",
+   "type": "number",
+   "scope": "story",
+   "note": "Restitution paid in all (60 at most)."
+  }
+ ],
+ "regions": [
+  {
+   "id": "salt_yard",
+   "cell": "w_ridgemere_13_12",
+   "x1": 84,
+   "y1": 226,
+   "x2": 108,
+   "y2": 250
+  },
+  {
+   "id": "brine_flats",
+   "cell": "w_ridgemere_12_12",
+   "x1": 180,
+   "y1": 24,
+   "x2": 199,
+   "y2": 43
+  },
+  {
+   "id": "brine_flats_b",
+   "cell": "w_ridgemere_12_12",
+   "x1": 200,
+   "y1": 44,
+   "x2": 219,
+   "y2": 63
+  },
+  {
+   "id": "saltwell_sq",
+   "cell": "w_ridgemere_12_11",
+   "x1": 208,
+   "y1": 104,
+   "x2": 232,
+   "y2": 126
+  },
+  {
+   "id": "dune_road",
+   "cell": "w_ridgemere_11_12",
+   "x1": 192,
+   "y1": 108,
+   "x2": 211,
+   "y2": 127
+  },
+  {
+   "id": "ochre_cut",
+   "cell": "w_ridgemere_11_11",
+   "x1": 96,
+   "y1": 24,
+   "x2": 115,
+   "y2": 43
+  }
+ ],
+ "triggers": [
+  {
+   "id": "brackish-taken",
+   "on": "quest started",
+   "match": {
+    "detail": "brackish"
+   },
+   "audience": "participant",
+   "note": "The raids are on (world text raided); the wagon question is laid.",
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "on_brackish"
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "lq_salt"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "lq_salt",
+       "value": "raided"
+      }
+     ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "cty_orm_sootgate",
+      "id": "lq_salt_wagon",
+      "words": "When does the wagon load?",
+      "reply": "At the eighth hour of wagon day, from the yard by the store. Bring your teeth and a waterskin, #address#. The dunes drink a wolf dry before the raiders do.",
+      "once": true
+     }
+    }
+   ]
+  },
+  {
+   "id": "flats-dark",
+   "on": "region entered",
+   "match": {
+    "target": "brine_flats"
+   },
+   "audience": "participant",
+   "note": "A wolf on Brackish Wells walks the flats after dark: the raiders come (2 to 6 by wolves present), unless a band already stands on both stretches. Again on a later night until the wolf has seen a band broken.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "brackish",
+      "objective": "flats",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "spawned_brine_flats",
+      "is": false
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "spawned_brine_flats"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "count in region",
+        "region": "brine_flats",
+        "op": ">=",
+        "value": 5
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "brine_flats",
+          "count": 6,
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "count in region",
+          "region": "brine_flats",
+          "op": ">=",
+          "value": 3
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "brine_flats",
+            "count": 4,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "count in region",
+          "region": "brine_flats",
+          "op": ">=",
+          "value": 2
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "brine_flats",
+            "count": 3,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "brine_flats",
+          "count": 2,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "switch",
+        "var": "spawned_brine_flats_b",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "spawned_brine_flats_b"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "count in region",
+          "region": "brine_flats_b",
+          "op": ">=",
+          "value": 5
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "brine_flats_b",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "count in region",
+            "region": "brine_flats_b",
+            "op": ">=",
+            "value": 3
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "brine_flats_b",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          },
+          {
+           "if": {
+            "test": "count in region",
+            "region": "brine_flats_b",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "brine_flats_b",
+              "count": 3,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "brine_flats_b",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "hour between",
+      "from": 20,
+      "to": 4
+     },
+     {
+      "test": "switch",
+      "var": "on_brackish",
+      "is": true
+     },
+     {
+      "test": "switch",
+      "var": "raiders_done",
+      "is": false
+     }
+    ]
+   }
+  },
+  {
+   "id": "flats-dark-b",
+   "on": "region entered",
+   "match": {
+    "target": "brine_flats_b"
+   },
+   "audience": "participant",
+   "note": "The same, further down the flats road.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "brackish",
+      "objective": "flats",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "spawned_brine_flats_b",
+      "is": false
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "spawned_brine_flats_b"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "count in region",
+        "region": "brine_flats_b",
+        "op": ">=",
+        "value": 5
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "brine_flats_b",
+          "count": 6,
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "count in region",
+          "region": "brine_flats_b",
+          "op": ">=",
+          "value": 3
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "brine_flats_b",
+            "count": 4,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "count in region",
+          "region": "brine_flats_b",
+          "op": ">=",
+          "value": 2
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "brine_flats_b",
+            "count": 3,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "brine_flats_b",
+          "count": 2,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "switch",
+        "var": "spawned_brine_flats",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "spawned_brine_flats"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "count in region",
+          "region": "brine_flats",
+          "op": ">=",
+          "value": 5
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "brine_flats",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "count in region",
+            "region": "brine_flats",
+            "op": ">=",
+            "value": 3
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "brine_flats",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          },
+          {
+           "if": {
+            "test": "count in region",
+            "region": "brine_flats",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "brine_flats",
+              "count": 3,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "brine_flats",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "hour between",
+      "from": 20,
+      "to": 4
+     },
+     {
+      "test": "switch",
+      "var": "on_brackish",
+      "is": true
+     },
+     {
+      "test": "switch",
+      "var": "raiders_done",
+      "is": false
+     }
+    ]
+   }
+  },
+  {
+   "id": "tally-shown",
+   "on": "objective completed",
+   "match": {
+    "detail": "brackish",
+    "item": "raiders"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.reveal",
+      "quest": "brackish",
+      "objective": "tally",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "camp-flats",
+   "on": "camp cleared",
+   "match": {
+    "cell": "w_ridgemere_12_12"
+   },
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "spawned_brine_flats",
+      "is": true
+     },
+     {
+      "test": "switch",
+      "var": "spawned_brine_flats_b",
+      "is": true
+     }
+    ]
+   },
+   "note": "A story band on the flats broken: every wolf of Brackish Wells who was there has driven the raiders off and takes their tally.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "spawned_brine_flats_b",
+        "is": true
+       },
+       {
+        "test": "wolf in region",
+        "region": "brine_flats_b"
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "turn off",
+       "var": "spawned_brine_flats_b"
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "switch",
+        "var": "spawned_brine_flats",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "turn off",
+         "var": "spawned_brine_flats"
+        }
+       ]
+      },
+      {
+       "if": {
+        "test": "switch",
+        "var": "spawned_brine_flats_b",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "turn off",
+         "var": "spawned_brine_flats_b"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "on_brackish",
+          "is": true,
+          "of": "$each"
+         },
+         {
+          "test": "switch",
+          "var": "raiders_done",
+          "is": false,
+          "of": "$each"
+         },
+         {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "wolf in region",
+            "region": "brine_flats",
+            "who": "$each"
+           },
+           {
+            "test": "wolf in region",
+            "region": "brine_flats_b",
+            "who": "$each"
+           },
+           {
+            "test": "compare",
+            "left": {
+             "each": true
+            },
+            "op": "=",
+            "right": {
+             "field": "actor"
+            }
+           }
+          ]
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "raiders_done",
+         "of": "$each"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "brackish",
+          "objective": "raiders",
+          "player": "$each"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$each",
+          "item": "paper",
+          "quantity": 1,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "brackish",
+          "objective": "tally",
+          "player": "$each"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$each",
+          "text": "Where the raiders stood lies a tally of sacks, with a grey paw-mark at its foot.",
+          "ifRefused": "when here"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "rolling",
+      "is": true
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "stage_held"
+      }
+     ]
+    },
+    {
+     "do": "subtract",
+     "var": "nh_threat",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "nh_threat",
+     "min": 0,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "camp-dunes",
+   "on": "camp cleared",
+   "match": {
+    "cell": "w_ridgemere_11_12"
+   },
+   "if": {
+    "test": "switch",
+    "var": "spawned_dune_road",
+    "is": true
+   },
+   "note": "A story band broken on the wagon road (cell plus the spawned_ switch, decisions 4.1).",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "spawned_dune_road"
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "rolling",
+      "is": true
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "stage_held"
+      }
+     ]
+    },
+    {
+     "do": "subtract",
+     "var": "nh_threat",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "nh_threat",
+     "min": 0,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "camp-ochre",
+   "on": "camp cleared",
+   "match": {
+    "cell": "w_ridgemere_11_11"
+   },
+   "if": {
+    "test": "switch",
+    "var": "spawned_ochre_cut",
+    "is": true
+   },
+   "note": "A story band broken on the wagon road (cell plus the spawned_ switch, decisions 4.1).",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "spawned_ochre_cut"
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "rolling",
+      "is": true
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "stage_held"
+      }
+     ]
+    },
+    {
+     "do": "subtract",
+     "var": "nh_threat",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "nh_threat",
+     "min": 0,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "brackish-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "brackish"
+   },
+   "audience": "participant",
+   "note": "The first raiders driven off: the wagon runs from the next morning.",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "on_brackish"
+    },
+    {
+     "do": "turn on",
+     "var": "drove_off"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "quest.offer",
+      "quest": "ride",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "journal.note",
+      "player": "$actor",
+      "text": "The salt wagon loads at the Saltpan yard at the eighth hour, every seventh day. The Saltwell board gives notice the day before.",
+      "ifRefused": "when here"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "wagon_on",
+      "is": false
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "wagon_on"
+      },
+      {
+       "do": "start timer",
+       "var": "wagon_last"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "wagon-hour",
+   "on": "hour",
+   "match": {
+    "detail": "8"
+   },
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "wagon_on",
+      "is": true
+     },
+     {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "runs"
+          },
+          "op": "=",
+          "right": 0
+         },
+         {
+          "test": "compare",
+          "left": {
+           "since": "wagon_last"
+          },
+          "op": ">=",
+          "right": 0.75
+         }
+        ]
+       },
+       {
+        "test": "compare",
+        "left": {
+         "since": "wagon_last"
+        },
+        "op": ">=",
+        "right": 6.75
+       }
+      ]
+     }
+    ]
+   },
+   "note": "Wagon day: the eighth hour, a game day after the first raiders broke, then every 7 game days. The DM can send wagon.",
+   "actions": [
+    {
+     "do": "emit",
+     "signal": "wagon"
+    }
+   ]
+  },
+  {
+   "id": "wagon-eve",
+   "on": "hour",
+   "match": {
+    "detail": "8"
+   },
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "wagon_on",
+      "is": true
+     },
+     {
+      "test": "switch",
+      "var": "rolling",
+      "is": false
+     },
+     {
+      "test": "compare",
+      "left": {
+       "var": "runs"
+      },
+      "op": ">=",
+      "right": 1
+     },
+     {
+      "test": "compare",
+      "left": {
+       "since": "wagon_last"
+      },
+      "op": ">=",
+      "right": 5.75
+     },
+     {
+      "test": "compare",
+      "left": {
+       "since": "wagon_last"
+      },
+      "op": "<",
+      "right": 6.75
+     }
+    ]
+   },
+   "note": "The day before wagon day: the Saltwell board says the wagon loads tomorrow.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "nh_stage"
+      },
+      "op": ">=",
+      "right": 3
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "board.post",
+        "town": "saltwell",
+        "days": 1,
+        "text": "THE SALT WAGON loads at the Saltpan yard tomorrow at the eighth hour. Riders wanted against the grey-cloaked raiders on the Waste.",
+        "ifRefused": "skip"
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "board.post",
+        "town": "saltwell",
+        "days": 1,
+        "text": "THE SALT WAGON loads at the Saltpan yard tomorrow at the eighth hour. Riders wanted against the raiders on the Waste.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "wagon-go",
+   "on": "story signal",
+   "signal": "wagon",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "rolling",
+      "is": false
+     },
+     {
+      "test": "compare",
+      "left": {
+       "since": "wagon_last"
+      },
+      "op": ">=",
+      "right": 1
+     }
+    ]
+   },
+   "note": "The wagon loads (a stuck one is set going again after a day). Every wolf who drove the raiders off is offered the ride.",
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "rolling"
+    },
+    {
+     "do": "set",
+     "var": "sacks",
+     "value": 3
+    },
+    {
+     "do": "set",
+     "var": "held",
+     "value": 0
+    },
+    {
+     "do": "start timer",
+     "var": "wagon_last"
+    },
+    {
+     "do": "add",
+     "var": "runs",
+     "value": 1
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.protect",
+      "npc": "cty_orm_sootgate",
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.walk",
+      "npc": "cty_orm_sootgate",
+      "cell": "w_ridgemere_13_12",
+      "x": 96,
+      "y": 238,
+      "pace": "walk",
+      "cue": "lq_yard",
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "nh_stage"
+      },
+      "op": ">=",
+      "right": 3
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "board.post",
+        "town": "saltwell",
+        "days": 1,
+        "text": "THE SALT WAGON loads at the Saltpan yard today. Riders wanted against the grey-cloaked raiders on the Waste. Bring teeth and a waterskin.",
+        "ifRefused": "skip"
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "board.post",
+        "town": "saltwell",
+        "days": 1,
+        "text": "THE SALT WAGON loads at the Saltpan yard today. Riders wanted against the raiders on the Waste. Bring teeth and a waterskin.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "story.tell",
+      "to": "participants",
+      "text": "The salt wagon is loading at the Saltpan yard. Riders wanted.",
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "drove_off",
+          "is": true,
+          "of": "$each"
+         },
+         {
+          "test": "switch",
+          "var": "riding",
+          "is": false,
+          "of": "$each"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "quest.offer",
+          "quest": "ride",
+          "player": "$each"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "wagon-yard",
+   "on": "scene arrived",
+   "match": {
+    "actor": "cty_orm_sootgate",
+    "detail": "lq_yard"
+   },
+   "note": "Loaded: each rider at the yard; each new rider grows the shared goal by one sack, and each rider after the first loads one sack more.",
+   "actions": [
+    {
+     "do": "set",
+     "var": "loaded_n",
+     "value": 0
+    },
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "riding",
+          "is": true,
+          "of": "$each"
+         },
+         {
+          "test": "wolf in region",
+          "region": "salt_yard",
+          "who": "$each"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "ride",
+          "objective": "loaded",
+          "player": "$each"
+         }
+        },
+        {
+         "do": "add",
+         "var": "loaded_n",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "not",
+          "condition": {
+           "test": "in list",
+           "list": "helpers",
+           "value": {
+            "each": true
+           }
+          }
+         },
+         "then": [
+          {
+           "do": "list add",
+           "var": "helpers",
+           "value": {
+            "each": true
+           }
+          },
+          {
+           "do": "add",
+           "var": "goal",
+           "value": 1
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "loaded_n"
+      },
+      "op": ">=",
+      "right": 2
+     },
+     "then": [
+      {
+       "do": "add",
+       "var": "sacks",
+       "value": {
+        "minus": [
+         {
+          "var": "loaded_n"
+         },
+         1
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.walk",
+      "npc": "cty_orm_sootgate",
+      "cell": "w_ridgemere_12_12",
+      "x": 190,
+      "y": 34,
+      "pace": "walk",
+      "cue": "lq_flats",
+      "ifRefused": "skip"
+     }
+    }
+   ]
+  },
+  {
+   "id": "wagon-flats",
+   "on": "scene arrived",
+   "match": {
+    "actor": "cty_orm_sootgate",
+    "detail": "lq_flats"
+   },
+   "note": "The wagon stops on the flats: a band comes; the stage holds if its camp is broken within two game hours.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "spawned_brine_flats",
+      "is": false
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "spawned_brine_flats"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "count in region",
+        "region": "brine_flats",
+        "op": ">=",
+        "value": 5
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "brine_flats",
+          "count": 6,
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "count in region",
+          "region": "brine_flats",
+          "op": ">=",
+          "value": 3
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "brine_flats",
+            "count": 4,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "count in region",
+          "region": "brine_flats",
+          "op": ">=",
+          "value": 2
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "brine_flats",
+            "count": 3,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "brine_flats",
+          "count": 2,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "switch",
+        "var": "spawned_brine_flats_b",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "spawned_brine_flats_b"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "count in region",
+          "region": "brine_flats_b",
+          "op": ">=",
+          "value": 5
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "brine_flats_b",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "count in region",
+            "region": "brine_flats_b",
+            "op": ">=",
+            "value": 3
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "brine_flats_b",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          },
+          {
+           "if": {
+            "test": "count in region",
+            "region": "brine_flats_b",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "brine_flats_b",
+              "count": 3,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "brine_flats_b",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "turn off",
+     "var": "stage_held"
+    },
+    {
+     "do": "wait",
+     "days": 0.084
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "stage_held",
+      "is": true
+     },
+     "then": [
+      {
+       "do": "add",
+       "var": "held",
+       "value": 1
+      }
+     ],
+     "else": [
+      {
+       "do": "subtract",
+       "var": "sacks",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.walk",
+      "npc": "cty_orm_sootgate",
+      "cell": "w_ridgemere_11_12",
+      "x": 201,
+      "y": 118,
+      "pace": "walk",
+      "cue": "lq_dunes",
+      "ifRefused": "skip"
+     }
+    }
+   ]
+  },
+  {
+   "id": "wagon-dunes",
+   "on": "scene arrived",
+   "match": {
+    "actor": "cty_orm_sootgate",
+    "detail": "lq_dunes"
+   },
+   "note": "The wagon stops on the dunes: a band comes; the stage holds if its camp is broken within two game hours.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "spawned_dune_road",
+      "is": false
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "spawned_dune_road"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "count in region",
+        "region": "dune_road",
+        "op": ">=",
+        "value": 5
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "dune_road",
+          "count": 6,
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "count in region",
+          "region": "dune_road",
+          "op": ">=",
+          "value": 3
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "dune_road",
+            "count": 4,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "count in region",
+          "region": "dune_road",
+          "op": ">=",
+          "value": 2
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "dune_road",
+            "count": 3,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "dune_road",
+          "count": 2,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "switch",
+        "var": "spawned_brine_flats",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "spawned_brine_flats"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "count in region",
+          "region": "brine_flats",
+          "op": ">=",
+          "value": 5
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "brine_flats",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "count in region",
+            "region": "brine_flats",
+            "op": ">=",
+            "value": 3
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "brine_flats",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          },
+          {
+           "if": {
+            "test": "count in region",
+            "region": "brine_flats",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "brine_flats",
+              "count": 3,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "brine_flats",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "turn off",
+     "var": "stage_held"
+    },
+    {
+     "do": "wait",
+     "days": 0.084
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "stage_held",
+      "is": true
+     },
+     "then": [
+      {
+       "do": "add",
+       "var": "held",
+       "value": 1
+      }
+     ],
+     "else": [
+      {
+       "do": "subtract",
+       "var": "sacks",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.walk",
+      "npc": "cty_orm_sootgate",
+      "cell": "w_ridgemere_11_11",
+      "x": 106,
+      "y": 34,
+      "pace": "walk",
+      "cue": "lq_ochre",
+      "ifRefused": "skip"
+     }
+    }
+   ]
+  },
+  {
+   "id": "wagon-ochre",
+   "on": "scene arrived",
+   "match": {
+    "actor": "cty_orm_sootgate",
+    "detail": "lq_ochre"
+   },
+   "note": "The wagon stops on the ochre: a band comes; the stage holds if its camp is broken within two game hours.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "spawned_ochre_cut",
+      "is": false
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "spawned_ochre_cut"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "count in region",
+        "region": "ochre_cut",
+        "op": ">=",
+        "value": 5
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "ochre_cut",
+          "count": 6,
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "count in region",
+          "region": "ochre_cut",
+          "op": ">=",
+          "value": 3
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "ochre_cut",
+            "count": 4,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "count in region",
+          "region": "ochre_cut",
+          "op": ">=",
+          "value": 2
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "ochre_cut",
+            "count": 3,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "ochre_cut",
+          "count": 2,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "switch",
+        "var": "spawned_dune_road",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "spawned_dune_road"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "count in region",
+          "region": "dune_road",
+          "op": ">=",
+          "value": 5
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "dune_road",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "count in region",
+            "region": "dune_road",
+            "op": ">=",
+            "value": 3
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "dune_road",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          },
+          {
+           "if": {
+            "test": "count in region",
+            "region": "dune_road",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "dune_road",
+              "count": 3,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "dune_road",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "turn off",
+     "var": "stage_held"
+    },
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "riding",
+          "is": true,
+          "of": "$each"
+         },
+         {
+          "test": "wolf in region",
+          "region": "ochre_cut",
+          "who": "$each"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "ride",
+          "objective": "through",
+          "player": "$each"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "wait",
+     "days": 0.084
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "stage_held",
+      "is": true
+     },
+     "then": [
+      {
+       "do": "add",
+       "var": "held",
+       "value": 1
+      }
+     ],
+     "else": [
+      {
+       "do": "subtract",
+       "var": "sacks",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.walk",
+      "npc": "cty_orm_sootgate",
+      "cell": "w_ridgemere_12_11",
+      "x": 220,
+      "y": 116,
+      "pace": "walk",
+      "cue": "lq_home",
+      "ifRefused": "skip"
+     }
+    }
+   ]
+  },
+  {
+   "id": "wagon-home",
+   "on": "scene arrived",
+   "match": {
+    "actor": "cty_orm_sootgate",
+    "detail": "lq_home"
+   },
+   "note": "Home: the sacks that came through count; two stages held lower the threat by 3. The shared goal met opens the reckoning (a 7-day fallback tally).",
+   "actions": [
+    {
+     "do": "add",
+     "var": "sacks_through",
+     "value": {
+      "var": "sacks"
+     }
+    },
+    {
+     "do": "add",
+     "var": "lq_salt_sacks",
+     "value": {
+      "var": "sacks"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "held"
+      },
+      "op": ">=",
+      "right": 2
+     },
+     "then": [
+      {
+       "do": "subtract",
+       "var": "nh_threat",
+       "value": 3
+      },
+      {
+       "do": "clamp",
+       "var": "nh_threat",
+       "min": 0,
+       "max": 100
+      }
+     ]
+    },
+    {
+     "do": "turn off",
+     "var": "rolling"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.unprotect",
+      "npc": "cty_orm_sootgate",
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "story.tell",
+      "to": "participants",
+      "text": "The salt wagon is home in Saltwell.",
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "phase is",
+        "phase": "open"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "sacks_through"
+        },
+        "op": ">=",
+        "right": {
+         "var": "goal"
+        }
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "schedule",
+       "signal": "reckon",
+       "days": 7,
+       "scope": "campaign"
+      },
+      {
+       "do": "schedule",
+       "signal": "lay",
+       "days": 0.002,
+       "scope": "campaign"
+      },
+      {
+       "do": "enter",
+       "phase": "reckoning"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "wagon-blocked",
+   "on": "scene blocked",
+   "match": {
+    "actor": "cty_orm_sootgate"
+   },
+   "note": "The carter cannot get on (a blocked walk): the wagon ends where it is, and he is unprotected.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.unprotect",
+      "npc": "cty_orm_sootgate",
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "rolling",
+      "is": true
+     },
+     "then": [
+      {
+       "do": "turn off",
+       "var": "rolling"
+      },
+      {
+       "do": "add",
+       "var": "sacks_through",
+       "value": {
+        "var": "sacks"
+       }
+      },
+      {
+       "do": "add",
+       "var": "lq_salt_sacks",
+       "value": {
+        "var": "sacks"
+       }
+      },
+      {
+       "do": "note",
+       "text": "The carter could not get through: the wagon stopped where it stood."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "wagon-fought",
+   "on": "bandit falls",
+   "audience": "participant",
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "riding",
+      "is": true
+     },
+     {
+      "test": "switch",
+      "var": "rolling",
+      "is": true
+     },
+     {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "field": "cell"
+        },
+        "op": "=",
+        "right": "w_ridgemere_12_12"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "field": "cell"
+        },
+        "op": "=",
+        "right": "w_ridgemere_11_12"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "field": "cell"
+        },
+        "op": "=",
+        "right": "w_ridgemere_11_11"
+       }
+      ]
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "ride",
+      "objective": "fought",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "ride-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "ride"
+   },
+   "audience": "participant",
+   "note": "The first ride pays 6, each later one 3 (decisions 3.2; the line pays 35 at most).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "rides"
+      },
+      "op": "=",
+      "right": 0
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_saltwell_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_saltwell_day"
+          },
+          "op": "<=",
+          "right": 16
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "lq_coin"
+          },
+          "op": "<=",
+          "right": 29
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 6,
+          "purse": "town:saltwell",
+          "reason": "the Saltwell stores pay the wagon's riders",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_saltwell_day",
+         "value": 6
+        },
+        {
+         "do": "add",
+         "var": "lq_coin",
+         "value": 6
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "lq_thin"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "There was no coin to spare for you this time, so you were paid in bread.",
+          "ifRefused": "when here"
+         }
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "rode the salt wagon through the red dunes",
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.practice",
+        "player": "$actor",
+        "skill": "travel",
+        "ifRefused": "when here"
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_saltwell_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_saltwell_day"
+          },
+          "op": "<=",
+          "right": 19
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "lq_coin"
+          },
+          "op": "<=",
+          "right": 32
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 3,
+          "purse": "town:saltwell",
+          "reason": "the Saltwell stores pay the wagon's riders",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_saltwell_day",
+         "value": 3
+        },
+        {
+         "do": "add",
+         "var": "lq_coin",
+         "value": 3
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "lq_thin"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "There was no coin to spare for you this time, so you were paid in bread.",
+          "ifRefused": "when here"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ride-taken",
+   "on": "quest started",
+   "match": {
+    "detail": "ride"
+   },
+   "audience": "participant",
+   "note": "The wolf rides with this wagon (a switch: quest conditions are for phase triggers).",
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "riding"
+    }
+   ]
+  },
+  {
+   "id": "ride-dropped",
+   "on": "quest abandoned",
+   "match": {
+    "detail": "ride"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "riding"
+    }
+   ]
+  },
+  {
+   "id": "ride-tally",
+   "on": "quest completed",
+   "match": {
+    "detail": "ride"
+   },
+   "audience": "participant",
+   "note": "A rider is offered the three roads once the reckoning is open.",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "riding"
+    },
+    {
+     "do": "add",
+     "var": "rides",
+     "value": 1
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "party size",
+      "op": ">=",
+      "value": 2
+     },
+     "then": [
+      {
+       "do": "turn on",
+       "var": "packed"
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "not",
+        "condition": {
+         "test": "phase is",
+         "phase": "open"
+        }
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "road"
+        },
+        "op": "=",
+        "right": ""
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "salt_board",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "salt_bought",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "salt_cart",
+        "player": "$actor"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-board",
+   "on": "quest started",
+   "match": {
+    "detail": "salt_board"
+   },
+   "audience": "participant",
+   "note": "Quest accepted: the road weighs 1 (2 from a pack); the first one starts the 3-day tally. A second road is refused (L5 later).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "board"
+      },
+      {
+       "do": "add",
+       "var": "t_board",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "packed",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_board",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_osric_ropeworth",
+        "id": "lq_salt_osric1",
+        "words": "Your sacks have Saltpan string on them.",
+        "reply": "String's string. I buy what's brought to my door, and I don't ask whose paws tied it. That's trade. If you want a sermon, the chapel's down the hill."
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "reckoning"
+         },
+         {
+          "test": "switch",
+          "var": "reckon_called",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "reckon_called"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "salt_board",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you have chosen your road for the salt already.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-bought",
+   "on": "quest started",
+   "match": {
+    "detail": "salt_bought"
+   },
+   "audience": "participant",
+   "note": "Quest accepted: the road weighs 1 (2 from a pack); the first one starts the 3-day tally. A second road is refused (L5 later).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "bought"
+      },
+      {
+       "do": "add",
+       "var": "t_bought",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "packed",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_bought",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_osric_ropeworth",
+        "id": "lq_salt_osric1",
+        "words": "Your sacks have Saltpan string on them.",
+        "reply": "String's string. I buy what's brought to my door, and I don't ask whose paws tied it. That's trade. If you want a sermon, the chapel's down the hill."
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "reckoning"
+         },
+         {
+          "test": "switch",
+          "var": "reckon_called",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "reckon_called"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "salt_bought",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you have chosen your road for the salt already.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-cart",
+   "on": "quest started",
+   "match": {
+    "detail": "salt_cart"
+   },
+   "audience": "participant",
+   "note": "Quest accepted: the road weighs 1 (2 from a pack); the first one starts the 3-day tally. A second road is refused (L5 later).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "cart"
+      },
+      {
+       "do": "add",
+       "var": "t_cart",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "packed",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_cart",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_osric_ropeworth",
+        "id": "lq_salt_osric1",
+        "words": "Your sacks have Saltpan string on them.",
+        "reply": "String's string. I buy what's brought to my door, and I don't ask whose paws tied it. That's trade. If you want a sermon, the chapel's down the hill."
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "reckoning"
+         },
+         {
+          "test": "switch",
+          "var": "reckon_called",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "reckon_called"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "salt_cart",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you have chosen your road for the salt already.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "string-shown",
+   "on": "objective completed",
+   "match": {
+    "item": "string"
+   },
+   "audience": "participant",
+   "note": "The provisioner has seen the string: the three ends of the roads are laid in the windows (J1 later: per wolf).",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rm_osric_ropeworth",
+      "id": "lq_salt_bought",
+      "words": "Pay me, and the tally stays with me.",
+      "reply": "Now you're talking sense. Ten pennies and a sack's worth of quiet. Keep your nose pointed somewhere else, and we never spoke."
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rmx_fenwick_mossdale",
+      "id": "lq_salt_board",
+      "words": "Lay this salt tally before the Market Board.",
+      "reply": "#oath#. A tally with a grey paw on it, eh? The Board sits on Marketday. I'll put it first, and his counter can answer for it. #thanks#, neighbour."
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "cty_orm_sootgate",
+      "id": "lq_salt_cart",
+      "words": "Sell the salt off the cart, straight to the smokehouses.",
+      "reply": "No provisioner between us and the fish? I'll drive it to the Rag Market myself on Marketday. Take two sacks to the smokehouse now, so they know it's coming."
+     }
+    }
+   ]
+  },
+  {
+   "id": "board-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "salt_board"
+   },
+   "audience": "participant",
+   "note": "Before the Board: 4 from the Saltwell stores and 8 restitution 'from Vane & Daughters' (the treasury until SQ2).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_saltwell_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_saltwell_day"
+        },
+        "op": "<=",
+        "right": 18
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 31
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 4,
+        "purse": "town:saltwell",
+        "reason": "the Saltwell stores pay for the tally",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_saltwell_day",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 4
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "There was no coin to spare for you this time, so you were paid in bread.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_ridgemere_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_ridgemere_day"
+        },
+        "op": "<=",
+        "right": 127
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 27
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "restitution"
+        },
+        "op": "<=",
+        "right": 52
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 8,
+        "purse": "town:ridgemere",
+        "reason": "Vane & Daughters pays it back",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_ridgemere_day",
+       "value": 8
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 8
+      },
+      {
+       "do": "add",
+       "var": "restitution",
+       "value": 8
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The provisioner paid back no coin to you this time: the city purse was thin.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 16
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_saltwell",
+     "value": 16
+    }
+   ]
+  },
+  {
+   "id": "bought-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "salt_bought"
+   },
+   "audience": "participant",
+   "note": "The provisioner's 10 (the treasury until SQ2); Saltwell hears of it: a quarter share.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_ridgemere_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_ridgemere_day"
+        },
+        "op": "<=",
+        "right": 125
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 25
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 10,
+        "purse": "town:ridgemere",
+        "reason": "the provisioner's coin",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_ridgemere_day",
+       "value": 10
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 10
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "There was no coin to spare for you this time, so you were paid in bread.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 16
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_saltwell",
+     "value": 4
+    }
+   ]
+  },
+  {
+   "id": "cart-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "salt_cart"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_saltwell_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_saltwell_day"
+        },
+        "op": "<=",
+        "right": 10
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 23
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 12,
+        "purse": "town:saltwell",
+        "reason": "the Saltwell stores pay for the sacks sold at the old price",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_saltwell_day",
+       "value": 12
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 12
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "There was no coin to spare for you this time, so you were paid in bread.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 16
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_saltwell",
+     "value": 16
+    }
+   ]
+  },
+  {
+   "id": "lay-offers",
+   "on": "story signal",
+   "signal": "lay",
+   "note": "A new visit: the window choices are laid again, and in the reckoning every rider is offered the roads.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "cty_orm_sootgate",
+      "id": "lq_salt_wagon",
+      "words": "When does the wagon load?",
+      "reply": "At the eighth hour of wagon day, from the yard by the store. Bring your teeth and a waterskin, #address#. The dunes drink a wolf dry before the raiders do.",
+      "once": true
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "phase is",
+       "phase": "open"
+      }
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_osric_ropeworth",
+        "id": "lq_salt_osric1",
+        "words": "Your sacks have Saltpan string on them.",
+        "reply": "String's string. I buy what's brought to my door, and I don't ask whose paws tied it. That's trade. If you want a sermon, the chapel's down the hill."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_osric_ropeworth",
+        "id": "lq_salt_bought",
+        "words": "Pay me, and the tally stays with me.",
+        "reply": "Now you're talking sense. Ten pennies and a sack's worth of quiet. Keep your nose pointed somewhere else, and we never spoke."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rmx_fenwick_mossdale",
+        "id": "lq_salt_board",
+        "words": "Lay this salt tally before the Market Board.",
+        "reply": "#oath#. A tally with a grey paw on it, eh? The Board sits on Marketday. I'll put it first, and his counter can answer for it. #thanks#, neighbour."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_orm_sootgate",
+        "id": "lq_salt_cart",
+        "words": "Sell the salt off the cart, straight to the smokehouses.",
+        "reply": "No provisioner between us and the fish? I'll drive it to the Rag Market myself on Marketday. Take two sacks to the smokehouse now, so they know it's coming."
+       }
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "rides",
+             "of": "$each"
+            },
+            "op": ">=",
+            "right": 1
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "road",
+             "of": "$each"
+            },
+            "op": "=",
+            "right": ""
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "salt_board",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "salt_bought",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "salt_cart",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cart-market",
+   "on": "day begins",
+   "match": {
+    "detail": "Marketday"
+   },
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "phase is",
+      "phase": "after_cart"
+     },
+     {
+      "test": "switch",
+      "var": "rolling",
+      "is": false
+     }
+    ]
+   },
+   "note": "Off the cart: on Marketday the carter drives his salt to the Rag Market.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.protect",
+      "npc": "cty_orm_sootgate",
+      "ifRefused": "skip"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.walk",
+      "npc": "cty_orm_sootgate",
+      "cell": "w_ridgemere_0_1",
+      "x": 234,
+      "y": 52,
+      "pace": "walk",
+      "cue": "lq_market",
+      "ifRefused": "skip"
+     }
+    }
+   ]
+  },
+  {
+   "id": "cart-sold",
+   "on": "scene arrived",
+   "match": {
+    "actor": "cty_orm_sootgate",
+    "detail": "lq_market"
+   },
+   "actions": [
+    {
+     "do": "wait",
+     "days": 0.25
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "rolling",
+      "is": false
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.walk",
+        "npc": "cty_orm_sootgate",
+        "cell": "w_ridgemere_12_11",
+        "x": 220,
+        "y": 116,
+        "pace": "walk",
+        "cue": "lq_cart_home",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cart-home",
+   "on": "scene arrived",
+   "match": {
+    "actor": "cty_orm_sootgate",
+    "detail": "lq_cart_home"
+   },
+   "if": {
+    "test": "switch",
+    "var": "rolling",
+    "is": false
+   },
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.unprotect",
+      "npc": "cty_orm_sootgate",
+      "ifRefused": "skip"
+     }
+    }
+   ]
+  },
+  {
+   "id": "new-season",
+   "on": "season begins",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "phase is",
+      "phase": "after_board"
+     },
+     {
+      "test": "phase is",
+      "phase": "after_bought"
+     },
+     {
+      "test": "phase is",
+      "phase": "after_cart"
+     }
+    ]
+   },
+   "note": "A new season: the raiders are back, and the shared goal starts again (the line never empties).",
+   "actions": [
+    {
+     "do": "set",
+     "var": "goal",
+     "value": 6
+    },
+    {
+     "do": "list clear",
+     "var": "helpers"
+    },
+    {
+     "do": "set",
+     "var": "sacks_through",
+     "value": 0
+    },
+    {
+     "do": "set",
+     "var": "t_board",
+     "value": 0
+    },
+    {
+     "do": "set",
+     "var": "t_bought",
+     "value": 0
+    },
+    {
+     "do": "set",
+     "var": "t_cart",
+     "value": 0
+    },
+    {
+     "do": "turn off",
+     "var": "reckon_called"
+    },
+    {
+     "do": "set",
+     "var": "lq_salt",
+     "value": "raided"
+    },
+    {
+     "do": "cancel",
+     "signal": "salt_dear"
+    },
+    {
+     "do": "schedule",
+     "signal": "lay",
+     "days": 0.002,
+     "scope": "campaign"
+    },
+    {
+     "do": "enter",
+     "phase": "open"
+    }
+   ]
+  },
+  {
+   "id": "ledger-read",
+   "on": "objective completed",
+   "match": {
+    "item": "ledger"
+   },
+   "audience": "participant",
+   "note": "The copyist has the provisioner's buying out of the rolls (Ridgemere's plain speech).",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "journal.note",
+      "player": "$actor",
+      "text": "The copyist reads out the provisioner's buying. \"Vane and Daughters. Three times last year's Saltpan salt, and duty paid on a third of it. Somebody sells it cheap.\"",
+      "ifRefused": "skip"
+     }
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "Salt carts out of the Saltpan are robbed on the brine flats and in the red dunes. The Saltwell carter wants wolves to ride with the salt.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_orm_sootgate",
+     "text": "The salt sits in the yard and the city goes without. And this wind. Look at it. Even the weather's in on it."
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_salt_saltpan_store_door_a",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "reckoning",
+   "journal": "The salt has come through the Waste. In the city somebody buys every robbed sack: who answers for it?",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_orm_sootgate",
+     "text": "The wagons got through. Now somebody in the city can answer for the empty ones. Hear that wind? Even the sky wants a name."
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_r2_the_records_office_door_a",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "reckon",
+     "on": "story signal",
+     "signal": "reckon",
+     "note": "The tally: the road with the most weight; a tie or nobody goes before the Board (the default).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "nh_stage"
+        },
+        "op": ">=",
+        "right": 5
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "text": "The paw-mark on the salt tally matches the one on the Grayrock toll receipts.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "t_bought"
+          },
+          "op": ">",
+          "right": {
+           "var": "t_board"
+          }
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "t_bought"
+          },
+          "op": ">",
+          "right": {
+           "var": "t_cart"
+          }
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "lq_salt",
+         "value": "bought"
+        },
+        {
+         "do": "schedule",
+         "signal": "salt_dear",
+         "days": 7,
+         "scope": "campaign",
+         "repeat": true
+        },
+        {
+         "do": "schedule",
+         "signal": "lay",
+         "days": 0.002,
+         "scope": "campaign"
+        },
+        {
+         "do": "enter",
+         "phase": "after_bought"
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "t_cart"
+            },
+            "op": ">",
+            "right": {
+             "var": "t_board"
+            }
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "t_cart"
+            },
+            "op": ">",
+            "right": {
+             "var": "t_bought"
+            }
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "lq_salt",
+           "value": "cart"
+          },
+          {
+           "do": "schedule",
+           "signal": "lay",
+           "days": 0.002,
+           "scope": "campaign"
+          },
+          {
+           "do": "enter",
+           "phase": "after_cart"
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "set",
+         "var": "lq_salt",
+         "value": "board"
+        },
+        {
+         "do": "schedule",
+         "signal": "lay",
+         "days": 0.002,
+         "scope": "campaign"
+        },
+        {
+         "do": "enter",
+         "phase": "after_board"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_board",
+   "journal": "The Market Board has heard the salt tally. Saltpan salt sells at the old price, and the wagons still run.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_orm_sootgate",
+     "text": "Wagon day again, and the Board's own price in Ridgemere. I'd shake every paw on that Board if they'd let me."
+    },
+    {
+     "kind": "times.nudge",
+     "market": "ridgemere",
+     "points": -20,
+     "days": 14,
+     "words": "salt back at the old price",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "event.cancel",
+     "market": "ridgemere",
+     "event": "salt_short",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "board.post",
+     "town": "ridgemere",
+     "days": 28,
+     "text": "THE MARKET BOARD: Saltpan salt sells at the old price from this Marketday. A Northgate provisioner will answer for robbed sacks.",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "board.post",
+     "town": "saltwell",
+     "days": 28,
+     "text": "The salt road holds. Wagons load on wagon day. Water and shade to every wolf who rode.",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "after_bought",
+   "journal": "The provisioner kept his secret, and the city's salt stays dear. The wagons still run.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_orm_sootgate",
+     "text": "Salt's dear in the city again, and they say somebody took coin to keep it so. I'd like to know who. The wind won't tell me, and I've asked it."
+    },
+    {
+     "kind": "event.add",
+     "market": "ridgemere",
+     "event": "salt_short",
+     "days": 0,
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "salt-dear",
+     "on": "story signal",
+     "signal": "salt_dear",
+     "note": "Each week of the season the city is short of salt again.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "event.add",
+        "market": "ridgemere",
+        "event": "salt_short",
+        "days": 0,
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_cart",
+   "journal": "The Saltwell carter sells his salt off the cart on Marketday. The wagons still run.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_orm_sootgate",
+     "text": "Full sacks off the tail-board on Marketday. No middle wolf. The wind can blow all it likes."
+    },
+    {
+     "kind": "times.nudge",
+     "market": "saltwell",
+     "points": 20,
+     "days": 28,
+     "words": "Saltwell salt sold off the cart",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "board.post",
+     "town": "saltwell",
+     "days": 28,
+     "text": "SALTPAN SALT off the cart at the old price, Marketday at the Rag Market in Ridgemere. Full sacks, no middle wolf.",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": []
+  }
+ ],
+ "quests": [
+  {
+   "id": "brackish",
+   "title": "Brackish Wells",
+   "summary": "Salt carts out of the Saltpan come home light. Find out who robs them on the brine flats.",
+   "scope": "player",
+   "repeat": "once",
+   "giver": "cty_orm_sootgate",
+   "board": "saltwell",
+   "join": {
+    "cap": 12
+   },
+   "offer": {
+    "ask": "Your cart's come back empty, carter.",
+    "say": "#greet#, #address#. Three carts left the Saltpan and three came home light. They take the salt and never the oxen. Ask the sack-counter what goes missing, ask the raker who worked in the city, then walk the brine flats after dark. #oath#.",
+    "accept": "I'll walk the brine flats.",
+    "decline": "Not this road.",
+    "handIn": "Here's what the raiders dropped.",
+    "thanks": "#thanks#. A tally of sacks, and a grey paw-mark at its foot. Somebody counts my salt before I've loaded it. When the next wagon loads, ride with me."
+   },
+   "objectives": [
+    {
+     "id": "kite",
+     "label": "Ask the sack-counter at the Saltpan what goes missing.",
+     "on": "conversation",
+     "match": {
+      "target": "tn_mb_kite_bogditch"
+     }
+    },
+    {
+     "id": "fern",
+     "label": "Ask the raker who came home from Ridgemere with nothing.",
+     "on": "conversation",
+     "match": {
+      "target": "cty_fern_merewick"
+     }
+    },
+    {
+     "id": "flats",
+     "label": "Walk the brine flats after dark.",
+     "on": "story signal",
+     "signal": "flats_dark"
+    },
+    {
+     "id": "raiders",
+     "label": "Drive off the raiders on the flats.",
+     "on": "story signal",
+     "signal": "raiders_broken",
+     "after": [
+      "flats"
+     ]
+    },
+    {
+     "id": "tally",
+     "label": "Pick up what the raiders dropped.",
+     "on": "story signal",
+     "signal": "tally_found",
+     "hidden": true
+    }
+   ],
+   "handIn": true,
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "drove the salt raiders off the brine flats",
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch",
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "salt",
+     "quantity": 2,
+     "ifRefused": "when here"
+    }
+   ]
+  },
+  {
+   "id": "ride",
+   "title": "Ride With the Salt",
+   "summary": "Ride with the carter's wagon from the Saltpan yard through the red dunes to the Ochre cut.",
+   "scope": "player",
+   "repeat": "daily",
+   "join": {
+    "cap": 12
+   },
+   "objectives": [
+    {
+     "id": "loaded",
+     "label": "Be at the Saltpan yard when the wagon loads.",
+     "on": "story signal",
+     "signal": "wagon_loaded"
+    },
+    {
+     "id": "fought",
+     "label": "Fight off a band on the wagon's road.",
+     "on": "story signal",
+     "signal": "wagon_fought"
+    },
+    {
+     "id": "through",
+     "label": "See the wagon through the Ochre cut.",
+     "on": "story signal",
+     "signal": "wagon_through"
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "salt",
+     "quantity": 1,
+     "ifRefused": "when here"
+    }
+   ]
+  },
+  {
+   "id": "salt_board",
+   "title": "Before the Market Board",
+   "summary": "Take the raiders' tally to the warden of the Market Hall.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "reckoning",
+    "after_board",
+    "after_bought",
+    "after_cart"
+   ],
+   "objectives": [
+    {
+     "id": "door",
+     "label": "Find the shop the robbed salt goes to.",
+     "on": "enter place",
+     "match": {
+      "target": "rm_vane_daughters"
+     }
+    },
+    {
+     "id": "smoke",
+     "label": "Ask the smokehouse why the fish spoil.",
+     "on": "conversation",
+     "match": {
+      "target": "rm_rosamund_coalford"
+     }
+    },
+    {
+     "id": "string",
+     "label": "Show the provisioner the Saltpan string on his sacks.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_osric_ropeworth",
+      "detail": "lq_salt_osric1"
+     },
+     "after": [
+      "door"
+     ]
+    },
+    {
+     "id": "ledger",
+     "label": "Ask the Records Office copyist to copy his buying out of the rolls: up the stairs at the Records Office by day, at the Grey Goose after work, before the cook locks up.",
+     "on": "conversation",
+     "match": {
+      "target": "rmx_hollis_shaw"
+     },
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "board",
+     "label": "Ask the warden of the Market Hall to lay the tally before the Board.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rmx_fenwick_mossdale",
+      "detail": "lq_salt_board"
+     },
+     "after": [
+      "door",
+      "smoke",
+      "string"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "waterskin",
+     "quantity": 1,
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "salt",
+     "quantity": 4,
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce",
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "laid the salt tally before the Market Board",
+     "ifRefused": "when here"
+    }
+   ]
+  },
+  {
+   "id": "salt_bought",
+   "title": "Salt Stays Dear",
+   "summary": "Take the provisioner's coin, and keep his secret.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "reckoning",
+    "after_board",
+    "after_bought",
+    "after_cart"
+   ],
+   "objectives": [
+    {
+     "id": "door",
+     "label": "Find the shop the robbed salt goes to.",
+     "on": "enter place",
+     "match": {
+      "target": "rm_vane_daughters"
+     }
+    },
+    {
+     "id": "smoke",
+     "label": "Ask the smokehouse why the fish spoil.",
+     "on": "conversation",
+     "match": {
+      "target": "rm_rosamund_coalford"
+     }
+    },
+    {
+     "id": "string",
+     "label": "Show the provisioner the Saltpan string on his sacks.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_osric_ropeworth",
+      "detail": "lq_salt_osric1"
+     },
+     "after": [
+      "door"
+     ]
+    },
+    {
+     "id": "ledger",
+     "label": "Ask the Records Office copyist to copy his buying out of the rolls: up the stairs at the Records Office by day, at the Grey Goose after work, before the cook locks up.",
+     "on": "conversation",
+     "match": {
+      "target": "rmx_hollis_shaw"
+     },
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "bought",
+     "label": "Take the provisioner's coin for the tally.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_osric_ropeworth",
+      "detail": "lq_salt_bought"
+     },
+     "after": [
+      "door",
+      "smoke",
+      "string"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "waterskin",
+     "quantity": 1,
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "salt",
+     "quantity": 4,
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce",
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "took a provisioner's coin to keep the city's salt dear",
+     "ifRefused": "when here"
+    }
+   ]
+  },
+  {
+   "id": "salt_cart",
+   "title": "Off the Cart",
+   "summary": "Tell the carter to sell to the smokehouses straight off the cart, and take the first two sacks there.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "reckoning",
+    "after_board",
+    "after_bought",
+    "after_cart"
+   ],
+   "objectives": [
+    {
+     "id": "door",
+     "label": "Find the shop the robbed salt goes to.",
+     "on": "enter place",
+     "match": {
+      "target": "rm_vane_daughters"
+     }
+    },
+    {
+     "id": "smoke",
+     "label": "Ask the smokehouse why the fish spoil.",
+     "on": "conversation",
+     "match": {
+      "target": "rm_rosamund_coalford"
+     }
+    },
+    {
+     "id": "string",
+     "label": "Show the provisioner the Saltpan string on his sacks.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_osric_ropeworth",
+      "detail": "lq_salt_osric1"
+     },
+     "after": [
+      "door"
+     ]
+    },
+    {
+     "id": "ledger",
+     "label": "Ask the Records Office copyist to copy his buying out of the rolls: up the stairs at the Records Office by day, at the Grey Goose after work, before the cook locks up.",
+     "on": "conversation",
+     "match": {
+      "target": "rmx_hollis_shaw"
+     },
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "cart",
+     "label": "Tell the carter to sell off the cart.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "cty_orm_sootgate",
+      "detail": "lq_salt_cart"
+     },
+     "after": [
+      "door",
+      "smoke",
+      "string"
+     ]
+    },
+    {
+     "id": "sacks",
+     "label": "Take two sacks of salt to the smokehouse.",
+     "on": "gift",
+     "match": {
+      "target": "rm_rosamund_coalford",
+      "item": "salt"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "after": [
+      "cart"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "waterskin",
+     "quantity": 1,
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "salt",
+     "quantity": 4,
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce",
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "sold the Saltpan's salt off the cart at the old price",
+     "ifRefused": "when here"
+    }
+   ]
+  }
+ ],
+ "tests": [
+  {
+   "name": "Two riders; a tie goes before the Market Board; a second road is refused; a new season",
+   "cohort": [],
+   "facts": {
+    "world": {
+     "hour": 22
+    }
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1,
+     "actor": "wolf-ash",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "tn_mb_kite_bogditch"
+    },
+    {
+     "id": "e3",
+     "kind": "conversation",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "cty_fern_merewick"
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "brine_flats",
+     "cell": "w_ridgemere_12_12",
+     "x": 190,
+     "y": 34
+    },
+    {
+     "id": "e5",
+     "kind": "bandit falls",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e6",
+     "kind": "bandit falls",
+     "day": 1.041,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e7",
+     "kind": "bandit falls",
+     "day": 1.042,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e8",
+     "kind": "camp cleared",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e9",
+     "kind": "item picked up",
+     "day": 1.06,
+     "actor": "wolf-ash",
+     "item": "paper",
+     "cell": "w_ridgemere_12_12",
+     "quantity": 1
+    },
+    {
+     "id": "e10",
+     "kind": "quest handed in",
+     "day": 1.07,
+     "actor": "wolf-ash",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e11",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e12",
+     "kind": "conversation",
+     "day": 1.11,
+     "actor": "wolf-birch",
+     "target": "tn_mb_kite_bogditch"
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 1.12,
+     "actor": "wolf-birch",
+     "target": "cty_fern_merewick"
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 1.13,
+     "actor": "wolf-birch",
+     "target": "brine_flats",
+     "cell": "w_ridgemere_12_12",
+     "x": 190,
+     "y": 34
+    },
+    {
+     "id": "e15",
+     "kind": "bandit falls",
+     "day": 1.14,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e16",
+     "kind": "bandit falls",
+     "day": 1.141,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e17",
+     "kind": "bandit falls",
+     "day": 1.142,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e18",
+     "kind": "camp cleared",
+     "day": 1.15,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e19",
+     "kind": "item picked up",
+     "day": 1.16,
+     "actor": "wolf-birch",
+     "item": "paper",
+     "cell": "w_ridgemere_12_12",
+     "quantity": 1
+    },
+    {
+     "id": "e20",
+     "kind": "quest handed in",
+     "day": 1.17,
+     "actor": "wolf-birch",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e21",
+     "kind": "hour",
+     "day": 2.4,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e22",
+     "kind": "quest accepted",
+     "day": 2.401,
+     "actor": "wolf-ash",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e23",
+     "kind": "quest accepted",
+     "day": 2.401,
+     "actor": "wolf-birch",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e24",
+     "kind": "scene arrived",
+     "day": 2.41,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_yard",
+     "target": "run",
+     "cell": "w_ridgemere_13_12",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       }
+      }
+     }
+    },
+    {
+     "id": "e25",
+     "kind": "scene arrived",
+     "day": 2.42,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_flats",
+     "target": "run",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e26",
+     "kind": "bandit falls",
+     "day": 2.43,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e27",
+     "kind": "bandit falls",
+     "day": 2.43,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e28",
+     "kind": "camp cleared",
+     "day": 2.44,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e29",
+     "kind": "scene arrived",
+     "day": 2.52,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_dunes",
+     "target": "run",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e30",
+     "kind": "bandit falls",
+     "day": 2.53,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e31",
+     "kind": "bandit falls",
+     "day": 2.53,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e32",
+     "kind": "camp cleared",
+     "day": 2.54,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e33",
+     "kind": "scene arrived",
+     "day": 2.62,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_ochre",
+     "target": "run",
+     "cell": "w_ridgemere_11_11",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       }
+      }
+     }
+    },
+    {
+     "id": "e34",
+     "kind": "bandit falls",
+     "day": 2.63,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e35",
+     "kind": "bandit falls",
+     "day": 2.63,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e36",
+     "kind": "camp cleared",
+     "day": 2.64,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e37",
+     "kind": "scene arrived",
+     "day": 2.72,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_home",
+     "target": "run",
+     "cell": "w_ridgemere_12_11"
+    },
+    {
+     "id": "e38",
+     "kind": "hour",
+     "day": 9.72,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e39",
+     "kind": "quest accepted",
+     "day": 9.721,
+     "actor": "wolf-ash",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e40",
+     "kind": "quest accepted",
+     "day": 9.721,
+     "actor": "wolf-birch",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e41",
+     "kind": "scene arrived",
+     "day": 9.73,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_yard",
+     "target": "run",
+     "cell": "w_ridgemere_13_12",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       }
+      }
+     }
+    },
+    {
+     "id": "e42",
+     "kind": "scene arrived",
+     "day": 9.74,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_flats",
+     "target": "run",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e43",
+     "kind": "bandit falls",
+     "day": 9.75,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e44",
+     "kind": "bandit falls",
+     "day": 9.75,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e45",
+     "kind": "camp cleared",
+     "day": 9.76,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e46",
+     "kind": "scene arrived",
+     "day": 9.84,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_dunes",
+     "target": "run",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e47",
+     "kind": "scene arrived",
+     "day": 9.94,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_ochre",
+     "target": "run",
+     "cell": "w_ridgemere_11_11",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       }
+      }
+     }
+    },
+    {
+     "id": "e48",
+     "kind": "bandit falls",
+     "day": 9.95,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e49",
+     "kind": "bandit falls",
+     "day": 9.95,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e50",
+     "kind": "camp cleared",
+     "day": 9.96,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e51",
+     "kind": "scene arrived",
+     "day": 10.04,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_home",
+     "target": "run",
+     "cell": "w_ridgemere_12_11"
+    },
+    {
+     "id": "e52",
+     "kind": "hour",
+     "day": 17.04,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e53",
+     "kind": "quest accepted",
+     "day": 17.041,
+     "actor": "wolf-ash",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e54",
+     "kind": "quest accepted",
+     "day": 17.041,
+     "actor": "wolf-birch",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e55",
+     "kind": "scene arrived",
+     "day": 17.05,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_yard",
+     "target": "run",
+     "cell": "w_ridgemere_13_12",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       }
+      }
+     }
+    },
+    {
+     "id": "e56",
+     "kind": "scene arrived",
+     "day": 17.06,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_flats",
+     "target": "run",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e57",
+     "kind": "bandit falls",
+     "day": 17.07,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e58",
+     "kind": "bandit falls",
+     "day": 17.07,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e59",
+     "kind": "camp cleared",
+     "day": 17.08,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e60",
+     "kind": "scene arrived",
+     "day": 17.16,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_dunes",
+     "target": "run",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e61",
+     "kind": "bandit falls",
+     "day": 17.17,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e62",
+     "kind": "bandit falls",
+     "day": 17.17,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e63",
+     "kind": "camp cleared",
+     "day": 17.18,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e64",
+     "kind": "scene arrived",
+     "day": 17.26,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_ochre",
+     "target": "run",
+     "cell": "w_ridgemere_11_11",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       }
+      }
+     }
+    },
+    {
+     "id": "e65",
+     "kind": "bandit falls",
+     "day": 17.27,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e66",
+     "kind": "bandit falls",
+     "day": 17.27,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e67",
+     "kind": "camp cleared",
+     "day": 17.28,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e68",
+     "kind": "scene arrived",
+     "day": 17.36,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_home",
+     "target": "run",
+     "cell": "w_ridgemere_12_11"
+    },
+    {
+     "id": "e69",
+     "kind": "quest accepted",
+     "day": 17.56,
+     "actor": "wolf-ash",
+     "detail": "salt_board",
+     "target": "run"
+    },
+    {
+     "id": "e70",
+     "kind": "enter place",
+     "day": 17.57,
+     "actor": "wolf-ash",
+     "target": "rm_vane_daughters"
+    },
+    {
+     "id": "e71",
+     "kind": "conversation",
+     "day": 17.58,
+     "actor": "wolf-ash",
+     "target": "rm_rosamund_coalford"
+    },
+    {
+     "id": "e72",
+     "kind": "dialogue choice",
+     "day": 17.59,
+     "actor": "wolf-ash",
+     "item": "rm_osric_ropeworth",
+     "detail": "lq_salt_osric1",
+     "target": "run"
+    },
+    {
+     "id": "e73",
+     "kind": "conversation",
+     "day": 17.595,
+     "actor": "wolf-ash",
+     "target": "rmx_hollis_shaw"
+    },
+    {
+     "id": "e74",
+     "kind": "dialogue choice",
+     "day": 17.6,
+     "actor": "wolf-ash",
+     "item": "rmx_fenwick_mossdale",
+     "detail": "lq_salt_board",
+     "target": "run"
+    },
+    {
+     "id": "e75",
+     "kind": "quest accepted",
+     "day": 17.66,
+     "actor": "wolf-birch",
+     "detail": "salt_cart",
+     "target": "run"
+    },
+    {
+     "id": "e76",
+     "kind": "enter place",
+     "day": 17.67,
+     "actor": "wolf-birch",
+     "target": "rm_vane_daughters"
+    },
+    {
+     "id": "e77",
+     "kind": "conversation",
+     "day": 17.68,
+     "actor": "wolf-birch",
+     "target": "rm_rosamund_coalford"
+    },
+    {
+     "id": "e78",
+     "kind": "dialogue choice",
+     "day": 17.69,
+     "actor": "wolf-birch",
+     "item": "rm_osric_ropeworth",
+     "detail": "lq_salt_osric1",
+     "target": "run"
+    },
+    {
+     "id": "e79",
+     "kind": "dialogue choice",
+     "day": 17.7,
+     "actor": "wolf-birch",
+     "item": "cty_orm_sootgate",
+     "detail": "lq_salt_cart",
+     "target": "run"
+    },
+    {
+     "id": "e80",
+     "kind": "gift",
+     "day": 17.7,
+     "actor": "wolf-birch",
+     "target": "rm_rosamund_coalford",
+     "item": "salt",
+     "quantity": 2
+    },
+    {
+     "id": "e81",
+     "kind": "quest accepted",
+     "day": 17.86,
+     "actor": "wolf-ash",
+     "detail": "salt_bought",
+     "target": "run"
+    },
+    {
+     "id": "e82",
+     "kind": "clock",
+     "day": 20.86
+    },
+    {
+     "id": "e83",
+     "kind": "season begins",
+     "day": 37.36,
+     "detail": "winter"
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_board",
+    "open"
+   ],
+   "expectQuests": {
+    "brackish": {
+     "wolf-ash": "done",
+     "wolf-birch": "done"
+    },
+    "salt_board": {
+     "wolf-ash": "done"
+    },
+    "salt_cart": {
+     "wolf-birch": "done"
+    },
+    "salt_bought": {
+     "wolf-ash": "failed"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_salt": "raided",
+     "lq_salt_sacks": 11
+    },
+    "player": {
+     "wolf-ash": {
+      "road": "board",
+      "rides": 3
+     },
+     "wolf-birch": {
+      "road": "cart"
+     }
+    }
+   }
+  },
+  {
+   "name": "The provisioner's coin wins: the salt stays dear; a blocked wagon",
+   "cohort": [],
+   "facts": {
+    "world": {
+     "hour": 22
+    }
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "tn_mb_kite_bogditch"
+    },
+    {
+     "id": "e3",
+     "kind": "conversation",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "cty_fern_merewick"
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "brine_flats",
+     "cell": "w_ridgemere_12_12",
+     "x": 190,
+     "y": 34
+    },
+    {
+     "id": "e5",
+     "kind": "bandit falls",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e6",
+     "kind": "bandit falls",
+     "day": 1.041,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e7",
+     "kind": "bandit falls",
+     "day": 1.042,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e8",
+     "kind": "camp cleared",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e9",
+     "kind": "item picked up",
+     "day": 1.06,
+     "actor": "wolf-ash",
+     "item": "paper",
+     "cell": "w_ridgemere_12_12",
+     "quantity": 1
+    },
+    {
+     "id": "e10",
+     "kind": "quest handed in",
+     "day": 1.07,
+     "actor": "wolf-ash",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e11",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e12",
+     "kind": "conversation",
+     "day": 1.11,
+     "actor": "wolf-birch",
+     "target": "tn_mb_kite_bogditch"
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 1.12,
+     "actor": "wolf-birch",
+     "target": "cty_fern_merewick"
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 1.13,
+     "actor": "wolf-birch",
+     "target": "brine_flats",
+     "cell": "w_ridgemere_12_12",
+     "x": 190,
+     "y": 34
+    },
+    {
+     "id": "e15",
+     "kind": "bandit falls",
+     "day": 1.14,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e16",
+     "kind": "bandit falls",
+     "day": 1.141,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e17",
+     "kind": "bandit falls",
+     "day": 1.142,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e18",
+     "kind": "camp cleared",
+     "day": 1.15,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e19",
+     "kind": "item picked up",
+     "day": 1.16,
+     "actor": "wolf-birch",
+     "item": "paper",
+     "cell": "w_ridgemere_12_12",
+     "quantity": 1
+    },
+    {
+     "id": "e20",
+     "kind": "quest handed in",
+     "day": 1.17,
+     "actor": "wolf-birch",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e21",
+     "kind": "quest accepted",
+     "day": 1.2,
+     "actor": "wolf-cedar",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e22",
+     "kind": "conversation",
+     "day": 1.21,
+     "actor": "wolf-cedar",
+     "target": "tn_mb_kite_bogditch"
+    },
+    {
+     "id": "e23",
+     "kind": "conversation",
+     "day": 1.22,
+     "actor": "wolf-cedar",
+     "target": "cty_fern_merewick"
+    },
+    {
+     "id": "e24",
+     "kind": "region entered",
+     "day": 1.23,
+     "actor": "wolf-cedar",
+     "target": "brine_flats",
+     "cell": "w_ridgemere_12_12",
+     "x": 190,
+     "y": 34
+    },
+    {
+     "id": "e25",
+     "kind": "bandit falls",
+     "day": 1.24,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e26",
+     "kind": "bandit falls",
+     "day": 1.241,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e27",
+     "kind": "bandit falls",
+     "day": 1.242,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e28",
+     "kind": "camp cleared",
+     "day": 1.25,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e29",
+     "kind": "item picked up",
+     "day": 1.26,
+     "actor": "wolf-cedar",
+     "item": "paper",
+     "cell": "w_ridgemere_12_12",
+     "quantity": 1
+    },
+    {
+     "id": "e30",
+     "kind": "quest handed in",
+     "day": 1.27,
+     "actor": "wolf-cedar",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e31",
+     "kind": "hour",
+     "day": 2.4,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e32",
+     "kind": "quest accepted",
+     "day": 2.401,
+     "actor": "wolf-ash",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e33",
+     "kind": "quest accepted",
+     "day": 2.401,
+     "actor": "wolf-birch",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e34",
+     "kind": "quest accepted",
+     "day": 2.401,
+     "actor": "wolf-cedar",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e35",
+     "kind": "scene arrived",
+     "day": 2.41,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_yard",
+     "target": "run",
+     "cell": "w_ridgemere_13_12",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       },
+       "wolf-cedar": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       }
+      }
+     }
+    },
+    {
+     "id": "e36",
+     "kind": "scene arrived",
+     "day": 2.42,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_flats",
+     "target": "run",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e37",
+     "kind": "bandit falls",
+     "day": 2.43,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e38",
+     "kind": "bandit falls",
+     "day": 2.43,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e39",
+     "kind": "bandit falls",
+     "day": 2.43,
+     "actor": "wolf-cedar",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e40",
+     "kind": "camp cleared",
+     "day": 2.44,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e41",
+     "kind": "scene arrived",
+     "day": 2.52,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_dunes",
+     "target": "run",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e42",
+     "kind": "bandit falls",
+     "day": 2.53,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e43",
+     "kind": "bandit falls",
+     "day": 2.53,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e44",
+     "kind": "bandit falls",
+     "day": 2.53,
+     "actor": "wolf-cedar",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e45",
+     "kind": "camp cleared",
+     "day": 2.54,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e46",
+     "kind": "scene arrived",
+     "day": 2.62,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_ochre",
+     "target": "run",
+     "cell": "w_ridgemere_11_11",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       },
+       "wolf-cedar": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       }
+      }
+     }
+    },
+    {
+     "id": "e47",
+     "kind": "bandit falls",
+     "day": 2.63,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e48",
+     "kind": "bandit falls",
+     "day": 2.63,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e49",
+     "kind": "bandit falls",
+     "day": 2.63,
+     "actor": "wolf-cedar",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e50",
+     "kind": "camp cleared",
+     "day": 2.64,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e51",
+     "kind": "scene arrived",
+     "day": 2.72,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_home",
+     "target": "run",
+     "cell": "w_ridgemere_12_11"
+    },
+    {
+     "id": "e105",
+     "kind": "hour",
+     "day": 8.4,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e52",
+     "kind": "hour",
+     "day": 9.72,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e53",
+     "kind": "quest accepted",
+     "day": 9.721,
+     "actor": "wolf-ash",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e54",
+     "kind": "quest accepted",
+     "day": 9.721,
+     "actor": "wolf-birch",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e55",
+     "kind": "quest accepted",
+     "day": 9.721,
+     "actor": "wolf-cedar",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e56",
+     "kind": "scene arrived",
+     "day": 9.73,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_yard",
+     "target": "run",
+     "cell": "w_ridgemere_13_12",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       },
+       "wolf-cedar": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       }
+      }
+     }
+    },
+    {
+     "id": "e57",
+     "kind": "scene arrived",
+     "day": 9.74,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_flats",
+     "target": "run",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e58",
+     "kind": "bandit falls",
+     "day": 9.75,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e59",
+     "kind": "bandit falls",
+     "day": 9.75,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e60",
+     "kind": "bandit falls",
+     "day": 9.75,
+     "actor": "wolf-cedar",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e61",
+     "kind": "camp cleared",
+     "day": 9.76,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e62",
+     "kind": "scene arrived",
+     "day": 9.84,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_dunes",
+     "target": "run",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e63",
+     "kind": "bandit falls",
+     "day": 9.85,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e64",
+     "kind": "bandit falls",
+     "day": 9.85,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e65",
+     "kind": "bandit falls",
+     "day": 9.85,
+     "actor": "wolf-cedar",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e66",
+     "kind": "camp cleared",
+     "day": 9.86,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e67",
+     "kind": "scene arrived",
+     "day": 9.94,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_ochre",
+     "target": "run",
+     "cell": "w_ridgemere_11_11",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       },
+       "wolf-cedar": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       }
+      }
+     }
+    },
+    {
+     "id": "e68",
+     "kind": "bandit falls",
+     "day": 9.95,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e69",
+     "kind": "bandit falls",
+     "day": 9.95,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e70",
+     "kind": "bandit falls",
+     "day": 9.95,
+     "actor": "wolf-cedar",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e71",
+     "kind": "camp cleared",
+     "day": 9.96,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e72",
+     "kind": "scene arrived",
+     "day": 10.04,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_home",
+     "target": "run",
+     "cell": "w_ridgemere_12_11"
+    },
+    {
+     "id": "e88",
+     "kind": "quest accepted",
+     "day": 10.3,
+     "actor": "wolf-ash",
+     "detail": "salt_bought",
+     "target": "run"
+    },
+    {
+     "id": "e89",
+     "kind": "enter place",
+     "day": 10.31,
+     "actor": "wolf-ash",
+     "target": "rm_vane_daughters"
+    },
+    {
+     "id": "e90",
+     "kind": "conversation",
+     "day": 10.32,
+     "actor": "wolf-ash",
+     "target": "rm_rosamund_coalford"
+    },
+    {
+     "id": "e91",
+     "kind": "dialogue choice",
+     "day": 10.33,
+     "actor": "wolf-ash",
+     "item": "rm_osric_ropeworth",
+     "detail": "lq_salt_osric1",
+     "target": "run"
+    },
+    {
+     "id": "e92",
+     "kind": "dialogue choice",
+     "day": 10.34,
+     "actor": "wolf-ash",
+     "item": "rm_osric_ropeworth",
+     "detail": "lq_salt_bought",
+     "target": "run"
+    },
+    {
+     "id": "e93",
+     "kind": "quest accepted",
+     "day": 10.4,
+     "actor": "wolf-birch",
+     "detail": "salt_bought",
+     "target": "run"
+    },
+    {
+     "id": "e94",
+     "kind": "enter place",
+     "day": 10.41,
+     "actor": "wolf-birch",
+     "target": "rm_vane_daughters"
+    },
+    {
+     "id": "e95",
+     "kind": "conversation",
+     "day": 10.42,
+     "actor": "wolf-birch",
+     "target": "rm_rosamund_coalford"
+    },
+    {
+     "id": "e96",
+     "kind": "dialogue choice",
+     "day": 10.43,
+     "actor": "wolf-birch",
+     "item": "rm_osric_ropeworth",
+     "detail": "lq_salt_osric1",
+     "target": "run"
+    },
+    {
+     "id": "e97",
+     "kind": "dialogue choice",
+     "day": 10.44,
+     "actor": "wolf-birch",
+     "item": "rm_osric_ropeworth",
+     "detail": "lq_salt_bought",
+     "target": "run"
+    },
+    {
+     "id": "e98",
+     "kind": "quest accepted",
+     "day": 10.5,
+     "actor": "wolf-cedar",
+     "detail": "salt_cart",
+     "target": "run"
+    },
+    {
+     "id": "e99",
+     "kind": "enter place",
+     "day": 10.51,
+     "actor": "wolf-cedar",
+     "target": "rm_vane_daughters"
+    },
+    {
+     "id": "e100",
+     "kind": "conversation",
+     "day": 10.52,
+     "actor": "wolf-cedar",
+     "target": "rm_rosamund_coalford"
+    },
+    {
+     "id": "e101",
+     "kind": "dialogue choice",
+     "day": 10.53,
+     "actor": "wolf-cedar",
+     "item": "rm_osric_ropeworth",
+     "detail": "lq_salt_osric1",
+     "target": "run"
+    },
+    {
+     "id": "e104",
+     "kind": "clock",
+     "day": 13.6
+    },
+    {
+     "id": "e73",
+     "kind": "hour",
+     "day": 17.04,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e74",
+     "kind": "scene blocked",
+     "day": 17.09,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_yard",
+     "target": "run"
+    },
+    {
+     "id": "e75",
+     "kind": "hour",
+     "day": 24.04,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e76",
+     "kind": "quest accepted",
+     "day": 24.041,
+     "actor": "wolf-ash",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e77",
+     "kind": "quest accepted",
+     "day": 24.041,
+     "actor": "wolf-birch",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e78",
+     "kind": "quest accepted",
+     "day": 24.041,
+     "actor": "wolf-cedar",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e79",
+     "kind": "scene arrived",
+     "day": 24.05,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_yard",
+     "target": "run",
+     "cell": "w_ridgemere_13_12",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       },
+       "wolf-cedar": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       }
+      }
+     }
+    },
+    {
+     "id": "e80",
+     "kind": "scene arrived",
+     "day": 24.06,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_flats",
+     "target": "run",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e81",
+     "kind": "scene arrived",
+     "day": 24.16,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_dunes",
+     "target": "run",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e82",
+     "kind": "bandit falls",
+     "day": 24.17,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e83",
+     "kind": "bandit falls",
+     "day": 24.17,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e84",
+     "kind": "bandit falls",
+     "day": 24.17,
+     "actor": "wolf-cedar",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e85",
+     "kind": "camp cleared",
+     "day": 24.18,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e86",
+     "kind": "scene arrived",
+     "day": 24.26,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_ochre",
+     "target": "run",
+     "cell": "w_ridgemere_11_11",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       },
+       "wolf-cedar": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       }
+      }
+     }
+    },
+    {
+     "id": "e87",
+     "kind": "scene arrived",
+     "day": 24.36,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_home",
+     "target": "run",
+     "cell": "w_ridgemere_12_11"
+    },
+    {
+     "id": "e102",
+     "kind": "clock",
+     "day": 27.86
+    },
+    {
+     "id": "e103",
+     "kind": "clock",
+     "day": 35.36
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_bought"
+   ],
+   "expectQuests": {
+    "salt_bought": {
+     "wolf-ash": "done",
+     "wolf-birch": "done"
+    },
+    "salt_cart": {
+     "wolf-cedar": "active"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_salt": "bought"
+    },
+    "story": {
+     "t_bought": 2,
+     "t_cart": 1
+    }
+   }
+  },
+  {
+   "name": "The cart wins from a pack; Marketday at the Rag Market; the stores run thin",
+   "cohort": [],
+   "facts": {
+    "world": {
+     "hour": 22
+    }
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1,
+     "actor": "wolf-ash",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "tn_mb_kite_bogditch"
+    },
+    {
+     "id": "e3",
+     "kind": "conversation",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "cty_fern_merewick"
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "brine_flats",
+     "cell": "w_ridgemere_12_12",
+     "x": 190,
+     "y": 34
+    },
+    {
+     "id": "e5",
+     "kind": "bandit falls",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e6",
+     "kind": "bandit falls",
+     "day": 1.041,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e7",
+     "kind": "bandit falls",
+     "day": 1.042,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e8",
+     "kind": "camp cleared",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e9",
+     "kind": "item picked up",
+     "day": 1.06,
+     "actor": "wolf-ash",
+     "item": "paper",
+     "cell": "w_ridgemere_12_12",
+     "quantity": 1
+    },
+    {
+     "id": "e10",
+     "kind": "quest handed in",
+     "day": 1.07,
+     "actor": "wolf-ash",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e11",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e12",
+     "kind": "conversation",
+     "day": 1.11,
+     "actor": "wolf-birch",
+     "target": "tn_mb_kite_bogditch"
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 1.12,
+     "actor": "wolf-birch",
+     "target": "cty_fern_merewick"
+    },
+    {
+     "id": "e14",
+     "kind": "region entered",
+     "day": 1.13,
+     "actor": "wolf-birch",
+     "target": "brine_flats",
+     "cell": "w_ridgemere_12_12",
+     "x": 190,
+     "y": 34
+    },
+    {
+     "id": "e15",
+     "kind": "bandit falls",
+     "day": 1.14,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e16",
+     "kind": "bandit falls",
+     "day": 1.141,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e17",
+     "kind": "bandit falls",
+     "day": 1.142,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e18",
+     "kind": "camp cleared",
+     "day": 1.15,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e19",
+     "kind": "item picked up",
+     "day": 1.16,
+     "actor": "wolf-birch",
+     "item": "paper",
+     "cell": "w_ridgemere_12_12",
+     "quantity": 1
+    },
+    {
+     "id": "e20",
+     "kind": "quest handed in",
+     "day": 1.17,
+     "actor": "wolf-birch",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e21",
+     "kind": "hour",
+     "day": 2.4,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e22",
+     "kind": "quest accepted",
+     "day": 2.401,
+     "actor": "wolf-ash",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e23",
+     "kind": "quest accepted",
+     "day": 2.401,
+     "actor": "wolf-birch",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e24",
+     "kind": "scene arrived",
+     "day": 2.41,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_yard",
+     "target": "run",
+     "cell": "w_ridgemere_13_12",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e25",
+     "kind": "scene arrived",
+     "day": 2.42,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_flats",
+     "target": "run",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e26",
+     "kind": "bandit falls",
+     "day": 2.43,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e27",
+     "kind": "bandit falls",
+     "day": 2.43,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e28",
+     "kind": "camp cleared",
+     "day": 2.44,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e29",
+     "kind": "scene arrived",
+     "day": 2.52,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_dunes",
+     "target": "run",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e30",
+     "kind": "bandit falls",
+     "day": 2.53,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e31",
+     "kind": "bandit falls",
+     "day": 2.53,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e32",
+     "kind": "camp cleared",
+     "day": 2.54,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e33",
+     "kind": "scene arrived",
+     "day": 2.62,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_ochre",
+     "target": "run",
+     "cell": "w_ridgemere_11_11",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e34",
+     "kind": "bandit falls",
+     "day": 2.63,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e35",
+     "kind": "bandit falls",
+     "day": 2.63,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e36",
+     "kind": "camp cleared",
+     "day": 2.64,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e37",
+     "kind": "scene arrived",
+     "day": 2.72,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_home",
+     "target": "run",
+     "cell": "w_ridgemere_12_11"
+    },
+    {
+     "id": "e38",
+     "kind": "hour",
+     "day": 9.72,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e39",
+     "kind": "quest accepted",
+     "day": 9.721,
+     "actor": "wolf-ash",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e40",
+     "kind": "quest accepted",
+     "day": 9.721,
+     "actor": "wolf-birch",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e41",
+     "kind": "scene arrived",
+     "day": 9.73,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_yard",
+     "target": "run",
+     "cell": "w_ridgemere_13_12",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e42",
+     "kind": "scene arrived",
+     "day": 9.74,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_flats",
+     "target": "run",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e43",
+     "kind": "bandit falls",
+     "day": 9.75,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e44",
+     "kind": "bandit falls",
+     "day": 9.75,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e45",
+     "kind": "camp cleared",
+     "day": 9.76,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e46",
+     "kind": "scene arrived",
+     "day": 9.84,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_dunes",
+     "target": "run",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e47",
+     "kind": "bandit falls",
+     "day": 9.85,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e48",
+     "kind": "bandit falls",
+     "day": 9.85,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e49",
+     "kind": "camp cleared",
+     "day": 9.86,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e50",
+     "kind": "scene arrived",
+     "day": 9.94,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_ochre",
+     "target": "run",
+     "cell": "w_ridgemere_11_11",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e51",
+     "kind": "bandit falls",
+     "day": 9.95,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e52",
+     "kind": "bandit falls",
+     "day": 9.95,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e53",
+     "kind": "camp cleared",
+     "day": 9.96,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e54",
+     "kind": "scene arrived",
+     "day": 10.04,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_home",
+     "target": "run",
+     "cell": "w_ridgemere_12_11"
+    },
+    {
+     "id": "e77",
+     "kind": "quest accepted",
+     "day": 10.3,
+     "actor": "wolf-ash",
+     "detail": "salt_cart",
+     "target": "run"
+    },
+    {
+     "id": "e78",
+     "kind": "enter place",
+     "day": 10.31,
+     "actor": "wolf-ash",
+     "target": "rm_vane_daughters"
+    },
+    {
+     "id": "e79",
+     "kind": "conversation",
+     "day": 10.32,
+     "actor": "wolf-ash",
+     "target": "rm_rosamund_coalford"
+    },
+    {
+     "id": "e80",
+     "kind": "dialogue choice",
+     "day": 10.33,
+     "actor": "wolf-ash",
+     "item": "rm_osric_ropeworth",
+     "detail": "lq_salt_osric1",
+     "target": "run"
+    },
+    {
+     "id": "e81",
+     "kind": "dialogue choice",
+     "day": 10.34,
+     "actor": "wolf-ash",
+     "item": "cty_orm_sootgate",
+     "detail": "lq_salt_cart",
+     "target": "run"
+    },
+    {
+     "id": "e82",
+     "kind": "gift",
+     "day": 10.34,
+     "actor": "wolf-ash",
+     "target": "rm_rosamund_coalford",
+     "item": "salt",
+     "quantity": 2
+    },
+    {
+     "id": "e83",
+     "kind": "quest accepted",
+     "day": 10.4,
+     "actor": "wolf-birch",
+     "detail": "salt_board",
+     "target": "run"
+    },
+    {
+     "id": "e84",
+     "kind": "enter place",
+     "day": 10.41,
+     "actor": "wolf-birch",
+     "target": "rm_vane_daughters"
+    },
+    {
+     "id": "e85",
+     "kind": "conversation",
+     "day": 10.42,
+     "actor": "wolf-birch",
+     "target": "rm_rosamund_coalford"
+    },
+    {
+     "id": "e86",
+     "kind": "dialogue choice",
+     "day": 10.43,
+     "actor": "wolf-birch",
+     "item": "rm_osric_ropeworth",
+     "detail": "lq_salt_osric1",
+     "target": "run"
+    },
+    {
+     "id": "e91",
+     "kind": "clock",
+     "day": 13.6
+    },
+    {
+     "id": "e55",
+     "kind": "hour",
+     "day": 17.04,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e56",
+     "kind": "quest accepted",
+     "day": 17.041,
+     "actor": "wolf-ash",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e57",
+     "kind": "quest accepted",
+     "day": 17.041,
+     "actor": "wolf-birch",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e58",
+     "kind": "scene arrived",
+     "day": 17.05,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_yard",
+     "target": "run",
+     "cell": "w_ridgemere_13_12",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e59",
+     "kind": "scene arrived",
+     "day": 17.06,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_flats",
+     "target": "run",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e60",
+     "kind": "bandit falls",
+     "day": 17.07,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e61",
+     "kind": "bandit falls",
+     "day": 17.07,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e62",
+     "kind": "camp cleared",
+     "day": 17.08,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e63",
+     "kind": "scene arrived",
+     "day": 17.16,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_dunes",
+     "target": "run",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e64",
+     "kind": "scene arrived",
+     "day": 17.26,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_ochre",
+     "target": "run",
+     "cell": "w_ridgemere_11_11",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e65",
+     "kind": "scene arrived",
+     "day": 17.36,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_home",
+     "target": "run",
+     "cell": "w_ridgemere_12_11"
+    },
+    {
+     "id": "e66",
+     "kind": "hour",
+     "day": 24.36,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e67",
+     "kind": "quest accepted",
+     "day": 24.361,
+     "actor": "wolf-ash",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e68",
+     "kind": "quest accepted",
+     "day": 24.361,
+     "actor": "wolf-birch",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e69",
+     "kind": "scene arrived",
+     "day": 24.37,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_yard",
+     "target": "run",
+     "cell": "w_ridgemere_13_12",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e70",
+     "kind": "scene arrived",
+     "day": 24.38,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_flats",
+     "target": "run",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e71",
+     "kind": "bandit falls",
+     "day": 24.39,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e72",
+     "kind": "bandit falls",
+     "day": 24.39,
+     "actor": "wolf-birch",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e73",
+     "kind": "camp cleared",
+     "day": 24.4,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e74",
+     "kind": "scene arrived",
+     "day": 24.48,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_dunes",
+     "target": "run",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e75",
+     "kind": "scene arrived",
+     "day": 24.58,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_ochre",
+     "target": "run",
+     "cell": "w_ridgemere_11_11",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e76",
+     "kind": "scene arrived",
+     "day": 24.68,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_home",
+     "target": "run",
+     "cell": "w_ridgemere_12_11"
+    },
+    {
+     "id": "e87",
+     "kind": "clock",
+     "day": 28.18
+    },
+    {
+     "id": "e88",
+     "kind": "day begins",
+     "day": 28.68,
+     "detail": "Marketday",
+     "item": "winter",
+     "quantity": 4
+    },
+    {
+     "id": "e89",
+     "kind": "scene arrived",
+     "day": 28.88,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_market",
+     "target": "run",
+     "cell": "w_ridgemere_0_1"
+    },
+    {
+     "id": "e90",
+     "kind": "scene arrived",
+     "day": 29.28,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_cart_home",
+     "target": "run",
+     "cell": "w_ridgemere_12_11"
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_cart"
+   ],
+   "expectQuests": {
+    "salt_cart": {
+     "wolf-ash": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_salt": "cart"
+    },
+    "story": {
+     "t_cart": 2,
+     "t_board": 1
+    },
+    "player": {
+     "wolf-ash": {
+      "packed": true,
+      "lq_thin": true
+     },
+     "wolf-birch": {
+      "packed": false
+     }
+    }
+   }
+  },
+  {
+   "name": "Nobody takes a road: the fallback tally goes before the Board",
+   "cohort": [],
+   "facts": {
+    "world": {
+     "hour": 22
+    }
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1,
+     "actor": "wolf-ash",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "tn_mb_kite_bogditch"
+    },
+    {
+     "id": "e3",
+     "kind": "conversation",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "cty_fern_merewick"
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "brine_flats_b",
+     "cell": "w_ridgemere_12_12",
+     "x": 210,
+     "y": 54
+    },
+    {
+     "id": "e5",
+     "kind": "bandit falls",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e6",
+     "kind": "bandit falls",
+     "day": 1.041,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e7",
+     "kind": "bandit falls",
+     "day": 1.042,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e8",
+     "kind": "camp cleared",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e9",
+     "kind": "item picked up",
+     "day": 1.06,
+     "actor": "wolf-ash",
+     "item": "paper",
+     "cell": "w_ridgemere_12_12",
+     "quantity": 1
+    },
+    {
+     "id": "e10",
+     "kind": "quest handed in",
+     "day": 1.07,
+     "actor": "wolf-ash",
+     "item": "cty_orm_sootgate",
+     "detail": "brackish",
+     "target": "run"
+    },
+    {
+     "id": "e11",
+     "kind": "hour",
+     "day": 2.4,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e12",
+     "kind": "quest accepted",
+     "day": 2.401,
+     "actor": "wolf-ash",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e13",
+     "kind": "scene arrived",
+     "day": 2.41,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_yard",
+     "target": "run",
+     "cell": "w_ridgemere_13_12",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       }
+      }
+     }
+    },
+    {
+     "id": "e14",
+     "kind": "scene arrived",
+     "day": 2.42,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_flats",
+     "target": "run",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e15",
+     "kind": "bandit falls",
+     "day": 2.43,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e16",
+     "kind": "camp cleared",
+     "day": 2.44,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e17",
+     "kind": "scene arrived",
+     "day": 2.52,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_dunes",
+     "target": "run",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e18",
+     "kind": "bandit falls",
+     "day": 2.53,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e19",
+     "kind": "camp cleared",
+     "day": 2.54,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e20",
+     "kind": "scene arrived",
+     "day": 2.62,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_ochre",
+     "target": "run",
+     "cell": "w_ridgemere_11_11",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       }
+      }
+     }
+    },
+    {
+     "id": "e21",
+     "kind": "bandit falls",
+     "day": 2.63,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e22",
+     "kind": "camp cleared",
+     "day": 2.64,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e23",
+     "kind": "scene arrived",
+     "day": 2.72,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_home",
+     "target": "run",
+     "cell": "w_ridgemere_12_11"
+    },
+    {
+     "id": "e24",
+     "kind": "hour",
+     "day": 9.72,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e25",
+     "kind": "quest accepted",
+     "day": 9.721,
+     "actor": "wolf-ash",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e26",
+     "kind": "scene arrived",
+     "day": 9.73,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_yard",
+     "target": "run",
+     "cell": "w_ridgemere_13_12",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       }
+      }
+     }
+    },
+    {
+     "id": "e27",
+     "kind": "scene arrived",
+     "day": 9.74,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_flats",
+     "target": "run",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e28",
+     "kind": "bandit falls",
+     "day": 9.75,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e29",
+     "kind": "camp cleared",
+     "day": 9.76,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e30",
+     "kind": "scene arrived",
+     "day": 9.84,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_dunes",
+     "target": "run",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e31",
+     "kind": "bandit falls",
+     "day": 9.85,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e32",
+     "kind": "camp cleared",
+     "day": 9.86,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e33",
+     "kind": "scene arrived",
+     "day": 9.94,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_ochre",
+     "target": "run",
+     "cell": "w_ridgemere_11_11",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       }
+      }
+     }
+    },
+    {
+     "id": "e34",
+     "kind": "bandit falls",
+     "day": 9.95,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e35",
+     "kind": "camp cleared",
+     "day": 9.96,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e36",
+     "kind": "scene arrived",
+     "day": 10.04,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_home",
+     "target": "run",
+     "cell": "w_ridgemere_12_11"
+    },
+    {
+     "id": "e37",
+     "kind": "hour",
+     "day": 17.04,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e38",
+     "kind": "quest accepted",
+     "day": 17.041,
+     "actor": "wolf-ash",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e39",
+     "kind": "scene arrived",
+     "day": 17.05,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_yard",
+     "target": "run",
+     "cell": "w_ridgemere_13_12",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_13_12",
+        "x": 96,
+        "y": 238
+       }
+      }
+     }
+    },
+    {
+     "id": "e40",
+     "kind": "scene arrived",
+     "day": 17.06,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_flats",
+     "target": "run",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e41",
+     "kind": "bandit falls",
+     "day": 17.07,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e42",
+     "kind": "camp cleared",
+     "day": 17.08,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_12_12"
+    },
+    {
+     "id": "e43",
+     "kind": "scene arrived",
+     "day": 17.16,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_dunes",
+     "target": "run",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e44",
+     "kind": "bandit falls",
+     "day": 17.17,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e45",
+     "kind": "camp cleared",
+     "day": 17.18,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_12"
+    },
+    {
+     "id": "e46",
+     "kind": "scene arrived",
+     "day": 17.26,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_ochre",
+     "target": "run",
+     "cell": "w_ridgemere_11_11",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_11",
+        "x": 106,
+        "y": 34
+       }
+      }
+     }
+    },
+    {
+     "id": "e47",
+     "kind": "bandit falls",
+     "day": 17.27,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e48",
+     "kind": "camp cleared",
+     "day": 17.28,
+     "actor": "wolf-ash",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_11_11"
+    },
+    {
+     "id": "e49",
+     "kind": "scene arrived",
+     "day": 17.36,
+     "actor": "cty_orm_sootgate",
+     "detail": "lq_home",
+     "target": "run",
+     "cell": "w_ridgemere_12_11"
+    },
+    {
+     "id": "e50",
+     "kind": "clock",
+     "day": 24.86
+    },
+    {
+     "id": "e51",
+     "kind": "hour",
+     "day": 25.36,
+     "detail": "8",
+     "quantity": 8
+    },
+    {
+     "id": "e52",
+     "kind": "quest accepted",
+     "day": 25.37,
+     "actor": "wolf-ash",
+     "detail": "ride",
+     "target": "run"
+    },
+    {
+     "id": "e53",
+     "kind": "quest abandoned",
+     "day": 25.38,
+     "actor": "wolf-ash",
+     "detail": "ride",
+     "target": "run"
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_board"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_salt": "board"
+    }
+   }
+  }
+ ]
+}

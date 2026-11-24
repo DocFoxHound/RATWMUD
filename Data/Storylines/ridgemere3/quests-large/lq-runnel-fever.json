@@ -1,0 +1,3253 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "lq-runnel-fever",
+ "title": "The Runnel Fever",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "quietAfterHours": 0,
+ "variables": [
+  {
+   "id": "lq_runnel",
+   "type": "text",
+   "scope": "world",
+   "initial": "",
+   "note": "The Runnel Fever's lasting result: covered or drained (empty: not yet). Written by lq-runnel-fever."
+  },
+  {
+   "id": "coin_ridgemere_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:ridgemere by every story (day cap 135); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_ridgemere_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:ridgemere is above its floor: off below 60, on again at 80 (nh-purses only)."
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_voice_ridgemere",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Ridgemere's strand of the realm's voice (campaign 4.1): packs add to it."
+  },
+  {
+   "id": "nh_stage",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The Ninth Howl chapter now running (read only here: from Ch 4 the cough is said to be at the Residence)."
+  },
+  {
+   "id": "nh_b_cough",
+   "type": "switch",
+   "scope": "world",
+   "initial": false,
+   "note": "Ch 4's branch: on when the Residence's cough was tended (read only here)."
+  },
+  {
+   "id": "cured",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "show": "Coughs eased",
+   "note": "+1 a remedy carried to a new coughing household, +2 a Bad Water chapter done."
+  },
+  {
+   "id": "goal",
+   "type": "number",
+   "scope": "story",
+   "initial": 10,
+   "show": "Coughs the courts need eased",
+   "note": "The shared bar: 10, and 2 more for each wolf who helps."
+  },
+  {
+   "id": "helpers",
+   "type": "wolves",
+   "scope": "story",
+   "note": "Every wolf who eased a cough or finished Bad Water."
+  },
+  {
+   "id": "lq_sick",
+   "type": "residents",
+   "scope": "story",
+   "initial": [
+    "rm_piet_wickridge",
+    "rm_tristram_rainley",
+    "rm_mathis_plankham",
+    "rm_rupert_cindergate",
+    "rm_lotte_bilgeton",
+    "rm_mogens_greycot",
+    "rm_orm_fogmore",
+    "rm_josephine_wetmore",
+    "rm_runa_ropemarsh",
+    "rm_magnus_greycot",
+    "rm_dunstan_slagley",
+    "rmx_humphrey_sootton"
+   ],
+   "note": "The coughing households round Cistern Court (Oakum Stair, Rag End and Slop Rooms)."
+  },
+  {
+   "id": "t_cover",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Weight for the cover: 1 a wolf who takes the road, 2 in a party."
+  },
+  {
+   "id": "t_soak",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Weight for the tanner's soakaway: 1 a wolf, 2 in a party."
+  },
+  {
+   "id": "tally_on",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "A road has been taken: the reckoning is three game days off."
+  },
+  {
+   "id": "cover_wanted",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "The cover is wanted: posted, or tried again each day until the city has room."
+  },
+  {
+   "id": "cover_posted",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "The city has posted the Cistern Court cover (its project posted event came)."
+  },
+  {
+   "id": "cover_built",
+   "type": "switch",
+   "scope": "story",
+   "initial": false,
+   "note": "The Cistern Court cover is built."
+  },
+  {
+   "id": "restitution",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Draught money paid back in all (4 a wolf, 40 at most)."
+  },
+  {
+   "id": "soaking",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Soakaway roads under way: the tanner shows his choice while any is."
+  },
+  {
+   "id": "drafting",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "note": "Draught-money roads under way: the draught-seller shows his second choice while any is."
+  },
+  {
+   "id": "lq_coin",
+   "type": "number",
+   "scope": "player",
+   "initial": 0,
+   "note": "What this line has paid this wolf in all (at most 35)."
+  },
+  {
+   "id": "lq_thin",
+   "type": "switch",
+   "scope": "player",
+   "initial": false,
+   "note": "This wolf was paid in kind when the purse was thin."
+  },
+  {
+   "id": "eased",
+   "type": "residents",
+   "scope": "player",
+   "note": "The households this wolf has carried a remedy to (each counts once)."
+  },
+  {
+   "id": "road",
+   "type": "text",
+   "scope": "player",
+   "initial": "",
+   "note": "The road this wolf took in chapter 3 (cover or soak): one road a wolf, for good."
+  },
+  {
+   "id": "owed",
+   "type": "switch",
+   "scope": "player",
+   "initial": false,
+   "note": "This wolf made the draught-seller pay and still has a household to carry it to."
+  },
+  {
+   "id": "water_paid",
+   "type": "switch",
+   "scope": "player",
+   "initial": false,
+   "note": "This wolf had the first-time reward of Bad Water."
+  }
+ ],
+ "regions": [
+  {
+   "id": "cistern",
+   "cell": "w_ridgemere_1_1",
+   "x1": 4,
+   "y1": 12,
+   "x2": 24,
+   "y2": 32
+  },
+  {
+   "id": "drain",
+   "cell": "w_ridgemere_0_1",
+   "x1": 182,
+   "y1": 174,
+   "x2": 202,
+   "y2": 194
+  }
+ ],
+ "triggers": [
+  {
+   "id": "lay-offers",
+   "on": "day begins",
+   "note": "Each day: the line's choices in their windows, and the cover posted again if the city had no room for it.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rmx_dirk_langstead",
+      "id": "lq_run_wash",
+      "words": "Does the wash water smell wrong?",
+      "reply": "Sharp, like a lime-kiln, since the spring flood. The rags I wash for the market come out stiff. The washhouse told the tannery. They said their pits don't leak. Pits always leak.",
+      "once": true
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rm_rupert_fogton",
+      "id": "lq_run_rupert",
+      "words": "Does your Runnel draught do anything?",
+      "reply": "It does what the label says. It soothes. Folk want something in a bottle when their pups cough, and I sell bottles. Is that a crime now?",
+      "once": true
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rm_halvard_ashley",
+      "id": "lq_run_test",
+      "words": "What's in the Runnel draught?",
+      "reply": "Chalk, mint and river water. Runnel water, likely, which is the joke of it. Willow bark and thyme syrup do more good. I'll make them at cost for the infirmary.",
+      "once": false
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "soaking"
+      },
+      "op": ">",
+      "right": 0
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_dunstan_greywick",
+        "id": "lq_run_soak",
+        "words": "Your lime-pits drain into the Runnel.",
+        "reply": "Do they? The flood shifted the old culvert, I'll grant that. I can't shut the tannery, #address#. Half the Sump wears my leather. Bring me four of bricks for a soakaway and I'll dig it myself.",
+        "once": true
+       }
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "drafting"
+      },
+      "op": ">",
+      "right": 0
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_rupert_fogton",
+        "id": "lq_run_payback",
+        "words": "Pay back the Sump for every bottle.",
+        "reply": "Every bottle? Bright One, you'd beggar me. Here. Four pennies' worth, and carry it to the courts yourself, since you're so fond of them.",
+        "once": true
+       }
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "cover_wanted",
+        "is": true
+       },
+       {
+        "test": "switch",
+        "var": "cover_posted",
+        "is": false
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "project.post",
+        "town": "ridgemere",
+        "project": "cover",
+        "cell": "w_ridgemere_1_1",
+        "x": 14,
+        "y": 22,
+        "title": "Cistern Court cover",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "lay-offers-now",
+   "on": "quest started",
+   "audience": "participant",
+   "once": "visit",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rmx_dirk_langstead",
+      "id": "lq_run_wash",
+      "words": "Does the wash water smell wrong?",
+      "reply": "Sharp, like a lime-kiln, since the spring flood. The rags I wash for the market come out stiff. The washhouse told the tannery. They said their pits don't leak. Pits always leak.",
+      "once": true
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rm_rupert_fogton",
+      "id": "lq_run_rupert",
+      "words": "Does your Runnel draught do anything?",
+      "reply": "It does what the label says. It soothes. Folk want something in a bottle when their pups cough, and I sell bottles. Is that a crime now?",
+      "once": true
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rm_halvard_ashley",
+      "id": "lq_run_test",
+      "words": "What's in the Runnel draught?",
+      "reply": "Chalk, mint and river water. Runnel water, likely, which is the joke of it. Willow bark and thyme syrup do more good. I'll make them at cost for the infirmary.",
+      "once": false
+     }
+    }
+   ]
+  },
+  {
+   "id": "cough-news",
+   "on": "day begins",
+   "note": "From Ch 4, while the Residence's cough is untended, the nurse says the cough has reached it (campaign nh_b_cough).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "phase is",
+        "phase": "open"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "nh_stage"
+        },
+        "op": ">=",
+        "right": 4
+       },
+       {
+        "test": "switch",
+        "var": "nh_b_cough",
+        "is": false
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "enter",
+       "phase": "open_cough"
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "open_cough"
+         },
+         {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "nh_stage"
+            },
+            "op": "<",
+            "right": 4
+           },
+           {
+            "test": "switch",
+            "var": "nh_b_cough",
+            "is": true
+           }
+          ]
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "enter",
+         "phase": "open"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cough-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "cough"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "quest.offer",
+      "quest": "water",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "var": "nh_stage"
+        },
+        "op": ">=",
+        "right": 4
+       },
+       {
+        "test": "switch",
+        "var": "nh_b_cough",
+        "is": false
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "At the infirmary they whisper that the same cough has reached the Residence."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "syrup",
+   "on": "objective completed",
+   "match": {
+    "detail": "cough",
+    "item": "syrup"
+   },
+   "audience": "participant",
+   "note": "The preserver brews the herbs into thyme syrup for the coughing houses.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "item.give",
+      "player": "$actor",
+      "item": "thyme_syrup",
+      "quantity": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "remedy",
+   "on": "gift",
+   "audience": "participant",
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "in list",
+      "list": "lq_sick",
+      "value": {
+       "field": "target"
+      }
+     },
+     {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "herbs"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "willow_bark"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "willow_tea"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "thyme_syrup"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "yarrow_poultice"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "bone_broth"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "herb_tea"
+       }
+      ]
+     }
+    ]
+   },
+   "note": "A remedy to a coughing household this wolf has not helped yet eases one cough.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "in list",
+       "list": "eased",
+       "value": {
+        "field": "target"
+       },
+       "of": "$actor"
+      }
+     },
+     "then": [
+      {
+       "do": "list add",
+       "var": "eased",
+       "of": "$actor",
+       "value": {
+        "field": "target"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.progress",
+        "quest": "cough",
+        "objective": "houses",
+        "player": "$actor",
+        "amount": 1
+       }
+      },
+      {
+       "do": "add",
+       "var": "cured",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "not",
+        "condition": {
+         "test": "in list",
+         "list": "helpers",
+         "value": {
+          "field": "actor"
+         }
+        }
+       },
+       "then": [
+        {
+         "do": "list add",
+         "var": "helpers",
+         "value": {
+          "field": "actor"
+         }
+        },
+        {
+         "do": "add",
+         "var": "goal",
+         "value": 2
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "owed",
+        "is": true,
+        "of": "$actor"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "runnel_draught",
+          "objective": "carry",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "turn off",
+         "var": "owed",
+         "of": "$actor"
+        }
+       ]
+      },
+      {
+       "do": "emit",
+       "signal": "bar"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "water-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "water"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "switch",
+      "var": "water_paid",
+      "is": false,
+      "of": "$actor"
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_ridgemere_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_ridgemere_day"
+          },
+          "op": "<=",
+          "right": 129
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "lq_coin",
+           "of": "$actor"
+          },
+          "op": "<=",
+          "right": 29
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 6,
+          "purse": "town:ridgemere",
+          "reason": "the city pays for finding what fouls the Runnel",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_ridgemere_day",
+         "value": 6
+        },
+        {
+         "do": "add",
+         "var": "lq_coin",
+         "value": 6,
+         "of": "$actor"
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "lq_thin",
+         "of": "$actor"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Coin is short in the city's treasury today, so you are paid in kind instead."
+         }
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "deed.award",
+        "player": "$actor",
+        "detail": "found what was fouling the Runnel"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.practice",
+        "player": "$actor",
+        "skill": "travel"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "water_paid",
+       "of": "$actor"
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "story.practice",
+        "player": "$actor",
+        "skill": "travel"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "cured",
+     "value": 2
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "in list",
+       "list": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      }
+     },
+     "then": [
+      {
+       "do": "list add",
+       "var": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      },
+      {
+       "do": "add",
+       "var": "goal",
+       "value": 2
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "phase is",
+      "phase": "reckoning"
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "runnel_cover",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "runnel_soak",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "runnel_draught",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "do": "emit",
+     "signal": "bar"
+    }
+   ]
+  },
+  {
+   "id": "bar",
+   "on": "story signal",
+   "signal": "bar",
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "phase is",
+        "phase": "open"
+       },
+       {
+        "test": "phase is",
+        "phase": "open_cough"
+       }
+      ]
+     },
+     {
+      "test": "compare",
+      "left": {
+       "var": "cured"
+      },
+      "op": ">=",
+      "right": {
+       "var": "goal"
+      }
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "each",
+     "over": "list",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "runnel_cover",
+        "player": "$each"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "runnel_soak",
+        "player": "$each"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.offer",
+        "quest": "runnel_draught",
+        "player": "$each"
+       }
+      }
+     ],
+     "list": "helpers"
+    },
+    {
+     "do": "schedule",
+     "signal": "reckon",
+     "days": 6,
+     "scope": "campaign"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "story.tell",
+      "to": "participants",
+      "text": "The coughs round Cistern Court are easing, and the cause is found. Now the Sump must choose who makes the water clean. Your journal has the roads."
+     }
+    },
+    {
+     "do": "enter",
+     "phase": "reckoning"
+    }
+   ]
+  },
+  {
+   "id": "road-cover",
+   "on": "quest started",
+   "match": {
+    "detail": "runnel_cover"
+   },
+   "audience": "participant",
+   "note": "The first road taken sets the reckoning three days off; if it is the cover, the city is asked to post it at once.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road",
+       "of": "$actor"
+      },
+      "op": "!=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "runnel_cover",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you are already bringing the tanner bricks."
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "cover",
+       "of": "$actor"
+      },
+      {
+       "do": "add",
+       "var": "t_cover",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "party size",
+        "op": ">=",
+        "value": 2
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_cover",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "tally_on",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "cover_wanted"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "project.post",
+          "town": "ridgemere",
+          "project": "cover",
+          "cell": "w_ridgemere_1_1",
+          "x": 14,
+          "y": 22,
+          "title": "Cistern Court cover",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "tally_on"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-soak",
+   "on": "quest started",
+   "match": {
+    "detail": "runnel_soak"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road",
+       "of": "$actor"
+      },
+      "op": "!=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "runnel_soak",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you are already carrying for the cover."
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "soak",
+       "of": "$actor"
+      },
+      {
+       "do": "add",
+       "var": "t_soak",
+       "value": 1
+      },
+      {
+       "do": "add",
+       "var": "soaking",
+       "value": 1
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_dunstan_greywick",
+        "id": "lq_run_soak",
+        "words": "Your lime-pits drain into the Runnel.",
+        "reply": "Do they? The flood shifted the old culvert, I'll grant that. I can't shut the tannery, #address#. Half the Sump wears my leather. Bring me four of bricks for a soakaway and I'll dig it myself.",
+        "once": true
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "party size",
+        "op": ">=",
+        "value": 2
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_soak",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "tally_on",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "tally_on"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "draught-start",
+   "on": "quest started",
+   "match": {
+    "detail": "runnel_draught"
+   },
+   "audience": "participant",
+   "note": "The draught money goes with either road.",
+   "actions": [
+    {
+     "do": "add",
+     "var": "drafting",
+     "value": 1
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rm_rupert_fogton",
+      "id": "lq_run_payback",
+      "words": "Pay back the Sump for every bottle.",
+      "reply": "Every bottle? Bright One, you'd beggar me. Here. Four pennies' worth, and carry it to the courts yourself, since you're so fond of them.",
+      "once": true
+     }
+    }
+   ]
+  },
+  {
+   "id": "payback",
+   "on": "dialogue choice",
+   "match": {
+    "item": "rm_rupert_fogton",
+    "detail": "lq_run_payback"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "owed",
+     "of": "$actor"
+    }
+   ]
+  },
+  {
+   "id": "cover-posted",
+   "on": "project posted",
+   "match": {
+    "detail": "Cistern Court cover"
+   },
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "cover_posted"
+    }
+   ]
+  },
+  {
+   "id": "cover-built",
+   "on": "project built",
+   "match": {
+    "detail": "Cistern Court cover"
+   },
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "cover_built"
+    },
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "runnel_cover",
+        "objective": "built",
+        "player": "$each"
+       }
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "phase is",
+      "phase": "building"
+     },
+     "then": [
+      {
+       "do": "schedule",
+       "signal": "res_covered",
+       "days": 0.01,
+       "scope": "campaign"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cover-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "runnel_cover"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_ridgemere_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_ridgemere_day"
+        },
+        "op": "<=",
+        "right": 127
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin",
+         "of": "$actor"
+        },
+        "op": "<=",
+        "right": 27
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 8,
+        "purse": "town:ridgemere",
+        "reason": "the city pays for the Cistern Court cover",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_ridgemere_day",
+       "value": 8
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 8,
+       "of": "$actor"
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin",
+       "of": "$actor"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Coin is short in the city's treasury today, so you are paid in kind instead."
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 8
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_ridgemere",
+     "value": 8
+    }
+   ]
+  },
+  {
+   "id": "soak-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "runnel_soak"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_ridgemere_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_ridgemere_day"
+        },
+        "op": "<=",
+        "right": 127
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin",
+         "of": "$actor"
+        },
+        "op": "<=",
+        "right": 27
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 8,
+        "purse": "town:ridgemere",
+        "reason": "the city pays for the tanner's soakaway",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_ridgemere_day",
+       "value": 8
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 8,
+       "of": "$actor"
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin",
+       "of": "$actor"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Coin is short in the city's treasury today, so you are paid in kind instead."
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 8
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_ridgemere",
+     "value": 8
+    },
+    {
+     "do": "subtract",
+     "var": "soaking",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "soaking",
+     "min": 0,
+     "max": 5000
+    }
+   ]
+  },
+  {
+   "id": "draught-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "runnel_draught"
+   },
+   "audience": "participant",
+   "note": "Restitution: 4 a wolf, 40 in all (decisions 3.2.4).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "restitution"
+      },
+      "op": "<=",
+      "right": 36
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_ridgemere_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_ridgemere_day"
+          },
+          "op": "<=",
+          "right": 131
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "lq_coin",
+           "of": "$actor"
+          },
+          "op": "<=",
+          "right": 31
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 4,
+          "purse": "town:ridgemere",
+          "reason": "Hollis Physic pays the coughing houses back",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_ridgemere_day",
+         "value": 4
+        },
+        {
+         "do": "add",
+         "var": "lq_coin",
+         "value": 4,
+         "of": "$actor"
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$actor",
+          "item": "bread",
+          "quantity": 2
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "lq_thin",
+         "of": "$actor"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Coin is short in the city's treasury today, so you are paid in kind instead."
+         }
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "restitution",
+       "value": 4
+      }
+     ]
+    },
+    {
+     "do": "subtract",
+     "var": "drafting",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "drafting",
+     "min": 0,
+     "max": 5000
+    }
+   ]
+  },
+  {
+   "id": "reckon",
+   "on": "story signal",
+   "signal": "reckon",
+   "if": {
+    "test": "phase is",
+    "phase": "reckoning"
+   },
+   "note": "The most weight wins; a tie or nobody goes to the cover (the default), which waits for the city to build it.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "t_soak"
+      },
+      "op": ">",
+      "right": {
+       "var": "t_cover"
+      }
+     },
+     "then": [
+      {
+       "do": "emit",
+       "signal": "res_drained"
+      }
+     ],
+     "else": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "cover_built",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "emit",
+         "signal": "res_covered"
+        }
+       ],
+       "else": [
+        {
+         "do": "turn on",
+         "var": "cover_wanted"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "cover_posted",
+          "is": false
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "project.post",
+            "town": "ridgemere",
+            "project": "cover",
+            "cell": "w_ridgemere_1_1",
+            "x": 14,
+            "y": 22,
+            "title": "Cistern Court cover",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "enter",
+         "phase": "building"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "res-covered",
+   "on": "story signal",
+   "signal": "res_covered",
+   "actions": [
+    {
+     "do": "set",
+     "var": "lq_runnel",
+     "value": "covered"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "story.tell",
+      "to": "region",
+      "region": "cistern",
+      "text": "The Runnel runs clear past Cistern Court."
+     }
+    },
+    {
+     "do": "enter",
+     "phase": "after_covered"
+    }
+   ]
+  },
+  {
+   "id": "res-drained",
+   "on": "story signal",
+   "signal": "res_drained",
+   "actions": [
+    {
+     "do": "set",
+     "var": "lq_runnel",
+     "value": "drained"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "story.tell",
+      "to": "region",
+      "region": "cistern",
+      "text": "The Runnel runs clear past Cistern Court."
+     }
+    },
+    {
+     "do": "enter",
+     "phase": "after_drained"
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "A wet cough is going round the courts by Cistern Court, worst in the pups who drink from the Runnel.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rm_halvard_ashley",
+     "text": "Mind the Runnel water. Boil it, or don't drink it. The infirmary has pups coughing in every cot."
+    },
+    {
+     "kind": "npc.line",
+     "npc": "rm_liv_slagstack",
+     "text": "Thyme syrup? Bring me herbs and I'll brew it the old way, with honey, not sugar. A spoon at night and one at dawn. I cough in the damp myself."
+    }
+   ],
+   "exits": [
+    {
+     "on": "dm signal",
+     "match": {
+      "detail": "residence"
+     },
+     "to": "open_cough"
+    }
+   ]
+  },
+  {
+   "id": "open_cough",
+   "journal": "A wet cough is going round the courts by Cistern Court, and they say it has reached the Residence too.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rm_halvard_ashley",
+     "text": "Boil the Runnel water. And they say the cough's up at the Residence too. Damp doesn't care whose lungs it gets."
+    },
+    {
+     "kind": "npc.line",
+     "npc": "rm_liv_slagstack",
+     "text": "Thyme syrup? Bring me herbs and I'll brew it the old way, with honey, not sugar. A spoon at night and one at dawn. I cough in the damp myself."
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "reckoning",
+   "journal": "The coughs are easing, and the cause is found. Now the Sump must choose who makes the water clean: a cover over the cisterns, or the tanner's soakaway.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rm_halvard_ashley",
+     "text": "A cover over the cisterns, or a soakaway for the tanner's pits. Choose one and carry for it. The pups can't wait on a council."
+    },
+    {
+     "kind": "npc.line",
+     "npc": "rm_liv_slagstack",
+     "text": "Thyme syrup? Bring me herbs and I'll brew it the old way, with honey, not sugar. A spoon at night and one at dawn. I cough in the damp myself."
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "building",
+   "journal": "The city is raising a cover over Cistern Court. Every load carried brings it sooner.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rm_halvard_ashley",
+     "text": "They're raising a cover over Cistern Court. Carry for it if you've a back for it. Every load is a cot emptied sooner."
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "after_covered",
+   "journal": "A cover stands over Cistern Court, and the coughing has eased.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rm_halvard_ashley",
+     "text": "Half the infirmary's cots are empty this week. Bright One bless whoever carried stone for that cover."
+    },
+    {
+     "kind": "board.post",
+     "town": "ridgemere",
+     "days": 28,
+     "ifRefused": "skip",
+     "text": "THE SUMP INFIRMARY: the Runnel water is safe again. Boil it a week more all the same. Sister Theodora."
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "after_drained",
+   "journal": "The tanner dug a soakaway, and the Runnel runs clean again.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "rm_halvard_ashley",
+     "text": "The Runnel runs clean. Boil it a week more all the same. I've learned not to trust water twice."
+    },
+    {
+     "kind": "board.post",
+     "town": "ridgemere",
+     "days": 28,
+     "ifRefused": "skip",
+     "text": "THE SUMP INFIRMARY: the Runnel water is safe again. Boil it a week more all the same. Sister Theodora."
+    }
+   ],
+   "exits": []
+  }
+ ],
+ "quests": [
+  {
+   "id": "cough",
+   "title": "The Runnel Cough",
+   "summary": "A wet cough in the courts round Cistern Court, worst in the pups. The Sump Infirmary's cots are full, and the honest apothecary at the Mortar and Pestle needs willow bark for it, and legs to carry remedies.",
+   "giver": "rm_halvard_ashley",
+   "board": "ridgemere",
+   "scope": "player",
+   "repeat": "once",
+   "join": {
+    "cap": 40
+   },
+   "offer": {
+    "ask": "You look worn through.",
+    "say": "#greet#, #address#. The infirmary's cots are full and half of them are pups. A wet cough from the courts round the cisterns, worst in those who drink from the Runnel. Bring me willow bark for the nurse, carry remedies to the coughing houses, and ask the rag-criers about the wash water.",
+    "accept": "I'll carry remedies.",
+    "decline": "I can't today.",
+    "handIn": "The washhouse water smells of lime.",
+    "thanks": "#thanks#. Lime. Then it isn't the damp alone, it's the water. Bright One keep the pups. Walk the Runnel back to where it goes bad, and find who's fouling it."
+   },
+   "objectives": [
+    {
+     "id": "bark",
+     "label": "Bring the apothecary two of willow bark, for the infirmary.",
+     "on": "gift",
+     "match": {
+      "target": "rm_halvard_ashley",
+      "item": "willow_bark"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    },
+    {
+     "id": "syrup",
+     "label": "Take two of herbs to the preserver at the Honey Crock, for thyme syrup.",
+     "on": "gift",
+     "match": {
+      "target": "rm_liv_slagstack",
+      "item": "herbs"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "optional": true
+    },
+    {
+     "id": "houses",
+     "label": "Carry a remedy to three coughing households round Cistern Court (herbs, willow, thyme syrup, a poultice or broth).",
+     "on": "story signal",
+     "signal": "remedy",
+     "goal": 3
+    },
+    {
+     "id": "wash",
+     "label": "Ask the rag-crier in the Rag Market if the wash water smells wrong.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rmx_dirk_langstead",
+      "detail": "lq_run_wash"
+     }
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "carried remedies to the coughing courts of the Sump"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "service"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "bandages",
+     "quantity": 2
+    }
+   ]
+  },
+  {
+   "id": "water",
+   "title": "Bad Water",
+   "summary": "Walk the Runnel back to where it goes bad, and find who's fouling it.",
+   "scope": "player",
+   "repeat": "weekly",
+   "join": {
+    "cap": 40
+   },
+   "objectives": [
+    {
+     "id": "court",
+     "label": "Walk Cistern Court and the Runnel.",
+     "on": "region entered",
+     "match": {
+      "target": "cistern"
+     }
+    },
+    {
+     "id": "drain",
+     "label": "Find where the Wharf Tannery drains.",
+     "on": "region entered",
+     "match": {
+      "target": "drain"
+     }
+    },
+    {
+     "id": "tanner",
+     "label": "Ask the tanner about his lime-pits.",
+     "on": "conversation",
+     "match": {
+      "target": "rm_dunstan_greywick"
+     },
+     "after": [
+      "drain"
+     ]
+    },
+    {
+     "id": "draught",
+     "label": "Buy the apothecary's Runnel draught at Hollis Physic.",
+     "on": "trade done",
+     "match": {
+      "target": "rm_rupert_fogton",
+      "detail": "bought"
+     }
+    },
+    {
+     "id": "test",
+     "label": "Ask the honest apothecary at the Mortar and Pestle what is in it.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_halvard_ashley",
+      "detail": "lq_run_test"
+     },
+     "after": [
+      "draught"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "runnel_cover",
+   "title": "A Cover for the Cisterns",
+   "summary": "Carry stone, timber and lime for a cover over Cistern Court.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "open",
+    "open_cough",
+    "reckoning",
+    "building"
+   ],
+   "objectives": [
+    {
+     "id": "carry",
+     "label": "Carry three loads for the Cistern Court cover (what its board asks for).",
+     "on": "project gift",
+     "match": {
+      "detail": "Cistern Court cover"
+     },
+     "goal": 3,
+     "measure": "quantity"
+    },
+    {
+     "id": "built",
+     "label": "See the cover raised over Cistern Court.",
+     "on": "story signal",
+     "signal": "cover_up"
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "helped raise a cover over Cistern Court"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "theriac",
+     "quantity": 1
+    }
+   ]
+  },
+  {
+   "id": "runnel_soak",
+   "title": "The Tanner's Soakaway",
+   "summary": "Bring the tanner bricks, and he'll dig a soakaway for his pits.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "open",
+    "open_cough",
+    "reckoning"
+   ],
+   "objectives": [
+    {
+     "id": "choice",
+     "label": "Tell the tanner his lime-pits drain into the Runnel.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_dunstan_greywick",
+      "detail": "lq_run_soak"
+     }
+    },
+    {
+     "id": "bricks",
+     "label": "Bring the tanner four of bricks for a soakaway.",
+     "on": "gift",
+     "match": {
+      "target": "rm_dunstan_greywick",
+      "item": "bricks"
+     },
+     "goal": 4,
+     "measure": "quantity",
+     "after": [
+      "choice"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "dug the tanner a soakaway and cleaned the Runnel"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    },
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "theriac",
+     "quantity": 1
+    }
+   ]
+  },
+  {
+   "id": "runnel_draught",
+   "title": "The Draught Money",
+   "summary": "Make the draught-seller pay the coughing houses back.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "open",
+    "open_cough",
+    "reckoning",
+    "building"
+   ],
+   "objectives": [
+    {
+     "id": "payback",
+     "label": "Tell the draught-seller at Hollis Physic to pay the Sump back for every bottle.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_rupert_fogton",
+      "detail": "lq_run_payback"
+     }
+    },
+    {
+     "id": "carry",
+     "label": "Carry its worth to a coughing household you have not helped yet (a remedy will do).",
+     "on": "story signal",
+     "signal": "draught_carried",
+     "after": [
+      "payback"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "made the Runnel draught-seller pay the coughing courts back"
+    }
+   ]
+  }
+ ],
+ "tests": [
+  {
+   "name": "One wolf eases the cough and carries for the cover (the default); the city builds it",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.1,
+     "detail": "Dawnday",
+     "item": "spring",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_halvard_ashley",
+     "detail": "cough"
+    },
+    {
+     "id": "e3",
+     "kind": "gift",
+     "day": 0.111,
+     "actor": "wolf-ash",
+     "target": "rm_halvard_ashley",
+     "item": "willow_bark",
+     "quantity": 2,
+     "cell": "rm_the_harness_shop"
+    },
+    {
+     "id": "e4",
+     "kind": "gift",
+     "day": 0.112,
+     "actor": "wolf-ash",
+     "target": "rm_liv_slagstack",
+     "item": "herbs",
+     "quantity": 2,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 0.113,
+     "actor": "wolf-ash",
+     "target": "rm_piet_wickridge",
+     "item": "thyme_syrup",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "gift",
+     "day": 0.1131,
+     "actor": "wolf-ash",
+     "target": "rm_tristram_rainley",
+     "item": "thyme_syrup",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e7",
+     "kind": "gift",
+     "day": 0.11320000000000001,
+     "actor": "wolf-ash",
+     "target": "rm_mathis_plankham",
+     "item": "thyme_syrup",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e8",
+     "kind": "dialogue choice",
+     "day": 0.114,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_dirk_langstead",
+     "detail": "lq_run_wash"
+    },
+    {
+     "id": "e9",
+     "kind": "quest handed in",
+     "day": 0.115,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_halvard_ashley",
+     "detail": "cough"
+    },
+    {
+     "id": "e10",
+     "kind": "quest accepted",
+     "day": 0.116,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "water"
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 0.1161,
+     "actor": "wolf-ash",
+     "target": "cistern",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run"
+    },
+    {
+     "id": "e12",
+     "kind": "region entered",
+     "day": 0.1162,
+     "actor": "wolf-ash",
+     "target": "drain",
+     "cell": "w_ridgemere_0_1",
+     "detail": "run"
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 0.1163,
+     "actor": "wolf-ash",
+     "target": "rm_dunstan_greywick",
+     "cell": "w_ridgemere_0_1"
+    },
+    {
+     "id": "e14",
+     "kind": "trade done",
+     "day": 0.1164,
+     "actor": "wolf-ash",
+     "target": "rm_rupert_fogton",
+     "item": "mint",
+     "detail": "bought",
+     "quantity": 1,
+     "coins": 3
+    },
+    {
+     "id": "e15",
+     "kind": "dialogue choice",
+     "day": 0.1165,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_halvard_ashley",
+     "detail": "lq_run_test"
+    },
+    {
+     "id": "e16",
+     "kind": "gift",
+     "day": 0.117,
+     "actor": "wolf-ash",
+     "target": "rm_rupert_cindergate",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e17",
+     "kind": "gift",
+     "day": 0.11710000000000001,
+     "actor": "wolf-ash",
+     "target": "rm_lotte_bilgeton",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e18",
+     "kind": "gift",
+     "day": 0.11720000000000001,
+     "actor": "wolf-ash",
+     "target": "rm_mogens_greycot",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e19",
+     "kind": "gift",
+     "day": 0.1173,
+     "actor": "wolf-ash",
+     "target": "rm_orm_fogmore",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e20",
+     "kind": "gift",
+     "day": 0.1174,
+     "actor": "wolf-ash",
+     "target": "rm_josephine_wetmore",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e21",
+     "kind": "gift",
+     "day": 0.11750000000000001,
+     "actor": "wolf-ash",
+     "target": "rm_runa_ropemarsh",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e22",
+     "kind": "gift",
+     "day": 0.11760000000000001,
+     "actor": "wolf-ash",
+     "target": "rm_magnus_greycot",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e23",
+     "kind": "quest accepted",
+     "day": 0.12,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "runnel_cover"
+    },
+    {
+     "id": "e24",
+     "kind": "project posted",
+     "day": 0.13,
+     "actor": "town",
+     "target": "proj-4",
+     "item": "cover",
+     "cell": "w_ridgemere_1_1",
+     "detail": "Cistern Court cover"
+    },
+    {
+     "id": "e25",
+     "kind": "project gift",
+     "day": 0.13999999999999999,
+     "actor": "wolf-ash",
+     "target": "proj-4",
+     "item": "stone",
+     "cell": "w_ridgemere_1_1",
+     "detail": "Cistern Court cover",
+     "quantity": 3
+    },
+    {
+     "id": "e26",
+     "kind": "day begins",
+     "day": 3.22,
+     "detail": "Stoneday",
+     "item": "spring",
+     "quantity": 4
+    },
+    {
+     "id": "e27",
+     "kind": "project built",
+     "day": 5.12,
+     "actor": "town:ridgemere",
+     "target": "proj-4",
+     "item": "cover",
+     "cell": "w_ridgemere_1_1",
+     "detail": "Cistern Court cover",
+     "coins": 60
+    },
+    {
+     "id": "e28",
+     "kind": "hour",
+     "day": 5.17,
+     "detail": "9",
+     "quantity": 9
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "building",
+    "after_covered"
+   ],
+   "expectQuests": {
+    "cough": {
+     "wolf-ash": "done"
+    },
+    "water": {
+     "wolf-ash": "done"
+    },
+    "runnel_cover": {
+     "wolf-ash": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_runnel": "covered",
+     "coin_ridgemere_day": 14,
+     "nh_realm": 8
+    },
+    "story": {
+     "cured": 12,
+     "goal": 12,
+     "cover_posted": true,
+     "cover_built": true,
+     "t_cover": 1
+    },
+    "player": {
+     "wolf-ash": {
+      "lq_coin": 14,
+      "road": "cover"
+     }
+    }
+   }
+  },
+  {
+   "name": "The tanner's soakaway wins, the draught-seller pays back, and a second road is refused",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.1,
+     "detail": "Dawnday",
+     "item": "spring",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_halvard_ashley",
+     "detail": "cough"
+    },
+    {
+     "id": "e3",
+     "kind": "gift",
+     "day": 0.111,
+     "actor": "wolf-ash",
+     "target": "rm_halvard_ashley",
+     "item": "willow_bark",
+     "quantity": 2,
+     "cell": "rm_the_harness_shop"
+    },
+    {
+     "id": "e4",
+     "kind": "gift",
+     "day": 0.112,
+     "actor": "wolf-ash",
+     "target": "rm_liv_slagstack",
+     "item": "herbs",
+     "quantity": 2,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 0.113,
+     "actor": "wolf-ash",
+     "target": "rm_piet_wickridge",
+     "item": "thyme_syrup",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "gift",
+     "day": 0.1131,
+     "actor": "wolf-ash",
+     "target": "rm_tristram_rainley",
+     "item": "thyme_syrup",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e7",
+     "kind": "gift",
+     "day": 0.11320000000000001,
+     "actor": "wolf-ash",
+     "target": "rm_mathis_plankham",
+     "item": "thyme_syrup",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e8",
+     "kind": "dialogue choice",
+     "day": 0.114,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_dirk_langstead",
+     "detail": "lq_run_wash"
+    },
+    {
+     "id": "e9",
+     "kind": "quest handed in",
+     "day": 0.115,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_halvard_ashley",
+     "detail": "cough"
+    },
+    {
+     "id": "e10",
+     "kind": "quest accepted",
+     "day": 0.116,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "water"
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 0.1161,
+     "actor": "wolf-ash",
+     "target": "cistern",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run"
+    },
+    {
+     "id": "e12",
+     "kind": "region entered",
+     "day": 0.1162,
+     "actor": "wolf-ash",
+     "target": "drain",
+     "cell": "w_ridgemere_0_1",
+     "detail": "run"
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 0.1163,
+     "actor": "wolf-ash",
+     "target": "rm_dunstan_greywick",
+     "cell": "w_ridgemere_0_1"
+    },
+    {
+     "id": "e14",
+     "kind": "trade done",
+     "day": 0.1164,
+     "actor": "wolf-ash",
+     "target": "rm_rupert_fogton",
+     "item": "mint",
+     "detail": "bought",
+     "quantity": 1,
+     "coins": 3
+    },
+    {
+     "id": "e15",
+     "kind": "dialogue choice",
+     "day": 0.1165,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_halvard_ashley",
+     "detail": "lq_run_test"
+    },
+    {
+     "id": "e16",
+     "kind": "gift",
+     "day": 0.117,
+     "actor": "wolf-ash",
+     "target": "rm_rupert_cindergate",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e17",
+     "kind": "gift",
+     "day": 0.11710000000000001,
+     "actor": "wolf-ash",
+     "target": "rm_lotte_bilgeton",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e18",
+     "kind": "gift",
+     "day": 0.11720000000000001,
+     "actor": "wolf-ash",
+     "target": "rm_mogens_greycot",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e19",
+     "kind": "gift",
+     "day": 0.1173,
+     "actor": "wolf-ash",
+     "target": "rm_orm_fogmore",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e20",
+     "kind": "gift",
+     "day": 0.1174,
+     "actor": "wolf-ash",
+     "target": "rm_josephine_wetmore",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e21",
+     "kind": "gift",
+     "day": 0.11750000000000001,
+     "actor": "wolf-ash",
+     "target": "rm_runa_ropemarsh",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e22",
+     "kind": "gift",
+     "day": 0.11760000000000001,
+     "actor": "wolf-ash",
+     "target": "rm_magnus_greycot",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e23",
+     "kind": "quest accepted",
+     "day": 0.12,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "runnel_soak"
+    },
+    {
+     "id": "e24",
+     "kind": "dialogue choice",
+     "day": 0.13,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_dunstan_greywick",
+     "detail": "lq_run_soak"
+    },
+    {
+     "id": "e25",
+     "kind": "gift",
+     "day": 0.13999999999999999,
+     "actor": "wolf-ash",
+     "target": "rm_dunstan_greywick",
+     "item": "bricks",
+     "quantity": 4,
+     "cell": "w_ridgemere_0_1"
+    },
+    {
+     "id": "e26",
+     "kind": "quest accepted",
+     "day": 0.15,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "runnel_draught"
+    },
+    {
+     "id": "e27",
+     "kind": "dialogue choice",
+     "day": 0.16,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_rupert_fogton",
+     "detail": "lq_run_payback"
+    },
+    {
+     "id": "e28",
+     "kind": "gift",
+     "day": 0.16999999999999998,
+     "actor": "wolf-ash",
+     "target": "rm_dunstan_slagley",
+     "item": "bone_broth",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e29",
+     "kind": "quest accepted",
+     "day": 0.18,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "runnel_cover"
+    },
+    {
+     "id": "e30",
+     "kind": "day begins",
+     "day": 3.22,
+     "detail": "Stoneday",
+     "item": "spring",
+     "quantity": 4
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_drained"
+   ],
+   "expectQuests": {
+    "runnel_soak": {
+     "wolf-ash": "done"
+    },
+    "runnel_draught": {
+     "wolf-ash": "done"
+    },
+    "runnel_cover": {
+     "wolf-ash": "failed"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_runnel": "drained",
+     "coin_ridgemere_day": 18
+    },
+    "story": {
+     "restitution": 4,
+     "t_soak": 1,
+     "t_cover": 0,
+     "soaking": 0,
+     "drafting": 0,
+     "cured": 13
+    },
+    "player": {
+     "wolf-ash": {
+      "lq_coin": 18,
+      "owed": false
+     }
+    }
+   }
+  },
+  {
+   "name": "Nobody chooses: the cover is the default, and the city is asked for it every day until it is posted",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "day begins",
+     "day": 0.1,
+     "detail": "Dawnday",
+     "item": "spring",
+     "quantity": 1
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.11,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_halvard_ashley",
+     "detail": "cough"
+    },
+    {
+     "id": "e3",
+     "kind": "gift",
+     "day": 0.111,
+     "actor": "wolf-ash",
+     "target": "rm_halvard_ashley",
+     "item": "willow_bark",
+     "quantity": 2,
+     "cell": "rm_the_harness_shop"
+    },
+    {
+     "id": "e4",
+     "kind": "gift",
+     "day": 0.112,
+     "actor": "wolf-ash",
+     "target": "rm_liv_slagstack",
+     "item": "herbs",
+     "quantity": 2,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 0.113,
+     "actor": "wolf-ash",
+     "target": "rm_piet_wickridge",
+     "item": "thyme_syrup",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "gift",
+     "day": 0.1131,
+     "actor": "wolf-ash",
+     "target": "rm_tristram_rainley",
+     "item": "thyme_syrup",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e7",
+     "kind": "gift",
+     "day": 0.11320000000000001,
+     "actor": "wolf-ash",
+     "target": "rm_mathis_plankham",
+     "item": "thyme_syrup",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e8",
+     "kind": "dialogue choice",
+     "day": 0.114,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rmx_dirk_langstead",
+     "detail": "lq_run_wash"
+    },
+    {
+     "id": "e9",
+     "kind": "quest handed in",
+     "day": 0.115,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_halvard_ashley",
+     "detail": "cough"
+    },
+    {
+     "id": "e10",
+     "kind": "quest accepted",
+     "day": 0.116,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "",
+     "detail": "water"
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 0.1161,
+     "actor": "wolf-ash",
+     "target": "cistern",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run"
+    },
+    {
+     "id": "e12",
+     "kind": "region entered",
+     "day": 0.1162,
+     "actor": "wolf-ash",
+     "target": "drain",
+     "cell": "w_ridgemere_0_1",
+     "detail": "run"
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 0.1163,
+     "actor": "wolf-ash",
+     "target": "rm_dunstan_greywick",
+     "cell": "w_ridgemere_0_1"
+    },
+    {
+     "id": "e14",
+     "kind": "trade done",
+     "day": 0.1164,
+     "actor": "wolf-ash",
+     "target": "rm_rupert_fogton",
+     "item": "mint",
+     "detail": "bought",
+     "quantity": 1,
+     "coins": 3
+    },
+    {
+     "id": "e15",
+     "kind": "dialogue choice",
+     "day": 0.1165,
+     "actor": "wolf-ash",
+     "target": "run",
+     "item": "rm_halvard_ashley",
+     "detail": "lq_run_test"
+    },
+    {
+     "id": "e16",
+     "kind": "quest accepted",
+     "day": 0.12,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_halvard_ashley",
+     "detail": "cough"
+    },
+    {
+     "id": "e17",
+     "kind": "gift",
+     "day": 0.121,
+     "actor": "wolf-birch",
+     "target": "rm_halvard_ashley",
+     "item": "willow_bark",
+     "quantity": 2,
+     "cell": "rm_the_harness_shop"
+    },
+    {
+     "id": "e18",
+     "kind": "gift",
+     "day": 0.122,
+     "actor": "wolf-birch",
+     "target": "rm_liv_slagstack",
+     "item": "herbs",
+     "quantity": 2,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e19",
+     "kind": "gift",
+     "day": 0.123,
+     "actor": "wolf-birch",
+     "target": "rm_piet_wickridge",
+     "item": "thyme_syrup",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e20",
+     "kind": "gift",
+     "day": 0.1231,
+     "actor": "wolf-birch",
+     "target": "rm_tristram_rainley",
+     "item": "thyme_syrup",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e21",
+     "kind": "gift",
+     "day": 0.1232,
+     "actor": "wolf-birch",
+     "target": "rm_mathis_plankham",
+     "item": "thyme_syrup",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e22",
+     "kind": "dialogue choice",
+     "day": 0.124,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rmx_dirk_langstead",
+     "detail": "lq_run_wash"
+    },
+    {
+     "id": "e23",
+     "kind": "quest handed in",
+     "day": 0.125,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_halvard_ashley",
+     "detail": "cough"
+    },
+    {
+     "id": "e24",
+     "kind": "quest accepted",
+     "day": 0.126,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "",
+     "detail": "water"
+    },
+    {
+     "id": "e25",
+     "kind": "region entered",
+     "day": 0.1261,
+     "actor": "wolf-birch",
+     "target": "cistern",
+     "cell": "w_ridgemere_1_1",
+     "detail": "run"
+    },
+    {
+     "id": "e26",
+     "kind": "region entered",
+     "day": 0.1262,
+     "actor": "wolf-birch",
+     "target": "drain",
+     "cell": "w_ridgemere_0_1",
+     "detail": "run"
+    },
+    {
+     "id": "e27",
+     "kind": "conversation",
+     "day": 0.1263,
+     "actor": "wolf-birch",
+     "target": "rm_dunstan_greywick",
+     "cell": "w_ridgemere_0_1"
+    },
+    {
+     "id": "e28",
+     "kind": "trade done",
+     "day": 0.12639999999999998,
+     "actor": "wolf-birch",
+     "target": "rm_rupert_fogton",
+     "item": "mint",
+     "detail": "bought",
+     "quantity": 1,
+     "coins": 3
+    },
+    {
+     "id": "e29",
+     "kind": "dialogue choice",
+     "day": 0.1265,
+     "actor": "wolf-birch",
+     "target": "run",
+     "item": "rm_halvard_ashley",
+     "detail": "lq_run_test"
+    },
+    {
+     "id": "e30",
+     "kind": "gift",
+     "day": 0.127,
+     "actor": "wolf-ash",
+     "target": "rm_rupert_cindergate",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e31",
+     "kind": "gift",
+     "day": 0.1271,
+     "actor": "wolf-ash",
+     "target": "rm_lotte_bilgeton",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e32",
+     "kind": "gift",
+     "day": 0.1272,
+     "actor": "wolf-ash",
+     "target": "rm_mogens_greycot",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e33",
+     "kind": "gift",
+     "day": 0.1273,
+     "actor": "wolf-ash",
+     "target": "rm_orm_fogmore",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e34",
+     "kind": "gift",
+     "day": 0.1274,
+     "actor": "wolf-ash",
+     "target": "rm_josephine_wetmore",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e35",
+     "kind": "gift",
+     "day": 0.1275,
+     "actor": "wolf-ash",
+     "target": "rm_runa_ropemarsh",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e36",
+     "kind": "gift",
+     "day": 0.1276,
+     "actor": "wolf-ash",
+     "target": "rm_magnus_greycot",
+     "item": "herb_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e37",
+     "kind": "day begins",
+     "day": 6.2299999999999995,
+     "detail": "Restday",
+     "item": "spring",
+     "quantity": 7
+    },
+    {
+     "id": "e38",
+     "kind": "day begins",
+     "day": 7.2299999999999995,
+     "detail": "Dawnday",
+     "item": "spring",
+     "quantity": 8
+    },
+    {
+     "id": "e39",
+     "kind": "project posted",
+     "day": 7.33,
+     "actor": "town",
+     "target": "proj-4",
+     "item": "cover",
+     "cell": "w_ridgemere_1_1",
+     "detail": "Cistern Court cover"
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "building"
+   ],
+   "expectVariables": {
+    "story": {
+     "cover_wanted": true,
+     "cover_posted": true,
+     "goal": 14
+    }
+   }
+  },
+  {
+   "name": "The DM moves it to the Residence's cough; the next day the campaign is not in Ch 4, so it moves back",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "dm signal",
+     "day": 0.5,
+     "detail": "residence"
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 0.6,
+     "actor": "wolf-cedar",
+     "target": "run",
+     "item": "rm_halvard_ashley",
+     "detail": "cough"
+    },
+    {
+     "id": "e3",
+     "kind": "gift",
+     "day": 0.7,
+     "actor": "wolf-cedar",
+     "target": "rm_piet_wickridge",
+     "item": "willow_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e4",
+     "kind": "gift",
+     "day": 0.71,
+     "actor": "wolf-cedar",
+     "target": "rm_piet_wickridge",
+     "item": "willow_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 0.72,
+     "actor": "wolf-cedar",
+     "target": "rm_someone_else",
+     "item": "willow_tea",
+     "quantity": 1,
+     "cell": "w_ridgemere_1_1"
+    },
+    {
+     "id": "e6",
+     "kind": "day begins",
+     "day": 1.1,
+     "detail": "Hearthday",
+     "item": "spring",
+     "quantity": 2
+    }
+   ],
+   "expect": [
+    "open",
+    "open_cough",
+    "open"
+   ],
+   "expectVariables": {
+    "story": {
+     "cured": 1
+    },
+    "player": {
+     "wolf-cedar": {
+      "eased": [
+       "rm_piet_wickridge"
+      ]
+     }
+    }
+   }
+  }
+ ]
+}

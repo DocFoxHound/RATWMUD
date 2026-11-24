@@ -1,0 +1,6163 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "nh-pack.medium.greenholt",
+ "title": "Medium errands of Coldwater and Larkfield",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "variables": [
+  {
+   "id": "coin_coldwater_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "coin_coldwater_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true
+  },
+  {
+   "id": "coin_larkfield_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "coin_larkfield_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true
+  },
+  {
+   "id": "nh_b_hills",
+   "type": "text",
+   "scope": "world",
+   "initial": ""
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "nh_stage",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "nh_threat",
+   "type": "number",
+   "scope": "world",
+   "initial": 30
+  },
+  {
+   "id": "nh_voice_coldwater",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "nh_voice_larkfield",
+   "type": "number",
+   "scope": "world",
+   "initial": 0
+  },
+  {
+   "id": "gn_pick",
+   "type": "text",
+   "scope": "player"
+  },
+  {
+   "id": "gn_spawned",
+   "type": "switch",
+   "scope": "player"
+  },
+  {
+   "id": "spawned_gn_road",
+   "type": "switch",
+   "scope": "story"
+  },
+  {
+   "id": "mq_nets_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_nets_b",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mb_pick",
+   "type": "text",
+   "scope": "player",
+   "note": "Q9: a burned; b chosen, then b1 saved or b2 spread."
+  },
+  {
+   "id": "mq_blight_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_blight_b",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_blight_c",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "cs_pick",
+   "type": "text",
+   "scope": "player"
+  },
+  {
+   "id": "mq_still_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_still_b",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "bl_pick",
+   "type": "text",
+   "scope": "player"
+  },
+  {
+   "id": "mq_bolt_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_bolt_b",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mw_pick",
+   "type": "text",
+   "scope": "player"
+  },
+  {
+   "id": "mw_spawned",
+   "type": "switch",
+   "scope": "player"
+  },
+  {
+   "id": "spawned_mw_wagon",
+   "type": "switch",
+   "scope": "story"
+  },
+  {
+   "id": "mq_axles_posted",
+   "type": "switch",
+   "scope": "story",
+   "note": "The 'it's taken' notice is up."
+  },
+  {
+   "id": "mq_axles_a",
+   "type": "number",
+   "scope": "story"
+  },
+  {
+   "id": "mq_axles_b",
+   "type": "number",
+   "scope": "story"
+  }
+ ],
+ "regions": [
+  {
+   "id": "gn_landing",
+   "cell": "w_ridgemere_7_7",
+   "x1": 34,
+   "y1": 192,
+   "x2": 58,
+   "y2": 204
+  },
+  {
+   "id": "gn_road",
+   "cell": "w_ridgemere_6_8",
+   "x1": 133,
+   "y1": 122,
+   "x2": 147,
+   "y2": 134
+  },
+  {
+   "id": "mb_rows",
+   "cell": "w_ridgemere_8_6",
+   "x1": 90,
+   "y1": 183,
+   "x2": 120,
+   "y2": 195
+  },
+  {
+   "id": "fh_door",
+   "cell": "w_ridgemere_2_1",
+   "x1": 145,
+   "y1": 66,
+   "x2": 149,
+   "y2": 75
+  },
+  {
+   "id": "bl_door",
+   "cell": "w_ridgemere_6_9",
+   "x1": 159,
+   "y1": 70,
+   "x2": 164,
+   "y2": 82
+  },
+  {
+   "id": "mw_wagon",
+   "cell": "w_ridgemere_6_9",
+   "x1": 216,
+   "y1": 234,
+   "x2": 230,
+   "y2": 244
+  },
+  {
+   "id": "lf_square",
+   "cell": "w_ridgemere_6_9",
+   "x1": 131,
+   "y1": 70,
+   "x2": 149,
+   "y2": 82
+  }
+ ],
+ "scenes": [
+  {
+   "format": "ratw-scene",
+   "version": 1,
+   "id": "cs_price",
+   "title": "At the door of Fellhall",
+   "visibility": "individual",
+   "lockMovement": false,
+   "cast": [
+    {
+     "id": "speaker",
+     "npc": "rm_millicent_rustwell"
+    }
+   ],
+   "start": "line",
+   "beats": [
+    {
+     "id": "line",
+     "type": "line",
+     "speaker": "speaker",
+     "seconds": 10,
+     "text": "A sample from the lake still. The factor will be pleased. House Fell pays well, and the still stays in Coldwater. The brandy goes out under our green seal. Tell the stillmaster that is the price."
+    }
+   ]
+  },
+  {
+   "format": "ratw-scene",
+   "version": 1,
+   "id": "cs_hills",
+   "title": "At the door of Fellhall",
+   "visibility": "individual",
+   "lockMovement": false,
+   "cast": [
+    {
+     "id": "speaker",
+     "npc": "rm_millicent_rustwell"
+    }
+   ],
+   "start": "line",
+   "beats": [
+    {
+     "id": "line",
+     "type": "line",
+     "speaker": "speaker",
+     "seconds": 10,
+     "text": "House Fell has the Hills now. A still is a small thing beside them. Still, we pay well for small things. The brandy goes out under our green seal. Tell the stillmaster that is the price."
+    }
+   ]
+  },
+  {
+   "format": "ratw-scene",
+   "version": 1,
+   "id": "bl_baker",
+   "title": "At the Larkfield Bakehouse",
+   "visibility": "individual",
+   "lockMovement": false,
+   "cast": [
+    {
+     "id": "speaker",
+     "npc": "tn_sm_eskar_cornley"
+    }
+   ],
+   "start": "line",
+   "beats": [
+    {
+     "id": "line",
+     "type": "line",
+     "speaker": "speaker",
+     "seconds": 10,
+     "text": "Linen? Aye, a bolt. A Southwood lad, all elbows and hungry, asked six loaves for it. I gave him the loaves. Scales and silver, I'd give it back if I was asked."
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "Errands for any wolf who asks around the Greenholt: the Glasswater landing, the Meresend orchard, the Coldwater Still, the Larkfield Looms and the track below Longmead Mill.",
+   "effects": [],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "q8-accept",
+     "on": "quest started",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-glasswater-nets"
+     },
+     "actions": [
+      {
+       "do": "set",
+       "var": "gn_pick",
+       "value": ""
+      },
+      {
+       "do": "turn off",
+       "var": "gn_spawned"
+      }
+     ]
+    },
+    {
+     "id": "q8-road",
+     "on": "region entered",
+     "audience": "participant",
+     "match": {
+      "target": "gn_road"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-glasswater-nets",
+        "status": "active"
+       },
+       {
+        "test": "hour between",
+        "from": 20,
+        "to": 4
+       },
+       {
+        "test": "objective is",
+        "quest": "mq-glasswater-nets",
+        "objective": "nets",
+        "status": "done"
+       },
+       {
+        "test": "switch",
+        "var": "gn_spawned",
+        "is": false
+       }
+      ]
+     },
+     "note": "P-A and P-B: the road camp after dark.",
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "mq-glasswater-nets",
+        "objective": "tracks",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "party size",
+        "op": ">=",
+        "value": 3
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "gn_road",
+          "count": 6,
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "party size",
+          "op": ">=",
+          "value": 2
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "gn_road",
+            "count": 4,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.area.spawn",
+          "region": "gn_road",
+          "count": 2,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "turn on",
+       "var": "spawned_gn_road"
+      },
+      {
+       "do": "turn on",
+       "var": "gn_spawned"
+      }
+     ]
+    },
+    {
+     "id": "q8-progress",
+     "on": "objective completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-glasswater-nets"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "catch"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_sm_fennel_cornley",
+          "id": "gn_back",
+          "player": "$actor",
+          "once": true,
+          "words": "It goes back to the landing families.",
+          "reply": "Back to them. Good. I'll have it on the landing cart tonight. Half that fish was the widow at the end shed's. She'll not say thank you; she'll send you a pie. That's how she says it."
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_sm_fennel_cornley",
+          "id": "gn_sell",
+          "player": "$actor",
+          "once": true,
+          "words": "The inn's cook will pay for it.",
+          "reply": "Sell it. Course you will. It's fish, it doesn't remember whose it was. The families will, mind."
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "mend"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.practice",
+            "player": "$actor",
+            "skill": "craft",
+            "ifRefused": "when here"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "nets"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "The nets were cut with teeth, not knives, and wet paw-marks go up the bank toward the Glasswater road.",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.ping",
+            "cell": "w_ridgemere_6_8",
+            "x": 140,
+            "y": 128,
+            "player": "$actor",
+            "label": "the paw-marks lead here",
+            "minutes": 60,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "fight"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.place",
+            "item": "smoked_fish",
+            "quantity": 4,
+            "cell": "w_ridgemere_6_8",
+            "x": 140,
+            "y": 128,
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "The net-cutters ran, and left the stolen catch lying by their fire.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q8-choice",
+     "on": "dialogue choice",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-glasswater-nets",
+      "status": "active"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "gn_back"
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "gn_pick",
+         "value": "a"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-glasswater-nets",
+          "objective": "choose",
+          "player": "$actor"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "gn_sell"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "gn_pick",
+           "value": "b"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-glasswater-nets",
+            "objective": "choose",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q8-deliver",
+     "on": "gift",
+     "audience": "participant",
+     "match": {
+      "item": "smoked_fish"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-glasswater-nets",
+        "status": "active"
+       },
+       {
+        "test": "objective is",
+        "quest": "mq-glasswater-nets",
+        "objective": "choose",
+        "status": "done"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "field": "quantity"
+        },
+        "op": ">=",
+        "right": 3
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "gn_pick"
+          },
+          "op": "=",
+          "right": "a"
+         },
+         {
+          "test": "compare",
+          "left": {
+           "field": "target"
+          },
+          "op": "=",
+          "right": "tn_sm_fennel_cornley"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-glasswater-nets",
+          "objective": "deliver",
+          "player": "$actor"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "gn_pick"
+            },
+            "op": "=",
+            "right": "b"
+           },
+           {
+            "test": "compare",
+            "left": {
+             "field": "target"
+            },
+            "op": "=",
+            "right": "tn_cw_harrow_reedford"
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-glasswater-nets",
+            "objective": "deliver",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q8-camp",
+     "on": "camp cleared",
+     "match": {
+      "cell": "w_ridgemere_6_8"
+     },
+     "if": {
+      "test": "switch",
+      "var": "spawned_gn_road",
+      "is": true
+     },
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "spawned_gn_road"
+      }
+     ]
+    },
+    {
+     "id": "q8-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-glasswater-nets"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "gn_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_coldwater_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_coldwater_day"
+            },
+            "op": "<=",
+            "right": 13
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 8,
+            "purse": "town:coldwater",
+            "reason": "the Glasswater landing thanks you",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_coldwater_day",
+           "value": 8
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Coldwater's store is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "won back the Glasswater catch from the road wolves",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The Glasswater catch went back to the landing families.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_sm_fennel_cornley",
+          "id": "gn_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "The end shed's widow is baking. Don't make that face; eat the pie."
+         }
+        },
+        {
+         "do": "add",
+         "var": "nh_voice_coldwater",
+         "value": 6
+        }
+       ],
+       "else": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_coldwater_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_coldwater_day"
+            },
+            "op": "<=",
+            "right": 7
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 14,
+            "purse": "town:coldwater",
+            "reason": "the inn's price for the catch",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_coldwater_day",
+           "value": 14
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Coldwater's store is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "sold the Glasswater families' own catch to the inn",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The Glasswater catch was sold to the inn's cook.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_sm_fennel_cornley",
+          "id": "gn_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "The inn's serving our catch at the Glasswater price. Folk on the landing know whose it was."
+         }
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "nh_stage"
+        },
+        "op": ">=",
+        "right": 3
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Up at the road camp there was a signal lamp on a pole, unlit.",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      },
+      {
+       "do": "subtract",
+       "var": "nh_threat",
+       "value": 2
+      },
+      {
+       "do": "clamp",
+       "var": "nh_threat",
+       "min": 0,
+       "max": 100
+      }
+     ]
+    },
+    {
+     "id": "q8-town",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-glasswater-nets"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "gn_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_nets_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_nets_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_nets_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_nets_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "coldwater",
+            "text": "The Glasswater catch came home off the road, and it was not the Larkfield boats. Landing families: mend your nets and keep a lamp lit by the sheds at night.",
+            "days": 7,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "gn_pick"
+          },
+          "op": "=",
+          "right": "b"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_nets_b",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_nets_b"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_nets_b"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_nets_b"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "coldwater",
+              "text": "The Glasswater Inn serves fish this week that the landing families lost to the road camp. Somebody won it back. Somebody sold it on.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q9-accept",
+     "on": "quest accepted",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-meresend-blight"
+     },
+     "note": "The first taking each week stages the blight at the Coldwater market.",
+     "actions": [
+      {
+       "do": "set",
+       "var": "mb_pick",
+       "value": ""
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "timer",
+        "signal": "mb_week"
+       },
+       "then": [
+        {
+         "do": "note",
+         "text": "The blight is already the talk of Coldwater this week."
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "event.add",
+          "market": "coldwater",
+          "event": "orchard_blight",
+          "days": 0,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "schedule",
+         "signal": "mb_week",
+         "days": 7,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q9-week",
+     "on": "story signal",
+     "signal": "mb_week",
+     "actions": [
+      {
+       "do": "note",
+       "text": "A week on: the next taking stages the blight again."
+      }
+     ]
+    },
+    {
+     "id": "q9-progress",
+     "on": "objective completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-meresend-blight"
+     },
+     "note": "The fire lit, or the wash tried: it takes (60) or the leaf spreads (40).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "rows"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_sm_kindle_applemeadow",
+          "id": "mb_burn",
+          "player": "$actor",
+          "once": true,
+          "words": "Burn the three rows tonight, before it spreads.",
+          "reply": "Their gran's way. Bright One's tide, it'll hurt. Bring me charcoal and pitch, and I'll send them up with the cart; they'll burn at dusk with the wind behind."
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_sm_kindle_applemeadow",
+          "id": "mb_wash",
+          "player": "$actor",
+          "once": true,
+          "words": "Let me fetch the city wash. It might save them.",
+          "reply": "Might. Might's a thin rope, eh? Go on, then. If it works I'll say so out loud, and you'll hear it from the far end of Glasswater."
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "apothecary"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "potash",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "The apothecary sold you nothing: he gave you two measures of his wash, and his blessing.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mb_pick"
+            },
+            "op": "=",
+            "right": "a"
+           },
+           {
+            "test": "objective is",
+            "quest": "mq-meresend-blight",
+            "objective": "fire1",
+            "status": "done"
+           },
+           {
+            "test": "objective is",
+            "quest": "mq-meresend-blight",
+            "objective": "fire2",
+            "status": "done"
+           },
+           {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "field": "item"
+              },
+              "op": "=",
+              "right": "fire1"
+             },
+             {
+              "test": "compare",
+              "left": {
+               "field": "item"
+              },
+              "op": "=",
+              "right": "fire2"
+             }
+            ]
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Three rows burned at Meresend.",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "harvest.override",
+            "area": "fruit",
+            "word": "poor",
+            "days": 3,
+            "words": "three rows burned at Meresend",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-meresend-blight",
+            "objective": "done",
+            "player": "$actor"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mb_pick"
+            },
+            "op": "=",
+            "right": "b"
+           },
+           {
+            "test": "compare",
+            "left": {
+             "field": "item"
+            },
+            "op": "=",
+            "right": "wash"
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "random",
+           "choices": [
+            {
+             "weight": 60,
+             "actions": [
+              {
+               "do": "set",
+               "var": "mb_pick",
+               "value": "b1"
+              },
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "journal.note",
+                "player": "$actor",
+                "text": "The city wash took at Meresend.",
+                "ifRefused": "skip"
+               }
+              },
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "objective.complete",
+                "quest": "mq-meresend-blight",
+                "objective": "done",
+                "player": "$actor"
+               }
+              }
+             ]
+            },
+            {
+             "weight": 40,
+             "actions": [
+              {
+               "do": "set",
+               "var": "mb_pick",
+               "value": "b2"
+              },
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "journal.note",
+                "player": "$actor",
+                "text": "The black leaf spread at Meresend.",
+                "ifRefused": "skip"
+               }
+              },
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "harvest.override",
+                "area": "fruit",
+                "word": "poor",
+                "days": 7,
+                "words": "the black leaf spread at Meresend",
+                "ifRefused": "skip"
+               }
+              },
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "event.add",
+                "market": "coldwater",
+                "event": "orchard_blight",
+                "days": 0,
+                "ifRefused": "skip"
+               }
+              },
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "objective.complete",
+                "quest": "mq-meresend-blight",
+                "objective": "done",
+                "player": "$actor"
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q9-choice",
+     "on": "dialogue choice",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-meresend-blight",
+      "status": "active"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "mb_burn"
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "mb_pick",
+         "value": "a"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.reveal",
+          "quest": "mq-meresend-blight",
+          "objective": "fire1",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.reveal",
+          "quest": "mq-meresend-blight",
+          "objective": "fire2",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-meresend-blight",
+          "objective": "choose",
+          "player": "$actor"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "mb_wash"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "mb_pick",
+           "value": "b"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.reveal",
+            "quest": "mq-meresend-blight",
+            "objective": "apothecary",
+            "player": "$actor"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.reveal",
+            "quest": "mq-meresend-blight",
+            "objective": "wash",
+            "player": "$actor"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-meresend-blight",
+            "objective": "choose",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q9-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-meresend-blight"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "mb_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_coldwater_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_coldwater_day"
+            },
+            "op": "<=",
+            "right": 13
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 8,
+            "purse": "town:coldwater",
+            "reason": "the Meresend orchard thanks you",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_coldwater_day",
+           "value": 8
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Coldwater's store is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "burned out the black leaf at Meresend",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_sm_kindle_applemeadow",
+          "id": "mb_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Three rows of ash at Meresend, and the rest still green. Their gran would've done the same. That's no comfort, but it's true."
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "mb_pick"
+          },
+          "op": "=",
+          "right": "b1"
+         },
+         "then": [
+          {
+           "do": "if",
+           "if": {
+            "test": "all",
+            "conditions": [
+             {
+              "test": "switch",
+              "var": "coin_coldwater_ok",
+              "is": true
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "coin_coldwater_day"
+              },
+              "op": "<=",
+              "right": 9
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "character.grant",
+              "player": "$actor",
+              "coins": 12,
+              "purse": "town:coldwater",
+              "reason": "the Meresend orchard thanks you",
+              "ifRefused": "skip"
+             }
+            },
+            {
+             "do": "add",
+             "var": "coin_coldwater_day",
+             "value": 12
+            }
+           ],
+           "else": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "item.give",
+              "player": "$actor",
+              "item": "bread",
+              "quantity": 2,
+              "ifRefused": "when here"
+             }
+            },
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "journal.note",
+              "player": "$actor",
+              "text": "Coldwater's store is thin today. You were paid in bread.",
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "deed.award",
+            "player": "$actor",
+            "detail": "saved the Meresend rows with a city wash",
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "tn_sm_kindle_applemeadow",
+            "id": "mb_since",
+            "player": "$actor",
+            "once": true,
+            "words": "How has it gone, since?",
+            "reply": "Three rows of ash at Meresend, and the rest still green. Their gran would've done the same. That's no comfort, but it's true."
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_coldwater_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_coldwater_day"
+            },
+            "op": "<=",
+            "right": 17
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 4,
+            "purse": "town:coldwater",
+            "reason": "the Meresend orchard thanks you",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_coldwater_day",
+           "value": 4
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Coldwater's store is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "tried a city wash on the Meresend blight",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_sm_kindle_applemeadow",
+          "id": "mb_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Three rows of ash at Meresend, and the rest still green. Their gran would've done the same. That's no comfort, but it's true."
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q9-town",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-meresend-blight"
+     },
+     "actions": [
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_coldwater",
+       "value": 6
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "mb_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_blight_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_blight_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_blight_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_blight_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "coldwater",
+            "text": "Three rows were burned at Meresend to stop the black leaf. The rest of the orchard is clean. Growers: burn at dusk, with the wind behind you, and keep your ash off the road.",
+            "days": 7,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "mb_pick"
+          },
+          "op": "=",
+          "right": "b1"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_blight_b",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_blight_b"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_blight_b"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_blight_b"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "coldwater",
+              "text": "A wash from the city saved the blighted rows at Meresend. The orchard keeper says so herself, out loud, from one end of Glasswater to the other.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "mb_pick"
+          },
+          "op": "=",
+          "right": "b2"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_blight_c",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_blight_c"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_blight_c"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_blight_c"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "coldwater",
+              "text": "The black leaf has spread at Meresend after a city wash failed. Apples will be dear this year. Growers: look to your own rows.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q10-accept",
+     "on": "quest started",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-coldwater-still"
+     },
+     "actions": [
+      {
+       "do": "set",
+       "var": "cs_pick",
+       "value": ""
+      }
+     ]
+    },
+    {
+     "id": "q10-progress",
+     "on": "objective completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-coldwater-still"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "cask"
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "not",
+          "condition": {
+           "test": "timer",
+           "signal": "cs_stock",
+           "owner": "player"
+          }
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "brandy",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "schedule",
+           "signal": "cs_stock",
+           "days": 7,
+           "owner": "player",
+           "scope": "campaign"
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "The stillmaster has no second sample for you this week. Carry the one she gave.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_sm_linden_harvestton",
+          "id": "cs_fell",
+          "player": "$actor",
+          "once": true,
+          "words": "Put it on Fell's table. Let them pay for it.",
+          "reply": "Their table. It's a long one, eh? Take the cask to the distiller, then hear the steward's price at Fellhall's door. Don't sign anything with your paw."
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_sm_linden_harvestton",
+          "id": "cs_ours",
+          "player": "$actor",
+          "once": true,
+          "words": "Coldwater can sell its own. Let me find the buyers.",
+          "reply": "Our own. That's my gran talking in your mouth. One cask to The Sheaf in Larkfield, one to The Glasswater Inn. If they pour it, we've a trade."
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "field": "item"
+            },
+            "op": "=",
+            "right": "steward"
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "cs_pick"
+            },
+            "op": "=",
+            "right": "a"
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-coldwater-still",
+            "objective": "word",
+            "player": "$actor"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "cs_pick"
+            },
+            "op": "=",
+            "right": "b"
+           },
+           {
+            "test": "objective is",
+            "quest": "mq-coldwater-still",
+            "objective": "sheaf",
+            "status": "done"
+           },
+           {
+            "test": "objective is",
+            "quest": "mq-coldwater-still",
+            "objective": "glasswater",
+            "status": "done"
+           },
+           {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "field": "item"
+              },
+              "op": "=",
+              "right": "sheaf"
+             },
+             {
+              "test": "compare",
+              "left": {
+               "field": "item"
+              },
+              "op": "=",
+              "right": "glasswater"
+             }
+            ]
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-coldwater-still",
+            "objective": "word",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q10-stock",
+     "on": "story signal",
+     "signal": "cs_stock",
+     "actions": [
+      {
+       "do": "note",
+       "text": "A week on: the stillmaster may give this wolf samples again."
+      }
+     ]
+    },
+    {
+     "id": "q10-door",
+     "on": "region entered",
+     "audience": "participant",
+     "match": {
+      "target": "fh_door"
+     },
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-coldwater-still",
+        "status": "active"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "cs_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       {
+        "test": "objective is",
+        "quest": "mq-coldwater-still",
+        "objective": "distillery",
+        "status": "done"
+       },
+       {
+        "test": "not",
+        "condition": {
+         "test": "objective is",
+         "quest": "mq-coldwater-still",
+         "objective": "steward",
+         "status": "done"
+        }
+       }
+      ]
+     },
+     "note": "The steward lives and works behind Fellhall's doors, locked to wolves: she answers at the door, in a scene. Once the campaign gives Fell the Hills (nh_b_hills), she says so.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "nh_b_hills"
+        },
+        "op": "=",
+        "right": "fell"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "scene.play",
+          "scene": "cs_hills",
+          "player": "$actor",
+          "cue": "cs_hills",
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "scene.play",
+          "scene": "cs_price",
+          "player": "$actor",
+          "cue": "cs_price",
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "mq-coldwater-still",
+        "objective": "steward",
+        "player": "$actor"
+       }
+      }
+     ]
+    },
+    {
+     "id": "q10-choice",
+     "on": "dialogue choice",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-coldwater-still",
+      "status": "active"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "cs_fell"
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "cs_pick",
+         "value": "a"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.reveal",
+          "quest": "mq-coldwater-still",
+          "objective": "distillery",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.reveal",
+          "quest": "mq-coldwater-still",
+          "objective": "steward",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-coldwater-still",
+          "objective": "choose",
+          "player": "$actor"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "cs_ours"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "cs_pick",
+           "value": "b"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.reveal",
+            "quest": "mq-coldwater-still",
+            "objective": "sheaf",
+            "player": "$actor"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.reveal",
+            "quest": "mq-coldwater-still",
+            "objective": "glasswater",
+            "player": "$actor"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-coldwater-still",
+            "objective": "choose",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q10-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-coldwater-still"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "cs_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_coldwater_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_coldwater_day"
+            },
+            "op": "<=",
+            "right": 6
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 15,
+            "purse": "town:coldwater",
+            "reason": "the Fell advance, paid through the store",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_coldwater_day",
+           "value": 15
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Coldwater's store is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "carried Coldwater's still to House Fell's table",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "times.nudge",
+          "market": "coldwater",
+          "points": 10,
+          "days": 7,
+          "words": "Fell money at the Coldwater Still",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The Coldwater Still's cask is on House Fell's table.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_sm_linden_harvestton",
+          "id": "cs_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Fell's paid, and paid well. A green seal on my brandy. I'll get used to it. Maybe."
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_coldwater_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_coldwater_day"
+            },
+            "op": "<=",
+            "right": 11
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 10,
+            "purse": "town:coldwater",
+            "reason": "the taprooms' first price",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_coldwater_day",
+           "value": 10
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Coldwater's store is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "found Coldwater's brandy its own buyers",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "Two taprooms pour Coldwater brandy at a fair price.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_sm_linden_harvestton",
+          "id": "cs_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Two taprooms pouring Coldwater brandy at a fair price. No seal, no factor. Calm water, at last."
+         }
+        },
+        {
+         "do": "add",
+         "var": "nh_voice_coldwater",
+         "value": 6
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "If this one stays with you, it would make a Story of two scenes: the factor's letter, and the answer you carried back.",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      }
+     ]
+    },
+    {
+     "id": "q10-town",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-coldwater-still"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "cs_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_still_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_still_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_still_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_still_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "coldwater",
+            "text": "The Coldwater Still's brandy goes out under House Fell's green seal from this month. The still stays in Coldwater. The price, they say, was a good one.",
+            "days": 7,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "cs_pick"
+          },
+          "op": "=",
+          "right": "b"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_still_b",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_still_b"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_still_b"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_still_b"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "coldwater",
+              "text": "Coldwater brandy, no seal and no factor, is poured at The Sheaf in Larkfield and The Glasswater Inn at a fair price. Ask for it by name.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q11-accept",
+     "on": "quest started",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-linen-bolt"
+     },
+     "actions": [
+      {
+       "do": "set",
+       "var": "bl_pick",
+       "value": ""
+      }
+     ]
+    },
+    {
+     "id": "q11-progress",
+     "on": "objective completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-linen-bolt"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "item"
+        },
+        "op": "=",
+        "right": "baker"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "scene.play",
+          "scene": "bl_baker",
+          "player": "$actor",
+          "cue": "bl_baker",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.reveal",
+          "quest": "mq-linen-bolt",
+          "objective": "lad",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The swineherd lad works the Southwood pig yard by day, and walks home to Larkfield at dusk.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.ping",
+          "cell": "w_ridgemere_5_8",
+          "x": 96,
+          "y": 11,
+          "player": "$actor",
+          "label": "the Southwood pig yard",
+          "minutes": 60,
+          "ifRefused": "skip"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "lad"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "tn_mb_heather_reedwater",
+            "id": "bl_back",
+            "player": "$actor",
+            "once": true,
+            "words": "A Southwood lad traded it to the baker for bread. I'll bring it back.",
+            "reply": "For bread? #oath#. Bring it home, then. The loom master will want his name, and I'll give it gently. Hungry isn't wicked, but a bolt's a bolt."
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "tn_mb_heather_reedwater",
+            "id": "bl_work",
+            "player": "$actor",
+            "once": true,
+            "words": "Let the lad work it off at your loading door. I'll take him bread to start on.",
+            "reply": "Work it off. Aye, there's a loading door wants minding, early and late. Six loaves for a bolt's a short-weighed trade, and he's learned it. Take him his bread. I'll square the count."
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "fetch"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "linen_cloth",
+            "quantity": 1,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "The baker gave the bolt back, folded in a flour sack.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "all",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "field": "item"
+              },
+              "op": "=",
+              "right": "home"
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "bl_pick"
+              },
+              "op": "=",
+              "right": "a"
+             }
+            ]
+           },
+           {
+            "test": "all",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "field": "item"
+              },
+              "op": "=",
+              "right": "bread"
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "bl_pick"
+              },
+              "op": "=",
+              "right": "b"
+             }
+            ]
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-linen-bolt",
+            "objective": "square",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q11-choice",
+     "on": "dialogue choice",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-linen-bolt",
+      "status": "active"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "bl_back"
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "bl_pick",
+         "value": "a"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.reveal",
+          "quest": "mq-linen-bolt",
+          "objective": "fetch",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.reveal",
+          "quest": "mq-linen-bolt",
+          "objective": "home",
+          "player": "$actor"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "mq-linen-bolt",
+          "objective": "choose",
+          "player": "$actor"
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "bl_work"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "bl_pick",
+           "value": "b"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.reveal",
+            "quest": "mq-linen-bolt",
+            "objective": "bread",
+            "player": "$actor"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "objective.complete",
+            "quest": "mq-linen-bolt",
+            "objective": "choose",
+            "player": "$actor"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q11-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-linen-bolt"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "bl_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_larkfield_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_larkfield_day"
+            },
+            "op": "<=",
+            "right": 12
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 12,
+            "purse": "town:larkfield",
+            "reason": "the Looms' finder's share",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_larkfield_day",
+           "value": 12
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Larkfield's store is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "brought a lost bolt of Larkfield linen home to the Looms",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "The lost bolt is back at the Linen Shed.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "tn_mb_heather_reedwater",
+          "id": "bl_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Twelve bolts on the Wharf cart, and the count's square. The loom master had a word with the lad. A soft word. I made sure."
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_larkfield_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_larkfield_day"
+            },
+            "op": "<=",
+            "right": 16
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 8,
+            "purse": "town:larkfield",
+            "reason": "the Looms' thanks",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_larkfield_day",
+           "value": 8
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Larkfield's store is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "let a hungry Southwood lad work off a bolt of linen",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 7
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "The Southwood lad minds the Linen Shed door, and he stood at the ford with the rest of Larkfield.",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "tn_mb_heather_reedwater",
+            "id": "bl_since",
+            "player": "$actor",
+            "once": true,
+            "words": "How has it gone, since?",
+            "reply": "The lad minds our door, and he stood at the ford with the rest when it came to it. Worked his bolt off twice over, I'd say."
+           }
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "A Southwood lad minds the Linen Shed's loading door.",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "tn_mb_heather_reedwater",
+            "id": "bl_since",
+            "player": "$actor",
+            "once": true,
+            "words": "How has it gone, since?",
+            "reply": "The lad minds our loading door now, early and late. Not a bolt's gone walking since. Scales and silver, he counts better than I do."
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_larkfield",
+       "value": 6
+      }
+     ]
+    },
+    {
+     "id": "q11-town",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-linen-bolt"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "bl_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_bolt_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_bolt_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_bolt_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_bolt_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "larkfield",
+            "text": "The lost bolt of Wharf linen is home at the Looms, and the Wharf cart left with a full twelve. Carters: count at the door, and count again at the wagon.",
+            "days": 7,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "bl_pick"
+          },
+          "op": "=",
+          "right": "b"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_bolt_b",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_bolt_b"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_bolt_b"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_bolt_b"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "larkfield",
+              "text": "The Linen Shed's loading door is minded early and late by a Southwood lad working off a debt. Not a bolt has gone walking since.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q12-accept",
+     "on": "quest accepted",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-mud-to-the-axles"
+     },
+     "note": "The carter waits at her wagon below Longmead Mill.",
+     "actions": [
+      {
+       "do": "set",
+       "var": "mw_pick",
+       "value": ""
+      },
+      {
+       "do": "turn off",
+       "var": "mw_spawned"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "mq_axles_posted",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "board.post",
+          "town": "larkfield",
+          "text": "The carter below Longmead Mill has help in the mud already. A loom hand at the Linen Shed is a bolt short, if you've a nose.",
+          "days": 1,
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "mq_axles_posted"
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.move",
+        "npc": "cty_imogen_rustford",
+        "cell": "w_ridgemere_6_9",
+        "x": 222,
+        "y": 239,
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.hold",
+        "npc": "cty_imogen_rustford",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "schedule",
+       "signal": "mw_late",
+       "days": 0.95,
+       "owner": "player",
+       "scope": "campaign"
+      }
+     ]
+    },
+    {
+     "id": "q12-progress",
+     "on": "objective completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-mud-to-the-axles"
+     },
+     "note": "Axle and planks in: the road lot come (P-B); held: the choice at Imogen.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "field": "item"
+            },
+            "op": "=",
+            "right": "axle"
+           },
+           {
+            "test": "compare",
+            "left": {
+             "field": "item"
+            },
+            "op": "=",
+            "right": "planks"
+           }
+          ]
+         },
+         {
+          "test": "objective is",
+          "quest": "mq-mud-to-the-axles",
+          "objective": "axle",
+          "status": "done"
+         },
+         {
+          "test": "objective is",
+          "quest": "mq-mud-to-the-axles",
+          "objective": "planks",
+          "status": "done"
+         },
+         {
+          "test": "switch",
+          "var": "mw_spawned",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "party size",
+          "op": ">=",
+          "value": 3
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "mw_wagon",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "party size",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "mw_wagon",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "mw_wagon",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "turn on",
+         "var": "spawned_mw_wagon"
+        },
+        {
+         "do": "turn on",
+         "var": "mw_spawned"
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "item"
+          },
+          "op": "=",
+          "right": "hold"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "cty_imogen_rustford",
+            "id": "mw_casks",
+            "player": "$actor",
+            "once": true,
+            "words": "Cut the Fell casks loose. The flour's for Larkfield.",
+            "reply": "#oath#! Fell will howl. Let them; casks float, flour doesn't. Over they go."
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "cty_imogen_rustford",
+            "id": "mw_flour",
+            "player": "$actor",
+            "once": true,
+            "words": "Leave the flour. Fell's casks pay the carriage.",
+            "reply": "Fell's casks it is. 'Pay the piper, starve the cook.' Larkfield will feel it in the bakehouse, mind."
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q12-choice",
+     "on": "dialogue choice",
+     "audience": "participant",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "quest is",
+        "quest": "mq-mud-to-the-axles",
+        "status": "active"
+       },
+       {
+        "test": "objective is",
+        "quest": "mq-mud-to-the-axles",
+        "objective": "hold",
+        "status": "done"
+       },
+       {
+        "test": "any",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "mw_casks"
+         },
+         {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "mw_flour"
+         }
+        ]
+       }
+      ]
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "field": "detail"
+        },
+        "op": "=",
+        "right": "mw_casks"
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "mw_pick",
+         "value": "a"
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "field": "detail"
+          },
+          "op": "=",
+          "right": "mw_flour"
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "mw_pick",
+           "value": "b"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "times.nudge",
+            "market": "larkfield",
+            "points": -10,
+            "days": 5,
+            "words": "flour short in Larkfield",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.complete",
+        "quest": "mq-mud-to-the-axles",
+        "objective": "choose",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.walk",
+        "npc": "cty_imogen_rustford",
+        "cell": "w_ridgemere_6_9",
+        "x": 140,
+        "y": 76,
+        "pace": "walk",
+        "cue": "mw_home",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "id": "q12-camp",
+     "on": "camp cleared",
+     "match": {
+      "cell": "w_ridgemere_6_9"
+     },
+     "if": {
+      "test": "switch",
+      "var": "spawned_mw_wagon",
+      "is": true
+     },
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "spawned_mw_wagon"
+      }
+     ]
+    },
+    {
+     "id": "q12-end",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-mud-to-the-axles"
+     },
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "mw_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_larkfield_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_larkfield_day"
+            },
+            "op": "<=",
+            "right": 16
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 8,
+            "purse": "town:larkfield",
+            "reason": "the carriage of the flour",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_larkfield_day",
+           "value": 8
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Larkfield's store is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "freed a Larkfield wagon at the cost of House Fell's casks",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "nh_stage"
+          },
+          "op": ">=",
+          "right": 7
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "The flour reached Larkfield. House Fell's casks are in the ditch. Flour's worth more than wine this year.",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "cty_imogen_rustford",
+            "id": "mw_since",
+            "player": "$actor",
+            "once": true,
+            "words": "How has it gone, since?",
+            "reply": "Flour's at the bakehouse, the casks are in the Longmead ditch, and a Fell factor's on his way to shout at me. Flour's worth more than wine this year."
+           }
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "The flour reached Larkfield. House Fell's casks are in the ditch.",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.offer",
+            "npc": "cty_imogen_rustford",
+            "id": "mw_since",
+            "player": "$actor",
+            "once": true,
+            "words": "How has it gone, since?",
+            "reply": "Flour's at the bakehouse, the casks are in the Longmead ditch, and a Fell factor's on his way to shout at me. Worth it."
+           }
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_larkfield_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_larkfield_day"
+            },
+            "op": "<=",
+            "right": 12
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$actor",
+            "coins": 12,
+            "purse": "town:larkfield",
+            "reason": "the carriage paid in full",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_larkfield_day",
+           "value": 12
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$actor",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$actor",
+            "text": "Larkfield's store is thin today. You were paid in bread.",
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$actor",
+          "detail": "saved House Fell's casks from the Longmead mud",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$actor",
+          "text": "House Fell's casks reached Larkfield. The flour is in the mud.",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "npc.offer",
+          "npc": "cty_imogen_rustford",
+          "id": "mw_since",
+          "player": "$actor",
+          "once": true,
+          "words": "How has it gone, since?",
+          "reply": "Fell paid the carriage, full weight. The bakehouse is short. My neighbour says I chose wine over bread. She would."
+         }
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_larkfield",
+       "value": 6
+      },
+      {
+       "do": "subtract",
+       "var": "nh_threat",
+       "value": 2
+      },
+      {
+       "do": "clamp",
+       "var": "nh_threat",
+       "min": 0,
+       "max": 100
+      }
+     ]
+    },
+    {
+     "id": "q12-late",
+     "on": "story signal",
+     "signal": "mw_late",
+     "audience": "participant",
+     "if": {
+      "test": "quest is",
+      "quest": "mq-mud-to-the-axles",
+      "status": "active"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "mq-mud-to-the-axles",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "cty_imogen_rustford",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn off",
+       "var": "mq_axles_posted"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Dusk came and went. The carter got her wagon out with the miller's help.",
+        "ifRefused": "skip"
+       }
+      }
+     ]
+    },
+    {
+     "id": "q12-abandon",
+     "on": "quest abandoned",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-mud-to-the-axles"
+     },
+     "if": {
+      "test": "quest is",
+      "quest": "mq-mud-to-the-axles",
+      "status": "abandoned"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "cty_imogen_rustford",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn off",
+       "var": "mq_axles_posted"
+      }
+     ]
+    },
+    {
+     "id": "q12-town",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-mud-to-the-axles"
+     },
+     "actions": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.release",
+        "npc": "cty_imogen_rustford",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "turn off",
+       "var": "mq_axles_posted"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "mw_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "mq_axles_a",
+         "value": 1
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_axles_a"
+            },
+            "op": "=",
+            "right": 3
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_axles_a"
+            },
+            "op": "=",
+            "right": 10
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "mq_axles_a"
+            },
+            "op": "=",
+            "right": 30
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "board.post",
+            "town": "larkfield",
+            "text": "House Fell's casks lie in the Longmead ditch, and Larkfield's flour is in the bakehouse. Carters: the track below the mill is soft. Lay planks before you cross.",
+            "days": 7,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "mw_pick"
+          },
+          "op": "=",
+          "right": "b"
+         },
+         "then": [
+          {
+           "do": "add",
+           "var": "mq_axles_b",
+           "value": 1
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "any",
+            "conditions": [
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_axles_b"
+              },
+              "op": "=",
+              "right": 3
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_axles_b"
+              },
+              "op": "=",
+              "right": 10
+             },
+             {
+              "test": "compare",
+              "left": {
+               "var": "mq_axles_b"
+              },
+              "op": "=",
+              "right": 30
+             }
+            ]
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "board.post",
+              "town": "larkfield",
+              "text": "Flour is short in Larkfield this week: a wagon's load was left in the Longmead mud so House Fell's casks could come through. Bake small.",
+              "days": 7,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "quests": [
+  {
+   "id": "mq-glasswater-nets",
+   "title": "Cut Nets at Glasswater",
+   "summary": "Three nights running the Glasswater nets have been slashed and the catch lifted. The boatman blames the Larkfield boats, and the Stores hand who buys his catch wants it proved. Look at the landing, then follow whatever you find.",
+   "giver": "tn_sm_fennel_cornley",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 3
+   },
+   "fail": [
+    {
+     "afterDays": 2
+    }
+   ],
+   "offer": {
+    "ask": "Bad night on the water?",
+    "say": "#greet#. Three nights the Glasswater boatman's nets have been cut, and the catch the Stores buys gone with them. Larkfield boats, he says, but I'd like it proved before he says it louder, eh? Look at the landing. Then follow whatever you find.",
+    "accept": "I'll look, and follow.",
+    "decline": "Nets aren't my trade.",
+    "handIn": "The catch is back, one way or another.",
+    "thanks": "#thanks#. Not Larkfield, then. The boatman will have to buy a Larkfield wolf a drink he owes him, and I'll see he does. That's worse than the nets."
+   },
+   "objectives": [
+    {
+     "id": "nets",
+     "label": "Look over the cut nets at the Glasswater landing.",
+     "on": "region entered",
+     "match": {
+      "target": "gn_landing"
+     }
+    },
+    {
+     "id": "mend",
+     "label": "Bring the Stores a fishing net, to replace the worst of the boatman's.",
+     "on": "gift",
+     "match": {
+      "target": "tn_sm_fennel_cornley",
+      "item": "fishing_net"
+     },
+     "optional": true
+    },
+    {
+     "id": "tracks",
+     "label": "Follow the tracks up to the Glasswater road after dark.",
+     "on": "story signal",
+     "signal": "gn_t",
+     "after": [
+      "nets"
+     ]
+    },
+    {
+     "id": "fight",
+     "label": "Drive the net-cutters off the road.",
+     "on": "bandit falls",
+     "match": {
+      "cell": "w_ridgemere_6_8"
+     },
+     "goal": 2,
+     "after": [
+      "tracks"
+     ]
+    },
+    {
+     "id": "catch",
+     "label": "Recover the stolen catch.",
+     "on": "item picked up",
+     "match": {
+      "item": "smoked_fish"
+     },
+     "goal": 3,
+     "measure": "quantity",
+     "after": [
+      "fight"
+     ]
+    },
+    {
+     "id": "choose",
+     "label": "Decide where the catch goes.",
+     "on": "story signal",
+     "signal": "gn_chose",
+     "after": [
+      "catch"
+     ]
+    },
+    {
+     "id": "deliver",
+     "label": "Hand the catch over: three fish, to the Stores for the families, or to the inn's cook.",
+     "on": "story signal",
+     "signal": "gn_d",
+     "after": [
+      "choose"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "watch"
+    }
+   ]
+  },
+  {
+   "id": "mq-meresend-blight",
+   "title": "Black Leaf at Meresend",
+   "summary": "Black leaf has come into three rows of the Meresend orchard, and the Still that buys its apples is worried. Burn them now and lose a season for sure, or fetch a wash from the city apothecary and maybe save them, or maybe lose more.",
+   "giver": "tn_sm_kindle_applemeadow",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 6
+   },
+   "fail": [
+    {
+     "afterDays": 2
+    }
+   ],
+   "offer": {
+    "ask": "Is the Still short of apples?",
+    "say": "#greet#. Not yet. Black leaf in three rows at Meresend, and the Still buys every apple they grow. It'll be in thirty rows by the full moon. Their gran would burn them tonight. The city apothecary sells a wash, but I've never trusted a city bottle, eh? Walk the rows, then tell me which.",
+    "accept": "I'll walk the rows.",
+    "decline": "Trees aren't my business.",
+    "handIn": "The rows are seen to.",
+    "thanks": "#thanks#. Whatever comes of it, it was done with a will. Net and line, I'd rather lose apples than sit and watch."
+   },
+   "objectives": [
+    {
+     "id": "rows",
+     "label": "Walk the blighted rows at Meresend.",
+     "on": "region entered",
+     "match": {
+      "target": "mb_rows"
+     }
+    },
+    {
+     "id": "choose",
+     "label": "Decide: burn the rows, or fetch a wash from the city.",
+     "on": "story signal",
+     "signal": "mb_chose",
+     "after": [
+      "rows"
+     ]
+    },
+    {
+     "id": "fire1",
+     "label": "Bring two charcoal for the fire, to the Still, to go up to Meresend.",
+     "on": "gift",
+     "match": {
+      "target": "tn_sm_kindle_applemeadow",
+      "item": "charcoal"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "after": [
+      "choose"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "fire2",
+     "label": "Bring pitch for the fire, to the Still, to go up to Meresend.",
+     "on": "gift",
+     "match": {
+      "target": "tn_sm_kindle_applemeadow",
+      "item": "pitch"
+     },
+     "after": [
+      "choose"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "apothecary",
+     "label": "Ask the apothecary at Hollis Physic for a wash against black leaf.",
+     "on": "conversation",
+     "match": {
+      "target": "rm_rupert_fogton"
+     },
+     "after": [
+      "choose"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "wash",
+     "label": "Bring the wash to the Still, to go up to Meresend.",
+     "on": "gift",
+     "match": {
+      "target": "tn_sm_kindle_applemeadow",
+      "item": "potash"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "after": [
+      "apothecary"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "done",
+     "label": "The rows are seen to.",
+     "on": "story signal",
+     "signal": "mb_d",
+     "after": [
+      "choose"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    }
+   ]
+  },
+  {
+   "id": "mq-coldwater-still",
+   "title": "A Cask for the Fell Factor",
+   "summary": "House Fell's factor wants a sample cask from the Coldwater Still, and will name a price for the still. Carry the brandy, and choose: Fell's table, or Coldwater's own buyers.",
+   "giver": "tn_sm_linden_harvestton",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 6
+   },
+   "fail": [
+    {
+     "afterDays": 3
+    }
+   ],
+   "offer": {
+    "ask": "You look like a wolf with a letter you don't like.",
+    "say": "#greet#, #address#. House Fell's factor writes: send a sample cask to the Distillery, and we'll name a price. I know a Fell price. The still stays here and the brandy goes out with a green seal on it. Carry the cask for me? And choose for me, eh? I've been choosing alone too long.",
+    "accept": "I'll carry it, and choose.",
+    "decline": "That's a House matter.",
+    "handIn": "You have your answer.",
+    "thanks": "#thanks#. Still water, then, whichever way it runs. I'll sit with my back to the wall and think it over."
+   },
+   "objectives": [
+    {
+     "id": "cask",
+     "label": "Collect the sample brandy from the Coldwater Still.",
+     "on": "enter place",
+     "match": {
+      "target": "cn_coldwater_still"
+     }
+    },
+    {
+     "id": "choose",
+     "label": "Decide where the brandy goes.",
+     "on": "story signal",
+     "signal": "cs_chose",
+     "after": [
+      "cask"
+     ]
+    },
+    {
+     "id": "distillery",
+     "label": "Give both sample bottles to the distiller at the Fell Distillery.",
+     "on": "gift",
+     "match": {
+      "target": "rm_ilse_saltley",
+      "item": "brandy"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "after": [
+      "choose"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "steward",
+     "label": "Hear House Fell's price from the steward, at the door of Fellhall.",
+     "on": "story signal",
+     "signal": "cs_s",
+     "after": [
+      "distillery"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "sheaf",
+     "label": "Pour a cask for the keeper of The Sheaf in Larkfield.",
+     "on": "gift",
+     "match": {
+      "target": "tn_cw_bramble_reedford",
+      "item": "brandy"
+     },
+     "after": [
+      "choose"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "glasswater",
+     "label": "Pour the other for the keeper of The Glasswater Inn.",
+     "on": "gift",
+     "match": {
+      "target": "tn_fh_loam_pinefell",
+      "item": "brandy"
+     },
+     "after": [
+      "choose"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "word",
+     "label": "Bring the stillmaster the answer.",
+     "on": "story signal",
+     "signal": "cs_w",
+     "after": [
+      "choose"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce"
+    }
+   ]
+  },
+  {
+   "id": "mq-linen-bolt",
+   "title": "A Bolt Gone Missing",
+   "summary": "Twelve bolts of Wharf-bound linen went out of the Linen Shed door and eleven reached the cart. New linen smells of size and flax. Follow your nose, find the bolt, and decide who pays for it.",
+   "giver": "tn_mb_heather_reedwater",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 6
+   },
+   "fail": [
+    {
+     "afterDays": 2
+    }
+   ],
+   "offer": {
+    "ask": "Counting again?",
+    "say": "#greet#. Always. Twelve bolts of linen out of our door for the Wharf, and eleven on the cart. I counted twice, and I'm never wrong twice. Somebody lifted one between the door and the wagon. New linen smells of size and flax. Follow your nose for me, #address#?",
+    "accept": "I'll follow the flax.",
+    "decline": "Linen's not my trade.",
+    "handIn": "I know where your bolt went.",
+    "thanks": "#thanks#. Twelve, then, one way or another. I'll stop counting in my sleep. Mostly."
+   },
+   "objectives": [
+    {
+     "id": "door",
+     "label": "Smell round the Linen Shed door where the carts load.",
+     "on": "region entered",
+     "match": {
+      "target": "bl_door"
+     }
+    },
+    {
+     "id": "bake",
+     "label": "Follow the smell of new flax to the Bakehouse.",
+     "on": "enter place",
+     "match": {
+      "target": "cn_larkfield_bakehouse"
+     },
+     "after": [
+      "door"
+     ]
+    },
+    {
+     "id": "baker",
+     "label": "Ask the baker what he took in trade this week.",
+     "on": "conversation",
+     "match": {
+      "target": "tn_sm_eskar_cornley"
+     },
+     "after": [
+      "bake"
+     ]
+    },
+    {
+     "id": "lad",
+     "label": "Find the Southwood lad who traded a bolt of linen for bread.",
+     "on": "conversation",
+     "match": {
+      "target": "cty_ragnar_wetby"
+     },
+     "after": [
+      "baker"
+     ],
+     "hidden": true
+    },
+    {
+     "id": "choose",
+     "label": "Decide who pays for the bolt.",
+     "on": "story signal",
+     "signal": "bl_chose",
+     "after": [
+      "lad"
+     ]
+    },
+    {
+     "id": "fetch",
+     "label": "Fetch the bolt back from the baker.",
+     "on": "conversation",
+     "match": {
+      "target": "tn_sm_eskar_cornley"
+     },
+     "after": [
+      "choose"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "home",
+     "label": "Bring the bolt home to the Linen Shed.",
+     "on": "gift",
+     "match": {
+      "target": "tn_mb_heather_reedwater",
+      "item": "linen_cloth"
+     },
+     "after": [
+      "fetch"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "bread",
+     "label": "Take the lad two loaves to start his work on.",
+     "on": "gift",
+     "match": {
+      "target": "cty_ragnar_wetby",
+      "item": "bread"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "after": [
+      "choose"
+     ],
+     "optional": true,
+     "hidden": true
+    },
+    {
+     "id": "square",
+     "label": "The count is square.",
+     "on": "story signal",
+     "signal": "bl_d",
+     "after": [
+      "choose"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "commerce"
+    }
+   ]
+  },
+  {
+   "id": "mq-mud-to-the-axles",
+   "title": "Mud to the Axles",
+   "summary": "A carter's wagon is in the mud to the axles below Longmead Mill, with House Fell's casks and Larkfield's flour aboard. Dusk is coming, and the road wolves know a stuck wagon when they smell one.",
+   "giver": "cty_imogen_rustford",
+   "repeat": "weekly",
+   "lifetime": "campaign",
+   "abandon": true,
+   "join": {
+    "cap": 1
+   },
+   "fail": [
+    {
+     "afterDays": 1
+    }
+   ],
+   "offer": {
+    "ask": "Stuck?",
+    "say": "#greet#! Stuck, and deep. 'A wagon in the mud is a gift to every thief.' My gran's saying, and she's right. Fell's casks and our flour, and the axle cracked. I need an axle and two planks, and someone with teeth when the road lot come up the track at dusk.",
+    "accept": "An axle, two planks, and teeth.",
+    "decline": "Sorry, not today.",
+    "handIn": "The wagon's in Larkfield.",
+    "thanks": "#thanks#! 'Shared mud, shared bread.' My gran again, and right again."
+   },
+   "objectives": [
+    {
+     "id": "axle",
+     "label": "Bring the carter a new axle.",
+     "on": "gift",
+     "match": {
+      "target": "cty_imogen_rustford",
+      "item": "axle"
+     }
+    },
+    {
+     "id": "planks",
+     "label": "Bring two planks to lay under the wheels.",
+     "on": "gift",
+     "match": {
+      "target": "cty_imogen_rustford",
+      "item": "planks"
+     },
+     "goal": 2,
+     "measure": "quantity"
+    },
+    {
+     "id": "hold",
+     "label": "Hold the wagon while she frees it. They're coming up the track.",
+     "on": "bandit falls",
+     "match": {
+      "cell": "w_ridgemere_6_9"
+     },
+     "goal": 2,
+     "after": [
+      "axle",
+      "planks"
+     ]
+    },
+    {
+     "id": "choose",
+     "label": "The wagon's still too heavy. Decide what goes in the mud.",
+     "on": "story signal",
+     "signal": "mw_chose",
+     "after": [
+      "hold"
+     ]
+    },
+    {
+     "id": "escort",
+     "label": "Walk the wagon into Larkfield.",
+     "on": "region entered",
+     "match": {
+      "target": "lf_square"
+     },
+     "after": [
+      "choose"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour"
+    }
+   ]
+  }
+ ],
+ "tests": [
+  {
+   "name": "Cut Nets at Glasswater: the catch goes home",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-grist-a",
+     "target": "run",
+     "item": "tn_sm_fennel_cornley",
+     "detail": "mq-glasswater-nets"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "player-grist-a",
+     "target": "gn_road",
+     "cell": "w_ridgemere_6_8",
+     "x": 139,
+     "y": 126
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 1.03,
+     "actor": "player-grist-a",
+     "target": "gn_landing",
+     "cell": "w_ridgemere_7_7",
+     "x": 44,
+     "y": 198
+    },
+    {
+     "id": "e4",
+     "kind": "gift",
+     "day": 1.04,
+     "actor": "player-grist-a",
+     "target": "tn_sm_fennel_cornley",
+     "item": "fishing_net",
+     "quantity": 1,
+     "cell": "cn_coldwater_store"
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 1.05,
+     "actor": "player-grist-a",
+     "target": "gn_road",
+     "cell": "w_ridgemere_6_8",
+     "x": 139,
+     "y": 126
+    },
+    {
+     "id": "e6",
+     "kind": "bandit falls",
+     "day": 1.06,
+     "actor": "player-grist-a",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_6_8",
+     "detail": "a net-cutter"
+    },
+    {
+     "id": "e7",
+     "kind": "bandit falls",
+     "day": 1.07,
+     "actor": "player-grist-a",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_6_8",
+     "detail": "a net-cutter"
+    },
+    {
+     "id": "e8",
+     "kind": "camp cleared",
+     "day": 1.08,
+     "actor": "coldwater",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_6_8",
+     "detail": "by the watch"
+    },
+    {
+     "id": "e9",
+     "kind": "item picked up",
+     "day": 1.09,
+     "actor": "player-grist-a",
+     "item": "smoked_fish",
+     "cell": "w_ridgemere_6_8",
+     "quantity": 4,
+     "x": 140,
+     "y": 128
+    },
+    {
+     "id": "e10",
+     "kind": "dialogue choice",
+     "day": 1.1,
+     "actor": "player-grist-a",
+     "target": "run",
+     "item": "tn_sm_fennel_cornley",
+     "detail": "gn_back"
+    },
+    {
+     "id": "e11",
+     "kind": "gift",
+     "day": 1.11,
+     "actor": "player-grist-a",
+     "target": "tn_sm_fennel_cornley",
+     "item": "smoked_fish",
+     "quantity": 2,
+     "cell": "cn_coldwater_store"
+    },
+    {
+     "id": "e12",
+     "kind": "gift",
+     "day": 1.12,
+     "actor": "player-grist-a",
+     "target": "tn_sm_fennel_cornley",
+     "item": "smoked_fish",
+     "quantity": 3,
+     "cell": "cn_coldwater_store"
+    },
+    {
+     "id": "e13",
+     "kind": "quest handed in",
+     "day": 1.13,
+     "actor": "player-grist-a",
+     "target": "run",
+     "item": "tn_sm_fennel_cornley",
+     "detail": "mq-glasswater-nets"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "world": {
+     "hour": 22,
+     "season": "spring"
+    },
+    "wolves": {
+     "player-grist-a": {
+      "partySize": 2
+     }
+    }
+   },
+   "expectQuests": {
+    "mq-glasswater-nets": {
+     "player-grist-a": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-grist-a": {
+      "gn_pick": "a"
+     }
+    },
+    "story": {
+     "mq_nets_a": 1
+    },
+    "world": {
+     "coin_coldwater_day": 8
+    }
+   }
+  },
+  {
+   "name": "Cut Nets at Glasswater: the catch is sold",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-grist-b",
+     "target": "run",
+     "item": "tn_sm_fennel_cornley",
+     "detail": "mq-glasswater-nets"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "player-grist-b",
+     "target": "gn_road",
+     "cell": "w_ridgemere_6_8",
+     "x": 139,
+     "y": 126
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 1.03,
+     "actor": "player-grist-b",
+     "target": "gn_landing",
+     "cell": "w_ridgemere_7_7",
+     "x": 44,
+     "y": 198
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.04,
+     "actor": "player-grist-b",
+     "target": "gn_road",
+     "cell": "w_ridgemere_6_8",
+     "x": 139,
+     "y": 126
+    },
+    {
+     "id": "e5",
+     "kind": "bandit falls",
+     "day": 1.05,
+     "actor": "player-grist-b",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_6_8",
+     "detail": "a net-cutter"
+    },
+    {
+     "id": "e6",
+     "kind": "bandit falls",
+     "day": 1.06,
+     "actor": "player-grist-b",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_6_8",
+     "detail": "a net-cutter"
+    },
+    {
+     "id": "e7",
+     "kind": "camp cleared",
+     "day": 1.07,
+     "actor": "coldwater",
+     "target": "camp_story_2",
+     "cell": "w_ridgemere_6_8",
+     "detail": "by the watch"
+    },
+    {
+     "id": "e8",
+     "kind": "item picked up",
+     "day": 1.08,
+     "actor": "player-grist-b",
+     "item": "smoked_fish",
+     "cell": "w_ridgemere_6_8",
+     "quantity": 4,
+     "x": 140,
+     "y": 128
+    },
+    {
+     "id": "e9",
+     "kind": "dialogue choice",
+     "day": 1.09,
+     "actor": "player-grist-b",
+     "target": "run",
+     "item": "tn_sm_fennel_cornley",
+     "detail": "gn_sell"
+    },
+    {
+     "id": "e10",
+     "kind": "gift",
+     "day": 1.1,
+     "actor": "player-grist-b",
+     "target": "tn_cw_harrow_reedford",
+     "item": "smoked_fish",
+     "quantity": 2
+    },
+    {
+     "id": "e11",
+     "kind": "gift",
+     "day": 1.11,
+     "actor": "player-grist-b",
+     "target": "tn_cw_harrow_reedford",
+     "item": "smoked_fish",
+     "quantity": 3
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 1.12,
+     "actor": "player-grist-b",
+     "target": "run",
+     "item": "tn_sm_fennel_cornley",
+     "detail": "mq-glasswater-nets"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "world": {
+     "hour": 22,
+     "season": "spring"
+    },
+    "wolves": {
+     "player-grist-b": {
+      "partySize": 1
+     }
+    }
+   },
+   "expectQuests": {
+    "mq-glasswater-nets": {
+     "player-grist-b": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-grist-b": {
+      "gn_pick": "b"
+     }
+    },
+    "story": {
+     "mq_nets_b": 1
+    },
+    "world": {
+     "coin_coldwater_day": 14
+    }
+   }
+  },
+  {
+   "name": "Black Leaf at Meresend: burned",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-pell-a",
+     "target": "run",
+     "item": "tn_sm_kindle_applemeadow",
+     "detail": "mq-meresend-blight"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "player-pell-a",
+     "target": "mb_rows",
+     "cell": "w_ridgemere_8_6",
+     "x": 100,
+     "y": 188
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 1.03,
+     "actor": "player-pell-a",
+     "target": "run",
+     "item": "tn_sm_kindle_applemeadow",
+     "detail": "mb_burn"
+    },
+    {
+     "id": "e4",
+     "kind": "gift",
+     "day": 1.04,
+     "actor": "player-pell-a",
+     "target": "tn_sm_kindle_applemeadow",
+     "item": "pitch",
+     "quantity": 1,
+     "cell": "cn_coldwater_still"
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 1.05,
+     "actor": "player-pell-a",
+     "target": "tn_sm_kindle_applemeadow",
+     "item": "charcoal",
+     "quantity": 2,
+     "cell": "cn_coldwater_still"
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 1.06,
+     "actor": "player-pell-a",
+     "target": "run",
+     "item": "tn_sm_kindle_applemeadow",
+     "detail": "mq-meresend-blight"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 1.56,
+     "actor": "player-pell-d",
+     "target": "run",
+     "item": "tn_sm_kindle_applemeadow",
+     "detail": "mq-meresend-blight"
+    },
+    {
+     "id": "e8",
+     "kind": "arrival",
+     "day": 8.56,
+     "actor": "player-nobody"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "mq-meresend-blight": {
+     "player-pell-a": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-pell-a": {
+      "mb_pick": "a"
+     }
+    },
+    "story": {
+     "mq_blight_a": 1
+    }
+   }
+  },
+  {
+   "name": "Black Leaf at Meresend: the wash takes, or the leaf spreads",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-pell-b",
+     "target": "run",
+     "item": "tn_sm_kindle_applemeadow",
+     "detail": "mq-meresend-blight"
+    },
+    {
+     "id": "e2",
+     "kind": "quest accepted",
+     "day": 1.02,
+     "actor": "player-pell-c",
+     "target": "run",
+     "item": "tn_sm_kindle_applemeadow",
+     "detail": "mq-meresend-blight"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 1.03,
+     "actor": "player-pell-b",
+     "target": "mb_rows",
+     "cell": "w_ridgemere_8_6",
+     "x": 100,
+     "y": 188
+    },
+    {
+     "id": "e4",
+     "kind": "dialogue choice",
+     "day": 1.04,
+     "actor": "player-pell-b",
+     "target": "run",
+     "item": "tn_sm_kindle_applemeadow",
+     "detail": "mb_wash"
+    },
+    {
+     "id": "e5",
+     "kind": "conversation",
+     "day": 1.05,
+     "actor": "player-pell-b",
+     "target": "rm_rupert_fogton"
+    },
+    {
+     "id": "e6",
+     "kind": "gift",
+     "day": 1.06,
+     "actor": "player-pell-b",
+     "target": "tn_sm_kindle_applemeadow",
+     "item": "potash",
+     "quantity": 2,
+     "cell": "cn_coldwater_still"
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 1.07,
+     "actor": "player-pell-b",
+     "target": "run",
+     "item": "tn_sm_kindle_applemeadow",
+     "detail": "mq-meresend-blight"
+    },
+    {
+     "id": "e8",
+     "kind": "region entered",
+     "day": 1.08,
+     "actor": "player-pell-c",
+     "target": "mb_rows",
+     "cell": "w_ridgemere_8_6",
+     "x": 100,
+     "y": 188
+    },
+    {
+     "id": "e9",
+     "kind": "dialogue choice",
+     "day": 1.09,
+     "actor": "player-pell-c",
+     "target": "run",
+     "item": "tn_sm_kindle_applemeadow",
+     "detail": "mb_wash"
+    },
+    {
+     "id": "e10",
+     "kind": "conversation",
+     "day": 1.1,
+     "actor": "player-pell-c",
+     "target": "rm_rupert_fogton"
+    },
+    {
+     "id": "e11",
+     "kind": "gift",
+     "day": 1.11,
+     "actor": "player-pell-c",
+     "target": "tn_sm_kindle_applemeadow",
+     "item": "potash",
+     "quantity": 2,
+     "cell": "cn_coldwater_still"
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 1.12,
+     "actor": "player-pell-c",
+     "target": "run",
+     "item": "tn_sm_kindle_applemeadow",
+     "detail": "mq-meresend-blight"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "mq-meresend-blight": {
+     "player-pell-b": "done",
+     "player-pell-c": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-pell-b": {
+      "mb_pick": "b1"
+     },
+     "player-pell-c": {
+      "mb_pick": "b2"
+     }
+    },
+    "story": {
+     "mq_blight_b": 1,
+     "mq_blight_c": 1
+    }
+   },
+   "rolls": [
+    10,
+    90
+   ]
+  },
+  {
+   "name": "A Cask for the Fell Factor: Fell's table",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-linden-a",
+     "target": "run",
+     "item": "tn_sm_linden_harvestton",
+     "detail": "mq-coldwater-still"
+    },
+    {
+     "id": "e2",
+     "kind": "enter place",
+     "day": 1.02,
+     "actor": "player-linden-a",
+     "target": "cn_coldwater_still",
+     "cell": "cn_coldwater_still",
+     "detail": "w_ridgemere_7_6"
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 1.03,
+     "actor": "player-linden-a",
+     "target": "run",
+     "item": "tn_sm_linden_harvestton",
+     "detail": "cs_fell"
+    },
+    {
+     "id": "e4",
+     "kind": "gift",
+     "day": 1.04,
+     "actor": "player-linden-a",
+     "target": "rm_ilse_saltley",
+     "item": "brandy",
+     "quantity": 2
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 1.05,
+     "actor": "player-linden-a",
+     "target": "fh_door",
+     "cell": "w_ridgemere_2_1",
+     "x": 148,
+     "y": 70
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 1.06,
+     "actor": "player-linden-a",
+     "target": "run",
+     "item": "tn_sm_linden_harvestton",
+     "detail": "mq-coldwater-still"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "mq-coldwater-still": {
+     "player-linden-a": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-linden-a": {
+      "cs_pick": "a"
+     }
+    },
+    "story": {
+     "mq_still_a": 1
+    },
+    "world": {
+     "nh_voice_coldwater": 0
+    }
+   }
+  },
+  {
+   "name": "A Cask for the Fell Factor: Coldwater's own buyers",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-linden-b",
+     "target": "run",
+     "item": "tn_sm_linden_harvestton",
+     "detail": "mq-coldwater-still"
+    },
+    {
+     "id": "e2",
+     "kind": "enter place",
+     "day": 1.02,
+     "actor": "player-linden-b",
+     "target": "cn_coldwater_still",
+     "cell": "cn_coldwater_still",
+     "detail": "w_ridgemere_7_6"
+    },
+    {
+     "id": "e3",
+     "kind": "dialogue choice",
+     "day": 1.03,
+     "actor": "player-linden-b",
+     "target": "run",
+     "item": "tn_sm_linden_harvestton",
+     "detail": "cs_ours"
+    },
+    {
+     "id": "e4",
+     "kind": "gift",
+     "day": 1.04,
+     "actor": "player-linden-b",
+     "target": "tn_fh_loam_pinefell",
+     "item": "brandy",
+     "quantity": 1
+    },
+    {
+     "id": "e5",
+     "kind": "gift",
+     "day": 1.05,
+     "actor": "player-linden-b",
+     "target": "tn_cw_bramble_reedford",
+     "item": "brandy",
+     "quantity": 1
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 1.06,
+     "actor": "player-linden-b",
+     "target": "run",
+     "item": "tn_sm_linden_harvestton",
+     "detail": "mq-coldwater-still"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "mq-coldwater-still": {
+     "player-linden-b": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-linden-b": {
+      "cs_pick": "b"
+     }
+    },
+    "story": {
+     "mq_still_b": 1
+    },
+    "world": {
+     "nh_voice_coldwater": 6
+    }
+   }
+  },
+  {
+   "name": "A Cask for the Fell Factor: put aside, taken again, no second sample that week",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-linden-c",
+     "target": "run",
+     "item": "tn_sm_linden_harvestton",
+     "detail": "mq-coldwater-still"
+    },
+    {
+     "id": "e2",
+     "kind": "enter place",
+     "day": 1.02,
+     "actor": "player-linden-c",
+     "target": "cn_coldwater_still",
+     "cell": "cn_coldwater_still",
+     "detail": "w_ridgemere_7_6"
+    },
+    {
+     "id": "e3",
+     "kind": "quest abandoned",
+     "day": 1.03,
+     "actor": "player-linden-c",
+     "target": "run",
+     "detail": "mq-coldwater-still"
+    },
+    {
+     "id": "e4",
+     "kind": "quest accepted",
+     "day": 1.13,
+     "actor": "player-linden-c",
+     "target": "run",
+     "item": "tn_sm_linden_harvestton",
+     "detail": "mq-coldwater-still"
+    },
+    {
+     "id": "e5",
+     "kind": "enter place",
+     "day": 1.14,
+     "actor": "player-linden-c",
+     "target": "cn_coldwater_still",
+     "cell": "cn_coldwater_still",
+     "detail": "w_ridgemere_7_6"
+    },
+    {
+     "id": "e6",
+     "kind": "arrival",
+     "day": 8.34,
+     "actor": "player-nobody"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "mq-coldwater-still": {
+     "player-linden-c": "failed"
+    }
+   }
+  },
+  {
+   "name": "A Bolt Gone Missing: the bolt home",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-heather-a",
+     "target": "run",
+     "item": "tn_mb_heather_reedwater",
+     "detail": "mq-linen-bolt"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "player-heather-a",
+     "target": "bl_door",
+     "cell": "w_ridgemere_6_9",
+     "x": 162,
+     "y": 76
+    },
+    {
+     "id": "e3",
+     "kind": "enter place",
+     "day": 1.03,
+     "actor": "player-heather-a",
+     "target": "cn_larkfield_bakehouse",
+     "cell": "cn_larkfield_bakehouse",
+     "detail": "w_ridgemere_6_9"
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 1.04,
+     "actor": "player-heather-a",
+     "target": "tn_sm_eskar_cornley"
+    },
+    {
+     "id": "e5",
+     "kind": "conversation",
+     "day": 1.05,
+     "actor": "player-heather-a",
+     "target": "cty_ragnar_wetby"
+    },
+    {
+     "id": "e6",
+     "kind": "dialogue choice",
+     "day": 1.06,
+     "actor": "player-heather-a",
+     "target": "run",
+     "item": "tn_mb_heather_reedwater",
+     "detail": "bl_back"
+    },
+    {
+     "id": "e7",
+     "kind": "conversation",
+     "day": 1.07,
+     "actor": "player-heather-a",
+     "target": "tn_sm_eskar_cornley"
+    },
+    {
+     "id": "e8",
+     "kind": "gift",
+     "day": 1.08,
+     "actor": "player-heather-a",
+     "target": "tn_mb_heather_reedwater",
+     "item": "linen_cloth",
+     "quantity": 1
+    },
+    {
+     "id": "e9",
+     "kind": "quest handed in",
+     "day": 1.09,
+     "actor": "player-heather-a",
+     "target": "run",
+     "item": "tn_mb_heather_reedwater",
+     "detail": "mq-linen-bolt"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "mq-linen-bolt": {
+     "player-heather-a": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-heather-a": {
+      "bl_pick": "a"
+     }
+    },
+    "story": {
+     "mq_bolt_a": 1
+    },
+    "world": {
+     "coin_larkfield_day": 12
+    }
+   }
+  },
+  {
+   "name": "A Bolt Gone Missing: the lad works it off",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-heather-b",
+     "target": "run",
+     "item": "tn_mb_heather_reedwater",
+     "detail": "mq-linen-bolt"
+    },
+    {
+     "id": "e2",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "player-heather-b",
+     "target": "bl_door",
+     "cell": "w_ridgemere_6_9",
+     "x": 162,
+     "y": 76
+    },
+    {
+     "id": "e3",
+     "kind": "enter place",
+     "day": 1.03,
+     "actor": "player-heather-b",
+     "target": "cn_larkfield_bakehouse",
+     "cell": "cn_larkfield_bakehouse",
+     "detail": "w_ridgemere_6_9"
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 1.04,
+     "actor": "player-heather-b",
+     "target": "tn_sm_eskar_cornley"
+    },
+    {
+     "id": "e5",
+     "kind": "conversation",
+     "day": 1.05,
+     "actor": "player-heather-b",
+     "target": "cty_ragnar_wetby"
+    },
+    {
+     "id": "e6",
+     "kind": "dialogue choice",
+     "day": 1.06,
+     "actor": "player-heather-b",
+     "target": "run",
+     "item": "tn_mb_heather_reedwater",
+     "detail": "bl_work"
+    },
+    {
+     "id": "e7",
+     "kind": "gift",
+     "day": 1.07,
+     "actor": "player-heather-b",
+     "target": "cty_ragnar_wetby",
+     "item": "bread",
+     "quantity": 2
+    },
+    {
+     "id": "e8",
+     "kind": "quest handed in",
+     "day": 1.08,
+     "actor": "player-heather-b",
+     "target": "run",
+     "item": "tn_mb_heather_reedwater",
+     "detail": "mq-linen-bolt"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "mq-linen-bolt": {
+     "player-heather-b": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-heather-b": {
+      "bl_pick": "b"
+     }
+    },
+    "story": {
+     "mq_bolt_b": 1
+    }
+   }
+  },
+  {
+   "name": "Mud to the Axles: the Fell casks cut loose",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-imogen-a",
+     "target": "run",
+     "item": "cty_imogen_rustford",
+     "detail": "mq-mud-to-the-axles"
+    },
+    {
+     "id": "e2",
+     "kind": "gift",
+     "day": 1.02,
+     "actor": "player-imogen-a",
+     "target": "cty_imogen_rustford",
+     "item": "planks",
+     "quantity": 2
+    },
+    {
+     "id": "e3",
+     "kind": "gift",
+     "day": 1.03,
+     "actor": "player-imogen-a",
+     "target": "cty_imogen_rustford",
+     "item": "axle",
+     "quantity": 1
+    },
+    {
+     "id": "e4",
+     "kind": "bandit falls",
+     "day": 1.04,
+     "actor": "player-imogen-a",
+     "target": "camp_story_3",
+     "cell": "w_ridgemere_6_9",
+     "detail": "a road wolf"
+    },
+    {
+     "id": "e5",
+     "kind": "bandit falls",
+     "day": 1.05,
+     "actor": "player-imogen-a",
+     "target": "camp_story_3",
+     "cell": "w_ridgemere_6_9",
+     "detail": "a road wolf"
+    },
+    {
+     "id": "e6",
+     "kind": "camp cleared",
+     "day": 1.06,
+     "actor": "player-imogen-a",
+     "target": "camp_story_3",
+     "cell": "w_ridgemere_6_9",
+     "detail": "by a wolf"
+    },
+    {
+     "id": "e7",
+     "kind": "dialogue choice",
+     "day": 1.07,
+     "actor": "player-imogen-a",
+     "target": "run",
+     "item": "cty_imogen_rustford",
+     "detail": "mw_casks"
+    },
+    {
+     "id": "e8",
+     "kind": "region entered",
+     "day": 1.08,
+     "actor": "player-imogen-a",
+     "target": "lf_square",
+     "cell": "w_ridgemere_6_9",
+     "x": 140,
+     "y": 76
+    },
+    {
+     "id": "e9",
+     "kind": "quest handed in",
+     "day": 1.09,
+     "actor": "player-imogen-a",
+     "target": "run",
+     "item": "cty_imogen_rustford",
+     "detail": "mq-mud-to-the-axles"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "facts": {
+    "world": {
+     "hour": 19,
+     "season": "spring"
+    },
+    "wolves": {
+     "player-imogen-a": {
+      "partySize": 2
+     }
+    }
+   },
+   "expectQuests": {
+    "mq-mud-to-the-axles": {
+     "player-imogen-a": "done"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-imogen-a": {
+      "mw_pick": "a"
+     }
+    },
+    "story": {
+     "mq_axles_a": 1,
+     "mq_axles_posted": false
+    }
+   }
+  },
+  {
+   "name": "Mud to the Axles: the flour left; the next carter too late; one put aside",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.01,
+     "actor": "player-imogen-b",
+     "target": "run",
+     "item": "cty_imogen_rustford",
+     "detail": "mq-mud-to-the-axles"
+    },
+    {
+     "id": "e2",
+     "kind": "gift",
+     "day": 1.02,
+     "actor": "player-imogen-b",
+     "target": "cty_imogen_rustford",
+     "item": "axle",
+     "quantity": 1
+    },
+    {
+     "id": "e3",
+     "kind": "gift",
+     "day": 1.03,
+     "actor": "player-imogen-b",
+     "target": "cty_imogen_rustford",
+     "item": "planks",
+     "quantity": 1
+    },
+    {
+     "id": "e4",
+     "kind": "gift",
+     "day": 1.04,
+     "actor": "player-imogen-b",
+     "target": "cty_imogen_rustford",
+     "item": "planks",
+     "quantity": 1
+    },
+    {
+     "id": "e5",
+     "kind": "bandit falls",
+     "day": 1.05,
+     "actor": "player-imogen-b",
+     "target": "camp_story_4",
+     "cell": "w_ridgemere_6_9",
+     "detail": "a road wolf"
+    },
+    {
+     "id": "e6",
+     "kind": "bandit falls",
+     "day": 1.06,
+     "actor": "player-imogen-b",
+     "target": "camp_story_4",
+     "cell": "w_ridgemere_6_9",
+     "detail": "a road wolf"
+    },
+    {
+     "id": "e7",
+     "kind": "dialogue choice",
+     "day": 1.07,
+     "actor": "player-imogen-b",
+     "target": "run",
+     "item": "cty_imogen_rustford",
+     "detail": "mw_flour"
+    },
+    {
+     "id": "e8",
+     "kind": "region entered",
+     "day": 1.08,
+     "actor": "player-imogen-b",
+     "target": "lf_square",
+     "cell": "w_ridgemere_6_9",
+     "x": 141,
+     "y": 75
+    },
+    {
+     "id": "e9",
+     "kind": "quest handed in",
+     "day": 1.09,
+     "actor": "player-imogen-b",
+     "target": "run",
+     "item": "cty_imogen_rustford",
+     "detail": "mq-mud-to-the-axles"
+    },
+    {
+     "id": "e10",
+     "kind": "quest accepted",
+     "day": 1.29,
+     "actor": "player-imogen-c",
+     "target": "run",
+     "item": "cty_imogen_rustford",
+     "detail": "mq-mud-to-the-axles"
+    },
+    {
+     "id": "e11",
+     "kind": "arrival",
+     "day": 2.26,
+     "actor": "player-nobody"
+    },
+    {
+     "id": "e12",
+     "kind": "quest accepted",
+     "day": 2.36,
+     "actor": "player-imogen-a",
+     "target": "run",
+     "item": "cty_imogen_rustford",
+     "detail": "mq-mud-to-the-axles"
+    },
+    {
+     "id": "e13",
+     "kind": "quest abandoned",
+     "day": 2.37,
+     "actor": "player-imogen-a",
+     "target": "run",
+     "detail": "mq-mud-to-the-axles"
+    }
+   ],
+   "expect": [
+    "open"
+   ],
+   "expectQuests": {
+    "mq-mud-to-the-axles": {
+     "player-imogen-b": "done",
+     "player-imogen-c": "failed",
+     "player-imogen-a": "abandoned"
+    }
+   },
+   "expectVariables": {
+    "player": {
+     "player-imogen-b": {
+      "mw_pick": "b"
+     }
+    },
+    "story": {
+     "mq_axles_b": 1,
+     "mq_axles_posted": false
+    }
+   }
+  }
+ ]
+}

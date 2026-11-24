@@ -6,6 +6,12 @@ This file settles every question that crosses files, so the per-file revisers of
 
 The giver registry is `givers.tsv`, next to this file. It is the single list of who carries what.
 
+**Revised 2026-11-22 for doors locked to wolves** (doc 82, `World::playerDoorLocked`): 45 givers, choice holders and
+targets who worked behind such doors were re-cast in the programs, and `givers.tsv` follows them; where a re-cast below
+names someone else, `givers.tsv` and doc 86's "Givers behind locked doors" (the content section) win. Among them §1.3's
+Edda Gullford (Q1), Gwen Cinderdale (#7), Brock Marshholm (#25), Fallow Reedwell (#40), Willa Wheatcombe (#38), and the
+estate errands' givers (#46, #47).
+
 **Checked against the world read only** (Ridgemere 3, `ratw_ridgemere3`, world id `upper_accord`), through `tools/world_db.connect('ridgemere3', 'owner')` inside `SET TRANSACTION READ ONLY` with a rollback. Nothing in the repo or the world was changed. The checkpoint read is the latest, saved **2026-11-22 22:34 UTC**, `calendarDays` **66.32**.
 
 The queries:

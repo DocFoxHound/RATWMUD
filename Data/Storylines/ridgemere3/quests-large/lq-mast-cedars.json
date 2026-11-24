@@ -1,0 +1,4134 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "lq-mast-cedars",
+ "title": "The Mast Cedars",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "variables": [
+  {
+   "id": "lq_coin",
+   "type": "number",
+   "scope": "player",
+   "note": "What this line has paid the wolf in all (35 at most)."
+  },
+  {
+   "id": "lq_thin",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf was last paid in kind (a thin purse); read by N2 later for the thin thanks."
+  },
+  {
+   "id": "road",
+   "type": "text",
+   "scope": "player",
+   "note": "The road of chapter 3 this wolf took ('' none yet)."
+  },
+  {
+   "id": "packed",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf did chapter 2 in a party: their road weighs one more."
+  },
+  {
+   "id": "helpers",
+   "type": "wolves",
+   "scope": "story",
+   "note": "Wolves who have helped the shared goal this visit (each grows the goal)."
+  },
+  {
+   "id": "reckon_called",
+   "type": "switch",
+   "scope": "story",
+   "note": "The first road was taken: the tally runs 3 game days."
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The realm's voice (campaign 4.1): packs add."
+  },
+  {
+   "id": "nh_threat",
+   "type": "number",
+   "scope": "world",
+   "initial": 30,
+   "note": "The bandit threat (campaign 4.1): packs lower it, never below 0."
+  },
+  {
+   "id": "coin_oakhaven_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:oakhaven (day cap 24); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_oakhaven_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:oakhaven is above its floor (nh-purses: off below 60, on at 80)."
+  },
+  {
+   "id": "coin_ridgemere_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:ridgemere (day cap 135); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_ridgemere_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:ridgemere is above its floor (nh-purses: off below 60, on at 80)."
+  },
+  {
+   "id": "nh_voice_oakhaven",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Oakhaven's strand of the realm's voice (campaign 4.1)."
+  },
+  {
+   "id": "lq_cedars",
+   "type": "text",
+   "scope": "world",
+   "initial": "",
+   "note": "The Mast Cedars: '' before it began, dying while the night crews fell, reckoning, then contract, returned or taken."
+  },
+  {
+   "id": "goal",
+   "type": "number",
+   "scope": "story",
+   "initial": 6,
+   "note": "Cedars the reckoning needs saved: 6, and 1 more for each wolf who helps."
+  },
+  {
+   "id": "stumps_saved",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "show": "Cedars standing",
+   "note": "Night-crew fellers brought down this season: each a cedar saved."
+  },
+  {
+   "id": "fells",
+   "type": "number",
+   "scope": "player",
+   "note": "How often the wolf has sat up with the night fellers."
+  },
+  {
+   "id": "felling",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf is on Night Fellers now (set for the party that took it)."
+  },
+  {
+   "id": "sitters",
+   "type": "number",
+   "scope": "story",
+   "note": "Wolves of a sitting party in the stand at the first hour (the night crew comes only for them)."
+  },
+  {
+   "id": "did_senna",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf heard the logger's debt (Senna's Debt is offered)."
+  },
+  {
+   "id": "asked_where",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf asked the old feller where the Sisters stood (the float home may begin)."
+  },
+  {
+   "id": "spawned_old_stand",
+   "type": "switch",
+   "scope": "story",
+   "note": "A story crew stands in old_stand."
+  },
+  {
+   "id": "spawned_ravine_stand",
+   "type": "switch",
+   "scope": "story",
+   "note": "A story crew stands in ravine_stand."
+  },
+  {
+   "id": "t_contract",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for a mast a season."
+  },
+  {
+   "id": "t_returned",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for floating them home."
+  },
+  {
+   "id": "restitution",
+   "type": "number",
+   "scope": "story",
+   "note": "The shipwrights' payments in all (60 at most)."
+  },
+  {
+   "id": "ringbarking",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf is on Ring-Barked now."
+  }
+ ],
+ "regions": [
+  {
+   "id": "cut_camp",
+   "cell": "w_ridgemere_2_4",
+   "x1": 128,
+   "y1": 56,
+   "x2": 152,
+   "y2": 80
+  },
+  {
+   "id": "old_stand",
+   "cell": "w_ridgemere_2_6",
+   "x1": 210,
+   "y1": 20,
+   "x2": 229,
+   "y2": 39
+  },
+  {
+   "id": "rope_spot",
+   "cell": "w_ridgemere_2_6",
+   "x1": 215,
+   "y1": 26,
+   "x2": 223,
+   "y2": 34
+  },
+  {
+   "id": "ravine_stand",
+   "cell": "w_ridgemere_3_7",
+   "x1": 140,
+   "y1": 130,
+   "x2": 159,
+   "y2": 149
+  }
+ ],
+ "triggers": [
+  {
+   "id": "ringbark-taken",
+   "on": "quest started",
+   "match": {
+    "detail": "ringbark"
+   },
+   "audience": "participant",
+   "note": "The stands are dying (world text); the young logger's answer is laid.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "lq_cedars"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "lq_cedars",
+       "value": "dying"
+      }
+     ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "cty_flint_snowdrift",
+      "id": "lq_ced_flint",
+      "words": "What did you hear in the stands?",
+      "reply": "Saws, at night, where there's no cut. I went to look once and somebody whistled the way you whistle a crew off. I didn't go twice. Bright One keep me, I'm not proud of it.",
+      "once": true
+     }
+    }
+   ]
+  },
+  {
+   "id": "rope-found",
+   "on": "region entered",
+   "match": {
+    "target": "rope_spot"
+   },
+   "audience": "participant",
+   "once": "player",
+   "if": {
+    "test": "switch",
+    "var": "ringbarking",
+    "is": true
+   },
+   "note": "The rope lies in the old stand: a story signal, nothing placed, so chapter 1 takes 40.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "ringbark",
+      "objective": "rope",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "journal.note",
+      "player": "$actor",
+      "text": "A cut tow-rope, tied off in a shipwright's knot.",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "ringbark-on",
+   "on": "quest started",
+   "match": {
+    "detail": "ringbark"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "ringbarking"
+    }
+   ]
+  },
+  {
+   "id": "ringbark-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "ringbark"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "ringbarking"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "quest.offer",
+      "quest": "nightfell",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "nightfell-taken",
+   "on": "quest started",
+   "match": {
+    "detail": "nightfell"
+   },
+   "audience": "participant",
+   "note": "The party that took it sits up (its members fixed now).",
+   "actions": [
+    {
+     "do": "each",
+     "over": "party",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "felling",
+       "of": "$each"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "stand-sat",
+   "on": "hour",
+   "if": {
+    "test": "compare",
+    "left": {
+     "field": "quantity"
+    },
+    "op": "<=",
+    "right": 4
+   },
+   "note": "Between midnight and the fourth hour: each wolf of a sitting party in a stand.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "felling",
+          "is": true,
+          "of": "$each"
+         },
+         {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "wolf in region",
+            "region": "old_stand",
+            "who": "$each"
+           },
+           {
+            "test": "wolf in region",
+            "region": "ravine_stand",
+            "who": "$each"
+           }
+          ]
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "nightfell",
+          "objective": "sit",
+          "player": "$each"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "crew-old",
+   "on": "hour",
+   "match": {
+    "detail": "1"
+   },
+   "if": {
+    "test": "count in region",
+    "region": "old_stand",
+    "op": ">=",
+    "value": 1
+   },
+   "note": "The first hour: the night crew comes to a stand where a party of Night Fellers sits (2 to 6 by wolves present); never for a passer-by, so nobody farms the crews.",
+   "actions": [
+    {
+     "do": "set",
+     "var": "sitters",
+     "value": 0
+    },
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "felling",
+          "is": true,
+          "of": "$each"
+         },
+         {
+          "test": "wolf in region",
+          "region": "old_stand",
+          "who": "$each"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "sitters",
+         "value": 1
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "sitters"
+      },
+      "op": ">=",
+      "right": 1
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "spawned_old_stand",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "spawned_old_stand"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "count in region",
+          "region": "old_stand",
+          "op": ">=",
+          "value": 5
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "old_stand",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "count in region",
+            "region": "old_stand",
+            "op": ">=",
+            "value": 3
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "old_stand",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          },
+          {
+           "if": {
+            "test": "count in region",
+            "region": "old_stand",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "old_stand",
+              "count": 3,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "old_stand",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "switch",
+          "var": "spawned_ravine_stand",
+          "is": false
+         },
+         "then": [
+          {
+           "do": "turn on",
+           "var": "spawned_ravine_stand"
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "count in region",
+            "region": "ravine_stand",
+            "op": ">=",
+            "value": 5
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "ravine_stand",
+              "count": 6,
+              "ifRefused": "skip"
+             }
+            }
+           ],
+           "elif": [
+            {
+             "if": {
+              "test": "count in region",
+              "region": "ravine_stand",
+              "op": ">=",
+              "value": 3
+             },
+             "then": [
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "story.area.spawn",
+                "region": "ravine_stand",
+                "count": 4,
+                "ifRefused": "skip"
+               }
+              }
+             ]
+            },
+            {
+             "if": {
+              "test": "count in region",
+              "region": "ravine_stand",
+              "op": ">=",
+              "value": 2
+             },
+             "then": [
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "story.area.spawn",
+                "region": "ravine_stand",
+                "count": 3,
+                "ifRefused": "skip"
+               }
+              }
+             ]
+            }
+           ],
+           "else": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "ravine_stand",
+              "count": 2,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "crew-ravine",
+   "on": "hour",
+   "match": {
+    "detail": "1"
+   },
+   "if": {
+    "test": "count in region",
+    "region": "ravine_stand",
+    "op": ">=",
+    "value": 1
+   },
+   "actions": [
+    {
+     "do": "set",
+     "var": "sitters",
+     "value": 0
+    },
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "felling",
+          "is": true,
+          "of": "$each"
+         },
+         {
+          "test": "wolf in region",
+          "region": "ravine_stand",
+          "who": "$each"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "sitters",
+         "value": 1
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "sitters"
+      },
+      "op": ">=",
+      "right": 1
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "spawned_ravine_stand",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "spawned_ravine_stand"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "count in region",
+          "region": "ravine_stand",
+          "op": ">=",
+          "value": 5
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "ravine_stand",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "count in region",
+            "region": "ravine_stand",
+            "op": ">=",
+            "value": 3
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "ravine_stand",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          },
+          {
+           "if": {
+            "test": "count in region",
+            "region": "ravine_stand",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "ravine_stand",
+              "count": 3,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "ravine_stand",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "switch",
+          "var": "spawned_old_stand",
+          "is": false
+         },
+         "then": [
+          {
+           "do": "turn on",
+           "var": "spawned_old_stand"
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "count in region",
+            "region": "old_stand",
+            "op": ">=",
+            "value": 5
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "old_stand",
+              "count": 6,
+              "ifRefused": "skip"
+             }
+            }
+           ],
+           "elif": [
+            {
+             "if": {
+              "test": "count in region",
+              "region": "old_stand",
+              "op": ">=",
+              "value": 3
+             },
+             "then": [
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "story.area.spawn",
+                "region": "old_stand",
+                "count": 4,
+                "ifRefused": "skip"
+               }
+              }
+             ]
+            },
+            {
+             "if": {
+              "test": "count in region",
+              "region": "old_stand",
+              "op": ">=",
+              "value": 2
+             },
+             "then": [
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "story.area.spawn",
+                "region": "old_stand",
+                "count": 3,
+                "ifRefused": "skip"
+               }
+              }
+             ]
+            }
+           ],
+           "else": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "old_stand",
+              "count": 2,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "note": "The same for the ravine stand."
+  },
+  {
+   "id": "crew-down",
+   "on": "bandit falls",
+   "audience": "participant",
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "felling",
+      "is": true
+     },
+     {
+      "test": "any",
+      "conditions": [
+       {
+        "test": "compare",
+        "left": {
+         "field": "cell"
+        },
+        "op": "=",
+        "right": "w_ridgemere_2_6"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "field": "cell"
+        },
+        "op": "=",
+        "right": "w_ridgemere_3_7"
+       }
+      ]
+     }
+    ]
+   },
+   "note": "Each feller brought down saves a cedar; the shared goal (6, and 1 a helper) opens the reckoning (a 7-day fallback tally).",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.progress",
+      "quest": "nightfell",
+      "objective": "crew",
+      "player": "$actor",
+      "amount": 1
+     }
+    },
+    {
+     "do": "add",
+     "var": "stumps_saved",
+     "value": 1
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "in list",
+       "list": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      }
+     },
+     "then": [
+      {
+       "do": "list add",
+       "var": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      },
+      {
+       "do": "add",
+       "var": "goal",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "phase is",
+        "phase": "open"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "stumps_saved"
+        },
+        "op": ">=",
+        "right": {
+         "var": "goal"
+        }
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "lq_cedars",
+       "value": "reckoning"
+      },
+      {
+       "do": "schedule",
+       "signal": "reckon",
+       "days": 7,
+       "scope": "campaign"
+      },
+      {
+       "do": "schedule",
+       "signal": "lay",
+       "days": 0.002,
+       "scope": "campaign"
+      },
+      {
+       "do": "enter",
+       "phase": "reckoning"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "camp-old",
+   "on": "camp cleared",
+   "match": {
+    "cell": "w_ridgemere_2_6"
+   },
+   "if": {
+    "test": "switch",
+    "var": "spawned_old_stand",
+    "is": true
+   },
+   "note": "A night crew broken (cell plus the spawned_ switch).",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "spawned_old_stand"
+    },
+    {
+     "do": "subtract",
+     "var": "nh_threat",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "nh_threat",
+     "min": 0,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "camp-ravine",
+   "on": "camp cleared",
+   "match": {
+    "cell": "w_ridgemere_3_7"
+   },
+   "if": {
+    "test": "switch",
+    "var": "spawned_ravine_stand",
+    "is": true
+   },
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "spawned_ravine_stand"
+    },
+    {
+     "do": "subtract",
+     "var": "nh_threat",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "nh_threat",
+     "min": 0,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "slip-found",
+   "on": "objective completed",
+   "match": {
+    "detail": "nightfell",
+    "item": "slip"
+   },
+   "audience": "participant",
+   "note": "At the slipway: the logger who went white.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.reveal",
+      "quest": "nightfell",
+      "objective": "senna",
+      "player": "$actor"
+     }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "cty_senna_beechleaf",
+      "id": "lq_ced_senna",
+      "words": "Who do you owe in Ridgemere?",
+      "reply": "A shipwright on the Wharf. She lent when my roof went, and now she wants it paid in nights. Marked trees, a whistle, a rope on the landing. I hate every one of them."
+     }
+    }
+   ]
+  },
+  {
+   "id": "senna-heard",
+   "on": "objective completed",
+   "match": {
+    "detail": "nightfell",
+    "item": "senna"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "each",
+     "over": "party",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "did_senna",
+       "of": "$each"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "nightfell-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "nightfell"
+   },
+   "audience": "participant",
+   "note": "The first night pays each wolf of the party 6, a deed, a lesson and a rain cape; a pack weighs more on the roads.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "party",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "felling",
+       "of": "$each"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "fells",
+         "of": "$each"
+        },
+        "op": "=",
+        "right": 0
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_oakhaven_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_oakhaven_day"
+            },
+            "op": "<=",
+            "right": 18
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "lq_coin",
+             "of": "$each"
+            },
+            "op": "<=",
+            "right": 29
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$each",
+            "coins": 6,
+            "purse": "town:oakhaven",
+            "reason": "the Oakhaven stores pay the night watch",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_oakhaven_day",
+           "value": 6
+          },
+          {
+           "do": "add",
+           "var": "lq_coin",
+           "value": 6,
+           "of": "$each"
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$each",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "turn on",
+           "var": "lq_thin",
+           "of": "$each"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$each",
+            "text": "There was no coin to spare for you this time, so you were paid in bread.",
+            "ifRefused": "when here"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$each",
+          "detail": "sat up with the night fellers in the old cedar stand",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.practice",
+          "player": "$each",
+          "skill": "watch",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$each",
+          "item": "rain_cape",
+          "quantity": 1,
+          "ifRefused": "when here"
+         }
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "fells",
+       "value": 1,
+       "of": "$each"
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "party size",
+      "op": ">=",
+      "value": 2
+     },
+     "then": [
+      {
+       "do": "each",
+       "over": "party",
+       "actions": [
+        {
+         "do": "turn on",
+         "var": "packed",
+         "of": "$each"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "phase is",
+       "phase": "open"
+      }
+     },
+     "then": [
+      {
+       "do": "each",
+       "over": "party",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "road",
+           "of": "$each"
+          },
+          "op": "=",
+          "right": ""
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "cedar_contract",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "cedar_return",
+            "player": "$each"
+           }
+          }
+         ]
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "did_senna",
+          "is": true,
+          "of": "$each"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "cedar_debt",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-contract",
+   "on": "quest started",
+   "match": {
+    "detail": "cedar_contract"
+   },
+   "audience": "participant",
+   "note": "A road taken: it weighs 1, 2 from a pack; the first starts the 3-day tally; a second road is refused (L5 later).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "contract"
+      },
+      {
+       "do": "add",
+       "var": "t_contract",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "packed",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_contract",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_brenna_slaggate",
+        "id": "lq_ced_face",
+        "words": "Those mast cedars are Oakhaven's.",
+        "reply": "#greet#. Are they? I bought them full weight off the landing, a felling mark on every butt. Grayrock needs masts and Oakhaven sells planks. I paid. Who did I pay? That's the question, isn't it?"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_fh_ivy_stonehollow",
+        "id": "lq_ced_return",
+        "words": "Float the marked logs back up the Sound.",
+        "reply": "Up the Sound to its head, and lay them where the Sisters stood? It'll take a crew and a long day. Ask the old feller at the Oakhaven cut where they stood. I'd like to see the Wharf's face."
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "reckoning"
+         },
+         {
+          "test": "switch",
+          "var": "reckon_called",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "reckon_called"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "cedar_contract",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you have chosen your road already.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-returned",
+   "on": "quest started",
+   "match": {
+    "detail": "cedar_return"
+   },
+   "audience": "participant",
+   "note": "A road taken: it weighs 1, 2 from a pack; the first starts the 3-day tally; a second road is refused (L5 later).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "returned"
+      },
+      {
+       "do": "add",
+       "var": "t_returned",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "packed",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_returned",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_brenna_slaggate",
+        "id": "lq_ced_face",
+        "words": "Those mast cedars are Oakhaven's.",
+        "reply": "#greet#. Are they? I bought them full weight off the landing, a felling mark on every butt. Grayrock needs masts and Oakhaven sells planks. I paid. Who did I pay? That's the question, isn't it?"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_fh_ivy_stonehollow",
+        "id": "lq_ced_return",
+        "words": "Float the marked logs back up the Sound.",
+        "reply": "Up the Sound to its head, and lay them where the Sisters stood? It'll take a crew and a long day. Ask the old feller at the Oakhaven cut where they stood. I'd like to see the Wharf's face."
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "reckoning"
+         },
+         {
+          "test": "switch",
+          "var": "reckon_called",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "reckon_called"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "cedar_return",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you have chosen your road already.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "debt-taken",
+   "on": "quest started",
+   "match": {
+    "detail": "cedar_debt"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rm_brenna_slaggate",
+      "id": "lq_ced_face",
+      "words": "Those mast cedars are Oakhaven's.",
+      "reply": "#greet#. Are they? I bought them full weight off the landing, a felling mark on every butt. Grayrock needs masts and Oakhaven sells planks. I paid. Who did I pay? That's the question, isn't it?"
+     }
+    }
+   ]
+  },
+  {
+   "id": "face-done",
+   "on": "objective completed",
+   "match": {
+    "item": "face"
+   },
+   "audience": "participant",
+   "note": "The shipwright has been faced: her bargain is laid (J1 later: per wolf).",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "rm_brenna_slaggate",
+      "id": "lq_ced_contract",
+      "words": "Pay Oakhaven's own fellers, one mast a season.",
+      "reply": "One a season, felled by their axes and paid to their stores? That's a dearer mast. Fine. Sold. And the night crew can find other work."
+     }
+    }
+   ]
+  },
+  {
+   "id": "where-asked",
+   "on": "objective completed",
+   "match": {
+    "detail": "cedar_return",
+    "item": "where"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "asked_where"
+    }
+   ]
+  },
+  {
+   "id": "float-home",
+   "on": "region entered",
+   "match": {
+    "target": "cut_camp"
+   },
+   "audience": "participant",
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "asked_where",
+      "is": true
+     },
+     {
+      "test": "hour between",
+      "from": 6,
+      "to": 18
+     }
+    ]
+   },
+   "note": "The logs come in to the cut by daylight.",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.complete",
+      "quest": "cedar_return",
+      "objective": "float",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "contract-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "cedar_contract"
+   },
+   "audience": "participant",
+   "note": "4 from the Oakhaven stores and 8 'from Grayrock Shipwrights' (the treasury until SQ2).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_oakhaven_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_oakhaven_day"
+        },
+        "op": "<=",
+        "right": 20
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 31
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 4,
+        "purse": "town:oakhaven",
+        "reason": "the Oakhaven stores pay for a fair bargain",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_oakhaven_day",
+       "value": 4
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 4
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "There was no coin to spare for you this time, so you were paid in bread.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_ridgemere_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_ridgemere_day"
+        },
+        "op": "<=",
+        "right": 127
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 27
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "restitution"
+        },
+        "op": "<=",
+        "right": 52
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 8,
+        "purse": "town:ridgemere",
+        "reason": "Grayrock Shipwrights pays the first mast's price",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_ridgemere_day",
+       "value": 8
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 8
+      },
+      {
+       "do": "add",
+       "var": "restitution",
+       "value": 8
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "The shipwrights' payment did not come to you this time: the city purse was thin.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 8
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_oakhaven",
+     "value": 8
+    }
+   ]
+  },
+  {
+   "id": "returned-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "cedar_return"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_oakhaven_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_oakhaven_day"
+        },
+        "op": "<=",
+        "right": 12
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 23
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 12,
+        "purse": "town:oakhaven",
+        "reason": "the Oakhaven stores pay for the cedars brought home",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_oakhaven_day",
+       "value": 12
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 12
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "There was no coin to spare for you this time, so you were paid in bread.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 8
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_oakhaven",
+     "value": 8
+    }
+   ]
+  },
+  {
+   "id": "lay-offers",
+   "on": "story signal",
+   "signal": "lay",
+   "note": "A new visit: the window choices again; in the reckoning every wolf who sat up is offered the roads.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "phase is",
+       "phase": "open"
+      }
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_brenna_slaggate",
+        "id": "lq_ced_face",
+        "words": "Those mast cedars are Oakhaven's.",
+        "reply": "#greet#. Are they? I bought them full weight off the landing, a felling mark on every butt. Grayrock needs masts and Oakhaven sells planks. I paid. Who did I pay? That's the question, isn't it?"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "rm_brenna_slaggate",
+        "id": "lq_ced_contract",
+        "words": "Pay Oakhaven's own fellers, one mast a season.",
+        "reply": "One a season, felled by their axes and paid to their stores? That's a dearer mast. Fine. Sold. And the night crew can find other work."
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_fh_ivy_stonehollow",
+        "id": "lq_ced_return",
+        "words": "Float the marked logs back up the Sound.",
+        "reply": "Up the Sound to its head, and lay them where the Sisters stood? It'll take a crew and a long day. Ask the old feller at the Oakhaven cut where they stood. I'd like to see the Wharf's face."
+       }
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "fells",
+             "of": "$each"
+            },
+            "op": ">=",
+            "right": 1
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "road",
+             "of": "$each"
+            },
+            "op": "=",
+            "right": ""
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "cedar_contract",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "cedar_return",
+            "player": "$each"
+           }
+          }
+         ]
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "switch",
+          "var": "did_senna",
+          "is": true,
+          "of": "$each"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "cedar_debt",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_flint_snowdrift",
+        "id": "lq_ced_flint",
+        "words": "What did you hear in the stands?",
+        "reply": "Saws, at night, where there's no cut. I went to look once and somebody whistled the way you whistle a crew off. I didn't go twice. Bright One keep me, I'm not proud of it.",
+        "once": true
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "night-again",
+   "on": "day begins",
+   "note": "Each day the wolves who have sat up before are offered the next night (weekly; the game says when).",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "fells",
+         "of": "$each"
+        },
+        "op": ">=",
+        "right": 1
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "quest.offer",
+          "quest": "nightfell",
+          "player": "$each"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "new-season",
+   "on": "season begins",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "phase is",
+      "phase": "after_contract"
+     },
+     {
+      "test": "phase is",
+      "phase": "after_returned"
+     },
+     {
+      "test": "phase is",
+      "phase": "after_taken"
+     }
+    ]
+   },
+   "note": "A new season: the night crews come back for the next stand.",
+   "actions": [
+    {
+     "do": "set",
+     "var": "goal",
+     "value": 6
+    },
+    {
+     "do": "list clear",
+     "var": "helpers"
+    },
+    {
+     "do": "set",
+     "var": "stumps_saved",
+     "value": 0
+    },
+    {
+     "do": "set",
+     "var": "t_contract",
+     "value": 0
+    },
+    {
+     "do": "set",
+     "var": "t_returned",
+     "value": 0
+    },
+    {
+     "do": "turn off",
+     "var": "reckon_called"
+    },
+    {
+     "do": "set",
+     "var": "lq_cedars",
+     "value": "dying"
+    },
+    {
+     "do": "schedule",
+     "signal": "lay",
+     "days": 0.002,
+     "scope": "campaign"
+    },
+    {
+     "do": "enter",
+     "phase": "open"
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "Somebody is ring-barking the oldest cedars of the Rainwood and felling them by night. The feller at the Sound cut wants wolves to sit up in the stands.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "tn_fh_ivy_stonehollow",
+     "text": "Mind the old stand. The best cedars in the Rainwood are dying on their feet, and I can't stand guard on every tree."
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "reckoning",
+   "journal": "The night crews are broken, and the tow-rope led to a Grayrock slipway. What is a cedar worth?",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "tn_fh_ivy_stonehollow",
+     "text": "We know whose saws, now. A shipwright on the Wharf. What's a cedar worth to her, and what's it worth to us?"
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "reckon",
+     "on": "story signal",
+     "signal": "reckon",
+     "note": "The tally: the road with the most weight; a tie goes to the contract; nobody: the cedars are taken.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "compare",
+          "left": {
+           "var": "t_contract"
+          },
+          "op": "=",
+          "right": 0
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "t_returned"
+          },
+          "op": "=",
+          "right": 0
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "lq_cedars",
+         "value": "taken"
+        },
+        {
+         "do": "schedule",
+         "signal": "lay",
+         "days": 0.002,
+         "scope": "campaign"
+        },
+        {
+         "do": "enter",
+         "phase": "after_taken"
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "t_returned"
+          },
+          "op": ">",
+          "right": {
+           "var": "t_contract"
+          }
+         },
+         "then": [
+          {
+           "do": "set",
+           "var": "lq_cedars",
+           "value": "returned"
+          },
+          {
+           "do": "schedule",
+           "signal": "lay",
+           "days": 0.002,
+           "scope": "campaign"
+          },
+          {
+           "do": "enter",
+           "phase": "after_returned"
+          }
+         ]
+        }
+       ],
+       "else": [
+        {
+         "do": "set",
+         "var": "lq_cedars",
+         "value": "contract"
+        },
+        {
+         "do": "schedule",
+         "signal": "lay",
+         "days": 0.002,
+         "scope": "campaign"
+        },
+        {
+         "do": "enter",
+         "phase": "after_contract"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_contract",
+   "journal": "Grayrock pays Oakhaven's own fellers for a mast a season. The Seven Sisters stand.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "tn_fh_ivy_stonehollow",
+     "text": "A mast a season, felled by our own axes and paid to our own stores. The Sisters stand. I can live with that bargain."
+    },
+    {
+     "kind": "times.nudge",
+     "market": "oakhaven",
+     "points": 15,
+     "days": 28,
+     "words": "Grayrock pays Oakhaven for a mast a season",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "board.post",
+     "town": "oakhaven",
+     "days": 28,
+     "text": "A MAST A SEASON: the Wharf pays Oakhaven's own axes for one cedar a season. The Sisters stand.",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "after_returned",
+   "journal": "The stolen cedars were floated back up the Sound to where the Sisters stood.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "tn_fh_ivy_stonehollow",
+     "text": "The cedars went home up the Sound. I'd have given a week's pay to see the faces on the Wharf."
+    },
+    {
+     "kind": "times.nudge",
+     "market": "ridgemere",
+     "points": 10,
+     "days": 14,
+     "words": "masts short at the Wharf",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "board.post",
+     "town": "oakhaven",
+     "days": 28,
+     "text": "The cedars came home up the Sound. Root and rain, the Wharf will think twice.",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "after_taken",
+   "journal": "Nobody stood up for the cedars. The night crews took more of the Sisters, and they will be back.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "tn_fh_ivy_stonehollow",
+     "text": "Three more Sisters down. Nobody stopped them. I've stopped counting the stumps."
+    }
+   ],
+   "exits": []
+  }
+ ],
+ "quests": [
+  {
+   "id": "ringbark",
+   "title": "Ring-Barked",
+   "summary": "Somebody is killing the old cedars of the Rainwood. Walk the stands and find out who.",
+   "scope": "player",
+   "repeat": "once",
+   "giver": "tn_fh_ivy_stonehollow",
+   "board": "oakhaven",
+   "join": {
+    "cap": 40
+   },
+   "offer": {
+    "ask": "Trouble at the cut?",
+    "say": "#greet#, #address#. Somebody's ring-barking the old cedars. A band of bark cut right round, so the tree dies on its feet and nobody asks why it's felled after. Five gone from the old stand already. Walk the stands and find me who.",
+    "accept": "I'll walk the stands.",
+    "decline": "Not today.",
+    "handIn": "I found a cut tow-rope.",
+    "thanks": "#thanks#. That's a shipwright's knot. Nobody ties a log like that to burn it. They're masts, then. They're stealing masts. Come back with a pack and we'll sit up in the stands."
+   },
+   "objectives": [
+    {
+     "id": "flint",
+     "label": "Ask the young logger what he heard in the stands.",
+     "on": "conversation",
+     "match": {
+      "target": "cty_flint_snowdrift"
+     }
+    },
+    {
+     "id": "old",
+     "label": "Walk the old stand.",
+     "on": "region entered",
+     "match": {
+      "target": "old_stand"
+     }
+    },
+    {
+     "id": "ravine",
+     "label": "Walk the ravine stand.",
+     "on": "region entered",
+     "match": {
+      "target": "ravine_stand"
+     }
+    },
+    {
+     "id": "names",
+     "label": "Ask the old feller at the Oakhaven cut what the stands are called.",
+     "on": "conversation",
+     "match": {
+      "target": "cty_frost_colddrift"
+     }
+    },
+    {
+     "id": "rope",
+     "label": "Find the cut tow-rope in the old stand.",
+     "on": "story signal",
+     "signal": "rope_found",
+     "after": [
+      "old"
+     ]
+    }
+   ],
+   "handIn": true,
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "found the ring-barked cedars of the Rainwood",
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel",
+     "ifRefused": "when here"
+    }
+   ]
+  },
+  {
+   "id": "nightfell",
+   "title": "Night Fellers",
+   "summary": "Sit up in the old stands with a pack, bring down the night crew, and follow the rope.",
+   "scope": "party",
+   "repeat": "weekly",
+   "join": {
+    "cap": 12
+   },
+   "objectives": [
+    {
+     "id": "sit",
+     "label": "Sit up in a stand between midnight and the fourth hour.",
+     "on": "story signal",
+     "signal": "stand_sat"
+    },
+    {
+     "id": "crew",
+     "label": "Bring down the night crew.",
+     "on": "story signal",
+     "signal": "crew_down",
+     "goal": 2
+    },
+    {
+     "id": "slip",
+     "label": "Follow the tow-rope's knot to the slipway.",
+     "on": "enter place",
+     "match": {
+      "target": "r2_grayrock_shipwrights"
+     },
+     "after": [
+      "crew"
+     ]
+    },
+    {
+     "id": "senna",
+     "label": "Ask the logger who went white when you showed her the rope.",
+     "on": "conversation",
+     "match": {
+      "target": "cty_senna_beechleaf"
+     },
+     "hidden": true,
+     "after": [
+      "slip"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cedar_contract",
+   "title": "A Mast a Season",
+   "summary": "Make the shipwright pay Oakhaven's fellers for a mast a season.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "reckoning",
+    "after_contract",
+    "after_returned",
+    "after_taken"
+   ],
+   "objectives": [
+    {
+     "id": "face",
+     "label": "Tell the shipwright the cedars are Oakhaven's.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_brenna_slaggate",
+      "detail": "lq_ced_face"
+     }
+    },
+    {
+     "id": "contract",
+     "label": "Ask the shipwright to pay Oakhaven's own fellers, one mast a season.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_brenna_slaggate",
+      "detail": "lq_ced_contract"
+     },
+     "after": [
+      "face"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "timber",
+     "quantity": 4,
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour",
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "won Oakhaven a fair price for its mast cedars",
+     "ifRefused": "when here"
+    }
+   ]
+  },
+  {
+   "id": "cedar_return",
+   "title": "Float Them Home",
+   "summary": "Float the stolen cedars back up the Sound to where the Sisters stood.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "reckoning",
+    "after_contract",
+    "after_returned",
+    "after_taken"
+   ],
+   "objectives": [
+    {
+     "id": "face",
+     "label": "Tell the shipwright the cedars are Oakhaven's.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_brenna_slaggate",
+      "detail": "lq_ced_face"
+     }
+    },
+    {
+     "id": "ret",
+     "label": "Tell the feller at the Sound cut you will float the logs home.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "tn_fh_ivy_stonehollow",
+      "detail": "lq_ced_return"
+     },
+     "after": [
+      "face"
+     ]
+    },
+    {
+     "id": "where",
+     "label": "Ask the old feller where the Sisters stood.",
+     "on": "conversation",
+     "match": {
+      "target": "cty_frost_colddrift"
+     },
+     "after": [
+      "ret"
+     ]
+    },
+    {
+     "id": "float",
+     "label": "Bring the logs in to the Rainwood cut by daylight.",
+     "on": "story signal",
+     "signal": "float_home",
+     "after": [
+      "where"
+     ]
+    },
+    {
+     "id": "together",
+     "label": "Bring them in beside another wolf.",
+     "on": "together",
+     "match": {
+      "cell": "w_ridgemere_2_4"
+     },
+     "optional": true
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "timber",
+     "quantity": 4,
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour",
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "floated stolen cedars back up the Sound to Oakhaven",
+     "ifRefused": "when here"
+    }
+   ]
+  },
+  {
+   "id": "cedar_debt",
+   "title": "Senna's Debt",
+   "summary": "Pay the logger's debt, so the shipwright has no hold on her.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "reckoning",
+    "after_contract",
+    "after_returned",
+    "after_taken"
+   ],
+   "objectives": [
+    {
+     "id": "face",
+     "label": "Tell the shipwright the cedars are Oakhaven's.",
+     "on": "dialogue choice",
+     "match": {
+      "item": "rm_brenna_slaggate",
+      "detail": "lq_ced_face"
+     }
+    },
+    {
+     "id": "debt",
+     "label": "Give the logger twelve pennies for her debt.",
+     "on": "gift",
+     "match": {
+      "target": "cty_senna_beechleaf"
+     },
+     "goal": 12,
+     "measure": "coins",
+     "after": [
+      "face"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "paid a logger's debt, so a shipwright had no hold on her",
+     "ifRefused": "when here"
+    }
+   ]
+  }
+ ],
+ "tests": [
+  {
+   "name": "A pack of two: a tie keeps the contract; the debt paid; a second road refused; a new season",
+   "cohort": [],
+   "parties": {
+    "wolf-ash": "pack1",
+    "wolf-birch": "pack1"
+   },
+   "facts": {
+    "world": {
+     "hour": 1
+    },
+    "wolves": {
+     "wolf-ash": {
+      "cell": "w_ridgemere_2_6",
+      "x": 220,
+      "y": 30,
+      "partySize": 2
+     },
+     "wolf-birch": {
+      "cell": "w_ridgemere_2_6",
+      "x": 221,
+      "y": 30,
+      "partySize": 2
+     }
+    }
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1,
+     "actor": "wolf-ash",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "cty_flint_snowdrift"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "old_stand",
+     "cell": "w_ridgemere_2_6",
+     "x": 212,
+     "y": 30
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "rope_spot",
+     "cell": "w_ridgemere_2_6",
+     "x": 216,
+     "y": 30
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "ravine_stand",
+     "cell": "w_ridgemere_3_7",
+     "x": 150,
+     "y": 140
+    },
+    {
+     "id": "e6",
+     "kind": "conversation",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "target": "cty_frost_colddrift"
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 1.06,
+     "actor": "wolf-ash",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e9",
+     "kind": "conversation",
+     "day": 1.11,
+     "actor": "wolf-birch",
+     "target": "cty_flint_snowdrift"
+    },
+    {
+     "id": "e10",
+     "kind": "region entered",
+     "day": 1.12,
+     "actor": "wolf-birch",
+     "target": "old_stand",
+     "cell": "w_ridgemere_2_6",
+     "x": 212,
+     "y": 30
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 1.13,
+     "actor": "wolf-birch",
+     "target": "rope_spot",
+     "cell": "w_ridgemere_2_6",
+     "x": 216,
+     "y": 30
+    },
+    {
+     "id": "e12",
+     "kind": "region entered",
+     "day": 1.14,
+     "actor": "wolf-birch",
+     "target": "ravine_stand",
+     "cell": "w_ridgemere_3_7",
+     "x": 150,
+     "y": 140
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 1.15,
+     "actor": "wolf-birch",
+     "target": "cty_frost_colddrift"
+    },
+    {
+     "id": "e14",
+     "kind": "quest handed in",
+     "day": 1.16,
+     "actor": "wolf-birch",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e15",
+     "kind": "quest accepted",
+     "day": 2,
+     "actor": "wolf-ash",
+     "detail": "nightfell",
+     "target": "run"
+    },
+    {
+     "id": "e16",
+     "kind": "hour",
+     "day": 2.01,
+     "detail": "0",
+     "quantity": 0,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_2_6",
+        "x": 220,
+        "y": 30,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_2_6",
+        "x": 220,
+        "y": 30,
+        "partySize": 2
+       }
+      }
+     }
+    },
+    {
+     "id": "e17",
+     "kind": "hour",
+     "day": 2.05,
+     "detail": "1",
+     "quantity": 1
+    },
+    {
+     "id": "e18",
+     "kind": "bandit falls",
+     "day": 2.06,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e19",
+     "kind": "bandit falls",
+     "day": 2.061,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e20",
+     "kind": "bandit falls",
+     "day": 2.062,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e21",
+     "kind": "camp cleared",
+     "day": 2.07,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e22",
+     "kind": "enter place",
+     "day": 2.2,
+     "actor": "wolf-ash",
+     "target": "r2_grayrock_shipwrights"
+    },
+    {
+     "id": "e23",
+     "kind": "conversation",
+     "day": 2.21,
+     "actor": "wolf-ash",
+     "target": "cty_senna_beechleaf"
+    },
+    {
+     "id": "e24",
+     "kind": "day begins",
+     "day": 9.4,
+     "detail": "Riverday",
+     "item": "autumn",
+     "quantity": 10
+    },
+    {
+     "id": "e25",
+     "kind": "quest accepted",
+     "day": 9.5,
+     "actor": "wolf-ash",
+     "detail": "nightfell",
+     "target": "run"
+    },
+    {
+     "id": "e26",
+     "kind": "hour",
+     "day": 9.51,
+     "detail": "0",
+     "quantity": 0,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_3_7",
+        "x": 150,
+        "y": 140,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_3_7",
+        "x": 150,
+        "y": 140,
+        "partySize": 2
+       }
+      }
+     }
+    },
+    {
+     "id": "e27",
+     "kind": "hour",
+     "day": 9.55,
+     "detail": "1",
+     "quantity": 1
+    },
+    {
+     "id": "e28",
+     "kind": "bandit falls",
+     "day": 9.56,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_3_7"
+    },
+    {
+     "id": "e29",
+     "kind": "bandit falls",
+     "day": 9.561,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_3_7"
+    },
+    {
+     "id": "e30",
+     "kind": "bandit falls",
+     "day": 9.562,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_3_7"
+    },
+    {
+     "id": "e31",
+     "kind": "bandit falls",
+     "day": 9.563,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_3_7"
+    },
+    {
+     "id": "e32",
+     "kind": "bandit falls",
+     "day": 9.564,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_3_7"
+    },
+    {
+     "id": "e33",
+     "kind": "camp cleared",
+     "day": 9.57,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_3_7"
+    },
+    {
+     "id": "e34",
+     "kind": "enter place",
+     "day": 9.7,
+     "actor": "wolf-ash",
+     "target": "r2_grayrock_shipwrights"
+    },
+    {
+     "id": "e35",
+     "kind": "conversation",
+     "day": 9.71,
+     "actor": "wolf-ash",
+     "target": "cty_senna_beechleaf"
+    },
+    {
+     "id": "e36",
+     "kind": "quest accepted",
+     "day": 9.8,
+     "actor": "wolf-ash",
+     "detail": "cedar_contract",
+     "target": "run"
+    },
+    {
+     "id": "e37",
+     "kind": "dialogue choice",
+     "day": 9.81,
+     "actor": "wolf-ash",
+     "item": "rm_brenna_slaggate",
+     "detail": "lq_ced_face",
+     "target": "run"
+    },
+    {
+     "id": "e38",
+     "kind": "dialogue choice",
+     "day": 9.82,
+     "actor": "wolf-ash",
+     "item": "rm_brenna_slaggate",
+     "detail": "lq_ced_contract",
+     "target": "run"
+    },
+    {
+     "id": "e39",
+     "kind": "quest accepted",
+     "day": 9.83,
+     "actor": "wolf-ash",
+     "detail": "cedar_debt",
+     "target": "run"
+    },
+    {
+     "id": "e40",
+     "kind": "dialogue choice",
+     "day": 9.84,
+     "actor": "wolf-ash",
+     "item": "rm_brenna_slaggate",
+     "detail": "lq_ced_face",
+     "target": "run"
+    },
+    {
+     "id": "e41",
+     "kind": "gift",
+     "day": 9.85,
+     "actor": "wolf-ash",
+     "target": "cty_senna_beechleaf",
+     "coins": 12
+    },
+    {
+     "id": "e42",
+     "kind": "quest accepted",
+     "day": 9.9,
+     "actor": "wolf-birch",
+     "detail": "cedar_return",
+     "target": "run"
+    },
+    {
+     "id": "e43",
+     "kind": "dialogue choice",
+     "day": 9.91,
+     "actor": "wolf-birch",
+     "item": "rm_brenna_slaggate",
+     "detail": "lq_ced_face",
+     "target": "run"
+    },
+    {
+     "id": "e44",
+     "kind": "dialogue choice",
+     "day": 9.92,
+     "actor": "wolf-birch",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "lq_ced_return",
+     "target": "run"
+    },
+    {
+     "id": "e45",
+     "kind": "conversation",
+     "day": 9.93,
+     "actor": "wolf-birch",
+     "target": "cty_frost_colddrift"
+    },
+    {
+     "id": "e46",
+     "kind": "region entered",
+     "day": 9.94,
+     "actor": "wolf-birch",
+     "target": "cut_camp",
+     "cell": "w_ridgemere_2_4",
+     "x": 140,
+     "y": 68,
+     "facts": {
+      "world": {
+       "hour": 10
+      }
+     }
+    },
+    {
+     "id": "e47",
+     "kind": "quest accepted",
+     "day": 10.0,
+     "actor": "wolf-birch",
+     "detail": "cedar_contract",
+     "target": "run"
+    },
+    {
+     "id": "e48",
+     "kind": "clock",
+     "day": 13.3
+    },
+    {
+     "id": "e49",
+     "kind": "season begins",
+     "day": 29.8,
+     "detail": "spring"
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_contract",
+    "open"
+   ],
+   "expectQuests": {
+    "ringbark": {
+     "wolf-ash": "done",
+     "wolf-birch": "done"
+    },
+    "nightfell": {
+     "party:pack1": "done"
+    },
+    "cedar_contract": {
+     "wolf-ash": "done",
+     "wolf-birch": "failed"
+    },
+    "cedar_return": {
+     "wolf-birch": "done"
+    },
+    "cedar_debt": {
+     "wolf-ash": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_cedars": "dying"
+    },
+    "player": {
+     "wolf-ash": {
+      "fells": 2,
+      "packed": true
+     },
+     "wolf-birch": {
+      "did_senna": true
+     }
+    }
+   }
+  },
+  {
+   "name": "Two wolves float the cedars home against one contract",
+   "cohort": [],
+   "facts": {
+    "world": {
+     "hour": 1
+    }
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "cty_flint_snowdrift"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "old_stand",
+     "cell": "w_ridgemere_2_6",
+     "x": 212,
+     "y": 30
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "rope_spot",
+     "cell": "w_ridgemere_2_6",
+     "x": 216,
+     "y": 30
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "ravine_stand",
+     "cell": "w_ridgemere_3_7",
+     "x": 150,
+     "y": 140
+    },
+    {
+     "id": "e6",
+     "kind": "conversation",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "target": "cty_frost_colddrift"
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 1.06,
+     "actor": "wolf-ash",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e9",
+     "kind": "conversation",
+     "day": 1.11,
+     "actor": "wolf-birch",
+     "target": "cty_flint_snowdrift"
+    },
+    {
+     "id": "e10",
+     "kind": "region entered",
+     "day": 1.12,
+     "actor": "wolf-birch",
+     "target": "old_stand",
+     "cell": "w_ridgemere_2_6",
+     "x": 212,
+     "y": 30
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 1.13,
+     "actor": "wolf-birch",
+     "target": "rope_spot",
+     "cell": "w_ridgemere_2_6",
+     "x": 216,
+     "y": 30
+    },
+    {
+     "id": "e12",
+     "kind": "region entered",
+     "day": 1.14,
+     "actor": "wolf-birch",
+     "target": "ravine_stand",
+     "cell": "w_ridgemere_3_7",
+     "x": 150,
+     "y": 140
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 1.15,
+     "actor": "wolf-birch",
+     "target": "cty_frost_colddrift"
+    },
+    {
+     "id": "e14",
+     "kind": "quest handed in",
+     "day": 1.16,
+     "actor": "wolf-birch",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e15",
+     "kind": "quest accepted",
+     "day": 1.2,
+     "actor": "wolf-cedar",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e16",
+     "kind": "conversation",
+     "day": 1.21,
+     "actor": "wolf-cedar",
+     "target": "cty_flint_snowdrift"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 1.22,
+     "actor": "wolf-cedar",
+     "target": "old_stand",
+     "cell": "w_ridgemere_2_6",
+     "x": 212,
+     "y": 30
+    },
+    {
+     "id": "e18",
+     "kind": "region entered",
+     "day": 1.23,
+     "actor": "wolf-cedar",
+     "target": "rope_spot",
+     "cell": "w_ridgemere_2_6",
+     "x": 216,
+     "y": 30
+    },
+    {
+     "id": "e19",
+     "kind": "region entered",
+     "day": 1.24,
+     "actor": "wolf-cedar",
+     "target": "ravine_stand",
+     "cell": "w_ridgemere_3_7",
+     "x": 150,
+     "y": 140
+    },
+    {
+     "id": "e20",
+     "kind": "conversation",
+     "day": 1.25,
+     "actor": "wolf-cedar",
+     "target": "cty_frost_colddrift"
+    },
+    {
+     "id": "e21",
+     "kind": "quest handed in",
+     "day": 1.26,
+     "actor": "wolf-cedar",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e22",
+     "kind": "quest accepted",
+     "day": 2,
+     "actor": "wolf-ash",
+     "detail": "nightfell",
+     "target": "run"
+    },
+    {
+     "id": "e23",
+     "kind": "hour",
+     "day": 2.01,
+     "detail": "0",
+     "quantity": 0,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_2_6",
+        "x": 220,
+        "y": 30,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e24",
+     "kind": "hour",
+     "day": 2.05,
+     "detail": "1",
+     "quantity": 1
+    },
+    {
+     "id": "e25",
+     "kind": "bandit falls",
+     "day": 2.06,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e26",
+     "kind": "bandit falls",
+     "day": 2.061,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e27",
+     "kind": "bandit falls",
+     "day": 2.062,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e28",
+     "kind": "bandit falls",
+     "day": 2.063,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e29",
+     "kind": "camp cleared",
+     "day": 2.07,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e30",
+     "kind": "enter place",
+     "day": 2.2,
+     "actor": "wolf-ash",
+     "target": "r2_grayrock_shipwrights"
+    },
+    {
+     "id": "e31",
+     "kind": "conversation",
+     "day": 2.21,
+     "actor": "wolf-ash",
+     "target": "cty_senna_beechleaf"
+    },
+    {
+     "id": "e32",
+     "kind": "quest accepted",
+     "day": 3,
+     "actor": "wolf-birch",
+     "detail": "nightfell",
+     "target": "run"
+    },
+    {
+     "id": "e33",
+     "kind": "hour",
+     "day": 3.01,
+     "detail": "0",
+     "quantity": 0,
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_3_7",
+        "x": 150,
+        "y": 140,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e34",
+     "kind": "hour",
+     "day": 3.05,
+     "detail": "1",
+     "quantity": 1
+    },
+    {
+     "id": "e35",
+     "kind": "bandit falls",
+     "day": 3.06,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_3_7"
+    },
+    {
+     "id": "e36",
+     "kind": "bandit falls",
+     "day": 3.061,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_3_7"
+    },
+    {
+     "id": "e37",
+     "kind": "bandit falls",
+     "day": 3.062,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_3_7"
+    },
+    {
+     "id": "e38",
+     "kind": "camp cleared",
+     "day": 3.07,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_3_7"
+    },
+    {
+     "id": "e39",
+     "kind": "enter place",
+     "day": 3.2,
+     "actor": "wolf-birch",
+     "target": "r2_grayrock_shipwrights"
+    },
+    {
+     "id": "e40",
+     "kind": "conversation",
+     "day": 3.21,
+     "actor": "wolf-birch",
+     "target": "cty_senna_beechleaf"
+    },
+    {
+     "id": "e41",
+     "kind": "quest accepted",
+     "day": 4,
+     "actor": "wolf-cedar",
+     "detail": "nightfell",
+     "target": "run"
+    },
+    {
+     "id": "e42",
+     "kind": "hour",
+     "day": 4.01,
+     "detail": "0",
+     "quantity": 0,
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_2_6",
+        "x": 220,
+        "y": 30,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e43",
+     "kind": "hour",
+     "day": 4.05,
+     "detail": "1",
+     "quantity": 1
+    },
+    {
+     "id": "e44",
+     "kind": "bandit falls",
+     "day": 4.06,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e45",
+     "kind": "bandit falls",
+     "day": 4.061,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e46",
+     "kind": "bandit falls",
+     "day": 4.062,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e47",
+     "kind": "camp cleared",
+     "day": 4.07,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e48",
+     "kind": "enter place",
+     "day": 4.2,
+     "actor": "wolf-cedar",
+     "target": "r2_grayrock_shipwrights"
+    },
+    {
+     "id": "e49",
+     "kind": "conversation",
+     "day": 4.21,
+     "actor": "wolf-cedar",
+     "target": "cty_senna_beechleaf"
+    },
+    {
+     "id": "e50",
+     "kind": "quest accepted",
+     "day": 4.5,
+     "actor": "wolf-ash",
+     "detail": "cedar_return",
+     "target": "run"
+    },
+    {
+     "id": "e51",
+     "kind": "quest accepted",
+     "day": 4.6,
+     "actor": "wolf-birch",
+     "detail": "cedar_return",
+     "target": "run"
+    },
+    {
+     "id": "e52",
+     "kind": "quest accepted",
+     "day": 4.8,
+     "actor": "wolf-cedar",
+     "detail": "cedar_contract",
+     "target": "run"
+    },
+    {
+     "id": "e53",
+     "kind": "clock",
+     "day": 8.0
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_returned"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_cedars": "returned"
+    },
+    "story": {
+     "t_returned": 2,
+     "t_contract": 1
+    }
+   }
+  },
+  {
+   "name": "Nobody stands up for the cedars: they are taken; the stores run thin",
+   "cohort": [],
+   "facts": {
+    "world": {
+     "hour": 1
+    }
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "cty_flint_snowdrift"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "old_stand",
+     "cell": "w_ridgemere_2_6",
+     "x": 212,
+     "y": 30
+    },
+    {
+     "id": "e4",
+     "kind": "region entered",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "rope_spot",
+     "cell": "w_ridgemere_2_6",
+     "x": 216,
+     "y": 30
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "ravine_stand",
+     "cell": "w_ridgemere_3_7",
+     "x": 150,
+     "y": 140
+    },
+    {
+     "id": "e6",
+     "kind": "conversation",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "target": "cty_frost_colddrift"
+    },
+    {
+     "id": "e7",
+     "kind": "quest handed in",
+     "day": 1.06,
+     "actor": "wolf-ash",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e8",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e9",
+     "kind": "conversation",
+     "day": 1.11,
+     "actor": "wolf-birch",
+     "target": "cty_flint_snowdrift"
+    },
+    {
+     "id": "e10",
+     "kind": "region entered",
+     "day": 1.12,
+     "actor": "wolf-birch",
+     "target": "old_stand",
+     "cell": "w_ridgemere_2_6",
+     "x": 212,
+     "y": 30
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 1.13,
+     "actor": "wolf-birch",
+     "target": "rope_spot",
+     "cell": "w_ridgemere_2_6",
+     "x": 216,
+     "y": 30
+    },
+    {
+     "id": "e12",
+     "kind": "region entered",
+     "day": 1.14,
+     "actor": "wolf-birch",
+     "target": "ravine_stand",
+     "cell": "w_ridgemere_3_7",
+     "x": 150,
+     "y": 140
+    },
+    {
+     "id": "e13",
+     "kind": "conversation",
+     "day": 1.15,
+     "actor": "wolf-birch",
+     "target": "cty_frost_colddrift"
+    },
+    {
+     "id": "e14",
+     "kind": "quest handed in",
+     "day": 1.16,
+     "actor": "wolf-birch",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e15",
+     "kind": "quest accepted",
+     "day": 1.2,
+     "actor": "wolf-cedar",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e16",
+     "kind": "conversation",
+     "day": 1.21,
+     "actor": "wolf-cedar",
+     "target": "cty_flint_snowdrift"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 1.22,
+     "actor": "wolf-cedar",
+     "target": "old_stand",
+     "cell": "w_ridgemere_2_6",
+     "x": 212,
+     "y": 30
+    },
+    {
+     "id": "e18",
+     "kind": "region entered",
+     "day": 1.23,
+     "actor": "wolf-cedar",
+     "target": "rope_spot",
+     "cell": "w_ridgemere_2_6",
+     "x": 216,
+     "y": 30
+    },
+    {
+     "id": "e19",
+     "kind": "region entered",
+     "day": 1.24,
+     "actor": "wolf-cedar",
+     "target": "ravine_stand",
+     "cell": "w_ridgemere_3_7",
+     "x": 150,
+     "y": 140
+    },
+    {
+     "id": "e20",
+     "kind": "conversation",
+     "day": 1.25,
+     "actor": "wolf-cedar",
+     "target": "cty_frost_colddrift"
+    },
+    {
+     "id": "e21",
+     "kind": "quest handed in",
+     "day": 1.26,
+     "actor": "wolf-cedar",
+     "item": "tn_fh_ivy_stonehollow",
+     "detail": "ringbark",
+     "target": "run"
+    },
+    {
+     "id": "e22",
+     "kind": "quest accepted",
+     "day": 2,
+     "actor": "wolf-ash",
+     "detail": "nightfell",
+     "target": "run"
+    },
+    {
+     "id": "e23",
+     "kind": "hour",
+     "day": 2.01,
+     "detail": "0",
+     "quantity": 0,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_2_6",
+        "x": 220,
+        "y": 30,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e24",
+     "kind": "hour",
+     "day": 2.05,
+     "detail": "1",
+     "quantity": 1
+    },
+    {
+     "id": "e25",
+     "kind": "bandit falls",
+     "day": 2.06,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e26",
+     "kind": "bandit falls",
+     "day": 2.061,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e27",
+     "kind": "bandit falls",
+     "day": 2.062,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e28",
+     "kind": "bandit falls",
+     "day": 2.063,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e29",
+     "kind": "camp cleared",
+     "day": 2.07,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e30",
+     "kind": "enter place",
+     "day": 2.2,
+     "actor": "wolf-ash",
+     "target": "r2_grayrock_shipwrights"
+    },
+    {
+     "id": "e31",
+     "kind": "conversation",
+     "day": 2.21,
+     "actor": "wolf-ash",
+     "target": "cty_senna_beechleaf"
+    },
+    {
+     "id": "e32",
+     "kind": "quest accepted",
+     "day": 3,
+     "actor": "wolf-birch",
+     "detail": "nightfell",
+     "target": "run"
+    },
+    {
+     "id": "e33",
+     "kind": "hour",
+     "day": 3.01,
+     "detail": "0",
+     "quantity": 0,
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_2_6",
+        "x": 220,
+        "y": 30,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e34",
+     "kind": "hour",
+     "day": 3.05,
+     "detail": "1",
+     "quantity": 1
+    },
+    {
+     "id": "e35",
+     "kind": "bandit falls",
+     "day": 3.06,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e36",
+     "kind": "bandit falls",
+     "day": 3.061,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e37",
+     "kind": "bandit falls",
+     "day": 3.062,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e38",
+     "kind": "camp cleared",
+     "day": 3.07,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e39",
+     "kind": "enter place",
+     "day": 3.2,
+     "actor": "wolf-birch",
+     "target": "r2_grayrock_shipwrights"
+    },
+    {
+     "id": "e40",
+     "kind": "conversation",
+     "day": 3.21,
+     "actor": "wolf-birch",
+     "target": "cty_senna_beechleaf"
+    },
+    {
+     "id": "e41",
+     "kind": "quest accepted",
+     "day": 4,
+     "actor": "wolf-cedar",
+     "detail": "nightfell",
+     "target": "run"
+    },
+    {
+     "id": "e42",
+     "kind": "hour",
+     "day": 4.01,
+     "detail": "0",
+     "quantity": 0,
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_2_6",
+        "x": 220,
+        "y": 30,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e43",
+     "kind": "hour",
+     "day": 4.05,
+     "detail": "1",
+     "quantity": 1
+    },
+    {
+     "id": "e44",
+     "kind": "bandit falls",
+     "day": 4.06,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e45",
+     "kind": "bandit falls",
+     "day": 4.061,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e46",
+     "kind": "bandit falls",
+     "day": 4.062,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e47",
+     "kind": "camp cleared",
+     "day": 4.07,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_2_6"
+    },
+    {
+     "id": "e48",
+     "kind": "clock",
+     "day": 12
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_taken"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_cedars": "taken"
+    },
+    "player": {
+     "wolf-cedar": {
+      "fells": 0
+     }
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,4297 @@
+{
+ "format": "ratw-story-program",
+ "version": 2,
+ "id": "lq-old-brown",
+ "title": "The Old Brown of the Greyteeth",
+ "audience": {
+  "kind": "open",
+  "cap": 5000
+ },
+ "start": "open",
+ "variables": [
+  {
+   "id": "lq_coin",
+   "type": "number",
+   "scope": "player",
+   "note": "What this line has paid the wolf in all (35 at most)."
+  },
+  {
+   "id": "lq_thin",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf was last paid in kind (a thin purse); read by N2 later for the thin thanks."
+  },
+  {
+   "id": "road",
+   "type": "text",
+   "scope": "player",
+   "note": "The road of chapter 3 this wolf took ('' none yet)."
+  },
+  {
+   "id": "packed",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf did chapter 2 in a party: their road weighs one more."
+  },
+  {
+   "id": "helpers",
+   "type": "wolves",
+   "scope": "story",
+   "note": "Wolves who have helped the shared goal this visit (each grows the goal)."
+  },
+  {
+   "id": "reckon_called",
+   "type": "switch",
+   "scope": "story",
+   "note": "The first road was taken: the tally runs 3 game days."
+  },
+  {
+   "id": "nh_realm",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The realm's voice (campaign 4.1): packs add."
+  },
+  {
+   "id": "nh_threat",
+   "type": "number",
+   "scope": "world",
+   "initial": 30,
+   "note": "The bandit threat (campaign 4.1): packs lower it, never below 0."
+  },
+  {
+   "id": "nh_stage",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "The Ninth Howl chapter now running (read only)."
+  },
+  {
+   "id": "coin_coldwater_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from town:coldwater (day cap 21); nh-purses sets it to 0 each day."
+  },
+  {
+   "id": "coin_coldwater_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "town:coldwater is above its floor (nh-purses: off below 60, on at 80)."
+  },
+  {
+   "id": "nh_voice_coldwater",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Coldwater's strand of the realm's voice (campaign 4.1)."
+  },
+  {
+   "id": "lq_brown",
+   "type": "text",
+   "scope": "world",
+   "initial": "",
+   "note": "The Old Brown: '' before it began, rustled while the fold is raided, then slain or spared."
+  },
+  {
+   "id": "lq_rustlers",
+   "type": "text",
+   "scope": "world",
+   "initial": "",
+   "note": "grey once the Greyteeth rustlers are broken (wolves in grey cloaks on the Frosthollow road), for the season; '' after."
+  },
+  {
+   "id": "goal",
+   "type": "number",
+   "scope": "story",
+   "initial": 3,
+   "note": "Rustler bands the reckoning needs broken: 3, and 1 more for every 3 wolves who help."
+  },
+  {
+   "id": "step",
+   "type": "number",
+   "scope": "story",
+   "note": "New helpers since the goal last grew (every third grows it)."
+  },
+  {
+   "id": "rustlers_broken",
+   "type": "number",
+   "scope": "story",
+   "initial": 0,
+   "show": "Rustlers driven off",
+   "note": "Rustler bands driven off the fold this season (a camp on the Frosthollow road counts two)."
+  },
+  {
+   "id": "on_wool",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf is on Wool on the Rocks now."
+  },
+  {
+   "id": "folds",
+   "type": "number",
+   "scope": "player",
+   "note": "How often the wolf has sat the fold."
+  },
+  {
+   "id": "sitting",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf is on Nights at the Fold now (set for the party that took it)."
+  },
+  {
+   "id": "sitters",
+   "type": "number",
+   "scope": "story",
+   "note": "Wolves of a party sitting the fold in the region at the second hour (the rustlers come only for them)."
+  },
+  {
+   "id": "sat_tonight",
+   "type": "switch",
+   "scope": "party",
+   "note": "The party has sat the fold this night already (cleared at midday)."
+  },
+  {
+   "id": "fold_ready",
+   "type": "switch",
+   "scope": "story",
+   "note": "A first night has been sat: from now the rustlers come to a fold that is kept."
+  },
+  {
+   "id": "keeping",
+   "type": "switch",
+   "scope": "player",
+   "note": "The wolf has brought the flock to the high fold and keeps it at dusk."
+  },
+  {
+   "id": "bear_down",
+   "type": "switch",
+   "scope": "story",
+   "note": "A wolf of the story has really brought down a bear."
+  },
+  {
+   "id": "spawned_fold",
+   "type": "switch",
+   "scope": "story",
+   "note": "A story band stands in fold."
+  },
+  {
+   "id": "spawned_fold_b",
+   "type": "switch",
+   "scope": "story",
+   "note": "A story band stands in fold_b."
+  },
+  {
+   "id": "t_hunt",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for bringing down the Old Brown."
+  },
+  {
+   "id": "t_spare",
+   "type": "number",
+   "scope": "story",
+   "note": "Weight for moving the flock high."
+  }
+ ],
+ "regions": [
+  {
+   "id": "fold",
+   "cell": "w_ridgemere_11_5",
+   "x1": 4,
+   "y1": 236,
+   "x2": 28,
+   "y2": 255
+  },
+  {
+   "id": "fold_b",
+   "cell": "w_ridgemere_11_5",
+   "x1": 56,
+   "y1": 212,
+   "x2": 75,
+   "y2": 231
+  },
+  {
+   "id": "greytarn",
+   "cell": "w_ridgemere_13_3",
+   "x1": 200,
+   "y1": 70,
+   "x2": 219,
+   "y2": 89
+  },
+  {
+   "id": "hearths",
+   "cell": "w_ridgemere_10_3",
+   "x1": 72,
+   "y1": 162,
+   "x2": 96,
+   "y2": 186
+  },
+  {
+   "id": "pass_camp",
+   "cell": "w_ridgemere_8_6",
+   "x1": 0,
+   "y1": 0,
+   "x2": 19,
+   "y2": 19
+  },
+  {
+   "id": "high_fold",
+   "cell": "w_ridgemere_12_4",
+   "x1": 170,
+   "y1": 190,
+   "x2": 189,
+   "y2": 209
+  }
+ ],
+ "triggers": [
+  {
+   "id": "wool-taken",
+   "on": "quest started",
+   "match": {
+    "detail": "wool"
+   },
+   "audience": "participant",
+   "note": "The fold is raided (world text rustled); the other shepherd's count is laid.",
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "on_wool"
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "lq_brown"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "lq_brown",
+       "value": "rustled"
+      }
+     ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "npc.offer",
+      "npc": "tn_lf_juniper_larkcombe",
+      "id": "lq_brown_count",
+      "words": "How many are gone?",
+      "reply": "Forty-two, if you count the lambs. Funny thing, eh? The owner never counted the forty. Only the two the bear had. Make of that what you like, neighbour.",
+      "once": true
+     }
+    }
+   ]
+  },
+  {
+   "id": "sign-read",
+   "on": "objective completed",
+   "match": {
+    "detail": "wool",
+    "item": "sign"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "journal.note",
+      "player": "$actor",
+      "text": "Scat and a torn fleece on the scree: a bear, an old one.",
+      "ifRefused": "when here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "collier-heard",
+   "on": "objective completed",
+   "match": {
+    "detail": "wool",
+    "item": "collier"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "objective.reveal",
+      "quest": "wool",
+      "objective": "pass",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "wool-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "wool"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "on_wool"
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "quest.offer",
+      "quest": "foldnight",
+      "player": "$actor"
+     }
+    }
+   ]
+  },
+  {
+   "id": "fold-taken",
+   "on": "quest started",
+   "match": {
+    "detail": "foldnight"
+   },
+   "audience": "participant",
+   "note": "The party that took it sits the fold; from Ch 3 (the Grey Captain named) the cloak is the Captain's colour.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "party",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "sitting",
+       "of": "$each"
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "nh_stage"
+      },
+      "op": ">=",
+      "right": 3
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.reveal",
+        "quest": "foldnight",
+        "objective": "cloak_grey",
+        "player": "$actor"
+       }
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "objective.reveal",
+        "quest": "foldnight",
+        "objective": "cloak",
+        "player": "$actor"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "fold-kept",
+   "on": "hour",
+   "match": {
+    "detail": "3"
+   },
+   "note": "The third hour: each sitting party with a wolf at the fold has kept one night.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "sitting",
+          "is": true,
+          "of": "$each"
+         },
+         {
+          "test": "switch",
+          "var": "sat_tonight",
+          "is": false,
+          "of": "$each"
+         },
+         {
+          "test": "any",
+          "conditions": [
+           {
+            "test": "wolf in region",
+            "region": "fold",
+            "who": "$each"
+           },
+           {
+            "test": "wolf in region",
+            "region": "fold_b",
+            "who": "$each"
+           }
+          ]
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.progress",
+          "quest": "foldnight",
+          "objective": "sit",
+          "player": "$each",
+          "amount": 1
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "sat_tonight",
+         "of": "$each"
+        },
+        {
+         "do": "turn on",
+         "var": "fold_ready"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "fold-midday",
+   "on": "hour",
+   "match": {
+    "detail": "12"
+   },
+   "if": {
+    "test": "switch",
+    "var": "fold_ready",
+    "is": true
+   },
+   "note": "Midday: the next night may be kept.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "sat_tonight",
+       "of": "$each"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "rustlers-fold",
+   "on": "hour",
+   "match": {
+    "detail": "2"
+   },
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "fold_ready",
+      "is": true
+     },
+     {
+      "test": "count in region",
+      "region": "fold",
+      "op": ">=",
+      "value": 1
+     }
+    ]
+   },
+   "note": "The second hour, once a first night was kept quiet: the rustlers come to a fold kept by a party of Nights at the Fold (2 to 6 by wolves present); never for a passer-by, so nobody farms them.",
+   "actions": [
+    {
+     "do": "set",
+     "var": "sitters",
+     "value": 0
+    },
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "sitting",
+          "is": true,
+          "of": "$each"
+         },
+         {
+          "test": "wolf in region",
+          "region": "fold",
+          "who": "$each"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "sitters",
+         "value": 1
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "sitters"
+      },
+      "op": ">=",
+      "right": 1
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "spawned_fold",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "spawned_fold"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "count in region",
+          "region": "fold",
+          "op": ">=",
+          "value": 5
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "fold",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "count in region",
+            "region": "fold",
+            "op": ">=",
+            "value": 3
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "fold",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          },
+          {
+           "if": {
+            "test": "count in region",
+            "region": "fold",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "fold",
+              "count": 3,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "fold",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "switch",
+          "var": "spawned_fold_b",
+          "is": false
+         },
+         "then": [
+          {
+           "do": "turn on",
+           "var": "spawned_fold_b"
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "count in region",
+            "region": "fold_b",
+            "op": ">=",
+            "value": 5
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "fold_b",
+              "count": 6,
+              "ifRefused": "skip"
+             }
+            }
+           ],
+           "elif": [
+            {
+             "if": {
+              "test": "count in region",
+              "region": "fold_b",
+              "op": ">=",
+              "value": 3
+             },
+             "then": [
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "story.area.spawn",
+                "region": "fold_b",
+                "count": 4,
+                "ifRefused": "skip"
+               }
+              }
+             ]
+            },
+            {
+             "if": {
+              "test": "count in region",
+              "region": "fold_b",
+              "op": ">=",
+              "value": 2
+             },
+             "then": [
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "story.area.spawn",
+                "region": "fold_b",
+                "count": 3,
+                "ifRefused": "skip"
+               }
+              }
+             ]
+            }
+           ],
+           "else": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "fold_b",
+              "count": 2,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "rustlers-fold-b",
+   "on": "hour",
+   "match": {
+    "detail": "2"
+   },
+   "if": {
+    "test": "all",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "fold_ready",
+      "is": true
+     },
+     {
+      "test": "count in region",
+      "region": "fold_b",
+      "op": ">=",
+      "value": 1
+     }
+    ]
+   },
+   "actions": [
+    {
+     "do": "set",
+     "var": "sitters",
+     "value": 0
+    },
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "sitting",
+          "is": true,
+          "of": "$each"
+         },
+         {
+          "test": "wolf in region",
+          "region": "fold_b",
+          "who": "$each"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "sitters",
+         "value": 1
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "sitters"
+      },
+      "op": ">=",
+      "right": 1
+     },
+     "then": [
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "spawned_fold_b",
+        "is": false
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "spawned_fold_b"
+        },
+        {
+         "do": "if",
+         "if": {
+          "test": "count in region",
+          "region": "fold_b",
+          "op": ">=",
+          "value": 5
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "fold_b",
+            "count": 6,
+            "ifRefused": "skip"
+           }
+          }
+         ],
+         "elif": [
+          {
+           "if": {
+            "test": "count in region",
+            "region": "fold_b",
+            "op": ">=",
+            "value": 3
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "fold_b",
+              "count": 4,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          },
+          {
+           "if": {
+            "test": "count in region",
+            "region": "fold_b",
+            "op": ">=",
+            "value": 2
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "fold_b",
+              "count": 3,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "story.area.spawn",
+            "region": "fold_b",
+            "count": 2,
+            "ifRefused": "skip"
+           }
+          }
+         ]
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "switch",
+          "var": "spawned_fold",
+          "is": false
+         },
+         "then": [
+          {
+           "do": "turn on",
+           "var": "spawned_fold"
+          },
+          {
+           "do": "if",
+           "if": {
+            "test": "count in region",
+            "region": "fold",
+            "op": ">=",
+            "value": 5
+           },
+           "then": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "fold",
+              "count": 6,
+              "ifRefused": "skip"
+             }
+            }
+           ],
+           "elif": [
+            {
+             "if": {
+              "test": "count in region",
+              "region": "fold",
+              "op": ">=",
+              "value": 3
+             },
+             "then": [
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "story.area.spawn",
+                "region": "fold",
+                "count": 4,
+                "ifRefused": "skip"
+               }
+              }
+             ]
+            },
+            {
+             "if": {
+              "test": "count in region",
+              "region": "fold",
+              "op": ">=",
+              "value": 2
+             },
+             "then": [
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "story.area.spawn",
+                "region": "fold",
+                "count": 3,
+                "ifRefused": "skip"
+               }
+              }
+             ]
+            }
+           ],
+           "else": [
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "story.area.spawn",
+              "region": "fold",
+              "count": 2,
+              "ifRefused": "skip"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "camp-fold",
+   "on": "camp cleared",
+   "match": {
+    "cell": "w_ridgemere_11_5"
+   },
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "switch",
+      "var": "spawned_fold",
+      "is": true
+     },
+     {
+      "test": "switch",
+      "var": "spawned_fold_b",
+      "is": true
+     }
+    ]
+   },
+   "note": "A rustler band broken at the fold: one of them drops a grey cloak.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "spawned_fold_b",
+        "is": true
+       },
+       {
+        "test": "wolf in region",
+        "region": "fold_b"
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "turn off",
+       "var": "spawned_fold_b"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.place",
+        "item": "wool_hood",
+        "quantity": 1,
+        "cell": "w_ridgemere_11_5",
+        "x": 65,
+        "y": 221,
+        "ifRefused": "skip"
+       }
+      }
+     ],
+     "elif": [
+      {
+       "if": {
+        "test": "switch",
+        "var": "spawned_fold",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "turn off",
+         "var": "spawned_fold"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "wool_hood",
+          "quantity": 1,
+          "cell": "w_ridgemere_11_5",
+          "x": 24,
+          "y": 250,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      },
+      {
+       "if": {
+        "test": "switch",
+        "var": "spawned_fold_b",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "turn off",
+         "var": "spawned_fold_b"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "wool_hood",
+          "quantity": 1,
+          "cell": "w_ridgemere_11_5",
+          "x": 65,
+          "y": 221,
+          "ifRefused": "skip"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "subtract",
+     "var": "nh_threat",
+     "value": 1
+    },
+    {
+     "do": "clamp",
+     "var": "nh_threat",
+     "min": 0,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "rustlers-off",
+   "on": "objective completed",
+   "match": {
+    "detail": "foldnight",
+    "item": "rustlers"
+   },
+   "audience": "participant",
+   "note": "A party drove the rustlers off: the shared goal (3, and 1 for every 3 helpers) opens the reckoning.",
+   "actions": [
+    {
+     "do": "add",
+     "var": "rustlers_broken",
+     "value": 1
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "in list",
+       "list": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      }
+     },
+     "then": [
+      {
+       "do": "list add",
+       "var": "helpers",
+       "value": {
+        "field": "actor"
+       }
+      },
+      {
+       "do": "add",
+       "var": "step",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "step"
+        },
+        "op": ">=",
+        "right": 3
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "step",
+         "value": 0
+        },
+        {
+         "do": "add",
+         "var": "goal",
+         "value": 1
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "phase is",
+        "phase": "open"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "rustlers_broken"
+        },
+        "op": ">=",
+        "right": {
+         "var": "goal"
+        }
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "lq_rustlers",
+       "value": "grey"
+      },
+      {
+       "do": "subtract",
+       "var": "nh_threat",
+       "value": 3
+      },
+      {
+       "do": "clamp",
+       "var": "nh_threat",
+       "min": 0,
+       "max": 100
+      },
+      {
+       "do": "schedule",
+       "signal": "reckon",
+       "days": 7,
+       "scope": "campaign"
+      },
+      {
+       "do": "schedule",
+       "signal": "lay",
+       "days": 0.002,
+       "scope": "campaign"
+      },
+      {
+       "do": "enter",
+       "phase": "reckoning"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pass-camp",
+   "on": "camp cleared",
+   "match": {
+    "cell": "w_ridgemere_8_6"
+   },
+   "if": {
+    "test": "count in region",
+    "region": "pass_camp",
+    "op": ">=",
+    "value": 1
+   },
+   "note": "The rustlers' camp on the Frosthollow road broken with wolves of the story there (a natural camp or a story one: either way the road is clear).",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "sitting",
+          "is": true,
+          "of": "$each"
+         },
+         {
+          "test": "wolf in region",
+          "region": "pass_camp",
+          "who": "$each"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.complete",
+          "quest": "foldnight",
+          "objective": "camp",
+          "player": "$each"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "rustlers_broken",
+     "value": 2
+    },
+    {
+     "do": "subtract",
+     "var": "nh_threat",
+     "value": 3
+    },
+    {
+     "do": "clamp",
+     "var": "nh_threat",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "phase is",
+        "phase": "open"
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "rustlers_broken"
+        },
+        "op": ">=",
+        "right": {
+         "var": "goal"
+        }
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "lq_rustlers",
+       "value": "grey"
+      },
+      {
+       "do": "subtract",
+       "var": "nh_threat",
+       "value": 3
+      },
+      {
+       "do": "clamp",
+       "var": "nh_threat",
+       "min": 0,
+       "max": 100
+      },
+      {
+       "do": "schedule",
+       "signal": "reckon",
+       "days": 7,
+       "scope": "campaign"
+      },
+      {
+       "do": "schedule",
+       "signal": "lay",
+       "days": 0.002,
+       "scope": "campaign"
+      },
+      {
+       "do": "enter",
+       "phase": "reckoning"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "fold-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "foldnight"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "each",
+     "over": "party",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "sitting",
+       "of": "$each"
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "folds",
+         "of": "$each"
+        },
+        "op": "=",
+        "right": 0
+       },
+       "then": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "switch",
+            "var": "coin_coldwater_ok",
+            "is": true
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "coin_coldwater_day"
+            },
+            "op": "<=",
+            "right": 15
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "lq_coin",
+             "of": "$each"
+            },
+            "op": "<=",
+            "right": 29
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "character.grant",
+            "player": "$each",
+            "coins": 6,
+            "purse": "town:coldwater",
+            "reason": "the Coldwater stores pay the fold-sitters",
+            "ifRefused": "skip"
+           }
+          },
+          {
+           "do": "add",
+           "var": "coin_coldwater_day",
+           "value": 6
+          },
+          {
+           "do": "add",
+           "var": "lq_coin",
+           "value": 6,
+           "of": "$each"
+          }
+         ],
+         "else": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "item.give",
+            "player": "$each",
+            "item": "bread",
+            "quantity": 2,
+            "ifRefused": "when here"
+           }
+          },
+          {
+           "do": "turn on",
+           "var": "lq_thin",
+           "of": "$each"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "journal.note",
+            "player": "$each",
+            "text": "There was no coin to spare for you this time, so you were paid in bread.",
+            "ifRefused": "when here"
+           }
+          }
+         ]
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "deed.award",
+          "player": "$each",
+          "detail": "drove the rustlers off the Greyteeth fold",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "story.practice",
+          "player": "$each",
+          "skill": "watch",
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$each",
+          "item": "fleece_boots",
+          "quantity": 1,
+          "ifRefused": "when here"
+         }
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "folds",
+       "value": 1,
+       "of": "$each"
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "party size",
+      "op": ">=",
+      "value": 2
+     },
+     "then": [
+      {
+       "do": "each",
+       "over": "party",
+       "actions": [
+        {
+         "do": "turn on",
+         "var": "packed",
+         "of": "$each"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "phase is",
+       "phase": "open"
+      }
+     },
+     "then": [
+      {
+       "do": "each",
+       "over": "party",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "road",
+           "of": "$each"
+          },
+          "op": "=",
+          "right": ""
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "brown_hunt",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "brown_spare",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "fold-again",
+   "on": "day begins",
+   "note": "Each day the wolves who have sat the fold before are offered the next nights (weekly).",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "folds",
+         "of": "$each"
+        },
+        "op": ">=",
+        "right": 1
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "quest.offer",
+          "quest": "foldnight",
+          "player": "$each"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-hunt",
+   "on": "quest started",
+   "match": {
+    "detail": "brown_hunt"
+   },
+   "audience": "participant",
+   "note": "A road taken: it weighs 1, 2 from a pack; the first starts the 3-day tally; a second road is refused (L5 later).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "hunt"
+      },
+      {
+       "do": "add",
+       "var": "t_hunt",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "packed",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_hunt",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "reckoning"
+         },
+         {
+          "test": "switch",
+          "var": "reckon_called",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "reckon_called"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "brown_hunt",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you have chosen your road already.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "road-spare",
+   "on": "quest started",
+   "match": {
+    "detail": "brown_spare"
+   },
+   "audience": "participant",
+   "note": "A road taken: it weighs 1, 2 from a pack; the first starts the 3-day tally; a second road is refused (L5 later).",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "road"
+      },
+      "op": "=",
+      "right": ""
+     },
+     "then": [
+      {
+       "do": "set",
+       "var": "road",
+       "value": "spare"
+      },
+      {
+       "do": "add",
+       "var": "t_spare",
+       "value": 1
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "switch",
+        "var": "packed",
+        "is": true
+       },
+       "then": [
+        {
+         "do": "add",
+         "var": "t_spare",
+         "value": 1
+        }
+       ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_vale_pikebridge",
+        "id": "lq_brown_high",
+        "words": "Will the high fold take the flock?",
+        "reply": "Grass enough, and a lick if somebody brings salt up. Bring me two of salt and I'll open the gate. Blight take the bear, I'd still not want it killed for being hungry."
+       }
+      },
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "phase is",
+          "phase": "reckoning"
+         },
+         {
+          "test": "switch",
+          "var": "reckon_called",
+          "is": false
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "turn on",
+         "var": "reckon_called"
+        },
+        {
+         "do": "schedule",
+         "signal": "reckon",
+         "days": 3,
+         "scope": "campaign"
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "quest.fail",
+        "quest": "brown_spare",
+        "player": "$actor"
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "Another road taken: you have chosen your road already.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "bear-down",
+   "on": "hunted",
+   "match": {
+    "target": "bear"
+   },
+   "audience": "participant",
+   "note": "A bear really killed (L1 hunt.stage later puts the Old Brown at Greytarn).",
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "bear_down"
+    }
+   ]
+  },
+  {
+   "id": "high-reached",
+   "on": "objective completed",
+   "match": {
+    "detail": "brown_spare",
+    "item": "high"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "turn on",
+     "var": "keeping"
+    }
+   ]
+  },
+  {
+   "id": "high-dusk",
+   "on": "hour",
+   "match": {
+    "detail": "20"
+   },
+   "note": "Dusk on the high fold: each wolf keeping it there has kept one evening.",
+   "actions": [
+    {
+     "do": "each",
+     "over": "participants",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "keeping",
+          "is": true,
+          "of": "$each"
+         },
+         {
+          "test": "wolf in region",
+          "region": "high_fold",
+          "who": "$each"
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "objective.progress",
+          "quest": "brown_spare",
+          "objective": "keep",
+          "player": "$each",
+          "amount": 1
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "hunt-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "brown_hunt"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "each",
+     "over": "party",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "coin_coldwater_ok",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "coin_coldwater_day"
+          },
+          "op": "<=",
+          "right": 9
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "lq_coin",
+           "of": "$each"
+          },
+          "op": "<=",
+          "right": 23
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "character.grant",
+          "player": "$each",
+          "coins": 12,
+          "purse": "town:coldwater",
+          "reason": "the Coldwater stores pay for the Old Brown",
+          "ifRefused": "skip"
+         }
+        },
+        {
+         "do": "add",
+         "var": "coin_coldwater_day",
+         "value": 12
+        },
+        {
+         "do": "add",
+         "var": "lq_coin",
+         "value": 12,
+         "of": "$each"
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.give",
+          "player": "$each",
+          "item": "bread",
+          "quantity": 2,
+          "ifRefused": "when here"
+         }
+        },
+        {
+         "do": "turn on",
+         "var": "lq_thin",
+         "of": "$each"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "journal.note",
+          "player": "$each",
+          "text": "There was no coin to spare for you this time, so you were paid in bread.",
+          "ifRefused": "when here"
+         }
+        }
+       ]
+      },
+      {
+       "do": "add",
+       "var": "nh_realm",
+       "value": 12
+      },
+      {
+       "do": "add",
+       "var": "nh_voice_coldwater",
+       "value": 12
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "spare-done",
+   "on": "quest completed",
+   "match": {
+    "detail": "brown_spare"
+   },
+   "audience": "participant",
+   "actions": [
+    {
+     "do": "turn off",
+     "var": "keeping"
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "all",
+      "conditions": [
+       {
+        "test": "switch",
+        "var": "coin_coldwater_ok",
+        "is": true
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "coin_coldwater_day"
+        },
+        "op": "<=",
+        "right": 9
+       },
+       {
+        "test": "compare",
+        "left": {
+         "var": "lq_coin"
+        },
+        "op": "<=",
+        "right": 23
+       }
+      ]
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "character.grant",
+        "player": "$actor",
+        "coins": 12,
+        "purse": "town:coldwater",
+        "reason": "the Coldwater stores pay for the flock kept safe",
+        "ifRefused": "skip"
+       }
+      },
+      {
+       "do": "add",
+       "var": "coin_coldwater_day",
+       "value": 12
+      },
+      {
+       "do": "add",
+       "var": "lq_coin",
+       "value": 12
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "item.give",
+        "player": "$actor",
+        "item": "bread",
+        "quantity": 2,
+        "ifRefused": "when here"
+       }
+      },
+      {
+       "do": "turn on",
+       "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "journal.note",
+        "player": "$actor",
+        "text": "There was no coin to spare for you this time, so you were paid in bread.",
+        "ifRefused": "when here"
+       }
+      }
+     ]
+    },
+    {
+     "do": "add",
+     "var": "nh_realm",
+     "value": 12
+    },
+    {
+     "do": "add",
+     "var": "nh_voice_coldwater",
+     "value": 12
+    }
+   ]
+  },
+  {
+   "id": "lay-offers",
+   "on": "story signal",
+   "signal": "lay",
+   "note": "A new visit: the window choices again; in the reckoning every wolf who sat the fold is offered the roads.",
+   "actions": [
+    {
+     "do": "if",
+     "if": {
+      "test": "not",
+      "condition": {
+       "test": "phase is",
+       "phase": "open"
+      }
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "cty_vale_pikebridge",
+        "id": "lq_brown_high",
+        "words": "Will the high fold take the flock?",
+        "reply": "Grass enough, and a lick if somebody brings salt up. Bring me two of salt and I'll open the gate. Blight take the bear, I'd still not want it killed for being hungry."
+       }
+      },
+      {
+       "do": "each",
+       "over": "participants",
+       "actions": [
+        {
+         "do": "if",
+         "if": {
+          "test": "all",
+          "conditions": [
+           {
+            "test": "compare",
+            "left": {
+             "var": "folds",
+             "of": "$each"
+            },
+            "op": ">=",
+            "right": 1
+           },
+           {
+            "test": "compare",
+            "left": {
+             "var": "road",
+             "of": "$each"
+            },
+            "op": "=",
+            "right": ""
+           }
+          ]
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "brown_hunt",
+            "player": "$each"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "quest.offer",
+            "quest": "brown_spare",
+            "player": "$each"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "else": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.offer",
+        "npc": "tn_lf_juniper_larkcombe",
+        "id": "lq_brown_count",
+        "words": "How many are gone?",
+        "reply": "Forty-two, if you count the lambs. Funny thing, eh? The owner never counted the forty. Only the two the bear had. Make of that what you like, neighbour.",
+        "once": true
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "new-season",
+   "on": "season begins",
+   "if": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "phase is",
+      "phase": "after_slain"
+     },
+     {
+      "test": "phase is",
+      "phase": "after_spared"
+     }
+    ]
+   },
+   "note": "A new season: the rustlers come back down the Pass Road.",
+   "actions": [
+    {
+     "do": "set",
+     "var": "goal",
+     "value": 3
+    },
+    {
+     "do": "set",
+     "var": "step",
+     "value": 0
+    },
+    {
+     "do": "list clear",
+     "var": "helpers"
+    },
+    {
+     "do": "set",
+     "var": "rustlers_broken",
+     "value": 0
+    },
+    {
+     "do": "set",
+     "var": "t_hunt",
+     "value": 0
+    },
+    {
+     "do": "set",
+     "var": "t_spare",
+     "value": 0
+    },
+    {
+     "do": "turn off",
+     "var": "reckon_called"
+    },
+    {
+     "do": "turn off",
+     "var": "bear_down"
+    },
+    {
+     "do": "turn off",
+     "var": "fold_ready"
+    },
+    {
+     "do": "set",
+     "var": "lq_brown",
+     "value": "rustled"
+    },
+    {
+     "do": "set",
+     "var": "lq_rustlers",
+     "value": ""
+    },
+    {
+     "do": "schedule",
+     "signal": "lay",
+     "days": 0.002,
+     "scope": "campaign"
+    },
+    {
+     "do": "enter",
+     "phase": "open"
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "id": "open",
+   "journal": "Something is taking sheep from the Greyteeth fold: a bear, or wolves, or both. The Coldwater shepherd wants help.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_jessamy_greyford",
+     "text": "Calm water to you. Mind the fold gate, neighbour. Something's counting our sheep before we do."
+    },
+    {
+     "kind": "board.post",
+     "town": "coldwater",
+     "days": 28,
+     "text": "THE GREYTEETH FOLD: shepherds want sitters for the night. Rustlers about. Bring teeth and a friend.",
+     "ifRefused": "skip"
+    },
+    {
+     "kind": "door.unlock",
+     "door": "link_fs_sheep_foothills_barn_door_a",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "reckoning",
+   "journal": "The rustlers are broken: grey-cloaked wolves, gone up the Pass Road. And the Old Brown is still on the scree.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_jessamy_greyford",
+     "text": "The rustlers are broken, and the Old Brown's still on the scree. Bring it down, or move the flock high? Think on it, neighbour."
+    }
+   ],
+   "exits": [],
+   "triggers": [
+    {
+     "id": "reckon",
+     "on": "story signal",
+     "signal": "reckon",
+     "note": "The tally: the hunt only if a bear was really brought down and more chose it; otherwise the bear is spared (the default).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "all",
+        "conditions": [
+         {
+          "test": "switch",
+          "var": "bear_down",
+          "is": true
+         },
+         {
+          "test": "compare",
+          "left": {
+           "var": "t_hunt"
+          },
+          "op": ">",
+          "right": {
+           "var": "t_spare"
+          }
+         }
+        ]
+       },
+       "then": [
+        {
+         "do": "set",
+         "var": "lq_brown",
+         "value": "slain"
+        },
+        {
+         "do": "schedule",
+         "signal": "lay",
+         "days": 0.002,
+         "scope": "campaign"
+        },
+        {
+         "do": "enter",
+         "phase": "after_slain"
+        }
+       ],
+       "else": [
+        {
+         "do": "set",
+         "var": "lq_brown",
+         "value": "spared"
+        },
+        {
+         "do": "schedule",
+         "signal": "lay",
+         "days": 0.002,
+         "scope": "campaign"
+        },
+        {
+         "do": "enter",
+         "phase": "after_spared"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "after_slain",
+   "journal": "The Old Brown is down. The Greyteeth fold sleeps.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_jessamy_greyford",
+     "text": "Calm water. The Old Brown's down by Greytarn and the fold sleeps sound. I'll not say I'm glad of it, neighbour, but I'm not sorry."
+    },
+    {
+     "kind": "board.post",
+     "town": "coldwater",
+     "days": 28,
+     "text": "The Old Brown is down. The Greyteeth fold sleeps.",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": []
+  },
+  {
+   "id": "after_spared",
+   "journal": "The flock is on the high fold, and the Old Brown keeps its rocks.",
+   "effects": [
+    {
+     "kind": "npc.line",
+     "npc": "cty_jessamy_greyford",
+     "text": "Still water. The flock's high and the Old Brown's on its rocks, and nobody's oath was broken. Fair catch, eh?"
+    },
+    {
+     "kind": "board.post",
+     "town": "coldwater",
+     "days": 28,
+     "text": "The flock is on the high fold, and the Old Brown has its rocks.",
+     "ifRefused": "skip"
+    }
+   ],
+   "exits": []
+  }
+ ],
+ "quests": [
+  {
+   "id": "wool",
+   "title": "Wool on the Rocks",
+   "summary": "Something is taking sheep from the Greyteeth fold. Read the signs.",
+   "scope": "player",
+   "repeat": "once",
+   "giver": "cty_jessamy_greyford",
+   "board": "coldwater",
+   "join": {
+    "cap": 40
+   },
+   "offer": {
+    "ask": "You're a sheep short?",
+    "say": "#greet#, #address#. Forty short, and two of those were the bear's, I'd swear it on the oath I keep. The owner says Frosthollow thieves and wants the heather burned to bare rock. Count with my cottage-mate, find the bear's sign at Greytarn, and ask the collier what he saw, eh?",
+    "accept": "I'll read the signs.",
+    "decline": "Another day.",
+    "handIn": "The forty went up the Pass Road.",
+    "thanks": "#thanks#. Up the Pass Road, driven, not dragged. Net and line, it's wolves, then, and a bear besides. Sit the fold with me after dark. If they come again, they'll find teeth waiting."
+   },
+   "objectives": [
+    {
+     "id": "count",
+     "label": "Count the flock with the other shepherd.",
+     "on": "conversation",
+     "match": {
+      "target": "tn_lf_juniper_larkcombe"
+     }
+    },
+    {
+     "id": "sign",
+     "label": "Find the bear's sign at Greytarn.",
+     "on": "region entered",
+     "match": {
+      "target": "greytarn"
+     }
+    },
+    {
+     "id": "collier",
+     "label": "Ask the collier at the Upper hearths what he saw.",
+     "on": "conversation",
+     "match": {
+      "target": "cty_stone_acorndell"
+     }
+    },
+    {
+     "id": "pass",
+     "label": "Follow the drove up the Pass Road to the old camp site.",
+     "on": "region entered",
+     "match": {
+      "target": "pass_camp"
+     },
+     "after": [
+      "collier"
+     ],
+     "hidden": true
+    }
+   ],
+   "handIn": true,
+   "rewards": [
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "read the signs on the Greyteeth fold",
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "travel",
+     "ifRefused": "when here"
+    }
+   ]
+  },
+  {
+   "id": "foldnight",
+   "title": "Nights at the Fold",
+   "summary": "Sit the Greyteeth fold two nights with a pack, and drive the rustlers off.",
+   "scope": "party",
+   "repeat": "weekly",
+   "join": {
+    "cap": 12
+   },
+   "objectives": [
+    {
+     "id": "sit",
+     "label": "Keep the fold through the dark hours, two nights.",
+     "on": "story signal",
+     "signal": "fold_night",
+     "goal": 2
+    },
+    {
+     "id": "rustlers",
+     "label": "Drive the rustlers off the fold.",
+     "on": "bandit falls",
+     "match": {
+      "cell": "w_ridgemere_11_5"
+     },
+     "goal": 2
+    },
+    {
+     "id": "cloak",
+     "label": "Pick up the grey cloak a rustler dropped.",
+     "on": "item picked up",
+     "match": {
+      "item": "wool_hood",
+      "cell": "w_ridgemere_11_5"
+     },
+     "hidden": true
+    },
+    {
+     "id": "cloak_grey",
+     "label": "Pick up the grey cloak, the Captain's colour.",
+     "on": "item picked up",
+     "match": {
+      "item": "wool_hood",
+      "cell": "w_ridgemere_11_5"
+     },
+     "hidden": true,
+     "optional": true
+    },
+    {
+     "id": "camp",
+     "label": "Break the rustlers' camp on the Frosthollow road.",
+     "on": "story signal",
+     "signal": "camp86",
+     "optional": true
+    }
+   ]
+  },
+  {
+   "id": "brown_hunt",
+   "title": "Bring Down the Old Brown",
+   "summary": "The Old Brown has taken two of the flock and will take more. Bring it down, with a pack at your side.",
+   "scope": "party",
+   "repeat": "once",
+   "phases": [
+    "reckoning",
+    "after_slain",
+    "after_spared"
+   ],
+   "objectives": [
+    {
+     "id": "hunt",
+     "label": "Bring down the old brown bear.",
+     "on": "hunted",
+     "match": {
+      "target": "bear"
+     }
+    },
+    {
+     "id": "pelt",
+     "label": "Bring the shepherd the bear's pelt.",
+     "on": "gift",
+     "match": {
+      "target": "cty_jessamy_greyford",
+      "item": "bear_pelt"
+     },
+     "after": [
+      "hunt"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "fur_hat",
+     "quantity": 1,
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour",
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "brought down the Old Brown of the Greyteeth",
+     "ifRefused": "when here"
+    }
+   ]
+  },
+  {
+   "id": "brown_spare",
+   "title": "Move the Flock High",
+   "summary": "The Old Brown is old and hungry. Move the flock to the high fold and leave the bear its rocks.",
+   "scope": "player",
+   "repeat": "once",
+   "phases": [
+    "reckoning",
+    "after_slain",
+    "after_spared"
+   ],
+   "objectives": [
+    {
+     "id": "high",
+     "label": "Bring the flock up to the high fold.",
+     "on": "region entered",
+     "match": {
+      "target": "high_fold"
+     }
+    },
+    {
+     "id": "keep",
+     "label": "Keep the high fold at dusk, two evenings.",
+     "on": "story signal",
+     "signal": "high_kept",
+     "goal": 2,
+     "after": [
+      "high"
+     ]
+    },
+    {
+     "id": "lick",
+     "label": "Bring the shepherd two of salt for the high fold's lick.",
+     "on": "gift",
+     "match": {
+      "target": "cty_vale_pikebridge",
+      "item": "salt"
+     },
+     "goal": 2,
+     "measure": "quantity",
+     "after": [
+      "high"
+     ]
+    }
+   ],
+   "rewards": [
+    {
+     "kind": "item.give",
+     "player": "$actor",
+     "item": "sheepskin",
+     "quantity": 1,
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "story.practice",
+     "player": "$actor",
+     "skill": "labour",
+     "ifRefused": "when here"
+    },
+    {
+     "kind": "deed.award",
+     "player": "$actor",
+     "detail": "moved the Greyteeth flock out of the Old Brown's road",
+     "ifRefused": "when here"
+    }
+   ]
+  }
+ ],
+ "tests": [
+  {
+   "name": "A pack brings down the Old Brown; the camp on the Frosthollow road; a new season",
+   "cohort": [],
+   "parties": {
+    "wolf-ash": "pack1",
+    "wolf-birch": "pack1"
+   },
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1,
+     "actor": "wolf-ash",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "tn_lf_juniper_larkcombe"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "greytarn",
+     "cell": "w_ridgemere_13_3",
+     "x": 210,
+     "y": 80
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "cty_stone_acorndell"
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "pass_camp",
+     "cell": "w_ridgemere_8_6",
+     "x": 10,
+     "y": 10
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e8",
+     "kind": "conversation",
+     "day": 1.11,
+     "actor": "wolf-birch",
+     "target": "tn_lf_juniper_larkcombe"
+    },
+    {
+     "id": "e9",
+     "kind": "region entered",
+     "day": 1.12,
+     "actor": "wolf-birch",
+     "target": "greytarn",
+     "cell": "w_ridgemere_13_3",
+     "x": 210,
+     "y": 80
+    },
+    {
+     "id": "e10",
+     "kind": "conversation",
+     "day": 1.13,
+     "actor": "wolf-birch",
+     "target": "cty_stone_acorndell"
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 1.14,
+     "actor": "wolf-birch",
+     "target": "pass_camp",
+     "cell": "w_ridgemere_8_6",
+     "x": 10,
+     "y": 10
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 1.15,
+     "actor": "wolf-birch",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 2,
+     "actor": "wolf-ash",
+     "detail": "foldnight",
+     "target": "run"
+    },
+    {
+     "id": "e14",
+     "kind": "hour",
+     "day": 2.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 2
+       }
+      }
+     }
+    },
+    {
+     "id": "e15",
+     "kind": "hour",
+     "day": 2.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e16",
+     "kind": "hour",
+     "day": 2.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e17",
+     "kind": "hour",
+     "day": 3.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 2
+       }
+      }
+     }
+    },
+    {
+     "id": "e18",
+     "kind": "bandit falls",
+     "day": 3.11,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e19",
+     "kind": "bandit falls",
+     "day": 3.111,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e20",
+     "kind": "bandit falls",
+     "day": 3.112,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e21",
+     "kind": "camp cleared",
+     "day": 3.12,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e22",
+     "kind": "item picked up",
+     "day": 3.13,
+     "actor": "wolf-ash",
+     "item": "wool_hood",
+     "cell": "w_ridgemere_11_5",
+     "quantity": 1
+    },
+    {
+     "id": "e23",
+     "kind": "camp cleared",
+     "day": 3.135,
+     "actor": "wolf-ash",
+     "target": "camp_8_6",
+     "cell": "w_ridgemere_8_6",
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_8_6",
+        "x": 10,
+        "y": 10,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_8_6",
+        "x": 10,
+        "y": 10,
+        "partySize": 2
+       }
+      }
+     }
+    },
+    {
+     "id": "e24",
+     "kind": "hour",
+     "day": 3.138,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 2
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 2
+       }
+      }
+     }
+    },
+    {
+     "id": "e25",
+     "kind": "hour",
+     "day": 3.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e26",
+     "kind": "hour",
+     "day": 3.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e27",
+     "kind": "quest accepted",
+     "day": 3.5,
+     "actor": "wolf-ash",
+     "detail": "brown_hunt",
+     "target": "run"
+    },
+    {
+     "id": "e28",
+     "kind": "hunted",
+     "day": 3.6,
+     "actor": "wolf-birch",
+     "target": "bear",
+     "cell": "w_ridgemere_13_3",
+     "quantity": 1
+    },
+    {
+     "id": "e29",
+     "kind": "gift",
+     "day": 3.7,
+     "actor": "wolf-ash",
+     "target": "cty_jessamy_greyford",
+     "item": "bear_pelt",
+     "quantity": 1
+    },
+    {
+     "id": "e30",
+     "kind": "clock",
+     "day": 7.0
+    },
+    {
+     "id": "e31",
+     "kind": "season begins",
+     "day": 23.5,
+     "detail": "winter"
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_slain",
+    "open"
+   ],
+   "expectQuests": {
+    "wool": {
+     "wolf-ash": "done",
+     "wolf-birch": "done"
+    },
+    "foldnight": {
+     "party:pack1": "done"
+    },
+    "brown_hunt": {
+     "party:pack1": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_brown": "rustled",
+     "lq_rustlers": "",
+     "nh_threat": 23
+    },
+    "story": {
+     "goal": 3
+    },
+    "player": {
+     "wolf-ash": {
+      "folds": 1,
+      "road": "hunt",
+      "packed": true
+     }
+    }
+   }
+  },
+  {
+   "name": "Two move the flock high: the Old Brown is spared; the stores run thin",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "tn_lf_juniper_larkcombe"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "greytarn",
+     "cell": "w_ridgemere_13_3",
+     "x": 210,
+     "y": 80
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "cty_stone_acorndell"
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "pass_camp",
+     "cell": "w_ridgemere_8_6",
+     "x": 10,
+     "y": 10
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e8",
+     "kind": "conversation",
+     "day": 1.11,
+     "actor": "wolf-birch",
+     "target": "tn_lf_juniper_larkcombe"
+    },
+    {
+     "id": "e9",
+     "kind": "region entered",
+     "day": 1.12,
+     "actor": "wolf-birch",
+     "target": "greytarn",
+     "cell": "w_ridgemere_13_3",
+     "x": 210,
+     "y": 80
+    },
+    {
+     "id": "e10",
+     "kind": "conversation",
+     "day": 1.13,
+     "actor": "wolf-birch",
+     "target": "cty_stone_acorndell"
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 1.14,
+     "actor": "wolf-birch",
+     "target": "pass_camp",
+     "cell": "w_ridgemere_8_6",
+     "x": 10,
+     "y": 10
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 1.15,
+     "actor": "wolf-birch",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 1.2,
+     "actor": "wolf-cedar",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e14",
+     "kind": "conversation",
+     "day": 1.21,
+     "actor": "wolf-cedar",
+     "target": "tn_lf_juniper_larkcombe"
+    },
+    {
+     "id": "e15",
+     "kind": "region entered",
+     "day": 1.22,
+     "actor": "wolf-cedar",
+     "target": "greytarn",
+     "cell": "w_ridgemere_13_3",
+     "x": 210,
+     "y": 80
+    },
+    {
+     "id": "e16",
+     "kind": "conversation",
+     "day": 1.23,
+     "actor": "wolf-cedar",
+     "target": "cty_stone_acorndell"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 1.24,
+     "actor": "wolf-cedar",
+     "target": "pass_camp",
+     "cell": "w_ridgemere_8_6",
+     "x": 10,
+     "y": 10
+    },
+    {
+     "id": "e18",
+     "kind": "quest handed in",
+     "day": 1.25,
+     "actor": "wolf-cedar",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e19",
+     "kind": "quest accepted",
+     "day": 2,
+     "actor": "wolf-ash",
+     "detail": "foldnight",
+     "target": "run"
+    },
+    {
+     "id": "e20",
+     "kind": "hour",
+     "day": 2.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e21",
+     "kind": "hour",
+     "day": 2.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e22",
+     "kind": "hour",
+     "day": 2.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e23",
+     "kind": "hour",
+     "day": 3.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e24",
+     "kind": "bandit falls",
+     "day": 3.11,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e25",
+     "kind": "bandit falls",
+     "day": 3.111,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e26",
+     "kind": "bandit falls",
+     "day": 3.112,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e27",
+     "kind": "camp cleared",
+     "day": 3.12,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e28",
+     "kind": "item picked up",
+     "day": 3.13,
+     "actor": "wolf-ash",
+     "item": "wool_hood",
+     "cell": "w_ridgemere_11_5",
+     "quantity": 1
+    },
+    {
+     "id": "e29",
+     "kind": "hour",
+     "day": 3.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e30",
+     "kind": "hour",
+     "day": 3.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e31",
+     "kind": "quest accepted",
+     "day": 4,
+     "actor": "wolf-birch",
+     "detail": "foldnight",
+     "target": "run"
+    },
+    {
+     "id": "e32",
+     "kind": "hour",
+     "day": 4.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_5",
+        "x": 65,
+        "y": 220,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e33",
+     "kind": "hour",
+     "day": 4.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e34",
+     "kind": "hour",
+     "day": 4.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e35",
+     "kind": "hour",
+     "day": 5.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_5",
+        "x": 65,
+        "y": 220,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e36",
+     "kind": "bandit falls",
+     "day": 5.11,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e37",
+     "kind": "bandit falls",
+     "day": 5.111,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e38",
+     "kind": "bandit falls",
+     "day": 5.112,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e39",
+     "kind": "camp cleared",
+     "day": 5.12,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e40",
+     "kind": "item picked up",
+     "day": 5.13,
+     "actor": "wolf-birch",
+     "item": "wool_hood",
+     "cell": "w_ridgemere_11_5",
+     "quantity": 1
+    },
+    {
+     "id": "e41",
+     "kind": "hour",
+     "day": 5.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e42",
+     "kind": "hour",
+     "day": 5.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e43",
+     "kind": "day begins",
+     "day": 10.5,
+     "detail": "Dawnday",
+     "item": "autumn",
+     "quantity": 3
+    },
+    {
+     "id": "e44",
+     "kind": "quest accepted",
+     "day": 11,
+     "actor": "wolf-ash",
+     "detail": "foldnight",
+     "target": "run"
+    },
+    {
+     "id": "e45",
+     "kind": "hour",
+     "day": 11.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e46",
+     "kind": "hour",
+     "day": 11.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e47",
+     "kind": "hour",
+     "day": 11.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e48",
+     "kind": "hour",
+     "day": 12.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e49",
+     "kind": "bandit falls",
+     "day": 12.11,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e50",
+     "kind": "bandit falls",
+     "day": 12.111,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e51",
+     "kind": "bandit falls",
+     "day": 12.112,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e52",
+     "kind": "camp cleared",
+     "day": 12.12,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e53",
+     "kind": "item picked up",
+     "day": 12.13,
+     "actor": "wolf-ash",
+     "item": "wool_hood",
+     "cell": "w_ridgemere_11_5",
+     "quantity": 1
+    },
+    {
+     "id": "e54",
+     "kind": "hour",
+     "day": 12.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e55",
+     "kind": "hour",
+     "day": 12.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e56",
+     "kind": "quest accepted",
+     "day": 12.5,
+     "actor": "wolf-ash",
+     "detail": "brown_spare",
+     "target": "run"
+    },
+    {
+     "id": "e57",
+     "kind": "region entered",
+     "day": 12.52,
+     "actor": "wolf-ash",
+     "target": "high_fold",
+     "cell": "w_ridgemere_12_4",
+     "x": 180,
+     "y": 200
+    },
+    {
+     "id": "e58",
+     "kind": "quest accepted",
+     "day": 12.6,
+     "actor": "wolf-birch",
+     "detail": "brown_spare",
+     "target": "run"
+    },
+    {
+     "id": "e59",
+     "kind": "region entered",
+     "day": 12.62,
+     "actor": "wolf-birch",
+     "target": "high_fold",
+     "cell": "w_ridgemere_12_4",
+     "x": 180,
+     "y": 200
+    },
+    {
+     "id": "e60",
+     "kind": "hour",
+     "day": 12.9,
+     "detail": "20",
+     "quantity": 20,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_12_4",
+        "x": 180,
+        "y": 200
+       },
+       "wolf-birch": {
+        "cell": "w_ridgemere_12_4",
+        "x": 180,
+        "y": 200
+       }
+      }
+     }
+    },
+    {
+     "id": "e61",
+     "kind": "hour",
+     "day": 13.9,
+     "detail": "20",
+     "quantity": 20
+    },
+    {
+     "id": "e62",
+     "kind": "gift",
+     "day": 14.0,
+     "actor": "wolf-ash",
+     "target": "cty_vale_pikebridge",
+     "item": "salt",
+     "quantity": 2
+    },
+    {
+     "id": "e63",
+     "kind": "gift",
+     "day": 14.0,
+     "actor": "wolf-birch",
+     "target": "cty_vale_pikebridge",
+     "item": "salt",
+     "quantity": 2
+    },
+    {
+     "id": "e64",
+     "kind": "quest accepted",
+     "day": 14.1,
+     "actor": "wolf-cedar",
+     "detail": "brown_hunt",
+     "target": "run"
+    },
+    {
+     "id": "e65",
+     "kind": "clock",
+     "day": 16.5
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_spared"
+   ],
+   "expectQuests": {
+    "brown_spare": {
+     "wolf-ash": "done",
+     "wolf-birch": "done"
+    }
+   },
+   "expectVariables": {
+    "world": {
+     "lq_brown": "spared"
+    },
+    "story": {
+     "t_spare": 2,
+     "t_hunt": 0
+    },
+    "player": {
+     "wolf-ash": {
+      "folds": 2
+     },
+     "wolf-birch": {
+      "lq_thin": true
+     }
+    }
+   }
+  },
+  {
+   "name": "Nobody takes a road: the Old Brown is spared",
+   "cohort": [],
+   "events": [
+    {
+     "id": "e1",
+     "kind": "quest accepted",
+     "day": 1.0,
+     "actor": "wolf-ash",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e2",
+     "kind": "conversation",
+     "day": 1.01,
+     "actor": "wolf-ash",
+     "target": "tn_lf_juniper_larkcombe"
+    },
+    {
+     "id": "e3",
+     "kind": "region entered",
+     "day": 1.02,
+     "actor": "wolf-ash",
+     "target": "greytarn",
+     "cell": "w_ridgemere_13_3",
+     "x": 210,
+     "y": 80
+    },
+    {
+     "id": "e4",
+     "kind": "conversation",
+     "day": 1.03,
+     "actor": "wolf-ash",
+     "target": "cty_stone_acorndell"
+    },
+    {
+     "id": "e5",
+     "kind": "region entered",
+     "day": 1.04,
+     "actor": "wolf-ash",
+     "target": "pass_camp",
+     "cell": "w_ridgemere_8_6",
+     "x": 10,
+     "y": 10
+    },
+    {
+     "id": "e6",
+     "kind": "quest handed in",
+     "day": 1.05,
+     "actor": "wolf-ash",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e7",
+     "kind": "quest accepted",
+     "day": 1.1,
+     "actor": "wolf-birch",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e8",
+     "kind": "conversation",
+     "day": 1.11,
+     "actor": "wolf-birch",
+     "target": "tn_lf_juniper_larkcombe"
+    },
+    {
+     "id": "e9",
+     "kind": "region entered",
+     "day": 1.12,
+     "actor": "wolf-birch",
+     "target": "greytarn",
+     "cell": "w_ridgemere_13_3",
+     "x": 210,
+     "y": 80
+    },
+    {
+     "id": "e10",
+     "kind": "conversation",
+     "day": 1.13,
+     "actor": "wolf-birch",
+     "target": "cty_stone_acorndell"
+    },
+    {
+     "id": "e11",
+     "kind": "region entered",
+     "day": 1.14,
+     "actor": "wolf-birch",
+     "target": "pass_camp",
+     "cell": "w_ridgemere_8_6",
+     "x": 10,
+     "y": 10
+    },
+    {
+     "id": "e12",
+     "kind": "quest handed in",
+     "day": 1.15,
+     "actor": "wolf-birch",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e13",
+     "kind": "quest accepted",
+     "day": 1.2,
+     "actor": "wolf-cedar",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e14",
+     "kind": "conversation",
+     "day": 1.21,
+     "actor": "wolf-cedar",
+     "target": "tn_lf_juniper_larkcombe"
+    },
+    {
+     "id": "e15",
+     "kind": "region entered",
+     "day": 1.22,
+     "actor": "wolf-cedar",
+     "target": "greytarn",
+     "cell": "w_ridgemere_13_3",
+     "x": 210,
+     "y": 80
+    },
+    {
+     "id": "e16",
+     "kind": "conversation",
+     "day": 1.23,
+     "actor": "wolf-cedar",
+     "target": "cty_stone_acorndell"
+    },
+    {
+     "id": "e17",
+     "kind": "region entered",
+     "day": 1.24,
+     "actor": "wolf-cedar",
+     "target": "pass_camp",
+     "cell": "w_ridgemere_8_6",
+     "x": 10,
+     "y": 10
+    },
+    {
+     "id": "e18",
+     "kind": "quest handed in",
+     "day": 1.25,
+     "actor": "wolf-cedar",
+     "item": "cty_jessamy_greyford",
+     "detail": "wool",
+     "target": "run"
+    },
+    {
+     "id": "e19",
+     "kind": "quest accepted",
+     "day": 2,
+     "actor": "wolf-ash",
+     "detail": "foldnight",
+     "target": "run"
+    },
+    {
+     "id": "e20",
+     "kind": "hour",
+     "day": 2.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e21",
+     "kind": "hour",
+     "day": 2.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e22",
+     "kind": "hour",
+     "day": 2.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e23",
+     "kind": "hour",
+     "day": 3.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e24",
+     "kind": "bandit falls",
+     "day": 3.11,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e25",
+     "kind": "bandit falls",
+     "day": 3.111,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e26",
+     "kind": "bandit falls",
+     "day": 3.112,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e27",
+     "kind": "camp cleared",
+     "day": 3.12,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e28",
+     "kind": "item picked up",
+     "day": 3.13,
+     "actor": "wolf-ash",
+     "item": "wool_hood",
+     "cell": "w_ridgemere_11_5",
+     "quantity": 1
+    },
+    {
+     "id": "e29",
+     "kind": "hour",
+     "day": 3.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e30",
+     "kind": "hour",
+     "day": 3.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e31",
+     "kind": "quest accepted",
+     "day": 4,
+     "actor": "wolf-birch",
+     "detail": "foldnight",
+     "target": "run"
+    },
+    {
+     "id": "e32",
+     "kind": "hour",
+     "day": 4.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e33",
+     "kind": "hour",
+     "day": 4.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e34",
+     "kind": "hour",
+     "day": 4.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e35",
+     "kind": "hour",
+     "day": 5.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-birch": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e36",
+     "kind": "bandit falls",
+     "day": 5.11,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e37",
+     "kind": "bandit falls",
+     "day": 5.111,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e38",
+     "kind": "bandit falls",
+     "day": 5.112,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e39",
+     "kind": "camp cleared",
+     "day": 5.12,
+     "actor": "wolf-birch",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e40",
+     "kind": "item picked up",
+     "day": 5.13,
+     "actor": "wolf-birch",
+     "item": "wool_hood",
+     "cell": "w_ridgemere_11_5",
+     "quantity": 1
+    },
+    {
+     "id": "e41",
+     "kind": "hour",
+     "day": 5.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e42",
+     "kind": "hour",
+     "day": 5.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e43",
+     "kind": "quest accepted",
+     "day": 6,
+     "actor": "wolf-cedar",
+     "detail": "foldnight",
+     "target": "run"
+    },
+    {
+     "id": "e44",
+     "kind": "hour",
+     "day": 6.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e45",
+     "kind": "hour",
+     "day": 6.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e46",
+     "kind": "hour",
+     "day": 6.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e47",
+     "kind": "hour",
+     "day": 7.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-cedar": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e48",
+     "kind": "bandit falls",
+     "day": 7.11,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e49",
+     "kind": "bandit falls",
+     "day": 7.111,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e50",
+     "kind": "bandit falls",
+     "day": 7.112,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e51",
+     "kind": "camp cleared",
+     "day": 7.12,
+     "actor": "wolf-cedar",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e52",
+     "kind": "item picked up",
+     "day": 7.13,
+     "actor": "wolf-cedar",
+     "item": "wool_hood",
+     "cell": "w_ridgemere_11_5",
+     "quantity": 1
+    },
+    {
+     "id": "e53",
+     "kind": "hour",
+     "day": 7.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e54",
+     "kind": "hour",
+     "day": 7.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e55",
+     "kind": "day begins",
+     "day": 10.5,
+     "detail": "Dawnday",
+     "item": "autumn",
+     "quantity": 3
+    },
+    {
+     "id": "e56",
+     "kind": "quest accepted",
+     "day": 11,
+     "actor": "wolf-ash",
+     "detail": "foldnight",
+     "target": "run"
+    },
+    {
+     "id": "e57",
+     "kind": "hour",
+     "day": 11.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e58",
+     "kind": "hour",
+     "day": 11.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e59",
+     "kind": "hour",
+     "day": 11.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e60",
+     "kind": "hour",
+     "day": 12.1,
+     "detail": "2",
+     "quantity": 2,
+     "facts": {
+      "wolves": {
+       "wolf-ash": {
+        "cell": "w_ridgemere_11_5",
+        "x": 20,
+        "y": 245,
+        "partySize": 1
+       }
+      }
+     }
+    },
+    {
+     "id": "e61",
+     "kind": "bandit falls",
+     "day": 12.11,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e62",
+     "kind": "bandit falls",
+     "day": 12.111,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e63",
+     "kind": "bandit falls",
+     "day": 12.112,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e64",
+     "kind": "camp cleared",
+     "day": 12.12,
+     "actor": "wolf-ash",
+     "target": "camp_story_1",
+     "cell": "w_ridgemere_11_5"
+    },
+    {
+     "id": "e65",
+     "kind": "item picked up",
+     "day": 12.13,
+     "actor": "wolf-ash",
+     "item": "wool_hood",
+     "cell": "w_ridgemere_11_5",
+     "quantity": 1
+    },
+    {
+     "id": "e66",
+     "kind": "hour",
+     "day": 12.14,
+     "detail": "3",
+     "quantity": 3
+    },
+    {
+     "id": "e67",
+     "kind": "hour",
+     "day": 12.5,
+     "detail": "12",
+     "quantity": 12
+    },
+    {
+     "id": "e68",
+     "kind": "clock",
+     "day": 20
+    }
+   ],
+   "expect": [
+    "open",
+    "reckoning",
+    "after_spared"
+   ],
+   "expectVariables": {
+    "world": {
+     "lq_brown": "spared",
+     "lq_rustlers": "grey"
+    }
+   }
+  }
+ ]
+}
