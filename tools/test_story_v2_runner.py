@@ -555,6 +555,37 @@ class Casting(unittest.TestCase):
         self.assertIsNone(self.pick(job='carter', faction='house_greatly'), 'no House claims their work')
         self.assertEqual(self.pick(job='carter', town='larkfield'), self.pick(job='carter', town='larkfield'), 'the same seed, the same')
 
+    def test_by_house(self):
+        # (Review of Phase 9: a House's residents are its members and those whose work place it claims first, as the game
+        # sorts a place's claims.)
+        c = self.conn
+        c.execute('RESET ROLE')
+        for faction, name in (('house_greatly', 'House Greatly'), ('house_zed', 'House Zed'), ('house_fell', 'House Fell')):
+            c.execute('INSERT INTO live.factions(world_id,id,name) VALUES (%s,%s,%s)', (self.world, faction, name))
+        c.execute("INSERT INTO live.faction_claims(world_id,faction_id,area) VALUES (%s,'house_zed','lark-row'),(%s,'house_greatly','lark-row')",
+                  (self.world,) * 2)
+        c.execute("INSERT INTO live.faction_members(world_id,faction_id,npc_id) VALUES (%s,'house_fell','cst_cold')", (self.world,))
+        c.execute('SET LOCAL ROLE ratw_dm')
+        self.assertEqual(self.pick(job='carter', faction='house_greatly'), 'cst_far', 'their work place is claimed by Greatly first')
+        self.assertIsNone(self.pick(job='carter', faction='house_zed'), 'Zed claims it too, but not first')
+        self.assertEqual(self.pick(faction='house_fell'), 'cst_cold', 'a member')
+        self.assertIsNone(self.pick(job='baker', faction='house_greatly'))
+
+    def nearest_in_a_run(self, cell, x, y):
+        run = self.launch('cast-carter')
+        self.answer()
+        self.fact('conversation', ASH, 'rm112', cell=cell, x=x, y=y)
+        self.tick()
+        return self.conn.execute('SELECT state FROM dm.story_releases WHERE id=%s', (run,)).fetchone()[0]['counters']['story']['carter']
+
+    def test_a_run_casts_the_carter_nearest_the_wolf_on_the_row(self):
+        # (Review of Phase 9: the fact's own place, with no world facts asked for.)
+        self.assertEqual(rules.watch_of(rules.validate(cast_program())).get('facts'), None, 'the casting asks for no facts')
+        self.assertEqual(self.nearest_in_a_run('lark-row', 19, 19), 'cst_far')
+
+    def test_a_run_casts_the_carter_nearest_the_wolf_in_the_yard(self):
+        self.assertEqual(self.nearest_in_a_run('lark-yard', 3, 3), 'cst_near')
+
     def test_a_run_casts_in_its_turn_and_offers_the_quest_there(self):
         run = self.launch('cast-carter')
         self.answer()

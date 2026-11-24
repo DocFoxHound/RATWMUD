@@ -395,6 +395,32 @@ void firstInLine()
            "the baker, first in line, comes for the docker's post: " + (arrivals.empty() ? std::string("nobody") : arrivals[0].templateId));
     expect(s.fills().count("first in line, by a story") && !s.fills().count("from the Country"), "first in line, not the Country's choice");
     expect(s.state().careers.queued.empty(), "and the line is empty again");
+    // (Review of Phase 9: one first in line no longer of an age to work leaves the line, and the next is sent for.)
+    Society t(Roster::None);
+    t.configure(docks(false));
+    Fates g;
+    auto world2 = [&] {
+        auto w = g.world(t);
+        w.townOf = [](const std::string&) { return std::string("docks"); };
+        return w;
+    };
+    t.tendCareers(1.3, world2());
+    auto line = t.state();
+    line.careers.queued["docks"] = {"cty_old", "tn_baker"};
+    expect(t.restore(line), "a line with the old first");
+    g.dead.insert("ivar");
+    t.died("ivar", 1.5);
+    arrivals.clear();
+    for (int day = 2; day <= 20 && arrivals.empty(); ++day)
+    {
+        t.tendCareers(day + .3, world2());
+        for (auto& r : t.takeRequests())
+            if (r.kind == "arrival")
+                arrivals.push_back(r);
+    }
+    expect(arrivals.size() == 1 && arrivals[0].templateId == "tn_baker",
+           "the old one leaves the line; the baker behind them comes: " + (arrivals.empty() ? std::string("nobody") : arrivals[0].templateId));
+    expect(t.state().careers.queued.empty(), "nobody left in line");
 }
 
 // Doc 79, 6.3: a post's kind and class without the city's loop (postKind, postRules in RatwCareers.cpp: city_loop.json's

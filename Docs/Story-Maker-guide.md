@@ -454,11 +454,13 @@ rule above ends the quest when the carter dies.
 - **A House's purse** (`house:greatly`, or by the faction's id, `house:house_greatly`): filled once a game day by the
   House's own businesses (the posts whose work place the House claims), a tenth of what each till holds over 80 pennies,
   2,500 at most; it pays what it holds and never more. It is behind a **world switch**, `storyHousePurses`, **off** on every
-  world until its owner turns it on (op `house-purses`): while it is off no money moves to a House and approval refuses a
+  world until its owner turns it on (**Campaigns → House purses…**, with a reason; op `house-purses`), and off again in a
+  world given to someone else: while it is off no money moves to a House and approval refuses a
   `house:` purse ("House purses are off in this world"). It moves money each day, so it waits on the economy check. Until
   then pay from the treasury, a town, or a House business's own till (for Greatly, `till:job:rm_eleanor_saltcot`).
 - **A plain cap on the coin** (`"rewardLimit": {"perDay": 2, "scope": "quest"}`, the quest editor's **Coin rewards a game
-  day, at most**): after 2 coin rewards in a game day the rest are given without their coin (the rewards' other effects, a
+  day, at most**): after 2 hand-ins with coin in a game day the rest are given without their coin (one hand-in counts once:
+  its rewards, its bonus and every wolf of a party; the rewards' other effects, a
   greeting, a deed, still come; the timeline's reward notes say why). `"scope": "purse"` counts every quest of the story
   that pays from the same purse. It is the shorthand of the one purse rule (decisions 3.2): where the story declares them,
   each coin paid is added to the world number `coin_<purse>_day` (`coin_ridgemere_day`, `coin_till_eleanor_saltcot_day`)
@@ -765,6 +767,8 @@ talk of **the story itself**: the director's `story` topic (news, as a death or 
 `scene talk.story` with `[topic.story=nh world.mem.nh_stage=reckoning]`. It opens only where the library has `talk.story`
 scenes, so a town whose library has none (the talk town of the tests) never hears it, and it closes when the run ends or
 its keys are forgotten. Until such scenes are written, the campaign rides `news`, `gossip` or `day`, gated on `world.mem.nh_*`.
+Whoever writes the first ones adds `talk.story` to `Data/Talk/settings.json`'s concepts (the library refuses a concept it
+declares with nothing written for it).
 
 **Rumours** (`belief.plant`): a number of residents of a town (living, placed, never the one it is about; the same ones each
 time, by the run's seed) come to believe a phrase of a resident, as if they had heard it: gossip tells it ("Ingrid Kendrick
@@ -874,8 +878,10 @@ campaigns", with a reason).
 
 **Put an unplaced resident first in line** (`npc.queue`, a builder or the owner) names a resident the world knows but who
 has no home yet (one of the Country's) to take **the next post that falls vacant in a town**, by the careers book's rules:
-when a post there that pays has stood empty its eight days, they are sent for before anyone the rules would choose (of any
-class), and come in from the Country to take it. It never makes a vacancy, and nobody new is made. Lasting; refused at
+when a post there that pays has stood empty its eight days with nobody of the town to take it (an apprentice, a master,
+kin, a local or the best trained come first), they are sent for before the city's wolves and the Country's choice (of any
+class), and come in from the Country to take it. One who cannot come yet (no home in reach) keeps their place while the
+next in line is tried; one placed since, or now past working age, leaves the line. It never makes a vacancy, and nobody new is made. Lasting; refused at
 approval for a resident who has a place already, and by the game for one too young or too old to take up a post. Named
 again, they are first again; named for another town, they move there.
 
@@ -891,7 +897,9 @@ the wolf, `target` the resident, `item` `beside` and `quantity` the spells, once
 
 **A mantle given back.** A mantle a story binds (`mantle.assign`) is laid down when the story ends, or when it lays it down
 itself (`mantle.release`), and **the mantle the resident wore before is theirs again** (none before: they wear none). A
-mantle passed on to someone else since cannot come back: theirs is laid down instead.
+mantle passed on to someone else since cannot come back: theirs is laid down instead. One who no longer wears the story's
+mantle (a Dungeon Master bound them another since) is left as they are; and where two stories bound one resident in turn,
+the end of both gives back what they wore before either, whichever ends first.
 
 ## 9. Rehearsing
 
@@ -6195,7 +6203,7 @@ Reads: **rm111** takes the post **job:rm112**; whoever held it gives it up
 
 <a id="effect-npc-queue"></a>**`npc.queue`**: Put an unplaced resident first in line (needs a builder)
 
-An unplaced resident (one the world knows but who has no home yet) takes the next vacancy in that town by the careers rules, before anyone the rules would choose. It never makes a vacancy, and nobody new is made. Lasting: never undone. Refused for a resident with a place, or one too young or too old to take up a post.
+An unplaced resident (one the world knows but who has no home yet) takes the next vacancy in that town that nobody of the town takes (an apprentice, a master, kin, a local or the best trained come first), before the city's wolves and the Country. It never makes a vacancy, and nobody new is made. Lasting: never undone. Refused for a resident with a place, or one too young or too old to take up a post.
 
 Reads: **cty_fisher** is first in line for the next post that falls vacant in **greyfen**
 

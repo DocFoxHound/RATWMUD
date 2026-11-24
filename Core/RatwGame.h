@@ -2650,13 +2650,14 @@ class Game
     // Doc 86, M3: House purses (house:<faction>, the account purse:<faction>), each filled once a game day by a share of
     // its businesses' tills (the posts whose work place the House claims): HouseShare percent of what a till holds over
     // HouseTillFloat, the purse holding at most HousePurseMost. Behind the world switch storyHousePurses (off: no money
-    // moves and a house: purse pays nothing), set by the owner's story.house-purses on|off and kept in the checkpoint.
+    // moves and a house: purse pays nothing), set by the owner's story.house_purses on|off and kept in the checkpoint.
     static constexpr std::int64_t HouseShare = 10, HouseTillFloat = 80, HousePurseMost = 2500;
     bool storyHousePurses() const { return storyHousePurses_; }
     std::string housePurseFaction(const std::string& purse) const;   // house:<x> -> the House's faction id ("" none).
   private:
     bool storyHousePurses_ = false;
-    std::int64_t housePurseDay_ = -1;
+    std::int64_t housePurseDay_ = -1;               // (Saved: the game day the Houses last took their share.)
+    std::int64_t storyTopicsDay_ = -1;              // (Doc 86, T6: the story topic looked at again once a game day.)
     void tendHousePurses();
   public:
     // Doc 86, C1b: a story's words with the name tokens its engines put in ({@w:<wolf>}, {@r:<resident>}, {@p:<place>},
@@ -2717,9 +2718,14 @@ class Game
     void noteStoryHeld(const json::Value& payload, const char* key, const std::string& id);   // (A stranger.)
     // Doc 86, C15: a mantle a story binds is kept with it as {npc: the mantle they wore before, or ""} (held.mantles; how it
     // was bound in held.mantleHow), and given back when the story ends or lays it down itself (putBackMantle).
-    void noteStoryMantle(const json::Value& payload, const std::string& npc, const std::string& before, const std::string& how);
-    Result putBackMantle(const std::string& npc, const std::string& before, const std::string& how);
-    bool storyBoundMantle(const json::Value& payload, const std::string& npc, std::string& before, std::string& how);
+    // After review: with what it bound (held.mantleBound), put back only while they still wear it; a later story's binding
+    // over it takes the "before" on (handOnStoryMantle).
+    void noteStoryMantle(const json::Value& payload, const std::string& npc, const std::string& before, const std::string& how,
+                         const std::string& bound);
+    Result putBackMantle(const std::string& npc, const std::string& before, const std::string& how, const std::string& bound = {});
+    bool storyBoundMantle(const json::Value& payload, const std::string& npc, std::string& before, std::string& how, std::string& bound);
+    bool handOnStoryMantle(const std::string& run, const std::string& npc, const std::string& before, const std::string& how,
+                           const std::string& bound);
     // Doc 86, Phase 1b (RatwGameStoryWorld.cpp): residents a story spares from old age or protects for a while (C11), and
     // what residents remember and come to believe from a story (C8, T7).
     std::map<std::string, std::map<std::string, std::set<std::string>>> storyHolds_;   // kind -> npc -> owners

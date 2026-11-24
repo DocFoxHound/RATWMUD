@@ -2800,9 +2800,12 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                                 raise DMError("Letting a sentenced resident go on this world needs its owner, or the owner's "
                                               '"may steer campaigns" for your account.', 403)
                             result = story_runner.release_sentence(conn, world, who['username'], data)
+                        elif op == 'house-purses-state':   # (Doc 86, M3: the switch, each House's purse; a read.)
+                            result = story_runner.house_purses_state(conn, world)
                         elif op == 'house-purses':
-                            # (Doc 86, M3: the world switch for House purses moves money each day: the owner's alone.)
-                            if who['role'] != 'owner':
+                            # (Doc 86, M3: the world switch for House purses moves money each day: the owner's alone, or
+                            # the studio's admin, who outranks an owner.)
+                            if RANK[who['role']] < RANK['owner']:
                                 raise DMError("Turning House purses on or off is the world owner's.", 403)
                             result = story_runner.house_purses(conn, world, who['username'], data)
                         elif op == 'campaign-release':

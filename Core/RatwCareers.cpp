@@ -1228,25 +1228,29 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
             if (auto line = c.queued.find(town); line != c.queued.end())
             {
                 auto& who = line->second;
-                while (!who.empty() && !sent)
+                for (auto it = who.begin(); it != who.end() && !sent;)
                 {
-                    const auto id = who.front();
+                    const auto id = *it;
                     ResidentRequest r;
-                    const bool waiting = unplaced(id) != nullptr;   // (The unplaced are not in the world: none dies.)
-                    if (waiting && std::any_of(requests_.begin(), requests_.end(), [&](const ResidentRequest& q) { return q.templateId == id; }))
+                    const auto* u = unplaced(id);   // (The unplaced are not in the world: none dies.)
+                    if (!u || u->age >= retireAge(id))
+                    {
+                        it = who.erase(it);         // (Placed since, or now past working age: no longer in line.)
+                        continue;
+                    }
+                    if (std::any_of(requests_.begin(), requests_.end(), [&](const ResidentRequest& q) { return q.templateId == id; }))
                         break;                      // (Sent for already: it waits for them to arrive.)
-                    if (waiting && arrivalFor(p, ps, world, 0, r, id))
+                    if (arrivalFor(p, ps, world, 0, r, id))
                     {
                         arrivalMantle(r, now, world);
                         requests_.push_back(r);
                         ++fills_["first in line, by a story"];
                         notes.push_back({"arrival sent for", r.templateId, ps.lastHolder, p.title + ": first in line"});
                         sent = true;
+                        who.erase(it);
+                        break;
                     }
-                    if (!waiting || sent)
-                        who.erase(who.begin());
-                    else
-                        break;                      // (No home for them in reach today: they keep their place.)
+                    ++it;                           // (No home for them in reach today: they keep their place; the next is tried.)
                 }
                 if (who.empty())
                     c.queued.erase(line);

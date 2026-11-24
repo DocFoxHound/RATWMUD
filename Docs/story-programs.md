@@ -613,11 +613,15 @@ and none is paid while the world switch `coin_<purse>_ok` is off (`story_quests.
 approval refuses a resident with a place (home or work) in `dm.story_residents` and an unknown town. The game's
 `Society::queueResident` (through `World::queueResident`) keeps `careers.queued[town]` (saved with the careers); at a vacancy
 of that town's that pays, at its eight days, `tendCareers` sends for the first in line (`arrivalFor` with `only`, of any
-class) before the city's wolves and the Country's choice ("first in line, by a story"). Lasting.
+class) before the city's wolves and the Country's choice ("first in line, by a story"); one placed since or now past working
+age leaves the line, and one with no home in reach keeps their place while the next is tried. Lasting.
 
 **Mantles given back** (C15): `held.mantles` is `{npc: the mantle worn before, or ""}` (and `held.mantleHow`, how it was
 bound); an older save's list is read as `{npc: ""}`. `endStoryWorld`, and the story's own `mantle.release`, call
 `Game::putBackMantle`: the mantle before bound again (`assignMantle` with its `how`), or the story's released.
+`held.mantleBound` keeps what the story bound last: it is put back only while the resident still wears that (one the DM
+bound since is left as it is), and where another live story bound over it (its "before" is this story's mantle),
+`Game::handOnStoryMantle` gives that story this one's "before" instead, so the end of both leaves what was worn before either.
 
 **A paw at a resident's work** (SQ3): `World::lendAPaw` to a resident at their own post (`besideWorkAt`: not farm work or a
 bench) starts the activity `beside` (`Data/Together/patterns.json`, `at` post): beats by the clock, no practice, no
@@ -627,9 +631,11 @@ once a game day for the pair.
 **House purses** (M3): a purse `house:<faction>` (or `house:<name>` for `house_<name>`) is the account `purse:<faction>`
 (a new facility prefix, staged, never topped up), filled once a game day by `Game::tendHousePurses` from the tills of the
 posts whose work cell the House claims first (`HouseShare` 10% of what a till holds over `HouseTillFloat` 80, the purse at
-most `HousePurseMost` 2,500). Behind the world switch `storyHousePurses` (the game's `story.house-purses on|off`, the
-owner's op `house-purses`, audited; kept in the checkpoint as `people.storyHousePurses`): off, nothing moves, the purse maps
-to no account, and approval refuses `house:` purses.
+most `HousePurseMost` 2,500). Behind the world switch `storyHousePurses` (the game's `story.house_purses on|off`, the
+owner's op `house-purses`, audited; kept in the checkpoint as `people.storyHousePurses`, with the day the Houses last took
+their share as `people.storyHousePurseDay`, so a restart or off-and-on the same day takes none again; the world packager
+drops both, so a world given away starts off): off, nothing moves, the purse maps to no account, and approval refuses
+`house:` purses. The console's read `house-purses-state` gives the switch as last saved and each House's purse.
 
 **The `story` topic** (T6): `Data/Talk/topics.json`'s `story` (news, base 2.2); the director weighs it once for each prefix
 of a live story's realm memory keys (`Game::storyTopicsChanged` → `World::setStoryTopics`), only when the library has

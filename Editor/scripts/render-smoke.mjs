@@ -139,7 +139,7 @@ print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), '
         'Campaigns (open audience)': ['open · 3 of 5000'],
         // (Doc 85, Phase 10: chapters, the world's variables, the guide.)
         'Campaigns (chapters)': ['The long winter', '3 chapters · 1 done · now: Ninety days on the winter ferries (ferry-watch)', '✔ 1. The muster',
-            '○ 3. The spring council', 'World variables…', 'Sentences…', 'New campaign…'],
+            '○ 3. The spring council', 'World variables…', 'Sentences…', 'House purses…', 'New campaign…'],
         'Campaigns (a chapter)': ['Chapter 2 of 3 of', 'The long winter', '“The spring council” for this story&#x27;s wolves, carrying its variables, when this story has ended'.replace('“', '"').replace('”', '"').replace(/"/g, '&quot;')],
         // (Doc 86, Phase 1a: readiness.)
         'Campaigns (ready)': ['Readiness', 'Ready to advance to deep-freeze (since day 93)', '42 of 118 active wolves (35%); 35% and at least 5 needed, 150 always enough',
@@ -150,6 +150,7 @@ print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), '
             '+ Declare a world variable…', 'one more crossed at dawn'],
         'Realm variables': ['Per wolf', 'nh_voice', 'Act II: the Turn (running)', '✎ Set…', 'a howl the game missed', 'Declared by the world&#x27;s stories'],
         'Sentences': ['Ilse Coalley, held at The Keep, below by lq-wreckers-light: 4.3 of 7 days left', 'Release now…'],
+        'House purses': ['House purses are <b>off</b>', 'House Greatly: no purse yet', 'House Fell: 42 pennies in its purse', 'Turn House purses on…'],
         'Guide': ['A small quest in five minutes', 'Building a campaign', 'What the game undoes when a run ends', 'Why not?', 'story.start',
             'Reference: every event, condition, action and effect', 'near resident'],
         'Guide (search)': ['of the guide mention', 'purse crossed', 'Show the whole guide'],

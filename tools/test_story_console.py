@@ -413,5 +413,50 @@ class ReadinessInTheConsole(ReadyFixture, unittest.TestCase):
         self.assertIn('ready, and the admin agrees', audit)
 
 
+@unittest.skipUnless(database_available(), 'local PostgreSQL required')
+class HousePursesRoute(unittest.TestCase):
+    """Doc 86, M3 (review of Phase 9): the world switch for House purses through POST /api/story-program: read by a Dungeon
+    Master, turned on and off by the owner (or the studio's admin) alone, audited, and sent to the game as an order
+    dm.actions takes (story.house_purses: its kinds have no hyphen)."""
+
+    @classmethod
+    def setUpClass(cls):
+        ConsoleRoute.setUpClass.__func__(cls)
+        with admin(cls.name) as owner:
+            owner.execute('SET ROLE ratw_dm')
+            D.create_account(owner, 'camp-owner', 'owner', 'a long owner password')
+            D.create_account(owner, 'camp-admin', 'admin', 'a long admin password')
+            owner.execute('RESET ROLE')
+            owner.execute("INSERT INTO live.factions(world_id,id,name) VALUES (%s,'house_greatly','House Greatly'),(%s,'council','The Council')",
+                          (cls.world, cls.world))
+
+    tearDownClass = classmethod(ConsoleRoute.tearDownClass.__func__)
+    call, token = ConsoleRoute.call, ConsoleRoute.token
+
+    def test_the_owner_turns_house_purses_on_and_off(self):
+        dm = self.token('camp-dm', 'a long dm password')
+        status, state = self.call('/api/story-program', {'op': 'house-purses-state', 'target': 'dev'}, dm)
+        self.assertEqual(status, 200, state)
+        self.assertEqual((state['on'], state['houses']), (False, [{'id': 'house_greatly', 'name': 'House Greatly', 'purse': None}]))
+        status, refused = self.call('/api/story-program', {'op': 'house-purses', 'target': 'dev', 'on': True, 'reason': 'the check passed'}, dm)
+        self.assertEqual(status, 403, refused)
+        owner = self.token('camp-owner', 'a long owner password')
+        status, bad = self.call('/api/story-program', {'op': 'house-purses', 'target': 'dev', 'on': 'yes', 'reason': 'the check passed'}, owner)
+        self.assertEqual(status, 422, bad)
+        status, out = self.call('/api/story-program', {'op': 'house-purses', 'target': 'dev', 'on': True, 'reason': 'the check passed'}, owner)
+        self.assertEqual(status, 200, out)
+        self.assertEqual((out['on'], out['houses'], out['saved']), (True, ['house_greatly'], False))
+        with admin(self.name) as conn:
+            order = conn.execute('SELECT kind,target_id,requested_by FROM dm.actions WHERE id=%s', (out['receipt'],)).fetchone()
+            self.assertEqual(order, ('story.house_purses', 'on', 'camp-owner'))
+            audit = conn.execute("SELECT target,detail,who FROM dm.audit WHERE action='story.house-purses'").fetchall()
+            self.assertEqual(audit, [('on', 'House purses on. Reason: "the check passed"', 'camp-owner')])
+        admin_ = self.token('camp-admin', 'a long admin password')
+        status, out = self.call('/api/story-program', {'op': 'house-purses', 'target': 'dev', 'on': False, 'reason': 'not yet after all'}, admin_)
+        self.assertEqual(status, 200, out)
+        status, state = self.call('/api/story-program', {'op': 'house-purses-state', 'target': 'dev'}, dm)
+        self.assertEqual([a['on'] for a in state['audit']], [False, True], 'newest first')
+
+
 if __name__ == '__main__':
     unittest.main()

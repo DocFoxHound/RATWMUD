@@ -11663,7 +11663,7 @@
    "title": "Put an unplaced resident first in line",
    "needsBuilder": true,
    "sentence": "{npc} is first in line for the next post that falls vacant in {town}",
-   "help": "An unplaced resident (one the world knows but who has no home yet) takes the next vacancy in that town by the careers rules, before anyone the rules would choose. It never makes a vacancy, and nobody new is made. Lasting: never undone. Refused for a resident with a place, or one too young or too old to take up a post.",
+   "help": "An unplaced resident (one the world knows but who has no home yet) takes the next vacancy in that town that nobody of the town takes (an apprentice, a master, kin, a local or the best trained come first), before the city's wolves and the Country. It never makes a vacancy, and nobody new is made. Lasting: never undone. Refused for a resident with a place, or one too young or too old to take up a post.",
    "params": [
     {
      "key": "npc",

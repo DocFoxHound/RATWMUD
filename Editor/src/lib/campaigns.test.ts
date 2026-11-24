@@ -521,3 +521,12 @@ test('doc 86, Phase 8: a sentence in words, with the days left', () => {
     assert.equal(sentenceLine({...s, left: 0}), 'Ilse Coalley, held at The Keep, below by lq-wreckers-light: served (let go at the next moment)');
     assert.equal(sentenceLine({...s, placeName: '', by: '', days: 1, left: 1}), 'Ilse Coalley, held at r2_the_keep_down by world-1: 1 of 1 day left');
 });
+
+// ----- Doc 86, Phase 9 (after review): a House's purse in the Campaigns console's House purses panel.
+import {housePurseLine} from './campaigns.ts';
+
+test('doc 86, Phase 9: a House purse in words', () => {
+    assert.equal(housePurseLine({id: 'house_greatly', name: 'House Greatly', purse: 42}), 'House Greatly: 42 pennies in its purse');
+    assert.equal(housePurseLine({id: 'house_fell', name: 'House Fell', purse: 1}), 'House Fell: 1 penny in its purse');
+    assert.equal(housePurseLine({id: 'house_fell', name: 'House Fell', purse: null}), 'House Fell: no purse yet');
+});

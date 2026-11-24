@@ -772,6 +772,7 @@ class Run:
         self.p, self.phase, self.state, self.day, self.elapsed, self.push = p, phase, state, day, elapsed, push
         self.quests = index(p)
         self.event = event   # (Doc 86, C1: the fact being read, whose world facts a goal or a reward's value may read.)
+        self.handing_in = None   # (Doc 86, SQ4: while a copy is handed in, its rewardLimit decision, by the limit's key.)
 
     def ctx(self, wolf):
         return words_ctx(self.p, self.state, wolf, self.day, self.elapsed, self.event, self.phase)
@@ -959,6 +960,16 @@ class Run:
             shares = c.get('shares', {})
             wolves = [w for w in wolves if shares.get(w, 0) >= q.get('creditMin', 1)]
         giver = giver_of(q, self.state, c)   # (Doc 86, C7: the giver the copy started with.)
+        # (Doc 86, SQ4: a rewardLimit counts hand-ins, not grants: one decision covers every coin reward of this hand-in, its
+        # bonus and each wolf of a party.)
+        self.handing_in = {}
+        try:
+            self.hand_in(q, c, wolves, shares, giver)
+        finally:
+            self.handing_in = None
+        self.fact('quest completed', actor, q['id'])
+
+    def hand_in(self, q, c, wolves, shares, giver):
         self.reward(q, q.get('rewards', []), wolves, shares, giver)
         kind = closure_of(q)
         if kind:
@@ -972,7 +983,6 @@ class Run:
         if q.get('bonus') and optional and all(c['objectives'].get(o['id'], {}).get('done') for o in optional):
             c['bonus'] = True
             self.reward(q, q['bonus'], wolves, shares, giver)
-        self.fact('quest completed', actor, q['id'])
 
     def credited(self, q, c):
         """Each wolf with credit: the holder; a party's members still in it, and those who left after helping; the story's
@@ -1016,7 +1026,9 @@ class Run:
         """Doc 86, SQ4 and decisions 3.2: a coin reward is paid while the purse's floor switch (coin_<purse>_ok, where the
         program declares it) is on and the quest's rewardLimit has room today; then it adds the coins to coin_<purse>_day
         (where declared). Otherwise it is given without its coin (noted in rewardNotes). A quest with no rewardLimit pays as
-        ever: its program keeps the counters itself, if it keeps them."""
+        ever: its program keeps the counters itself, if it keeps them. The limit counts hand-ins (the spec's "after N
+        hand-ins a game day"): the first coin reward of a hand-in decides, and counts one, for the whole hand-in (its
+        rewards, its bonus, every wolf of a party); the coins still add to coin_<purse>_day grant by grant."""
         limit = q.get('rewardLimit')
         if not limit:
             return True
@@ -1031,16 +1043,21 @@ class Run:
         counts = self.state.setdefault('rewardLimits', {})
         key = q['id'] if limit.get('scope', 'quest') == 'quest' else 'purse:' + e.get('purse', '')
         if not why:
-            seen = counts.get(key)
-            if seen and seen.get('day') == today and seen.get('n', 0) >= limit['perDay']:
+            room = self.handing_in.get(key) if self.handing_in is not None else None
+            if room is None:
+                seen = counts.get(key)
+                room = not (seen and seen.get('day') == today and seen.get('n', 0) >= limit['perDay'])
+                if room:
+                    counts[key] = {'day': today, 'n': (seen['n'] if seen and seen.get('day') == today else 0) + 1}
+                if self.handing_in is not None:
+                    self.handing_in[key] = room
+            if not room:
                 why = f'{limit["perDay"]} coin rewards a day already ({"this quest" if key == q["id"] else e.get("purse", "")}): given without its coin'
         if why:
             notes = self.state.setdefault('rewardNotes', [])
             notes.append({'quest': q['id'], 'wolf': wolf, 'kind': e['kind'], 'day': self.day, 'why': why})
             del notes[:-20]
             return False
-        seen = counts.get(key)
-        counts[key] = {'day': today, 'n': (seen['n'] if seen and seen.get('day') == today else 0) + 1}
         if day_var and day_var['scope'] == 'world' and day_var['type'] == 'number' and isinstance(e.get('coins'), int):
             world[day_var['id']] = world.get(day_var['id'], triggers.initial(day_var)) + e['coins']
         return True
@@ -1267,10 +1284,14 @@ class Run:
             d = self.phase.get('_vars', {}).get(effect['notIn'], {}) if self.phase else {}
             store = triggers.var_store(state, d.get('scope', 'story'), actor) or {}
             request['notIn'] = [v for v in store.get(effect['notIn'], []) if isinstance(v, str)]
-        wolves = ((self.event or {}).get('facts') or {}).get('wolves') or {}
+        event = self.event or {}
+        wolves = (event.get('facts') or {}).get('wolves') or {}
         if near and isinstance(wolves.get(near), dict):
             w = wolves[near]
             request['at'] = {'cell': w.get('cell', ''), 'x': w.get('x', 0), 'y': w.get('y', 0), 'town': w.get('town', '')}
+        elif near and near == event.get('actor') and isinstance(event.get('cell'), str) and event['cell']:
+            # (The fact's own actor: where the fact happened, as game.events has it; the caster finds the place's town.)
+            request['at'] = {'cell': event['cell'], 'x': event.get('x') or 0, 'y': event.get('y') or 0}
         request['seed'] = hashlib.sha256(json.dumps([self.p.get('id', ''), effect['var'], state.get('visits', 0),
                                                      len(state.get('castLog', []))]).encode()).hexdigest()[:16]
         picker = CASTER.get()

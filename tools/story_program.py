@@ -2603,6 +2603,12 @@ def watch_of(p):
         sections.add('purses')
     if any(isinstance(o, dict) and o.get('credit') == 'present' for q in p.get('quests', []) or [] for o in q.get('objectives', [])):
         sections.add('wolves')
+    # (Doc 86, C7: a casting nearest a wolf other than the fact's own actor reads where that wolf is from the world's facts;
+    # the fact's own actor is where the fact happened.)
+    cast_effects = [a['effect'] for t in rules_ for _, a in triggers.walk(t.get('actions', [])) if a.get('do') == 'effect']
+    cast_effects += [e for ph in p.get('phases', []) for e in ph.get('effects', [])]
+    if any(isinstance(e, dict) and e.get('kind') == 'cast.pick' and e.get('near') not in (None, '', '$actor') for e in cast_effects):
+        sections.add('wolves')
     out = {}
     for key, values in (('facts', sections), ('items', items), ('factions', factions), ('towns', towns), ('residents', residents),
                         ('cells', weather_cells), ('events', events)):

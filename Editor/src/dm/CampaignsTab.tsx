@@ -126,7 +126,7 @@ export function CampaignsTab({me, target, focus, initial}: {me: Me; target: Targ
         {problem && <p className="error">{problem === 'Not found.' ? 'The DM host is older than this page: restart it.' : problem}</p>}
         {!selected || !run ? <CampaignList overview={overview} live={live} names={names} open={id => { setSelected(id); setTab('overview'); }}
             holdAll={maySteer(me) && (!me.hosted || me.role === 'owner') ? holdAll : undefined} target={target} mayRule={!me.hosted || me.role === 'owner'}
-            mayApprove={atLeast(me, 'dm')} maySteerWorld={maySteer(me)} />
+            mayApprove={atLeast(me, 'dm')} maySteerWorld={maySteer(me)} mayHousePurses={atLeast(me, 'owner')} />
             : <CampaignView me={me} target={target} row={run} detail={detail?.run === selected ? detail : null} items={items} events={events}
                 names={names} now={overview!.now} live={live} tab={tab} setTab={setTab} earlier={earlier ? more : undefined}
                 refresh={() => poll(selected)} explained={explained?.run === selected ? explained : null} open={id => { setSelected(id); setTab('overview'); }} />}

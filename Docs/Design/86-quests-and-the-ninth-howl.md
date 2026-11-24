@@ -2355,7 +2355,7 @@ rehearsal case field (`cast`), one new together activity (`beside`), one new tal
   (`topUp`, `payable`: it pays what it holds). `Game::tendHousePurses`, once a game day, moves to each House's purse a tenth
   (`HouseShare`) of what each of its businesses' tills holds over 80 (`HouseTillFloat`): the posts held whose work cell the
   House claims first (the game's own rule for who serves a faction), 2,500 at most in a purse (`HousePurseMost`). All of it
-  behind the **world switch `storyHousePurses`**, off: the game's order `story.house-purses on|off` (kept in the checkpoint as
+  behind the **world switch `storyHousePurses`**, off: the game's order `story.house_purses on|off` (kept in the checkpoint as
   `people.storyHousePurses`, which the world packager keeps), the console's op `house-purses` `{on, reason}` (the owner only;
   audited `story.house-purses`). Off, nothing moves and a `house:` purse maps to no account ("There is no such purse to pay
   from"); approval refuses a `house:` purse while the checkpoint says off, an unknown House, and (on) a House with no purse
@@ -2420,3 +2420,58 @@ rehearsal case field (`cast`), one new together activity (`beside`), one new tal
   mantles given back, the paw, the House purses' switch, the story topic), the story runner from it (casting, the giver
   from a variable, `rewardLimit`, the new orders and checks), the Editor released from it (the quest editor). The client
   needs no change: "Lend a paw" is a menu action as any. House purses stay off until the user approves their economy check.
+
+**Phase 9 after review** (2026-11-24, on `d2e3d8c7`). The review found four bugs and three gaps, all fixed with tests, and
+six nits (five fixed); two more were found while fixing.
+- **The House purses' order is `story.house_purses`.** `dm.actions` takes only `^[a-z]+\.[a-z_]+$`, so the op's
+  `story.house-purses` failed its check and the switch could never be sent. Renamed in the runner and the game (the audit
+  keeps `story.house-purses`). And the op refused the studio's own `admin`, who outranks an owner: it asks for the owner's
+  rank now. `test_story_console` (`HousePursesRoute`, through the route: a Dungeon Master reads it and is refused the
+  change, a bad value refused, the owner's order in `dm.actions` and the audit, the admin turns it off, the audit newest
+  first).
+- **Casting by House matches.** The faction arrays are of the domain `ratw_id`, which psycopg returns as one string, so
+  `faction` never matched anyone; they are cast to `text`, and "the House that claims it first" is the first by id, as the
+  game sorts a place's claims (`cell->factionClaims.front()`). `test_story_v2_runner` (`Casting.test_by_house`: Greatly
+  claims the row first, Zed too but not first, a member of Fell).
+- **A quest's coin limit counts hand-ins.** `coin_allowed` counted each grant, so a bonus or a party's second wolf used up
+  the day. One decision now covers a whole hand-in (`Run.handing_in`, by the limit's key: its rewards, its bonus, every
+  wolf); the coins still add to `coin_<purse>_day` grant by grant. `test_story_quests`
+  (`test_a_reward_limit_counts_hand_ins_not_grants`: 3 and 2 paid, `coin_larkfield_day` 5, one counted; Birch's the second
+  that day, no coin; a party of two both paid, one counted).
+- **The `story` topic after a restart.** The story memory is read before the stories, so the topic closed at every load;
+  `storylinesLoad` now calls `storyTopicsChanged`, and `tickStoryWorld` looks again once a game day (a key whose days ran
+  out closes it). Found while testing it: the talk library could not hold a `talk.story` line at all (`topic.story` was
+  no fact, and `talk.story` is no concept): `Data/Talk/facts.json` gains the fact `topic.story`; the concept is declared in
+  `settings.json` by whoever writes the first `talk.story` lines (the library refuses a declared concept with no lines,
+  `talk_library`), so nothing said changes now. `story_world_tests` (`phase9StoryTopicRestart`: Data/Talk with the concept
+  and one `talk.story` line of the test's own; open on `nh`, still open after a restart, closed when the story ends).
+- **Nearest the wolf, in a live run.** The casting read the wolf's place only from the world's facts, which a story that
+  reads no other wolf fact never has. Now, near the fact's own actor, it is where the fact happened (game.events' cell and
+  tile; the caster finds the place's town); `watch_of` asks for `wolves` when a casting is near another wolf. A trigger
+  fired by hand passes its stand-in as the fact (nit N4), so `$actor` is the wolf it was fired for.
+  `test_story_v2_runner` (the nearer carter on the row, and in the yard, from the fact alone).
+- **A mantle given back only while it is still worn.** `held.mantleBound` keeps what the story bound last; at the end (or
+  its own release) the mantle before is put back only while the resident still wears that, so a DM's later binding
+  stands. Two stories in turn: when one lets go and the other's "before" is its mantle, the other takes on its "before"
+  (`Game::handOnStoryMantle`), so the end of both leaves what was worn before either, whichever ends first. An older save
+  without `mantleBound` is put back as before. `story_world_tests` (`phase9MantlesOverlap`: the DM's rm953 left; S1 then
+  S2, S2 then S1, and a story's own release under another's binding, all ending in rm950).
+- **The console's House purses panel** (`Editor/src/dm/campaigns/HousePurses.tsx`, **Campaigns → House purses…**): the
+  switch as last saved, each House's purse (`house_purses_state`, the read `house-purses-state`) and the last changes;
+  the owner (or admin) turns it on or off with a reason. `campaigns.test.ts` (`housePurseLine`), the render smoke.
+- **Nits.** N1: the day the Houses last took their share is saved (`people.storyHousePurseDay`) and not reset when the
+  switch goes on, so a restart, or off and on again, takes no second share that day (`phase9HousePurses`). N2: one first in
+  line who is placed since or past working age leaves the line, and one with no home in reach keeps their place while the
+  next is tried (`people_flow_tests` `firstInLine`: the old one first, the baker behind them sent for). N3: `npc.queue`'s
+  help and the guide say who comes first (the town's own, then the line, before the city's wolves and the Country). N4
+  above. N6: the world packager drops `storyHousePurses` and `storyHousePurseDay` (`PEOPLE_RESET`), so a world given
+  away starts with House purses off (`test_world_package`). **N5 left**: a casting waiting (What if only) that moves the
+  phase still drops the fact it was answered before; dispatching that fact too would need the caller to enter the new
+  visit first, which `advance`'s True already asks of it.
+- **Run**: the whole `ctest` (122, with the database settings: all pass but `talk_scorecard_quick` under `-j6`, the timing
+  test noted before, which passes alone; `pg_client` skipped as ever); every story Python suite but the live ones, with the
+  local PostgreSQL (the tests' own `ratw_test_*` databases, and `RATW_STORY_TEST_DSN` on a throwaway database migrated
+  whole, dropped after), `test_dungeon_master`, `test_world_package` (all but the two end-to-end failures noted in Phase 8
+  after review, unchanged), `story_guide.py --check`; the Editor's tests (78 and 156), `tsc --noEmit` and `npm run smoke`
+  (65 panels, House purses among them); a scratch Ridgemere 3 server from this branch (restored the save, answered;
+  stopped after).

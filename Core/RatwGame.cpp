@@ -1471,15 +1471,17 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         if (const auto space = npc.find(' '); space != std::string::npos)
             mantle = npc.substr(space + 1), npc = npc.substr(0, space);
         // (Doc 86, C15: what they wore before a story's binding, given back when the story ends or lays it down.)
-        std::string before, how;
+        std::string before, how, bound;
         if (const auto* b = world_.society().mantleOf(npc); b && !b->mantle.empty() && b->releasedDay < 0)
             before = b->mantle, how = b->how;
-        if (kind == "mantle.release" && payload.isObject() && storyBoundMantle(payload, npc, before, how))
-            outcome = putBackMantle(npc, before, how);
+        if (kind == "mantle.release" && payload.isObject() && storyBoundMantle(payload, npc, before, how, bound))
+            outcome = handOnStoryMantle(payload.string("run"), npc, before, how, bound)
+                          ? Result{true, "Another story's binding stands; what was worn before is now its to give back.", npc}
+                          : putBackMantle(npc, before, how, bound);
         else
             outcome = kind == "mantle.assign" ? assignMantle(npc, mantle) : releaseMantle(npc);
         if (outcome.ok && kind == "mantle.assign" && payload.isObject() && payload.has("run") && before != mantle)
-            noteStoryMantle(payload, npc, before, how);   // (Doc 85, Phase 9: put back when the story ends.)
+            noteStoryMantle(payload, npc, before, how, mantle);   // (Doc 85, Phase 9: put back when the story ends.)
     }
     else if (kind == "deed.award" || kind == "deed.revoke")
     {
@@ -1754,15 +1756,14 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             }
         }
     }
-    else if (kind == "story.house-purses")
+    else if (kind == "story.house_purses")
     {
         // Doc 86, M3: the world switch for House purses (target on or off); the owner's (the runner checks who sends it).
         if (target != "on" && target != "off")
             outcome = {false, "House purses are on or off.", target};
         else
         {
-            storyHousePurses_ = target == "on";
-            housePurseDay_ = -1;
+            storyHousePurses_ = target == "on";     // (Off and on again the same game day takes no second share.)
             if (storyHousePurses_)
                 tendHousePurses();
             record(Economy);

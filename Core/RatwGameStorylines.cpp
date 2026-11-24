@@ -909,6 +909,7 @@ void Game::storylinesLoad(const Value& saved)
     journalViews_.clear();
     storyOccupants_.clear();
     refreshStoryWatch();
+    storyTopicsChanged();   // (Doc 86, T6: the story memory is read before the stories; their realm keys open the topic now.)
 }
 
 void Game::storylinesFromEvent(const WorldEvent& e)

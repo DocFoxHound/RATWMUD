@@ -329,8 +329,9 @@ def cast_pick(conn, world, request):
         'SELECT r.id, r.home_area, r.work_area, coalesce(hc.region, hi.region, \'\'), '
         + ('(SELECT p.title FROM dm.story_posts p WHERE p.world_id=r.world_id AND p.holder=r.id LIMIT 1)' if posts else 'NULL') + ', '
         'n.work_label, ' + ('v.quarter' if voice else "''") + ', ' + ('coalesce(s.alive, true)' if alive else 'true') + ', '
-        '(SELECT array_agg(m.faction_id) FROM live.faction_members m WHERE m.world_id=r.world_id AND m.npc_id=r.id), '
-        '(SELECT array_agg(c.faction_id) FROM live.faction_claims c WHERE c.world_id=r.world_id AND c.area=r.work_area), '
+        # (As text: an array of the domain ratw_id comes back as one string, not a list.)
+        '(SELECT array_agg(m.faction_id::text) FROM live.faction_members m WHERE m.world_id=r.world_id AND m.npc_id=r.id), '
+        '(SELECT array_agg(c.faction_id::text) FROM live.faction_claims c WHERE c.world_id=r.world_id AND c.area=r.work_area), '
         'n.work_x, n.work_y, n.home_x, n.home_y '
         'FROM dm.story_residents r LEFT JOIN live.npcs n ON n.world_id=r.world_id AND n.id=r.id '
         'LEFT JOIN world.cells hc ON hc.world_id=r.world_id AND hc.id=r.home_area '
@@ -340,7 +341,11 @@ def cast_pick(conn, world, request):
         + 'WHERE r.world_id=%s AND coalesce(r.home_area,\'\')<>\'\'', (world,)).fetchall()
     left_out = set(request.get('notIn', ()))
     job = (request.get('job') or '').lower()
-    at = request.get('at') or {}
+    at = dict(request.get('at') or {})
+    if at.get('cell') and not at.get('town'):
+        # (The wolf's place from the fact itself, which names no town: the town is the place's region.)
+        row = conn.execute('SELECT region FROM world.cells WHERE world_id=%s AND id=%s', (world, at['cell'])).fetchone()
+        at['town'] = row[0] if row and row[0] else ''
     seed = request.get('seed', '')
     fits = []
     for rid, home, work, town, title, label, quarter, living, members, claims, wx, wy, hx, hy in rows:
@@ -350,7 +355,8 @@ def cast_pick(conn, world, request):
             continue
         if request.get('town') and town != request['town']:
             continue
-        if request.get('faction') and request['faction'] not in (members or []) and request['faction'] not in (claims or [])[:1]:
+        # (The House that claims their work place first, as the game sorts a place's claims: cell->factionClaims.front().)
+        if request.get('faction') and request['faction'] not in (members or []) and request['faction'] not in sorted(claims or [])[:1]:
             continue
         if request.get('quarter') and (quarter or '') != request['quarter']:
             continue
@@ -1275,15 +1281,29 @@ def release_sentence(conn, world, who, data):
     return {'npc': npc, 'receipt': receipt}
 
 
+def house_purses_state(conn, world):
+    """Doc 86, M3: the console's House purses panel (op `house-purses-state`, a read): the switch as the world was last
+    saved, each House with what its purse held then (None: no purse yet), and the switch's last changes from the audit."""
+    houses = house_factions(conn, world)
+    row = conn.execute("SELECT payload::jsonb->'society'->'accounts' FROM game.checkpoints WHERE world_id=%s", (world,)).fetchone()
+    accounts = row[0] if row and isinstance(row[0], dict) else {}
+    held = lambda f: accounts['purse:' + f].get('cash', 0) if isinstance(accounts.get('purse:' + f), dict) else None
+    audit = [{'at': r[0], 'on': r[1] == 'on', 'detail': r[2], 'who': r[3]} for r in conn.execute(
+        "SELECT at, target, detail, who FROM dm.audit WHERE action='story.house-purses' ORDER BY at DESC LIMIT 10")]
+    return {'on': house_purses_on(conn, world), 'houses': [{'id': f, 'name': n, 'purse': held(f)} for f, n in sorted(houses.items())],
+            'audit': audit}
+
+
 def house_purses(conn, world, who, data):
-    """Doc 86, M3: the world switch for House purses (op `house-purses`: {on, reason}): the game's story.house-purses on|off.
+    """Doc 86, M3: the world switch for House purses (op `house-purses`: {on, reason}): the game's story.house_purses on|off.
     Off (the first state of every world), no money moves to a House's purse and approval refuses a house: purse. Turning it
     on moves money each game day (a House's businesses' tills put a share in its purse), so it waits on the economy check
-    the user approves (engine spec M3, D8). Audited `story.house-purses`."""
+    the user approves (engine spec M3, D8). Audited `story.house-purses`. (The order's kind has no hyphen: dm.actions takes
+    only lowercase letters, a dot, then letters and underscores.)"""
     on = data.get('on')
     rules.require(isinstance(on, bool), 'House purses are on or off.')
     reason = _reason(data.get('reason'))
-    receipt = queue(conn, who, 'story.house-purses', 'on' if on else 'off', {'by': who})
+    receipt = queue(conn, who, 'story.house_purses', 'on' if on else 'off', {'by': who})
     conn.execute('INSERT INTO dm.audit (at, action, target, detail, who) VALUES (extract(epoch from now()), %s, %s, %s, %s)',
                  ('story.house-purses', 'on' if on else 'off', f'House purses {"on" if on else "off"}. Reason: "{reason}"'[:2000], who))
     return {'on': on, 'receipt': receipt, 'houses': sorted(house_factions(conn, world)), 'saved': house_purses_on(conn, world)}
@@ -4415,7 +4435,8 @@ class Steer:
         # has them taken (doc 85, Phase 10: fired by hand they went to the game, which knows nothing of them). Their facts follow.)
         facts = []
         if rules.triggers.version(phase) == 2:
-            quests.take_story_effects(self.program, phase, self.state, self.day(), self.elapsed(), facts.append)
+            # (With the stand-in as its fact: a casting nearest "$actor" casts near the wolf it was fired for.)
+            quests.take_story_effects(self.program, phase, self.state, self.day(), self.elapsed(), facts.append, stand_in)
         _attach_changes(phase, self.trace[-1:], before, _values(self.state, actor))
         moved = False
         if target:

@@ -154,7 +154,8 @@ def save(**extra):
                    'storyMemory': {'wren': {'nh_stage': {'value': 'waking', 'until': -1, 'run': 'world-1'}},
                                    WOLF: {'nh_debt': {'value': 'owed', 'until': -1, 'run': 'world-1'}}},
                    'storyItemNames': {'item^nh_horn': 'the Ninth Horn'},
-                   'storySentences': {'bram': {'place': 'grey-cells', 'run': 'world-1', 'until': 12, 'days': 7}}},
+                   'storySentences': {'bram': {'place': 'grey-cells', 'run': 'world-1', 'until': 12, 'days': 7}},
+                   'storyHousePurses': True, 'storyHousePurseDay': 9},
         'weather': {'cell': 1}, 'festivals': [],
     }
     doc.update(extra)
@@ -377,6 +378,9 @@ class StripTest(unittest.TestCase):
         self.assertEqual(people['storyHolds'], {'spare': {'wren': ['run:world-1']}})
         self.assertEqual(people['storyItemNames'], {'item^nh_horn': 'the Ninth Horn'})
         self.assertEqual(people['storySentences']['bram']['place'], 'grey-cells')
+        # (Doc 86, M3, after review: House purses off in a world given away, until its own economy check.)
+        self.assertNotIn('storyHousePurses', people)
+        self.assertNotIn('storyHousePurseDay', people)
         self.assertEqual(d['chapters'], {'next': 2, 'chapters': []})
 
     def test_a_section_with_fixed_fields_keeps_no_player_in_them(self):

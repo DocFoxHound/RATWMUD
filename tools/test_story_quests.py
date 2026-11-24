@@ -1189,6 +1189,35 @@ class Phase9Casting(unittest.TestCase):
         self.assertEqual(quests.purse_counter('till:job:rm_eleanor_saltcot'), 'till_eleanor_saltcot', "decisions 3.2's names")
         self.assertEqual(quests.purse_counter('house:greatly'), 'house_greatly')
 
+    def test_a_reward_limit_counts_hand_ins_not_grants(self):
+        # (Review of Phase 9: one hand-in's rewards and its bonus are one under the limit, and so is each wolf of a party.)
+        p = self.limited(per_day=1)
+        q = p['quests'][0]
+        q['objectives'].append({'id': 'extra', 'label': 'Bring a spoke too.', 'on': 'gift', 'match': {'item': 'spoke'}, 'optional': True})
+        q['bonus'] = [{'kind': 'character.grant', 'player': '$actor', 'coins': 2, 'purse': 'town:larkfield', 'reason': 'for the spoke'}]
+        rules.validate(p)
+        events = [arrive(1, ASH), fact(2, 'gift', 0.1, ASH, target='rm111', item='spoke'), fact(3, 'gift', 0.2, ASH, target='rm111', item='axle')]
+        state, report = cast_state(p, events, {})
+        self.assertEqual([e['coins'] for e in report['effects'] if e['kind'] == 'character.grant'], [3, 2],
+                         'the reward and its bonus, one hand-in')
+        self.assertEqual(state['counters']['world']['coin_larkfield_day'], 5, 'each grant still adds its coins')
+        self.assertEqual(state['rewardLimits']['q']['n'], 1)
+        self.assertFalse(state.get('rewardNotes'))
+        events += [arrive(4, BIRCH, 0.25), fact(5, 'gift', 0.3, BIRCH, target='rm111', item='axle')]
+        state, report = cast_state(p, events, {})
+        self.assertEqual([e['player'] for e in report['effects'] if e['kind'] == 'character.grant'], [ASH, ASH],
+                         "Birch's hand-in the same day is the second: no coin")
+        # A party: every wolf of the hand-in paid, and it counts once.
+        p = self.limited(per_day=1)
+        p['quests'][0]['scope'] = 'party'
+        rules.validate(p)
+        events = [fact(1, 'party joined', 0.05, ASH, target='p1'), fact(2, 'party joined', 0.06, BIRCH, target='p1'), arrive(3, ASH),
+                  fact(4, 'gift', 0.2, BIRCH, target='rm111', item='axle')]
+        state, report = cast_state(p, events, {})
+        self.assertEqual(sorted(e['player'] for e in report['effects'] if e['kind'] == 'character.grant'), sorted([ASH, BIRCH]),
+                         "each wolf of the party paid for the one hand-in")
+        self.assertEqual(state['rewardLimits']['q']['n'], 1)
+
     def test_the_reward_limit_checks(self):
         p = self.limited()
         for limit, words in (({'perDay': 0}, '1 to 1,000'), ({'perDay': 2, 'scope': 'town'}, 'for the quest or for its purse')):

@@ -231,6 +231,7 @@
     "claim": "text",
     "claim_kind": ["death", "marriage", "violence", "theft", "victim", "wanted", "bandit", "promise_kept", "promise_broken", "prowling", "newcomer", "other"],
     "news": "text",
+    "story": "text",
     "said": "text",
     "what": "text",
     "price": "text",

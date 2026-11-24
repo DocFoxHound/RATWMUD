@@ -20,6 +20,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -1157,6 +1158,124 @@ void phase9Mantles()
     fs::remove_all(root, ec);
 }
 
+// Doc 86, Phase 9 after review (C15): a mantle is given back only while the resident still wears what the story bound.
+// (a) The DM binds another meanwhile: the story's end leaves it. (b) Two stories bind one resident in turn: whichever ends
+// first, the end of both leaves them in what they wore before either, and never in a story's mantle.
+void phase9MantlesOverlap()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyworld-9o-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    const auto world = writeDoors(root);
+    fs::create_directories(root / "mantles" / "plain");
+    writeMantle(root / "mantles" / "plain", "rm950", "u1");
+    for (const auto* id : {"rm951", "rm952", "rm953"})
+        writeMantle(root / "mantles" / "plain", id, std::string("nobody_") + id);
+    int n = 3500;
+    {
+        Town t(world, save, 120, true, 3 * 86400, "", (root / "mantles").string());
+        t.enter(t.ash, 1, "ash", "Ash", 0, 8.5);
+        auto players = json::Value::array();
+        players.push(t.ash.entityId);
+        const auto open = [&](const std::string& id) {
+            auto phase = parsed(R"({"title":"Masks","phase":"masks","journal":"Faces change.","visit":1})");
+            phase.set("players", players);
+            return t.g.applyDmAct({std::to_string(++n), "story.phase", id, "dm", json::dump(phase)}).ok;
+        };
+        const auto bind = [&](const std::string& mantle, const std::string& run) {
+            auto p = parsed(R"({"mantle":")" + mantle + R"("})");
+            if (!run.empty())
+            {
+                p.set("run", run);
+                p.set("visit", 1);
+            }
+            return t.g.applyDmAct({std::to_string(++n), "mantle.assign", "u1", "dm", json::dump(p)}).ok;
+        };
+        const auto stop = [&](const std::string& run) { return t.g.applyDmAct({std::to_string(++n), "story.stop", run, "dm", "{}"}).ok; };
+        const auto worn = [&] {
+            const auto found = t.g.mantleWearers().find("u1");
+            return found == t.g.mantleWearers().end() ? std::string() : found->second;
+        };
+        expect(worn() == "rm950", "u1 wears rm950");
+        // (a) The story binds rm951; the DM binds rm953 meanwhile; the story's end leaves rm953.
+        expect(open("world-a") && bind("rm951", "world-a") && worn() == "rm951", "the story binds rm951");
+        expect(bind("rm953", "") && worn() == "rm953", "the DM binds rm953");
+        expect(stop("world-a") && worn() == "rm953", "the story's end leaves the DM's rm953: " + worn());
+        expect(bind("rm950", "") && worn() == "rm950", "the DM gives rm950 back");
+        // (b) S1 binds rm951 over rm950, S2 rm952 over rm951. S1 ends first: S2's stands; S2 ends: rm950.
+        expect(open("world-s1") && bind("rm951", "world-s1") && open("world-s2") && bind("rm952", "world-s2") && worn() == "rm952",
+               "two stories bind u1 in turn");
+        expect(stop("world-s1") && worn() == "rm952", "S1 ends: S2's rm952 stands: " + worn());
+        expect(t.g.storylineBook().find("world-s2")->held.find("mantles")->string("u1") == "rm950", "S2 now gives back rm950");
+        expect(stop("world-s2") && worn() == "rm950", "S2 ends: rm950, what u1 wore before either: " + worn());
+        // The other order: S2 ends first (rm951 back), then S1 (rm950 back).
+        expect(open("world-s3") && bind("rm951", "world-s3") && open("world-s4") && bind("rm952", "world-s4") && worn() == "rm952", "again");
+        expect(stop("world-s4") && worn() == "rm951", "the later ends first: the earlier's rm951: " + worn());
+        expect(stop("world-s3") && worn() == "rm950", "then the earlier: rm950: " + worn());
+        // The story's own release, under another story's binding: the other's stands and takes the "before" on.
+        expect(open("world-s5") && bind("rm951", "world-s5") && open("world-s6") && bind("rm952", "world-s6"), "and again");
+        auto p = parsed(R"({"run":"world-s5","visit":1})");
+        expect(t.g.applyDmAct({std::to_string(++n), "mantle.release", "u1", "dm", json::dump(p)}).ok && worn() == "rm952",
+               "S5 lays down its mantle: S6's rm952 stands: " + worn());
+        expect(stop("world-s5") && stop("world-s6") && worn() == "rm950", "both ended: rm950: " + worn());
+    }
+    std::error_code ec;
+    fs::remove(save, ec);
+    fs::remove_all(root, ec);
+}
+
+// Doc 86, Phase 9 after review (T6): the story topic opens again after a restart (the story memory is read before the
+// stories), and closes when the story ends. The library is Data/Talk with one talk.story line of the test's own (and the
+// concept declared).
+void phase9StoryTopicRestart()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyworld-9t-" + std::to_string(::getpid()));
+    fs::remove_all(root);
+    const auto save = root.string() + ".json";
+    const auto world = writeDoors(root);
+    const auto talk = root / "talk";
+    fs::copy(RATW_SOURCE_DIR "/Data/Talk", talk, fs::copy_options::recursive);
+    {
+        // (The concept declared as the talk plan will when it writes the first talk.story lines: the real library has
+        // none yet, and every concept it declares must have lines.)
+        std::stringstream text;
+        text << std::ifstream(talk / "settings.json").rdbuf();
+        auto settings = text.str();
+        const auto at = settings.find("\"talk.harvest\",");
+        expect(at != std::string::npos, "the settings name talk.harvest");
+        settings.insert(at, "\"talk.story\", ");
+        std::ofstream(talk / "settings.json") << settings;
+    }
+    std::ofstream(talk / "rules" / "zz_story_topic_test.talk")
+        << "rule zz_story_topic_test\nwhen concept=talk.story topic.story=nh\ndoes tell.news\ncooldown 1d\n"
+           "say Something stirs out on the ridge, they say.\n";
+    const auto run = std::string("world-topic");
+    int n = 3700;
+    {
+        Town t(world, save, 120, false, 3 * 86400, "", "", talk.string());
+        expect(t.g.talkLibrary().has("talk.story"), "the library has a talk.story line");
+        t.enter(t.ash, 1, "ash", "Ash", 0, 8.5);
+        auto phase = parsed(R"({"title":"Ridge","phase":"ridge","journal":"Something stirs.","visit":1})");
+        auto players = json::Value::array();
+        players.push(t.ash.entityId);
+        phase.set("players", players);
+        expect(t.g.applyDmAct({std::to_string(++n), "story.phase", run, "dm", json::dump(phase)}).ok, "the story opens");
+        auto p = parsed(R"({"scope":"realm","key":"nh_stage","value":"two","days":30,"visit":1})");
+        p.set("run", run);
+        expect(t.g.applyDmAct({std::to_string(++n), "talk.remember", run, "dm", json::dump(p)}).ok, "a realm key remembered");
+        expect(t.g.world().storyTopics() == std::set<std::string>{"nh"}, "the story topic opens on nh");
+        t.g.save();
+    }
+    {
+        Town again(world, save, 120, false, 3 * 86400, "", "", talk.string());
+        expect(again.g.world().storyTopics() == std::set<std::string>{"nh"}, "after a restart: still open on nh");
+        expect(again.g.applyDmAct({std::to_string(++n), "story.stop", run, "dm", "{}"}).ok && again.g.world().storyTopics().empty(),
+               "the story ends: closed");
+    }
+    std::error_code ec;
+    fs::remove(save, ec);
+    fs::remove_all(root, ec);
+}
+
 // Doc 86, Phase 9 (M3): House purses. The stall in the strip's second cell is House Greatly's (it claims the cell).
 // Off (the world's switch): nothing moves and house:greatly pays nothing. On: once a game day the stall's till puts a
 // tenth of what it holds over 80 in purse:house_greatly, which pays a wolf what it holds and no more; the switch is kept
@@ -1192,9 +1311,9 @@ void phase9HousePurses()
         expect(!t.g.storyHousePurses() && !soc.account("purse:house_greatly") && soc.cash(till) == 500, "off: nothing moves");
         auto r = grant(5);
         expect(!r.ok && contains(r.message, "no such purse"), "off: house:greatly pays nothing: " + r.message);
-        expect(!t.g.applyDmAct({std::to_string(++n), "story.house-purses", "maybe", "dm", "{}"}).ok, "on or off");
+        expect(!t.g.applyDmAct({std::to_string(++n), "story.house_purses", "maybe", "dm", "{}"}).ok, "on or off");
         // On: the share at once, then once a game day.
-        r = t.g.applyDmAct({std::to_string(++n), "story.house-purses", "on", "dm", "{}"});
+        r = t.g.applyDmAct({std::to_string(++n), "story.house_purses", "on", "dm", "{}"});
         expect(r.ok && t.g.storyHousePurses(), "the switch on: " + r.message);
         expect(soc.cash("purse:house_greatly") == 42 && soc.cash(till) == 458, "a tenth of 420 over the float: 42 in Greatly's purse, " +
                std::to_string(soc.cash("purse:house_greatly")));
@@ -1208,12 +1327,19 @@ void phase9HousePurses()
         expect(r.ok && soc.cash("purse:house_greatly") == 12 && soc.cash(t.ash.entityId) == ashBefore + 30, "Greatly pays Ash 30: " + r.message);
         r = grant(20);
         expect(!r.ok && contains(r.message, "short") && soc.cash("purse:house_greatly") == 12, "and no more than it holds (never topped up): " + r.message);
+        // (After review: off and on again the same game day takes no second share.)
+        expect(t.g.applyDmAct({std::to_string(++n), "story.house_purses", "off", "dm", "{}"}).ok &&
+                   t.g.applyDmAct({std::to_string(++n), "story.house_purses", "on", "dm", "{}"}).ok && soc.cash("purse:house_greatly") == 12,
+               "off and on again the same day: no second share, " + std::to_string(soc.cash("purse:house_greatly")));
         t.g.save();
     }
     {
         Town again(world, save);
         expect(again.g.storyHousePurses() && again.g.world().society().account("purse:house_greatly"), "after a restart: still on, the purse kept");
-        expect(again.g.applyDmAct({"1", "story.house-purses", "off", "dm", "{}"}).ok && !again.g.storyHousePurses(), "and off again");
+        again.run(2);
+        expect(again.g.world().society().cash("purse:house_greatly") == 12, "and the same game day: no second share after a restart, " +
+               std::to_string(again.g.world().society().cash("purse:house_greatly")));
+        expect(again.g.applyDmAct({"1", "story.house_purses", "off", "dm", "{}"}).ok && !again.g.storyHousePurses(), "and off again");
     }
     fs::remove_all(root);
     fs::remove(save);
@@ -1232,6 +1358,8 @@ int main()
         phase7Foes();
         phase8Sentences();
         phase9Mantles();
+        phase9MantlesOverlap();
+        phase9StoryTopicRestart();
         phase9HousePurses();
     }
     catch (const std::exception& error)

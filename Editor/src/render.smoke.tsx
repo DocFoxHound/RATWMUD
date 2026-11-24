@@ -17,6 +17,7 @@ import type {MyWorld} from './dm/api';
 import {CampaignsTab, type CampaignsInitial} from './dm/CampaignsTab';
 import {GuideTab} from './dm/GuideTab';
 import {WorldVarsPanel} from './dm/campaigns/WorldVars';
+import {HousePursesPanel} from './dm/campaigns/HousePurses';
 import {SentencesPanel} from './dm/campaigns/Sentences';
 import type {Campaign, Readiness} from './lib/campaigns';
 import type {Explained, MigrationReport, Order, Preview, Problems, RunDetail, RunRow, TimelineItem, Version} from './lib/campaigns';
@@ -340,6 +341,8 @@ export function renderAll(): Record<string, string> {
         {name: 'nh_voice', wolf: 'player-ash', type: 'number', value: 4, run: runningRow.run, updatedAt: '2026-11-24T10:00:00Z'}],
         names: [{name: 'nh_voice', type: 'number', wolves: 1, stories: [{run: runningRow.run, story: 'act-two', title: 'Act II: the Turn', type: 'number', status: 'running'}]}],
         audit: [{at: 1763800000, name: 'nh_voice/player-ash', detail: 'nh_voice for player-ash: 3 → 4. Reason: "a howl the game missed"', who: 'martin'}]}} />);
+    out['House purses'] = renderToString(<HousePursesPanel target="dev" mayChange initial={{on: false, houses: [{id: 'house_greatly', name: 'House Greatly', purse: null},
+        {id: 'house_fell', name: 'House Fell', purse: 42}], audit: [{at: 1, on: false, detail: 'House purses off. Reason: "not yet"', who: 'martin'}]}} />);
     out['Sentences'] = renderToString(<SentencesPanel target="dev" mayRelease initial={[{npc: 'rm_ilse_coalley', name: 'Ilse Coalley', place: 'r2_the_keep_down',
         placeName: 'The Keep, below', by: 'lq-wreckers-light', run: 'world-1', days: 7, began: 60, until: 67, left: 4.25}]} />);
     out['Guide'] = renderToString(<GuideTab />);

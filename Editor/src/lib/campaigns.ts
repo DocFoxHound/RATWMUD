@@ -109,6 +109,13 @@ export function sentenceLine(s: Sentence): string {
     const left = s.left <= 0 ? 'served (let go at the next moment)' : `${+s.left.toFixed(1)} of ${s.days} day${s.days === 1 ? '' : 's'} left`;
     return `${s.name}, held at ${s.placeName || s.place} by ${s.by || s.run}: ${left}`;
 }
+/** Doc 86, M3: the world switch for House purses (op house-purses-state), as the world was last saved. */
+export interface HousePurses { on: boolean; houses: {id: string; name: string; purse: number | null}[];
+    audit?: {at: number; on: boolean; detail: string; who: string}[] }
+/** A House's purse in words: "House Greatly: 42 pennies in its purse" (none yet: "no purse yet"). */
+export function housePurseLine(h: HousePurses['houses'][number]): string {
+    return `${h.name}: ${h.purse === null ? 'no purse yet' : `${h.purse} penn${h.purse === 1 ? 'y' : 'ies'} in its purse`}`;
+}
 export interface Region { id: string; cell: string; x1: number; y1: number; x2: number; y2: number }
 export interface Timer { signal?: string; at: number; clock?: 'game' | 'real'; actor?: string; interval?: number; scope?: string }
 export interface RunState {
