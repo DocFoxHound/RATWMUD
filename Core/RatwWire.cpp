@@ -1067,6 +1067,18 @@ Value society(const SocietyState& s)
     for (const auto& [dead, day] : s.careers.birthsOwed)
         owed.add(dead, day);
     careers.add("birthsOwed", owed);
+    if (!s.careers.queued.empty())   // (Doc 86, J7: the unplaced a story put first in line, by town.)
+    {
+        auto queued = Value::object();
+        for (const auto& [town, who] : s.careers.queued)
+        {
+            auto list = Value::array();
+            for (const auto& id : who)
+                list.push(id);
+            queued.add(town, list);
+        }
+        careers.add("queued", queued);
+    }
     // The mantle ledger (doc 84 §12, §17.8): who wears or wore which mantle, only while there is one (an older save
     // reads as none).
     if (!s.careers.mantles.empty())
@@ -1504,6 +1516,9 @@ CareerState readCareers(const Value& o)
         if (v.isNumber()) c.births[key] = std::clamp(int(v.asNumber()), 0, 3);
     for (const auto& [dead, v] : o.object("birthsOwed").fields())
         if (v.isNumber() && v.asNumber() >= 0 && v.asNumber() < 1e9) c.birthsOwed[dead] = v.asNumber();
+    for (const auto& [town, list] : o.object("queued").fields())
+        for (const auto& id : list.items())
+            if (id.isString() && !id.asString().empty() && c.queued[town].size() < 64) c.queued[town].push_back(id.asString());
     for (const auto& [wearer, a] : o.object("mantles").fields())
     {
         if (!a.isObject() || a.string("mantle").empty())

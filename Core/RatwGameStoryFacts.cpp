@@ -395,6 +395,12 @@ std::string Game::storyPurseAccount(const std::string& purse) const
         if (world_.towns().empty() && society.account("treasury"))
             return "treasury";
     }
+    // (Doc 86, M3: a House's purse, house:<faction> or house:<name without house_>, only while storyHousePurses is on.)
+    if (purse.rfind("house:", 0) == 0)
+    {
+        const auto faction = housePurseFaction(purse);
+        return storyHousePurses_ && !faction.empty() ? "purse:" + faction : std::string();
+    }
     // (Doc 86, SQ2: a business's till is the account till:job:<founder>; till:<id> names it when no till:<id> account is.)
     if (purse.rfind("till:", 0) == 0 && purse.rfind("till:job:", 0) != 0 && !society.account(purse) &&
         society.account("till:job:" + purse.substr(5)))

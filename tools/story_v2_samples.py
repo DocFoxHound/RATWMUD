@@ -261,7 +261,7 @@ READY = {
 def all_samples():
     return [copy.deepcopy(LEDGER), copy.deepcopy(FLOW), copy.deepcopy(READY), copy.deepcopy(TALK), copy.deepcopy(VALUES),
             copy.deepcopy(THANKS), copy.deepcopy(LINE), copy.deepcopy(HOWLS), copy.deepcopy(LETTERS),
-            copy.deepcopy(FOES), copy.deepcopy(CROWN)]
+            copy.deepcopy(FOES), copy.deepcopy(CROWN), copy.deepcopy(CASTING)]
 
 
 # ----- Doc 85, Phase 6: quests (tools/test_story_quests.py; both twins' parity, tools/test_story_native.py)
@@ -1030,5 +1030,72 @@ CROWN = {
          ], 'expect': ['moot', 'refused'],
          'expectVariables': {'story': {'voices': 2, 'for-coldwater': 0}},
          'expectEffects': []},
+    ],
+}
+
+
+# ----- Doc 86, Phase 9: casting, mantles, queues, paws, House purses (tools/test_story_v2.py; both twins,
+# tools/test_story_native.py). The Carter Wanted: the first wolf to come casts a carter of Greyfen near them (C7, cast.pick,
+# leaving out those tried before) and the quest's giver is whoever was cast (a giver from a variable); a paw lent to the
+# carter at their work ("together", item beside: SQ3) counts, and the carter takes up the ferryman's mantle (given back
+# when the story ends: C15); the axle pays four pennies from Greyfen's purse at most once a game day (rewardLimit, SQ4,
+# writing coin_greyfen_day); nobody fits, and a wolf of the Country is put first in line for the next post there (J7).
+CASTING = {
+    'format': 'ratw-story-program', 'version': 2, 'id': 'v2-carter-wanted', 'title': 'The Carter Wanted',
+    'audience': {'kind': 'open', 'cap': 50}, 'start': 'seek',
+    'variables': [
+        {'id': 'carter', 'type': 'resident', 'scope': 'story', 'note': 'The carter the story cast: the axle quest\'s giver.'},
+        {'id': 'tried', 'type': 'residents', 'scope': 'story', 'note': 'Carters cast before: never cast again.'},
+        {'id': 'paws', 'type': 'number', 'scope': 'story', 'show': 'Paws lent at the ford'},
+        {'id': 'coin_greyfen_day', 'type': 'number', 'scope': 'world', 'note': "Story coin from Greyfen's purse today (nh-purses)."},
+        {'id': 'coin_greyfen_ok', 'type': 'switch', 'scope': 'world', 'initial': True, 'note': "Greyfen's purse above its floor."},
+    ],
+    'phases': [
+        {'id': 'seek', 'journal': 'Somebody in Greyfen has a cart with a split axle.', 'effects': [], 'exits': [],
+         'triggers': [
+             {'id': 'cast', 'on': 'arrival', 'once': 'campaign', 'actions': [
+                 {'do': 'effect', 'effect': {'kind': 'cast.pick', 'var': 'carter', 'job': 'carter', 'town': 'greyfen',
+                                             'notIn': 'tried', 'near': '$actor'}}]},
+             {'id': 'found', 'on': 'cast chosen', 'match': {'detail': 'carter'}, 'actions': [
+                 {'do': 'list add', 'var': 'tried', 'value': {'var': 'carter'}}]},
+             {'id': 'nobody', 'on': 'cast failed', 'match': {'detail': 'carter'}, 'actions': [
+                 {'do': 'effect', 'effect': {'kind': 'npc.queue', 'npc': 'cty_carter', 'town': 'greyfen'}},
+                 {'do': 'enter', 'phase': 'waiting'}]},
+             {'id': 'paw', 'on': 'together', 'match': {'item': 'beside'}, 'audience': 'participant', 'actions': [
+                 {'do': 'add', 'var': 'paws', 'value': 1},
+                 {'do': 'effect', 'effect': {'kind': 'mantle.assign', 'npc': {'var': 'carter'}, 'mantle': 'ferryman'}}]},
+         ]},
+        {'id': 'waiting', 'journal': 'Nobody in Greyfen drives a cart now: a wolf of the Country is sent for.', 'effects': [], 'exits': []},
+    ],
+    'quests': [{
+        'id': 'axle', 'title': 'An axle for the carter', 'summary': 'A carter in Greyfen is stuck with a split axle.',
+        'giver': {'var': 'carter'}, 'repeat': 'daily',
+        'offer': {'say': 'My axle split on the ford road. Could you find me another?', 'accept': 'I will find you one.'},
+        'objectives': [{'id': 'bring', 'label': 'Bring an axle.', 'on': 'gift', 'match': {'item': 'axle'}}],
+        'rewards': [{'kind': 'character.grant', 'player': '$actor', 'coins': 4, 'purse': 'town:greyfen', 'reason': 'the carter thanks you'}],
+        'rewardLimit': {'perDay': 1, 'scope': 'purse'},
+    }],
+    'tests': [
+        {'name': 'A carter cast near Ash gives the quest; paid once a day', 'cohort': [],
+         'cast': {'carter': ['rm111', 'rm112']},
+         'events': [
+             quest_fact(1, 'arrival', 0.1, ASH),
+             quest_fact(2, 'quest accepted', 0.2, ASH, target='run', item='rm111', detail='axle'),
+             quest_fact(3, 'together', 0.25, ASH, target='rm111', item='beside', quantity=2),
+             quest_fact(4, 'gift', 0.3, ASH, target='rm111', item='axle', quantity=1),
+             quest_fact(5, 'quest handed in', 0.35, ASH, target='run', item='rm111', detail='axle'),
+             quest_fact(6, 'quest accepted', 0.4, BIRCH, target='run', item='rm111', detail='axle'),
+             quest_fact(7, 'gift', 0.45, BIRCH, target='rm111', item='axle', quantity=1),
+             quest_fact(8, 'quest handed in', 0.5, BIRCH, target='run', item='rm111', detail='axle'),
+         ], 'expect': ['seek'],
+         'expectVariables': {'story': {'carter': 'rm111', 'tried': ['rm111'], 'paws': 1}, 'world': {'coin_greyfen_day': 4}},
+         'expectQuests': {'axle': {ASH: 'done', BIRCH: 'done'}},
+         'expectEffects': [
+             {'phase': 'seek', 'kind': 'mantle.assign', 'npc': 'rm111', 'mantle': 'ferryman'},
+             {'phase': 'seek', 'kind': 'character.grant', 'player': ASH, 'coins': 4, 'purse': 'town:greyfen',
+              'reason': 'the carter thanks you', 'reward': 'axle'}]},
+        {'name': 'Nobody drives a cart in Greyfen: a wolf of the Country first in line', 'cohort': [],
+         'events': [quest_fact(1, 'arrival', 0.1, ASH)], 'expect': ['seek', 'waiting'],
+         'expectEffects': [{'phase': 'seek', 'kind': 'npc.queue', 'npc': 'cty_carter', 'town': 'greyfen'}]},
     ],
 }

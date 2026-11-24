@@ -114,8 +114,8 @@ EFFECT_WORDS = {
 }
 # Said as written, never in a voice: a resident's words aloud (npc.speak) fill no #symbols#.
 UNVOICED = frozenset({'npc.speak'})
-# The catalogue's text parameters no wolf reads (none yet): every other is in EFFECT_WORDS (test_story_words checks).
-EXEMPT = frozenset()
+# The catalogue's text parameters no wolf reads: every other is in EFFECT_WORDS (test_story_words checks).
+EXEMPT = frozenset({'cast.pick.job', 'cast.pick.quarter'})   # (Doc 86, C7: what a casting looks for, never said to anyone.)
 
 
 def effect_sites(program):
@@ -127,7 +127,8 @@ def effect_sites(program):
         for part in ('rewards', 'bonus'):
             for ei, e in enumerate(_list(q.get(part))):
                 if isinstance(e, dict):
-                    yield f'quests[{qi}].{part}[{ei}]', {'kind': 'quest', 'index': qi, 'id': q.get('id'), 'part': f'{part}[{ei}]'}, e, q.get('giver')
+                    yield (f'quests[{qi}].{part}[{ei}]', {'kind': 'quest', 'index': qi, 'id': q.get('id'), 'part': f'{part}[{ei}]'}, e,
+                           q.get('giver') if isinstance(q.get('giver'), str) else None)   # (Doc 86, C7: a cast giver's dialect is not known.)
     phases = _list(program.get('phases'))
     for pi, ph in enumerate(phases):
         for ei, e in enumerate(_list(ph.get('effects'))):

@@ -1470,9 +1470,16 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         mantle = payload.string("mantle", "");
         if (const auto space = npc.find(' '); space != std::string::npos)
             mantle = npc.substr(space + 1), npc = npc.substr(0, space);
-        outcome = kind == "mantle.assign" ? assignMantle(npc, mantle) : releaseMantle(npc);
-        if (outcome.ok && kind == "mantle.assign" && payload.isObject() && payload.has("run"))
-            noteStoryHeld(payload, "mantles", npc);   // (Doc 85, Phase 9: released when the story ends.)
+        // (Doc 86, C15: what they wore before a story's binding, given back when the story ends or lays it down.)
+        std::string before, how;
+        if (const auto* b = world_.society().mantleOf(npc); b && !b->mantle.empty() && b->releasedDay < 0)
+            before = b->mantle, how = b->how;
+        if (kind == "mantle.release" && payload.isObject() && storyBoundMantle(payload, npc, before, how))
+            outcome = putBackMantle(npc, before, how);
+        else
+            outcome = kind == "mantle.assign" ? assignMantle(npc, mantle) : releaseMantle(npc);
+        if (outcome.ok && kind == "mantle.assign" && payload.isObject() && payload.has("run") && before != mantle)
+            noteStoryMantle(payload, npc, before, how);   // (Doc 85, Phase 9: put back when the story ends.)
     }
     else if (kind == "deed.award" || kind == "deed.revoke")
     {
@@ -1747,6 +1754,39 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             }
         }
     }
+    else if (kind == "story.house-purses")
+    {
+        // Doc 86, M3: the world switch for House purses (target on or off); the owner's (the runner checks who sends it).
+        if (target != "on" && target != "off")
+            outcome = {false, "House purses are on or off.", target};
+        else
+        {
+            storyHousePurses_ = target == "on";
+            housePurseDay_ = -1;
+            if (storyHousePurses_)
+                tendHousePurses();
+            record(Economy);
+            saveSoon();
+            outcome = {true, storyHousePurses_ ? "House purses are on: each House's businesses put a share of their tills in its purse daily."
+                                               : "House purses are off: no money moves to them, and a story's house: purse pays nothing.",
+                       target};
+        }
+    }
+    else if (kind == "npc.queue")
+    {
+        // Doc 86, J7: an unplaced resident first in line for the next post that falls vacant in a town (payload {town});
+        // lasting, kept with the careers.
+        json::Value payload;
+        std::string problem;
+        const auto town = row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject()
+                              ? payload.string("town") : std::string();
+        outcome = world_.queueResident(target, town);
+        if (outcome.ok)
+        {
+            record(Careers);
+            saveSoon();
+        }
+    }
     else if (kind == "npc.unsentence")
     {
         // Doc 86, L4: the console's "Release now" for a resident a story sentenced ("sentence served", item "released").
@@ -1779,6 +1819,7 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         outcome = row.size() > 4 && row[4] && json::parse(*row[4], payload, problem) && payload.isObject()
                       ? applyStoryTalk(kind, target, payload)
                       : Result{false, "Invalid story talk.", target};
+        storyTopicsChanged();                       // (Doc 86, T6: the realm's story keys, the director's story topic.)
     }
     else if (kind == "npc.protect" || kind == "npc.unprotect")
     {
@@ -4994,6 +5035,10 @@ void Game::sendSnapshot(Connection* c, const Value* preparedScene)
             if (const auto* act = world_.residentWorkAt(e.id))
                 if (const auto* mine = world_.jointOf(view.self.id); !mine || mine->target != e.id)
                     actions.push(act->verb);
+        // Doc 86, SQ3: Lend a paw to a resident at their own post (no farm work or bench), near.
+        if (e.npc && apart <= together::rules().lendTiles && !world_.inBattle(view.self.id) && world_.besideWorkAt(e.id))
+            if (const auto* mine = world_.jointOf(view.self.id); !mine || mine->target != e.id)
+                actions.push("lend a paw");
         // Working together (doc 53, 2.3): Lend a paw to a wolf at work; Ask to lend a paw of one near, while at work.
         if (!e.npc && e.id != view.self.id)
         {

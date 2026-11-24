@@ -448,8 +448,21 @@ rule above ends the quest when the carter dies.
   `player.quest.<story id>/<quest id>` (`offered`, `active`, `ready`, `done`, `failed`, `abandoned`, `expired`):
   `say[player.quest.ninth-howl.1/where_king=active priority=3] Still looking for the King, then?`.
 - **Purses that pay:** a town's treasury (`town:<town>`; the city's is the realm's treasury), a business's till
-  (`till:job:<founder>`, or `till:<founder>`), a Chapter's (`chapter:<id>`). Approval refuses a purse the world (as last
-  saved) has no account for; no world has a town's works, watch or church purse, so `town:<town>:works` is refused too.
+  (`till:job:<founder>`, or `till:<founder>`), a Chapter's (`chapter:<id>`), a House's (`house:<House>`, below). Approval
+  refuses a purse the world (as last saved) has no account for; no world has a town's works, watch or church purse, so
+  `town:<town>:works` is refused too.
+- **A House's purse** (`house:greatly`, or by the faction's id, `house:house_greatly`): filled once a game day by the
+  House's own businesses (the posts whose work place the House claims), a tenth of what each till holds over 80 pennies,
+  2,500 at most; it pays what it holds and never more. It is behind a **world switch**, `storyHousePurses`, **off** on every
+  world until its owner turns it on (op `house-purses`): while it is off no money moves to a House and approval refuses a
+  `house:` purse ("House purses are off in this world"). It moves money each day, so it waits on the economy check. Until
+  then pay from the treasury, a town, or a House business's own till (for Greatly, `till:job:rm_eleanor_saltcot`).
+- **A plain cap on the coin** (`"rewardLimit": {"perDay": 2, "scope": "quest"}`, the quest editor's **Coin rewards a game
+  day, at most**): after 2 coin rewards in a game day the rest are given without their coin (the rewards' other effects, a
+  greeting, a deed, still come; the timeline's reward notes say why). `"scope": "purse"` counts every quest of the story
+  that pays from the same purse. It is the shorthand of the one purse rule (decisions 3.2): where the story declares them,
+  each coin paid is added to the world number `coin_<purse>_day` (`coin_ridgemere_day`, `coin_till_eleanor_saltcot_day`)
+  that `nh-purses` sets back to 0 each day, and no coin is paid while the switch `coin_<purse>_ok` is off.
 - **A goal from a value:** an objective's `goal` may be a value, `{"max": [12, {"times": [{"audience": "active"}, 4]}]}`,
   read when a copy starts and kept in it (1 to 1,000,000). With `"goalLive": true` (a quest of the whole story only) it is
   read again as the copy is credited and after each firing, never below what is made, and the objective is done the
@@ -484,6 +497,27 @@ rule above ends the quest when the carter dies.
 - **Who may take part:** audience `players` (a list), `active` (active in the last N days, frozen at publication), `open`
   (nobody at first: a wolf comes in by taking a quest, or by `participant.add`), `everyone` (the active wolves, and each who
   signs in after). Open and everyone take a `cap`, up to 5,000.
+
+### Quests any town can give
+
+A quest's giver may be **whoever a resident variable of the story holds** (`"giver": {"var": "carter"}`; the quest editor's
+**Or given by whoever a variable holds**), and **Cast a resident** (`cast.pick`) fills it as the story runs: a living,
+placed resident whose work is the words given (`job`: "carter" finds a "carter at the yard"), of a town, of a House (a
+member, or one whose work place it claims), of a quarter, none of a list left out (`notIn`), the nearest the named wolf
+first (at their work in the wolf's place, then their home, then the wolf's town), the rest in an order the run keeps.
+At least one of the work, the town, the House or the quarter. Then **A resident is cast** (`cast chosen`: `target` the
+resident, `detail` the variable, `actor` the wolf they were chosen near) or **Nobody fits a casting** (`cast failed`: the
+variable keeps what it held) follows, in the same turn.
+
+```json
+{"do": "effect", "effect": {"kind": "cast.pick", "var": "carter", "job": "carter", "town": "larkfield", "notIn": "tried", "near": "$actor"}}
+```
+
+The offer goes to the resident the variable holds, and moves when it changes: cast again when the carter dies (a trigger on
+`death` whose actor is the variable's), and the next wolf takes it at the new carter. A wolf's copy is handed in to the giver
+it began with (their journal names them), and a reward's greeting is from that giver too. Keep those cast in a list (`list
+add` on `cast chosen`) and leave them out, so the same carter is never cast twice. A rehearsal case says who the world
+would cast: `"cast": {"carter": ["rm111", "rm112"]}` (the first not left out; none: `cast failed`).
 
 ### Chains: requires
 
@@ -725,6 +759,13 @@ game day). **Campaigns → the run → Variables & timers → What residents rem
 Writing the lines: no resident's name in a library line (they are said by everyone), the speaker's dialect as any line,
 and a key table of the campaign's (`nh_stage`, `nh_debts`…) so chapters agree on the words.
 
+**The story topic.** While a live story has residents remember a realm key (`scope: "realm"`), two residents who meet may
+talk of **the story itself**: the director's `story` topic (news, as a death or a festival is), one for each key's prefix
+(`nh` for `nh_stage`), with `topic.story` the prefix. Its scenes are the library's `talk.story` ones, gated on the keys:
+`scene talk.story` with `[topic.story=nh world.mem.nh_stage=reckoning]`. It opens only where the library has `talk.story`
+scenes, so a town whose library has none (the talk town of the tests) never hears it, and it closes when the run ends or
+its keys are forgotten. Until such scenes are written, the campaign rides `news`, `gossip` or `day`, gated on `world.mem.nh_*`.
+
 **Rumours** (`belief.plant`): a number of residents of a town (living, placed, never the one it is about; the same ones each
 time, by the run's seed) come to believe a phrase of a resident, as if they had heard it: gossip tells it ("Ingrid Kendrick
 was seen at the Customs House at midnight") and it spreads on friendships and caravans like any belief, fading by the
@@ -830,6 +871,27 @@ campaigns", with a reason).
 ```json
 {"kind": "npc.sentence", "npc": "rm_ilse_coalley", "place": "r2_the_keep_down", "days": 7}
 ```
+
+**Put an unplaced resident first in line** (`npc.queue`, a builder or the owner) names a resident the world knows but who
+has no home yet (one of the Country's) to take **the next post that falls vacant in a town**, by the careers book's rules:
+when a post there that pays has stood empty its eight days, they are sent for before anyone the rules would choose (of any
+class), and come in from the Country to take it. It never makes a vacancy, and nobody new is made. Lasting; refused at
+approval for a resident who has a place already, and by the game for one too young or too old to take up a post. Named
+again, they are first again; named for another town, they move there.
+
+```json
+{"kind": "npc.queue", "npc": "cty_eskar", "town": "coldwater"}
+```
+
+**A paw at a resident's work.** A wolf beside a resident at their own post, in their hours (one that is not farm work or a
+bench: those have their own work), may **Lend a paw** from the resident's menu: the work's spells come by the clock, no
+wage is paid and nothing of the resident's is made faster. When it ends, **Two worked together** (`together`) has `actor`
+the wolf, `target` the resident, `item` `beside` and `quantity` the spells, once a game day for a wolf and a resident:
+`{"on": "together", "match": {"item": "beside", "target": "rm_osric_ropeworth"}}` is "work beside the ropemaker".
+
+**A mantle given back.** A mantle a story binds (`mantle.assign`) is laid down when the story ends, or when it lays it down
+itself (`mantle.release`), and **the mantle the resident wore before is theirs again** (none before: they wear none). A
+mantle passed on to someone else since cannot come back: theirs is laid down instead.
 
 ## 9. Rehearsing
 
@@ -951,14 +1013,14 @@ Ranks are viewer, dm, builder, owner. In your own studio a Dungeon Master does e
 | See the Campaigns console | a Dungeon Master (it names wolves and where they are) |
 | Approve and publish a story, a campaign | a Dungeon Master, and the marks below for what it contains |
 | A story that **acts on wolves** (`character.injury`, `story.area.damage`, `item.take`, `warrant.issue`) | the owner, or "may act on players' wolves" |
-| A story that **needs a builder** (`faction.relation`, `standing.adjust`, since Phase 10 the economy's `prices.reset`, `project.complete`, `project.cancel`, the realm's figures, `figure.set`, `figure.clear`, a resident made a foe, `foe.outlaw`, and the lasting changes to residents, `npc.post` and `npc.sentence`) | a builder or the owner |
+| A story that **needs a builder** (`faction.relation`, `standing.adjust`, since Phase 10 the economy's `prices.reset`, `project.complete`, `project.cancel`, the realm's figures, `figure.set`, `figure.clear`, a resident made a foe, `foe.outlaw`, and the lasting changes to residents, `npc.post`, `npc.sentence` and `npc.queue`) | a builder or the owner |
 | Undo a figure a story set | a builder or the owner |
 | Let go of a campaign's holds | the owner, or "may steer campaigns" |
 | Steer a running story (every control) | the owner, or the owner's "may steer campaigns" for the account (My world, Editor accounts) |
 | A control that could release an effect marked above | also what approving it would need |
 | Declare, set or remove a world variable; set a wolf's realm value | the owner, or "may steer campaigns" |
 | Release a sentenced resident now | the owner, or "may steer campaigns" |
-| Hold all; change the alert rules; grant "may steer campaigns" | the owner |
+| Hold all; change the alert rules; grant "may steer campaigns"; turn House purses on or off (`house-purses`) | the owner |
 
 The weather, notices, market events and the other effects need what the same act needs by hand on LIVE: a Dungeon Master.
 Underneath it all the game's own guard stays: on a community world with cheats off, a reward to the host's own wolf is
@@ -975,7 +1037,7 @@ takes back what the story held, as it was before the story first touched it. Wha
 | `npc.hold` | the resident is released to their day |
 | `npc.follow` | the resident leaves the party and goes home |
 | `visitor.add` | the stranger goes |
-| `mantle.assign` | the mantle is laid down |
+| `mantle.assign` | the mantle is laid down, and the one the resident wore before is theirs again |
 | `board.post` | the notice comes down |
 | `weather.set` | the weather goes back to the season's (it also runs out by itself after its hours) |
 | `story.ping` | the map markers go (they also run out by themselves) |
@@ -991,6 +1053,8 @@ takes back what the story held, as it was before the story first touched it. Wha
 | a closure quest's finished Story | **stays**: a record of a finished story |
 | `npc.howl` | **stays**: the town remembers the howl a while, as any howl |
 | `npc.post` | **stays**: the crown's change (a post given, whoever held it) is the careers book's from then on |
+| `npc.queue` | **stays**: the resident keeps their place in line until a post there falls vacant |
+| `cast.pick` | the story's own: the variable goes with the run; the resident is untouched |
 | `npc.sentence` | **stays**: the resident serves the days even after the story ends (`sentence served`), unless an admin presses **Release now** |
 | a realm variable | **stays**: each wolf's value is kept for every story that declares it |
 | `story.notify`, `quest.withdraw` | the story's own: news told is told; an offer taken back goes with the run |
@@ -1084,7 +1148,7 @@ Made from the trigger catalogue (`Data/Storylines/trigger-catalogue.json`), the 
 
 ### Events
 
-221 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
+223 events. A trigger names one (`"on"`) and may filter its fields by exact text (`"match"`: actor, target, cell, item, detail). Fields not listed are empty for that event.
 
 #### Story engine
 
@@ -1233,6 +1297,36 @@ Sent by the story runner to every other live story of the world that declares th
 
 ```json
 {"id": "when-variable-changed", "on": "variable changed", "match": {"target": "ropes"}, "actions": [{"do": "note", "text": "A world variable changes"}]}
+```
+
+<a id="event-cast-chosen"></a>**`cast chosen`**: A resident is cast (the story's own)
+
+The story's 'Cast a resident' found someone: target the resident, detail the variable they were put in, actor the wolf they were chosen near (empty when none was named).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `actor` | the wolf they were chosen near (wolf) | any wolf |
+| `target` | the resident cast (resident) | anyone |
+| `detail` | the variable (text) | any |
+
+Sent by the story itself as it runs, after the fact whose trigger cast; the game never records it.
+
+```json
+{"id": "when-cast-chosen", "on": "cast chosen", "match": {"target": "rm111"}, "actions": [{"do": "note", "text": "A resident is cast"}]}
+```
+
+<a id="event-cast-failed"></a>**`cast failed`**: Nobody fits a casting (the story's own)
+
+The story's 'Cast a resident' found nobody living and placed who fits: detail the variable (it keeps what it held).
+
+| Field | Holds | Left out means |
+|---|---|---|
+| `detail` | the variable (text) | any |
+
+Sent by the story itself as it runs, after the fact whose trigger cast; the game never records it.
+
+```json
+{"id": "when-cast-failed", "on": "cast failed", "actions": [{"do": "note", "text": "Nobody fits a casting"}]}
 ```
 
 #### Scenes
@@ -1716,7 +1810,7 @@ A character tends a downed one beside it and stands them up.
 
 <a id="event-together"></a>**`together`**: Two worked together (mission evidence, has a tile)
 
-When a joint work (foraging, farm work, bench work) ends, one event for each pair who worked enough beats side by side.
+When a joint work (foraging, farm work, bench work) ends, one event for each pair who worked enough beats side by side. A wolf who lent a paw to a resident at their own work (Lend a paw): actor the wolf, target the resident, item 'beside', quantity the beats, once a game day for the pair.
 
 | Field | Holds | Left out means |
 |---|---|---|
@@ -5759,7 +5853,7 @@ Reads: Go to the phase **muster**
 
 ### Effects
 
-91 world effects, each one action `{"do": "effect", "effect": {...}}` (or, for a phase, one of what it sends as it opens). Each becomes an order the game applies and may refuse, with a receipt, except the story's own. On any effect the game applies, `ifRefused` says what the story does when it is refused: `pause` (the default), `skip`, or `when here` (an effect to one wolf, held until they are next in the world, `waitDays` 1 to 90).
+93 world effects, each one action `{"do": "effect", "effect": {...}}` (or, for a phase, one of what it sends as it opens). Each becomes an order the game applies and may refuse, with a receipt, except the story's own. On any effect the game applies, `ifRefused` says what the story does when it is refused: `pause` (the default), `skip`, or `when here` (an effect to one wolf, held until they are next in the world, `waitDays` 1 to 90).
 
 #### Telling the wolves
 
@@ -6043,7 +6137,7 @@ Reads: Send **stranger-1** away
 
 <a id="effect-mantle-assign"></a>**`mantle.assign`**: Bind a mantle (undone at the end)
 
-A mantle (doc 84: a part with its own lines in the dialogue window) bound to the resident. Released when the story ends.
+A mantle (doc 84: a part with its own lines in the dialogue window) bound to the resident. When the story ends, or lays the mantle down itself, the mantle they wore before is theirs again (none before: they wear none).
 
 Reads: **rm111** takes up the mantle **ferryman**
 
@@ -6058,7 +6152,7 @@ Reads: **rm111** takes up the mantle **ferryman**
 
 <a id="effect-mantle-release"></a>**`mantle.release`**: Release a mantle
 
-The resident's mantle is released.
+The resident's mantle is released. One this story bound: the mantle they wore before is theirs again.
 
 Reads: **rm111** lays down their mantle
 
@@ -6097,6 +6191,41 @@ Reads: **rm111** takes the post **job:rm112**; whoever held it gives it up
 
 ```json
 {"do": "effect", "effect": {"kind": "npc.post", "npc": "rm111", "post": "job:rm112"}}
+```
+
+<a id="effect-npc-queue"></a>**`npc.queue`**: Put an unplaced resident first in line (needs a builder)
+
+An unplaced resident (one the world knows but who has no home yet) takes the next vacancy in that town by the careers rules, before anyone the rules would choose. It never makes a vacancy, and nobody new is made. Lasting: never undone. Refused for a resident with a place, or one too young or too old to take up a post.
+
+Reads: **cty_fisher** is first in line for the next post that falls vacant in **greyfen**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `npc` | the resident | resident |
+| `town` | the town | town |
+
+```json
+{"do": "effect", "effect": {"kind": "npc.queue", "npc": "cty_fisher", "town": "greyfen"}}
+```
+
+<a id="effect-cast-pick"></a>**`cast.pick`**: Cast a resident (v2, the story's own)
+
+The story looks for a living, placed resident who fits (their work, their town, their House, their quarter), leaves out those in a list, prefers the one nearest a wolf, and puts them in a resident variable. Then 'cast chosen' happens (or 'cast failed' when nobody fits, and the variable keeps what it held). Use it for quests any town can give: a quest's giver may be that variable.
+
+Reads: Choose a resident **carter** **greyfen**, not in, near **$actor**, as **carter**
+
+| Parameter | What | Kind |
+|---|---|---|
+| `var` | into | variable; a variable of type resident |
+| `job` | whose work is | text; up to 40 characters; optional |
+| `town` | in the town | town; optional |
+| `faction` | of the House | faction; optional |
+| `quarter` | in the quarter | text; up to 40 characters; optional |
+| `notIn` | not one of | variable; a variable of type residents; optional |
+| `near` | nearest to | wolf; optional |
+
+```json
+{"do": "effect", "effect": {"kind": "cast.pick", "var": "carter", "job": "carter", "town": "greyfen", "near": "$actor"}}
 ```
 
 <a id="effect-npc-sentence"></a>**`npc.sentence`**: Sentence a resident (needs a builder)

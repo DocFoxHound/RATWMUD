@@ -585,6 +585,56 @@ place, `quantity` the days or the whole days served, `target` the run, `detail` 
 checkpoint) and `sentence-release` `{npc, reason}` (queues the game's `npc.unsentence`: `sentence served`, item
 `released`; audited `story.sentence-release`).
 
+## Casting, queues, paws and House purses (doc 86, Phase 9)
+
+**`cast.pick`** `{var, job?, town?, faction?, quarter?, notIn?, near?}` (`story`, `v2`; at least one of job, town, faction,
+quarter; `var` a `resident` variable of the story, `notIn` a `residents` list of the story or the world; `town` may be a
+value): the story's own effect (`story_quests.CAST_EFFECTS`). `Run.cast` builds a request (with the near wolf's tile from the
+event's facts and a seed) and answers it at once through `story_quests.CASTER`: the runner sets it (`story_runner.world_caster`,
+in `tick_run` and `take_commands`) to `cast_pick`, a query of `dm.story_residents` with `live.npcs`, `dm.story_posts` (0080),
+`live.npc_voice`, `live.npc_state`, `live.faction_members` and `live.faction_claims`; a rehearsal sets it to the case's
+`cast` (`{var: [resident, ...]}`, the first not left out). Where nothing answers (What if) the request waits in
+`state.castRequests` and is answered before the next fact (`story_program.advance`). The answer writes the variable and
+follows the fact with the story's own **`cast chosen`** (`target` the resident, `detail` the variable, `actor` the near wolf)
+or **`cast failed`** (`detail`); `state.castLog` keeps the last 20. Approval checks the town and the House.
+
+**A giver from a variable**: a quest's `giver` may be `{"var": "<resident variable of the story>"}`. `giver_of` reads it each
+time the offers are worked out (no offer while it holds nobody), a copy keeps the giver it began with (`c.giver`) for its
+hand-in, its journal view and a reward's greeting, and the offers add an entry closed to new takers (`players: []`) at a
+copy's own giver when the variable has moved on. `references()` skips it.
+
+**`rewardLimit`** `{perDay: 1-1000, scope: "quest" | "purse"}` on a quest that pays coin: its `character.grant` rewards stop
+after `perDay` a game day (`state.rewardLimits`, by the quest or `purse:<purse>`), the reward given without its coin and a
+note in `rewardNotes`. Where the program declares them, each coin paid is added to the world number `coin_<purse>_day`
+and none is paid while the world switch `coin_<purse>_ok` is off (`story_quests.purse_counter`: `town:ridgemere` is
+`ridgemere`, `till:job:rm_eleanor_saltcot` is `till_eleanor_saltcot`).
+
+**`npc.queue`** `{npc, town}` (`needsBuilder`; the runner's single-key order, target the resident, payload `{town}`):
+approval refuses a resident with a place (home or work) in `dm.story_residents` and an unknown town. The game's
+`Society::queueResident` (through `World::queueResident`) keeps `careers.queued[town]` (saved with the careers); at a vacancy
+of that town's that pays, at its eight days, `tendCareers` sends for the first in line (`arrivalFor` with `only`, of any
+class) before the city's wolves and the Country's choice ("first in line, by a story"). Lasting.
+
+**Mantles given back** (C15): `held.mantles` is `{npc: the mantle worn before, or ""}` (and `held.mantleHow`, how it was
+bound); an older save's list is read as `{npc: ""}`. `endStoryWorld`, and the story's own `mantle.release`, call
+`Game::putBackMantle`: the mantle before bound again (`assignMantle` with its `how`), or the story's released.
+
+**A paw at a resident's work** (SQ3): `World::lendAPaw` to a resident at their own post (`besideWorkAt`: not farm work or a
+bench) starts the activity `beside` (`Data/Together/patterns.json`, `at` post): beats by the clock, no practice, no
+`lendPaw`, no coin; its end records `together` (actor the wolf, target the resident, item `beside`, quantity the beats),
+once a game day for the pair.
+
+**House purses** (M3): a purse `house:<faction>` (or `house:<name>` for `house_<name>`) is the account `purse:<faction>`
+(a new facility prefix, staged, never topped up), filled once a game day by `Game::tendHousePurses` from the tills of the
+posts whose work cell the House claims first (`HouseShare` 10% of what a till holds over `HouseTillFloat` 80, the purse at
+most `HousePurseMost` 2,500). Behind the world switch `storyHousePurses` (the game's `story.house-purses on|off`, the
+owner's op `house-purses`, audited; kept in the checkpoint as `people.storyHousePurses`): off, nothing moves, the purse maps
+to no account, and approval refuses `house:` purses.
+
+**The `story` topic** (T6): `Data/Talk/topics.json`'s `story` (news, base 2.2); the director weighs it once for each prefix
+of a live story's realm memory keys (`Game::storyTopicsChanged` → `World::setStoryTopics`), only when the library has
+`talk.story` scenes; `topic.story` is the prefix.
+
 ## Writing a program
 
 The portable format is `ratw-story-program`, version 1. A program has an ID, title, audience, opening phase, phases and rehearsal cases. The examples under `Data/Storylines/programs/` are complete programs. The catalogue returned by the author API lists every supported event and the fields of each effect.

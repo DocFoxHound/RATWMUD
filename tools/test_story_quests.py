@@ -1047,3 +1047,155 @@ class Phase4AfterReview(unittest.TestCase):
         self.assertRaisesRegex(ValueError, 'requires another quest of the story done', rules.validate, p)
         p['quests'][1]['requires']['test'] = 'all'
         rules.validate(p)
+
+
+def casting(cast_town='larkfield'):
+    """Doc 86, C7: a story that casts a carter of a town for the wolf who comes first, and recasts when the one cast dies; the
+    axle's giver is whoever was cast."""
+    p = {'format': 'ratw-story-program', 'version': 2, 'id': 'p9cast', 'title': 'The carter wanted', 'start': 'a',
+         'audience': {'kind': 'open'},
+         'variables': [{'id': 'carter', 'type': 'resident', 'scope': 'story'}, {'id': 'tried', 'type': 'residents', 'scope': 'story'},
+                       {'id': 'failed', 'type': 'number', 'scope': 'story'}],
+         'quests': [{'id': 'axle', 'title': 'An axle', 'giver': {'var': 'carter'}, 'repeat': 'daily',
+                     'offer': {'say': 'My axle split. Could you find me another?'},
+                     'objectives': [{'id': 'bring', 'label': 'Bring an axle.', 'on': 'gift', 'match': {'item': 'axle'}}],
+                     'rewards': [{'kind': 'npc.greet', 'player': '$actor', 'text': 'You found me an axle!'}]}],
+         'phases': [{'id': 'a', 'journal': 'A.', 'effects': [], 'exits': [], 'triggers': [
+             {'id': 'cast', 'on': 'arrival', 'once': 'campaign', 'actions': [
+                 {'do': 'effect', 'effect': {'kind': 'cast.pick', 'var': 'carter', 'job': 'carter', 'town': cast_town, 'notIn': 'tried',
+                                             'near': '$actor'}}]},
+             {'id': 'chosen', 'on': 'cast chosen', 'match': {'detail': 'carter'}, 'actions': [
+                 {'do': 'list add', 'var': 'tried', 'value': {'var': 'carter'}}]},
+             {'id': 'none', 'on': 'cast failed', 'actions': [{'do': 'add', 'var': 'failed', 'value': 1}]},
+             {'id': 'died', 'on': 'death', 'if': {'test': 'compare', 'left': {'field': 'actor'}, 'op': '=', 'right': {'var': 'carter'}},
+              'actions': [{'do': 'effect', 'effect': {'kind': 'cast.pick', 'var': 'carter', 'job': 'carter', 'town': cast_town,
+                                                      'notIn': 'tried'}}]}]}],
+         'tests': [{'name': 'x', 'cohort': [], 'events': [], 'expect': ['a']}]}
+    rules.validate(p)
+    return p
+
+
+def cast_state(p, events, cast):
+    p = program(p)
+    p['tests'] = [{'name': 'a case', 'cohort': list(p['audience'].get('players', [])), 'events': events, 'expect': [p['start']],
+                   'cast': cast}]
+    seen = {}
+    report = rules._play_case(p, p['tests'][0], lambda f, state, *_: seen.update(state=json.loads(json.dumps(state))))
+    return seen['state'], report
+
+
+class Phase9Casting(unittest.TestCase):
+    """Doc 86, Phase 9: C7 cast.pick and a giver from a variable; SQ4 rewardLimit."""
+
+    def test_a_carter_cast_in_larkfield_gives_the_quest_and_is_recast_when_they_die(self):
+        p = casting()
+        cast = {'carter': ['rm201', 'rm202']}
+        state, report = cast_state(p, [fact(1, 'arrival', 0.1, ASH)], cast)
+        self.assertEqual(state['counters']['story']['carter'], 'rm201')
+        self.assertEqual(state['counters']['story']['tried'], ['rm201'])
+        self.assertEqual([o['npc'] for o in quests.offers(p, state)], ['rm201'], 'the offer is at the carter cast')
+        events = [fact(1, 'arrival', 0.1, ASH), fact(2, 'quest accepted', 0.2, ASH, target='run', item='rm201', detail='axle'),
+                  fact(3, 'death', 0.3, 'rm201'), fact(4, 'quest accepted', 0.4, BIRCH, target='run', item='rm201', detail='axle'),
+                  fact(5, 'quest accepted', 0.5, BIRCH, target='run', item='rm202', detail='axle')]
+        state, report = cast_state(p, events, cast)
+        self.assertEqual(state['counters']['story']['carter'], 'rm202', 'recast when the carter died, never the one tried')
+        self.assertEqual(state['quests']['axle'][ASH]['giver'], 'rm201', "Ash's copy keeps the giver it began with")
+        self.assertEqual(state['quests']['axle'][BIRCH]['giver'], 'rm202', 'Birch took it at the new carter, not the old')
+        offers = sorted((o['npc'], o.get('players')) for o in quests.offers(p, state))
+        self.assertEqual(offers, [('rm201', []), ('rm202', None)], 'offered at the new carter; the old keeps the copy under way')
+        self.assertEqual(quests.journal(p, state, ASH)['quests'][0]['giver'], 'rm201')
+        events += [fact(6, 'gift', 0.6, ASH, target='rm201', item='axle'), fact(7, 'quest handed in', 0.7, ASH, target='run', item='rm202', detail='axle'),
+                   fact(8, 'quest handed in', 0.8, ASH, target='run', item='rm201', detail='axle')]
+        state, report = cast_state(p, events, cast)
+        self.assertEqual(state['quests']['axle'][ASH]['status'], 'done', 'handed in to the giver it began with')
+        self.assertEqual(report['quests']['axle'][ASH], 'done')
+        greet = [e for e in report['effects'] if e['kind'] == 'npc.greet']
+        self.assertEqual([e['npc'] for e in greet], ['rm201'], "the reward's greeting from the copy's giver")
+
+    def test_nobody_fits(self):
+        p = casting()
+        state, _ = cast_state(p, [fact(1, 'arrival', 0.1, ASH)], {})
+        self.assertEqual(state['counters']['story'].get('failed'), 1)
+        self.assertNotIn('carter', state['counters']['story'], 'the variable keeps what it held')
+        self.assertEqual(quests.offers(p, state), [], 'nobody cast: no offer yet')
+        state, _ = cast_state(p, [fact(1, 'arrival', 0.1, ASH)], {'carter': ['rm201']})
+        self.assertEqual(state['castLog'][-1]['chosen'], 'rm201')
+
+    def test_a_casting_asked_where_nobody_answers_waits(self):
+        p = casting()
+        state = rules.begin(p, [], 0)
+        rules.advance(p, state, fact(1, 'arrival', 0.1, ASH), 0.1)
+        self.assertEqual(len(state['castRequests']), 1, 'no caster: the request waits')
+        req = state['castRequests'][0]
+        self.assertEqual((req['var'], req['job'], req['town'], req['near'], req['notIn']), ('carter', 'carter', 'larkfield', ASH, []))
+        token = quests.CASTER.set(lambda r: 'rm202')
+        try:
+            rules.advance(p, state, fact(2, 'deed', 0.2, ASH), 0.2)
+        finally:
+            quests.CASTER.reset(token)
+        self.assertNotIn('castRequests', state)
+        self.assertEqual(state['counters']['story']['carter'], 'rm202', 'answered before the next fact')
+
+    def test_the_casting_checks(self):
+        p = casting()
+        for change, words in (({'job': None, 'town': None}, 'at least one'), ({'var': 'tried'}, 'resident variable of the story'),
+                              ({'notIn': 'carter'}, 'list of residents')):
+            q = copy.deepcopy(p)
+            e = q['phases'][0]['triggers'][0]['actions'][0]['effect']
+            for k, v in change.items():
+                if v is None:
+                    e.pop(k)
+                else:
+                    e[k] = v
+            with self.subTest(change=change):
+                self.assertRaisesRegex(ValueError, words, rules.validate, q)
+        q = copy.deepcopy(p)
+        q['quests'][0]['giver'] = {'var': 'nobody'}
+        self.assertRaisesRegex(ValueError, 'giver from a variable', rules.validate, q)
+        q['quests'][0]['giver'] = {'var': 'tried'}
+        self.assertRaisesRegex(ValueError, 'giver from a variable', rules.validate, q)
+        q['variables'].append({'id': 'mine', 'type': 'resident', 'scope': 'player'})
+        q['quests'][0]['giver'] = {'var': 'mine'}
+        self.assertRaisesRegex(ValueError, 'giver from a variable', rules.validate, q)
+
+    def limited(self, per_day=2, scope='quest', ok=True):
+        grant = {'kind': 'character.grant', 'player': '$actor', 'coins': 3, 'purse': 'town:larkfield', 'reason': 'for the axle'}
+        p = one_quest({'on': 'gift', 'match': {'item': 'axle'}}, rewards=[grant], repeat='daily',
+                      variables=[{'id': 'coin_larkfield_day', 'type': 'number', 'scope': 'world'},
+                                 {'id': 'coin_larkfield_ok', 'type': 'switch', 'scope': 'world', 'initial': ok}],
+                      players=(ASH, BIRCH, ELM, 'player-fen'))
+        p['quests'][0]['rewardLimit'] = {'perDay': per_day, 'scope': scope}
+        rules.validate(p)
+        return p
+
+    def test_a_reward_limit_pays_twice_a_day_and_writes_the_counters(self):
+        p = self.limited()
+        arrivals = [arrive(10 + i, w, 0.05) for i, w in enumerate((ASH, BIRCH, ELM, 'player-fen'))]
+        gifts = [fact(i, 'gift', 0.1 * i, w, target='rm111', item='axle') for i, w in enumerate((ASH, BIRCH, ELM), 1)]
+        state, report = cast_state(p, arrivals + gifts, {})
+        grants = [e for e in report['effects'] if e['kind'] == 'character.grant']
+        self.assertEqual([e['player'] for e in grants], [ASH, BIRCH], 'paid twice, then the reward without its coin')
+        self.assertEqual(state['counters']['world']['coin_larkfield_day'], 6, 'the counter nh-purses resets: 3 + 3')
+        self.assertEqual(state['rewardNotes'][-1]['wolf'], ELM)
+        self.assertIn('coin rewards a day already', state['rewardNotes'][-1]['why'])
+        state, report = cast_state(p, arrivals + gifts + [fact(9, 'gift', 1.2, 'player-fen', target='rm111', item='axle')], {})
+        self.assertEqual([e['player'] for e in report['effects'] if e['kind'] == 'character.grant'], [ASH, BIRCH, 'player-fen'],
+                         'a new game day pays again')
+        # The floor switch off (decisions 3.2): no coin at all.
+        state, report = cast_state(self.limited(ok=False), arrivals + gifts, {})
+        self.assertFalse([e for e in report['effects'] if e['kind'] == 'character.grant'])
+        self.assertIn('thin', state['rewardNotes'][-1]['why'])
+        self.assertEqual(quests.purse_counter('town:ridgemere'), 'ridgemere')
+        self.assertEqual(quests.purse_counter('till:job:rm_eleanor_saltcot'), 'till_eleanor_saltcot', "decisions 3.2's names")
+        self.assertEqual(quests.purse_counter('house:greatly'), 'house_greatly')
+
+    def test_the_reward_limit_checks(self):
+        p = self.limited()
+        for limit, words in (({'perDay': 0}, '1 to 1,000'), ({'perDay': 2, 'scope': 'town'}, 'for the quest or for its purse')):
+            q = copy.deepcopy(p)
+            q['quests'][0]['rewardLimit'] = limit
+            with self.subTest(limit=limit):
+                self.assertRaisesRegex(ValueError, words, rules.validate, q)
+        q = copy.deepcopy(p)
+        q['quests'][0]['rewards'] = [{'kind': 'deed.award', 'player': '$actor', 'detail': 'Found an axle.'}]
+        self.assertRaisesRegex(ValueError, 'pays coin', rules.validate, q)

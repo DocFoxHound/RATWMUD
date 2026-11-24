@@ -2750,7 +2750,7 @@
    "group": "talk",
    "title": "Two worked together",
    "sentence": "{actor} and {target} work together at {item}",
-   "help": "When a joint work (foraging, farm work, bench work) ends, one event for each pair who worked enough beats side by side.",
+   "help": "When a joint work (foraging, farm work, bench work) ends, one event for each pair who worked enough beats side by side. A wolf who lent a paw to a resident at their own work (Lend a paw): actor the wolf, target the resident, item 'beside', quantity the beats, once a game day for the pair.",
    "fields": {
     "actor": {
      "type": "character",
@@ -7227,6 +7227,50 @@
     "target"
    ],
    "notes": "Sent by the story runner to every other live story of the world that declares the variable and listens for it; never in the world's log."
+  },
+  {
+   "id": "cast chosen",
+   "group": "story",
+   "title": "A resident is cast",
+   "sentence": "{target} is cast as {detail} (near {actor})",
+   "help": "The story's 'Cast a resident' found someone: target the resident, detail the variable they were put in, actor the wolf they were chosen near (empty when none was named).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf they were chosen near",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "resident",
+     "label": "the resident cast",
+     "any": "anyone"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the variable",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "story": true,
+   "notes": "Sent by the story itself as it runs, after the fact whose trigger cast; the game never records it."
+  },
+  {
+   "id": "cast failed",
+   "group": "story",
+   "title": "Nobody fits a casting",
+   "sentence": "nobody fits {detail}",
+   "help": "The story's 'Cast a resident' found nobody living and placed who fits: detail the variable (it keeps what it held).",
+   "fields": {
+    "detail": {
+     "type": "text",
+     "label": "the variable",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "story": true,
+   "notes": "Sent by the story itself as it runs, after the fact whose trigger cast; the game never records it."
   }
  ],
  "conditions": [
@@ -11547,7 +11591,7 @@
    "group": "residents",
    "title": "Bind a mantle",
    "sentence": "{npc} takes up the mantle {mantle}",
-   "help": "A mantle (doc 84: a part with its own lines in the dialogue window) bound to the resident. Released when the story ends.",
+   "help": "A mantle (doc 84: a part with its own lines in the dialogue window) bound to the resident. When the story ends, or lays the mantle down itself, the mantle they wore before is theirs again (none before: they wear none).",
    "params": [
     {
      "key": "npc",
@@ -11567,7 +11611,7 @@
    "group": "residents",
    "title": "Release a mantle",
    "sentence": "{npc} lays down their mantle",
-   "help": "The resident's mantle is released.",
+   "help": "The resident's mantle is released. One this story bound: the mantle they wore before is theirs again.",
    "params": [
     {
      "key": "npc",
@@ -11610,6 +11654,105 @@
      "key": "post",
      "type": "post",
      "label": "the post"
+    }
+   ]
+  },
+  {
+   "id": "npc.queue",
+   "group": "residents",
+   "title": "Put an unplaced resident first in line",
+   "needsBuilder": true,
+   "sentence": "{npc} is first in line for the next post that falls vacant in {town}",
+   "help": "An unplaced resident (one the world knows but who has no home yet) takes the next vacancy in that town by the careers rules, before anyone the rules would choose. It never makes a vacancy, and nobody new is made. Lasting: never undone. Refused for a resident with a place, or one too young or too old to take up a post.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town"
+    }
+   ]
+  },
+  {
+   "id": "cast.pick",
+   "group": "residents",
+   "title": "Cast a resident",
+   "v2": true,
+   "story": true,
+   "sentence": "Choose a resident {job} {town} {faction} {quarter}, not in {notIn}, near {near}, as {var}",
+   "help": "The story looks for a living, placed resident who fits (their work, their town, their House, their quarter), leaves out those in a list, prefers the one nearest a wolf, and puts them in a resident variable. Then 'cast chosen' happens (or 'cast failed' when nobody fits, and the variable keeps what it held). Use it for quests any town can give: a quest's giver may be that variable.",
+   "params": [
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "into",
+     "of": [
+      "resident"
+     ]
+    },
+    {
+     "key": "job",
+     "type": "text",
+     "label": "whose work is",
+     "max": 40,
+     "optional": true,
+     "words": {
+      "": "of any work"
+     }
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "in the town",
+     "optional": true,
+     "operand": true,
+     "words": {
+      "": "in any town"
+     }
+    },
+    {
+     "key": "faction",
+     "type": "faction",
+     "label": "of the House",
+     "optional": true,
+     "words": {
+      "": "of any House"
+     }
+    },
+    {
+     "key": "quarter",
+     "type": "text",
+     "label": "in the quarter",
+     "max": 40,
+     "optional": true,
+     "words": {
+      "": "in any quarter"
+     }
+    },
+    {
+     "key": "notIn",
+     "type": "variable",
+     "label": "not one of",
+     "of": [
+      "residents"
+     ],
+     "optional": true,
+     "words": {
+      "": "nobody left out"
+     }
+    },
+    {
+     "key": "near",
+     "type": "wolf",
+     "label": "nearest to",
+     "optional": true,
+     "words": {
+      "": "anyone"
+     }
     }
    ]
   },

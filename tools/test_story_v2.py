@@ -1066,3 +1066,32 @@ class Phase7Foes(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class Phase9Casting(unittest.TestCase):
+    """Doc 86, Phase 9 (C7, SQ3, SQ4, J7, C15): the Carter Wanted (story_v2_samples.CASTING): a carter cast near the first
+    wolf gives the quest, a paw lent beside them counts and binds them a mantle, the axle pays once a game day writing
+    coin_greyfen_day; nobody fits and a wolf of the Country is put first in line; in both twins."""
+
+    def review(self, p=None, native=True):
+        p = copy.deepcopy(p or samples.CASTING)
+        if native:
+            return rules.review(p)
+        with patch('story_native.interpreter', return_value=None):
+            return rules.review(p)
+
+    def test_the_carter_rehearses_clean_in_both_twins(self):
+        native, python = self.review(), self.review(native=False)
+        self.assertTrue(native['passed'] and not native['uncovered'], native)
+        self.assertEqual(native, python)
+        cast = native['tests'][0]
+        self.assertEqual([e['kind'] for e in cast['effects']], ['mantle.assign', 'character.grant'])
+        self.assertEqual(native['tests'][1]['path'], ['seek', 'waiting'])
+
+    def test_whom_the_case_casts_decides_it(self):
+        p = copy.deepcopy(samples.CASTING)
+        p['tests'][0]['cast'] = {'carter': ['rm112']}
+        report = self.review(p)
+        self.assertFalse(report['passed'], 'the quest is taken at rm111, who was never cast')
+        p['tests'][0]['cast'] = {'nobody': ['rm111']}
+        self.assertRaisesRegex(ValueError, 'casting names a resident variable', rules.review, p)

@@ -3900,6 +3900,20 @@ Result World::postResident(const std::string& positionId, const std::string& res
     return {true, e->name + " takes the post " + (p ? p->title : positionId) + ".", resident};
 }
 
+Result World::queueResident(const std::string& resident, const std::string& town)
+{
+    if (std::none_of(towns_.begin(), towns_.end(), [&](const auto& t) { return t.id == town; }))
+        return {false, "No such town: " + town + ".", resident};
+    const auto note = society_.queueResident(resident, town);
+    if (note.kind == "refused")
+        return {false, note.detail, resident};
+    const auto* r = society_.unplaced(resident);
+    const auto name = r ? r->name : resident;
+    if (note.kind == "held")
+        return {true, name + " is first in line there already.", resident};
+    return {true, name + " is first in line for the next post that falls vacant in " + town + ".", resident};
+}
+
 Result World::apprenticeResident(const std::string& positionId, const std::string& youth)
 {
     const auto note = society_.apprenticeTo(positionId, youth, careerWorld(), calendarDays_);

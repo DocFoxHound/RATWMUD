@@ -444,8 +444,9 @@ PEOPLE_EMPTY = ('accounts', 'profiles', 'safety', 'friends', 'requests', 'inbox'
 PEOPLE_PRUNE = ('deeds', 'nicknames', 'troublesHeard', 'troublesSolved', 'troublesResting', 'protectedMarks', 'loans',
                 'holds',
                 # (Doc 86: the stories' holds on residents, what residents remember, the greetings waiting, the stories' own
-                # items' names, the residents a story sentenced; a player's entries go.)
-                'storyHolds', 'storyMemory', 'storyGreets', 'storyItemNames', 'storySentences')
+                # items' names, the residents a story sentenced; a player's entries go. Phase 9: the world's switch for House
+                # purses, kept as it is.)
+                'storyHolds', 'storyMemory', 'storyGreets', 'storyItemNames', 'storySentences', 'storyHousePurses')
 
 
 def people_lodgings(people, st, section):

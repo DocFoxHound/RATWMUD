@@ -297,3 +297,65 @@ class WordsInTheWorld(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+@unittest.skipUnless(talk is not None and database_available(), 'local PostgreSQL required')
+class Phase9InTheWorld(unittest.TestCase):
+    """Doc 86, Phase 9's approval checks in a throwaway world (the console's fixture, House Greatly among its factions): a
+    House's purse refused while the world's switch storyHousePurses is off, and checked as SQ2 checks a purse when it is on
+    (M3); an unplaced resident first in line, never a placed one, in a town of the world (J7); a casting's town."""
+    setUpClass = classmethod(talk.console.ConsoleReads.setUpClass.__func__) if talk else None
+    tearDownClass = classmethod(talk.console.ConsoleReads.tearDownClass.__func__) if talk else None
+    fact = talk.console.ConsoleReads.fact if talk else None
+
+    def setUp(self):
+        talk.InTheWorld.setUp(self)
+
+    def refs(self, p, chapters=False):
+        return runner.references(self.conn, self.world, rules.validate(p), chapters=chapters)
+
+    def switch(self, on, accounts=None):
+        self.conn.execute('RESET ROLE')
+        self.conn.execute("""UPDATE game.checkpoints SET payload=jsonb_set(payload::jsonb,'{people}',%s::jsonb)::text WHERE world_id=%s""",
+                          (json.dumps({'storyHousePurses': True} if on else {}), self.world))
+        if accounts:
+            self.conn.execute("""UPDATE game.checkpoints SET payload=jsonb_set(payload::jsonb,'{society,accounts}',
+                                 (payload::jsonb->'society'->'accounts') || %s::jsonb)::text WHERE world_id=%s""",
+                              (json.dumps(accounts), self.world))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+
+    def test_a_house_purse_is_refused_while_the_switch_is_off(self):
+        grant = lambda purse: talk.program([talk.fx('character.grant', player='$actor', coins=5, purse=purse, reason='Greatly pays it')])
+        self.assertRaisesRegex(ValueError, 'House purses are off in this world', self.refs, grant('house:greatly'))
+        self.assertRaisesRegex(ValueError, 'No House "fell"', self.refs, grant('house:fell'))
+        self.switch(True)
+        self.assertRaisesRegex(ValueError, 'has no purse yet', self.refs, grant('house:greatly'))
+        self.switch(True, {'purse:house_greatly': {'cash': 42}})
+        for purse in ('house:greatly', 'house:house_greatly'):
+            with self.subTest(purse=purse):
+                self.refs(grant(purse))
+        self.switch(False)
+        self.assertRaisesRegex(ValueError, 'House purses are off', self.refs, grant('house:greatly'))
+        found = runner.reference_problems(self.conn, self.world, grant('house:greatly'))
+        self.assertTrue(any('storyHousePurses' in x['text'] for x in found), found)
+
+    def test_only_an_unplaced_resident_is_put_first_in_line(self):
+        self.conn.execute('RESET ROLE')
+        self.conn.execute("""INSERT INTO live.npcs(world_id,id,name,role,age,voice,appearance,hours_start,hours_end,home_x,home_y,
+                             work_x,work_y,evening_x,evening_y) VALUES (%s,'cty_carter','Kjell Saltdale','civilian',30,1,'{}',8,12,0,0,0,0,0,0)""",
+                          (self.world,))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+        self.refs(talk.program([talk.fx('npc.queue', npc='cty_carter', town='greyfen')]))
+        self.assertRaisesRegex(ValueError, 'rm111 has a place in the world already', self.refs,
+                               talk.program([talk.fx('npc.queue', npc='rm111', town='greyfen')]))
+        self.assertRaisesRegex(ValueError, 'Unknown town in this world: atlantis', self.refs,
+                               talk.program([talk.fx('npc.queue', npc='cty_carter', town='atlantis')]))
+
+    def test_a_castings_town_and_house(self):
+        p = talk.program([talk.fx('cast.pick', var='carter', job='carter', town='greyfen')])
+        p['variables'] = [{'id': 'carter', 'type': 'resident', 'scope': 'story'}]
+        self.refs(p)
+        p['phases'][0]['triggers'][0]['actions'][0]['effect']['town'] = 'atlantis'
+        self.assertRaisesRegex(ValueError, 'Unknown town in this world: atlantis', self.refs, p)
+        p['phases'][0]['triggers'][0]['actions'][0]['effect'].update(town='greyfen', faction='house_nobody')
+        self.assertRaisesRegex(ValueError, 'Unknown faction in this world: house_nobody', self.refs, p)

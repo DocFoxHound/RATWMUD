@@ -886,6 +886,12 @@ class World
     // spell times its rate, from the farm's till. No work when the till can't pay or the barn is full.
     const together::Activity* residentWorkAt(const std::string& farmer) const;
     Result helpAtWork(const std::string& player, const std::string& farmer);
+    // Doc 86, SQ3: lending a paw to a resident at their own post, in their hours, when it is no farm work or bench (those
+    // are helpAtWork's): "beside", its beats by the clock, no wage and nothing of theirs made faster; once a game day for
+    // a wolf and a resident. Its end writes `together` {actor the wolf, target the resident, item "beside", quantity the
+    // beats}. besideWorkAt: that work, or null (not at their post, or one that is farm work or a bench).
+    const together::Activity* besideWorkAt(const std::string& resident) const;
+    Result lendToResident(const std::string& helper, const std::string& resident);
     // A player did something (moved, spoke, any command): farm work, paid by the beat, needs a hand who is there.
     void noteActive(const std::string& player);
     // Gifted and Quickened at work (doc 53, 4): a work Gift the joint's activity takes (Winnow and Dry at threshing)
@@ -1025,6 +1031,8 @@ class World
     Result appointResident(const std::string& positionId, const std::string& resident);
     // Doc 86, C14: a post given to a resident by a story, whoever held it (Society::swapPost); the note recorded.
     Result postResident(const std::string& positionId, const std::string& resident);
+    // Doc 86, J7: an unplaced resident first in line for the next post that falls vacant in a town (Society::queueResident).
+    Result queueResident(const std::string& resident, const std::string& town);
     // Town projects standing (doc 57, Phase 4; the game hands them over when they change): what each does where, at its
     // strength (1; 0.5 worn under half; none at 0). A watch post counts +2 guards a strength against a raid in its cell
     // and the next, and no bandit camp gathers within two cells of it; a market cover keeps its town's stalls out in foul
@@ -1690,6 +1698,9 @@ class World
     void holdForScene(const std::string& id);
     // Doc 86, C11: the residents a story spares from old age (the Game keeps who spares whom; the world only skips them).
     void setStorySpared(std::set<std::string> ids) { storySpared_ = std::move(ids); }
+    // Doc 86, T6: the prefixes of the realm keys live stories have residents remember (nh): the `story` topic, one each.
+    void setStoryTopics(std::set<std::string> prefixes) { storyTopics_ = std::move(prefixes); }
+    const std::set<std::string>& storyTopics() const { return storyTopics_; }
     bool storySpared(const std::string& id) const { return storySpared_.count(id) > 0; }
     // Kills (true) or brings back (false) a character or NPC: stops them and lays them down, or stands them up.
     Result setDead(const std::string& id, bool dead);
@@ -2476,6 +2487,8 @@ class World
     std::map<std::string, std::string> jointOf_;
     std::map<std::string, std::set<std::string>> lendAsked_;
     std::map<std::string, double> lastWorked_;
+    std::map<std::string, std::int64_t> lentToday_;   // (Doc 86, SQ3: "wolf|resident" -> the game day a paw was last lent.)
+    bool residentAtPost(const std::string& id) const;
     double jointsAccumulator_ = 0;
     std::uint64_t jointNext_ = 1;
     void tendJoints(double dt);
@@ -2825,6 +2838,7 @@ class World
     // Old age (the user, 2026-10-13): from seventy a resident may die, likelier each year, so the world's people turn
     // over: children are born to take their place (Society::tendCareers). Not those the DM has protected.
     void tendOldAge();
+    std::set<std::string> storyTopics_;             // (Doc 86, T6: the story topic's prefixes.)
     std::set<std::string> storySpared_;             // Residents old age passes by while a story spares them (doc 86, C11).
     // An open, walkable tile near (x, y) in a cell that no resident calls home, for someone new to sleep.
     // `given`: tiles handed out already and not yet anyone's home (a pass's arrivals: takeResidentRequests), left out too.

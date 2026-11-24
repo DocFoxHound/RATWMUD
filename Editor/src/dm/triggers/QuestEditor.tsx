@@ -3,7 +3,7 @@
 // (objectives in sentences from the catalogue: required, optional or hidden, in order or not, counted), what fails it,
 // and what it gives (rewards to each wolf with credit, coins from a named purse, never minted).
 import {useState} from 'react';
-import {eventOf, eventParts, FIELDS, isId, newCondition, objectiveEvents, operandWords, renameObjective, renameQuest, REQUIRES_TESTS, SIGNAL, withQuests,
+import {eventOf, eventParts, FIELDS, giverWords, isId, newCondition, objectiveEvents, operandWords, renameObjective, renameQuest, REQUIRES_TESTS, SIGNAL, withQuests,
     type Condition, type FailRule, type Part, type Quest, type QuestObjective, type Ref, type Slot} from '../../lib/workbench';
 import {useBench} from './context';
 import {EventPicker, OfferValues, type Values} from './pickers';
@@ -156,7 +156,11 @@ export function QuestEditor({index, select}: {index: number; select: (r: Ref) =>
     };
     const v2 = program.version === 2;
     const open = program.audience.kind === 'open' || program.audience.kind === 'everyone';
-    const giverPart: Part[] = [{text: 'Given (and taken back) by '}, slotPart('giver', 'resident', 'a resident', q.giver, q.giver ? names.resident?.[q.giver] ?? q.giver : '')];
+    const named = typeof q.giver === 'string' ? q.giver : undefined;
+    const giverPart: Part[] = [{text: 'Given (and taken back) by '}, slotPart('giver', 'resident', 'a resident', named, named ? names.resident?.[named] ?? named : '')];
+    // (Doc 86, C7: or whoever a resident variable of the story holds, cast as it runs: "Cast a resident".)
+    const castVars = (program.variables ?? []).filter(v => v.type === 'resident' && v.scope === 'story').map(v => v.id);
+    const giverVar = typeof q.giver === 'object' ? q.giver.var : '';
     const regionPart: Part[] = [{text: 'Taken only standing inside '}, slotPart('region', 'region', 'anywhere', join.region, join.region ?? '')];
     const boardPart: Part[] = [{text: 'Posted on the notice board of '}, slotPart('board', 'town', 'no town', q.board, q.board ? names.town?.[q.board] ?? q.board : '')];
     const mine = Object.entries(problems).filter(([k]) => k === key || k.startsWith(key + ':')).flatMap(([, v]) => v);
@@ -203,12 +207,20 @@ export function QuestEditor({index, select}: {index: number; select: (r: Ref) =>
             }}/>{ph.id}</label>)}{!q.phases && <small className="hint">(every phase)</small>}</div>
 
         <h5>Who gives it</h5>
-        <div className="wb-line"><span className="wb-glyph">☻</span>
+        {!giverVar && <div className="wb-line"><span className="wb-glyph">☻</span>
             <Sentence parts={giverPart} clearable={() => true} pick={(_s, v) => {
                 const g = v.giver === undefined ? undefined : String(v.giver);
                 if (g) save({...q, giver: g, offer: q.offer ?? {say: 'There is something you could do for me.'}});
                 else { const {giver: _g, offer: _o, handIn: _h, ...rest} = q; void _g; void _o; void _h; save(rest); }
-            }}/></div>
+            }}/></div>}
+        {(castVars.length > 0 || giverVar) && <label title="Doc 86, C7: a quest any town can give: whoever the story cast into the variable (Cast a resident) gives it; a wolf's copy is handed in to the giver it began with">
+            {giverVar ? 'Given by whoever this variable holds' : 'Or given by whoever a variable holds'}
+            <select value={giverVar} onChange={e => {
+                const name = e.target.value;
+                if (name) save({...q, giver: {var: name}, offer: q.offer ?? {say: 'There is something you could do for me.'}});
+                else { const {giver: _g, offer: _o, handIn: _h, ...rest} = q; void _g; void _o; void _h; save(rest); }
+            }}><option value="">{giverVar ? '(no giver)' : '(a resident named above)'}</option>
+                {castVars.map(v => <option key={v} value={v}>{v}</option>)}</select></label>}
         <div className="wb-line"><span className="wb-glyph">▤</span>
             <Sentence parts={boardPart} clearable={() => true} pick={(_s, v) => {
                 const b = v.board === undefined ? undefined : String(v.board);
@@ -289,11 +301,20 @@ export function QuestEditor({index, select}: {index: number; select: (r: Ref) =>
         <ol className="wb-actions">{(q.fail ?? []).map((f, i) => <FailRow key={i} rule={f} change={(next, mark) => set('fail', (q.fail ?? []).map((x, n) => n === i ? next : x), mark)}
             remove={() => set('fail', (q.fail ?? []).filter((_, n) => n !== i))}/>)}
             {(q.fail ?? []).length < 4 && <li className="wb-add-row"><span className="wb-chips">
-                <button type="button" className="wb-add" onClick={() => set('fail', [...(q.fail ?? []), {on: 'death', ...(q.giver ? {match: {actor: q.giver}} : {})}])}>+ an event fails it</button>
+                <button type="button" className="wb-add" onClick={() => set('fail', [...(q.fail ?? []), {on: 'death', ...(named ? {match: {actor: named}} : {})}])}>+ an event fails it</button>
                 <button type="button" className="wb-add" onClick={() => set('fail', [...(q.fail ?? []), {afterDays: 3}])}>+ a deadline</button></span></li>}</ol>
 
         <h5>Rewards <small className="hint">to each wolf with credit (“the acting wolf”); coins come from a named purse, never minted</small></h5>
         <EffectList rewards max={8} effects={q.rewards ?? []} change={e => set('rewards', e)} problems={i => problems[`${key}:rewards[${i}]`]}/>
+        {/* (Doc 86, SQ4: a plain cap on the coin, the shorthand of decisions 3.2's counters: coin_<purse>_day and coin_<purse>_ok.) */}
+        <div className="wb-head">
+            <label title="Doc 86, SQ4: after this many coin rewards in a game day the rest are given without their coin; it adds to coin_<purse>_day and reads coin_<purse>_ok where the story declares them">
+                Coin rewards a game day, at most<input type="number" min={1} max={1000} value={q.rewardLimit?.perDay ?? ''} placeholder="no limit"
+                onChange={e => set('rewardLimit', e.target.value === '' ? undefined : {...q.rewardLimit, perDay: Math.max(1, Math.min(1000, Math.round(e.target.valueAsNumber || 1)))}, key + ':rewardLimit')}/></label>
+            {q.rewardLimit && <label>counted for<select value={q.rewardLimit.scope ?? 'quest'} onChange={e => set('rewardLimit', {perDay: q.rewardLimit!.perDay,
+                ...(e.target.value === 'purse' ? {scope: 'purse' as const} : {})})}>
+                <option value="quest">this quest</option><option value="purse">its purse, across the story</option></select></label>}
+        </div>
         <h5>Bonus <small className="hint">given too when every optional objective was done</small></h5>
         <EffectList rewards max={4} effects={q.bonus ?? []} change={e => set('bonus', e)} problems={i => problems[`${key}:bonus[${i}]`]}/>
 
@@ -319,7 +340,7 @@ export function QuestList({select, add}: {select: (r: Ref) => void; add: () => v
         <p className="hint">A quest any wolf may pick up from a resident, or one a trigger gives: objectives in any order, optional and hidden ones, fail rules,
             rewards. {program.version !== 2 && 'Quests need a version 2 story: Make it version 2… (under Variables, on the right).'}</p>
         <ul>{quests.map((q, i) => <li key={q.id + i}><button type="button" className="link-button" onClick={() => select({kind: 'quest', index: i})}>{q.title || q.id}</button>
-            <small> {q.id} · {q.objectives.length} objective{q.objectives.length === 1 ? '' : 's'}{q.giver ? ' · from ' + (names.resident?.[q.giver] ?? q.giver) : ''}</small></li>)}</ul>
+            <small> {q.id} · {q.objectives.length} objective{q.objectives.length === 1 ? '' : 's'}{q.giver ? ' · from ' + giverWords(q, names) : ''}</small></li>)}</ul>
         <button type="button" disabled={program.version !== 2} onClick={add}>+ Quest</button>
     </article>;
 }

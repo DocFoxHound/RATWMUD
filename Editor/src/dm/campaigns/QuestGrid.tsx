@@ -34,7 +34,7 @@ export function QuestGrid({detail, names, live, steer, busy = false}: {detail: R
         const pick = giving[q.id] ?? free[0] ?? '';
         return <section key={q.id}>
             <h3>{q.title} <small>({SCOPE[q.scope] ?? q.scope}{q.repeat && q.repeat !== 'once' ? `, again ${q.repeat}` : ''}{q.lifetime === 'phase' ? ', this phase only' : ''}
-                {q.giver ? ` · from ${nameOf(names, q.giver)}` : ''}{q.open === false ? ' · not offered in this phase' : ''})</small></h3>
+                {q.giver ? ` · from ${nameOf(names, q.giver)}` : q.giverVar ? ` · from whoever ${q.giverVar} holds (nobody cast yet)` : ''}{q.open === false ? ' · not offered in this phase' : ''})</small></h3>
             {steer && <div className="camp-controls">{free.length > 0 ? <><select value={pick} aria-label={'Give ' + q.title + ' to'} onChange={e => setGiving(g => ({...g, [q.id]: e.target.value}))}>
                 {free.map(w => <option key={w} value={w}>{nameOf(names, w)}</option>)}</select>
                 <button disabled={busy || !pick} onClick={() => steer(giveAsk(q, pick, names))}>Give the quest…</button></>

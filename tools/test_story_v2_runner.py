@@ -488,3 +488,93 @@ class RealmVariables(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+def cast_program():
+    """Doc 86, C7: a story that casts a carter of Larkfield for the wolf who comes, the quest's giver whoever was cast."""
+    return {
+        'format': 'ratw-story-program', 'version': 2, 'id': 'cast-carter', 'title': 'The carter wanted',
+        'audience': {'kind': 'players', 'players': sorted(WOLVES)}, 'start': 'open',
+        'variables': [{'id': 'carter', 'type': 'resident', 'scope': 'story'}, {'id': 'tried', 'type': 'residents', 'scope': 'story'},
+                      {'id': 'missed', 'type': 'number', 'scope': 'story'}],
+        'phases': [{'id': 'open', 'journal': 'A carter is wanted.', 'effects': [], 'exits': [], 'triggers': [
+            {'id': 'cast', 'on': 'conversation', 'audience': 'participant', 'actions': [
+                {'do': 'effect', 'effect': {'kind': 'cast.pick', 'var': 'carter', 'job': 'carter', 'town': 'larkfield', 'notIn': 'tried',
+                                            'near': '$actor'}}]},
+            {'id': 'found', 'on': 'cast chosen', 'actions': [{'do': 'list add', 'var': 'tried', 'value': {'field': 'target'}}]},
+            {'id': 'none', 'on': 'cast failed', 'actions': [{'do': 'add', 'var': 'missed', 'value': 1}]}]}],
+        'quests': [{'id': 'axle', 'title': 'An axle', 'giver': {'var': 'carter'},
+                    'objectives': [{'id': 'bring', 'label': 'Bring an axle.', 'on': 'gift', 'match': {'item': 'axle'}}]}],
+        'tests': [{'name': 'A carter', 'cohort': sorted(WOLVES), 'cast': {'carter': ['rm111']},
+                   'events': [{'id': 'a', 'kind': 'conversation', 'day': 1, 'actor': ASH, 'target': 'rm112'}], 'expect': ['open'],
+                   'expectVariables': {'story': {'carter': 'rm111', 'tried': ['rm111']}}}],
+    }
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL required')
+class Casting(unittest.TestCase):
+    """Doc 86, C7: the runner's casting from the world's residents (living, placed, of the work and the town asked, never one
+    left out, the nearest the wolf first), answered in the same turn; the quest's offer at the resident cast."""
+    setUpClass = classmethod(console.ConsoleReads.setUpClass.__func__)
+    tearDownClass = classmethod(console.ConsoleReads.tearDownClass.__func__)
+    fact, launch, answer, tick = console.ConsoleReads.fact, console.ConsoleReads.launch, console.ConsoleReads.answer, console.ConsoleReads.tick
+
+    def setUp(self):
+        console.ConsoleReads.setUp(self)
+        self.examples = {**self.examples, 'cast-carter': cast_program()}
+        c = self.conn
+        c.execute('RESET ROLE')
+        c.execute("INSERT INTO world.areas(world_id,id,kind) VALUES (%s,'lark-yard','cell'),(%s,'lark-row','cell'),(%s,'cold-yard','cell')",
+                  (self.world,) * 3)
+        c.execute("""INSERT INTO world.cells(world_id,id,name,x,y,width,height,region) VALUES
+                     (%s,'lark-yard','The yard',0,0,30,30,'larkfield'),(%s,'lark-row','The row',40,0,30,30,'larkfield'),
+                     (%s,'cold-yard','The cold yard',90,0,30,30,'coldwater')""", (self.world,) * 3)
+        people = [('cst_near', 'carter at the yard', 'lark-yard', 'lark-yard', 4, 4), ('cst_far', 'carter on the row', 'lark-row', 'lark-row', 20, 20),
+                  ('cst_cold', 'carter at Coldwater', 'cold-yard', 'cold-yard', 4, 4), ('cst_baker', 'baker', 'lark-yard', 'lark-yard', 5, 5),
+                  ('cst_dead', 'carter, once', 'lark-yard', 'lark-yard', 4, 5), ('cst_away', 'carter of the Country', None, None, 0, 0)]
+        for npc, label, home, work, x, y in people:
+            c.execute("""INSERT INTO live.npcs(world_id,id,name,role,age,voice,appearance,hours_start,hours_end,work_label,home_area,home_x,home_y,
+                         work_area,work_x,work_y,evening_x,evening_y) VALUES (%s,%s,%s,'civilian',30,1,'{}',8,12,%s,%s,%s,%s,%s,%s,%s,0,0)""",
+                      (self.world, npc, npc, label, home, x, y, work, x, y))
+        c.execute("INSERT INTO live.npc_state(world_id,npc_id,alive,state) VALUES (%s,'cst_dead',false,'{}')", (self.world,))
+        c.execute('SET LOCAL ROLE ratw_dm')
+
+    def pick(self, **request):
+        return runner.cast_pick(self.conn, self.world, {'var': 'carter', 'seed': 's', **request})
+
+    def test_the_query(self):
+        self.assertIn(self.pick(job='carter', town='larkfield'), ('cst_near', 'cst_far'), 'a living, placed carter of Larkfield')
+        self.assertEqual(self.pick(job='carter', town='larkfield', at={'cell': 'lark-row', 'x': 19, 'y': 19, 'town': 'larkfield'}), 'cst_far',
+                         'the nearest the wolf: at their work in the wolf\'s place')
+        self.assertEqual(self.pick(job='carter', town='larkfield', at={'cell': 'lark-yard', 'x': 3, 'y': 3, 'town': 'larkfield'}), 'cst_near')
+        self.assertEqual(self.pick(job='carter', town='larkfield', notIn=['cst_near']), 'cst_far', 'never one left out')
+        self.assertIsNone(self.pick(job='carter', town='larkfield', notIn=['cst_near', 'cst_far']),
+                          'the dead and the unplaced are never cast')
+        self.assertEqual(self.pick(job='carter', town='coldwater'), 'cst_cold')
+        self.assertEqual(self.pick(job='baker'), 'cst_baker')
+        self.assertIsNone(self.pick(job='carter', faction='house_greatly'), 'no House claims their work')
+        self.assertEqual(self.pick(job='carter', town='larkfield'), self.pick(job='carter', town='larkfield'), 'the same seed, the same')
+
+    def test_a_run_casts_in_its_turn_and_offers_the_quest_there(self):
+        run = self.launch('cast-carter')
+        self.answer()
+        self.fact('conversation', ASH, 'rm112')
+        self.tick()
+        state = self.conn.execute('SELECT state FROM dm.story_releases WHERE id=%s', (run,)).fetchone()[0]
+        self.assertIn(state['counters']['story']['carter'], ('cst_near', 'cst_far'))
+        self.assertEqual(state['counters']['story']['tried'], [state['counters']['story']['carter']], "'cast chosen' fired in the same turn")
+        self.assertNotIn('castRequests', state)
+        orders = runner.status(self.conn, self.world, run)['orders']
+        quest_orders = [o for o in orders if o.get('kind') == 'story.quests']
+        self.assertTrue(quest_orders, orders)
+        payload = self.conn.execute('SELECT payload FROM dm.actions WHERE id=%s', (quest_orders[0]['id'],)).fetchone()[0]
+        payload = json.loads(payload) if isinstance(payload, str) else payload
+        self.assertEqual([o['npc'] for o in payload['offers'] if o['quest'] == 'axle'], [state['counters']['story']['carter']],
+                         'the offer goes to the resident cast')
+        for _ in range(2):
+            self.answer()
+            self.fact('conversation', ASH, 'rm112', day=11)
+            self.tick()
+        state = self.conn.execute('SELECT state FROM dm.story_releases WHERE id=%s', (run,)).fetchone()[0]
+        self.assertEqual(sorted(state['counters']['story']['tried']), ['cst_far', 'cst_near'])
+        self.assertEqual(state['counters']['story'].get('missed'), 1, 'a third time: nobody left to cast')

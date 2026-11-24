@@ -168,7 +168,9 @@ export interface Case {name: string; cohort: string[]; events: Fact[]; expect: s
     /** Phase 8: the world's facts as the case begins. */
     facts?: WorldFacts;
     /** Doc 86, J2: what each wolf holds of the story's realm variables at the start, as an earlier story left it. */
-    realm?: Record<string, Record<string, unknown>>}
+    realm?: Record<string, Record<string, unknown>>;
+    /** Doc 86, C7: who the world would cast into each resident variable, best first. */
+    cast?: Record<string, string[]>}
 /** A quest's objective (doc 85, 3.6): an event of a wolf with filters, a goal, what must come first, optional or hidden. */
 export interface QuestObjective {id: string; label: string; on: string; signal?: string; match?: Record<string, string>;
     goal?: number | Operand; measure?: 'count' | 'quantity' | 'coins'; after?: string[]; optional?: boolean; hidden?: boolean;
@@ -186,7 +188,9 @@ export interface QuestJoin {who?: 'anyone' | 'participants'; region?: string; ca
 /** A quest (doc 85, 3.6; Phase 6): a version 2 story's, offered by a resident or given by a trigger. */
 export interface Quest {
     id: string; title: string; summary?: string; scope?: 'player' | 'party' | 'story'; contributors?: number; lifetime?: 'campaign' | 'phase';
-    phases?: string[]; repeat?: 'once' | 'daily' | 'weekly' | 'always'; giver?: string; board?: string; offer?: QuestOffer; handIn?: boolean; join?: QuestJoin;
+    phases?: string[]; repeat?: 'once' | 'daily' | 'weekly' | 'always';
+    /** A resident, or (doc 86, C7) the resident a story variable holds: cast as it runs; a copy keeps the giver it began with. */
+    giver?: string | {var: string}; board?: string; offer?: QuestOffer; handIn?: boolean; join?: QuestJoin;
     abandon?: boolean; objectives: QuestObjective[]; fail?: FailRule[]; rewards?: Effect[]; bonus?: Effect[];
     /** Doc 86, C3b: each credited wolf rewarded by their share ({"share": true} in the rewards), at least creditMin. */
     credit?: 'share'; creditMin?: number;
@@ -194,6 +198,14 @@ export interface Quest {
     requires?: Condition;
     /** Doc 86, J3: done, it counts as a finished Story for each wolf with credit (true is read as "line"). */
     closure?: true | 'line' | 'side';
+    /** Doc 86, SQ4: its coin rewards stop after perDay a game day, counted for the quest or its purse (decisions 3.2's counters). */
+    rewardLimit?: {perDay: number; scope?: 'quest' | 'purse'};
+}
+/** Doc 86, C7: the resident who gives a quest as words: a resident's name, or "whoever <variable> holds". */
+export function giverWords(q: Quest, names: Record<string, Record<string, string> | undefined>): string {
+    if (!q.giver) return '';
+    if (typeof q.giver === 'object') return `whoever ${q.giver.var} holds`;
+    return names.resident?.[q.giver] ?? q.giver;
 }
 /** Doc 86, C6: the conditions a quest's "Only for wolves who…" may use (an offer is not an event: no world facts). */
 export const REQUIRES_TESTS = ['all', 'any', 'not', 'compare', 'switch', 'in list', 'days since', 'quest is', 'objective is', 'phase is'];
@@ -1107,8 +1119,19 @@ export function renameVariable(p: Program, from: string, to: string): Program {
         }
         return o;
     };
+    // (Doc 86, C7: an effect's own variables (a tracker's, a chapter's list, a casting's into and not one of) and its values.)
+    const effectOf = (e: Json): Json => {
+        let changed = false;
+        const out = Object.fromEntries(Object.entries(e).map(([k, v]) => {
+            const w = k !== 'kind' && (['var', 'list', 'notIn'].includes(k) && v === from ? to : record(v) ? op(v as Operand) : v);
+            if (w !== v && k !== 'kind') changed = true;
+            return [k, k === 'kind' ? v : w];
+        }));
+        return changed ? out : e;
+    };
     const named = (x: Json) => {
         let next = x;
+        if (next.do === 'effect' && record(next.effect)) { const e = effectOf(next.effect as Json); if (e !== next.effect) next = {...next, effect: e}; }
         for (const k of ['var', 'list']) if (next[k] === from) next = {...next, [k]: to};
         for (const k of ['left', 'right', 'value']) if (k in next) { const v = op(next[k] as Operand); if (v !== next[k]) next = {...next, [k]: v}; }
         if (record(next.where)) { const w = cond(next.where as Condition); if (w !== next.where) next = {...next, where: w}; }   // (A participation's test.)
@@ -1143,7 +1166,23 @@ export function renameVariable(p: Program, from: string, to: string): Program {
         return {...next, expectVariables: Object.fromEntries(Object.entries(v).map(([scope, o]) => [scope,
             scope === 'player' || scope === 'party' || scope === 'realm' ? byWolf(o) : rename(o)]))};
     });
-    return {...out, tests, variables: (out.variables ?? []).map(v => v.id === from ? {...v, id: to} : v)};
+    // (Doc 86, C7: a quest's giver read from a variable, and a case's castings, by the variable's name.)
+    const castCases = tests.map(c => {
+        const cast = c.cast;
+        return cast && from in cast ? {...c, cast: Object.fromEntries(Object.entries(cast).map(([k, x]) => [k === from ? to : k, x]))} : c;
+    });
+    const quests = out.quests?.map(q => {
+        let next = q;
+        if (typeof q.giver === 'object' && q.giver.var === from) next = {...next, giver: {var: to}};
+        for (const key of ['rewards', 'bonus'] as const) {
+            const list = next[key];
+            if (!list) continue;
+            const mapped = list.map(e => effectOf(e as unknown as Json) as unknown as Effect);
+            if (mapped.some((e, i) => e !== list[i])) next = {...next, [key]: mapped};
+        }
+        return next;
+    });
+    return {...out, ...(quests ? {quests} : {}), tests: castCases, variables: (out.variables ?? []).map(v => v.id === from ? {...v, id: to} : v)};
 }
 
 /** A trigger renamed, and the rehearsal cases that expect it by name. */

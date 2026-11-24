@@ -174,8 +174,8 @@ void Society::topUp(const std::string& payer, const std::string& payee, std::int
     // Staged payers topped up on demand (9.2): a staged account that must pay a player (or escrow) more than it holds is
     // set to the amount first. Never a dead account, never a real one, and never a shop's till: a till pays players from
     // its own daily budget, topped up only by Phase 1's rules (its take allowance and sell total, doc 79, 7 and 19).
-    if (coins <= 0 || classify(payer) != AccountKind::Staged || payer == "made" || startsWith(payer, "till:"))
-        return;
+    if (coins <= 0 || classify(payer) != AccountKind::Staged || payer == "made" || startsWith(payer, "till:") || startsWith(payer, "purse:"))
+        return;                                     // (Doc 86, M3: a House's purse pays what its tills put in, no more.)
     const auto to = classify(payee);
     if (to != AccountKind::Real && to != AccountKind::Escrow)
         return;
@@ -191,7 +191,7 @@ std::int64_t Society::payable(const std::string& payer, std::int64_t amount) con
     if (amount <= 0)
         return 0;
     // (A till is never topped up by the door (topUp): it pays what it holds, as topUp says.)
-    if (classify(payer) == AccountKind::Staged && account(payer) && !startsWith(payer, "till:"))
+    if (classify(payer) == AccountKind::Staged && account(payer) && !startsWith(payer, "till:") && !startsWith(payer, "purse:"))
         return std::min<std::int64_t>(amount, MoneyCap);
     return std::min(amount, cash(payer));
 }

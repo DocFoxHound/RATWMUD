@@ -535,7 +535,7 @@ class Game
     const std::map<std::string, std::string>& mantleWearers() const { return mantleOf_; }
     Result loadMantle(const std::string& id);
     // Doc 84 Phase 10: the DM's mantle.assign <npc> (payload {"mantle": id}, or "npc mantle") and mantle.release <npc>.
-    Result assignMantle(const std::string& npc, const std::string& mantle);
+    Result assignMantle(const std::string& npc, const std::string& mantle, const std::string& how = "dm");
     Result releaseMantle(const std::string& npc);
     Result loadVoice(const std::string& npc);
     // What the talk library is asked when `a` speaks to `b` (to no one: b "") of a concept, here and now: the two
@@ -2647,6 +2647,18 @@ class Game
     bool storyRelationsSeen_ = false, storyMantlesSeen_ = false;
     std::string storyPurseAccount(const std::string& purse) const;   // A reward's purse (town:<id>...) as the account it is.
   public:
+    // Doc 86, M3: House purses (house:<faction>, the account purse:<faction>), each filled once a game day by a share of
+    // its businesses' tills (the posts whose work place the House claims): HouseShare percent of what a till holds over
+    // HouseTillFloat, the purse holding at most HousePurseMost. Behind the world switch storyHousePurses (off: no money
+    // moves and a house: purse pays nothing), set by the owner's story.house-purses on|off and kept in the checkpoint.
+    static constexpr std::int64_t HouseShare = 10, HouseTillFloat = 80, HousePurseMost = 2500;
+    bool storyHousePurses() const { return storyHousePurses_; }
+    std::string housePurseFaction(const std::string& purse) const;   // house:<x> -> the House's faction id ("" none).
+  private:
+    bool storyHousePurses_ = false;
+    std::int64_t housePurseDay_ = -1;
+    void tendHousePurses();
+  public:
     // Doc 86, C1b: a story's words with the name tokens its engines put in ({@w:<wolf>}, {@r:<resident>}, {@p:<place>},
     // {@i:<item>}, {@f:<faction>}) made names, cut at `limit` characters on a word boundary (RatwGameStorylines.cpp).
     std::string fillStoryNames(const std::string& text, std::size_t limit) const;
@@ -2702,7 +2714,12 @@ class Game
     bool heldByAnotherStory(const std::string& npc, const std::string& run) const;
     // Doc 86, C10: a story's foe made (again, after a restart) from what the story keeps of it (its held.foes entry).
     Result storyFoeFrom(storylines::Storyline& story, const std::string& camp, const json::Value& kept);
-    void noteStoryHeld(const json::Value& payload, const char* key, const std::string& id);   // (A stranger, a mantle.)
+    void noteStoryHeld(const json::Value& payload, const char* key, const std::string& id);   // (A stranger.)
+    // Doc 86, C15: a mantle a story binds is kept with it as {npc: the mantle they wore before, or ""} (held.mantles; how it
+    // was bound in held.mantleHow), and given back when the story ends or lays it down itself (putBackMantle).
+    void noteStoryMantle(const json::Value& payload, const std::string& npc, const std::string& before, const std::string& how);
+    Result putBackMantle(const std::string& npc, const std::string& before, const std::string& how);
+    bool storyBoundMantle(const json::Value& payload, const std::string& npc, std::string& before, std::string& how);
     // Doc 86, Phase 1b (RatwGameStoryWorld.cpp): residents a story spares from old age or protects for a while (C11), and
     // what residents remember and come to believe from a story (C8, T7).
     std::map<std::string, std::map<std::string, std::set<std::string>>> storyHolds_;   // kind -> npc -> owners
@@ -2710,6 +2727,10 @@ class Game
     double storyMemoryWarnedDay_ = -1;
     Result applyStoryHold(const std::string& kind, const std::string& npc, const json::Value& payload);
     Result applyStoryTalk(const std::string& kind, const std::string& target, const json::Value& payload);
+    // Doc 86, T6: the director's `story` topic is live in the world while a live story has a realm key remembered (C8,
+    // talk.remember scope realm): one topic for each key's prefix (nh for nh_stage), given only when the talk library has
+    // scenes for talk.story. Worked out again whenever a story's talk memory changes, a run ends and at a load.
+    void storyTopicsChanged();
     // Doc 86, Phase 3 (RatwGameStoryWorld.cpp): a wolf named by a title (C4), a resident's words for one wolf the next time it
     // opens their window (C5), and a rumour put to rest (J8).
     std::map<std::string, std::map<std::string, StoryGreet>> storyGreets_;             // npc -> wolf -> greeting

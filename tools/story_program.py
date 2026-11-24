@@ -2196,6 +2196,17 @@ def advance(p, state, event, day, trace=None, elapsed=0):
     if day < state['entered'] or event['kind'] == triggers.SIGNAL or state.get('outcome'):
         return False
     phase = phase_of(p, state)
+    if state.get('castRequests') and quests.CASTER.get() is not None:
+        # (Doc 86, C7: castings asked where nobody could answer them (a command, What if), answered before the next fact.)
+        told = []
+        run = quests.Run(p, phase, state, day, elapsed, told.append)
+        for request in state.pop('castRequests'):
+            run.cast_answer(request, quests.CASTER.get()(request))
+        for fact in told:
+            if dispatch(p, phase, state, fact, day, trace, elapsed):
+                return True
+            if state.get('outcome'):
+                return False
     if event['kind'] != 'clock':
         return dispatch(p, phase, state, event, day, trace, elapsed)
     clock = {'kind': 'clock', 'id': event.get('id')}
@@ -2396,8 +2407,19 @@ def _check_case(p, case):
             'activeWolves',
             # (Doc 86, J2: what each wolf holds of the story's realm variables at the start, as an earlier story left it.)
             'realm',
+            # (Doc 86, C7: who the world would cast into each resident variable, best first: {var: [resident, ...]}.)
+            'cast',
         ),
     )
+    if 'cast' in case:
+        decls = {d['id']: d for d in p.get('variables', []) if isinstance(d, dict)}
+        require(isinstance(case['cast'], dict) and all(
+            isinstance(v, list) and len(v) <= 50 and all(identifier(r) for r in v) for v in case['cast'].values()),
+            'A case\'s casting gives each resident variable the residents who fit, best first: {var: [resident, ...]}.')
+        for name in case['cast']:
+            d = decls.get(name)
+            require(d is not None and d['type'] == 'resident' and d['scope'] == 'story',
+                    f'A case\'s casting names a resident variable of the story: {name}.')
     require('audience' not in case or (isinstance(case['audience'], dict) and set(case['audience']) <= set(triggers.AUDIENCES)
                                        and all(integer(v, 0, 1_000_000) for v in case['audience'].values())),
             'A case\'s audience gives the counts: {"all": n, "active": n, "online": n}.')
@@ -2677,10 +2699,29 @@ def review(p, budget=None):
         _rehearsals.release()
 
 
+def case_caster(case):
+    """Doc 86, C7: a rehearsal's casting: the first of the case's residents for the variable who is not left out (None: the
+    case names nobody who fits, 'cast failed')."""
+    given = case.get('cast') or {}
+
+    def pick(request):
+        left_out = set(request.get('notIn', ()))
+        return next((r for r in given.get(request['var'], ()) if r not in left_out), None)
+    return pick
+
+
 def _play_case(p, case, step=None):
     """One rehearsal case, fact by fact (as the runner would take them). `step(fact, state, path, trace, intended)` is
     called after each fact, for the workbench's step-through (doc 85, 4.5)."""
     _check_case(p, case)
+    token = quests.CASTER.set(case_caster(case))
+    try:
+        return _play_checked_case(p, case, step)
+    finally:
+        quests.CASTER.reset(token)
+
+
+def _play_checked_case(p, case, step=None):
     state = begin(p, case['cohort'], 0, case.get('seed'))
     if case.get('rolls'):
         state['rolls'] = list(case['rolls'])

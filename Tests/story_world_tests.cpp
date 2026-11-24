@@ -5,6 +5,7 @@
 // marker) undone; the journal's notes and the maps' markers in the wolf's journal view; and what is held kept with the
 // story through a save.
 #include "test_purse.h"
+#include "RatwAmbient.h"
 #include "RatwClaims.h"
 #include "RatwGame.h"
 #include "RatwItems.h"
@@ -1062,6 +1063,161 @@ void phase8Sentences()
     fs::remove_all(root);
     fs::remove(save);
 }
+// Doc 86, Phase 9 (C15): a mantle a story binds is given back when it ends: u1 wore rm950 before the story put rm951 on
+// her, and wears rm950 again after; u2 wore none, and wears none after; a story's own "lays down their mantle" gives
+// back what was worn before too; an older save's list of mantles is read as "none before".
+void writeMantle(const fs::path& dir, const std::string& id, const std::string& wearer)
+{
+    std::ofstream(dir / (id + ".mantle")) << "# " << id << " (test).\nmantle " << id << "\nstate ready\ndialect plain\naccent none\n"
+                                          << "tier standard\nwritten_for " << wearer << "\ntitle the lane's " << id << "\n"
+                                          << "fits stage=adult|old\ntraits talk=chatty humour=merry warmth=warm\nquirk counts_the_cobbles\n\n"
+                                          << "words\noath! = By my tail\n\ndlg resident.hub : Mind the lane.\n";
+}
+
+void phase9Mantles()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyworld-9-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    const auto world = writeDoors(root);
+    fs::create_directories(root / "mantles" / "plain");
+    writeMantle(root / "mantles" / "plain", "rm950", "u1");
+    writeMantle(root / "mantles" / "plain", "rm951", "nobody_here");
+    writeMantle(root / "mantles" / "plain", "rm952", "nobody_there");
+    const auto run = std::string("world-masks");
+    int n = 3000;
+    {
+        Town t(world, save, 120, true, 3 * 86400, "", (root / "mantles").string());
+        t.enter(t.ash, 1, "ash", "Ash", 0, 8.5);
+        auto players = json::Value::array();
+        players.push(t.ash.entityId);
+        const auto open = [&](const std::string& id) {
+            auto phase = parsed(R"({"title":"Masks","phase":"masks","journal":"Faces change.","visit":1})");
+            phase.set("players", players);
+            return t.g.applyDmAct({std::to_string(++n), "story.phase", id, "dm", json::dump(phase)}).ok;
+        };
+        const auto order = [&](const std::string& kind, const std::string& target, std::string payload, const std::string& id) {
+            auto p = parsed(payload.empty() ? "{}" : payload);
+            p.set("run", id);
+            p.set("visit", 1);
+            return t.g.applyDmAct({std::to_string(++n), kind, target, "dm", json::dump(p)});
+        };
+        const auto worn = [&](const std::string& npc) {
+            const auto found = t.g.mantleWearers().find(npc);
+            return found == t.g.mantleWearers().end() ? std::string() : found->second;
+        };
+        expect(worn("u1") == "rm950" && worn("u2").empty(), "u1 wears rm950, u2 none");
+        expect(open(run), "the story opens");
+        auto r = order("mantle.assign", "u1", R"({"mantle":"rm951"})", run);
+        expect(r.ok && worn("u1") == "rm951", "the story binds rm951 to u1: " + r.message);
+        r = order("mantle.assign", "u2", R"({"mantle":"rm952"})", run);
+        expect(r.ok && worn("u2") == "rm952", "and rm952 to u2: " + r.message);
+        const auto* held = &t.g.storylineBook().find(run)->held;
+        expect(held->find("mantles") && held->find("mantles")->isObject() && held->find("mantles")->string("u1") == "rm950" &&
+                   held->find("mantles")->has("u2") && held->find("mantles")->string("u2").empty(),
+               "what each wore before is kept with the story");
+        expect(order("mantle.assign", "u1", R"({"mantle":"rm951"})", run).ok &&
+                   t.g.storylineBook().find(run)->held.find("mantles")->string("u1") == "rm950",
+               "bound again: what she wore before the first binding is kept");
+        // The story's own "lays down their mantle": u1 has rm950 back at once, and it is no longer the story's.
+        r = order("mantle.release", "u1", "", run);
+        expect(r.ok && worn("u1") == "rm950" && !t.g.storylineBook().find(run)->held.find("mantles")->has("u1"),
+               "the story lays down rm951: u1 wears rm950 again: " + r.message);
+        expect(order("mantle.assign", "u1", R"({"mantle":"rm951"})", run).ok && worn("u1") == "rm951", "bound once more");
+        // T6: a realm key remembered by a live story; the story topic only where the talk library has scenes for it (this
+        // one has none: silent); given its prefix, the director weighs "story" (story|nh, topic.story nh).
+        expect(order("talk.remember", run, R"({"scope":"realm","key":"nh_stage","value":"two","days":30})", run).ok, "a realm key remembered");
+        expect(t.g.world().storyTopics().empty(), "no talk.story scenes in the library: the story topic stays silent");
+        std::vector<AmbientTopic> weighed;
+        t.g.world().onTopic = [&](const std::string&, const std::string&, const AmbientTopic& topic) { weighed.push_back(topic); };
+        t.g.world().ambientTopic("u1", "u2");
+        expect(std::none_of(weighed.begin(), weighed.end(), [](const AmbientTopic& x) { return x.kind == "story"; }), "not weighed");
+        t.g.world().setStoryTopics({"nh"});
+        weighed.clear();
+        t.g.world().ambientTopic("u1", "u2");
+        const auto story = std::find_if(weighed.begin(), weighed.end(), [](const AmbientTopic& x) { return x.kind == "story"; });
+        expect(story != weighed.end() && story->key == "story|nh" && story->talk.count("topic.story") && story->talk.at("topic.story") == "nh",
+               "with scenes for it, the director weighs the story topic, by its prefix");
+        t.g.world().onTopic = nullptr;
+        // The story ends: u1 has rm950 back, u2 wears nothing.
+        expect(t.g.applyDmAct({std::to_string(++n), "story.stop", run, "dm", "{}"}).ok, "the story ends");
+        expect(worn("u1") == "rm950", "u1 wears rm950 again: " + worn("u1"));
+        expect(worn("u2").empty(), "u2 wears no mantle, as before: " + worn("u2"));
+        // An older save's list ["u2"] is read as {"u2": ""}: let go of at the end.
+        expect(open("world-old"), "another story opens");
+        expect(order("mantle.assign", "u2", R"({"mantle":"rm952"})", "world-old").ok && worn("u2") == "rm952", "rm952 on u2 again");
+        auto& old = t.g.storylineBook().find("world-old")->held;
+        auto list = json::Value::array();
+        list.push("u2");
+        old.set("mantles", list);
+        expect(t.g.applyDmAct({std::to_string(++n), "story.stop", "world-old", "dm", "{}"}).ok && worn("u2").empty(),
+               "an older save's list: let go of when the story ends");
+    }
+    std::error_code ec;
+    fs::remove(save, ec);
+    fs::remove_all(root, ec);
+}
+
+// Doc 86, Phase 9 (M3): House purses. The stall in the strip's second cell is House Greatly's (it claims the cell).
+// Off (the world's switch): nothing moves and house:greatly pays nothing. On: once a game day the stall's till puts a
+// tenth of what it holds over 80 in purse:house_greatly, which pays a wolf what it holds and no more; the switch is kept
+// through a restart.
+void phase9HousePurses()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyworld-9h-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    const auto world = writeStrip(root);
+    {
+        std::stringstream text;
+        text << std::ifstream(root / "world.ratw").rdbuf();
+        auto m = text.str();
+        const auto line = "territory \"" + cellId(1) + "\" \"ridgemere\" \"-\" 0\n";
+        m.replace(m.find(line), line.size(), "territory \"" + cellId(1) + "\" \"ridgemere\" \"-\" 1 \"house_greatly\"\n");
+        m.insert(m.find("territory"), "faction \"house_greatly\" \"House Greatly\" \"#2f4f6f\"\nfaction \"council\" \"The Council\" \"#7d8a96\"\n");
+        std::ofstream(root / "world.ratw") << m;
+    }
+    int n = 4000;
+    {
+        Town t(world, save);
+        t.enter(t.ash, 1, "ash", "Ash", 0, 8.5);
+        auto& soc = t.g.world().society();
+        const auto till = soc.tillOf("um");
+        expect(!till.empty() && soc.account(till), "the stall's till: " + till);
+        expect(testPurse(soc, till, 500 - soc.cash(till)) || soc.cash(till) == 500, "the till holds 500");
+        const auto grant = [&](int coins) {
+            return t.g.applyEconomyCommand("character.grant", t.ash.entityId,
+                                           parsed(R"({"coins":)" + std::to_string(coins) + R"(,"purse":"house:greatly","reason":"Greatly pays it"})"), "");
+        };
+        // Off: no purse, nothing moved, nothing paid.
+        t.run(2);
+        expect(!t.g.storyHousePurses() && !soc.account("purse:house_greatly") && soc.cash(till) == 500, "off: nothing moves");
+        auto r = grant(5);
+        expect(!r.ok && contains(r.message, "no such purse"), "off: house:greatly pays nothing: " + r.message);
+        expect(!t.g.applyDmAct({std::to_string(++n), "story.house-purses", "maybe", "dm", "{}"}).ok, "on or off");
+        // On: the share at once, then once a game day.
+        r = t.g.applyDmAct({std::to_string(++n), "story.house-purses", "on", "dm", "{}"});
+        expect(r.ok && t.g.storyHousePurses(), "the switch on: " + r.message);
+        expect(soc.cash("purse:house_greatly") == 42 && soc.cash(till) == 458, "a tenth of 420 over the float: 42 in Greatly's purse, " +
+               std::to_string(soc.cash("purse:house_greatly")));
+        t.run(2);
+        expect(soc.cash("purse:house_greatly") == 42, "once a game day");
+        expect(t.g.housePurseFaction("house:greatly") == "house_greatly" && t.g.housePurseFaction("house:house_greatly") == "house_greatly" &&
+                   t.g.housePurseFaction("house:council").empty() && t.g.housePurseFaction("house:nobody").empty(),
+               "house:<name> or house:<faction>; never a faction that is no House");
+        const auto ashBefore = soc.cash(t.ash.entityId);
+        r = grant(30);
+        expect(r.ok && soc.cash("purse:house_greatly") == 12 && soc.cash(t.ash.entityId) == ashBefore + 30, "Greatly pays Ash 30: " + r.message);
+        r = grant(20);
+        expect(!r.ok && contains(r.message, "short") && soc.cash("purse:house_greatly") == 12, "and no more than it holds (never topped up): " + r.message);
+        t.g.save();
+    }
+    {
+        Town again(world, save);
+        expect(again.g.storyHousePurses() && again.g.world().society().account("purse:house_greatly"), "after a restart: still on, the purse kept");
+        expect(again.g.applyDmAct({"1", "story.house-purses", "off", "dm", "{}"}).ok && !again.g.storyHousePurses(), "and off again");
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
 } // namespace
 
 int main()
@@ -1075,6 +1231,8 @@ int main()
         phase6Items();
         phase7Foes();
         phase8Sentences();
+        phase9Mantles();
+        phase9HousePurses();
     }
     catch (const std::exception& error)
     {

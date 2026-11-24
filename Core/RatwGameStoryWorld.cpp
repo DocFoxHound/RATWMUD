@@ -652,6 +652,78 @@ void Game::noteStoryHeld(const Value& payload, const char* key, const std::strin
     record(StoryBook);
 }
 
+namespace
+{
+// held.mantles as {npc: before}; an array from an older save is read as {npc: ""} (doc 86, C15).
+Value& storyMantles(storylines::Storyline& s)
+{
+    auto& m = section(s, "mantles");
+    if (m.isArray())
+    {
+        auto o = Value::object();
+        for (const auto& v : m.items())
+            if (v.isString())
+                o.set(v.asString(), "");
+        m = o;
+    }
+    return m;
+}
+} // namespace
+
+void Game::noteStoryMantle(const Value& payload, const std::string& npc, const std::string& before, const std::string& how)
+{
+    auto* s = storylines_.find(payload.string("run"));
+    if (!s || s->kind != "world" || s->source != "storykeeper" || !s->live())
+        return;
+    auto& m = storyMantles(*s);
+    if (!m.has(npc))   // (A second binding by the same story keeps what they wore before the first.)
+    {
+        m.set(npc, before);
+        auto& hows = section(*s, "mantleHow");
+        hows.set(npc, how);
+    }
+    storylines_.touch();
+    record(StoryBook);
+}
+
+bool Game::storyBoundMantle(const Value& payload, const std::string& npc, std::string& before, std::string& how)
+{
+    // The story's own mantle.release of a mantle it bound: what they wore before (taken out of what it holds), true.
+    auto* s = storylines_.find(payload.string("run"));
+    if (!s || s->kind != "world" || !s->held.isObject() || !s->held.has("mantles"))
+        return false;
+    auto& m = storyMantles(*s);
+    if (!m.has(npc))
+        return false;
+    before = m.string(npc);
+    how = s->held.has("mantleHow") ? (*s->held.find("mantleHow")).string(npc) : std::string();
+    m.erase(npc);
+    if (s->held.has("mantleHow"))
+        s->held.find("mantleHow")->erase(npc);
+    storylines_.touch();
+    record(StoryBook);
+    return true;
+}
+
+Result Game::putBackMantle(const std::string& npc, const std::string& before, const std::string& how)
+{
+    // Doc 86, C15: the mantle they wore before the story's binding is theirs again; none before, the story's let go of.
+    // One given since to another (passed on, or bound by the DM) cannot come back: theirs is let go of instead.
+    if (!before.empty())
+    {
+        if (const auto* b = world_.society().mantleOf(npc); b && b->mantle == before && b->releasedDay < 0)
+            return {true, "They wear " + before + " already.", npc};
+        auto r = assignMantle(npc, before, how.empty() ? std::string("dm") : how);
+        if (r.ok)
+            return {true, r.message + " (as before the story)", npc};
+        note("warn", "RATW_STORY mantle " + before + " could not be given back to " + npc + ": " + r.message);
+    }
+    auto r = releaseMantle(npc);
+    if (!r.ok && r.message.find("wears no mantle") != std::string::npos)
+        return {true, r.message, npc};
+    return r;
+}
+
 std::string Game::storyProject(const std::string& town, const std::string& kind) const
 {
     for (const auto& [id, p] : projects_.all())
@@ -748,6 +820,7 @@ void Game::endStoryWorld(storylines::Storyline& story)
             m = m->second.run == story.id && !m->second.keep ? it->second.erase(m) : std::next(m);
         it = it->second.empty() ? storyMemory_.erase(it) : std::next(it);
     }
+    storyTopicsChanged();                           // (Doc 86, T6: its realm keys no longer open the story topic.)
     if (!story.held.isObject() || !story.held.size())
         return;
     auto& h = story.held;
@@ -770,8 +843,13 @@ void Game::endStoryWorld(storylines::Storyline& story)
         world_.sendVisitorAway(v.asString());
     for (const auto& [camp, j] : h.object("foes").fields())   // (Doc 86, C10: its foes go, even mid-fight, with no event.)
         world_.endStoryFoe(camp, {}, true);
-    for (const auto& npc : h.array("mantles"))
-        releaseMantle(npc.asString());
+    if (h.has("mantles"))   // (Doc 86, C15: each given back the mantle they wore before, or let go of.)
+    {
+        const auto mantles = storyMantles(story);
+        const auto hows = story.held.has("mantleHow") ? *story.held.find("mantleHow") : Value::object();
+        for (const auto& [npc, before] : mantles.fields())
+            putBackMantle(npc, before.isString() ? before.asString() : std::string(), hows.string(npc));
+    }
     for (const auto& id : h.array("notices"))
         if (documents_.find(id.asString()))
             documents_.erase(id.asString());
@@ -813,8 +891,64 @@ void Game::endStoryWorld(storylines::Storyline& story)
     saveSoon();
 }
 
+std::string Game::housePurseFaction(const std::string& purse) const
+{
+    if (purse.rfind("house:", 0) != 0 || purse.size() <= 6)
+        return {};
+    const auto name = purse.substr(6);
+    for (const auto& id : {name, "house_" + name})
+        if (const auto* f = factions_.find(id); f && f->name.rfind("House ", 0) == 0)
+            return f->id;
+    return {};
+}
+
+void Game::tendHousePurses()
+{
+    // Doc 86, M3: once a game day, each House's businesses (the posts held, whose work place the House claims first, as
+    // its members are found) put a share of what their tills hold over the float into the House's purse. Money only moves.
+    const auto day = std::int64_t(std::floor(world_.calendarDays()));
+    if (!storyHousePurses_ || day == housePurseDay_)
+        return;
+    housePurseDay_ = day;
+    auto& society = world_.society();
+    const auto& held = society.state().careers.positions;
+    std::int64_t moved = 0;
+    for (const auto& [id, f] : factions_.all())
+    {
+        if (f.name.rfind("House ", 0) != 0)
+            continue;
+        const auto purse = "purse:" + id;
+        if (!society.account(purse) && !society.openAccount(purse))
+            continue;
+        for (const auto& p : society.positions())
+        {
+            const auto h = held.find(p.id);
+            const auto* cell = world_.cell(p.work.cell);
+            if (h == held.end() || h->second.holder.empty() || !cell || cell->factionClaims.empty() || cell->factionClaims.front() != id)
+                continue;
+            const auto till = "till:" + p.id;
+            const auto* a = society.account(till);
+            const auto room = HousePurseMost - society.cash(purse);
+            if (room <= 0)
+                break;
+            if (!a || a->cash <= HouseTillFloat)
+                continue;
+            const auto share = std::min(room, (a->cash - HouseTillFloat) * HouseShare / 100);
+            if (share >= 1 && society.shift(till, purse, "", 0, share, "a House's share"))
+                moved += share;
+        }
+    }
+    if (moved > 0)
+    {
+        record(Economy);
+        saveSoon();
+    }
+}
+
 void Game::tickStoryWorld(double dt)
 {
+    if (storyHousePurses_)
+        tendHousePurses();                          // (Doc 86, M3: once a game day, behind its switch.)
     if ((storiesHolding_.empty() && storySentences_.empty()) || (storyWorldAccumulator_ += dt) < .5)
         return;
     storyWorldAccumulator_ = 0;
@@ -1057,6 +1191,21 @@ std::set<std::string> Game::storyHoldOwners(const std::string& kind, const std::
         return {};
     const auto n = k->second.find(npc);
     return n == k->second.end() ? std::set<std::string>{} : n->second;
+}
+
+void Game::storyTopicsChanged()
+{
+    std::set<std::string> prefixes;
+    if (talk_.has("talk.story"))
+        if (const auto realm = storyMemory_.find("realm"); realm != storyMemory_.end())
+            for (const auto& [key, m] : realm->second)
+            {
+                const auto* s = m.run.empty() ? nullptr : storylines_.find(m.run);
+                const auto bar = key.find('_');
+                if ((m.until < 0 || m.until >= world_.calendarDays()) && s && s->live() && bar != std::string::npos && bar >= 2 && bar <= 8)
+                    prefixes.insert(key.substr(0, bar));
+            }
+    world_.setStoryTopics(std::move(prefixes));
 }
 
 void Game::sparedChanged()
@@ -1468,10 +1617,13 @@ void Game::storyTalkSave(Value& root) const
         sentences.add(npc, std::move(j));
     }
     root.add("storySentences", std::move(sentences));
+    if (storyHousePurses_)
+        root.add("storyHousePurses", true);         // (Doc 86, M3: the world switch, read at approval.)
 }
 
 void Game::storyTalkLoad(const Value& saved)
 {
+    storyHousePurses_ = saved.boolean("storyHousePurses");
     storySentences_.clear();
     for (const auto& [npc, j] : saved.object("storySentences").fields())
         if (npc.size() <= 80 && j.isObject() && !j.string("place").empty() && j.number("until") > 0)
@@ -1498,6 +1650,7 @@ void Game::storyTalkLoad(const Value& saved)
             }
     }
     storyGreetsLoad(saved);
+    storyTopicsChanged();
     for (const auto& [item, _] : storyItemNames_)
         items::nameStoryItem(item, "");
     storyItemNames_.clear();

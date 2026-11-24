@@ -232,7 +232,7 @@ export interface QuestCopy {
     times?: number; objectives: Record<string, {n?: number; done?: boolean; failed?: boolean; shown?: boolean}>;
 }
 export interface QuestBoard {
-    id: string; title: string; summary?: string; scope: 'player' | 'party' | 'story'; lifetime?: string; repeat?: string; giver?: string | null; open?: boolean;
+    id: string; title: string; summary?: string; scope: 'player' | 'party' | 'story'; lifetime?: string; repeat?: string; giver?: string | null; giverVar?: string; open?: boolean;
     objectives: {id: string; label: string; optional?: boolean; hidden?: boolean; goal?: number; measure?: string; after?: string[]}[];
     copies: QuestCopy[]; counts?: Partial<Record<QuestStatus, number>>; starts?: number; cap?: number | null; limit?: number | null;
 }

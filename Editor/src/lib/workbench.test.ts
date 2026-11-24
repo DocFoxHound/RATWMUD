@@ -183,7 +183,7 @@ const v2: Record<string, Program> = JSON.parse(execFileSync('python3', ['-c',
 const ledger = v2['v2-ledger'];
 
 test('version 2: the samples and the 108 programs made version 2 are shown by the workbench, every nested action a sentence', () => {
-    assert.equal(Object.keys(v2).length, 119);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road; Phase 3: the oil drive; Phase 4: the lamp line; Phase 5: Old Brown at the tarn; Phase 6: the watch list; Phase 7: the Grey Captain at the Pass; Phase 8: the Moot Night.)
+    assert.equal(Object.keys(v2).length, 120);   // (Doc 86, Phase 1a: the muster at the ford, a third sample; Phase 1b: the pledge at the stone; Phase 2: the beacon road; Phase 3: the oil drive; Phase 4: the lamp line; Phase 5: Old Brown at the tarn; Phase 6: the watch list; Phase 7: the Grey Captain at the Pass; Phase 8: the Moot Night; Phase 9: the carter wanted.)
     let nested = 0;
     for (const [name, p] of Object.entries(v2)) {
         assert.ok(editable(p), name);
@@ -247,7 +247,7 @@ test('version 2: every action and condition the workbench adds is one the story 
 // ------------------------------------------------------------------------------------------------- quests (doc 85, Phase 6)
 
 import {
-    editableQuest, fromTemplate, newEffect, newQuest, renameObjective, renameQuest, smallQuestProgram, withQuests, type Quest,
+    editableQuest, fromTemplate, giverWords, newEffect, newQuest, renameObjective, renameQuest, smallQuestProgram, withQuests, type Quest,
 } from './workbench.ts';
 import {questCampaignOf, SMALL_QUEST_INPUT} from './fixtures/inputs.ts';
 
@@ -760,5 +760,32 @@ test('doc 86, Phase 8: the Moot Night in words; a realm variable renamed in a ca
         {do: 'effect', effect: {...newEffect(cat, 'npc.sentence', p), npc: 'rm112', place: 'grey-cells', days: 3}}]}];
     const found = JSON.parse(execFileSync('python3', ['-c', "import json, sys\nsys.path.insert(0, 'tools')\nimport story_program as P\n"
         + "print(json.dumps([x for x in P.problems(json.loads(sys.stdin.read())) if x['level'] == 'error']))"], {cwd: repo, input: JSON.stringify(q)}).toString());
+    assert.deepEqual(found, []);
+});
+
+test('doc 86, Phase 9: the carter wanted in words; a giver from a variable; a casting\'s variables renamed with the case and the quest', () => {
+    const p = v2['v2-carter-wanted'];
+    assert.ok(editable(p));
+    const ns = namesOf(null, p);
+    const seek = triggersOf(p, 0);
+    const cast = seek.find(t => t.id === 'cast')!;
+    assert.match(plain(actionParts(cat, cast.actions[0], ns)), /Choose a resident .*carter.*greyfen.*not in .*tried.*near .*as .*carter/);
+    const nobody = seek.find(t => t.id === 'nobody')!;
+    assert.equal(plain(actionParts(cat, nobody.actions[0], ns)), 'cty_carter is first in line for the next post that falls vacant in greyfen');
+    for (const id of ['cast chosen', 'cast failed']) assert.ok(plain(eventParts(cat, {id: 'x', on: id, actions: []}, ns)).length > 0, id);
+    assert.equal(giverWords(p.quests![0], ns), 'whoever carter holds');
+    assert.equal(p.quests![0].rewardLimit!.perDay, 1);
+    assert.match(cat.effects.find(e => e.id === 'mantle.assign')!.help, /wore before is theirs again/);
+    // (The cast variable renamed: the casting's into and not one of, the effects' values, the giver, the case's castings.)
+    const renamed = renameVariable(renameVariable(p, 'carter', 'wheelwright'), 'tried', 'asked');
+    const effect = (triggersOf(renamed, 0).find(t => t.id === 'cast')!.actions[0] as {effect: Record<string, unknown>}).effect;
+    assert.equal(effect.var, 'wheelwright');
+    assert.equal(effect.notIn, 'asked');
+    const paw = (triggersOf(renamed, 0).find(t => t.id === 'paw')!.actions[1] as {effect: Record<string, unknown>}).effect;
+    assert.deepEqual(paw.npc, {var: 'wheelwright'});
+    assert.deepEqual(renamed.quests![0].giver, {var: 'wheelwright'});
+    assert.deepEqual(renamed.tests[0].cast, {wheelwright: ['rm111', 'rm112']});
+    const found = JSON.parse(execFileSync('python3', ['-c', "import json, sys\nsys.path.insert(0, 'tools')\nimport story_program as P\n"
+        + "print(json.dumps([x for x in P.problems(json.loads(sys.stdin.read())) if x['level'] == 'error']))"], {cwd: repo, input: JSON.stringify(renamed)}).toString());
     assert.deepEqual(found, []);
 });

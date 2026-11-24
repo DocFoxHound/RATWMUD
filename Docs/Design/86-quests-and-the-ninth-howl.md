@@ -2294,3 +2294,129 @@ Residents, both `needsBuilder`), two new events (221 in the catalogue's list, 21
   and `tsc --noEmit`. No C++ changed. **Two failures found, not caused here**: `test_world_package`'s end-to-end
   `test_the_planted_players_are_stripped` (12 accounts closed, not 8) and `test_a_hostile_package_is_refused_before_anything_is_written`
   ("written before the checks") fail the same way at `19c914e3` with this change taken out; the other 51 pass.
+
+## Phase 9 as built
+
+**Phase 9 as built** (2026-11-24, branch `r3-nh-p9`, on `r3-nh-p8` at `b2122b8d`). Engine spec items C7 (`cast.pick` and a
+giver from a variable), C15 (a mantle given back), J7 (`npc.queue`), SQ3 (a paw lent to a resident at work), SQ4 (quest
+`rewardLimit`), M3 (House purses, behind their world switch) and T6 (a `story` talk topic). **No migration**: the casting
+reads what 0067 and 0080 already give (`dm.story_residents`, `dm.story_posts`), the queue and the House purses' switch are
+kept in the checkpoint. Two new effects (93 in all: `cast.pick`, group Residents, the story's own; `npc.queue`, group
+Residents, `needsBuilder`), two new events (223 in the catalogue's list, 220 a story may name: `cast chosen`, `cast failed`,
+group story, the story's own), one new quest field (`rewardLimit`), a quest's `giver` that may be `{"var": ...}`, one new
+rehearsal case field (`cast`), one new together activity (`beside`), one new talk topic (`story`), one new account prefix
+(`purse:`) and one new console op (`house-purses`).
+- **C7: casting at run time** (`tools/story_quests.py`, `tools/story_program.py`, `tools/story_runner.py`). `cast.pick`
+  `{var, job?, town?, faction?, quarter?, notIn?, near?}` is a story effect (`CAST_EFFECTS`): neither twin needed a change (an
+  effect's operand, its town, is worked out by both as any; "near" `$actor` is read by the story from the fact). `Run.cast`
+  makes a request (the near wolf's tile from the event's facts, the list left out as it is now, a seed) and answers it at
+  once through `story_quests.CASTER`, a context variable: the runner sets it in `tick_run` and `take_commands` to
+  `world_caster` (`cast_pick`: `dm.story_residents` with `live.npcs`, the post held from `dm.story_posts`, else the work as
+  written, `live.npc_voice`'s quarter, `live.npc_state`'s alive, a House as a member or by the claim of their work place;
+  living and placed only; nearest the wolf at their work in the wolf's place, then their home there, then the wolf's town,
+  the rest by the seed); a rehearsal sets it to the case's `cast` (`{var: [resident, ...]}`, the first not left out). The
+  answer writes the story variable and follows the fact with `cast chosen` (target the resident, detail the variable, actor
+  the near wolf) or `cast failed` (the variable keeps what it held). Where nothing answers (What if) the request waits in
+  `state.castRequests` and `story_program.advance` answers it before the next fact. Checks: at least one of the work, the
+  town, the House or the quarter; `var` a story-scope `resident`, `notIn` a `residents` list of the story or the world;
+  approval checks the town and the House. **A giver from a variable**: `giver_of` reads the quest's variable whenever the
+  offers are worked out (no offer while it holds nobody), so the offer moves when it is recast; a copy keeps the giver it
+  began with (`c['giver']`) for its hand-in, its journal view and a reward's greeting (`from_giver` with the copy's giver),
+  and the offers add an entry closed to new takers at a copy's old giver; `references()` skips it.
+- **SQ4: `rewardLimit`** `{perDay, scope: quest | purse}` (`Run.coin_allowed`): after `perDay` coin rewards a game day
+  (counted in `state.rewardLimits`, for the quest or `purse:<purse>` across the program) a `character.grant` reward is given
+  without its coin, with a reward note; where the program declares them it adds the coins to the world number
+  `coin_<purse>_day` and pays none while the switch `coin_<purse>_ok` is off, the names `nh-purses` uses
+  (`purse_counter`: `town:ridgemere` → `ridgemere`, `till:job:rm_eleanor_saltcot` → `till_eleanor_saltcot`). A quest with
+  no `rewardLimit` pays as before. Refused on a quest that pays no coin.
+- **J7: first in line** (`Core/RatwCareers.cpp`, `RatwWorld.cpp`, `RatwWire.cpp`, `RatwGame.cpp`). `Society::queueResident`
+  keeps `careers.queued[town]` (saved with the careers, read back at most 64 a town); refused for one not unplaced, too young
+  or old, or with no town; named again, "held"; named for another town, moved. In `tendCareers`, at a post that pays empty
+  its eight days, the first in line for the post's town (`CareerWorld::townOf` of its work) is sent for before the city's
+  wolves and the Country's choice (`arrivalFor` with `only`: any class), noted "first in line, by a story"; one placed
+  since is let go of; one with no home in reach keeps their place. It never makes a vacancy. The game's order `npc.queue`
+  (payload `{town}`, the runner's single-key `action()`), `World::queueResident` refusing an unknown town; approval refuses a
+  resident with a place (V1.4's rows, role `queue`) and an unknown town.
+- **C15: a mantle given back** (`Core/RatwGameStoryWorld.cpp`, `RatwGame.cpp`, `RatwGameHandoff.cpp`). `held.mantles` is
+  `{npc: the mantle worn before, or ""}`, with `held.mantleHow` (how it was bound: `assignMantle` takes it now, "dm" by
+  default); a second binding keeps the first's "before"; an older save's list is read as `{npc: ""}`. `endStoryWorld` and
+  the story's own `mantle.release` call `putBackMantle`: the mantle before bound again, or the story's released; one passed
+  to someone else since cannot come back, so theirs is released (logged).
+- **SQ3: a paw at a resident's work** (`Core/RatwTogether.cpp`, `Data/Together/patterns.json`). `World::lendAPaw` to a
+  resident goes to `lendToResident`: at their post, in their hours (`residentAtPost`, the check `residentWorkAt` used), and
+  not farm work or a bench (those stay `helpAtWork`'s, which `lendToResident` hands them to), the activity `beside` (`at`
+  post, beats of 300 s by the clock, three at most): no practice, no `lendPaw` (nothing of theirs made faster), no coin.
+  At its end `together` {actor the wolf, target the resident, item `beside`, quantity the beats} and the resident's regard,
+  once a game day for the pair (`lentToday_`, by the beats in `beatsTogether`, so a wolf who left first still counts);
+  refused again the same day. The resident's menu offers **Lend a paw** (`besideWorkAt`).
+- **M3: House purses** (`Core/RatwGameStoryWorld.cpp`, `RatwGameStoryFacts.cpp`, `RatwStagedAccounts.cpp`, `RatwCareers.cpp`).
+  `house:<faction>` (or `house:<name>` for `house_<name>`; a faction whose name begins "House ") maps to the account
+  `purse:<faction>` (`Game::housePurseFaction`, `storyPurseAccount`), a new facility prefix, staged, **never topped up**
+  (`topUp`, `payable`: it pays what it holds). `Game::tendHousePurses`, once a game day, moves to each House's purse a tenth
+  (`HouseShare`) of what each of its businesses' tills holds over 80 (`HouseTillFloat`): the posts held whose work cell the
+  House claims first (the game's own rule for who serves a faction), 2,500 at most in a purse (`HousePurseMost`). All of it
+  behind the **world switch `storyHousePurses`**, off: the game's order `story.house-purses on|off` (kept in the checkpoint as
+  `people.storyHousePurses`, which the world packager keeps), the console's op `house-purses` `{on, reason}` (the owner only;
+  audited `story.house-purses`). Off, nothing moves and a `house:` purse maps to no account ("There is no such purse to pay
+  from"); approval refuses a `house:` purse while the checkpoint says off, an unknown House, and (on) a House with no purse
+  as last saved. Read only against Ridgemere 3: the four Houses claim 15 to 25 places each, with 5 (Fell) to 12 (Grayrock)
+  businesses that have tills, so the rule finds each House's trades without a list.
+- **T6: the `story` topic** (`Data/Talk/topics.json`, `Core/RatwTopics.cpp`, `RatwAmbient.cpp`). A news topic (base 2.2),
+  a source the director scores, weighed once for each prefix of a live story's realm memory keys (`nh` for `nh_stage`,
+  `topic.story` the prefix), only where the talk library has `talk.story` scenes (`Game::storyTopicsChanged`, after each
+  story talk order, a run's end and a load, sets `World::setStoryTopics`). The test town's library has none, so the topic is
+  silent there: **the scorecard (`talk_scorecard_quick`) and the golden transcripts (`talk_golden`) were re-run and moved
+  nothing**. `Tests/fixtures/talk_topics/topics-today.json` gains the topic (a topics.json must give every source).
+- **Workbench and console** (`Editor/`): the quest editor's **Or given by whoever a variable holds** (the story's resident
+  variables) and **Coin rewards a game day, at most** (counted for this quest or its purse); `giverWords`; the Quests grid
+  says "from whoever <variable> holds" before anyone is cast; renaming a variable follows it into an effect's own variables
+  (a tracker's, a chapter's list, a casting's into and not one of), the values in effects and quest rewards, a quest's giver
+  and a case's castings. `cast.pick` and `npc.queue` take the pickers they have (variable, town, faction, wolf, text).
+- **Guide and format**: `Docs/Story-Maker-guide.md` §7 "Quests any town can give", a House's purse and a plain cap on the
+  coin; §8 the story topic, first in line, a paw at a resident's work, a mantle given back; §13 and §14 rows; the reference
+  regenerated (`story_guide.py --write`; `--check` passes; both effects have examples). `Docs/story-programs.md` gains
+  "Casting, queues, paws and House purses". `RUNNER_VERSION` is `doc86-phase9`.
+- **Sample** `story_v2_samples.CASTING` ("The Carter Wanted", `v2-carter-wanted`, in `all_samples()`, so both twins run it):
+  the first wolf casts a carter of Greyfen near them (left out once tried); the axle's giver is whoever was cast; a paw
+  lent beside them (`together`, item `beside`) counts and binds them the ferryman's mantle; the axle pays four pennies at
+  most once a game day (`rewardLimit` by purse, writing `coin_greyfen_day`: Birch's hand-in the same day gets no coin);
+  a second case, nobody fits, and a wolf of the Country is first in line (`npc.queue`). It rehearses clean in both twins.
+- **Tests**: `test_story_quests` (`Phase9Casting`: a carter cast in Larkfield gives the quest, recast when they die and never
+  the one tried, the offer moved and the old giver's closed entry, the copy handed in to its own giver and greeted from it;
+  nobody fits; a casting waiting for a caster answered before the next fact; the checks; `rewardLimit` pays twice then
+  without coin, writes `coin_larkfield_day` 6, pays again the next day, pays nothing with the floor switch off, and its
+  checks), `test_story_v2_runner` (`Casting`, on a throwaway database: the query, living, placed, of the work and town,
+  nearest the wolf, never one left out, the dead and the unplaced never cast; a published run casts in its turn, `cast
+  chosen` fires in the same turn, the `story.quests` order offers the axle at the resident cast, a third casting fails),
+  `test_story_problems` (`Phase9InTheWorld`: `house:greatly` refused while the switch is off and an unknown House, "no
+  purse yet" when on, accepted once its account is saved; `npc.queue` refused for a placed resident and an unknown town;
+  a casting's town and House), `test_story_native` (`CastParity`: the casting's town from a value, `cast chosen` and `cast
+  failed` matched by their variable, a mantle bound to the resident cast, alike in both twins), `test_story_v2`
+  (`Phase9Casting`), `test_story_catalogue`, `test_story_effects`, `test_story_drafts` (the counts), `test_story_words` (a
+  casting's work and quarter are words nobody hears), `Tests/story_world_tests.cpp` (`phase9Mantles`: u1's rm950 back after
+  the story's rm951, u2 with none after, the story's own release, an older save's list; the story topic silent without
+  scenes and weighed by its prefix with them; `phase9HousePurses`: off, nothing moves and nothing is paid; on, 42 of the
+  stall's 500 to House Greatly's purse at once and once a game day, Ash paid 30 from it, then refused as short, never topped
+  up; kept through a restart), `Tests/together_tests.cpp` (`besideAResident`: Tam training the recruits, two spells, no coin,
+  nothing made faster, `together` {Ash, Tam, beside, 2}, once a day, nothing off her hours), `Tests/people_flow_tests.cpp`
+  (`firstInLine`: the baker first in line at the docks before the fisher the rules would send for, refusals, kept through a
+  save, no vacancy made in twelve days, sent for at the docker's death), `Tests/status_tests.cpp` (`purse:` is staged),
+  `workbench.test.ts` (120 programs; the Carter in words; renames through the casting, the giver and the case).
+- **Run**: see below (the run at the end of this phase).
+- **Left or changed, and why**: (1) **M3's economy check was not run**: it is a simulation (a House's purse filled for 30 game
+  days against the same run without it), and the user has not approved it (memory: ask before simulations; answer (c)
+  covers combat sims only). M3 is built and tested, and stays off behind `storyHousePurses` on every world until the user
+  approves the run and the owner turns it on. (2) The spec's `house:` accounts are `purse:<faction>`: `house:` accounts are
+  the old economy's, dropped at restore (doc 79, 14). (3) Which businesses are a House's is the game's own rule for who
+  serves a faction (the House claims their work place first), not a list; the share, float and cap are placeholders.
+  (4) `npc.queue`'s test is in `people_flow_tests` (the arrivals' fixture), not `careers_tests`. (5) A casting's "nearest"
+  is by work and home places (the database knows no resident's tile now), then the wolf's town, then the seed. (6) The
+  `story` topic needs `talk.story` scenes in the library to open; none is written yet (the talk plan's), so until then the
+  campaign rides `news`, `gossip` and `day` as the spec's fallback says. (7) A paw beside a resident gives no practice (the
+  spec asks only for no wage and no output change; practice would be a new source of skill), and the once-a-day mark is
+  in memory, not saved (a restart may let a pair be counted twice that day). (8) A House purse holds at most 2,500 so a
+  quiet House does not hoard the tills' money. (9) A `cast failed` leaves the variable as it was (the spec does not say).
+- **Going live** on `ratw_ridgemere3` needs no migration; the game server restarted from this branch (the queue, the
+  mantles given back, the paw, the House purses' switch, the story topic), the story runner from it (casting, the giver
+  from a variable, `rewardLimit`, the new orders and checks), the Editor released from it (the quest editor). The client
+  needs no change: "Lend a paw" is a menu action as any. House purses stay off until the user approves their economy check.

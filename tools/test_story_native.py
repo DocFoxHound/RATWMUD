@@ -584,5 +584,50 @@ class FoeParity(ValuesParity):
                 self.assertEqual([e['band'] for e in effects], [band])
 
 
+
+class CastParity(ValuesParity):
+    """Doc 86, Phase 9 (C7): a casting asked by a trigger (its town worked out from a value, C1a; "near" the acting wolf
+    kept for the story to read), and the story's own "cast chosen" and "cast failed" matched on their variable, alike in
+    both twins; a mantle bound to the cast resident (a value) alike too."""
+
+    def program(self):
+        add = lambda n: [{'do': 'add', 'var': 'n', 'value': n}]
+        pick = {'kind': 'cast.pick', 'var': 'carter', 'job': 'carter', 'town': {'var': 'where'}, 'notIn': 'tried', 'near': '$actor'}
+        return {'format': 'ratw-story-program', 'version': 2, 'id': 'parity9', 'title': 'Casting in both twins', 'start': 'a',
+                'audience': {'kind': 'open'}, 'variables': [{'id': 'n', 'type': 'number', 'scope': 'story'},
+                                                             {'id': 'where', 'type': 'text', 'scope': 'story'},
+                                                             {'id': 'carter', 'type': 'resident', 'scope': 'story'},
+                                                             {'id': 'tried', 'type': 'residents', 'scope': 'story'}],
+                'phases': [{'id': 'a', 'journal': 'Casting.', 'effects': [], 'exits': [], 'triggers': [
+                    {'id': 'ask', 'on': 'deed', 'actions': [{'do': 'effect', 'effect': pick}]},
+                    {'id': 'chosen', 'on': 'cast chosen', 'match': {'detail': 'carter'},
+                     'actions': [{'do': 'list add', 'var': 'tried', 'value': {'field': 'target'}},
+                                 {'do': 'effect', 'effect': {'kind': 'mantle.assign', 'npc': {'field': 'target'}, 'mantle': 'ferryman'}},
+                                 *add(1)]},
+                    {'id': 'failed', 'on': 'cast failed', 'match': {'detail': 'carter'}, 'actions': add(10)},
+                    {'id': 'other', 'on': 'cast chosen', 'match': {'detail': 'smith'}, 'actions': add(100)},
+                ]}],
+                'tests': [{'name': 'x', 'cohort': [], 'events': [], 'expect': ['a']}]}
+
+    def test_every_form_matches(self):
+        base = {'phase': 'a', 'entered': 0, 'visits': 1, 'votes': {}, 'actor': '', 'seed': 's', 'began': 0, 'cohort': [self.ASH],
+                'counters': {'story': {'where': 'larkfield'}}}
+        after, _ = self.both(base, {'kind': 'deed', 'id': 1, 'actor': self.ASH})
+        self.assertEqual([e for e in after.get('triggerEffects', []) if e['kind'] == 'cast.pick'],
+                         [{'kind': 'cast.pick', 'var': 'carter', 'job': 'carter', 'town': 'larkfield', 'notIn': 'tried', 'near': '$actor'}])
+        nothing = {**base, 'counters': {}}
+        after, trace = self.both(nothing, {'kind': 'deed', 'id': 1, 'actor': self.ASH})
+        self.assertFalse([e for e in after.get('triggerEffects', []) if e['kind'] == 'cast.pick'], 'no town: not asked, with a note')
+        n = lambda after: after.get('counters', {}).get('story', {}).get('n', 0)
+        for (kind, target, detail), want in ((('cast chosen', 'rm111', 'carter'), 1), (('cast failed', '', 'carter'), 10),
+                                             (('cast chosen', 'rm112', 'smith'), 100), (('cast failed', '', 'smith'), 0)):
+            with self.subTest(kind=kind, detail=detail):
+                after, _ = self.both(base, {'kind': kind, 'id': 2, 'actor': self.ASH, 'target': target, 'detail': detail, 'item': ''})
+                self.assertEqual(n(after), want)
+                if want == 1:
+                    self.assertEqual(after['counters']['story']['tried'], ['rm111'])
+                    self.assertIn({'kind': 'mantle.assign', 'npc': 'rm111', 'mantle': 'ferryman'}, after['triggerEffects'])
+
+
 if __name__ == '__main__':
     unittest.main()

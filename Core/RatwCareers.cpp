@@ -157,8 +157,9 @@ const std::vector<std::string>& facilityPrefixes()
     // departures, and dropped at a restart. (chapter: doc 32's treasuries; home: doc 36; town: doc 35's Town Works,
     // watch, church; letter: doc 55's enclosures; let:, stall:, table: and fest: doc 54's chests, stalls, stakes and
     // festival pots; project: doc 57's town projects; stores: the towns' treasuries; till: a business's.)
+    // (purse: doc 86, M3's House purses, purse:<faction>, filled only by the House's businesses' tills, never topped up.)
     static const std::vector<std::string> prefixes{"stores:", "caravan:", "bandits:", "contract:", "ground:", "chapter:", "home:", "town:",
-                                                   "till:", "letter:", "let:", "stall:", "table:", "fest:", "project:"};
+                                                   "till:", "letter:", "let:", "stall:", "table:", "fest:", "project:", "purse:"};
     return prefixes;
 }
 
@@ -1217,7 +1218,41 @@ std::vector<CareerNote> Society::tendCareers(double now, const CareerWorld& worl
         // A post that pays, empty PostWaitDays (the user, 2026-11-01): a wolf of the city with no post that pays (grown
         // pups first) of the post's class; else an unplaced NPC of the world's own list, of its class, come in from the
         // Country (one whose trade suits the post first); then the same of the next class. Nobody new is ever made.
-        if (chosen.empty() && waited >= PostWaitDays && !postClass(p).empty() &&
+        bool sent = false;
+        if (chosen.empty() && waited >= PostWaitDays && !postClass(p).empty() && world.townOf && !c.queued.empty() &&
+            std::none_of(requests_.begin(), requests_.end(), [&](const ResidentRequest& r) { return r.kind == "arrival" && r.positionId == p.id; }))
+        {
+            // Doc 86, J7: the first in line for this town (a story's npc.queue), if still unplaced and of working age, comes
+            // for it before the city's wolves; one dead or placed since is let go of.
+            const auto town = world.townOf(p.work.cell);
+            if (auto line = c.queued.find(town); line != c.queued.end())
+            {
+                auto& who = line->second;
+                while (!who.empty() && !sent)
+                {
+                    const auto id = who.front();
+                    ResidentRequest r;
+                    const bool waiting = unplaced(id) != nullptr;   // (The unplaced are not in the world: none dies.)
+                    if (waiting && std::any_of(requests_.begin(), requests_.end(), [&](const ResidentRequest& q) { return q.templateId == id; }))
+                        break;                      // (Sent for already: it waits for them to arrive.)
+                    if (waiting && arrivalFor(p, ps, world, 0, r, id))
+                    {
+                        arrivalMantle(r, now, world);
+                        requests_.push_back(r);
+                        ++fills_["first in line, by a story"];
+                        notes.push_back({"arrival sent for", r.templateId, ps.lastHolder, p.title + ": first in line"});
+                        sent = true;
+                    }
+                    if (!waiting || sent)
+                        who.erase(who.begin());
+                    else
+                        break;                      // (No home for them in reach today: they keep their place.)
+                }
+                if (who.empty())
+                    c.queued.erase(line);
+            }
+        }
+        if (chosen.empty() && !sent && waited >= PostWaitDays && !postClass(p).empty() &&
             std::none_of(requests_.begin(), requests_.end(), [&](const ResidentRequest& r) { return r.kind == "arrival" && r.positionId == p.id; }))
             for (int step = 0; step < 2 && chosen.empty(); ++step)
             {
@@ -1456,7 +1491,7 @@ std::string Society::cityWolfFor(const Position& p, const CareerWorld& world, in
 }
 
 bool Society::arrivalFor(const Position& p, const PositionState& ps, const CareerWorld& world, int classStep,
-                         ResidentRequest& out) const
+                         ResidentRequest& out, const std::string& only) const
 {
     // Who comes: an unplaced NPC of the world's own list (doc 66, 2) of working age, its class classStep from the post's,
     // not already sent for: the one whose trade suits the post best (its kind of work; the post's words in its label or
@@ -1469,7 +1504,9 @@ bool Society::arrivalFor(const Position& p, const PositionState& ps, const Caree
     std::pair<int, double> best{-1, 0};
     for (const auto& r : authored_.unplaced)
     {
-        if (r.protectedNpc || r.age < 16 || r.age >= retireAge(r.id) || classApart(wanted, classOf(r.id)) != classStep ||
+        if (!only.empty() && r.id != only)
+            continue;                               // (Doc 86, J7: the one a story put first in line, of any class.)
+        if (r.protectedNpc || r.age < 16 || r.age >= retireAge(r.id) || (only.empty() && classApart(wanted, classOf(r.id)) != classStep) ||
             std::any_of(requests_.begin(), requests_.end(),
                         [&](const ResidentRequest& q) { return (q.kind == "arrival" || q.kind == "farm") && q.templateId == r.id; }))
             continue;
@@ -1637,6 +1674,29 @@ CareerNote Society::swapPost(const std::string& positionId, const std::string& r
     known = std::max({known, 10.0, .5 * familySkill(resident, skillFamily(p->title))});
     forgetCareers();
     return {"succession", resident, before.empty() ? ps.lastHolder : before, p->title + ": by the story"};
+}
+
+CareerNote Society::queueResident(const std::string& resident, const std::string& town)
+{
+    // Doc 86, J7: first in line for the next vacancy in the town; never a vacancy made, so the population rule holds.
+    const auto* r = unplaced(resident);
+    if (!r)
+        return {"refused", resident, {}, "Only a resident with no home yet (unplaced) can be put in line."};
+    if (r->protectedNpc || r->age < 16 || r->age >= retireAge(resident))
+        return {"refused", resident, {}, "They are not of an age to take up a post."};
+    if (town.empty())
+        return {"refused", resident, {}, "Name the town."};
+    auto& q = state_.careers.queued;
+    if (auto line = q.find(town); line != q.end() && std::find(line->second.begin(), line->second.end(), resident) != line->second.end())
+        return {"held", resident, {}, "They are in line there already."};
+    for (auto it = q.begin(); it != q.end();)   // (In line elsewhere: moved here.)
+    {
+        it->second.erase(std::remove(it->second.begin(), it->second.end(), resident), it->second.end());
+        it = it->second.empty() ? q.erase(it) : std::next(it);
+    }
+    auto& line = q[town];
+    line.insert(line.begin(), resident);   // (The newest a story names is first.)
+    return {"queued", resident, {}, town};
 }
 
 CareerNote Society::apprenticeTo(const std::string& positionId, const std::string& youth, const CareerWorld& world, double)

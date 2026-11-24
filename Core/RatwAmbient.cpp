@@ -1290,6 +1290,14 @@ void World::sceneTopics(const std::string& a, const std::string& b, const std::f
                 t.talk["topic.where"] = name(n.other);
             consider(std::move(t));
         }
+    // Doc 86, T6: the story the realm is living through (a live story's realm keys, by their prefix): news, talked of
+    // anywhere; its scenes (talk.story) read world.mem.<prefix>_* themselves.
+    for (const auto& prefix : storyTopics_)
+    {
+        auto t = topic("story", H(book.score("story")), "story|" + prefix);
+        t.talk["topic.story"] = prefix;
+        consider(std::move(t));
+    }
     // A festival today, or one called for the days ahead.
     const auto community = communityOf(ea->cellId);
     const auto plan = dayPlan(community);

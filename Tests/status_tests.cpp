@@ -251,7 +251,7 @@ void everyAccountSorted()
         {"contract:k1", K::Escrow},  {"letter:l1@x", K::Escrow}, {"let:l1", K::Escrow},     {"stall:s1", K::Escrow},
         {"table:t1", K::Escrow},     {"fest:x:1:race", K::Escrow}, {"project:p1", K::Escrow}, {"ground:g1", K::Escrow},
         {"bandits:camp1", K::Escrow}, {"treasury", K::Staged},   {"stores:coldwater", K::Staged}, {"till:job:x", K::Staged},
-        {"town:works", K::Staged},   {"home:h1", K::Staged},     {"ivar", K::Staged},       {"house:fell", K::Dead},
+        {"town:works", K::Staged},   {"home:h1", K::Staged},     {"purse:house_fell", K::Staged},     {"ivar", K::Staged},       {"house:fell", K::Dead},
         {"caravan:c1", K::Dead},     {"fund:relief", K::Dead},   {"bank:b", K::Dead},       {"outside:wharf", K::Dead},
         {"farm:f1", K::Dead},        {"crew:f1", K::Dead},       {"estate:fell", K::Dead}};
     for (const auto& [id, kind] : table)

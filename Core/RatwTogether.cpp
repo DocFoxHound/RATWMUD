@@ -237,6 +237,8 @@ bool World::mayLend(const std::string& helper, const std::string& worker) const
 
 Result World::lendAPaw(const std::string& helper, const std::string& worker, const std::string& role)
 {
+    if (const auto* r = entity(worker); r && r->npc)
+        return lendToResident(helper, worker);      // (Doc 86, SQ3: a resident at their own work.)
     if (!mayLend(helper, worker))
         return {false, "You can't lend them a paw just now.", {}};
     const auto* act = together::activity("forage");          // (Foraging is the one activity a wolf works on its own yet.)
@@ -365,12 +367,39 @@ void World::endJoint(const std::string& id)
     std::vector<std::string> everyone;
     for (const auto& m : joint.members)
         everyone.push_back(m.id);
+    const auto* act = together::activity(joint.kind);
+    const bool beside = act && act->at == "post" && !joint.target.empty();
+    if (beside)
+    {
+        // Doc 86, SQ3: each wolf who lent the resident a paw for a beat or more: `together` (actor the wolf, target the
+        // resident, item "beside", quantity the beats), the resident's regard as for any work beside them, once a day.
+        const auto day = std::int64_t(std::floor(calendarDays_));
+        // (By the beats each worked beside them: a wolf who left first is no longer among the members.)
+        for (const auto& [pair, beats] : joint.beatsTogether)
+        {
+            const auto bar = pair.find('|');
+            const auto a = pair.substr(0, bar), b = pair.substr(bar + 1);
+            const auto& wolf = a == joint.target ? b : a;
+            if ((a != joint.target && b != joint.target) || beats < 1)
+                continue;
+            const auto key = wolf + "|" + joint.target;
+            if (const auto lent = lentToday_.find(key); lent != lentToday_.end() && lent->second == day)
+                continue;
+            lentToday_[key] = day;
+            bonds_.change(joint.target, wolf, {r.residentAffinity, r.residentTrust, r.bondFamiliarity, 0, 0}, calendarDays_);
+            recordEvent({"together", wolf, joint.target, joint.cellId, 0, 0, joint.kind, beats, 0, id});
+        }
+        for (auto it = lentToday_.begin(); it != lentToday_.end();)
+            it = it->second < day - 1 ? lentToday_.erase(it) : std::next(it);
+    }
     for (const auto& [pair, beats] : joint.beatsTogether)
     {
         if (beats < r.bondBeats)
             continue;
         const auto bar = pair.find('|');
         const auto a = pair.substr(0, bar), b = pair.substr(bar + 1);
+        if (beside && (a == joint.target || b == joint.target))
+            continue;                               // (The wolf and the resident: written above.)
         const auto* ea = entity(a);
         const auto* eb = entity(b);
         if (!ea || !eb)
@@ -414,7 +443,7 @@ void World::tendJoints(double dt)
                 if (j.nextBeat >= 0)
                     j.nextBeat += act->beat;
             }
-            if (j.nextBeat < 0 || residentWorkAt(j.target) != act)
+            if (j.nextBeat < 0 || (act->at == "post" ? besideWorkAt(j.target) : residentWorkAt(j.target)) != act)
             {
                 if (j.nextBeat >= 0)
                     if (const auto* f = entity(j.target))
@@ -476,19 +505,23 @@ std::string lower(std::string name)                // ("Wheat" in a sentence: "w
 
 } // namespace
 
+bool World::residentAtPost(const std::string& id) const
+{
+    // At its post, working (the task its post's title, in its hours), and there.
+    const auto* e = entity(id);
+    if (!e || !e->npc || e->dead)
+        return false;
+    const auto* job = society_.jobOf(id);
+    const auto* life = society_.resident(id);
+    return society_.spec(id) && job && life && life->task == job->title && e->cellId == life->goalCell &&
+           std::hypot(e->position.x - life->goalX, e->position.y - life->goalY) <= 1.5;
+}
+
 const together::Activity* World::residentWorkAt(const std::string& farmer) const
 {
-    const auto* e = entity(farmer);
-    if (!e || !e->npc || e->dead)
+    if (!residentAtPost(farmer))
         return nullptr;
     const auto* spec = society_.spec(farmer);
-    const auto* job = society_.jobOf(farmer);
-    const auto* life = society_.resident(farmer);
-    if (!spec || !job || !life)
-        return nullptr;
-    // At its post, working (the task its post's title, in its hours), and there.
-    if (life->task != job->title || e->cellId != life->goalCell || std::hypot(e->position.x - life->goalX, e->position.y - life->goalY) > 1.5)
-        return nullptr;
     // A farm's work in its season; a maker's bench (a business that crafts) at any time.
     const auto* producer = items::producerFor(spec->workLabel);
     const auto* business = items::businessFor(spec->workLabel);
@@ -556,6 +589,66 @@ Result World::helpAtWork(const std::string& player, const std::string& farmer)
     return {true, "You set to work beside " + f->name + ": you " + yours + ".", {}};
 }
 
+const together::Activity* World::besideWorkAt(const std::string& resident) const
+{
+    if (!residentAtPost(resident) || residentWorkAt(resident))
+        return nullptr;
+    const auto* act = together::activity("beside");
+    return act && act->at == "post" ? act : nullptr;
+}
+
+Result World::lendToResident(const std::string& helper, const std::string& resident)
+{
+    // Doc 86, SQ3: beside a resident at their own work. Farm work and a bench are helpAtWork's (they have their own rules).
+    const auto* p = entity(helper);
+    const auto* r = entity(resident);
+    if (!p || p->npc || p->dead || !r || !r->npc || r->dead)
+        return {false, "Lend whom a paw?", {}};
+    if (inBattle(helper) || p->downedLeft > 0 || inBattle(resident))
+        return {false, "Not now.", {}};
+    if (p->cellId != r->cellId || std::hypot(p->position.x - r->position.x, p->position.y - r->position.y) > together::rules().lendTiles)
+        return {false, "Go nearer to " + r->name + " first.", {}};
+    if (residentWorkAt(resident))
+        return helpAtWork(helper, resident);
+    const auto* act = besideWorkAt(resident);
+    if (!act)
+        return {false, r->name + " isn't at work just now.", {}};
+    if (const auto* j = jointOf(helper); j && j->target == resident)
+        return {false, "You are already at it.", {}};
+    if (const auto lent = lentToday_.find(helper + "|" + resident);
+        lent != lentToday_.end() && lent->second == std::int64_t(std::floor(calendarDays_)))
+        return {false, "You have lent " + r->name + " a paw today already.", {}};
+    if (jointOf(helper))
+        leaveWork(helper);
+    std::string jointId;
+    if (const auto found = jointOf_.find(resident); found != jointOf_.end() && joints_.count(found->second))
+        jointId = found->second;
+    else
+    {
+        together::JointWork fresh;
+        fresh.id = "work-" + std::to_string(jointNext_++);
+        fresh.kind = act->id;
+        fresh.cellId = r->cellId;
+        fresh.target = resident;
+        fresh.x = r->position.x;
+        fresh.y = r->position.y;
+        fresh.started = time_;
+        fresh.nextBeat = time_ + act->beat;
+        fresh.members.push_back({resident, act->roles[std::min<std::size_t>(std::size_t(act->residentRole), act->roles.size() - 1)].id, true, time_, time_, 0});
+        jointId = fresh.id;
+        joints_[jointId] = fresh;
+        jointOf_[resident] = jointId;
+    }
+    const auto chosen = joinJoint(jointId, helper, {});
+    if (chosen.empty())
+        return {false, "As many are at it as can work it.", {}};
+    std::string yours;
+    for (const auto& role : act->roles)
+        if (role.id == chosen)
+            yours = role.yours;
+    return {true, "You lend " + r->name + " a paw at their work: you " + yours + ".", {}};
+}
+
 void World::noteActive(const std::string& player)
 {
     if (const auto found = jointOf_.find(player); found != jointOf_.end())
@@ -573,6 +666,7 @@ void World::workBeat(together::JointWork& joint)
     const auto* spec = society_.spec(joint.target);
     const auto* producer = spec ? items::producerFor(spec->workLabel) : nullptr;
     const bool farm = act && act->at == "farm";
+    const bool beside = act && act->at == "post";   // (Doc 86, SQ3: a paw at a resident's own work: no practice, no pace.)
     if (!act || !f || !spec || (farm && !producer))
         return;
     const double beatStart = joint.nextBeat - act->beat;
@@ -588,6 +682,11 @@ void World::workBeat(together::JointWork& joint)
             continue;
         ++m.beats;
         worked.push_back(m.id);
+        if (beside)
+        {
+            notice(m.id, "A spell beside " + f->name + " at their work.");
+            continue;
+        }
         // A spell's practice beside the resident, the master (doc 49's apprentice source by the family of work).
         PracticeContext context;
         context.teacher = joint.target;
@@ -598,7 +697,7 @@ void World::workBeat(together::JointWork& joint)
         recordEvent({farm ? "farm work" : "bench work", m.id, joint.target, joint.cellId, 0, 0, joint.kind, 0, 0, joint.id});
     }
     // A workshop: the maker's batches begun in the next spell and a half go faster by the joint's rate (doc 53, 3).
-    if (!farm && !worked.empty())
+    if (!farm && !beside && !worked.empty())
         society_.lendPaw(joint.target, rate, calendarDays_ + act->beat * 1.5 / calendar::SecondsPerDay);
     // Beats together: each hand who worked with each other and with the farmer.
     for (std::size_t a = 0; a < worked.size(); ++a)

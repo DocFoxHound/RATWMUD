@@ -124,7 +124,7 @@ def references(conn, world, program, chapters=False):
         and not (e['kind'] == 'standing.adjust' and key == 'faction')   # (Standing's factions are the game's: it refuses.)
         and not (e['kind'] == 'npc.offer' and key == 'player')
     }
-    refs.update(('npc', q['giver']) for q in program.get('quests', []) if 'giver' in q)
+    refs.update(('npc', q['giver']) for q in program.get('quests', []) if isinstance(q.get('giver'), str))   # (C7: a variable's: skipped.)
     for scene in program.get('scenes', []):
         if 'area' in scene:
             area = scene['area']
@@ -275,6 +275,7 @@ OBJECTIVE_TARGETS = {'conversation': 'character', 'gift': 'character', 'gift aga
 NAMED_RESIDENT_KEYS = ('npc', 'giver', 'from', 'like', 'subject')
 ALIVE_WARNED = ('npc.kill',)   # (They may die before the effect runs: the game refuses it then.)
 DEAD_WANTED = ('npc.revive',)   # (Brings back the dead: one alive is a warning, the game refuses it then.)
+UNPLACED_WANTED = ('npc.queue',)   # (Doc 86, J7: one with no place yet; one placed is refused.)
 
 
 def checkpoint_accounts(conn, world, names):
@@ -306,7 +307,78 @@ def purse_account(purse, accounts, towns, capital=None, town_stores=None):
         return purse
     if parts[0] == 'till' and len(parts) == 2 and purse not in accounts:
         return 'till:job:' + parts[1]
+    if parts[0] == 'house' and len(parts) == 2:
+        # (Doc 86, M3: house:<faction> or house:<the name after house_>, as Game::housePurseFaction reads it.)
+        return 'purse:' + parts[1] if 'purse:' + parts[1] in accounts else 'purse:house_' + parts[1]
     return purse
+
+
+# ----- doc 86, C7: casting at run time. A story's cast.pick is answered in the same turn from the world's residents: living
+# and placed (a home), by the post they hold (dm.story_posts, 0080, else their work as written), their town (their home's),
+# their House (a member, or one whose work place the House claims) and their quarter (live.npc_voice); never one of the
+# list left out; the nearest the named wolf first (their work place, then their home, in the wolf's place; then their
+# town), the rest by the run's seed.
+
+def cast_pick(conn, world, request):
+    """The resident a casting chooses (None: nobody fits)."""
+    has = lambda t: conn.execute('SELECT to_regclass(%s)', (t,)).fetchone()[0] is not None
+    alive = has('live.npc_state')
+    posts = has('dm.story_posts')
+    voice = has('live.npc_voice')
+    rows = conn.execute(
+        'SELECT r.id, r.home_area, r.work_area, coalesce(hc.region, hi.region, \'\'), '
+        + ('(SELECT p.title FROM dm.story_posts p WHERE p.world_id=r.world_id AND p.holder=r.id LIMIT 1)' if posts else 'NULL') + ', '
+        'n.work_label, ' + ('v.quarter' if voice else "''") + ', ' + ('coalesce(s.alive, true)' if alive else 'true') + ', '
+        '(SELECT array_agg(m.faction_id) FROM live.faction_members m WHERE m.world_id=r.world_id AND m.npc_id=r.id), '
+        '(SELECT array_agg(c.faction_id) FROM live.faction_claims c WHERE c.world_id=r.world_id AND c.area=r.work_area), '
+        'n.work_x, n.work_y, n.home_x, n.home_y '
+        'FROM dm.story_residents r LEFT JOIN live.npcs n ON n.world_id=r.world_id AND n.id=r.id '
+        'LEFT JOIN world.cells hc ON hc.world_id=r.world_id AND hc.id=r.home_area '
+        'LEFT JOIN world.interiors hi ON hi.world_id=r.world_id AND hi.id=r.home_area '
+        + ('LEFT JOIN live.npc_voice v ON v.world_id=r.world_id AND v.npc_id=r.id ' if voice else '')
+        + ('LEFT JOIN live.npc_state s ON s.world_id=r.world_id AND s.npc_id=r.id ' if alive else '')
+        + 'WHERE r.world_id=%s AND coalesce(r.home_area,\'\')<>\'\'', (world,)).fetchall()
+    left_out = set(request.get('notIn', ()))
+    job = (request.get('job') or '').lower()
+    at = request.get('at') or {}
+    seed = request.get('seed', '')
+    fits = []
+    for rid, home, work, town, title, label, quarter, living, members, claims, wx, wy, hx, hy in rows:
+        if not living or rid in left_out:
+            continue
+        if job and job not in (title or label or '').lower():
+            continue
+        if request.get('town') and town != request['town']:
+            continue
+        if request.get('faction') and request['faction'] not in (members or []) and request['faction'] not in (claims or [])[:1]:
+            continue
+        if request.get('quarter') and (quarter or '') != request['quarter']:
+            continue
+        if at.get('cell') and work == at['cell'] and wx is not None:
+            near = math.hypot(wx - at.get('x', 0), wy - at.get('y', 0))
+        elif at.get('cell') and home == at['cell'] and hx is not None:
+            near = 500 + math.hypot(hx - at.get('x', 0), hy - at.get('y', 0))
+        elif at.get('town') and town == at['town']:
+            near = 5000
+        else:
+            near = 10000
+        fits.append((near, hashlib.sha256((seed + '|' + rid).encode()).hexdigest(), rid))
+    return min(fits)[2] if fits else None
+
+
+def world_caster(conn, world):
+    return lambda request: cast_pick(conn, world, request)
+
+
+def house_factions(conn, world):
+    """Doc 86, M3: the world's Houses, {faction id: its name} (a faction whose name begins "House ")."""
+    return {r[0]: r[1] for r in conn.execute("SELECT id, name FROM live.factions WHERE world_id=%s AND name LIKE 'House %%'", (world,))}
+
+
+def house_purses_on(conn, world):
+    """Doc 86, M3: the world switch storyHousePurses, as the world was last saved (the game's people.storyHousePurses)."""
+    row = conn.execute("SELECT payload::jsonb->'people'->>'storyHousePurses' FROM game.checkpoints WHERE world_id=%s", (world,)).fetchone()
+    return bool(row) and row[0] == 'true'
 
 
 def _purse_sites(program):
@@ -349,7 +421,8 @@ def _resident_sites(program):
                 continue
             if key in NAMED_RESIDENT_KEYS or params.get(key, {}).get('type') == 'resident':
                 yield path, at, value, ('kill' if e['kind'] in ALIVE_WARNED and key == 'npc' else
-                                        'revive' if e['kind'] in DEAD_WANTED and key == 'npc' else key)
+                                        'revive' if e['kind'] in DEAD_WANTED and key == 'npc' else
+                                        'queue' if e['kind'] in UNPLACED_WANTED and key == 'npc' else key)
     for qi, q in enumerate(program.get('quests', []) or []):
         if isinstance(q.get('giver'), str):
             yield f'quests[{qi}].giver', {'kind': 'quest', 'index': qi, 'id': q.get('id'), 'part': 'giver'}, q['giver'], 'giver'
@@ -413,7 +486,8 @@ def world_checks(conn, world, program, chapters=False):
     if purses:
         wanted = set()
         for _, _, purse in purses:
-            wanted.update({purse, 'till:job:' + purse.split(':', 1)[-1], 'stores:' + purse.split(':', 1)[-1], 'treasury'})
+            tail = purse.split(':', 1)[-1]
+            wanted.update({purse, 'till:job:' + tail, 'stores:' + tail, 'treasury', 'purse:' + tail, 'purse:house_' + tail})
         accounts = checkpoint_accounts(conn, world, wanted)
         # (The game's capital is the town its spawn is in; in a world with no stores:<town> there is one settlement.)
         spawn = conn.execute("""SELECT c.region FROM world.worlds w JOIN world.cells c ON c.world_id=w.id AND c.id=w.spawn_area
@@ -423,8 +497,22 @@ def world_checks(conn, world, program, chapters=False):
                CROSS JOIN LATERAL jsonb_object_keys(CASE WHEN jsonb_typeof(x.a)='object' THEN x.a ELSE '{}'::jsonb END) k
                WHERE c.world_id=%s AND k LIKE 'stores:%%' LIMIT 1""", (world,)).fetchone())
         capital = spawn[0] if spawn and spawn[0] and spawn[0] != 'unassigned' else None
+        houses = None
         for path, at, purse in purses:
             parts = purse.split(':')
+            if parts[0] == 'house':
+                # (Doc 86, M3: a House's purse, purse:<faction>, only while the world's switch storyHousePurses is on.)
+                if houses is None:
+                    houses = house_factions(conn, world)
+                faction = next((f for f in (parts[1], 'house_' + parts[1]) if f in houses), None)
+                if faction is None:
+                    add(path, at, f'No House "{parts[1]}" in this world: name one of {", ".join(sorted(houses)) or "its Houses"} (house:<House>).')
+                elif not house_purses_on(conn, world):
+                    add(path, at, f'House purses are off in this world (the switch storyHousePurses): {purse} pays nothing. Pay from '
+                        'the treasury, a town or a House business\'s till (till:job:<resident>) instead.')
+                elif accounts is not None and 'purse:' + faction not in accounts:
+                    add(path, at, f'{houses[faction]} has no purse yet (as last saved): it opens the day the switch goes on.')
+                continue
             if parts[0] == 'town' and len(parts) == 3:
                 add(path, at, f'This world has no works, watch or church purse ({purse}): pay from the town (town:{parts[1]}).')
             elif accounts is None:
@@ -503,6 +591,11 @@ def world_checks(conn, world, program, chapters=False):
                 continue   # (Unknown ones: references' own check names them.)
             seen.add((path, rid))
             placed, alive = rows[rid]
+            if role == 'queue':
+                if placed:
+                    add(path, at, f'{rid} has a place in the world already: only a resident with no home yet (unplaced) '
+                        'can be put first in line.')
+                continue
             if not placed:
                 add(path, at, f'{rid} has no place in the world yet: place them first, or name someone who is.', role != 'like')
             elif role == 'revive':
@@ -516,9 +609,13 @@ def world_checks(conn, world, program, chapters=False):
     stories = None
     for path, at, e in _effect_sites(program, quests_too=True):
         kind = e.get('kind')
-        if kind in ('talk.remember', 'talk.forget', 'belief.plant', 'title.give', 'belief.forget') and isinstance(e.get('town'), str) \
+        if kind in ('talk.remember', 'talk.forget', 'belief.plant', 'title.give', 'belief.forget', 'npc.queue', 'cast.pick') \
+                and isinstance(e.get('town'), str) \
                 and e['town'] not in towns:
             add(path, at, f'Unknown town in this world: {e["town"]}')
+        if kind == 'cast.pick' and isinstance(e.get('faction'), str) and e['faction'] and not conn.execute(
+                'SELECT 1 FROM live.factions WHERE world_id=%s AND id=%s', (world, e['faction'])).fetchone():
+            add(path, at, f'Unknown faction in this world: {e["faction"]}')   # (Doc 86, C7: a casting by a House of the world.)
         if kind == 'figure.set':
             if e.get('known') == 'region' and isinstance(e.get('region'), str) and e.get('region') not in towns:
                 add(path, at, f'Unknown town in this world: {e.get("region")}')
@@ -834,6 +931,7 @@ def action(effect, actor):
         'npc.unspare': 'npc',
         'npc.howl': 'npc',      # (Doc 86, J5: a resident howls.)
         'npc.post': 'npc',      # (Doc 86, C14: a post given in one step, whoever held it; lasting.)
+        'npc.queue': 'npc',     # (Doc 86, J7: an unplaced resident first in line for a town's next vacancy; lasting.)
         'npc.revive': 'npc',
         'character.injury': 'player',
         'ship.storm': 'ship',
@@ -1175,6 +1273,20 @@ def release_sentence(conn, world, who, data):
     conn.execute('INSERT INTO dm.audit (at, action, target, detail, who) VALUES (extract(epoch from now()), %s, %s, %s, %s)',
                  ('story.sentence-release', npc, f'Released {npc} now. Reason: "{reason}"'[:2000], who))
     return {'npc': npc, 'receipt': receipt}
+
+
+def house_purses(conn, world, who, data):
+    """Doc 86, M3: the world switch for House purses (op `house-purses`: {on, reason}): the game's story.house-purses on|off.
+    Off (the first state of every world), no money moves to a House's purse and approval refuses a house: purse. Turning it
+    on moves money each game day (a House's businesses' tills put a share in its purse), so it waits on the economy check
+    the user approves (engine spec M3, D8). Audited `story.house-purses`."""
+    on = data.get('on')
+    rules.require(isinstance(on, bool), 'House purses are on or off.')
+    reason = _reason(data.get('reason'))
+    receipt = queue(conn, who, 'story.house-purses', 'on' if on else 'off', {'by': who})
+    conn.execute('INSERT INTO dm.audit (at, action, target, detail, who) VALUES (extract(epoch from now()), %s, %s, %s, %s)',
+                 ('story.house-purses', 'on' if on else 'off', f'House purses {"on" if on else "off"}. Reason: "{reason}"'[:2000], who))
+    return {'on': on, 'receipt': receipt, 'houses': sorted(house_factions(conn, world)), 'saved': house_purses_on(conn, world)}
 
 
 # Doc 85, Phase 9: the new world effects, each the game order of its own name. The target is what it acts on (a wolf, a
@@ -2406,9 +2518,11 @@ def tick_run(conn, world, run, clock):
             realm_join(conn, world, holder['program'], state, holder['loaded'].realm, wolf)
 
     quests.JOINED.append(joined)
+    caster = quests.CASTER.set(world_caster(conn, world))   # (Doc 86, C7: castings answered from the world's residents.)
     try:
         _tick_run(conn, world, run, clock, holder)
     finally:
+        quests.CASTER.reset(caster)
         quests.JOINED.remove(joined)
         if holder.get('loaded') is not None:
             world_save(conn, world, run, holder['program'], holder['state'], holder['loaded'])
@@ -3679,7 +3793,7 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
 # after, in the command's row and in dm.audit. A command can release only what was approved (5.1, rule 4): it fires a
 # trigger the program has, enters a phase it has, sets a counter it names; nothing adds a trigger or changes a rule.
 
-RUNNER_VERSION = 'doc86-phase8'
+RUNNER_VERSION = 'doc86-phase9'
 COMMAND_KINDS = ('hold', 'resume', 'stop', 'signal', 'fire', 'enable', 'disable', 'enter', 'set', 'timer', 'mission',
                  'order', 'tell', 'scene', 'migrate', 'objective', 'quest', 'participant', 'advance', 'foe')
 # Flow commands move the story (dispatch a fact, run actions, open a visit, send the journal): they wait while the run is
@@ -4812,6 +4926,14 @@ def _audit(conn, cmd, title, outcome, result):
 def take_commands(conn, world, run, clock, limit=20):
     """The run's queued commands, in order, at the top of its tick (doc 85, 5.1 rule 3). A flow command waits while the
     run still sends its orders; only hold, resume, stop and order commands go past it."""
+    caster = quests.CASTER.set(world_caster(conn, world))   # (Doc 86, C7: a casting a command's trigger asks, answered.)
+    try:
+        return _take_commands(conn, world, run, clock, limit)
+    finally:
+        quests.CASTER.reset(caster)
+
+
+def _take_commands(conn, world, run, clock, limit=20):
     rows = conn.execute(
         """SELECT id,key,visit,digest,kind,payload,reason,requested_by,extract(epoch from statement_timestamp()-requested_at)::float8
            FROM dm.story_commands WHERE run=%s AND status='queued' ORDER BY id LIMIT %s FOR UPDATE SKIP LOCKED""",

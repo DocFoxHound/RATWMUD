@@ -118,9 +118,9 @@ def effect(kind, **more):
 class Catalogue(unittest.TestCase):
     def test_the_new_effects_are_in_the_catalogue_with_typed_parameters_and_sentences(self):
         ids = [e['id'] for e in CAT['effects']]
-        self.assertEqual(len(ids), 91)   # (Doc 86 Phase 7's three foe effects. Phase 10's story.start, the story's own: not a game order; doc 86 Phase 1b's 7, Phase 3's 4,
+        self.assertEqual(len(ids), 93)   # (Doc 86 Phase 9's npc.queue (a single-key order) and cast.pick (the story's own). Phase 7's three foe effects. Phase 10's story.start, the story's own: not a game order; doc 86 Phase 1b's 7, Phase 3's 4,
         self.assertNotIn('story.start', runner.WORLD_ORDERS)   # Phase 4's story.notify and quest.withdraw, the story's own too.)
-        for kind in ('story.notify', 'quest.withdraw'):
+        for kind in ('story.notify', 'quest.withdraw', 'cast.pick'):
             self.assertNotIn(kind, runner.WORLD_ORDERS)
             self.assertIn(kind, quests.STORY_EFFECTS)
         for kind in NEW:
@@ -151,7 +151,8 @@ class Catalogue(unittest.TestCase):
         self.assertEqual(rules.BUILDER_EFFECTS, {'faction.relation', 'standing.adjust', 'prices.reset', 'project.complete', 'project.cancel',
                                                  'figure.set', 'figure.clear',   # (Doc 86, C9: the realm's figures.)
                                                  'foe.outlaw',    # (Doc 86, C10: a resident made a foe.)
-                                                 'npc.post', 'npc.sentence'})   # (Doc 86, C14 and L4: posts and sentences.)
+                                                 'npc.post', 'npc.sentence',   # (Doc 86, C14 and L4: posts and sentences.)
+                                             'npc.queue'})   # (Doc 86, J7: an unplaced resident first in line.)
         self.assertEqual(studio.STORY_WOLF_KINDS, rules.WOLF_EFFECTS)
         self.assertEqual(runner.WOLF_EFFECTS, rules.WOLF_EFFECTS)
         p = program([effect('item.take')])

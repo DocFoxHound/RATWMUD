@@ -60,6 +60,9 @@ EXAMPLE = {
     # (Doc 86, Phase 8: the crown's change, and a week in the Watch's cells.)
     'npc.post': {'npc': 'rm111', 'post': 'job:rm112'},
     'npc.sentence': {'npc': 'rm113', 'place': 'greyfen-cells', 'days': 7},
+    # (Doc 86, Phase 9: a wolf of the Country first in line, and a carter cast for a quest any town can give.)
+    'npc.queue': {'npc': 'cty_fisher', 'town': 'greyfen'},
+    'cast.pick': {'var': 'carter', 'job': 'carter', 'town': 'greyfen', 'near': '$actor'},
 }
 GROUP_NOTES = {
     'flow': 'Version 2 only. Nested lists of actions: up to 24 actions in a trigger counting nested ones, three deep.',

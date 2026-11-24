@@ -19,6 +19,7 @@ The state it keeps (inside the run's state):
 """
 
 import bisect
+import contextvars
 import hashlib
 import json
 
@@ -46,15 +47,50 @@ CHAPTER_EFFECTS = ('story.start',)
 # (Doc 86, Phase 4: news for another story (C12a) the story's own too; an offer taken back from one wolf (L5, quest.withdraw)
 # is a quest effect, its quest the program's own.)
 NOTICE_EFFECTS = ('story.notify',)
-STORY_EFFECTS = (*QUEST_EFFECTS, *PARTICIPANT_EFFECTS, 'npc.offer', 'story.tracker', *CHAPTER_EFFECTS, *NOTICE_EFFECTS)
+# (Doc 86, C7: a resident cast at run time, the story's own: the runner, or a rehearsal's case, answers it at once.)
+CAST_EFFECTS = ('cast.pick',)
+STORY_EFFECTS = (*QUEST_EFFECTS, *PARTICIPANT_EFFECTS, 'npc.offer', 'story.tracker', *CHAPTER_EFFECTS, *NOTICE_EFFECTS, *CAST_EFFECTS)
+# Doc 86, C7: who answers a casting as it is asked: a function (request) -> a resident's id, or None for nobody, that the
+# runner sets around a run's turn (the world's residents) and a rehearsal around a case (the case's `cast`). Unset, a
+# request waits in the state (castRequests) for the runner's next turn.
+CASTER = contextvars.ContextVar('story_caster', default=None)
+CAST_FIELDS = ('job', 'town', 'faction', 'quarter')
+CAST_WAITING = 64          # (Requests kept for the next turn at most.)
+CAST_EVENTS = ('cast chosen', 'cast failed')
 # (A wolf may be named by $actor in these from a trigger of anyone in the world: each takes the wolf into the story.)
 TAKES_IN = ('participant.add', 'quest.offer', 'quest.start')
 GAME_EVENTS = ('quest accepted', 'quest declined', 'quest handed in', 'quest abandoned', 'dialogue choice')
 PARTY_EVENTS = ('party joined', 'party left')
 STORY_FACTS = ('quest started', 'quest completed', 'quest failed', 'objective completed')
 LEAVES = 'storyline abandoned'     # (A wolf leaving the world story from the journal: an open audience lets them go.)
-PURSE_PREFIXES = ('town:', 'till:', 'chapter:')
+PURSE_PREFIXES = ('town:', 'till:', 'chapter:', 'house:')   # (Doc 86, M3: house:<faction>, behind its world switch.)
 TOWN_PURSES = ('works', 'watch', 'church')
+
+# Doc 86, SQ4: a quest's coin rewards stop after N a game day, counted for the quest or for its purse across the program;
+# a shorthand for decisions 3.2's rule, writing the same counters (coin_<purse>_day, a world number) and reading the same
+# floor switch (coin_<purse>_ok), each where the program declares it.
+REWARD_LIMIT_SCOPES = ('quest', 'purse')
+
+
+def purse_counter(purse):
+    """The name decisions 3.2 gives a purse's counters, coin_<this>_day and coin_<this>_ok: town:ridgemere -> ridgemere,
+    till:job:rm_eleanor_saltcot -> till_eleanor_saltcot (a resident's id without its first part), chapter:<id> ->
+    chapter_<id>, house:greatly -> house_greatly."""
+    parts = purse.split(':')
+    if parts[0] == 'town':
+        return parts[1] if len(parts) == 2 else '_'.join(parts[1:])
+    if parts[0] == 'till':
+        who = parts[-1]
+        head = who.split('_', 1)
+        return 'till_' + (head[1] if len(head) == 2 and len(head[0]) <= 3 else who)
+    if parts[0] == 'house':
+        return parts[1] if parts[1].startswith('house_') else 'house_' + parts[1]
+    return '_'.join(parts)
+
+
+def coin_rewards(q):
+    return [e for key in ('rewards', 'bonus') for e in q.get(key, []) if isinstance(e, dict) and e.get('kind') == 'character.grant']
+
 
 DEFAULT_WORDS = {'accept': "I'll do it.", 'decline': 'Not now.'}
 # Doc 86, Phase 4: a quest that counts as a finished Story (J3; `true` is read as "line"), at most 4 a program; the conditions
@@ -113,7 +149,7 @@ def check_purse(v):
     return len(parts) == 2 and bool(parts[1])
 
 
-PURSE_WORDS = 'Name a purse that pays: town:<town>, till:job:<resident> or chapter:<id>.'
+PURSE_WORDS = 'Name a purse that pays: town:<town>, till:job:<resident>, chapter:<id> or house:<House>.'
 
 
 # Doc 86, Phase 2: who an objective credits (SQ5), and the events whose objectives must credit the wolves present (L3).
@@ -212,10 +248,34 @@ def reward_wolves(effect):
     return per_wolf, bool(per_wolf or reads_wolf)
 
 
-def from_giver(effect, q):
-    """Doc 86, C5: a reward's greeting is from the quest's giver unless it names its resident."""
-    if effect.get('kind') == 'npc.greet' and 'npc' not in effect and isinstance(q.get('giver'), str):
-        return {**effect, 'npc': q['giver']}
+def giver_var(q):
+    """Doc 86, C7: the story variable a quest's giver is read from ({"var": name}), or None for a giver named outright."""
+    g = q.get('giver')
+    return g['var'] if isinstance(g, dict) and isinstance(g.get('var'), str) else None
+
+
+def giver_of(q, state, c=None):
+    """Who gives a quest now: the resident named, or the one its variable holds (story scope; "" while it holds nobody). A
+    copy keeps the giver it started with (c['giver']) for its hand-in."""
+    if c is not None and c.get('giver'):
+        return c['giver']
+    name = giver_var(q)
+    if name is None:
+        return q.get('giver') or ''
+    v = (state.get('counters', {}).get('story', {}) if state else {}).get(name, '')
+    return v if isinstance(v, str) else ''
+
+
+def from_giver(effect, q, giver=None):
+    """Doc 86, C5: a reward's greeting is from the quest's giver unless it names its resident (C7: the copy's giver when it
+    is given; a giver from a variable, read from it as the reward is given)."""
+    if effect.get('kind') == 'npc.greet' and 'npc' not in effect:
+        if giver:
+            return {**effect, 'npc': giver}
+        if isinstance(q.get('giver'), str):
+            return {**effect, 'npc': q['giver']}
+        if giver_var(q):
+            return {**effect, 'npc': {'var': giver_var(q)}}
     return effect
 
 
@@ -239,7 +299,7 @@ def check_quest(q, p, ids):
     """One quest of a program (3.6)."""
     rules.shape(q, ('id', 'title', 'objectives'),
                 ('summary', 'scope', 'contributors', 'lifetime', 'phases', 'repeat', 'giver', 'board', 'offer', 'handIn', 'join',
-                 'abandon', 'fail', 'rewards', 'bonus', 'credit', 'creditMin', 'requires', 'closure'))
+                 'abandon', 'fail', 'rewards', 'bonus', 'credit', 'creditMin', 'requires', 'closure', 'rewardLimit'))
     rules.require(rules.identifier(q['id']) and q['id'] not in ids, 'Give every quest a unique ID.')
     ids.add(q['id'])
     qid = q['id']
@@ -257,7 +317,14 @@ def check_quest(q, p, ids):
     repeat = q.get('repeat', 'once')
     rules.require(repeat in REPEATS and (repeat == 'once' or scope != 'story'),
                   f'quest {qid}: it is taken once, daily, weekly or always (a quest of the whole story only once).')
-    rules.require('giver' not in q or rules.identifier(q['giver']), f'quest {qid}: choose the resident who gives it.')
+    if isinstance(q.get('giver'), dict):
+        # (Doc 86, C7: a giver read from a resident variable of the story, cast as it runs; references() skips it.)
+        rules.shape(q['giver'], ('var',), ())
+        decl = rules.variables_of(p).get(q['giver']['var']) if p.get('version') == 2 else None
+        rules.require(decl is not None and decl['type'] == 'resident' and decl['scope'] == 'story',
+                      f'quest {qid}: a giver from a variable names a resident variable of the story (story scope).')
+    else:
+        rules.require('giver' not in q or rules.identifier(q['giver']), f'quest {qid}: choose the resident who gives it.')
     rules.require('board' not in q or rules.identifier(q['board']), f'quest {qid}: choose the town whose notice board shows it.')
     if 'offer' in q:
         rules.require('giver' in q, f'quest {qid}: an offer needs a giver.')
@@ -332,6 +399,14 @@ def check_quest(q, p, ids):
         # (Doc 86, C6: only for the wolves for whom it holds; read when the offers are sent, and when one takes it.)
         rules.require(phase is not None, f'quest {qid}: "Only for wolves who..." (requires) needs a version 2 story.')
         check_requires(q['requires'], {**phase, '_questIndex': index(p), '_phaseIds': phase_ids}, qid)
+    if 'rewardLimit' in q:
+        # (Doc 86, SQ4: coin rewards stop after perDay a game day, for this quest or for its purse across the program.)
+        limit = q['rewardLimit']
+        rules.shape(limit, ('perDay',), ('scope',))
+        rules.require(rules.integer(limit['perDay'], 1, 1000), f'quest {qid}: a reward limit of 1 to 1,000 a game day.')
+        rules.require(limit.get('scope', 'quest') in REWARD_LIMIT_SCOPES,
+                      f'quest {qid}: a reward limit counts for the quest or for its purse.')
+        rules.require(coin_rewards(q), f'quest {qid}: a reward limit is for a quest that pays coin (Pay a wolf from a purse).')
     if 'closure' in q:
         # (Doc 86, J3: the last chapter of a quest line, or a campaign chapter's side story, counts as a finished Story.)
         rules.require(q['closure'] is True or q['closure'] in CLOSURES,
@@ -496,6 +571,18 @@ def check_story_effect(effect, phase, t):
         return
     if phase is not None:
         rules.require(triggers.version(phase) == 2, 'This effect needs a version 2 story.')
+    if kind == 'cast.pick':
+        # (Doc 86, C7: at least one of the work, the town, the House or the quarter; into a resident of the story's own.)
+        rules.require(any(effect.get(k) for k in CAST_FIELDS),
+                      'Cast a resident by their work, their town, their House or their quarter: at least one.')
+        if phase is not None:
+            d = phase.get('_vars', {}).get(effect['var'])
+            rules.require(d is not None and d['type'] == 'resident' and d['scope'] == 'story',
+                          f'A casting is put in a resident variable of the story (story scope): {effect["var"]} is not one.')
+            if effect.get('notIn'):
+                n = phase.get('_vars', {}).get(effect['notIn'])
+                rules.require(n is not None and n['type'] == 'residents' and n['scope'] in ('story', 'world'),
+                              f'Those left out are a list of residents of the story or the world: {effect["notIn"]} is not one.')
     if kind == 'story.tracker' and phase is not None:
         d = phase.get('_vars', {}).get(effect['var'])
         rules.require(d is not None and d['type'] in ('number', 'switch') and d.get('show'),
@@ -799,6 +886,8 @@ class Run:
             c['beganReal'] = self.elapsed
         if by:
             c['by'] = by
+        if giver_var(q):
+            c['giver'] = giver_of(q, state)   # (Doc 86, C7: handed in to the giver it began with, recast or not.)
         self.read_goals(q, c, wolf)
         copies[holder] = c
         starts = state.setdefault('questStarts', {})
@@ -869,7 +958,8 @@ class Run:
             # who added nothing: a share of 0 is no reward, not the least of each.)
             shares = c.get('shares', {})
             wolves = [w for w in wolves if shares.get(w, 0) >= q.get('creditMin', 1)]
-        self.reward(q, q.get('rewards', []), wolves, shares)
+        giver = giver_of(q, self.state, c)   # (Doc 86, C7: the giver the copy started with.)
+        self.reward(q, q.get('rewards', []), wolves, shares, giver)
         kind = closure_of(q)
         if kind:
             # (Doc 86, J3: each wolf with credit is told by the game that a Story closed for them, with the rewards: the
@@ -881,7 +971,7 @@ class Run:
         optional = [o for o in q['objectives'] if o.get('optional')]
         if q.get('bonus') and optional and all(c['objectives'].get(o['id'], {}).get('done') for o in optional):
             c['bonus'] = True
-            self.reward(q, q['bonus'], wolves, shares)
+            self.reward(q, q['bonus'], wolves, shares, giver)
         self.fact('quest completed', actor, q['id'])
 
     def credited(self, q, c):
@@ -892,12 +982,12 @@ class Run:
         helped = set(c.get('credit', ()))
         return [m for m in members if m not in left or m in helped]
 
-    def reward(self, q, effects, wolves, shares=None):
+    def reward(self, q, effects, wolves, shares=None, giver=None):
         """Rewards as story effects: one for each wolf with credit where the effect names $actor (or reads a value of theirs),
         else once. Doc 86, C1a: a value is worked out as it is given, the credited wolf as $actor; with none, that reward is not
         given (noted in the state's rewardNotes)."""
         for effect in effects:
-            effect = from_giver(effect, q)
+            effect = from_giver(effect, q, giver)
             per_wolf, each = reward_wolves(effect)
             for wolf in (wolves if each else [None]):
                 e = dict(effect)
@@ -916,9 +1006,44 @@ class Run:
                         continue
                 if e['kind'] in STORY_EFFECTS:
                     self.story_effect(e, wolf or '')
-                else:
-                    e['reward'] = q['id']
-                    self.state.setdefault('triggerEffects', []).append(e)
+                    continue
+                if e['kind'] == 'character.grant' and not self.coin_allowed(q, e, wolf or ''):
+                    continue
+                e['reward'] = q['id']
+                self.state.setdefault('triggerEffects', []).append(e)
+
+    def coin_allowed(self, q, e, wolf):
+        """Doc 86, SQ4 and decisions 3.2: a coin reward is paid while the purse's floor switch (coin_<purse>_ok, where the
+        program declares it) is on and the quest's rewardLimit has room today; then it adds the coins to coin_<purse>_day
+        (where declared). Otherwise it is given without its coin (noted in rewardNotes). A quest with no rewardLimit pays as
+        ever: its program keeps the counters itself, if it keeps them."""
+        limit = q.get('rewardLimit')
+        if not limit:
+            return True
+        decls = rules.variables_of(self.p) if self.p.get('version') == 2 else {}
+        world = triggers.var_store(self.state, 'world', None, write=True)
+        slug = purse_counter(e.get('purse', ''))
+        ok, day_var = decls.get(f'coin_{slug}_ok'), decls.get(f'coin_{slug}_day')
+        why = ''
+        if ok and ok['scope'] == 'world' and ok['type'] == 'switch' and not world.get(ok['id'], triggers.initial(ok)):
+            why = f'the purse is thin today (coin_{slug}_ok is off): given without its coin'
+        today = int(self.day or 0)
+        counts = self.state.setdefault('rewardLimits', {})
+        key = q['id'] if limit.get('scope', 'quest') == 'quest' else 'purse:' + e.get('purse', '')
+        if not why:
+            seen = counts.get(key)
+            if seen and seen.get('day') == today and seen.get('n', 0) >= limit['perDay']:
+                why = f'{limit["perDay"]} coin rewards a day already ({"this quest" if key == q["id"] else e.get("purse", "")}): given without its coin'
+        if why:
+            notes = self.state.setdefault('rewardNotes', [])
+            notes.append({'quest': q['id'], 'wolf': wolf, 'kind': e['kind'], 'day': self.day, 'why': why})
+            del notes[:-20]
+            return False
+        seen = counts.get(key)
+        counts[key] = {'day': today, 'n': (seen['n'] if seen and seen.get('day') == today else 0) + 1}
+        if day_var and day_var['scope'] == 'world' and day_var['type'] == 'number' and isinstance(e.get('coins'), int):
+            world[day_var['id']] = world.get(day_var['id'], triggers.initial(day_var)) + e['coins']
+        return True
 
     def fail(self, q, holder, c, actor):
         if c['status'] not in UNDER_WAY:
@@ -1101,7 +1226,7 @@ class Run:
                 return
             if board and giver[6:] != q.get('board'):
                 return   # (Taken from a town's notice board: the one the quest is posted on.)
-            if giver and not board and giver != q.get('giver'):
+            if giver and not board and giver != giver_of(q, state):
                 return
             why = self.start(q, wolf, by=giver, invited=invited)
             if why:
@@ -1110,7 +1235,7 @@ class Run:
             _withdraw(state, q['id'], wolf)
         elif kind == 'quest handed in':
             holder, c = copy_of(q, state, wolf, under_way=True)
-            if c is not None and c['status'] == 'ready' and giver == q.get('giver'):
+            if c is not None and c['status'] == 'ready' and giver == giver_of(q, state, c):
                 self.credit(c, wolf)
                 self.complete(q, holder, c, wolf)
         elif kind == 'quest abandoned':
@@ -1126,6 +1251,48 @@ class Run:
                     c['left'].append(wolf)
                 if all(m in c['left'] for m in c['members']):
                     _end(c, 'abandoned', self.day)
+
+    # ---- doc 86, C7: casting at run time
+    def cast(self, effect, actor):
+        """A casting asked: who fits, by the work, the town, the House and the quarter, not one of a list, nearest a wolf (the
+        request). Answered at once by CASTER (the runner's residents, a case's `cast`); unset, it waits in castRequests."""
+        state = self.state
+        near = effect.get('near', '')
+        if near == '$actor':
+            near = actor or (self.event or {}).get('actor', '')   # (The acting wolf of the fact whose trigger cast.)
+        near = near if isinstance(near, str) else ''
+        request = {'var': effect['var'], **{k: effect[k] for k in CAST_FIELDS if isinstance(effect.get(k), str) and effect[k]},
+                   'near': near}
+        if effect.get('notIn'):
+            d = self.phase.get('_vars', {}).get(effect['notIn'], {}) if self.phase else {}
+            store = triggers.var_store(state, d.get('scope', 'story'), actor) or {}
+            request['notIn'] = [v for v in store.get(effect['notIn'], []) if isinstance(v, str)]
+        wolves = ((self.event or {}).get('facts') or {}).get('wolves') or {}
+        if near and isinstance(wolves.get(near), dict):
+            w = wolves[near]
+            request['at'] = {'cell': w.get('cell', ''), 'x': w.get('x', 0), 'y': w.get('y', 0), 'town': w.get('town', '')}
+        request['seed'] = hashlib.sha256(json.dumps([self.p.get('id', ''), effect['var'], state.get('visits', 0),
+                                                     len(state.get('castLog', []))]).encode()).hexdigest()[:16]
+        picker = CASTER.get()
+        if picker is None:
+            waiting = state.setdefault('castRequests', [])
+            waiting.append(request)
+            del waiting[:-CAST_WAITING]
+            return
+        self.cast_answer(request, picker(request))
+
+    def cast_answer(self, request, chosen):
+        """A casting answered: the resident put in the story's variable and 'cast chosen', or 'cast failed' (it keeps what it
+        held). Both follow the fact that asked, as a quest's own facts do."""
+        state = self.state
+        log = state.setdefault('castLog', [])
+        log.append({'var': request['var'], 'chosen': chosen or '', 'day': self.day})
+        del log[:-20]
+        if chosen:
+            triggers.var_store(state, 'story', None, write=True)[request['var']] = chosen
+            self.push({'kind': 'cast chosen', 'actor': request.get('near', ''), 'target': chosen, 'detail': request['var'], 'item': ''})
+        else:
+            self.push({'kind': 'cast failed', 'actor': request.get('near', ''), 'target': '', 'detail': request['var'], 'item': ''})
 
     # ---- the story's own effects (from a trigger, a reward, or an admin)
     def story_effect(self, effect, actor):
@@ -1158,6 +1325,9 @@ class Run:
             notices.append({'signal': effect['signal'], 'player': wolf if isinstance(wolf, str) else '',
                             'amount': effect.get('amount', 0), **({'story': effect['story']} if effect.get('story') else {})})
             del notices[:-NOTICES_KEPT]
+            return
+        if kind == 'cast.pick':
+            self.cast(effect, actor)
             return
         if kind == 'story.tracker':
             hidden = set(state.get('hiddenTrackers', ()))
@@ -1342,7 +1512,7 @@ def view(q, c, holder, state, wolf, status=None, x=None):
          'abandon': status in UNDER_WAY and q.get('abandon', True) and q.get('scope', 'player') != 'story',
          'accept': status == 'offered' and 'giver' not in q}
     if 'giver' in q:
-        v['giver'] = q['giver']
+        v['giver'] = giver_of(q, state, c)
     if c and status in ENDED:
         v['again'] = again(q, c)
     if c and status in UNDER_WAY:
@@ -1526,7 +1696,14 @@ def offers(p, state):
             entry['during'] = words(o['during'])
             entry['duringAsk'] = during_ask(q)
         if 'giver' in q:
-            out.append({**entry, 'npc': q['giver']})
+            now = giver_of(q, state)
+            if now:
+                out.append({**entry, 'npc': now})
+            if giver_var(q):
+                # (Doc 86, C7: a copy under way keeps the giver it began with: handed in there, closed to new takers.)
+                for was in sorted({c.get('giver') for c in state.get('quests', {}).get(q['id'], {}).values()
+                                   if c.get('status') in UNDER_WAY and c.get('giver') and c.get('giver') != now}):
+                    out.append({**entry, 'npc': was, 'players': []})
         if 'board' in q:
             # (A town's notice board: the quest under QUESTS, taken with TAKE IT ON; handed in to its giver if it has one.)
             out.append({**entry, 'npc': '', 'board': q['board']})
@@ -1574,7 +1751,8 @@ def board(p, state, facts=None):
         counts['offered'] = len(state.get('questOffers', {}).get(q['id'], ()))
         join = q.get('join', {})
         out.append({'id': q['id'], 'title': q['title'], 'summary': q.get('summary', ''), 'scope': q.get('scope', 'player'),
-                    'lifetime': q.get('lifetime', 'campaign'), 'repeat': q.get('repeat', 'once'), 'giver': q.get('giver'),
+                    'lifetime': q.get('lifetime', 'campaign'), 'repeat': q.get('repeat', 'once'), 'giver': giver_of(q, state),
+                    **({'giverVar': giver_var(q)} if giver_var(q) else {}),
                     'open': open_in(q, state['phase']),
                     'objectives': [{'id': o['id'], 'label': o['label'], 'optional': bool(o.get('optional')),
                                     'hidden': bool(o.get('hidden')), 'goal': goal_now(o), 'measure': o.get('measure', 'count'),

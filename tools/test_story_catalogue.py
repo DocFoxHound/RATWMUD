@@ -129,7 +129,8 @@ class CatalogueShape(unittest.TestCase):
         self.assertEqual(len(ids), len(set(ids)))
         # (160, Phase 6's 11 quest and party events, Phase 8's 24, Phase 10's 10; doc 86's moon, title given; Phase 4's story notified,
         # variable changed, month begins, succession; Phase 5's howled and chorus closed.)
-        self.assertEqual(len(rules.EVENTS), 218)   # (Doc 86, Phase 7: foe downed, foe defeated, foe fled; Phase 8: sentence begun, served.)
+        self.assertEqual(len(rules.EVENTS), 220)   # (Doc 86, Phase 7: foe downed, foe defeated, foe fled; Phase 8: sentence begun, served;
+        # Phase 9: cast chosen, cast failed.)
         self.assertEqual(set(ids) - set(rules.EVENTS), {triggers.SIGNAL, rules.MISSION_GATE, rules.READY_EXIT})   # (Doc 86: the ready exit.)
         for e in CAT['events']:
             with self.subTest(event=e['id']):
@@ -156,7 +157,8 @@ class CatalogueShape(unittest.TestCase):
         self.assertEqual(set(dos), {'set', 'add', 'emit', 'schedule', 'cancel', 'effect', 'enter', *triggers.FLOW_V2, *triggers.STATE_V2})
         self.assertEqual(len({a['id'] for a in CAT['actions']}), len(CAT['actions']))
         self.assertTrue(all(a.get('nest') for a in CAT['actions'] if a.get('do', a['id']) in ('if', 'each', 'random')))
-        self.assertEqual(len(CAT['effects']), 91)   # (Doc 86, Phase 7: foe.add, foe.leave, foe.outlaw; Phase 8: npc.post, npc.sentence.)   # (25, Phase 6's 14, Phase 9's 31, Phase 10's story.start, doc 86 Phase 1b's 7, Phase 3's 4, Phase 4's 2,
+        self.assertEqual(len(CAT['effects']), 93)   # (Doc 86, Phase 7: foe.add, foe.leave, foe.outlaw; Phase 8: npc.post, npc.sentence;
+        # Phase 9: npc.queue, cast.pick.)   # (25, Phase 6's 14, Phase 9's 31, Phase 10's story.start, doc 86 Phase 1b's 7, Phase 3's 4, Phase 4's 2,
         # Phase 5's npc.howl and hunt.stage.)
         for item in [*CAT['conditions'], *CAT['actions'], *CAT['effects']]:
             with self.subTest(item=item['id']):

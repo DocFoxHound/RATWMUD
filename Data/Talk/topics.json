@@ -417,6 +417,19 @@
     "pastimes": ""
    }
   },
+  "story": {
+   "news": true,
+   "kinds": {
+    "_": {
+     "base": 2.2
+    }
+   },
+   "next": {
+    "news": "",
+    "gossip": "",
+    "faith": ""
+   }
+  },
   "player": {
    "kinds": {
     "_": {

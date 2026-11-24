@@ -396,6 +396,45 @@ void benchWork()
     expect(!w.residentWorkAt("player-ash"), "a player is nobody's bench");
 }
 
+// Doc 86, SQ3: a paw lent to a resident at their own work (Tam trains the recruits: no farm, no bench). The beats by the
+// clock, no coin moved and nothing of hers made faster; the end writes together {Ash, Tam, beside, beats}; once a day.
+void besideAResident()
+{
+    auto w = yard("training_yard", "trains the recruits");
+    const auto* act = w.besideWorkAt("tam");
+    expect(act && act->id == "beside" && !w.residentWorkAt("tam"), "Tam at her post: work beside her, no farm or bench");
+    expect(!w.besideWorkAt("player-ash"), "a player is nobody's post");
+    const auto money = allCash(w);
+    w.takeEvents();
+    const auto lent = w.lendAPaw("player-ash", "tam");
+    const auto* j = w.jointOf("player-ash");
+    expect(lent.ok && j && j->target == "tam" && j->members.front().id == "tam" && j->members.front().resident,
+           "Ash lends Tam a paw: " + lent.message);
+    expect(!w.lendAPaw("player-ash", "tam").ok, "not twice at once");
+    workFor(w, 2 * 300 + 2, {"player-ash"});
+    expect(w.jointOf("player-ash") && w.jointOf("player-ash")->members.back().beats == 2, "two spells beside her");
+    expect(std::abs(w.society().pawRateOf("tam") - 1) < 1e-9, "nothing of hers made faster");
+    expect(w.leaveWork("player-ash").ok && !w.jointOf("player-ash") && !w.jointOf("tam"), "Ash leaves off; the work beside her ends");
+    int together = 0;
+    for (const auto& e : w.takeEvents())
+        if (e.kind == "together")
+        {
+            ++together;
+            expect(e.actor == "player-ash" && e.target == "tam" && e.item == "beside" && e.quantity == 2,
+                   "together: the wolf, the resident, beside, two beats: " + e.actor + " " + e.target + " " + e.item);
+        }
+    expect(together == 1, "one together event: " + std::to_string(together));
+    expect(allCash(w) == money, "no coin moved (no wage from her purse)");
+    const auto again = w.lendAPaw("player-ash", "tam");
+    expect(!again.ok && again.message.find("today already") != std::string::npos, "once a game day for the pair: " + again.message);
+    // Away from her post (the evening), there is nothing to lend a paw at.
+    auto evening = yard("training_yard", "trains the recruits");
+    evening.setTimeOfDay(20);
+    for (int i = 0; i < 120; ++i)
+        evening.tick(1);
+    expect(!evening.besideWorkAt("tam") && !evening.lendAPaw("player-ash", "tam").ok, "off her hours, no work to lend a paw at");
+}
+
 // Gifted and Quickened at work (doc 53, 4): Winnow and Dry at threshing is an angle of its own and lifts the joint for the
 // beat; Keep watch is an angle any wolf may take in the wild; a resident in talk faces the talker.
 void anglesOfTheGifts()
@@ -473,6 +512,7 @@ int main()
         farmWork();
         training();
         benchWork();
+        besideAResident();
         anglesOfTheGifts();
     }
     catch (const std::exception& error)
