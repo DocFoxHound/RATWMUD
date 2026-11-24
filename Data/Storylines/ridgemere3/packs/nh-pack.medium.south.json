@@ -3,6 +3,7 @@
  "version": 2,
  "id": "nh-pack.medium.south",
  "title": "Medium errands of the south",
+ "prefix": "mq",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -464,6 +465,55 @@
      "kind": "door.unlock",
      "door": "link_fs_salt_saltpan_store_door_a",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_bear",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_casks",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_lights",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_kiln",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_raker",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_salt",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_names",
+     "value": "open",
+     "days": 365
     }
    ],
    "exits": [],
@@ -843,6 +893,16 @@
           "objective": "choose",
           "player": "$actor"
          }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "hunt.stage",
+          "region": "bg_garth",
+          "species": "bear",
+          "count": 1,
+          "minutes": 240
+         }
         }
        ],
        "elif": [
@@ -934,6 +994,14 @@
             },
             "op": "<=",
             "right": 13
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:southmeadow"
+            },
+            "op": ">=",
+            "right": 70
            }
           ]
          },
@@ -1008,13 +1076,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "cty_disa_fogford",
-          "id": "bg_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "Big as a cart, it was. The beekeeper wants the hide for the garth door. I'd rather the hives back."
+          "text": "Big as a cart, it was. The beekeeper wants the hide for the garth door. I'd rather the hives back.",
+          "days": 7
          }
         }
        ],
@@ -1036,6 +1102,14 @@
             },
             "op": "<=",
             "right": 15
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:southmeadow"
+            },
+            "op": ">=",
+            "right": 68
            }
           ]
          },
@@ -1120,6 +1194,54 @@
        "do": "add",
        "var": "nh_voice_southmeadow",
        "value": 8
+      }
+     ]
+    },
+    {
+     "id": "q13-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-bee-garth-bear"
+     },
+     "note": "C8: the town key mq_bear the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "bg_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "southmeadow",
+          "key": "mq_bear",
+          "value": "killed",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "southmeadow",
+          "key": "mq_bear",
+          "value": "led_off",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -1416,7 +1538,8 @@
             "kind": "story.area.spawn",
             "region": "vc_camp",
             "count": 6,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "mq_vc_camp"
            }
           }
          ],
@@ -1434,7 +1557,8 @@
               "kind": "story.area.spawn",
               "region": "vc_camp",
               "count": 4,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "mq_vc_camp"
              }
             }
            ]
@@ -1447,7 +1571,8 @@
             "kind": "story.area.spawn",
             "region": "vc_camp",
             "count": 2,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "mq_vc_camp"
            }
           }
          ]
@@ -1652,7 +1777,8 @@
      "id": "q14-camp",
      "on": "camp cleared",
      "match": {
-      "cell": "w_ridgemere_7_12"
+      "cell": "w_ridgemere_7_12",
+      "target": "camp_story_mq_vc_camp"
      },
      "if": {
       "test": "switch",
@@ -1691,6 +1817,14 @@
           },
           "op": "<=",
           "right": 13
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:southmeadow"
+          },
+          "op": ">=",
+          "right": 70
          }
         ]
        },
@@ -1766,13 +1900,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "tn_oh_harl_oakbough",
-          "id": "vc_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "She's scrubbing every cask in the cellar for a month, and she's not said a word to me. Fair. I'd not say one to me either."
+          "text": "She's scrubbing every cask in the cellar for a month, and she's not said a word to me. Fair. I'd not say one to me either.",
+          "days": 7
          }
         }
        ],
@@ -1829,6 +1961,54 @@
        "var": "nh_threat",
        "min": 0,
        "max": 100
+      }
+     ]
+    },
+    {
+     "id": "q14-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-vineyard-cellar"
+     },
+     "note": "C8: the town key mq_casks the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "vc_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "southmeadow",
+          "key": "mq_casks",
+          "value": "told",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "southmeadow",
+          "key": "mq_casks",
+          "value": "spared",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -2230,6 +2410,14 @@
           },
           "op": "<=",
           "right": 13
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:fenshore"
+          },
+          "op": ">=",
+          "right": 68
          }
         ]
        },
@@ -2329,13 +2517,11 @@
           {
            "do": "effect",
            "effect": {
-            "kind": "npc.offer",
+            "kind": "npc.greet",
             "npc": "tn_mb_iris_pikeford",
-            "id": "wl_since",
             "player": "$actor",
-            "once": true,
-            "words": "How has it gone, since?",
-            "reply": "Lamps on our creek. Nobody at the Heron's laughing about the drowned now. They're counting boats."
+            "text": "Lamps on our creek. Nobody at the Heron's laughing about the drowned now. They're counting boats.",
+            "days": 7
            }
           }
          ],
@@ -2416,6 +2602,54 @@
        "do": "add",
        "var": "nh_voice_fenshore",
        "value": 8
+      }
+     ]
+    },
+    {
+     "id": "q15-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-withy-lights"
+     },
+     "note": "C8: the town key mq_lights the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "wl_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "fenshore",
+          "key": "mq_lights",
+          "value": "lamps",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "fenshore",
+          "key": "mq_lights",
+          "value": "quieted",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -2738,6 +2972,14 @@
           },
           "op": "<=",
           "right": 13
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:fenshore"
+          },
+          "op": ">=",
+          "right": 68
          }
         ]
        },
@@ -2813,13 +3055,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "tn_sm_bram_harvestgarth",
-          "id": "pp_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "He takes the mornings, I take the firing. His pots lean. Mine don't. We'll see who teaches who."
+          "text": "He takes the mornings, I take the firing. His pots lean. Mine don't. We'll see who teaches who.",
+          "days": 7
          }
         }
        ],
@@ -2874,6 +3114,76 @@
        "do": "add",
        "var": "nh_voice_fenshore",
        "value": 8
+      }
+     ]
+    },
+    {
+     "id": "q16-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-potters-place"
+     },
+     "note": "C8: the town key mq_kiln the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "pp_pick"
+        },
+        "op": "=",
+        "right": "share"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "fenshore",
+          "key": "mq_kiln",
+          "value": "shared",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "oakhaven",
+          "key": "mq_kiln",
+          "value": "shared",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "fenshore",
+          "key": "mq_kiln",
+          "value": "ludo",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "oakhaven",
+          "key": "mq_kiln",
+          "value": "ludo",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -3468,6 +3778,14 @@
           },
           "op": "<=",
           "right": 12
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:saltwell"
+          },
+          "op": ">=",
+          "right": 70
          }
         ]
        },
@@ -3543,13 +3861,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "cty_fern_merewick",
-          "id": "lr_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "He told me. A sack for a wagon. I could spit. But he told me, and that's more than most would."
+          "text": "He told me. A sack for a wagon. I could spit. But he told me, and that's more than most would.",
+          "days": 7
          }
         }
        ],
@@ -3590,6 +3906,54 @@
        "do": "add",
        "var": "nh_voice_saltwell",
        "value": 8
+      }
+     ]
+    },
+    {
+     "id": "q17-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-lost-raker"
+     },
+     "note": "C8: the town key mq_raker the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "lr_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "saltwell",
+          "key": "mq_raker",
+          "value": "told",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "saltwell",
+          "key": "mq_raker",
+          "value": "kept",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -4002,6 +4366,24 @@
             "kind": "story.area.spawn",
             "region": "ws_wash",
             "count": 6,
+            "ifRefused": "skip",
+            "camp": "mq_ws_wash"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "foe.add",
+            "foe": "mq-tollman",
+            "name": "Brack the Tollman",
+            "cell": "w_ridgemere_11_12",
+            "x": 163,
+            "y": 163,
+            "strength": "tough",
+            "band": 0,
+            "stance": "waits",
+            "minutes": 120,
+            "description": "A grey-muzzled road wolf with a toll board slung across his back.",
             "ifRefused": "skip"
            }
           }
@@ -4020,6 +4402,24 @@
               "kind": "story.area.spawn",
               "region": "ws_wash",
               "count": 4,
+              "ifRefused": "skip",
+              "camp": "mq_ws_wash"
+             }
+            },
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "foe.add",
+              "foe": "mq-tollman",
+              "name": "Brack the Tollman",
+              "cell": "w_ridgemere_11_12",
+              "x": 163,
+              "y": 163,
+              "strength": "tough",
+              "band": 0,
+              "stance": "waits",
+              "minutes": 120,
+              "description": "A grey-muzzled road wolf with a toll board slung across his back.",
               "ifRefused": "skip"
              }
             }
@@ -4033,6 +4433,24 @@
             "kind": "story.area.spawn",
             "region": "ws_wash",
             "count": 2,
+            "ifRefused": "skip",
+            "camp": "mq_ws_wash"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "foe.add",
+            "foe": "mq-tollman",
+            "name": "Brack the Tollman",
+            "cell": "w_ridgemere_11_12",
+            "x": 163,
+            "y": 163,
+            "strength": "tough",
+            "band": 0,
+            "stance": "waits",
+            "minutes": 120,
+            "description": "A grey-muzzled road wolf with a toll board slung across his back.",
             "ifRefused": "skip"
            }
           }
@@ -4188,7 +4606,8 @@
      "id": "q18-camp",
      "on": "camp cleared",
      "match": {
-      "cell": "w_ridgemere_11_12"
+      "cell": "w_ridgemere_11_12",
+      "target": "camp_story_mq_ws_wash"
      },
      "if": {
       "test": "switch",
@@ -4238,6 +4657,14 @@
             },
             "op": "<=",
             "right": 17
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:southmeadow"
+            },
+            "op": ">=",
+            "right": 66
            }
           ]
          },
@@ -4293,13 +4720,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "cty_tor_chalkfield",
-          "id": "ws_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "They took the coin and laughed. We got through. Next time it'll be more. It's always more, eh."
+          "text": "They took the coin and laughed. We got through. Next time it'll be more. It's always more, eh.",
+          "days": 7
          }
         }
        ],
@@ -4331,6 +4756,14 @@
               },
               "op": "<=",
               "right": 11
+             },
+             {
+              "test": "compare",
+              "left": {
+               "purse": "town:southmeadow"
+              },
+              "op": ">=",
+              "right": 72
              }
             ]
            },
@@ -4416,6 +4849,14 @@
             },
             "op": "<=",
             "right": 17
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:southmeadow"
+            },
+            "op": ">=",
+            "right": 66
            }
           ]
          },
@@ -4479,6 +4920,88 @@
           "words": "How has it gone, since?",
           "reply": "Not a soul in the wash. Somebody broke whoever was buying what they stole. I sang the whole way. Badly."
          }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "q18-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-waste-road-salt"
+     },
+     "note": "C8: the town key mq_salt the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "ws_pick"
+        },
+        "op": "=",
+        "right": "paid"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "saltwell",
+          "key": "mq_salt",
+          "value": "paid",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "southmeadow",
+          "key": "mq_salt",
+          "value": "paid",
+          "days": 90
+         }
+        }
+       ],
+       "elif": [
+        {
+         "if": {
+          "test": "compare",
+          "left": {
+           "var": "ws_pick"
+          },
+          "op": "=",
+          "right": "fought"
+         },
+         "then": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "talk.remember",
+            "scope": "town",
+            "town": "saltwell",
+            "key": "mq_salt",
+            "value": "fought",
+            "days": 90
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "talk.remember",
+            "scope": "town",
+            "town": "southmeadow",
+            "key": "mq_salt",
+            "value": "fought",
+            "days": 90
+           }
+          }
+         ]
         }
        ]
       }
@@ -4847,7 +5370,9 @@
         "player": "$actor",
         "item": "paper",
         "quantity": 1,
-        "ifRefused": "when here"
+        "ifRefused": "when here",
+        "tag": "mirebridge_names",
+        "name": "The Mirebridge names"
        }
       },
       {
@@ -5004,7 +5529,7 @@
             "test": "carries",
             "op": ">=",
             "value": 1,
-            "item": "paper"
+            "item": "paper^mirebridge_names"
            }
           ]
          },
@@ -5044,7 +5569,7 @@
      "on": "gift",
      "audience": "participant",
      "match": {
-      "item": "paper",
+      "item": "paper^mirebridge_names",
       "target": "rm_imogen_nailridge"
      },
      "if": {
@@ -5115,6 +5640,14 @@
           },
           "op": "<=",
           "right": 14
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:saltwell"
+          },
+          "op": ">=",
+          "right": 68
          }
         ]
        },
@@ -5190,13 +5723,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "tn_mb_kite_bogditch",
-          "id": "mx_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "The mapmaker has them? Then they are on the realm's map, if only in ink. May your well never fail, my friend."
+          "text": "The mapmaker has them? Then they are on the realm's map, if only in ink. May your well never fail, my friend.",
+          "days": 7
          }
         }
        ],
@@ -5273,6 +5804,120 @@
        "do": "add",
        "var": "nh_voice_mirebridge",
        "value": 8
+      }
+     ]
+    },
+    {
+     "id": "q19-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-crossroads-names"
+     },
+     "note": "C8: the town key mq_names the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "mx_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "fenshore",
+          "key": "mq_names",
+          "value": "city",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "larkfield",
+          "key": "mq_names",
+          "value": "city",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_names",
+          "value": "city",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "saltwell",
+          "key": "mq_names",
+          "value": "city",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "fenshore",
+          "key": "mq_names",
+          "value": "fen",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "larkfield",
+          "key": "mq_names",
+          "value": "fen",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_names",
+          "value": "fen",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "saltwell",
+          "key": "mq_names",
+          "value": "fen",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -5555,7 +6200,8 @@
      "label": "Drive off the cask thieves.",
      "on": "bandit falls",
      "match": {
-      "cell": "w_ridgemere_7_12"
+      "cell": "w_ridgemere_7_12",
+      "target": "camp_story_mq_vc_camp"
      },
      "goal": 2,
      "after": [
@@ -5676,7 +6322,15 @@
      "player": "$actor",
      "skill": "travel"
     }
-   ]
+   ],
+   "requires": {
+    "test": "compare",
+    "left": {
+     "var": "nh_b_lights"
+    },
+    "op": "!=",
+    "right": "laid"
+   }
   },
   {
    "id": "mq-potters-place",
@@ -5768,7 +6422,8 @@
    "lifetime": "campaign",
    "abandon": true,
    "join": {
-    "cap": 1
+    "cap": 1,
+    "again": 7
    },
    "fail": [
     {
@@ -5835,7 +6490,8 @@
    "lifetime": "campaign",
    "abandon": true,
    "join": {
-    "cap": 1
+    "cap": 1,
+    "again": 7
    },
    "fail": [
     {
@@ -5862,7 +6518,8 @@
      "label": "Break the toll: drive the toll-takers off.",
      "on": "bandit falls",
      "match": {
-      "cell": "w_ridgemere_11_12"
+      "cell": "w_ridgemere_11_12",
+      "target": "camp_story_mq_ws_wash"
      },
      "goal": 2,
      "after": [
@@ -5898,7 +6555,28 @@
      "player": "$actor",
      "skill": "travel"
     }
-   ]
+   ],
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "compare",
+      "left": {
+       "var": "lq_salt"
+      },
+      "op": "=",
+      "right": ""
+     },
+     {
+      "test": "compare",
+      "left": {
+       "var": "lq_salt"
+      },
+      "op": "=",
+      "right": "raided"
+     }
+    ]
+   }
   },
   {
    "id": "mq-crossroads-names",
@@ -6030,6 +6708,13 @@
      "mq_bear_a": 1,
      "mq_bear_about": true
     }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
+    }
    }
   },
   {
@@ -6158,6 +6843,11 @@
       "x": 186,
       "y": 30
      }
+    },
+    "purses": {
+     "town:fenshore": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {
@@ -6221,7 +6911,7 @@
      "kind": "bandit falls",
      "day": 1.05,
      "actor": "player-harl-a",
-     "target": "camp_story_5",
+     "target": "camp_story_mq_vc_camp",
      "cell": "w_ridgemere_7_12",
      "detail": "a cask thief"
     },
@@ -6230,7 +6920,7 @@
      "kind": "bandit falls",
      "day": 1.06,
      "actor": "player-harl-a",
-     "target": "camp_story_5",
+     "target": "camp_story_mq_vc_camp",
      "cell": "w_ridgemere_7_12",
      "detail": "a cask thief"
     },
@@ -6239,7 +6929,7 @@
      "kind": "camp cleared",
      "day": 1.07,
      "actor": "player-harl-a",
-     "target": "camp_story_5",
+     "target": "camp_story_mq_vc_camp",
      "cell": "w_ridgemere_7_12",
      "detail": "by a wolf"
     },
@@ -6294,6 +6984,11 @@
      "player-harl-a": {
       "partySize": 3
      }
+    },
+    "purses": {
+     "town:fenshore": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {
@@ -6360,7 +7055,7 @@
      "kind": "bandit falls",
      "day": 1.05,
      "actor": "player-harl-b",
-     "target": "camp_story_5",
+     "target": "camp_story_mq_vc_camp",
      "cell": "w_ridgemere_7_12",
      "detail": "a cask thief"
     },
@@ -6369,7 +7064,7 @@
      "kind": "bandit falls",
      "day": 1.06,
      "actor": "player-harl-b",
-     "target": "camp_story_5",
+     "target": "camp_story_mq_vc_camp",
      "cell": "w_ridgemere_7_12",
      "detail": "a cask thief"
     },
@@ -6378,7 +7073,7 @@
      "kind": "camp cleared",
      "day": 1.07,
      "actor": "player-harl-b",
-     "target": "camp_story_5",
+     "target": "camp_story_mq_vc_camp",
      "cell": "w_ridgemere_7_12",
      "detail": "by a wolf"
     },
@@ -6433,6 +7128,11 @@
      "player-harl-b": {
       "partySize": 1
      }
+    },
+    "purses": {
+     "town:fenshore": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {
@@ -6521,6 +7221,11 @@
     "world": {
      "hour": 22,
      "season": "spring"
+    },
+    "purses": {
+     "town:fenshore": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {
@@ -6619,6 +7324,11 @@
     "world": {
      "hour": 3,
      "season": "spring"
+    },
+    "purses": {
+     "town:fenshore": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {
@@ -6726,6 +7436,13 @@
     "story": {
      "mq_kiln_a": 1
     }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
+    }
    }
   },
   {
@@ -6816,6 +7533,13 @@
     },
     "story": {
      "mq_kiln_b": 1
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    }
   },
@@ -6917,6 +7641,11 @@
       "x": 60,
       "y": 200
      }
+    },
+    "purses": {
+     "town:fenshore": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {
@@ -7056,15 +7785,6 @@
      "detail": "mq-lost-raker"
     },
     {
-     "id": "e13",
-     "kind": "quest accepted",
-     "day": 2.46,
-     "actor": "player-fern-a",
-     "target": "run",
-     "item": "cty_fern_merewick",
-     "detail": "mq-lost-raker"
-    },
-    {
      "id": "e14",
      "kind": "arrival",
      "day": 9.56,
@@ -7082,13 +7802,18 @@
       "x": 60,
       "y": 200
      }
+    },
+    "purses": {
+     "town:fenshore": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {
     "mq-lost-raker": {
      "player-fern-b": "done",
      "player-fern-c": "failed",
-     "player-fern-a": "failed"
+     "player-fern-a": "abandoned"
     }
    },
    "expectVariables": {
@@ -7130,7 +7855,7 @@
      "kind": "bandit falls",
      "day": 1.03,
      "actor": "player-tor-a",
-     "target": "camp_story_6",
+     "target": "camp_story_mq_ws_wash",
      "cell": "w_ridgemere_11_12",
      "detail": "a toll-taker"
     },
@@ -7139,7 +7864,7 @@
      "kind": "bandit falls",
      "day": 1.04,
      "actor": "player-tor-a",
-     "target": "camp_story_6",
+     "target": "camp_story_mq_ws_wash",
      "cell": "w_ridgemere_11_12",
      "detail": "a toll-taker"
     },
@@ -7148,7 +7873,7 @@
      "kind": "camp cleared",
      "day": 1.05,
      "actor": "player-tor-a",
-     "target": "camp_story_6",
+     "target": "camp_story_mq_ws_wash",
      "cell": "w_ridgemere_11_12",
      "detail": "by a wolf"
     },
@@ -7188,6 +7913,11 @@
      "player-tor-a": {
       "partySize": 2
      }
+    },
+    "purses": {
+     "town:fenshore": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {
@@ -7305,6 +8035,11 @@
       "x": 163,
       "y": 160
      }
+    },
+    "purses": {
+     "town:fenshore": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {
@@ -7355,7 +8090,7 @@
      "day": 1.03,
      "actor": "player-kite-a",
      "target": "rm_imogen_nailridge",
-     "item": "paper",
+     "item": "paper^mirebridge_names",
      "quantity": 1
     },
     {
@@ -7380,7 +8115,7 @@
      "day": 1.05,
      "actor": "player-kite-a",
      "target": "rm_imogen_nailridge",
-     "item": "paper",
+     "item": "paper^mirebridge_names",
      "quantity": 1
     }
    ],
@@ -7397,6 +8132,11 @@
       "alive": true,
       "cell": "fs_marsh_eels_home"
      }
+    },
+    "purses": {
+     "town:fenshore": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {
@@ -7479,7 +8219,7 @@
       "wolves": {
        "player-kite-b": {
         "carries": {
-         "paper": 1
+         "paper^mirebridge_names": 1
         }
        }
       }
@@ -7499,6 +8239,11 @@
       "alive": true,
       "cell": "fs_marsh_eels_home"
      }
+    },
+    "purses": {
+     "town:fenshore": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {

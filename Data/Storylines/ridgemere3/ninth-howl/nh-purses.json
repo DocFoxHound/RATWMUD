@@ -3,6 +3,7 @@
  "version": 2,
  "id": "nh-purses",
  "title": "The story purses",
+ "prefix": "coin",
  "audience": {
   "kind": "open"
  },
@@ -73,6 +74,20 @@
    "note": "Story coin paid today from till:job:rm_eleanor_saltcot by every story (day cap 16); nh-purses sets it to 0 each day."
   },
   {
+   "id": "coin_till_edric_millton_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from till:job:rm_edric_millton (Edric Millton's cooperage till): medium Q6 (mq-coopers-note), day cap 19."
+  },
+  {
+   "id": "coin_till_rupert_fogton_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from till:job:rm_rupert_fogton (Hollis Physic's till): the Runnel Fever's draught money, day cap 9."
+  },
+  {
    "id": "coin_ridgemere_ok",
    "type": "switch",
    "scope": "world",
@@ -134,6 +149,20 @@
    "scope": "world",
    "initial": true,
    "note": "till:job:rm_eleanor_saltcot is above its floor: off below 60, on again at 80 (nh-purses only)."
+  },
+  {
+   "id": "coin_till_edric_millton_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "till:job:rm_edric_millton at or above its floor (off below 60, on again at 80)."
+  },
+  {
+   "id": "coin_till_rupert_fogton_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "till:job:rm_rupert_fogton at or above its floor (off below 60, on again at 80)."
   }
  ],
  "phases": [
@@ -192,6 +221,16 @@
        "do": "set",
        "var": "coin_till_eleanor_saltcot_day",
        "value": 0
+      },
+      {
+       "do": "set",
+       "var": "coin_till_edric_millton_day",
+       "value": 0
+      },
+      {
+       "do": "set",
+       "var": "coin_till_rupert_fogton_day",
+       "value": 0
       }
      ]
     },
@@ -208,6 +247,17 @@
       {
        "do": "turn off",
        "var": "coin_ridgemere_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "ridgemere",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
       },
       {
        "do": "note",
@@ -230,6 +280,15 @@
        "var": "coin_ridgemere_ok"
       },
       {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "ridgemere",
+        "key": "nh_coin"
+       }
+      },
+      {
        "do": "note",
        "text": "The city's treasury is back at 80 pennies: stories pay coin from it again."
       }
@@ -248,6 +307,17 @@
       {
        "do": "turn off",
        "var": "coin_coldwater_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "coldwater",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
       },
       {
        "do": "note",
@@ -270,6 +340,15 @@
        "var": "coin_coldwater_ok"
       },
       {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "coldwater",
+        "key": "nh_coin"
+       }
+      },
+      {
        "do": "note",
        "text": "Coldwater's store is back at 80 pennies: stories pay coin from it again."
       }
@@ -288,6 +367,17 @@
       {
        "do": "turn off",
        "var": "coin_larkfield_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "larkfield",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
       },
       {
        "do": "note",
@@ -310,6 +400,15 @@
        "var": "coin_larkfield_ok"
       },
       {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "larkfield",
+        "key": "nh_coin"
+       }
+      },
+      {
        "do": "note",
        "text": "Larkfield's store is back at 80 pennies: stories pay coin from it again."
       }
@@ -328,6 +427,17 @@
       {
        "do": "turn off",
        "var": "coin_southmeadow_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "southmeadow",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
       },
       {
        "do": "note",
@@ -350,6 +460,15 @@
        "var": "coin_southmeadow_ok"
       },
       {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "southmeadow",
+        "key": "nh_coin"
+       }
+      },
+      {
        "do": "note",
        "text": "Southmeadow's store is back at 80 pennies: stories pay coin from it again."
       }
@@ -368,6 +487,17 @@
       {
        "do": "turn off",
        "var": "coin_fenshore_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "fenshore",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
       },
       {
        "do": "note",
@@ -390,6 +520,15 @@
        "var": "coin_fenshore_ok"
       },
       {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "fenshore",
+        "key": "nh_coin"
+       }
+      },
+      {
        "do": "note",
        "text": "Fenshore's store is back at 80 pennies: stories pay coin from it again."
       }
@@ -408,6 +547,17 @@
       {
        "do": "turn off",
        "var": "coin_saltwell_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "saltwell",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
       },
       {
        "do": "note",
@@ -430,6 +580,15 @@
        "var": "coin_saltwell_ok"
       },
       {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "saltwell",
+        "key": "nh_coin"
+       }
+      },
+      {
        "do": "note",
        "text": "Saltwell's store is back at 80 pennies: stories pay coin from it again."
       }
@@ -448,6 +607,17 @@
       {
        "do": "turn off",
        "var": "coin_oakhaven_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "oakhaven",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
       },
       {
        "do": "note",
@@ -470,6 +640,15 @@
        "var": "coin_oakhaven_ok"
       },
       {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "oakhaven",
+        "key": "nh_coin"
+       }
+      },
+      {
        "do": "note",
        "text": "Oakhaven's store is back at 80 pennies: stories pay coin from it again."
       }
@@ -490,6 +669,17 @@
        "var": "coin_frosthollow_ok"
       },
       {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "frosthollow",
+        "key": "nh_coin",
+        "value": "thin",
+        "days": 28
+       }
+      },
+      {
        "do": "note",
        "text": "Frosthollow's store fell below 60 pennies: stories pay in kind from it until it is back at 80."
       }
@@ -508,6 +698,15 @@
       {
        "do": "turn on",
        "var": "coin_frosthollow_ok"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.forget",
+        "scope": "town",
+        "town": "frosthollow",
+        "key": "nh_coin"
+       }
       },
       {
        "do": "note",
@@ -552,6 +751,86 @@
       {
        "do": "note",
        "text": "The Greatly Bank's till is back at 80 pennies: stories pay coin from it again."
+      }
+     ]
+    },
+    {
+     "id": "thin-till-edric-millton",
+     "on": "purse crossed",
+     "match": {
+      "target": "till:job:rm_edric_millton",
+      "item": "down",
+      "detail": "60"
+     },
+     "note": "till:job:rm_edric_millton fell below 60: no story coin from it until it is back at 80.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "coin_till_edric_millton_ok"
+      },
+      {
+       "do": "note",
+       "text": "Edric Millton's cooperage till fell below 60 pennies: stories pay in kind from it until it is back at 80."
+      }
+     ]
+    },
+    {
+     "id": "mended-till-edric-millton",
+     "on": "purse crossed",
+     "match": {
+      "target": "till:job:rm_edric_millton",
+      "item": "up",
+      "detail": "80"
+     },
+     "note": "till:job:rm_edric_millton is back at 80: story coin from it again.",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "coin_till_edric_millton_ok"
+      },
+      {
+       "do": "note",
+       "text": "Edric Millton's cooperage till is back at 80 pennies: stories pay coin from it again."
+      }
+     ]
+    },
+    {
+     "id": "thin-till-rupert-fogton",
+     "on": "purse crossed",
+     "match": {
+      "target": "till:job:rm_rupert_fogton",
+      "item": "down",
+      "detail": "60"
+     },
+     "note": "till:job:rm_rupert_fogton fell below 60: no story coin from it until it is back at 80.",
+     "actions": [
+      {
+       "do": "turn off",
+       "var": "coin_till_rupert_fogton_ok"
+      },
+      {
+       "do": "note",
+       "text": "Hollis Physic's till fell below 60 pennies: stories pay in kind from it until it is back at 80."
+      }
+     ]
+    },
+    {
+     "id": "mended-till-rupert-fogton",
+     "on": "purse crossed",
+     "match": {
+      "target": "till:job:rm_rupert_fogton",
+      "item": "up",
+      "detail": "80"
+     },
+     "note": "till:job:rm_rupert_fogton is back at 80: story coin from it again.",
+     "actions": [
+      {
+       "do": "turn on",
+       "var": "coin_till_rupert_fogton_ok"
+      },
+      {
+       "do": "note",
+       "text": "Hollis Physic's till is back at 80 pennies: stories pay coin from it again."
       }
      ]
     }
@@ -624,7 +903,11 @@
      "coin_saltwell_ok": true,
      "coin_oakhaven_ok": true,
      "coin_frosthollow_ok": true,
-     "coin_till_eleanor_saltcot_ok": true
+     "coin_till_eleanor_saltcot_ok": true,
+     "coin_till_edric_millton_ok": true,
+     "coin_till_edric_millton_day": 0,
+     "coin_till_rupert_fogton_ok": true,
+     "coin_till_rupert_fogton_day": 0
     }
    }
   },
@@ -712,6 +995,24 @@
      "item": "down",
      "detail": "60",
      "quantity": 58
+    },
+    {
+     "id": "e9_edric_millton",
+     "kind": "purse crossed",
+     "day": 2.0801,
+     "target": "till:job:rm_edric_millton",
+     "item": "down",
+     "detail": "60",
+     "quantity": 58
+    },
+    {
+     "id": "e9_rupert_fogton",
+     "kind": "purse crossed",
+     "day": 2.0802,
+     "target": "till:job:rm_rupert_fogton",
+     "item": "down",
+     "detail": "60",
+     "quantity": 58
     }
    ],
    "expect": [
@@ -726,7 +1027,9 @@
     "thin-saltwell",
     "thin-oakhaven",
     "thin-frosthollow",
-    "thin-till-eleanor-saltcot"
+    "thin-till-eleanor-saltcot",
+    "thin-till-edric-millton",
+    "thin-till-rupert-fogton"
    ],
    "expectVariables": {
     "world": {
@@ -738,7 +1041,9 @@
      "coin_saltwell_ok": false,
      "coin_oakhaven_ok": false,
      "coin_frosthollow_ok": false,
-     "coin_till_eleanor_saltcot_ok": false
+     "coin_till_eleanor_saltcot_ok": false,
+     "coin_till_edric_millton_ok": false,
+     "coin_till_rupert_fogton_ok": false
     }
    }
   },
@@ -828,6 +1133,24 @@
      "quantity": 55
     },
     {
+     "id": "e9_edric_millton",
+     "kind": "purse crossed",
+     "day": 3.0901,
+     "target": "till:job:rm_edric_millton",
+     "item": "down",
+     "detail": "60",
+     "quantity": 55
+    },
+    {
+     "id": "e9_rupert_fogton",
+     "kind": "purse crossed",
+     "day": 3.0902,
+     "target": "till:job:rm_rupert_fogton",
+     "item": "down",
+     "detail": "60",
+     "quantity": 55
+    },
+    {
      "id": "e10",
      "kind": "purse crossed",
      "day": 4.1,
@@ -904,6 +1227,24 @@
      "kind": "purse crossed",
      "day": 4.18,
      "target": "till:job:rm_eleanor_saltcot",
+     "item": "up",
+     "detail": "60",
+     "quantity": 65
+    },
+    {
+     "id": "e18_edric_millton",
+     "kind": "purse crossed",
+     "day": 4.1801,
+     "target": "till:job:rm_edric_millton",
+     "item": "up",
+     "detail": "60",
+     "quantity": 65
+    },
+    {
+     "id": "e18_rupert_fogton",
+     "kind": "purse crossed",
+     "day": 4.1802,
+     "target": "till:job:rm_rupert_fogton",
      "item": "up",
      "detail": "60",
      "quantity": 65
@@ -990,6 +1331,24 @@
      "quantity": 82
     },
     {
+     "id": "e27_edric_millton",
+     "kind": "purse crossed",
+     "day": 5.2701,
+     "target": "till:job:rm_edric_millton",
+     "item": "up",
+     "detail": "80",
+     "quantity": 82
+    },
+    {
+     "id": "e27_rupert_fogton",
+     "kind": "purse crossed",
+     "day": 5.2702,
+     "target": "till:job:rm_rupert_fogton",
+     "item": "up",
+     "detail": "80",
+     "quantity": 82
+    },
+    {
      "id": "e28",
      "kind": "day begins",
      "day": 6,
@@ -1011,6 +1370,8 @@
     "thin-oakhaven",
     "thin-frosthollow",
     "thin-till-eleanor-saltcot",
+    "thin-till-edric-millton",
+    "thin-till-rupert-fogton",
     "mended-ridgemere",
     "mended-coldwater",
     "mended-larkfield",
@@ -1020,6 +1381,8 @@
     "mended-oakhaven",
     "mended-frosthollow",
     "mended-till-eleanor-saltcot",
+    "mended-till-edric-millton",
+    "mended-till-rupert-fogton",
     "new-day"
    ],
    "expectVariables": {
@@ -1041,7 +1404,11 @@
      "coin_saltwell_day": 0,
      "coin_oakhaven_day": 0,
      "coin_frosthollow_day": 0,
-     "coin_till_eleanor_saltcot_day": 0
+     "coin_till_eleanor_saltcot_day": 0,
+     "coin_till_edric_millton_ok": true,
+     "coin_till_edric_millton_day": 0,
+     "coin_till_rupert_fogton_ok": true,
+     "coin_till_rupert_fogton_day": 0
     }
    }
   },
@@ -1084,7 +1451,9 @@
      "coin_saltwell_ok": true,
      "coin_oakhaven_ok": true,
      "coin_frosthollow_ok": true,
-     "coin_till_eleanor_saltcot_ok": true
+     "coin_till_eleanor_saltcot_ok": true,
+     "coin_till_edric_millton_ok": true,
+     "coin_till_rupert_fogton_ok": true
     }
    }
   }

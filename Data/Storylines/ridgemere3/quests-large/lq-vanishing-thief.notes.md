@@ -95,3 +95,11 @@ interiors: the strongroom, and the Sunken Street, where the cache lay (so it cou
   and the cache's three pledges are laid there (15,41 / 16,41 / 17,42), so `pledge-found` listens on that cell.
 - `givers.tsv` rows moved to the five new residents. Rehearsals follow (region events for the door and the stair).
 
+## Wave J (as built, 2026-11-24, branch `r3-nh-live`)
+The engine of doc 86 (Phases 1a to 9) is merged, so this version uses what the sections above call "later". Every
+program here passes `python3 tools/nh_check.py --all` (now with the wave J checks: the prefix, the purse guard, the talk keys).
+
+- `"prefix": "lq"`. **J3**: the three roads count as a finished Story (C6: after `locked` or `under`).
+- **C8**: `lq_thief` by phase (`walking`, `forgiven`, `named`, `blinker`); a wolf paid in bread tells the realm
+  `lq_thief_thin=yes` for a day (Petra's line). **M2** and **C1** on every grant.
+- **Left**: the clock lays stay every wolf's choices; C5 for Hester (her cold line stays a phase line).

@@ -3,6 +3,7 @@
  "version": 2,
  "id": "ninth-howl.cleanup",
  "title": "The Ninth Howl put away",
+ "prefix": "nh",
  "audience": {
   "kind": "open"
  },

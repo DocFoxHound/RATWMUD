@@ -165,3 +165,21 @@ refuses a door into one, or into a room whose stairs reach one.
   and leaves its own lock alone, so its workers still go in: `s56` closes the Granary, `s78` the Boat Shed, and `s9`
   both (in case a phase was skipped). The stage quests last their phase (`lifetime: phase`), so no wolf is still on one
   when its door closes. (`door.lock` would lock the workers out too, until the run ends.)
+
+## Wave J (as built, 2026-11-24, branch `r3-nh-live`)
+The engine of doc 86 (Phases 1a to 9) is merged, so this version uses what the sections above call "later". Every
+program here passes `python3 tools/nh_check.py --all` (now with the wave J checks: the prefix, the purse guard, the talk keys).
+
+- `"prefix": "st"`. **C8**: each phase opens with its open keys (`st_round`, `st_wagon`, `st_bounty`, `st_fair`,
+  `st_cloak`, `st_relief`, `st_ice`, `st_bell`); each small quest's rewards say `st_last=<its word>` in its towns (2
+  days); the five medium endings have a `<x>_talk` trigger beside them for their ending keys (`st_wagon=ahead|with`,
+  `st_cloak=cleared`, `st_relief=road|downs`, `st_ice=bell`, `st_bell=go|stay`), and the bounds and the post night say
+  `st_bounds=walked` and `st_posts=probed`.
+- **C5**: the closes above are now the giver's greeting by name, in place of the journal line that stood in for them
+  (the iw ones said by Wald Larkwell of the shepherd, whom he speaks for); Ingram thanks the wolf who pulled the stake.
+- **C6**: the `during` words of Aud, Myrtle and Wald. **J5**: when the chorus is mended, Alder howls on the square
+  (`npc.howl`). **N4**: `join.again: 7` on the five weekly medium quests. **J9**: the summons is the story's own
+  (`letter^moot_summons`). **L2**: every wave names its camp `st_<region>` and the camp triggers match it. **M2** on all
+  26 grants.
+- **Left**: C6 `requires` in place of the start-time fails (they are rehearsed and correct as they are), L3, J9 for the
+  stake (placed timber), C12a, T5 for Ada's line.

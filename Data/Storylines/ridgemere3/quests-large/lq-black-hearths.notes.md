@@ -76,3 +76,12 @@ say[world.mem.lq_hearths=greenholt here.region=larkfield self.dialect=larkfield 
 say[world.mem.lq_hearths=undersold here.region=frosthollow] The Upper hearths' charcoal sells at half in the city. The colliers want somebody to find out why.
 ```
 - Allow-list (large §14.2 item 7): "Upper hearths", "Greenholt hearths", "Kestrel Tarn" if `dialect_check` objects.
+
+## Wave J (as built, 2026-11-24, branch `r3-nh-live`)
+The engine of doc 86 (Phases 1a to 9) is merged, so this version uses what the sections above call "later". Every
+program here passes `python3 tools/nh_check.py --all` (now with the wave J checks: the prefix, the purse guard, the talk keys).
+
+- `"prefix": "lq"`. **J3**: the three roads count as a finished Story (C6: after `undersold` or `tarnfire`).
+- **C8**: `lq_hearths` by phase (the first witnesses' clue no longer waits for the DM); a wolf paid in bread tells the
+  realm `lq_hearths_thin=yes` for a day. **L2** on the yard camps; **M2** and **C1** on every grant.
+- **Left**: Marl's road choices are laid by a clock trigger, so they stay every wolf's (J1 needs an acting wolf).

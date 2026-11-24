@@ -258,3 +258,19 @@ refuses a door into one, or into a room whose stairs reach one.
   (`story_quests.open_in`), and each door here serves one, so each stays unlocked until the run ends, when the game puts
   back what each had. (`door.lock` would lock the workers out too. `door.close` closes a door to wolves and leaves its
   lock alone: that is how the stage pack ends its windows.)
+
+## Wave J (as built, 2026-11-24, branch `r3-nh-live`)
+The engine of doc 86 (Phases 1a to 9) is merged, so this version uses what the sections above call "later". Every
+program here passes `python3 tools/nh_check.py --all` (now with the wave J checks: the prefix, the purse guard, the talk keys).
+
+- `"prefix": "lq"`. **J3**: `vines_burn`/`vines_cure`, `runnel_cover`/`runnel_soak`, `wreck_tide`/`wreck_watch`/
+  `wreck_wharf` and `answer` count as a finished Story, each requiring the line's first or second chapter done (C6).
+- **C8**: each phase says `lq_vines`, `lq_runnel`, `lq_wreck` or `lq_post` to the realm (the long run forgets its key
+  as a fresh season opens); Rupert Fogton remembers he paid the draught money back (`self.mem.lq_rupert=paid`).
+- **L1**: the boar chapter stages two boar in the rows (`hunt.stage rows`, 6 hours) and its hunt is now required, in
+  the rows' cell; the rehearsals hunt them.
+- **SQ2**: the draught money comes from Hollis Physic's till (`till:job:rm_rupert_fogton`, day cap 9).
+- **J9**: the Long Run's tube is the story's own (`document_tube^long_run`); "carries" and the rehearsals' facts name it.
+- **L2** on the wreckers' cove camps; **J1**, **M2**, **C1** as in lines 1-4.
+- **Left**: C2 for the run (its `contributors` is a whole number, not a value), C1 for the ship storm, C3/C4 titles,
+  L4 and C14 for the lamplighter, L3.

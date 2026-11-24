@@ -3,6 +3,7 @@
  "version": 2,
  "id": "lq-mast-cedars",
  "title": "The Mast Cedars",
+ "prefix": "lq",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -253,7 +254,8 @@
       "id": "lq_ced_flint",
       "words": "What did you hear in the stands?",
       "reply": "Saws, at night, where there's no cut. I went to look once and somebody whistled the way you whistle a crew off. I didn't go twice. Bright One keep me, I'm not proud of it.",
-      "once": true
+      "once": true,
+      "player": "$actor"
      }
     }
    ]
@@ -501,7 +503,8 @@
             "kind": "story.area.spawn",
             "region": "old_stand",
             "count": 6,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_old_stand"
            }
           }
          ],
@@ -520,7 +523,8 @@
               "kind": "story.area.spawn",
               "region": "old_stand",
               "count": 4,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_old_stand"
              }
             }
            ]
@@ -539,7 +543,8 @@
               "kind": "story.area.spawn",
               "region": "old_stand",
               "count": 3,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_old_stand"
              }
             }
            ]
@@ -552,7 +557,8 @@
             "kind": "story.area.spawn",
             "region": "old_stand",
             "count": 2,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_old_stand"
            }
           }
          ]
@@ -585,7 +591,8 @@
               "kind": "story.area.spawn",
               "region": "ravine_stand",
               "count": 6,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_ravine_stand"
              }
             }
            ],
@@ -604,7 +611,8 @@
                 "kind": "story.area.spawn",
                 "region": "ravine_stand",
                 "count": 4,
-                "ifRefused": "skip"
+                "ifRefused": "skip",
+                "camp": "lq_ravine_stand"
                }
               }
              ]
@@ -623,7 +631,8 @@
                 "kind": "story.area.spawn",
                 "region": "ravine_stand",
                 "count": 3,
-                "ifRefused": "skip"
+                "ifRefused": "skip",
+                "camp": "lq_ravine_stand"
                }
               }
              ]
@@ -636,7 +645,8 @@
               "kind": "story.area.spawn",
               "region": "ravine_stand",
               "count": 2,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_ravine_stand"
              }
             }
            ]
@@ -737,7 +747,8 @@
             "kind": "story.area.spawn",
             "region": "ravine_stand",
             "count": 6,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_ravine_stand"
            }
           }
          ],
@@ -756,7 +767,8 @@
               "kind": "story.area.spawn",
               "region": "ravine_stand",
               "count": 4,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_ravine_stand"
              }
             }
            ]
@@ -775,7 +787,8 @@
               "kind": "story.area.spawn",
               "region": "ravine_stand",
               "count": 3,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_ravine_stand"
              }
             }
            ]
@@ -788,7 +801,8 @@
             "kind": "story.area.spawn",
             "region": "ravine_stand",
             "count": 2,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_ravine_stand"
            }
           }
          ]
@@ -821,7 +835,8 @@
               "kind": "story.area.spawn",
               "region": "old_stand",
               "count": 6,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_old_stand"
              }
             }
            ],
@@ -840,7 +855,8 @@
                 "kind": "story.area.spawn",
                 "region": "old_stand",
                 "count": 4,
-                "ifRefused": "skip"
+                "ifRefused": "skip",
+                "camp": "lq_old_stand"
                }
               }
              ]
@@ -859,7 +875,8 @@
                 "kind": "story.area.spawn",
                 "region": "old_stand",
                 "count": 3,
-                "ifRefused": "skip"
+                "ifRefused": "skip",
+                "camp": "lq_old_stand"
                }
               }
              ]
@@ -872,7 +889,8 @@
               "kind": "story.area.spawn",
               "region": "old_stand",
               "count": 2,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_old_stand"
              }
             }
            ]
@@ -1016,7 +1034,8 @@
    "id": "camp-old",
    "on": "camp cleared",
    "match": {
-    "cell": "w_ridgemere_2_6"
+    "cell": "w_ridgemere_2_6",
+    "target": "camp_story_lq_old_stand"
    },
    "if": {
     "test": "switch",
@@ -1046,7 +1065,8 @@
    "id": "camp-ravine",
    "on": "camp cleared",
    "match": {
-    "cell": "w_ridgemere_3_7"
+    "cell": "w_ridgemere_3_7",
+    "target": "camp_story_lq_ravine_stand"
    },
    "if": {
     "test": "switch",
@@ -1097,7 +1117,8 @@
       "npc": "cty_senna_beechleaf",
       "id": "lq_ced_senna",
       "words": "Who do you owe in Ridgemere?",
-      "reply": "A shipwright on the Wharf. She lent when my roof went, and now she wants it paid in nights. Marked trees, a whistle, a rope on the landing. I hate every one of them."
+      "reply": "A shipwright on the Wharf. She lent when my roof went, and now she wants it paid in nights. Marked trees, a whistle, a rope on the landing. I hate every one of them.",
+      "player": "$actor"
      }
     }
    ]
@@ -1180,6 +1201,14 @@
             },
             "op": "<=",
             "right": 29
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:oakhaven"
+            },
+            "op": ">=",
+            "right": 66
            }
           ]
          },
@@ -1189,7 +1218,19 @@
            "effect": {
             "kind": "character.grant",
             "player": "$each",
-            "coins": 6,
+            "coins": {
+             "min": [
+              6,
+              {
+               "div": [
+                {
+                 "purse": "town:oakhaven"
+                },
+                20
+               ]
+              }
+             ]
+            },
             "purse": "town:oakhaven",
             "reason": "the Oakhaven stores pay the night watch",
             "ifRefused": "skip"
@@ -1198,12 +1239,36 @@
           {
            "do": "add",
            "var": "coin_oakhaven_day",
-           "value": 6
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:oakhaven"
+               },
+               20
+              ]
+             }
+            ]
+           }
           },
           {
            "do": "add",
            "var": "lq_coin",
-           "value": 6,
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:oakhaven"
+               },
+               20
+              ]
+             }
+            ]
+           },
            "of": "$each"
           }
          ],
@@ -1414,7 +1479,8 @@
         "npc": "rm_brenna_slaggate",
         "id": "lq_ced_face",
         "words": "Those mast cedars are Oakhaven's.",
-        "reply": "#greet#. Are they? I bought them full weight off the landing, a felling mark on every butt. Grayrock needs masts and Oakhaven sells planks. I paid. Who did I pay? That's the question, isn't it?"
+        "reply": "#greet#. Are they? I bought them full weight off the landing, a felling mark on every butt. Grayrock needs masts and Oakhaven sells planks. I paid. Who did I pay? That's the question, isn't it?",
+        "player": "$actor"
        }
       },
       {
@@ -1424,7 +1490,8 @@
         "npc": "tn_fh_ivy_stonehollow",
         "id": "lq_ced_return",
         "words": "Float the marked logs back up the Sound.",
-        "reply": "Up the Sound to its head, and lay them where the Sisters stood? It'll take a crew and a long day. Ask the old feller at the Oakhaven cut where they stood. I'd like to see the Wharf's face."
+        "reply": "Up the Sound to its head, and lay them where the Sisters stood? It'll take a crew and a long day. Ask the old feller at the Oakhaven cut where they stood. I'd like to see the Wharf's face.",
+        "player": "$actor"
        }
       },
       {
@@ -1531,7 +1598,8 @@
         "npc": "rm_brenna_slaggate",
         "id": "lq_ced_face",
         "words": "Those mast cedars are Oakhaven's.",
-        "reply": "#greet#. Are they? I bought them full weight off the landing, a felling mark on every butt. Grayrock needs masts and Oakhaven sells planks. I paid. Who did I pay? That's the question, isn't it?"
+        "reply": "#greet#. Are they? I bought them full weight off the landing, a felling mark on every butt. Grayrock needs masts and Oakhaven sells planks. I paid. Who did I pay? That's the question, isn't it?",
+        "player": "$actor"
        }
       },
       {
@@ -1541,7 +1609,8 @@
         "npc": "tn_fh_ivy_stonehollow",
         "id": "lq_ced_return",
         "words": "Float the marked logs back up the Sound.",
-        "reply": "Up the Sound to its head, and lay them where the Sisters stood? It'll take a crew and a long day. Ask the old feller at the Oakhaven cut where they stood. I'd like to see the Wharf's face."
+        "reply": "Up the Sound to its head, and lay them where the Sisters stood? It'll take a crew and a long day. Ask the old feller at the Oakhaven cut where they stood. I'd like to see the Wharf's face.",
+        "player": "$actor"
        }
       },
       {
@@ -1611,7 +1680,8 @@
       "npc": "rm_brenna_slaggate",
       "id": "lq_ced_face",
       "words": "Those mast cedars are Oakhaven's.",
-      "reply": "#greet#. Are they? I bought them full weight off the landing, a felling mark on every butt. Grayrock needs masts and Oakhaven sells planks. I paid. Who did I pay? That's the question, isn't it?"
+      "reply": "#greet#. Are they? I bought them full weight off the landing, a felling mark on every butt. Grayrock needs masts and Oakhaven sells planks. I paid. Who did I pay? That's the question, isn't it?",
+      "player": "$actor"
      }
     }
    ]
@@ -1632,7 +1702,8 @@
       "npc": "rm_brenna_slaggate",
       "id": "lq_ced_contract",
       "words": "Pay Oakhaven's own fellers, one mast a season.",
-      "reply": "One a season, felled by their axes and paid to their stores? That's a dearer mast. Fine. Sold. And the night crew can find other work."
+      "reply": "One a season, felled by their axes and paid to their stores? That's a dearer mast. Fine. Sold. And the night crew can find other work.",
+      "player": "$actor"
      }
     }
    ]
@@ -1721,6 +1792,14 @@
         },
         "op": "<=",
         "right": 31
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:oakhaven"
+        },
+        "op": ">=",
+        "right": 64
        }
       ]
      },
@@ -1730,7 +1809,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 4,
+        "coins": {
+         "min": [
+          4,
+          {
+           "div": [
+            {
+             "purse": "town:oakhaven"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:oakhaven",
         "reason": "the Oakhaven stores pay for a fair bargain",
         "ifRefused": "skip"
@@ -1739,12 +1830,36 @@
       {
        "do": "add",
        "var": "coin_oakhaven_day",
-       "value": 4
+       "value": {
+        "min": [
+         4,
+         {
+          "div": [
+           {
+            "purse": "town:oakhaven"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 4
+       "value": {
+        "min": [
+         4,
+         {
+          "div": [
+           {
+            "purse": "town:oakhaven"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -1806,6 +1921,14 @@
         },
         "op": "<=",
         "right": 52
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 68
        }
       ]
      },
@@ -1815,7 +1938,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 8,
+        "coins": {
+         "min": [
+          8,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:ridgemere",
         "reason": "Grayrock Shipwrights pays the first mast's price",
         "ifRefused": "skip"
@@ -1824,17 +1959,53 @@
       {
        "do": "add",
        "var": "coin_ridgemere_day",
-       "value": 8
+       "value": {
+        "min": [
+         8,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 8
+       "value": {
+        "min": [
+         8,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "restitution",
-       "value": 8
+       "value": {
+        "min": [
+         8,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -1894,6 +2065,14 @@
         },
         "op": "<=",
         "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:oakhaven"
+        },
+        "op": ">=",
+        "right": 72
        }
       ]
      },
@@ -1903,7 +2082,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 12,
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:oakhaven"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:oakhaven",
         "reason": "the Oakhaven stores pay for the cedars brought home",
         "ifRefused": "skip"
@@ -1912,12 +2103,36 @@
       {
        "do": "add",
        "var": "coin_oakhaven_day",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:oakhaven"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:oakhaven"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -2202,6 +2417,13 @@
      "kind": "npc.line",
      "npc": "tn_fh_ivy_stonehollow",
      "text": "Mind the old stand. The best cedars in the Rainwood are dying on their feet, and I can't stand guard on every tree."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_cedars",
+     "value": "dying",
+     "days": 365
     }
    ],
    "exits": []
@@ -2214,6 +2436,13 @@
      "kind": "npc.line",
      "npc": "tn_fh_ivy_stonehollow",
      "text": "We know whose saws, now. A shipwright on the Wharf. What's a cedar worth to her, and what's it worth to us?"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_cedars",
+     "value": "dying",
+     "days": 365
     }
    ],
    "exits": [],
@@ -2340,6 +2569,13 @@
      "days": 28,
      "text": "A MAST A SEASON: the Wharf pays Oakhaven's own axes for one cedar a season. The Sisters stand.",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_cedars",
+     "value": "contract",
+     "days": 365
     }
    ],
    "exits": []
@@ -2367,6 +2603,13 @@
      "days": 28,
      "text": "The cedars came home up the Sound. Root and rain, the Wharf will think twice.",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_cedars",
+     "value": "returned",
+     "days": 365
     }
    ],
    "exits": []
@@ -2379,6 +2622,11 @@
      "kind": "npc.line",
      "npc": "tn_fh_ivy_stonehollow",
      "text": "Three more Sisters down. Nobody stopped them. I've stopped counting the stumps."
+    },
+    {
+     "kind": "talk.forget",
+     "scope": "realm",
+     "key": "lq_cedars"
     }
    ],
    "exits": []
@@ -2566,7 +2814,23 @@
      "detail": "won Oakhaven a fair price for its mast cedars",
      "ifRefused": "when here"
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "ringbark",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "nightfell",
+      "status": "done"
+     }
+    ]
+   }
   },
   {
    "id": "cedar_return",
@@ -2651,8 +2915,31 @@
      "player": "$actor",
      "detail": "floated stolen cedars back up the Sound to Oakhaven",
      "ifRefused": "when here"
+    },
+    {
+     "kind": "npc.greet",
+     "npc": "tn_fh_ivy_stonehollow",
+     "player": "$actor",
+     "days": 14,
+     "text": "The Sisters are home in the Sound, and you brought them. #thanks#, #address#. I'll not forget whose paws were on the ropes."
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "ringbark",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "nightfell",
+      "status": "done"
+     }
+    ]
+   }
   },
   {
    "id": "cedar_debt",
@@ -2725,6 +3012,10 @@
       "y": 30,
       "partySize": 2
      }
+    },
+    "purses": {
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000
     }
    },
    "events": [
@@ -2895,7 +3186,7 @@
      "kind": "bandit falls",
      "day": 2.06,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -2903,7 +3194,7 @@
      "kind": "bandit falls",
      "day": 2.061,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -2911,7 +3202,7 @@
      "kind": "bandit falls",
      "day": 2.062,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -2919,7 +3210,7 @@
      "kind": "camp cleared",
      "day": 2.07,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -2987,7 +3278,7 @@
      "kind": "bandit falls",
      "day": 9.56,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_ravine_stand",
      "cell": "w_ridgemere_3_7"
     },
     {
@@ -2995,7 +3286,7 @@
      "kind": "bandit falls",
      "day": 9.561,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_ravine_stand",
      "cell": "w_ridgemere_3_7"
     },
     {
@@ -3003,7 +3294,7 @@
      "kind": "bandit falls",
      "day": 9.562,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_ravine_stand",
      "cell": "w_ridgemere_3_7"
     },
     {
@@ -3011,7 +3302,7 @@
      "kind": "bandit falls",
      "day": 9.563,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_ravine_stand",
      "cell": "w_ridgemere_3_7"
     },
     {
@@ -3019,7 +3310,7 @@
      "kind": "bandit falls",
      "day": 9.564,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_ravine_stand",
      "cell": "w_ridgemere_3_7"
     },
     {
@@ -3027,7 +3318,7 @@
      "kind": "camp cleared",
      "day": 9.57,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_ravine_stand",
      "cell": "w_ridgemere_3_7"
     },
     {
@@ -3209,6 +3500,10 @@
    "facts": {
     "world": {
      "hour": 1
+    },
+    "purses": {
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000
     }
    },
    "events": [
@@ -3435,7 +3730,7 @@
      "kind": "bandit falls",
      "day": 2.06,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -3443,7 +3738,7 @@
      "kind": "bandit falls",
      "day": 2.061,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -3451,7 +3746,7 @@
      "kind": "bandit falls",
      "day": 2.062,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -3459,7 +3754,7 @@
      "kind": "bandit falls",
      "day": 2.063,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -3467,7 +3762,7 @@
      "kind": "camp cleared",
      "day": 2.07,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -3521,7 +3816,7 @@
      "kind": "bandit falls",
      "day": 3.06,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_ravine_stand",
      "cell": "w_ridgemere_3_7"
     },
     {
@@ -3529,7 +3824,7 @@
      "kind": "bandit falls",
      "day": 3.061,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_ravine_stand",
      "cell": "w_ridgemere_3_7"
     },
     {
@@ -3537,7 +3832,7 @@
      "kind": "bandit falls",
      "day": 3.062,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_ravine_stand",
      "cell": "w_ridgemere_3_7"
     },
     {
@@ -3545,7 +3840,7 @@
      "kind": "camp cleared",
      "day": 3.07,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_ravine_stand",
      "cell": "w_ridgemere_3_7"
     },
     {
@@ -3599,7 +3894,7 @@
      "kind": "bandit falls",
      "day": 4.06,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -3607,7 +3902,7 @@
      "kind": "bandit falls",
      "day": 4.061,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -3615,7 +3910,7 @@
      "kind": "bandit falls",
      "day": 4.062,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -3623,7 +3918,7 @@
      "kind": "camp cleared",
      "day": 4.07,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -3691,6 +3986,10 @@
    "facts": {
     "world": {
      "hour": 1
+    },
+    "purses": {
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000
     }
    },
    "events": [
@@ -3917,7 +4216,7 @@
      "kind": "bandit falls",
      "day": 2.06,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -3925,7 +4224,7 @@
      "kind": "bandit falls",
      "day": 2.061,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -3933,7 +4232,7 @@
      "kind": "bandit falls",
      "day": 2.062,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -3941,7 +4240,7 @@
      "kind": "bandit falls",
      "day": 2.063,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -3949,7 +4248,7 @@
      "kind": "camp cleared",
      "day": 2.07,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -4003,7 +4302,7 @@
      "kind": "bandit falls",
      "day": 3.06,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -4011,7 +4310,7 @@
      "kind": "bandit falls",
      "day": 3.061,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -4019,7 +4318,7 @@
      "kind": "bandit falls",
      "day": 3.062,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -4027,7 +4326,7 @@
      "kind": "camp cleared",
      "day": 3.07,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -4081,7 +4380,7 @@
      "kind": "bandit falls",
      "day": 4.06,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -4089,7 +4388,7 @@
      "kind": "bandit falls",
      "day": 4.061,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -4097,7 +4396,7 @@
      "kind": "bandit falls",
      "day": 4.062,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {
@@ -4105,7 +4404,7 @@
      "kind": "camp cleared",
      "day": 4.07,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_old_stand",
      "cell": "w_ridgemere_2_6"
     },
     {

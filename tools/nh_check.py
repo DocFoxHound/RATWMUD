@@ -53,6 +53,11 @@ TALK = ROOT / 'Data' / 'Talk'
 TALK_CHECK = ROOT / 'build-core' / 'talk_check'
 PREFIXES = ('nh_', 'sq_', 'mq_', 'lq_', 'st_', 'coin_')
 PACK_TIERS = ('small', 'medium', 'large', 'stage')
+# Wave J: each folder's programs and their prefix (D2: camps, foes and ids begin with it).
+FOLDER_PREFIX = {'packs': {'small': 'sq', 'medium': 'mq'}, 'quests-large': 'lq', 'quests-stage': 'st',
+                 'ninth-howl': {'nh-purses': 'coin', 'ninth-howl.': 'nh'}}
+TALK_GATE = re.compile(r'\b(world|self|pair)\.mem\.([a-z0-9_]+)(!?=)([^\s\]]+)')
+SCOPE_NS = {'realm': 'world', 'town': 'world', 'npc': 'self', 'pair': 'pair'}
 
 # decisions.md 1: placed, alive, reachable.
 REACH_SQL = """
@@ -530,7 +535,63 @@ def check_variables(p, r, declarations):
                 r.warn(f'world variable {v["id"]} starts at {v["initial"]!r} here, {d["value"]!r} in world-vars.json')
 
 
-def check_program(path, conn, world, rows, declarations, accounts, saved, doors=None):
+def talk_reads(talk=TALK):
+    """(namespace, key) -> the values the talk library's lines test (a | b both; '*' for a != test, any value)."""
+    out = collections.defaultdict(set)
+    for f in list((talk / 'dialogue').glob('*.tree')) + list(talk.rglob('*.talk')):
+        for m in TALK_GATE.finditer(f.read_text()):
+            out[(m.group(1), m.group(2))].update(['*'] if m.group(3) == '!=' else m.group(4).split('|'))
+    return out
+
+
+def expected_prefix(path):
+    rel = path.resolve().relative_to(STORIES.resolve()) if path.resolve().is_relative_to(STORIES.resolve()) else None
+    if rel is None or len(rel.parts) < 2:
+        return None
+    want = FOLDER_PREFIX.get(rel.parts[0])
+    if isinstance(want, dict):
+        return next((v for k, v in want.items() if k in rel.name), None)
+    return want
+
+
+def talk_writes(p):
+    """(namespace, key, value, where) for every talk.remember in the program."""
+    out = []
+    for kind, path, e, conds, siblings in effects_in(p):
+        if e.get('kind') == 'talk.remember':
+            out.append((SCOPE_NS.get(e.get('scope'), 'world'), e.get('key'), e.get('value'), where(path)))
+    for qi, q in enumerate(p.get('quests', []) or []):
+        for k in ('rewards', 'bonus'):
+            for ri, e in enumerate(q.get(k, []) or []):
+                if isinstance(e, dict) and e.get('kind') == 'talk.remember':
+                    out.append((SCOPE_NS.get(e.get('scope'), 'world'), e.get('key'), e.get('value'), f'quests[{qi}].{k}[{ri}]'))
+    return out
+
+
+def check_wave_j(path, p, r, reads):
+    """Doc 86, wave J: the prefix, the purse guard (M2) and the talk keys (C8)."""
+    want = expected_prefix(path)
+    if want and p.get('prefix') != want:
+        r.error(f'the program declares no prefix "{want}" (its folder\'s; doc 86 D2, wave J)')
+    for kind, ep, e, conds, siblings in effects_in(p):
+        if e.get('kind') == 'character.grant' and kind == 'trigger':
+            if not any(mentions(c, json.dumps({'purse': e.get('purse', '')})) for c in conds):
+                r.error(f'{where(ep)}: the grant from {e.get("purse")} does not read the purse itself (M2: {{"purse": ...}} at '
+                        'least 60 and the amount, beside the floor switch)')
+    if reads is None:
+        return
+    for ns, key, value, at in talk_writes(p):
+        got = reads.get((ns, key))
+        if not got:
+            r.warn(f'{at}: nothing in Data/Talk reads {ns}.mem.{key}: the memory says nothing')
+        elif value not in got and '*' not in got:
+            r.warn(f'{at}: Data/Talk reads {ns}.mem.{key} as {"|".join(sorted(got))}, never {value}')
+    n = len(talk_writes(p))
+    if n:
+        r.note(f'talk: {n} memories written, each read by the library')
+
+
+def check_program(path, conn, world, rows, declarations, accounts, saved, doors=None, reads=None):
     r = Report(str(path.resolve().relative_to(ROOT)) if path.resolve().is_relative_to(ROOT) else str(path))
     try:
         p = json.loads(path.read_text())
@@ -543,6 +604,7 @@ def check_program(path, conn, world, rows, declarations, accounts, saved, doors=
     check_words(p, r)
     check_variables(p, r, declarations)
     check_purses(p, r, accounts, saved)
+    check_wave_j(path, p, r, reads)
     if rows is not None:
         check_givers(p, r, rows)
     if conn is not None:
@@ -642,14 +704,35 @@ def main(argv=None):
         conn.execute('SET TRANSACTION READ ONLY')
         world = conn.execute('SELECT id FROM world.worlds').fetchone()[0]
         accounts, saved = latest_accounts(conn, world)
+    reads = talk_reads() if TALK.exists() else None
     try:
         doors = DoorMap(conn, world) if conn is not None else None
         for x in programs:
-            reports.append(check_program(x, conn, world, rows, declarations, accounts, saved, doors))
+            reports.append(check_program(x, conn, world, rows, declarations, accounts, saved, doors, reads))
     finally:
         if conn is not None:
             conn.rollback()
             conn.close()
+    if a.all and reads is not None:
+        # (Wave J, C8: the pack keys the library reads that no program writes stay silent; nh_ keys are the chapters'.)
+        r = Report('talk keys: the library against the programs')
+        written = set()
+        for x in programs:
+            try:
+                written |= {(ns, k, v) for ns, k, v, _ in talk_writes(json.loads(x.read_text()))}
+            except ValueError:
+                pass
+        silent = []
+        for (ns, key), values in sorted(reads.items()):
+            if not key.startswith(('sq_', 'mq_', 'lq_', 'st_', 'nh_coin')):
+                continue
+            for v in sorted(values - {'*'}):
+                if (ns, key, v) not in written:
+                    silent.append(f'{ns}.mem.{key}={v}')
+        for x in silent:
+            r.warn(f'no program writes {x}: its lines stay silent until the DM seeds it')
+        r.note(f'{len(written)} keys and values written by the programs; {len(silent)} the library reads that none writes')
+        reports.append(r)
     if talk or a.talk or a.all:
         reports.append(check_talk([x.resolve() for x in talk], '' if a.no_db else a.world))
     if a.json:

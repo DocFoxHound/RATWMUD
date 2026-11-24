@@ -3,6 +3,7 @@
  "version": 2,
  "id": "lq-vanishing-thief",
  "title": "The Thief Who Wasn't There",
+ "prefix": "lq",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -408,7 +409,23 @@
      "item": "scent_locket",
      "quantity": 1
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "locked",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "under",
+      "status": "done"
+     }
+    ]
+   }
   },
   {
    "id": "thief_name",
@@ -471,7 +488,23 @@
      "item": "silver_clip",
      "quantity": 1
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "locked",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "under",
+      "status": "done"
+     }
+    ]
+   }
   },
   {
    "id": "thief_quickened",
@@ -519,7 +552,23 @@
      "player": "$actor",
      "skill": "service"
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "locked",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "under",
+      "status": "done"
+     }
+    ]
+   }
   }
  ],
  "triggers": [
@@ -1004,6 +1053,14 @@
           },
           "op": "<=",
           "right": 29
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:ridgemere"
+          },
+          "op": ">=",
+          "right": 66
          }
         ]
        },
@@ -1013,7 +1070,19 @@
          "effect": {
           "kind": "character.grant",
           "player": "$actor",
-          "coins": 6,
+          "coins": {
+           "min": [
+            6,
+            {
+             "div": [
+              {
+               "purse": "town:ridgemere"
+              },
+              20
+             ]
+            }
+           ]
+          },
           "purse": "town:ridgemere",
           "reason": "Vance House pays for plain word of the old street",
           "ifRefused": "skip"
@@ -1022,12 +1091,36 @@
         {
          "do": "add",
          "var": "coin_ridgemere_day",
-         "value": 6
+         "value": {
+          "min": [
+           6,
+           {
+            "div": [
+             {
+              "purse": "town:ridgemere"
+             },
+             20
+            ]
+           }
+          ]
+         }
         },
         {
          "do": "add",
          "var": "lq_coin",
-         "value": 6
+         "value": {
+          "min": [
+           6,
+           {
+            "div": [
+             {
+              "purse": "town:ridgemere"
+             },
+             20
+            ]
+           }
+          ]
+         }
         }
        ],
        "else": [
@@ -1044,6 +1137,16 @@
         {
          "do": "turn on",
          "var": "lq_thin"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "realm",
+          "key": "lq_thief_thin",
+          "value": "yes",
+          "days": 1
+         }
         },
         {
          "do": "effect",
@@ -1548,6 +1651,14 @@
         },
         "op": "<=",
         "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 72
        }
       ]
      },
@@ -1557,7 +1668,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 12,
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:ridgemere",
         "reason": "the Sump courts thank you for their pledges",
         "ifRefused": "skip"
@@ -1566,12 +1689,36 @@
       {
        "do": "add",
        "var": "coin_ridgemere_day",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -1588,6 +1735,16 @@
       {
        "do": "turn on",
        "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "realm",
+        "key": "lq_thief_thin",
+        "value": "yes",
+        "days": 1
+       }
       },
       {
        "do": "effect",
@@ -1645,6 +1802,14 @@
         },
         "op": "<=",
         "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 72
        }
       ]
      },
@@ -1654,7 +1819,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 12,
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:ridgemere",
         "reason": "Vance House's thanks for a plain answer",
         "ifRefused": "skip"
@@ -1663,12 +1840,36 @@
       {
        "do": "add",
        "var": "coin_ridgemere_day",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -1685,6 +1886,16 @@
       {
        "do": "turn on",
        "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "realm",
+        "key": "lq_thief_thin",
+        "value": "yes",
+        "days": 1
+       }
       },
       {
        "do": "effect",
@@ -1751,6 +1962,14 @@
         },
         "op": "<=",
         "right": 25
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 70
        }
       ]
      },
@@ -1760,7 +1979,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 10,
+        "coins": {
+         "min": [
+          10,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:ridgemere",
         "reason": "Vance House's gratitude",
         "ifRefused": "skip"
@@ -1769,12 +2000,36 @@
       {
        "do": "add",
        "var": "coin_ridgemere_day",
-       "value": 10
+       "value": {
+        "min": [
+         10,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 10
+       "value": {
+        "min": [
+         10,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -1791,6 +2046,16 @@
       {
        "do": "turn on",
        "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "realm",
+        "key": "lq_thief_thin",
+        "value": "yes",
+        "days": 1
+       }
       },
       {
        "do": "effect",
@@ -1974,6 +2239,13 @@
      "x": 17,
      "y": 42,
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_thief",
+     "value": "walking",
+     "days": 365
     }
    ],
    "exits": [],
@@ -2104,6 +2376,13 @@
      "kind": "npc.line",
      "npc": "rm_eleanor_vance",
      "text": "Another pledge gone, and the whole Heights whispering about Gifts. Petra wants a plain answer, and nobody will give her one."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_thief",
+     "value": "walking",
+     "days": 365
     }
    ],
    "exits": [],
@@ -2185,6 +2464,13 @@
      "days": 7,
      "ifRefused": "skip",
      "text": "VANCE HOUSE: plain word wanted of the wall-walking thief. Ask at the Vances' Rag Mill. Petra Vance."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_thief",
+     "value": "walking",
+     "days": 365
     }
    ],
    "exits": [],
@@ -2478,6 +2764,13 @@
      "days": 28,
      "ifRefused": "skip",
      "text": "VANCE HOUSE: pledges from the Sump courts may be had back for the loan alone, no weekly penny. Petra Vance."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_thief",
+     "value": "forgiven",
+     "days": 365
     }
    ],
    "exits": [],
@@ -2613,6 +2906,13 @@
      "days": 28,
      "ifRefused": "skip",
      "text": "VANCE HOUSE: the Heights thief was a young Sump wolf, through an old drain. No Gift. The cellar is bricked up. Petra Vance."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_thief",
+     "value": "named",
+     "days": 365
     }
    ],
    "exits": [],
@@ -2748,6 +3048,13 @@
      "days": 28,
      "ifRefused": "skip",
      "text": "Lock your strongrooms. The Heights ask the Council to send for the Wardens."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_thief",
+     "value": "blinker",
+     "days": 365
     }
    ],
    "exits": [
@@ -2879,6 +3186,13 @@
      "kind": "npc.line",
      "npc": "rm_eleanor_vance",
      "text": "Black cloaks on the Pass Road, and they say the Vances sent for them. Bright One help us, perhaps we did."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_thief",
+     "value": "blinker",
+     "days": 365
     }
    ],
    "exits": [],
@@ -3684,6 +3998,11 @@
      "nh_realm": 24,
      "nh_voice_ridgemere": 14
     }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
    }
   },
   {
@@ -4220,6 +4539,11 @@
      "found": 0,
      "t_blinker": 0
     }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
    }
   },
   {
@@ -4724,6 +5048,11 @@
     "world": {
      "lq_thief": "named"
     }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
    }
   },
   {
@@ -5213,6 +5542,11 @@
     "world": {
      "lq_thief": "forgiven"
     }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
    }
   },
   {
@@ -5689,6 +6023,11 @@
    "expectVariables": {
     "world": {
      "lq_thief": "forgiven"
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
     }
    }
   }

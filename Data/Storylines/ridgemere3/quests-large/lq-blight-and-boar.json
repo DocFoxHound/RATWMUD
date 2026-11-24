@@ -3,6 +3,7 @@
  "version": 2,
  "id": "lq-blight-and-boar",
  "title": "Blight and Boar",
+ "prefix": "lq",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -254,7 +255,8 @@
       "id": "lq_vine_bees",
       "words": "Which rows do your bees avoid?",
       "reply": "The south rows, every one. Bees know a sick flower before the vine does. Three weeks they've flown round those rows like there's a ditch in the way.",
-      "once": true
+      "once": true,
+      "player": "$actor"
      }
     },
     {
@@ -265,7 +267,8 @@
       "id": "lq_vine_fence",
       "words": "Your fence is broken outward.",
       "reply": "Outward, is it? My sows went courting and the wild boar came back with them. I've mended it twice. Every boar in the Sunfields knows the way to our sties now.",
-      "once": false
+      "once": false,
+      "player": "$actor"
      }
     }
    ]
@@ -421,7 +424,8 @@
         "id": "lq_vine_cure",
         "words": "The vine hand knows a cure. Let's try it.",
         "reply": "Oak bark and lime on a sick root, the Oakhaven way? It's a gamble, my apple. Ripe or rotten. Bring him three of bark and two of lime, and I'll hold the rows till he's done.",
-        "once": true
+        "once": true,
+        "player": "$actor"
        }
       },
       {
@@ -530,6 +534,14 @@
             },
             "op": "<=",
             "right": 29
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:southmeadow"
+            },
+            "op": ">=",
+            "right": 66
            }
           ]
          },
@@ -539,7 +551,19 @@
            "effect": {
             "kind": "character.grant",
             "player": "$each",
-            "coins": 6,
+            "coins": {
+             "min": [
+              6,
+              {
+               "div": [
+                {
+                 "purse": "town:southmeadow"
+                },
+                20
+               ]
+              }
+             ]
+            },
             "purse": "town:southmeadow",
             "reason": "the Southmeadow stores pay for the boar hunt",
             "ifRefused": "skip"
@@ -548,12 +572,36 @@
           {
            "do": "add",
            "var": "coin_southmeadow_day",
-           "value": 6
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:southmeadow"
+               },
+               20
+              ]
+             }
+            ]
+           }
           },
           {
            "do": "add",
            "var": "lq_coin",
-           "value": 6,
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:southmeadow"
+               },
+               20
+              ]
+             }
+            ]
+           },
            "of": "$each"
           }
          ],
@@ -953,6 +1001,14 @@
         },
         "op": "<=",
         "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:southmeadow"
+        },
+        "op": ">=",
+        "right": 72
        }
       ]
      },
@@ -962,7 +1018,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 12,
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:southmeadow"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:southmeadow",
         "reason": "the Southmeadow stores pay for the burning",
         "ifRefused": "skip"
@@ -971,12 +1039,36 @@
       {
        "do": "add",
        "var": "coin_southmeadow_day",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:southmeadow"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 12,
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:southmeadow"
+           },
+           20
+          ]
+         }
+        ]
+       },
        "of": "$actor"
       }
      ],
@@ -1052,6 +1144,14 @@
         },
         "op": "<=",
         "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:southmeadow"
+        },
+        "op": ">=",
+        "right": 72
        }
       ]
      },
@@ -1061,7 +1161,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 12,
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:southmeadow"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:southmeadow",
         "reason": "the Southmeadow stores pay for the cure",
         "ifRefused": "skip"
@@ -1070,12 +1182,36 @@
       {
        "do": "add",
        "var": "coin_southmeadow_day",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:southmeadow"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 12,
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:southmeadow"
+           },
+           20
+          ]
+         }
+        ]
+       },
        "of": "$actor"
       }
      ],
@@ -1654,6 +1790,27 @@
      ]
     }
    ]
+  },
+  {
+   "id": "boar-staged",
+   "on": "quest started",
+   "audience": "participant",
+   "match": {
+    "detail": "boar"
+   },
+   "note": "L1: two boar wait in the rows for the next hunt there (they lapse after six hours).",
+   "actions": [
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "hunt.stage",
+      "region": "rows",
+      "species": "boar",
+      "count": 2,
+      "minutes": 360
+     }
+    }
+   ]
   }
  ],
  "phases": [
@@ -1685,6 +1842,13 @@
      "kind": "door.unlock",
      "door": "link_fs_pigs_south_sties_door_a",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_vines",
+     "value": "blight",
+     "days": 365
     }
    ],
    "exits": []
@@ -1702,6 +1866,13 @@
      "kind": "npc.line",
      "npc": "tn_oh_harl_oakbough",
      "text": "Where I was raised they paint a sick root with oak bark and lime, and pray to the Bright One it takes. Three of bark and two of lime, and I'll do the painting."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_vines",
+     "value": "reckoning",
+     "days": 365
     }
    ],
    "exits": []
@@ -1729,6 +1900,13 @@
      "text": "SOUTHMEADOW VINEYARD: the blighted south rows are burned. No wine from them this year, but the ground is clean. Our thanks to every wolf who carried firewood. Sloe Harvestby.",
      "days": 28,
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_vines",
+     "value": "burned",
+     "days": 365
     }
    ],
    "exits": []
@@ -1756,6 +1934,13 @@
      "text": "SOUTHMEADOW VINEYARD: the bark-and-ash cure has taken, and there are green leaves on every row. Our thanks to every wolf who carried bark and lime. Sloe Harvestby.",
      "days": 28,
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_vines",
+     "value": "cured",
+     "days": 365
     }
    ],
    "exits": []
@@ -1783,6 +1968,13 @@
      "text": "SOUTHMEADOW VINEYARD: the cure did not take, and the south rows are lost this year. Our thanks all the same to every wolf who carried bark and lime. Sloe Harvestby.",
      "days": 28,
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_vines",
+     "value": "lost",
+     "days": 365
     }
    ],
    "exits": []
@@ -1863,13 +2055,17 @@
    "objectives": [
     {
      "id": "hunt",
-     "label": "Hunt boar in the vine country (two will do).",
+     "label": "Hunt the boar in the rows (two will do).",
      "on": "hunted",
      "match": {
       "target": "boar"
      },
      "goal": 2,
-     "optional": true
+     "where": {
+      "cells": [
+       "w_ridgemere_9_12"
+      ]
+     }
     },
     {
      "id": "track",
@@ -1956,7 +2152,23 @@
      "item": "grapes",
      "quantity": 3
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "leaves",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "boar",
+      "status": "done"
+     }
+    ]
+   }
   },
   {
    "id": "vines_cure",
@@ -2023,7 +2235,23 @@
      "player": "$actor",
      "skill": "craft"
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "leaves",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "boar",
+      "status": "done"
+     }
+    ]
+   }
   }
  ],
  "tests": [
@@ -2093,6 +2321,26 @@
      "target": "run",
      "item": "",
      "detail": "boar"
+    },
+    {
+     "id": "e7h1",
+     "kind": "hunted",
+     "day": 0.1152,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e7h2",
+     "kind": "hunted",
+     "day": 0.1154,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
     },
     {
      "id": "e8",
@@ -2340,6 +2588,11 @@
      "goal": 8,
      "tally_on": false
     }
+   },
+   "facts": {
+    "purses": {
+     "town:southmeadow": 2000
+    }
    }
   },
   {
@@ -2411,6 +2664,26 @@
      "target": "run",
      "item": "",
      "detail": "boar"
+    },
+    {
+     "id": "e7h1",
+     "kind": "hunted",
+     "day": 0.1152,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e7h2",
+     "kind": "hunted",
+     "day": 0.1154,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
     },
     {
      "id": "e8",
@@ -2655,6 +2928,11 @@
       "lq_coin": 18
      }
     }
+   },
+   "facts": {
+    "purses": {
+     "town:southmeadow": 2000
+    }
    }
   },
   {
@@ -2726,6 +3004,26 @@
      "target": "run",
      "item": "",
      "detail": "boar"
+    },
+    {
+     "id": "e7h1",
+     "kind": "hunted",
+     "day": 0.1152,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e7h2",
+     "kind": "hunted",
+     "day": 0.1154,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
     },
     {
      "id": "e8",
@@ -3134,6 +3432,11 @@
      "t_cure": 2,
      "cure_hands": 2
     }
+   },
+   "facts": {
+    "purses": {
+     "town:southmeadow": 2000
+    }
    }
   },
   {
@@ -3202,6 +3505,26 @@
      "target": "run",
      "item": "",
      "detail": "boar"
+    },
+    {
+     "id": "e7h1",
+     "kind": "hunted",
+     "day": 0.1152,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e7h2",
+     "kind": "hunted",
+     "day": 0.1154,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
     },
     {
      "id": "e8",
@@ -3394,6 +3717,11 @@
      "t_burn": 0,
      "t_cure": 0
     }
+   },
+   "facts": {
+    "purses": {
+     "town:southmeadow": 2000
+    }
    }
   },
   {
@@ -3462,6 +3790,26 @@
      "target": "run",
      "item": "",
      "detail": "boar"
+    },
+    {
+     "id": "e7h1",
+     "kind": "hunted",
+     "day": 0.1152,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
+     "id": "e7h2",
+     "kind": "hunted",
+     "day": 0.1154,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
     },
     {
      "id": "e8",
@@ -3803,6 +4151,11 @@
      "t_burn": 1,
      "t_cure": 1
     }
+   },
+   "facts": {
+    "purses": {
+     "town:southmeadow": 2000
+    }
    }
   },
   {
@@ -3903,6 +4256,16 @@
      "detail": "boar"
     },
     {
+     "id": "e11h1",
+     "kind": "hunted",
+     "day": 0.1702,
+     "actor": "wolf-ash",
+     "target": "boar",
+     "cell": "w_ridgemere_9_12",
+     "detail": "a clean kill",
+     "quantity": 1
+    },
+    {
      "id": "e12",
      "kind": "conversation",
      "day": 0.18,
@@ -3934,7 +4297,7 @@
      "day": 0.3,
      "actor": "wolf-birch",
      "target": "boar",
-     "cell": "w_ridgemere_5_8",
+     "cell": "w_ridgemere_9_12",
      "detail": "a clean kill",
      "quantity": 2
     },
@@ -3995,6 +4358,11 @@
     "story": {
      "rows_kept": 6,
      "goal": 16
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:southmeadow": 2000
     }
    }
   }

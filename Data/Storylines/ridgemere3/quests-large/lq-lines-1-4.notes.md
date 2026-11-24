@@ -170,3 +170,25 @@ refuses a door into one, or into a room whose stairs reach one.
   (`story_quests.open_in`), and each door here serves one, so each stays unlocked until the run ends, when the game puts
   back what each had. (`door.lock` would lock the workers out too. `door.close` closes a door to wolves and leaves its
   lock alone: that is how the stage pack ends its windows.)
+
+## Wave J (as built, 2026-11-24, branch `r3-nh-live`)
+The engine of doc 86 (Phases 1a to 9) is merged, so this version uses what the sections above call "later". Every
+program here passes `python3 tools/nh_check.py --all` (now with the wave J checks: the prefix, the purse guard, the talk keys).
+
+- `"prefix": "lq"` on the four. **J3**: the roads count as a finished Story (`"closure": "line"`): Salt
+  `salt_board`/`salt_bought`/`salt_cart`, Cedars `cedar_contract`/`cedar_return`, Brown `brown_hunt`/`brown_spare`,
+  Silver `silver_board`/`silver_mercy`/`silver_cut`; **C6**: each road requires the line's first or second chapter done,
+  so a wolf who only stood a watch is not offered one.
+- **C8**: each phase says its line's key to the realm as it opens (`lq_salt`, `lq_cedars`, `lq_brown`, `lq_silver`,
+  the values the DM seeded by hand; `after_taken` forgets `lq_cedars`); a fold kept from Ch 3 tells Frosthollow
+  `lq_rustlers=grey`, and the beam put before the Board tells the city `lq_beam=board`.
+- **L2**: the waves name their camps (`lq_brine_flats`, `lq_old_stand`, `lq_fold`, `lq_kestrel`, ...) and the camp
+  triggers match them. **C10**: The Brine Captain leads the Brackish Wells raiders, Sleet the Drover the rustlers
+  (where the trigger had room under 24 actions).
+- **L1**: the Old Brown hunt road stages the bear at the tarn (`hunt.stage greytarn`, 4 hours), the kill counted in the
+  tarn's cell. **J1**: the choices laid for one wolf's start or step go to that wolf. **M2** and **C1** on every grant
+  (`min(amount, purse / 20)`, the counters adding what was paid). **SQ2**: the Counting House chit comes from the
+  Greatly Bank's till. **C5**: Ivy thanks each wolf who brought the cedars home, Vigdis each of the mercy road.
+- **Left**: the clock lays stay every wolf's choices (no acting wolf to give them to); L3 (the cell-plus-switch
+  triggers credit every wolf there); SQ2 for Osric, the shipwrights and Silver and Rain (no till of theirs in the world
+  as last saved); C14, C11, N2, C12a.

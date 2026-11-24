@@ -194,3 +194,27 @@ refuses a door into one, or into a room whose stairs reach one.
   (`story_quests.open_in`), and each door here serves one, so each stays unlocked until the run ends, when the game puts
   back what each had. (`door.lock` would lock the workers out too. `door.close` closes a door to wolves and leaves its
   lock alone: that is how the stage pack ends its windows.)
+
+## Wave J (as built, 2026-11-24, branch `r3-nh-live`)
+The engine of doc 86 (Phases 1a to 9) is merged, so this version uses what the sections above call "later". Every
+program here passes `python3 tools/nh_check.py --all` (now with the wave J checks: the prefix, the purse guard, the talk keys).
+
+- `"prefix": "mq"` on all four. **L2**: every story wave names its camp `mq_<region>` (`camp_story_mq_cg_camp`, ...),
+  and the `camp cleared` triggers and the `bandit falls` objectives match that camp exactly (no natural camp in the
+  cell counts any more); the rehearsals' facts carry the names.
+- **C10**: each wave comes with a named leader, a `tough` foe who waits by the band for two hours: Hask the Tallyman
+  (Q2), Rusk Netcutter (Q8), Mudge of Longmead (Q12), Brack the Tollman (Q18), Bran the Sawyer (Q20). Nothing waits on
+  them: the quest's own `bandit falls` objective still decides it.
+- **C8**: each quest's open key is said to the realm as the pack opens (its lines are gated on their towns), and a
+  trigger `qN-talk` beside each `qN-end` has the quest's towns remember the ending the wolf picked (90 days): the keys
+  and values the library reads (`mq_lamps=reported|shared`, ...).
+- **C5**: the closes that were a follow-up choice on the giver are now the giver's greeting by name (`npc.greet`, 7 days).
+- **M2** on every grant. **SQ2**: Q6 pays from the cooper's own till (`till:job:rm_edric_millton`, day cap 19,
+  `coin_till_edric_millton_day/_ok`, owned by nh-purses).
+- **N4**: `join.again: 7` on Q4, Q12, Q17, Q18 and Q20 (a lost-raker rehearsal no longer re-takes it inside the week).
+- **C6**: Q15 requires `nh_b_lights` not `laid`, Q18 requires `lq_salt` empty or `raided` (one gate for every wolf).
+- **J9**: Q19's names are the story's own list (`paper^mirebridge_names`). **L1**: choosing the kill in Q13 stages the
+  bear in the hives (`hunt.stage bg_garth`, 4 hours).
+- **Left**: the `during` lines (no words written for them yet), J9 for Q2's tally and Q15's lamp (placed with
+  `item.place`, which takes no mark), L3 (the camp triggers credit every wolf of the wave, which a `camp cleared`
+  objective would not), M5, C11, C14, M3 (House purses are off), J2, C12a, J4.

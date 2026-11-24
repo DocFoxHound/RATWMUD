@@ -2906,3 +2906,45 @@ of Ridgemere's clerks (`live.npc_voice`: Ridgemere, light):
    - In the Runnel Fever, if the soakaway wins after a wolf asked for the cover, the city keeps asking for the cover.
    - Q11's first witnesses give no clue until the DM seeds `lq_hearths=undersold`.
    - Rehearsals can't set world variables, so `nh_b_peace` in quests 46–48 was checked by reading.
+
+### Wave J as built (2026-11-24, branch `r3-nh-live`)
+
+The engine phases (1a to 9, `r3-nh-p9`), the story doors (`r3-nh-doors`) and this content (`r3-nh-content`) merged on
+`r3-nh-live`; wave J then moved the 21 programs onto what their notes called "later". Each program's notes file has a
+"Wave J (as built)" section with its own list and what is still left. Made by scripts kept out of the tree (as the
+content waves' were); nothing was approved, published or written to a world.
+
+| Feature | Where |
+|---|---|
+| top-level `prefix` | all 21: `sq` the small packs, `mq` the medium, `lq` the large lines, `st` the stage pack, `coin` nh-purses, `nh` the cleanup |
+| J1 per-wolf choices | every `npc.offer` laid by a wolf's own step (a participant trigger on a wolf's event) goes to that wolf: 41 in the large lines (the packs' were already); the choices laid by a clock, a day or a signal stay every wolf's (there is no acting wolf) |
+| C8 talk keys | nh-purses `nh_coin=thin` by town; the small packs' `sq_on` (as each opens, renewed by each errand) and `sq_last` (2 days, per errand); the medium packs' open keys (realm, as the pack opens) and ending keys (town, 90 days, a `qN-talk` trigger beside each ending); the large lines' state key at each phase's opening, the three thin-purse day keys, `lq_rupert`, `lq_rustlers`, `lq_beam`; the stage pack's open keys by phase, `st_last` per small quest and the medium endings' keys (`<x>_talk` triggers). `nh_check --all` now finds **no pack key the library reads that no program writes**, and no memory written that no line reads |
+| C5 thanks by name | north 26 and 29 (Tristram, Ebba); south's garland rope (Briar, to every helper); the medium packs' 23 closes (the follow-up choice became the giver's greeting); Ivy and Vigdis; the stage pack's five medium closes and Ingram's |
+| C6 `requires` / `during` | every large line's closure roads need its first or second chapter done; medium Q15 (`nh_b_lights` not `laid`) and Q18 (`lq_salt` empty or `raided`); `during` from four city givers and three stage givers |
+| J3 closure | 26 roads over the 11 large lines (at most 3 a line), each `"line"`, each after a chapter of its line |
+| L2 named camps | every `story.area.spawn` names its camp `<prefix>_<region>`; the camp triggers and `bandit falls` objectives of those cells match the camp's id (the rehearsals carry it) |
+| M2 purse operand | every story grant's If (127) also asks the purse itself for 60 and the amount; nh-purses' switches stay for their 60/80 hysteresis |
+| C1 values | the small south pack's and the large lines' grants pay `min(amount, purse / 20)`, the counters adding what was paid |
+| C2 scaled goal | the garland rope, `max(6, 2 x active)` |
+| N4 `join.again` | small 3, 23, 25 (its own weekly gate dropped), 30; medium Q4, Q12, Q17, Q18, Q20; the stage pack's five weekly medium quests |
+| SQ2 tills | the cooper's till for Q6 (cap 19), Hollis Physic's for the draught money (cap 9), the Greatly Bank's for the Counting House chit (cap 16); nh-purses watches and counts the two new tills, and `world-vars.json` declares them |
+| J9 story items | the City Office letter, the Carters' Yard crate, Greywool's bolt, the Mirebridge names, the Long Run's tube, the Moot summons |
+| C10 foes | named leaders with the medium waves (five) and the Salt Road's and the Old Brown's bands: The Brine Captain, Sleet the Drover |
+| L1 `hunt.stage` | medium Q13's bear (the hives), the Old Brown at the tarn, the boar in the rows (that hunt now required) |
+| J5 howls | the stage pack's mended chorus: Alder howls on the square |
+
+- **Rehearsals:** each still passes; where a new trigger fires, a new effect is sent or a payment moved purse, the
+  case's expected triggers, effects or numbers were updated only when that was the whole difference (the scripts
+  checked it), and every case gives the purses it pays from 2,000 pennies (`facts.purses`). Three cases changed by
+  hand: two took a quest again inside the week (N4 now refuses that, so the event is gone), and the festival's rope
+  is six with three active wolves.
+- **Behaviour that changed:** a large line's road is offered only to a wolf who did one of its first two chapters (J3's
+  rule), so a wolf who only stood a night watch is not offered one; the medium waves' objectives count only the
+  story's own camp, never a natural camp in the same cell (decisions 4.3); a poorer store pays less (C1).
+- **The checker** (`tools/nh_check.py`, check 10): the prefix by folder, the purse guard on every grant, and the talk
+  keys both ways (warnings). `--all`: **24 of 24 PASS** (the 21 programs, `world-vars.json`, the library and the new
+  "talk keys" report), with no warning.
+- **Left** (in the notes): the shop tills of the small city's errands (14 tills; the economy has not been asked),
+  `item.place` takes no story mark (the tufts, the tally, the float lamp, the stake), the clock-laid choices stay
+  every wolf's, L3 objectives where a trigger credits more wolves than an objective would, C2 for the Long Run (its
+  `contributors` is a whole number), C12a/J2 (no chapter to tell yet: waves B, H and I are not written), C14, L4, M3.

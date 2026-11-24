@@ -3,6 +3,7 @@
  "version": 2,
  "id": "lq-wreckers-light",
  "title": "The Wreckers' Light",
+ "prefix": "lq",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -580,7 +581,8 @@
       "id": "lq_wr_ledger",
       "words": "What became of the lighters' crews?",
       "reply": "Crews? The Wharf Office reads the losses out on the pier: cargo lost, eh, and a line under it. Same words as for the one that went down in the bay years back. A crew of three, I think, and the ledger calls them cargo. Rough water, to be written down like that.",
-      "once": false
+      "once": false,
+      "player": "$actor"
      }
     },
     {
@@ -591,7 +593,8 @@
       "id": "lq_wr_stair",
       "words": "Does your neighbour go out in a blow?",
       "reply": "Every blow, with a lamp and a jar, and back at dawn soaked through. She cries on the stair sometimes. Her brother was on a Grayrock lighter, years back. Nobody ever came to say sorry.",
-      "once": false
+      "once": false,
+      "player": "$actor"
      }
     }
    ]
@@ -1543,7 +1546,8 @@
           "kind": "story.area.spawn",
           "region": "cove",
           "count": 6,
-          "ifRefused": "skip"
+          "ifRefused": "skip",
+          "camp": "lq_cove"
          }
         }
        ],
@@ -1562,7 +1566,8 @@
             "kind": "story.area.spawn",
             "region": "cove",
             "count": 4,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_cove"
            }
           }
          ]
@@ -1581,7 +1586,8 @@
             "kind": "story.area.spawn",
             "region": "cove",
             "count": 3,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_cove"
            }
           }
          ]
@@ -1594,7 +1600,8 @@
           "kind": "story.area.spawn",
           "region": "cove",
           "count": 2,
-          "ifRefused": "skip"
+          "ifRefused": "skip",
+          "camp": "lq_cove"
          }
         }
        ]
@@ -1628,7 +1635,8 @@
           "kind": "story.area.spawn",
           "region": "cove_b",
           "count": 6,
-          "ifRefused": "skip"
+          "ifRefused": "skip",
+          "camp": "lq_cove_b"
          }
         }
        ],
@@ -1647,7 +1655,8 @@
             "kind": "story.area.spawn",
             "region": "cove_b",
             "count": 4,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_cove_b"
            }
           }
          ]
@@ -1666,7 +1675,8 @@
             "kind": "story.area.spawn",
             "region": "cove_b",
             "count": 3,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_cove_b"
            }
           }
          ]
@@ -1679,7 +1689,8 @@
           "kind": "story.area.spawn",
           "region": "cove_b",
           "count": 2,
-          "ifRefused": "skip"
+          "ifRefused": "skip",
+          "camp": "lq_cove_b"
          }
         }
        ]
@@ -1824,7 +1835,8 @@
             "kind": "story.area.spawn",
             "region": "cove",
             "count": 6,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_cove"
            }
           }
          ],
@@ -1843,7 +1855,8 @@
               "kind": "story.area.spawn",
               "region": "cove",
               "count": 4,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_cove"
              }
             }
            ]
@@ -1862,7 +1875,8 @@
               "kind": "story.area.spawn",
               "region": "cove",
               "count": 3,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_cove"
              }
             }
            ]
@@ -1875,7 +1889,8 @@
             "kind": "story.area.spawn",
             "region": "cove",
             "count": 2,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_cove"
            }
           }
          ]
@@ -1916,7 +1931,8 @@
             "kind": "story.area.spawn",
             "region": "cove_b",
             "count": 6,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_cove_b"
            }
           }
          ],
@@ -1935,7 +1951,8 @@
               "kind": "story.area.spawn",
               "region": "cove_b",
               "count": 4,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_cove_b"
              }
             }
            ]
@@ -1954,7 +1971,8 @@
               "kind": "story.area.spawn",
               "region": "cove_b",
               "count": 3,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_cove_b"
              }
             }
            ]
@@ -1967,7 +1985,8 @@
             "kind": "story.area.spawn",
             "region": "cove_b",
             "count": 2,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_cove_b"
            }
           }
          ]
@@ -1991,7 +2010,13 @@
    "id": "cove-cleared",
    "on": "camp cleared",
    "match": {
-    "cell": "w_ridgemere_0_4"
+    "cell": "w_ridgemere_0_4",
+    "target": {
+     "in": [
+      "camp_story_lq_cove",
+      "camp_story_lq_cove_b"
+     ]
+    }
    },
    "if": {
     "test": "any",
@@ -2222,6 +2247,14 @@
           },
           "op": "<=",
           "right": 29
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:ridgemere"
+          },
+          "op": ">=",
+          "right": 66
          }
         ]
        },
@@ -2231,7 +2264,19 @@
          "effect": {
           "kind": "character.grant",
           "player": "$actor",
-          "coins": 6,
+          "coins": {
+           "min": [
+            6,
+            {
+             "div": [
+              {
+               "purse": "town:ridgemere"
+              },
+              20
+             ]
+            }
+           ]
+          },
           "purse": "town:ridgemere",
           "reason": "the city pays for tracing the false lamp's oil",
           "ifRefused": "skip"
@@ -2240,12 +2285,36 @@
         {
          "do": "add",
          "var": "coin_ridgemere_day",
-         "value": 6
+         "value": {
+          "min": [
+           6,
+           {
+            "div": [
+             {
+              "purse": "town:ridgemere"
+             },
+             20
+            ]
+           }
+          ]
+         }
         },
         {
          "do": "add",
          "var": "lq_coin",
-         "value": 6,
+         "value": {
+          "min": [
+           6,
+           {
+            "div": [
+             {
+              "purse": "town:ridgemere"
+             },
+             20
+            ]
+           }
+          ]
+         },
          "of": "$actor"
         }
        ],
@@ -2479,7 +2548,8 @@
         "id": "lq_wr_face",
         "words": "You lit the lamp on the headland.",
         "reply": "And they wrote my brother down as cargo. Cargo lost, a line under it. I light a lamp so the Wharf loses cargo too. Nobody drowns, mostly. I see to that. Mostly.",
-        "once": true
+        "once": true,
+        "player": "$actor"
        }
       },
       {
@@ -2495,7 +2565,8 @@
         "id": "lq_wr_tide",
         "words": "Come and name him at the Tide.",
         "reply": "Out loud, at the Chapel of the Tide? All these years and nobody once asked his name. Walk with me, then. I'll put the lamp out on the way.",
-        "once": true
+        "once": true,
+        "player": "$actor"
        }
       },
       {
@@ -2599,7 +2670,8 @@
         "id": "lq_wr_face",
         "words": "You lit the lamp on the headland.",
         "reply": "And they wrote my brother down as cargo. Cargo lost, a line under it. I light a lamp so the Wharf loses cargo too. Nobody drowns, mostly. I see to that. Mostly.",
-        "once": true
+        "once": true,
+        "player": "$actor"
        }
       },
       {
@@ -2703,7 +2775,8 @@
         "id": "lq_wr_face",
         "words": "You lit the lamp on the headland.",
         "reply": "And they wrote my brother down as cargo. Cargo lost, a line under it. I light a lamp so the Wharf loses cargo too. Nobody drowns, mostly. I see to that. Mostly.",
-        "once": true
+        "once": true,
+        "player": "$actor"
        }
       },
       {
@@ -2901,6 +2974,14 @@
         },
         "op": "<=",
         "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 72
        }
       ]
      },
@@ -2910,7 +2991,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 12,
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:ridgemere",
         "reason": "the city thanks you for the headland",
         "ifRefused": "skip"
@@ -2919,12 +3012,36 @@
       {
        "do": "add",
        "var": "coin_ridgemere_day",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 12,
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       },
        "of": "$actor"
       }
      ],
@@ -3021,6 +3138,14 @@
         },
         "op": "<=",
         "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 72
        }
       ]
      },
@@ -3030,7 +3155,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 12,
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:ridgemere",
         "reason": "the city thanks you for the headland",
         "ifRefused": "skip"
@@ -3039,12 +3176,36 @@
       {
        "do": "add",
        "var": "coin_ridgemere_day",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 12,
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       },
        "of": "$actor"
       }
      ],
@@ -3130,6 +3291,14 @@
         },
         "op": "<=",
         "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 72
        }
       ]
      },
@@ -3139,7 +3308,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 12,
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:ridgemere",
         "reason": "Grayrock's thanks, through the treasury",
         "ifRefused": "skip"
@@ -3148,12 +3329,36 @@
       {
        "do": "add",
        "var": "coin_ridgemere_day",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 12,
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       },
        "of": "$actor"
       }
      ],
@@ -3474,6 +3679,13 @@
      "kind": "npc.line",
      "npc": "rm_dorcas_rainford",
      "text": "Full measure to the Lamp Store, and one of their lamplighters buys a jar more of her own on blowy days. Says the wind snuffs her wicks. I've not said a word, and I'd thank you not to say I did."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_wreck",
+     "value": "lamp",
+     "days": 365
     }
    ],
    "exits": []
@@ -3504,6 +3716,13 @@
      "kind": "npc.line",
      "npc": "rm_ilse_coalley",
      "text": "You've come about the headland. I know you have. Sit, if you want. I'll not run."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_wreck",
+     "value": "lamp",
+     "days": 365
     }
    ],
    "exits": [],
@@ -3757,6 +3976,13 @@
      "kind": "npc.line",
      "npc": "rm_ilse_coalley",
      "text": "I said his name in the Chapel of the Tide, and the tide took it. The lamp's out. I sleep now, mostly."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_wreck",
+     "value": "named",
+     "days": 365
     }
    ],
    "exits": [],
@@ -3794,6 +4020,13 @@
      "kind": "npc.hold",
      "npc": "rm_ilse_coalley",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_wreck",
+     "value": "watch",
+     "days": 365
     }
    ],
    "exits": [],
@@ -3823,6 +4056,13 @@
      "kind": "npc.line",
      "npc": "rm_greta_gullton",
      "text": "Grayrock turned her out of the Lamp Store, they say. The Wharf got its cargo back, in a way. I'd not call it even."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_wreck",
+     "value": "wharf",
+     "days": 365
     }
    ],
    "exits": [],
@@ -3998,7 +4238,13 @@
      "label": "Drive the salvage gang off North Cove.",
      "on": "bandit falls",
      "match": {
-      "cell": "w_ridgemere_0_4"
+      "cell": "w_ridgemere_0_4",
+      "target": {
+       "in": [
+        "camp_story_lq_cove",
+        "camp_story_lq_cove_b"
+       ]
+      }
      },
      "goal": 2,
      "optional": true
@@ -4073,7 +4319,23 @@
      "item": "oilcloth_hat",
      "quantity": 1
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "lamp",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "oil",
+      "status": "done"
+     }
+    ]
+   }
   },
   {
    "id": "wreck_watch",
@@ -4131,7 +4393,23 @@
      "item": "oilcloth_hat",
      "quantity": 1
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "lamp",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "oil",
+      "status": "done"
+     }
+    ]
+   }
   },
   {
    "id": "wreck_wharf",
@@ -4183,7 +4461,23 @@
      "item": "oilcloth_hat",
      "quantity": 1
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "lamp",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "oil",
+      "status": "done"
+     }
+    ]
+   }
   }
  ],
  "tests": [
@@ -4788,6 +5082,11 @@
      "tiding": 0,
      "facing": 0
     }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
    }
   },
   {
@@ -5110,7 +5409,7 @@
      "kind": "bandit falls",
      "day": 0.42000000000000004,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_cove",
      "cell": "w_ridgemere_0_4",
      "detail": "a salvager"
     },
@@ -5119,7 +5418,7 @@
      "kind": "camp cleared",
      "day": 0.43000000000000005,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_cove",
      "cell": "w_ridgemere_0_4",
      "detail": "by a wolf"
     },
@@ -5504,6 +5803,11 @@
      "spawned_cove_b": true,
      "lamps_taken": 0,
      "goal": 5
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
     }
    }
   },
@@ -6066,6 +6370,11 @@
      "spawned_cove_b": true,
      "wave_turn": 0
     }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
    }
   },
   {
@@ -6559,6 +6868,11 @@
    "expectVariables": {
     "world": {
      "lq_wreck": "named"
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
     }
    }
   }

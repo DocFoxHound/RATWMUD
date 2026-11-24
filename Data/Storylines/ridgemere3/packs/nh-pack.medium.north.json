@@ -3,6 +3,7 @@
  "version": 2,
  "id": "nh-pack.medium.north",
  "title": "Medium errands of the north",
+ "prefix": "mq",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -234,7 +235,36 @@
   {
    "id": "open",
    "journal": "Errands for any wolf who asks around Oakhaven and Frosthollow: the Sound Road and the cut, the iron mine, the Upper hearths and the shore of Cedar Sound.",
-   "effects": [],
+   "effects": [
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_cedar",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_props",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_oil",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_logs",
+     "value": "open",
+     "days": 365
+    }
+   ],
    "exits": [],
    "triggers": [
     {
@@ -388,6 +418,24 @@
             "kind": "story.area.spawn",
             "region": "wc_tree",
             "count": 6,
+            "ifRefused": "skip",
+            "camp": "mq_wc_tree"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "foe.add",
+            "foe": "mq-sawyer",
+            "name": "Bran the Sawyer",
+            "cell": "w_ridgemere_4_4",
+            "x": 211,
+            "y": 185,
+            "strength": "tough",
+            "band": 0,
+            "stance": "waits",
+            "minutes": 120,
+            "description": "A road wolf with a logger's saw and no logger's honesty.",
             "ifRefused": "skip"
            }
           }
@@ -406,6 +454,24 @@
               "kind": "story.area.spawn",
               "region": "wc_tree",
               "count": 4,
+              "ifRefused": "skip",
+              "camp": "mq_wc_tree"
+             }
+            },
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "foe.add",
+              "foe": "mq-sawyer",
+              "name": "Bran the Sawyer",
+              "cell": "w_ridgemere_4_4",
+              "x": 211,
+              "y": 185,
+              "strength": "tough",
+              "band": 0,
+              "stance": "waits",
+              "minutes": 120,
+              "description": "A road wolf with a logger's saw and no logger's honesty.",
               "ifRefused": "skip"
              }
             }
@@ -419,6 +485,24 @@
             "kind": "story.area.spawn",
             "region": "wc_tree",
             "count": 2,
+            "ifRefused": "skip",
+            "camp": "mq_wc_tree"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "foe.add",
+            "foe": "mq-sawyer",
+            "name": "Bran the Sawyer",
+            "cell": "w_ridgemere_4_4",
+            "x": 211,
+            "y": 185,
+            "strength": "tough",
+            "band": 0,
+            "stance": "waits",
+            "minutes": 120,
+            "description": "A road wolf with a logger's saw and no logger's honesty.",
             "ifRefused": "skip"
            }
           }
@@ -595,7 +679,8 @@
      "id": "q20-camp",
      "on": "camp cleared",
      "match": {
-      "cell": "w_ridgemere_4_4"
+      "cell": "w_ridgemere_4_4",
+      "target": "camp_story_mq_wc_tree"
      },
      "if": {
       "test": "switch",
@@ -634,6 +719,14 @@
           },
           "op": "<=",
           "right": 14
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:oakhaven"
+          },
+          "op": ">=",
+          "right": 70
          }
         ]
        },
@@ -709,13 +802,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "cty_tristram_rainridge",
-          "id": "wc_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "Every stick delivered. The city wolf counted it twice, the miser. I'm poorer and I sleep. Root well."
+          "text": "Every stick delivered. The city wolf counted it twice, the miser. I'm poorer and I sleep. Root well.",
+          "days": 7
          }
         }
        ],
@@ -784,6 +875,76 @@
        "var": "nh_threat",
        "min": 0,
        "max": 100
+      }
+     ]
+    },
+    {
+     "id": "q20-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-windthrown-cedar"
+     },
+     "note": "C8: the town key mq_cedar the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "wc_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "oakhaven",
+          "key": "mq_cedar",
+          "value": "honest",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_cedar",
+          "value": "honest",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "oakhaven",
+          "key": "mq_cedar",
+          "value": "kept",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_cedar",
+          "value": "kept",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -1364,6 +1525,14 @@
           },
           "op": "<=",
           "right": 14
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:frosthollow"
+          },
+          "op": ">=",
+          "right": 70
          }
         ]
        },
@@ -1439,13 +1608,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "cty_ebba_coalgate",
-          "id": "ld_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "Half the miners were at the mine house door by morning. The captain says the props came cheap from a city yard. Funny, that."
+          "text": "Half the miners were at the mine house door by morning. The captain says the props came cheap from a city yard. Funny, that.",
+          "days": 7
          }
         }
        ],
@@ -1491,6 +1658,76 @@
        "do": "add",
        "var": "nh_voice_frosthollow",
        "value": 6
+      }
+     ]
+    },
+    {
+     "id": "q21-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-low-drift-props"
+     },
+     "note": "C8: the town key mq_props the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "ld_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "frosthollow",
+          "key": "mq_props",
+          "value": "named",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_props",
+          "value": "named",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "frosthollow",
+          "key": "mq_props",
+          "value": "quiet",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_props",
+          "value": "quiet",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -1922,6 +2159,14 @@
               },
               "op": "<=",
               "right": 14
+             },
+             {
+              "test": "compare",
+              "left": {
+               "purse": "town:frosthollow"
+              },
+              "op": ">=",
+              "right": 70
              }
             ]
            },
@@ -1984,6 +2229,14 @@
               },
               "op": "<=",
               "right": 18
+             },
+             {
+              "test": "compare",
+              "left": {
+               "purse": "town:frosthollow"
+              },
+              "op": ">=",
+              "right": 66
              }
             ]
            },
@@ -2062,13 +2315,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "cty_stone_acorndell",
-          "id": "lo_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "Your name's on the list. Under the last hard winter's. I read it out at the Lamp and Pick, and nobody laughed."
+          "text": "Your name's on the list. Under the last hard winter's. I read it out at the Lamp and Pick, and nobody laughed.",
+          "days": 7
          }
         }
        ],
@@ -2118,6 +2369,76 @@
        "do": "add",
        "var": "nh_realm",
        "value": 4
+      }
+     ]
+    },
+    {
+     "id": "q22-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-lamp-oil-share"
+     },
+     "note": "C8: the town key mq_oil the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "lo_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "frosthollow",
+          "key": "mq_oil",
+          "value": "shared",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_oil",
+          "value": "shared",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "frosthollow",
+          "key": "mq_oil",
+          "value": "sold",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_oil",
+          "value": "sold",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -2624,6 +2945,14 @@
             },
             "op": "<=",
             "right": 14
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:oakhaven"
+            },
+            "op": ">=",
+            "right": 70
            }
           ]
          },
@@ -2688,13 +3017,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "cty_oda_cinderdale",
-          "id": "la_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "Four logs home, wet as otters. And the fog's lifted. I told it to, mind. Root well."
+          "text": "Four logs home, wet as otters. And the fog's lifted. I told it to, mind. Root well.",
+          "days": 7
          }
         },
         {
@@ -2721,6 +3048,14 @@
             },
             "op": "<=",
             "right": 121
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 74
            }
           ]
          },
@@ -2800,6 +3135,76 @@
        "do": "add",
        "var": "nh_realm",
        "value": 4
+      }
+     ]
+    },
+    {
+     "id": "q23-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-logs-adrift"
+     },
+     "note": "C8: the town key mq_logs the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "la_pick"
+        },
+        "op": "=",
+        "right": "home"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "oakhaven",
+          "key": "mq_logs",
+          "value": "home",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_logs",
+          "value": "home",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "oakhaven",
+          "key": "mq_logs",
+          "value": "sold",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_logs",
+          "value": "sold",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -2939,7 +3344,8 @@
    "lifetime": "campaign",
    "abandon": true,
    "join": {
-    "cap": 1
+    "cap": 1,
+    "again": 7
    },
    "fail": [
     {
@@ -2979,7 +3385,8 @@
      "label": "Hold the wagon while the trunk comes off the road.",
      "on": "bandit falls",
      "match": {
-      "cell": "w_ridgemere_4_4"
+      "cell": "w_ridgemere_4_4",
+      "target": "camp_story_mq_wc_tree"
      },
      "goal": 2,
      "after": [
@@ -3354,7 +3761,7 @@
      "kind": "bandit falls",
      "day": 1.04,
      "actor": "player-tristram-a",
-     "target": "camp_story_8",
+     "target": "camp_story_mq_wc_tree",
      "cell": "w_ridgemere_4_4",
      "detail": "a road wolf"
     },
@@ -3363,7 +3770,7 @@
      "kind": "bandit falls",
      "day": 1.05,
      "actor": "player-tristram-a",
-     "target": "camp_story_8",
+     "target": "camp_story_mq_wc_tree",
      "cell": "w_ridgemere_4_4",
      "detail": "a road wolf"
     },
@@ -3372,7 +3779,7 @@
      "kind": "camp cleared",
      "day": 1.06,
      "actor": "oakhaven",
-     "target": "camp_story_8",
+     "target": "camp_story_mq_wc_tree",
      "cell": "w_ridgemere_4_4",
      "detail": "by the watch"
     },
@@ -3422,6 +3829,11 @@
      "player-tristram-a": {
       "partySize": 3
      }
+    },
+    "purses": {
+     "town:frosthollow": 2000,
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000
     }
    },
    "expectQuests": {
@@ -3475,7 +3887,7 @@
      "kind": "bandit falls",
      "day": 1.04,
      "actor": "player-tristram-b",
-     "target": "camp_story_8",
+     "target": "camp_story_mq_wc_tree",
      "cell": "w_ridgemere_4_4",
      "detail": "a road wolf"
     },
@@ -3484,7 +3896,7 @@
      "kind": "bandit falls",
      "day": 1.05,
      "actor": "player-tristram-b",
-     "target": "camp_story_8",
+     "target": "camp_story_mq_wc_tree",
      "cell": "w_ridgemere_4_4",
      "detail": "a road wolf"
     },
@@ -3493,7 +3905,7 @@
      "kind": "camp cleared",
      "day": 1.06,
      "actor": "oakhaven",
-     "target": "camp_story_8",
+     "target": "camp_story_mq_wc_tree",
      "cell": "w_ridgemere_4_4",
      "detail": "by the watch"
     },
@@ -3575,6 +3987,11 @@
      "player-tristram-b": {
       "partySize": 2
      }
+    },
+    "purses": {
+     "town:frosthollow": 2000,
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000
     }
    },
    "expectQuests": {
@@ -3738,6 +4155,11 @@
     "world": {
      "hour": 20,
      "season": "autumn"
+    },
+    "purses": {
+     "town:frosthollow": 2000,
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000
     }
    },
    "expectQuests": {
@@ -3832,6 +4254,13 @@
     "story": {
      "mq_props_b": 1
     }
+   },
+   "facts": {
+    "purses": {
+     "town:frosthollow": 2000,
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000
+    }
    }
   },
   {
@@ -3901,6 +4330,11 @@
     "world": {
      "hour": 12,
      "season": "winter"
+    },
+    "purses": {
+     "town:frosthollow": 2000,
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000
     }
    },
    "expectQuests": {
@@ -3981,6 +4415,11 @@
     "world": {
      "hour": 12,
      "season": "autumn"
+    },
+    "purses": {
+     "town:frosthollow": 2000,
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000
     }
    },
    "expectQuests": {
@@ -4097,6 +4536,13 @@
     "world": {
      "nh_voice_oakhaven": 4
     }
+   },
+   "facts": {
+    "purses": {
+     "town:frosthollow": 2000,
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000
+    }
    }
   },
   {
@@ -4162,6 +4608,13 @@
     },
     "world": {
      "coin_ridgemere_day": 14
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:frosthollow": 2000,
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000
     }
    }
   }

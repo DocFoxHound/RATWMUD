@@ -3,6 +3,7 @@
  "version": 2,
  "id": "nh-pack.stage",
  "title": "The season's errands",
+ "prefix": "st",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -2035,6 +2036,14 @@
           },
           "op": "<=",
           "right": 125
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:ridgemere"
+          },
+          "op": ">=",
+          "right": 70
          }
         ]
        },
@@ -2576,6 +2585,14 @@
             },
             "op": "<=",
             "right": 125
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 70
            }
           ]
          },
@@ -2970,7 +2987,15 @@
   {
    "id": "s12",
    "journal": "The old King is dead, and the Moot is called.",
-   "effects": [],
+   "effects": [
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "st_round",
+     "value": "open",
+     "days": 365
+    }
+   ],
    "exits": [],
    "triggers": [
     {
@@ -3080,7 +3105,9 @@
               "kind": "item.give",
               "player": "$actor",
               "item": "letter",
-              "quantity": 1
+              "quantity": 1,
+              "tag": "moot_summons",
+              "name": "A summons to the Moot"
              }
             }
            ],
@@ -3148,6 +3175,14 @@
           },
           "op": "<=",
           "right": 133
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:ridgemere"
+          },
+          "op": ">=",
+          "right": 62
          }
         ]
        },
@@ -3258,6 +3293,14 @@
           },
           "op": "<=",
           "right": 132
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:ridgemere"
+          },
+          "op": ">=",
+          "right": 63
          }
         ]
        },
@@ -3348,7 +3391,29 @@
   {
    "id": "s3",
    "journal": "The Line is going up, post by post.",
-   "effects": [],
+   "effects": [
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "st_wagon",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "st_round",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "st_bounty",
+     "value": "open",
+     "days": 365
+    }
+   ],
    "exits": [],
    "triggers": [
     {
@@ -3749,6 +3814,14 @@
           },
           "op": "<=",
           "right": 132
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:ridgemere"
+          },
+          "op": ">=",
+          "right": 63
          }
         ]
        },
@@ -4059,7 +4132,8 @@
          "effect": {
           "kind": "story.area.spawn",
           "region": "gw_road",
-          "count": 2
+          "count": 2,
+          "camp": "st_gw_road"
          }
         },
         {
@@ -4083,7 +4157,8 @@
      "id": "gw_camp",
      "on": "camp cleared",
      "match": {
-      "cell": "w_ridgemere_4_5"
+      "cell": "w_ridgemere_4_5",
+      "target": "camp_story_st_gw_road"
      },
      "note": "The wave in this cell is gone (P-B): it scores nothing itself.",
      "actions": [
@@ -4288,6 +4363,14 @@
             },
             "op": "<=",
             "right": 9
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:coldwater"
+            },
+            "op": ">=",
+            "right": 72
            }
           ]
          },
@@ -4340,9 +4423,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "journal.note",
+          "kind": "npc.greet",
+          "npc": "rmx_aud_saltridge",
           "player": "$actor",
-          "text": "The road under Alder Mere was clear when the Coldwater wagon passed."
+          "text": "Not a paw on the road under Alder Mere. I drove it with my eyes shut. Nearly. I kept the coal in my fist the whole way.",
+          "days": 7
          }
         },
         {
@@ -4375,6 +4460,14 @@
             },
             "op": "<=",
             "right": 13
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:coldwater"
+            },
+            "op": ">=",
+            "right": 68
            }
           ]
          },
@@ -4427,9 +4520,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "journal.note",
+          "kind": "npc.greet",
+          "npc": "rmx_aud_saltridge",
           "player": "$actor",
-          "text": "You rode the Coldwater wagon in past the lit ridges."
+          "text": "We came in whole, lamp on the knoll and all. Nobody asked us for a mark. I think they saw your teeth.",
+          "days": 7
          }
         }
        ]
@@ -4451,6 +4546,77 @@
        "of": "$actor"
       }
      ]
+    },
+    {
+     "id": "gw_talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "st-greenholt-wagon"
+     },
+     "note": "C8: the town key st_wagon this ending's gossip is gated on.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "gw_pick",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": "ahead"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "coldwater",
+          "key": "st_wagon",
+          "value": "ahead",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "st_wagon",
+          "value": "ahead",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "coldwater",
+          "key": "st_wagon",
+          "value": "with",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "st_wagon",
+          "value": "with",
+          "days": 90
+         }
+        }
+       ]
+      }
+     ]
     }
    ]
   },
@@ -4462,6 +4628,20 @@
      "kind": "door.unlock",
      "door": "link_fs_grain_lark_granary_door_a",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "st_fair",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "st_bounty",
+     "value": "open",
+     "days": 365
     }
    ],
    "exits": [],
@@ -4660,6 +4840,14 @@
           },
           "op": "<=",
           "right": 20
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:southmeadow"
+          },
+          "op": ">=",
+          "right": 63
          }
         ]
        },
@@ -4742,6 +4930,14 @@
          "value": "chorus"
         }
        ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "npc.howl",
+        "npc": "cty_alder_blossomcroft",
+        "ifRefused": "skip"
+       }
       }
      ]
     },
@@ -4937,7 +5133,8 @@
              "effect": {
               "kind": "story.area.spawn",
               "region": "north_road_a",
-              "count": 6
+              "count": 6,
+              "camp": "st_north_road_a"
              }
             }
            ],
@@ -4955,7 +5152,8 @@
                "effect": {
                 "kind": "story.area.spawn",
                 "region": "north_road_a",
-                "count": 4
+                "count": 4,
+                "camp": "st_north_road_a"
                }
               }
              ]
@@ -4973,7 +5171,8 @@
                "effect": {
                 "kind": "story.area.spawn",
                 "region": "north_road_a",
-                "count": 3
+                "count": 3,
+                "camp": "st_north_road_a"
                }
               }
              ]
@@ -4985,7 +5184,8 @@
              "effect": {
               "kind": "story.area.spawn",
               "region": "north_road_a",
-              "count": 2
+              "count": 2,
+              "camp": "st_north_road_a"
              }
             }
            ]
@@ -5010,7 +5210,8 @@
              "effect": {
               "kind": "story.area.spawn",
               "region": "north_road_b",
-              "count": 6
+              "count": 6,
+              "camp": "st_north_road_b"
              }
             }
            ],
@@ -5028,7 +5229,8 @@
                "effect": {
                 "kind": "story.area.spawn",
                 "region": "north_road_b",
-                "count": 4
+                "count": 4,
+                "camp": "st_north_road_b"
                }
               }
              ]
@@ -5046,7 +5248,8 @@
                "effect": {
                 "kind": "story.area.spawn",
                 "region": "north_road_b",
-                "count": 3
+                "count": 3,
+                "camp": "st_north_road_b"
                }
               }
              ]
@@ -5058,7 +5261,8 @@
              "effect": {
               "kind": "story.area.spawn",
               "region": "north_road_b",
-              "count": 2
+              "count": 2,
+              "camp": "st_north_road_b"
              }
             }
            ]
@@ -5073,7 +5277,13 @@
      "id": "feast_camp",
      "on": "camp cleared",
      "match": {
-      "cell": "w_ridgemere_1_0"
+      "cell": "w_ridgemere_1_0",
+      "target": {
+       "in": [
+        "camp_story_st_north_road_a",
+        "camp_story_st_north_road_b"
+       ]
+      }
      },
      "if": {
       "test": "any",
@@ -5189,6 +5399,14 @@
               },
               "op": "<=",
               "right": 125
+             },
+             {
+              "test": "compare",
+              "left": {
+               "purse": "town:ridgemere"
+              },
+              "op": ">=",
+              "right": 70
              }
             ]
            },
@@ -5309,6 +5527,20 @@
      "kind": "door.close",
      "door": "link_fs_grain_lark_granary_door_a",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "st_cloak",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "st_bounty",
+     "value": "open",
+     "days": 365
     }
    ],
    "exits": [],
@@ -5981,6 +6213,14 @@
           },
           "op": "<=",
           "right": 133
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:ridgemere"
+          },
+          "op": ">=",
+          "right": 62
          }
         ]
        },
@@ -6108,6 +6348,14 @@
           },
           "op": "<=",
           "right": 22
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:oakhaven"
+          },
+          "op": ">=",
+          "right": 62
          }
         ]
        },
@@ -6228,6 +6476,14 @@
           },
           "op": "<=",
           "right": 18
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:fenshore"
+          },
+          "op": ">=",
+          "right": 63
          }
         ]
        },
@@ -6362,7 +6618,8 @@
        "effect": {
         "kind": "story.area.spawn",
         "region": "bc_road",
-        "count": 2
+        "count": 2,
+        "camp": "st_bc_road"
        }
       },
       {
@@ -6375,7 +6632,8 @@
      "id": "bc_camp",
      "on": "camp cleared",
      "match": {
-      "cell": "w_ridgemere_8_4"
+      "cell": "w_ridgemere_8_4",
+      "target": "camp_story_st_bc_road"
      },
      "note": "The wave in this cell is gone (P-B): it scores nothing itself.",
      "actions": [
@@ -6557,6 +6815,14 @@
             },
             "op": "<=",
             "right": 9
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:coldwater"
+            },
+            "op": ">=",
+            "right": 72
            }
           ]
          },
@@ -6609,9 +6875,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "journal.note",
+          "kind": "npc.greet",
+          "npc": "cty_wick_marshwade",
           "player": "$actor",
-          "text": "The Coldwater carter drove the road below the Pass at first light."
+          "text": "Drove it at first light. Not a paw on the road, and a black cloak walking down behind me like a heron. Fair catch, that road.",
+          "days": 7
          }
         }
        ],
@@ -6633,6 +6901,14 @@
             },
             "op": "<=",
             "right": 11
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:coldwater"
+            },
+            "op": ">=",
+            "right": 70
            }
           ]
          },
@@ -6685,9 +6961,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "journal.note",
+          "kind": "npc.greet",
+          "npc": "cty_wick_marshwade",
           "player": "$actor",
-          "text": "The Coldwater carter waited a day before the road below the Pass."
+          "text": "Waited the day, like you said. Glad I did; there was smoke by the road that night. I went the day after, and it was gone.",
+          "days": 7
          }
         }
        ]
@@ -6718,6 +6996,53 @@
        "var": "nh_threat",
        "min": 0,
        "max": 100
+      }
+     ]
+    },
+    {
+     "id": "bc_talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "st-black-cloak-road"
+     },
+     "note": "C8: the town key st_cloak this ending's gossip is gated on.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "bc_pick",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": "go"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "coldwater",
+          "key": "st_cloak",
+          "value": "cleared",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "frosthollow",
+          "key": "st_cloak",
+          "value": "cleared",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -7050,6 +7375,14 @@
             },
             "op": "<=",
             "right": 123
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 72
            }
           ]
          },
@@ -7154,6 +7487,28 @@
        "var": "st_done",
        "value": 1,
        "of": "$actor"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "oakhaven",
+        "key": "st_bounds",
+        "value": "walked",
+        "days": 90
+       }
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "ridgemere",
+        "key": "st_bounds",
+        "value": "walked",
+        "days": 90
+       }
       }
      ]
     }
@@ -7172,6 +7527,27 @@
      "kind": "door.close",
      "door": "link_fs_fishing_fencoast_shed_door_a",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "st_relief",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "st_ice",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "st_bounty",
+     "value": "open",
+     "days": 365
     }
    ],
    "exits": [],
@@ -7928,6 +8304,14 @@
           },
           "op": "<=",
           "right": 21
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:larkfield"
+          },
+          "op": ">=",
+          "right": 63
          }
         ]
        },
@@ -8110,6 +8494,14 @@
           },
           "op": "<=",
           "right": 18
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:coldwater"
+          },
+          "op": ">=",
+          "right": 63
          }
         ]
        },
@@ -8290,7 +8682,8 @@
          "effect": {
           "kind": "story.area.spawn",
           "region": "rc_road",
-          "count": 2
+          "count": 2,
+          "camp": "st_rc_road"
          }
         },
         {
@@ -8360,7 +8753,8 @@
      "id": "rc_camp",
      "on": "camp cleared",
      "match": {
-      "cell": "w_ridgemere_7_10"
+      "cell": "w_ridgemere_7_10",
+      "target": "camp_story_st_rc_road"
      },
      "note": "The wave in this cell is gone (P-B): it scores nothing itself.",
      "actions": [
@@ -8429,6 +8823,14 @@
             },
             "op": "<=",
             "right": 12
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:larkfield"
+            },
+            "op": ">=",
+            "right": 72
            }
           ]
          },
@@ -8481,9 +8883,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "journal.note",
+          "kind": "npc.greet",
+          "npc": "cty_myrtle_larkcombe",
           "player": "$actor",
-          "text": "Larkholm's flour reached Larkfield up the road."
+          "text": "Up the road, with teeth? Sheaf and sickle. Larkfield's ovens are lit. I counted the loaves back in my head all night.",
+          "days": 7
          }
         },
         {
@@ -8516,6 +8920,14 @@
             },
             "op": "<=",
             "right": 16
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:larkfield"
+            },
+            "op": ">=",
+            "right": 68
            }
           ]
          },
@@ -8580,9 +8992,11 @@
           {
            "do": "effect",
            "effect": {
-            "kind": "journal.note",
+            "kind": "npc.greet",
+            "npc": "cty_myrtle_larkcombe",
             "player": "$actor",
-            "text": "Larkholm's flour reached Larkfield up the road, past the watchers."
+            "text": "Up the road, with teeth? Sheaf and sickle. Larkfield's ovens are lit. I counted the loaves back in my head all night.",
+            "days": 7
            }
           }
          ],
@@ -8598,9 +9012,11 @@
           {
            "do": "effect",
            "effect": {
-            "kind": "journal.note",
+            "kind": "npc.greet",
+            "npc": "cty_myrtle_larkcombe",
             "player": "$actor",
-            "text": "Larkholm's flour reached Larkfield over the downs."
+            "text": "The long way, and every measure there. Ripe thinking. The downs don't ask you for a toll, eh.",
+            "days": 7
            }
           }
          ]
@@ -8622,6 +9038,77 @@
        "var": "st_done",
        "value": 1,
        "of": "$actor"
+      }
+     ]
+    },
+    {
+     "id": "rc_talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "st-relief-convoy"
+     },
+     "note": "C8: the town key st_relief this ending's gossip is gated on.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "rc_pick",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": "road"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "larkfield",
+          "key": "st_relief",
+          "value": "road",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "southmeadow",
+          "key": "st_relief",
+          "value": "road",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "larkfield",
+          "key": "st_relief",
+          "value": "downs",
+          "days": 90
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "southmeadow",
+          "key": "st_relief",
+          "value": "downs",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -9011,6 +9498,14 @@
             },
             "op": "<=",
             "right": 13
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:coldwater"
+            },
+            "op": ">=",
+            "right": 68
            }
           ]
          },
@@ -9063,9 +9558,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "journal.note",
+          "kind": "npc.greet",
+          "npc": "tn_lf_wald_larkwell",
           "player": "$actor",
-          "text": "The Still's hand took his rope down to the Boat Shed."
+          "text": "Took the shepherd's rope down to the Boat Shed, did you? He says they let him pull the end. A shepherd on a bell rope. Fair catch, that.",
+          "days": 7
          }
         }
        ],
@@ -9087,6 +9584,14 @@
             },
             "op": "<=",
             "right": 13
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:coldwater"
+            },
+            "op": ">=",
+            "right": 68
            }
           ]
          },
@@ -9139,9 +9644,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "journal.note",
+          "kind": "npc.greet",
+          "npc": "tn_lf_wald_larkwell",
           "player": "$actor",
-          "text": "The shepherd and his ewes slept the night."
+          "text": "The shepherd slept like a stone, he says, and the ewes too. If it was a kind lie, it was a fair one.",
+          "days": 7
          }
         }
        ]
@@ -9163,6 +9670,42 @@
        "of": "$actor"
       }
      ]
+    },
+    {
+     "id": "iw_talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "st-ice-watch"
+     },
+     "note": "C8: the town key st_ice this ending's gossip is gated on.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "iw_pick",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": "bell"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "coldwater",
+          "key": "st_ice",
+          "value": "bell",
+          "days": 90
+         }
+        }
+       ]
+      }
+     ]
     }
    ]
   },
@@ -9179,6 +9722,20 @@
      "kind": "door.close",
      "door": "link_fs_fishing_fencoast_shed_door_a",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "st_bell",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "st_bounty",
+     "value": "open",
+     "days": 365
     }
    ],
    "exits": [],
@@ -9464,6 +10021,14 @@
           },
           "op": "<=",
           "right": 132
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:ridgemere"
+          },
+          "op": ">=",
+          "right": 63
          }
         ]
        },
@@ -9694,7 +10259,8 @@
          "effect": {
           "kind": "story.area.spawn",
           "region": "br_stage",
-          "count": 2
+          "count": 2,
+          "camp": "st_br_stage"
          }
         },
         {
@@ -9789,7 +10355,8 @@
      "id": "br_camp",
      "on": "camp cleared",
      "match": {
-      "cell": "w_ridgemere_6_6"
+      "cell": "w_ridgemere_6_6",
+      "target": "camp_story_st_br_stage"
      },
      "note": "The wave in this cell is gone (P-B): it scores nothing itself.",
      "actions": [
@@ -10041,9 +10608,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "journal.note",
+          "kind": "npc.greet",
+          "npc": "tn_fh_jory_rimepeak",
           "player": "$actor",
-          "text": "The old weaver means to walk down to the city with the bell."
+          "text": "I'm walking down with it on the night. Packed one bag. Took it out again. Packed it. It's by the door.",
+          "days": 7
          }
         }
        ],
@@ -10059,9 +10628,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "journal.note",
+          "kind": "npc.greet",
+          "npc": "tn_fh_jory_rimepeak",
           "player": "$actor",
-          "text": "The old weaver will howl from the Coldwater square."
+          "text": "Staying. Somebody has to remember the names here. I'll howl from our square, and loud.",
+          "days": 7
          }
         }
        ]
@@ -10099,6 +10670,14 @@
           },
           "op": "<=",
           "right": 11
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:coldwater"
+          },
+          "op": ">=",
+          "right": 70
          }
         ]
        },
@@ -10160,6 +10739,55 @@
          "var": "nh_threat",
          "min": 0,
          "max": 100
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "br_talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "st-bell-road"
+     },
+     "note": "C8: the town key st_bell this ending's gossip is gated on.",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "br_pick",
+         "of": "$actor"
+        },
+        "op": "=",
+        "right": "go"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "coldwater",
+          "key": "st_bell",
+          "value": "go",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "coldwater",
+          "key": "st_bell",
+          "value": "stay",
+          "days": 90
+         }
         }
        ]
       }
@@ -10756,6 +11384,17 @@
          ]
         }
        ]
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "frosthollow",
+        "key": "st_posts",
+        "value": "probed",
+        "days": 90
+       }
       }
      ]
     },
@@ -10826,6 +11465,14 @@
               },
               "op": "<=",
               "right": 12
+             },
+             {
+              "test": "compare",
+              "left": {
+               "purse": "town:frosthollow"
+              },
+              "op": ">=",
+              "right": 72
              }
             ]
            },
@@ -10909,6 +11556,14 @@
               },
               "op": "<=",
               "right": 12
+             },
+             {
+              "test": "compare",
+              "left": {
+               "purse": "town:oakhaven"
+              },
+              "op": ">=",
+              "right": 72
              }
             ]
            },
@@ -10992,6 +11647,14 @@
               },
               "op": "<=",
               "right": 123
+             },
+             {
+              "test": "compare",
+              "left": {
+               "purse": "town:ridgemere"
+              },
+              "op": ">=",
+              "right": 72
              }
             ]
            },
@@ -11266,6 +11929,14 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "st_last",
+     "value": "wake",
+     "days": 2
     }
    ],
    "bonus": [
@@ -11307,7 +11978,7 @@
      "on": "gift",
      "match": {
       "target": "rm_edda_ropeton",
-      "item": "letter"
+      "item": "letter^moot_summons"
      }
     }
    ],
@@ -11316,6 +11987,14 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "travel"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "st_last",
+     "value": "summons",
+     "days": 2
     }
    ]
   },
@@ -11359,6 +12038,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "st_last",
+     "value": "stone",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "st_last",
+     "value": "stone",
+     "days": 2
     }
    ]
   },
@@ -11402,6 +12097,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "frosthollow",
+     "key": "st_last",
+     "value": "timber",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "st_last",
+     "value": "timber",
+     "days": 2
     }
    ]
   },
@@ -11462,6 +12173,14 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "southmeadow",
+     "key": "st_last",
+     "value": "chorus",
+     "days": 2
     }
    ],
    "bonus": [
@@ -11510,6 +12229,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "travel"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "st_last",
+     "value": "bounds",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "st_last",
+     "value": "bounds",
+     "days": 2
     }
    ]
   },
@@ -11555,6 +12290,21 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "st_last",
+     "value": "stake",
+     "days": 2
+    },
+    {
+     "kind": "npc.greet",
+     "npc": "cty_ingram_ashleaf",
+     "player": "$actor",
+     "days": 7,
+     "text": "Root well. That stake burned sweet, mm? The cut's ours yet, and you pulled for it."
     }
    ]
   },
@@ -11606,6 +12356,14 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "st_last",
+     "value": "lamps",
+     "days": 2
     }
    ]
   },
@@ -11656,6 +12414,14 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "st_last",
+     "value": "blankets",
+     "days": 2
     }
    ],
    "bonus": [
@@ -11707,6 +12473,14 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "st_last",
+     "value": "feed",
+     "days": 2
     }
    ]
   },
@@ -11753,6 +12527,14 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "st_last",
+     "value": "haul",
+     "days": 2
     }
    ],
    "bonus": [
@@ -11822,6 +12604,14 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "craft"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "st_last",
+     "value": "benches",
+     "days": 2
     }
    ],
    "bonus": [
@@ -11843,7 +12633,8 @@
    ],
    "repeat": "weekly",
    "join": {
-    "cap": 6
+    "cap": 6,
+    "again": 7
    },
    "giver": "rmx_aud_saltridge",
    "handIn": false,
@@ -11856,7 +12647,9 @@
     "ask": "Nobody wants the Coldwater road?",
     "say": "#greet#. Not since the paw-mark notices. 'One mark a wagon, paid at the ridge.' I'll drive it. I grew up by the clamps; a lamp on a hill doesn't frighten me. Much. Ride with me, or go ahead and see the road's clear under Alder Mere. Be on the Coldwater square when I come in.",
     "accept": "I'll see you to Coldwater.",
-    "decline": "Pay the mark."
+    "decline": "Pay the mark.",
+    "duringAsk": "About the wagon...",
+    "during": "We go when the board says. If you're going ahead, go after dark. The road under Alder Mere is where they wait."
    },
    "objectives": [
     {
@@ -11878,7 +12671,8 @@
      "label": "Clear the road under the lamp.",
      "on": "bandit falls",
      "match": {
-      "cell": "w_ridgemere_4_5"
+      "cell": "w_ridgemere_4_5",
+      "target": "camp_story_st_gw_road"
      },
      "goal": 2,
      "optional": true,
@@ -11916,7 +12710,8 @@
    ],
    "repeat": "weekly",
    "join": {
-    "cap": 3
+    "cap": 3,
+    "again": 7
    },
    "giver": "cty_wick_marshwade",
    "fail": [
@@ -11946,7 +12741,8 @@
      "label": "Clear the stage.",
      "on": "bandit falls",
      "match": {
-      "cell": "w_ridgemere_8_4"
+      "cell": "w_ridgemere_8_4",
+      "target": "camp_story_st_bc_road"
      },
      "goal": 2,
      "after": [
@@ -11998,7 +12794,8 @@
    ],
    "repeat": "weekly",
    "join": {
-    "cap": 3
+    "cap": 3,
+    "again": 7
    },
    "giver": "cty_myrtle_larkcombe",
    "handIn": false,
@@ -12011,7 +12808,9 @@
     "ask": "Larkfield short?",
     "say": "#greet#. Short as a sprout. The siege has the Downs Road and their fields both. Two measures of flour and two loaves, counted twice. Get them to the Larkfield Bakehouse. Up the road's quick and watched. Round over the downs is long, and nobody's there. Your choice. Only get there.",
     "accept": "Two measures and two loaves, to Larkfield.",
-    "decline": "Not through a siege."
+    "decline": "Not through a siege.",
+    "duringAsk": "About the flour...",
+    "during": "The Bakehouse in Larkfield, the shop hand at the counter. Road or downs, I don't mind which. I mind if it's late."
    },
    "objectives": [
     {
@@ -12025,7 +12824,8 @@
      "label": "Get the sacks through the wolves on the road.",
      "on": "bandit falls",
      "match": {
-      "cell": "w_ridgemere_7_10"
+      "cell": "w_ridgemere_7_10",
+      "target": "camp_story_st_rc_road"
      },
      "goal": 2,
      "optional": true,
@@ -12087,7 +12887,8 @@
    ],
    "repeat": "weekly",
    "join": {
-    "cap": 6
+    "cap": 6,
+    "again": 7
    },
    "giver": "tn_lf_wald_larkwell",
    "offer": {
@@ -12096,7 +12897,9 @@
     "accept": "I'll sit a night by the Boat Shed.",
     "decline": "Too cold for me.",
     "handIn": "I sat the night.",
-    "thanks": "#thanks#. Waterlogged, you look. Here's a cup by the stove. I'll send word up to the fold; they'll settle now, the daft things."
+    "thanks": "#thanks#. Waterlogged, you look. Here's a cup by the stove. I'll send word up to the fold; they'll settle now, the daft things.",
+    "duringAsk": "About the ice...",
+    "during": "Wait for the freeze. Then the shore by the Boat Shed, late, and keep still. Take something warm."
    },
    "objectives": [
     {
@@ -12152,7 +12955,8 @@
    ],
    "repeat": "weekly",
    "join": {
-    "cap": 3
+    "cap": 3,
+    "again": 7
    },
    "giver": "tn_fh_jory_rimepeak",
    "fail": [
@@ -12180,7 +12984,8 @@
      "label": "Drive off whoever wants the stage.",
      "on": "bandit falls",
      "match": {
-      "cell": "w_ridgemere_6_6"
+      "cell": "w_ridgemere_6_6",
+      "target": "camp_story_st_br_stage"
      },
      "goal": 2,
      "optional": true,
@@ -12417,7 +13222,13 @@
      "label": "Clear the bandits waiting for fair-goers.",
      "on": "bandit falls",
      "match": {
-      "cell": "w_ridgemere_1_0"
+      "cell": "w_ridgemere_1_0",
+      "target": {
+       "in": [
+        "camp_story_st_north_road_a",
+        "camp_story_st_north_road_b"
+       ]
+      }
      },
      "goal": 2
     }
@@ -12665,6 +13476,15 @@
      "period": "night",
      "season": "autumn",
      "weekday": "Marketday"
+    },
+    "purses": {
+     "town:coldwater": 2000,
+     "town:fenshore": 2000,
+     "town:frosthollow": 2000,
+     "town:larkfield": 2000,
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectVariables": {
@@ -12757,7 +13577,7 @@
      "day": 0.19,
      "actor": "player-birch",
      "target": "rm_edda_ropeton",
-     "item": "letter",
+     "item": "letter^moot_summons",
      "quantity": 1,
      "cell": "r2_the_round_and_rind"
     },
@@ -12971,6 +13791,15 @@
      "period": "night",
      "season": "autumn",
      "weekday": "Marketday"
+    },
+    "purses": {
+     "town:coldwater": 2000,
+     "town:fenshore": 2000,
+     "town:frosthollow": 2000,
+     "town:larkfield": 2000,
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {
@@ -13133,7 +13962,7 @@
      "kind": "bandit falls",
      "day": 0.21,
      "actor": "player-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_st_gw_road",
      "cell": "w_ridgemere_4_5",
      "detail": "a bandit 1"
     },
@@ -13142,7 +13971,7 @@
      "kind": "bandit falls",
      "day": 0.22,
      "actor": "player-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_st_gw_road",
      "cell": "w_ridgemere_4_5",
      "detail": "a bandit 2"
     },
@@ -13151,7 +13980,7 @@
      "kind": "camp cleared",
      "day": 0.23,
      "actor": "player-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_st_gw_road",
      "cell": "w_ridgemere_4_5",
      "detail": "by a wolf"
     },
@@ -13318,6 +14147,15 @@
      "period": "night",
      "season": "autumn",
      "weekday": "Marketday"
+    },
+    "purses": {
+     "town:coldwater": 2000,
+     "town:fenshore": 2000,
+     "town:frosthollow": 2000,
+     "town:larkfield": 2000,
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {
@@ -13527,7 +14365,7 @@
      "kind": "bandit falls",
      "day": 0.21,
      "actor": "player-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_st_north_road_a",
      "cell": "w_ridgemere_1_0",
      "detail": "a bandit 1"
     },
@@ -13536,7 +14374,7 @@
      "kind": "bandit falls",
      "day": 0.22,
      "actor": "player-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_st_north_road_a",
      "cell": "w_ridgemere_1_0",
      "detail": "a bandit 2"
     },
@@ -13545,7 +14383,7 @@
      "kind": "camp cleared",
      "day": 0.23,
      "actor": "player-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_st_north_road_a",
      "cell": "w_ridgemere_1_0",
      "detail": "by a wolf"
     },
@@ -13586,6 +14424,15 @@
      "period": "day",
      "season": "summer",
      "weekday": "Marketday"
+    },
+    "purses": {
+     "town:coldwater": 2000,
+     "town:fenshore": 2000,
+     "town:frosthollow": 2000,
+     "town:larkfield": 2000,
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000,
+     "town:southmeadow": 2000
     }
    },
    "parties": {
@@ -13895,7 +14742,7 @@
      "kind": "bandit falls",
      "day": 0.29,
      "actor": "player-dave",
-     "target": "camp_story_1",
+     "target": "camp_story_st_bc_road",
      "cell": "w_ridgemere_8_4",
      "detail": "a bandit 1"
     },
@@ -13904,7 +14751,7 @@
      "kind": "bandit falls",
      "day": 0.3,
      "actor": "player-dave",
-     "target": "camp_story_1",
+     "target": "camp_story_st_bc_road",
      "cell": "w_ridgemere_8_4",
      "detail": "a bandit 2"
     },
@@ -13913,7 +14760,7 @@
      "kind": "camp cleared",
      "day": 0.31,
      "actor": "player-dave",
-     "target": "camp_story_1",
+     "target": "camp_story_st_bc_road",
      "cell": "w_ridgemere_8_4",
      "detail": "by a wolf"
     },
@@ -14098,6 +14945,15 @@
      "period": "night",
      "season": "autumn",
      "weekday": "Marketday"
+    },
+    "purses": {
+     "town:coldwater": 2000,
+     "town:fenshore": 2000,
+     "town:frosthollow": 2000,
+     "town:larkfield": 2000,
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {
@@ -14341,7 +15197,7 @@
      "kind": "bandit falls",
      "day": 0.28,
      "actor": "player-dave",
-     "target": "camp_story_1",
+     "target": "camp_story_st_rc_road",
      "cell": "w_ridgemere_7_10",
      "detail": "a bandit 1"
     },
@@ -14350,7 +15206,7 @@
      "kind": "bandit falls",
      "day": 0.29,
      "actor": "player-dave",
-     "target": "camp_story_1",
+     "target": "camp_story_st_rc_road",
      "cell": "w_ridgemere_7_10",
      "detail": "a bandit 2"
     },
@@ -14359,7 +15215,7 @@
      "kind": "camp cleared",
      "day": 0.3,
      "actor": "player-dave",
-     "target": "camp_story_1",
+     "target": "camp_story_st_rc_road",
      "cell": "w_ridgemere_7_10",
      "detail": "by a wolf"
     },
@@ -14528,6 +15384,15 @@
      "period": "night",
      "season": "autumn",
      "weekday": "Marketday"
+    },
+    "purses": {
+     "town:coldwater": 2000,
+     "town:fenshore": 2000,
+     "town:frosthollow": 2000,
+     "town:larkfield": 2000,
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {
@@ -14713,7 +15578,7 @@
      "kind": "camp cleared",
      "day": 0.2,
      "actor": "player-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_st_br_stage",
      "cell": "w_ridgemere_6_6",
      "detail": "by a wolf"
     },
@@ -14959,6 +15824,15 @@
      "period": "night",
      "season": "autumn",
      "weekday": "Marketday"
+    },
+    "purses": {
+     "town:coldwater": 2000,
+     "town:fenshore": 2000,
+     "town:frosthollow": 2000,
+     "town:larkfield": 2000,
+     "town:oakhaven": 2000,
+     "town:ridgemere": 2000,
+     "town:southmeadow": 2000
     }
    },
    "parties": {

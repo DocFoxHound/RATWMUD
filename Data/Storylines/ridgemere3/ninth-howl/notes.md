@@ -81,3 +81,20 @@ Doc 86 §9, `artifacts/quests/design/decisions.md` §3, `campaign.md` §2.11, §
   made; C5 (Phase 3) `npc.greet` for the one-off thanks (Cressida, Ingrid Kendrick, Aspen's runner, Desmond at the yard,
   Aldric at the gate); T5 puts `npc.line` through the speaker's voice. The quest offers, "during" lines, scenes and
   notices of §3 (Q, O, L, S, B) are story texts: they belong to the chapter programs (waves B, H, I), not here.
+
+## Wave J (as built, 2026-11-24, branch `r3-nh-live`)
+The engine of doc 86 (Phases 1a to 9) is merged, so this version uses what the sections above call "later". Every
+program here passes `python3 tools/nh_check.py --all` (now with the wave J checks: the prefix, the purse guard, the talk keys).
+
+- **nh-purses**: `"prefix": "coin"`. **C8**: each town's `thin-<town>` trigger also has the town remember
+  `nh_coin=thin` (28 days) and `mended-<town>` forgets it, so the thin-purse lines play without the DM. **SQ2**: two
+  more tills are watched and counted, `till:job:rm_edric_millton` (the cooper, medium Q6, day cap 19) and
+  `till:job:rm_rupert_fogton` (Hollis Physic, the Runnel Fever's draught money, day cap 9): their `coin_till_*_day`
+  are set to 0 at midnight and their `coin_till_*_ok` switches follow `purse crossed` at 60 and 80 (four new triggers,
+  rehearsed with the other purses). Both are declared in `world-vars.json` (group "purse counters and switches").
+- **M2** is used by the payers, not here: every grant's If now also reads the purse itself (`{"purse": ...}` at least
+  60 and the amount), beside these switches, which stay for their 60/80 hysteresis.
+- **ninth-howl.cleanup**: `"prefix": "nh"`, otherwise unchanged. Since C11 a story's `npc.unprotect` and `npc.unspare`
+  let go only of that story's own (or its campaign's) holds, so for the chapters' campaign-long holds the undo is the
+  Campaigns console's **Let go of the campaign's holds…**; this program stays the fallback for protections with the
+  default `ever` mark. No `npc.unspare` was added: it would undo nothing of another story's.

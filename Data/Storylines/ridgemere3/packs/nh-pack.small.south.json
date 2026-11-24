@@ -3,6 +3,7 @@
  "version": 2,
  "id": "nh-pack.small.south",
  "title": "Errands of the south",
+ "prefix": "sq",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -560,6 +561,14 @@
         },
         "op": "<=",
         "right": 21
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:larkfield"
+        },
+        "op": ">=",
+        "right": 63
        }
       ]
      },
@@ -569,7 +578,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 3,
+        "coins": {
+         "min": [
+          3,
+          {
+           "div": [
+            {
+             "purse": "town:larkfield"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:larkfield",
         "reason": "Larkfield pays for an errand well done",
         "ifRefused": "skip"
@@ -578,7 +599,19 @@
       {
        "do": "add",
        "var": "coin_larkfield_day",
-       "value": 3
+       "value": {
+        "min": [
+         3,
+         {
+          "div": [
+           {
+            "purse": "town:larkfield"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -634,6 +667,14 @@
         },
         "op": "<=",
         "right": 22
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:larkfield"
+        },
+        "op": ">=",
+        "right": 62
        }
       ]
      },
@@ -643,7 +684,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 2,
+        "coins": {
+         "min": [
+          2,
+          {
+           "div": [
+            {
+             "purse": "town:larkfield"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:larkfield",
         "reason": "Larkfield pays for an errand well done",
         "ifRefused": "skip"
@@ -652,7 +705,19 @@
       {
        "do": "add",
        "var": "coin_larkfield_day",
-       "value": 2
+       "value": {
+        "min": [
+         2,
+         {
+          "div": [
+           {
+            "purse": "town:larkfield"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -725,6 +790,14 @@
         },
         "op": "<=",
         "right": 20
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:southmeadow"
+        },
+        "op": ">=",
+        "right": 63
        }
       ]
      },
@@ -734,7 +807,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 3,
+        "coins": {
+         "min": [
+          3,
+          {
+           "div": [
+            {
+             "purse": "town:southmeadow"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:southmeadow",
         "reason": "Southmeadow pays for an errand well done",
         "ifRefused": "skip"
@@ -743,7 +828,19 @@
       {
        "do": "add",
        "var": "coin_southmeadow_day",
-       "value": 3
+       "value": {
+        "min": [
+         3,
+         {
+          "div": [
+           {
+            "purse": "town:southmeadow"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -822,6 +919,14 @@
         },
         "op": "<=",
         "right": 18
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:fenshore"
+        },
+        "op": ">=",
+        "right": 63
        }
       ]
      },
@@ -831,7 +936,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 3,
+        "coins": {
+         "min": [
+          3,
+          {
+           "div": [
+            {
+             "purse": "town:fenshore"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:fenshore",
         "reason": "Fenshore pays for an errand well done",
         "ifRefused": "skip"
@@ -840,7 +957,19 @@
       {
        "do": "add",
        "var": "coin_fenshore_day",
-       "value": 3
+       "value": {
+        "min": [
+         3,
+         {
+          "div": [
+           {
+            "purse": "town:fenshore"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -907,6 +1036,14 @@
         },
         "op": "<=",
         "right": 19
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:saltwell"
+        },
+        "op": ">=",
+        "right": 63
        }
       ]
      },
@@ -916,7 +1053,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 3,
+        "coins": {
+         "min": [
+          3,
+          {
+           "div": [
+            {
+             "purse": "town:saltwell"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:saltwell",
         "reason": "Saltwell pays for an errand well done",
         "ifRefused": "skip"
@@ -925,7 +1074,19 @@
       {
        "do": "add",
        "var": "coin_saltwell_day",
-       "value": 3
+       "value": {
+        "min": [
+         3,
+         {
+          "div": [
+           {
+            "purse": "town:saltwell"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -981,6 +1142,14 @@
         },
         "op": "<=",
         "right": 20
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:saltwell"
+        },
+        "op": ">=",
+        "right": 62
        }
       ]
      },
@@ -990,7 +1159,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 2,
+        "coins": {
+         "min": [
+          2,
+          {
+           "div": [
+            {
+             "purse": "town:saltwell"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:saltwell",
         "reason": "Saltwell pays for an errand well done",
         "ifRefused": "skip"
@@ -999,7 +1180,19 @@
       {
        "do": "add",
        "var": "coin_saltwell_day",
-       "value": 2
+       "value": {
+        "min": [
+         2,
+         {
+          "div": [
+           {
+            "purse": "town:saltwell"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -1650,6 +1843,46 @@
      "kind": "door.unlock",
      "door": "link_fs_vineyard_ochre_press_door_a",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "southmeadow",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "saltwell",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "exits": [],
@@ -2013,11 +2246,40 @@
          }
         },
         {
-         "do": "add",
+         "do": "set",
          "var": "sq_garland_goal",
-         "value": 1
+         "value": {
+          "max": [
+           6,
+           {
+            "times": [
+             {
+              "audience": "active"
+             },
+             2
+            ]
+           }
+          ]
+         }
         }
        ]
+      },
+      {
+       "do": "set",
+       "var": "sq_garland_goal",
+       "value": {
+        "max": [
+         6,
+         {
+          "times": [
+           {
+            "audience": "active"
+           },
+           2
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "if",
@@ -2075,6 +2337,23 @@
          "do": "add",
          "var": "nh_realm",
          "value": 4
+        },
+        {
+         "do": "each",
+         "over": "list",
+         "list": "sq_helpers",
+         "actions": [
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "npc.greet",
+            "npc": "cty_briar_sedgebridge",
+            "player": "$each",
+            "days": 7,
+            "text": "The rope's round the square, every bunch of it, and not one of them city-bought. #thanks#, #address#."
+           }
+          }
+         ]
         }
        ]
       }
@@ -2418,6 +2697,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_last",
+     "value": "badger",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "scope": "player"
@@ -2469,6 +2764,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_last",
+     "value": "swill",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "scope": "player"
@@ -2515,6 +2826,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "craft"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_last",
+     "value": "linen",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "scope": "player"
@@ -2561,6 +2888,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_last",
+     "value": "race",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "scope": "player"
@@ -2628,6 +2971,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "craft"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "southmeadow",
+     "key": "sq_last",
+     "value": "hives",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "southmeadow",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -2687,6 +3046,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "southmeadow",
+     "key": "sq_last",
+     "value": "hare",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "southmeadow",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -2750,6 +3125,38 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "craft"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_last",
+     "value": "garland",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "larkfield",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "southmeadow",
+     "key": "sq_last",
+     "value": "garland",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "southmeadow",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "scope": "player"
@@ -2816,6 +3223,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "craft"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_last",
+     "value": "nets",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "scope": "player"
@@ -2874,6 +3297,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_last",
+     "value": "pans",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "scope": "player"
@@ -2943,6 +3382,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_last",
+     "value": "clay",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "scope": "player"
@@ -3004,6 +3459,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "craft"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_last",
+     "value": "plank",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "fenshore",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "scope": "player"
@@ -3053,6 +3524,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "travel"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "saltwell",
+     "key": "sq_last",
+     "value": "salt",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "saltwell",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -3106,6 +3593,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "saltwell",
+     "key": "sq_last",
+     "value": "rabbits",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "saltwell",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "scope": "player"
@@ -3165,6 +3668,38 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "caravan",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "saltwell",
+     "key": "sq_last",
+     "value": "caravan",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "saltwell",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "scope": "player"
@@ -3411,6 +3946,14 @@
       "sq_done": 4
      }
     }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:larkfield": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
+    }
    }
   },
   {
@@ -3583,6 +4126,14 @@
      "birch": {
       "sq_done": 2
      }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:larkfield": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    }
   },
@@ -3835,6 +4386,14 @@
      "coin_southmeadow_day": 21,
      "nh_realm": 32,
      "nh_voice_southmeadow": 32
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:larkfield": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    }
   },
@@ -4090,6 +4649,12 @@
       "x": 219,
       "y": 114
      }
+    },
+    "purses": {
+     "town:fenshore": 2000,
+     "town:larkfield": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {
@@ -4105,7 +4670,7 @@
    "expectVariables": {
     "story": {
      "sq_garlands": 8,
-     "sq_garland_goal": 8,
+     "sq_garland_goal": 6,
      "sq_garland_full": true,
      "sq_helpers": [
       "ash",
@@ -4369,6 +4934,14 @@
      "ash": {
       "sq_done": 4
      }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:larkfield": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    }
   },
@@ -4638,6 +5211,12 @@
       "x": 218,
       "y": 112
      }
+    },
+    "purses": {
+     "town:fenshore": 2000,
+     "town:larkfield": 2000,
+     "town:saltwell": 2000,
+     "town:southmeadow": 2000
     }
    },
    "expectQuests": {

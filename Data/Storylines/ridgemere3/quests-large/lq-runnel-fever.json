@@ -3,6 +3,7 @@
  "version": 2,
  "id": "lq-runnel-fever",
  "title": "The Runnel Fever",
+ "prefix": "lq",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -204,6 +205,20 @@
    "scope": "player",
    "initial": false,
    "note": "This wolf had the first-time reward of Bad Water."
+  },
+  {
+   "id": "coin_till_rupert_fogton_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from Hollis Physic's till (nh-purses sets it to 0 each day; cap 9)."
+  },
+  {
+   "id": "coin_till_rupert_fogton_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "Hollis Physic's till at or above its floor (nh-purses)."
   }
  ],
  "regions": [
@@ -360,7 +375,8 @@
       "id": "lq_run_wash",
       "words": "Does the wash water smell wrong?",
       "reply": "Sharp, like a lime-kiln, since the spring flood. The rags I wash for the market come out stiff. The washhouse told the tannery. They said their pits don't leak. Pits always leak.",
-      "once": true
+      "once": true,
+      "player": "$actor"
      }
     },
     {
@@ -371,7 +387,8 @@
       "id": "lq_run_rupert",
       "words": "Does your Runnel draught do anything?",
       "reply": "It does what the label says. It soothes. Folk want something in a bottle when their pups cough, and I sell bottles. Is that a crime now?",
-      "once": true
+      "once": true,
+      "player": "$actor"
      }
     },
     {
@@ -382,7 +399,8 @@
       "id": "lq_run_test",
       "words": "What's in the Runnel draught?",
       "reply": "Chalk, mint and river water. Runnel water, likely, which is the joke of it. Willow bark and thyme syrup do more good. I'll make them at cost for the infirmary.",
-      "once": false
+      "once": false,
+      "player": "$actor"
      }
     }
    ]
@@ -751,6 +769,14 @@
           },
           "op": "<=",
           "right": 29
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:ridgemere"
+          },
+          "op": ">=",
+          "right": 66
          }
         ]
        },
@@ -760,7 +786,19 @@
          "effect": {
           "kind": "character.grant",
           "player": "$actor",
-          "coins": 6,
+          "coins": {
+           "min": [
+            6,
+            {
+             "div": [
+              {
+               "purse": "town:ridgemere"
+              },
+              20
+             ]
+            }
+           ]
+          },
           "purse": "town:ridgemere",
           "reason": "the city pays for finding what fouls the Runnel",
           "ifRefused": "skip"
@@ -769,12 +807,36 @@
         {
          "do": "add",
          "var": "coin_ridgemere_day",
-         "value": 6
+         "value": {
+          "min": [
+           6,
+           {
+            "div": [
+             {
+              "purse": "town:ridgemere"
+             },
+             20
+            ]
+           }
+          ]
+         }
         },
         {
          "do": "add",
          "var": "lq_coin",
-         "value": 6,
+         "value": {
+          "min": [
+           6,
+           {
+            "div": [
+             {
+              "purse": "town:ridgemere"
+             },
+             20
+            ]
+           }
+          ]
+         },
          "of": "$actor"
         }
        ],
@@ -1159,7 +1221,8 @@
         "id": "lq_run_soak",
         "words": "Your lime-pits drain into the Runnel.",
         "reply": "Do they? The flood shifted the old culvert, I'll grant that. I can't shut the tannery, #address#. Half the Sump wears my leather. Bring me four of bricks for a soakaway and I'll dig it myself.",
-        "once": true
+        "once": true,
+        "player": "$actor"
        }
       },
       {
@@ -1223,7 +1286,8 @@
       "id": "lq_run_payback",
       "words": "Pay back the Sump for every bottle.",
       "reply": "Every bottle? Bright One, you'd beggar me. Here. Four pennies' worth, and carry it to the courts yourself, since you're so fond of them.",
-      "once": true
+      "once": true,
+      "player": "$actor"
      }
     }
    ]
@@ -1334,6 +1398,14 @@
         },
         "op": "<=",
         "right": 27
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 68
        }
       ]
      },
@@ -1343,7 +1415,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 8,
+        "coins": {
+         "min": [
+          8,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:ridgemere",
         "reason": "the city pays for the Cistern Court cover",
         "ifRefused": "skip"
@@ -1352,12 +1436,36 @@
       {
        "do": "add",
        "var": "coin_ridgemere_day",
-       "value": 8
+       "value": {
+        "min": [
+         8,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 8,
+       "value": {
+        "min": [
+         8,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       },
        "of": "$actor"
       }
      ],
@@ -1432,6 +1540,14 @@
         },
         "op": "<=",
         "right": 27
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 68
        }
       ]
      },
@@ -1441,7 +1557,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 8,
+        "coins": {
+         "min": [
+          8,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:ridgemere",
         "reason": "the city pays for the tanner's soakaway",
         "ifRefused": "skip"
@@ -1450,12 +1578,36 @@
       {
        "do": "add",
        "var": "coin_ridgemere_day",
-       "value": 8
+       "value": {
+        "min": [
+         8,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 8,
+       "value": {
+        "min": [
+         8,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       },
        "of": "$actor"
       }
      ],
@@ -1534,16 +1686,16 @@
         "conditions": [
          {
           "test": "switch",
-          "var": "coin_ridgemere_ok",
+          "var": "coin_till_rupert_fogton_ok",
           "is": true
          },
          {
           "test": "compare",
           "left": {
-           "var": "coin_ridgemere_day"
+           "var": "coin_till_rupert_fogton_day"
           },
           "op": "<=",
-          "right": 131
+          "right": 5
          },
          {
           "test": "compare",
@@ -1553,6 +1705,14 @@
           },
           "op": "<=",
           "right": 31
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "till:job:rm_rupert_fogton"
+          },
+          "op": ">=",
+          "right": 64
          }
         ]
        },
@@ -1562,21 +1722,57 @@
          "effect": {
           "kind": "character.grant",
           "player": "$actor",
-          "coins": 4,
-          "purse": "town:ridgemere",
+          "coins": {
+           "min": [
+            4,
+            {
+             "div": [
+              {
+               "purse": "till:job:rm_rupert_fogton"
+              },
+              20
+             ]
+            }
+           ]
+          },
+          "purse": "till:job:rm_rupert_fogton",
           "reason": "Hollis Physic pays the coughing houses back",
           "ifRefused": "skip"
          }
         },
         {
          "do": "add",
-         "var": "coin_ridgemere_day",
-         "value": 4
+         "var": "coin_till_rupert_fogton_day",
+         "value": {
+          "min": [
+           4,
+           {
+            "div": [
+             {
+              "purse": "till:job:rm_rupert_fogton"
+             },
+             20
+            ]
+           }
+          ]
+         }
         },
         {
          "do": "add",
          "var": "lq_coin",
-         "value": 4,
+         "value": {
+          "min": [
+           4,
+           {
+            "div": [
+             {
+              "purse": "till:job:rm_rupert_fogton"
+             },
+             20
+            ]
+           }
+          ]
+         },
          "of": "$actor"
         }
        ],
@@ -1622,6 +1818,17 @@
      "var": "drafting",
      "min": 0,
      "max": 5000
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "talk.remember",
+      "scope": "npc",
+      "npc": "rm_rupert_fogton",
+      "key": "lq_rupert",
+      "value": "paid",
+      "days": 90
+     }
     }
    ]
   },
@@ -1770,6 +1977,13 @@
      "kind": "npc.line",
      "npc": "rm_liv_slagstack",
      "text": "Thyme syrup? Bring me herbs and I'll brew it the old way, with honey, not sugar. A spoon at night and one at dawn. I cough in the damp myself."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_runnel",
+     "value": "fever",
+     "days": 365
     }
    ],
    "exits": [
@@ -1795,6 +2009,13 @@
      "kind": "npc.line",
      "npc": "rm_liv_slagstack",
      "text": "Thyme syrup? Bring me herbs and I'll brew it the old way, with honey, not sugar. A spoon at night and one at dawn. I cough in the damp myself."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_runnel",
+     "value": "fever",
+     "days": 365
     }
    ],
    "exits": []
@@ -1812,6 +2033,13 @@
      "kind": "npc.line",
      "npc": "rm_liv_slagstack",
      "text": "Thyme syrup? Bring me herbs and I'll brew it the old way, with honey, not sugar. A spoon at night and one at dawn. I cough in the damp myself."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_runnel",
+     "value": "fever",
+     "days": 365
     }
    ],
    "exits": []
@@ -1824,6 +2052,13 @@
      "kind": "npc.line",
      "npc": "rm_halvard_ashley",
      "text": "They're raising a cover over Cistern Court. Carry for it if you've a back for it. Every load is a cot emptied sooner."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_runnel",
+     "value": "fever",
+     "days": 365
     }
    ],
    "exits": []
@@ -1843,6 +2078,13 @@
      "days": 28,
      "ifRefused": "skip",
      "text": "THE SUMP INFIRMARY: the Runnel water is safe again. Boil it a week more all the same. Sister Theodora."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_runnel",
+     "value": "covered",
+     "days": 365
     }
    ],
    "exits": []
@@ -1862,6 +2104,13 @@
      "days": 28,
      "ifRefused": "skip",
      "text": "THE SUMP INFIRMARY: the Runnel water is safe again. Boil it a week more all the same. Sister Theodora."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_runnel",
+     "value": "drained",
+     "days": 365
     }
    ],
    "exits": []
@@ -2054,7 +2303,23 @@
      "item": "theriac",
      "quantity": 1
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "cough",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "water",
+      "status": "done"
+     }
+    ]
+   }
   },
   {
    "id": "runnel_soak",
@@ -2109,7 +2374,23 @@
      "item": "theriac",
      "quantity": 1
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "cough",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "water",
+      "status": "done"
+     }
+    ]
+   }
   },
   {
    "id": "runnel_draught",
@@ -2460,6 +2741,12 @@
       "road": "cover"
      }
     }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_rupert_fogton": 2000
+    }
    }
   },
   {
@@ -2769,7 +3056,8 @@
    "expectVariables": {
     "world": {
      "lq_runnel": "drained",
-     "coin_ridgemere_day": 18
+     "coin_ridgemere_day": 14,
+     "coin_till_rupert_fogton_day": 4
     },
     "story": {
      "restitution": 4,
@@ -2784,6 +3072,12 @@
       "lq_coin": 18,
       "owed": false
      }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_rupert_fogton": 2000
     }
    }
   },
@@ -3171,6 +3465,12 @@
      "cover_posted": true,
      "goal": 14
     }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_rupert_fogton": 2000
+    }
    }
   },
   {
@@ -3246,6 +3546,12 @@
        "rm_piet_wickridge"
       ]
      }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_rupert_fogton": 2000
     }
    }
   }

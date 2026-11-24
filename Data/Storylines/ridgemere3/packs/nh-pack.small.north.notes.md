@@ -115,3 +115,18 @@ trades with that farm and works where a wolf can walk in, in coldwater speech:
   (`mq-glasswater-nets`) and sends the crews' bread down with the catch cart.
 - `givers.tsv` rows moved; talk lines follow (`build_packs.py`). Oakhaven and Frosthollow had nothing to change: their
   givers work out of doors (the cut, the clamps, the quarry) or are board-only.
+
+## Wave J (as built, 2026-11-24, branch `r3-nh-live`)
+The engine of doc 86 (Phases 1a to 9) is merged, so this version uses what the sections above call "later". Every
+program here passes `python3 tools/nh_check.py --all` (now with the wave J checks: the prefix, the purse guard, the talk keys).
+
+- `"prefix": "sq"`. **C8**: each errand's rewards say `sq_last=<its word>` (2 days) and renew `sq_on=yes` in its town;
+  the phase opens with `sq_on=yes` in Coldwater, Oakhaven and Frosthollow.
+- **M2**: the six pay triggers read the purse itself too.
+- **N4**: `join.again: 7` on 23 (`sq-apple-nose`), 25 (`sq-strayed-ewe`) and 30 (`sq-clamp-watch`); 25's own
+  once-a-week gate (`t_ewe_trail`, the fail-at-once branch and the variable) is dropped. The rehearsal "Taken again"
+  no longer takes the ewe errand a second time inside the week (the game would refuse it).
+- **C5**: Tristram (26) and Ebba (29) thank the wolf by name in their own window (rewards' `npc.greet`, 7 days), with
+  the design's lines.
+- **Left**: J9 for the tufts (they are placed with `item.place`, which takes no story mark), L2/L3 (the bounties are on
+  natural camps by cell, as meant), C12a/J2, SQ1.

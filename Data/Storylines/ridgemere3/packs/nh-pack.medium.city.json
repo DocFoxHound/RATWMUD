@@ -3,6 +3,7 @@
  "version": 2,
  "id": "nh-pack.medium.city",
  "title": "Medium errands of Ridgemere",
+ "prefix": "mq",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -177,6 +178,20 @@
    "id": "mq_larder_b",
    "type": "number",
    "scope": "story"
+  },
+  {
+   "id": "coin_till_edric_millton_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from the cooper's till (nh-purses sets it to 0 each day; cap 19)."
+  },
+  {
+   "id": "coin_till_edric_millton_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "The cooper's till at or above its floor (nh-purses)."
   }
  ],
  "regions": [
@@ -446,6 +461,55 @@
     {
      "kind": "npc.hold",
      "npc": "rm_vidar_ashhand"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_lamps",
+     "value": "dark",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_tally",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_wharf",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_sunken",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_coal",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_note",
+     "value": "open",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "mq_larder",
+     "value": "open",
+     "days": 365
     }
    ],
    "exits": [],
@@ -889,6 +953,14 @@
             },
             "op": "<=",
             "right": 125
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 70
            }
           ]
          },
@@ -953,13 +1025,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "rm_dorcas_rainford",
-          "id": "sl_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "The old lamplighter. I took it to the Lamp Store, and they took it to the Watch Office. They were gentle with him. I wasn't, and I'm sorry for it now."
+          "text": "The old lamplighter. I took it to the Lamp Store, and they took it to the Watch Office. They were gentle with him. I wasn't, and I'm sorry for it now.",
+          "days": 7
          }
         }
        ],
@@ -981,6 +1051,14 @@
             },
             "op": "<=",
             "right": 129
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 66
            }
           ]
          },
@@ -1087,6 +1165,54 @@
        "do": "add",
        "var": "nh_voice_ridgemere",
        "value": 4
+      }
+     ]
+    },
+    {
+     "id": "q1-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-sump-lamps"
+     },
+     "note": "C8: the town key mq_lamps the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "sl_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_lamps",
+          "value": "reported",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_lamps",
+          "value": "shared",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -1368,6 +1494,24 @@
               "kind": "story.area.spawn",
               "region": "cg_camp",
               "count": 6,
+              "ifRefused": "skip",
+              "camp": "mq_cg_camp"
+             }
+            },
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "foe.add",
+              "foe": "mq-tallyman",
+              "name": "Hask the Tallyman",
+              "cell": "w_ridgemere_1_3",
+              "x": 138,
+              "y": 199,
+              "strength": "tough",
+              "band": 0,
+              "stance": "waits",
+              "minutes": 120,
+              "description": "A lean road wolf with chalk on his paws and a tally stick on a cord.",
               "ifRefused": "skip"
              }
             }
@@ -1386,6 +1530,24 @@
                 "kind": "story.area.spawn",
                 "region": "cg_camp",
                 "count": 4,
+                "ifRefused": "skip",
+                "camp": "mq_cg_camp"
+               }
+              },
+              {
+               "do": "effect",
+               "effect": {
+                "kind": "foe.add",
+                "foe": "mq-tallyman",
+                "name": "Hask the Tallyman",
+                "cell": "w_ridgemere_1_3",
+                "x": 138,
+                "y": 199,
+                "strength": "tough",
+                "band": 0,
+                "stance": "waits",
+                "minutes": 120,
+                "description": "A lean road wolf with chalk on his paws and a tally stick on a cord.",
                 "ifRefused": "skip"
                }
               }
@@ -1399,6 +1561,24 @@
               "kind": "story.area.spawn",
               "region": "cg_camp",
               "count": 2,
+              "ifRefused": "skip",
+              "camp": "mq_cg_camp"
+             }
+            },
+            {
+             "do": "effect",
+             "effect": {
+              "kind": "foe.add",
+              "foe": "mq-tallyman",
+              "name": "Hask the Tallyman",
+              "cell": "w_ridgemere_1_3",
+              "x": 138,
+              "y": 199,
+              "strength": "tough",
+              "band": 0,
+              "stance": "waits",
+              "minutes": 120,
+              "description": "A lean road wolf with chalk on his paws and a tally stick on a cord.",
               "ifRefused": "skip"
              }
             }
@@ -1697,7 +1877,8 @@
      "id": "q2-camp",
      "on": "camp cleared",
      "match": {
-      "cell": "w_ridgemere_1_3"
+      "cell": "w_ridgemere_1_3",
+      "target": "camp_story_mq_cg_camp"
      },
      "if": {
       "test": "switch",
@@ -1748,6 +1929,14 @@
             },
             "op": "<=",
             "right": 123
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 72
            }
           ]
          },
@@ -1812,13 +2001,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "rm_palle_plankmore",
-          "id": "cg_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "The collector's got it. There'll be a fine, and the Wharf Office will pretend it's weather."
+          "text": "The collector's got it. There'll be a fine, and the Wharf Office will pretend it's weather.",
+          "days": 7
          }
         }
        ],
@@ -1840,6 +2027,14 @@
             },
             "op": "<=",
             "right": 127
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 68
            }
           ]
          },
@@ -1935,6 +2130,54 @@
        "var": "nh_threat",
        "min": 0,
        "max": 100
+      }
+     ]
+    },
+    {
+     "id": "q2-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-cinder-gate-tally"
+     },
+     "note": "C8: the town key mq_tally the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "cg_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_tally",
+          "value": "customs",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_tally",
+          "value": "nailed",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -2549,6 +2792,14 @@
             },
             "op": "<=",
             "right": 120
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 75
            }
           ]
          },
@@ -2613,13 +2864,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "rm_leif_fogcot",
-          "id": "wb_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "The steward paid? In coin? Then the Wharf Office can write that down too: 'Grayrock owed him.'"
+          "text": "The steward paid? In coin? Then the Wharf Office can write that down too: 'Grayrock owed him.'",
+          "days": 7
          }
         }
        ],
@@ -2641,6 +2890,14 @@
             },
             "op": "<=",
             "right": 127
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 68
            }
           ]
          },
@@ -2734,6 +2991,54 @@
        "do": "add",
        "var": "nh_voice_ridgemere",
        "value": 4
+      }
+     ]
+    },
+    {
+     "id": "q3-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-wharf-brother"
+     },
+     "note": "C8: the town key mq_wharf the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "wb_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_wharf",
+          "value": "paid",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_wharf",
+          "value": "named",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -3525,6 +3830,14 @@
             },
             "op": "<=",
             "right": 123
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 72
            }
           ]
          },
@@ -3580,13 +3893,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "rm_theodora_bilgeridge",
-          "id": "ss_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "Smugglers, under our very feet. The Customs House sent a clerk. My boy's to scrub the block for a month."
+          "text": "Smugglers, under our very feet. The Customs House sent a clerk. My boy's to scrub the block for a month.",
+          "days": 7
          }
         }
        ],
@@ -3608,6 +3919,14 @@
             },
             "op": "<=",
             "right": 129
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 66
            }
           ]
          },
@@ -3696,6 +4015,54 @@
        "do": "add",
        "var": "nh_voice_ridgemere",
        "value": 4
+      }
+     ]
+    },
+    {
+     "id": "q4-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-sunken-street"
+     },
+     "note": "C8: the town key mq_sunken the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "ss_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_sunken",
+          "value": "customs",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_sunken",
+          "value": "poorbox",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -4428,6 +4795,14 @@
             },
             "op": "<=",
             "right": 125
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 70
            }
           ]
          },
@@ -4492,13 +4867,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "rm_sten_ropeford",
-          "id": "sn_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "The Watch fined him, and the lighter at the pier foot has lost its buyer. Northgate's flues draw clean. I've written it down."
+          "text": "The Watch fined him, and the lighter at the pier foot has lost its buyer. Northgate's flues draw clean. I've written it down.",
+          "days": 7
          }
         }
        ],
@@ -4520,6 +4893,14 @@
             },
             "op": "<=",
             "right": 127
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 68
            }
           ]
          },
@@ -4604,6 +4985,54 @@
        "do": "add",
        "var": "nh_voice_ridgemere",
        "value": 4
+      }
+     ]
+    },
+    {
+     "id": "q5-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-northgate-smoke"
+     },
+     "note": "C8: the town key mq_coal the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "sn_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_coal",
+          "value": "reported",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_coal",
+          "value": "dry",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -5027,16 +5456,24 @@
           "conditions": [
            {
             "test": "switch",
-            "var": "coin_ridgemere_ok",
+            "var": "coin_till_edric_millton_ok",
             "is": true
            },
            {
             "test": "compare",
             "left": {
-             "var": "coin_ridgemere_day"
+             "var": "coin_till_edric_millton_day"
             },
             "op": "<=",
-            "right": 129
+            "right": 13
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "till:job:rm_edric_millton"
+            },
+            "op": ">=",
+            "right": 66
            }
           ]
          },
@@ -5047,14 +5484,14 @@
             "kind": "character.grant",
             "player": "$actor",
             "coins": 6,
-            "purse": "town:ridgemere",
-            "reason": "the Council's debt-relief share",
+            "purse": "till:job:rm_edric_millton",
+            "reason": "The cooper pays it from his own till",
             "ifRefused": "skip"
            }
           },
           {
            "do": "add",
-           "var": "coin_ridgemere_day",
+           "var": "coin_till_edric_millton_day",
            "value": 6
           }
          ],
@@ -5074,7 +5511,7 @@
            "effect": {
             "kind": "journal.note",
             "player": "$actor",
-            "text": "The city's purse is thin today. You were paid in bread.",
+            "text": "The cooper's till is thin today. You were paid in bread.",
             "ifRefused": "skip"
            }
           }
@@ -5101,13 +5538,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "rm_edric_millton",
-          "id": "cn_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "Paid and done. I'll sleep. Father would be cross I let it go, but he'd be glad of the roof."
+          "text": "Paid and done. I'll sleep. Father would be cross I let it go, but he'd be glad of the roof.",
+          "days": 7
          }
         }
        ],
@@ -5119,16 +5554,24 @@
           "conditions": [
            {
             "test": "switch",
-            "var": "coin_ridgemere_ok",
+            "var": "coin_till_edric_millton_ok",
             "is": true
            },
            {
             "test": "compare",
             "left": {
-             "var": "coin_ridgemere_day"
+             "var": "coin_till_edric_millton_day"
             },
             "op": "<=",
-            "right": 125
+            "right": 9
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "till:job:rm_edric_millton"
+            },
+            "op": ">=",
+            "right": 70
            }
           ]
          },
@@ -5139,14 +5582,14 @@
             "kind": "character.grant",
             "player": "$actor",
             "coins": 10,
-            "purse": "town:ridgemere",
-            "reason": "Staves and Hoops pays you back",
+            "purse": "till:job:rm_edric_millton",
+            "reason": "The cooper pays it from his own till",
             "ifRefused": "skip"
            }
           },
           {
            "do": "add",
-           "var": "coin_ridgemere_day",
+           "var": "coin_till_edric_millton_day",
            "value": 10
           }
          ],
@@ -5166,7 +5609,7 @@
            "effect": {
             "kind": "journal.note",
             "player": "$actor",
-            "text": "The city's purse is thin today. You were paid in bread.",
+            "text": "The cooper's till is thin today. You were paid in bread.",
             "ifRefused": "skip"
            }
           }
@@ -5213,6 +5656,54 @@
        "do": "add",
        "var": "nh_voice_ridgemere",
        "value": 4
+      }
+     ]
+    },
+    {
+     "id": "q6-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-coopers-note"
+     },
+     "note": "C8: the town key mq_note the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "cn_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_note",
+          "value": "paid",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_note",
+          "value": "proved",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -5799,6 +6290,14 @@
             },
             "op": "<=",
             "right": 125
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 70
            }
           ]
          },
@@ -5863,13 +6362,11 @@
         {
          "do": "effect",
          "effect": {
-          "kind": "npc.offer",
+          "kind": "npc.greet",
           "npc": "rm_vidar_ashhand",
-          "id": "tc_since",
           "player": "$actor",
-          "once": true,
-          "words": "How has it gone, since?",
-          "reply": "The chute's barred and the larder counts true. I told the steward it was the chute. I didn't say whose paws. That's my business."
+          "text": "The chute's barred and the larder counts true. I told the steward it was the chute. I didn't say whose paws. That's my business.",
+          "days": 7
          }
         }
        ],
@@ -5891,6 +6388,14 @@
             },
             "op": "<=",
             "right": 129
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 66
            }
           ]
          },
@@ -5975,6 +6480,54 @@
        "do": "add",
        "var": "nh_voice_ridgemere",
        "value": 4
+      }
+     ]
+    },
+    {
+     "id": "q7-talk",
+     "on": "quest completed",
+     "audience": "participant",
+     "match": {
+      "detail": "mq-court-larder"
+     },
+     "note": "C8: the town key mq_larder the gossip of this ending is gated on (quests-medium.md 0.5).",
+     "actions": [
+      {
+       "do": "if",
+       "if": {
+        "test": "compare",
+        "left": {
+         "var": "tc_pick"
+        },
+        "op": "=",
+        "right": "a"
+       },
+       "then": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_larder",
+          "value": "barred",
+          "days": 90
+         }
+        }
+       ],
+       "else": [
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "talk.remember",
+          "scope": "town",
+          "town": "ridgemere",
+          "key": "mq_larder",
+          "value": "basket",
+          "days": 90
+         }
+        }
+       ]
       }
      ]
     },
@@ -6260,7 +6813,8 @@
      "label": "Drive off the wolves waiting at the wagon.",
      "on": "bandit falls",
      "match": {
-      "cell": "w_ridgemere_1_3"
+      "cell": "w_ridgemere_1_3",
+      "target": "camp_story_mq_cg_camp"
      },
      "goal": 2,
      "after": [
@@ -6414,7 +6968,8 @@
    "lifetime": "campaign",
    "abandon": true,
    "join": {
-    "cap": 1
+    "cap": 1,
+    "again": 7
    },
    "fail": [
     {
@@ -6951,6 +7506,10 @@
     "world": {
      "hour": 21,
      "season": "spring"
+    },
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_edric_millton": 2000
     }
    },
    "expectQuests": {
@@ -7062,6 +7621,10 @@
     "world": {
      "hour": 22,
      "season": "spring"
+    },
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_edric_millton": 2000
     }
    },
    "expectQuests": {
@@ -7131,7 +7694,7 @@
      "kind": "bandit falls",
      "day": 1.05,
      "actor": "player-palle-a",
-     "target": "camp_story_1",
+     "target": "camp_story_mq_cg_camp",
      "cell": "w_ridgemere_1_3",
      "detail": "a road wolf",
      "x": 139,
@@ -7151,7 +7714,7 @@
      "kind": "bandit falls",
      "day": 1.07,
      "actor": "player-palle-a",
-     "target": "camp_story_1",
+     "target": "camp_story_mq_cg_camp",
      "cell": "w_ridgemere_1_3",
      "detail": "a road wolf",
      "x": 140,
@@ -7161,7 +7724,7 @@
      "id": "e8",
      "kind": "camp cleared",
      "day": 1.08,
-     "target": "camp_story_1",
+     "target": "camp_story_mq_cg_camp",
      "cell": "w_ridgemere_1_3",
      "detail": "by a wolf"
     },
@@ -7229,6 +7792,10 @@
        "paper": 1
       }
      }
+    },
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_edric_millton": 2000
     }
    },
    "expectQuests": {
@@ -7299,7 +7866,7 @@
      "kind": "bandit falls",
      "day": 1.05,
      "actor": "player-palle-b",
-     "target": "camp_story_1",
+     "target": "camp_story_mq_cg_camp",
      "cell": "w_ridgemere_1_3",
      "detail": "a road wolf",
      "x": 139,
@@ -7319,7 +7886,7 @@
      "kind": "bandit falls",
      "day": 1.07,
      "actor": "player-palle-b",
-     "target": "camp_story_1",
+     "target": "camp_story_mq_cg_camp",
      "cell": "w_ridgemere_1_3",
      "detail": "a road wolf",
      "x": 140,
@@ -7329,7 +7896,7 @@
      "id": "e8",
      "kind": "camp cleared",
      "day": 1.08,
-     "target": "camp_story_1",
+     "target": "camp_story_mq_cg_camp",
      "cell": "w_ridgemere_1_3",
      "detail": "by a wolf"
     },
@@ -7396,6 +7963,10 @@
        "paper": 1
       }
      }
+    },
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_edric_millton": 2000
     }
    },
    "expectQuests": {
@@ -7511,6 +8082,12 @@
     "world": {
      "coin_ridgemere_day": 15
     }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_edric_millton": 2000
+    }
    }
   },
   {
@@ -7618,6 +8195,12 @@
     },
     "story": {
      "mq_wharf_b": 1
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_edric_millton": 2000
     }
    }
   },
@@ -7756,6 +8339,10 @@
       "x": 61,
       "y": 65
      }
+    },
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_edric_millton": 2000
     }
    },
    "expectQuests": {
@@ -7884,6 +8471,10 @@
       "x": 60,
       "y": 65
      }
+    },
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_edric_millton": 2000
     }
    },
    "expectQuests": {
@@ -7937,6 +8528,12 @@
    "expectVariables": {
     "story": {
      "mq_sunken_posted": false
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_edric_millton": 2000
     }
    }
   },
@@ -8052,6 +8649,12 @@
     "story": {
      "mq_coal_a": 1
     }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_edric_millton": 2000
+    }
    }
   },
   {
@@ -8165,6 +8768,12 @@
     "story": {
      "mq_coal_b": 1
     }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_edric_millton": 2000
+    }
    }
   },
   {
@@ -8251,6 +8860,12 @@
     "story": {
      "mq_note_a": 1
     }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_edric_millton": 2000
+    }
    }
   },
   {
@@ -8326,6 +8941,12 @@
     },
     "story": {
      "mq_note_b": 1
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_edric_millton": 2000
     }
    }
   },
@@ -8424,6 +9045,10 @@
     "world": {
      "hour": 14,
      "season": "spring"
+    },
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_edric_millton": 2000
     }
    },
    "expectQuests": {
@@ -8546,6 +9171,10 @@
     "world": {
      "hour": 23,
      "season": "spring"
+    },
+    "purses": {
+     "town:ridgemere": 2000,
+     "till:job:rm_edric_millton": 2000
     }
    },
    "expectQuests": {

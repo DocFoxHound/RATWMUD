@@ -3,6 +3,7 @@
  "version": 2,
  "id": "lq-salt-road",
  "title": "The Salt Road",
+ "prefix": "lq",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -348,7 +349,8 @@
       "id": "lq_salt_wagon",
       "words": "When does the wagon load?",
       "reply": "At the eighth hour of wagon day, from the yard by the store. Bring your teeth and a waterskin, #address#. The dunes drink a wolf dry before the raiders do.",
-      "once": true
+      "once": true,
+      "player": "$actor"
      }
     }
    ]
@@ -398,6 +400,24 @@
           "kind": "story.area.spawn",
           "region": "brine_flats",
           "count": 6,
+          "ifRefused": "skip",
+          "camp": "lq_brine_flats"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "foe.add",
+          "foe": "lq-brine-captain",
+          "name": "The Brine Captain",
+          "cell": "w_ridgemere_12_12",
+          "x": 189,
+          "y": 33,
+          "strength": "tough",
+          "band": 0,
+          "stance": "waits",
+          "minutes": 120,
+          "description": "A tall road wolf in a salt-stiff grey coat, who gives the raiders their orders.",
           "ifRefused": "skip"
          }
         }
@@ -417,7 +437,8 @@
             "kind": "story.area.spawn",
             "region": "brine_flats",
             "count": 4,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_brine_flats"
            }
           }
          ]
@@ -436,7 +457,8 @@
             "kind": "story.area.spawn",
             "region": "brine_flats",
             "count": 3,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_brine_flats"
            }
           }
          ]
@@ -449,7 +471,8 @@
           "kind": "story.area.spawn",
           "region": "brine_flats",
           "count": 2,
-          "ifRefused": "skip"
+          "ifRefused": "skip",
+          "camp": "lq_brine_flats"
          }
         }
        ]
@@ -482,7 +505,8 @@
             "kind": "story.area.spawn",
             "region": "brine_flats_b",
             "count": 6,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_brine_flats_b"
            }
           }
          ],
@@ -501,7 +525,8 @@
               "kind": "story.area.spawn",
               "region": "brine_flats_b",
               "count": 4,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_brine_flats_b"
              }
             }
            ]
@@ -520,7 +545,8 @@
               "kind": "story.area.spawn",
               "region": "brine_flats_b",
               "count": 3,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_brine_flats_b"
              }
             }
            ]
@@ -533,7 +559,8 @@
             "kind": "story.area.spawn",
             "region": "brine_flats_b",
             "count": 2,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_brine_flats_b"
            }
           }
          ]
@@ -609,6 +636,24 @@
           "kind": "story.area.spawn",
           "region": "brine_flats_b",
           "count": 6,
+          "ifRefused": "skip",
+          "camp": "lq_brine_flats_b"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "foe.add",
+          "foe": "lq-brine-captain",
+          "name": "The Brine Captain",
+          "cell": "w_ridgemere_12_12",
+          "x": 209,
+          "y": 53,
+          "strength": "tough",
+          "band": 0,
+          "stance": "waits",
+          "minutes": 120,
+          "description": "A tall road wolf in a salt-stiff grey coat, who gives the raiders their orders.",
           "ifRefused": "skip"
          }
         }
@@ -628,7 +673,8 @@
             "kind": "story.area.spawn",
             "region": "brine_flats_b",
             "count": 4,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_brine_flats_b"
            }
           }
          ]
@@ -647,7 +693,8 @@
             "kind": "story.area.spawn",
             "region": "brine_flats_b",
             "count": 3,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_brine_flats_b"
            }
           }
          ]
@@ -660,7 +707,8 @@
           "kind": "story.area.spawn",
           "region": "brine_flats_b",
           "count": 2,
-          "ifRefused": "skip"
+          "ifRefused": "skip",
+          "camp": "lq_brine_flats_b"
          }
         }
        ]
@@ -693,7 +741,8 @@
             "kind": "story.area.spawn",
             "region": "brine_flats",
             "count": 6,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_brine_flats"
            }
           }
          ],
@@ -712,7 +761,8 @@
               "kind": "story.area.spawn",
               "region": "brine_flats",
               "count": 4,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_brine_flats"
              }
             }
            ]
@@ -731,7 +781,8 @@
               "kind": "story.area.spawn",
               "region": "brine_flats",
               "count": 3,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_brine_flats"
              }
             }
            ]
@@ -744,7 +795,8 @@
             "kind": "story.area.spawn",
             "region": "brine_flats",
             "count": 2,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_brine_flats"
            }
           }
          ]
@@ -799,7 +851,13 @@
    "id": "camp-flats",
    "on": "camp cleared",
    "match": {
-    "cell": "w_ridgemere_12_12"
+    "cell": "w_ridgemere_12_12",
+    "target": {
+     "in": [
+      "camp_story_lq_brine_flats",
+      "camp_story_lq_brine_flats_b"
+     ]
+    }
    },
    "if": {
     "test": "any",
@@ -995,7 +1053,8 @@
    "id": "camp-dunes",
    "on": "camp cleared",
    "match": {
-    "cell": "w_ridgemere_11_12"
+    "cell": "w_ridgemere_11_12",
+    "target": "camp_story_lq_dune_road"
    },
    "if": {
     "test": "switch",
@@ -1039,7 +1098,8 @@
    "id": "camp-ochre",
    "on": "camp cleared",
    "match": {
-    "cell": "w_ridgemere_11_11"
+    "cell": "w_ridgemere_11_11",
+    "target": "camp_story_lq_ochre_cut"
    },
    "if": {
     "test": "switch",
@@ -1583,6 +1643,24 @@
           "kind": "story.area.spawn",
           "region": "brine_flats",
           "count": 6,
+          "ifRefused": "skip",
+          "camp": "lq_brine_flats"
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "foe.add",
+          "foe": "lq-brine-captain",
+          "name": "The Brine Captain",
+          "cell": "w_ridgemere_12_12",
+          "x": 189,
+          "y": 33,
+          "strength": "tough",
+          "band": 0,
+          "stance": "waits",
+          "minutes": 120,
+          "description": "A tall road wolf in a salt-stiff grey coat, who gives the raiders their orders.",
           "ifRefused": "skip"
          }
         }
@@ -1602,7 +1680,8 @@
             "kind": "story.area.spawn",
             "region": "brine_flats",
             "count": 4,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_brine_flats"
            }
           }
          ]
@@ -1621,7 +1700,8 @@
             "kind": "story.area.spawn",
             "region": "brine_flats",
             "count": 3,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_brine_flats"
            }
           }
          ]
@@ -1634,7 +1714,8 @@
           "kind": "story.area.spawn",
           "region": "brine_flats",
           "count": 2,
-          "ifRefused": "skip"
+          "ifRefused": "skip",
+          "camp": "lq_brine_flats"
          }
         }
        ]
@@ -1667,7 +1748,8 @@
             "kind": "story.area.spawn",
             "region": "brine_flats_b",
             "count": 6,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_brine_flats_b"
            }
           }
          ],
@@ -1686,7 +1768,8 @@
               "kind": "story.area.spawn",
               "region": "brine_flats_b",
               "count": 4,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_brine_flats_b"
              }
             }
            ]
@@ -1705,7 +1788,8 @@
               "kind": "story.area.spawn",
               "region": "brine_flats_b",
               "count": 3,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_brine_flats_b"
              }
             }
            ]
@@ -1718,7 +1802,8 @@
             "kind": "story.area.spawn",
             "region": "brine_flats_b",
             "count": 2,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_brine_flats_b"
            }
           }
          ]
@@ -1808,7 +1893,8 @@
           "kind": "story.area.spawn",
           "region": "dune_road",
           "count": 6,
-          "ifRefused": "skip"
+          "ifRefused": "skip",
+          "camp": "lq_dune_road"
          }
         }
        ],
@@ -1827,7 +1913,8 @@
             "kind": "story.area.spawn",
             "region": "dune_road",
             "count": 4,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_dune_road"
            }
           }
          ]
@@ -1846,7 +1933,8 @@
             "kind": "story.area.spawn",
             "region": "dune_road",
             "count": 3,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_dune_road"
            }
           }
          ]
@@ -1859,7 +1947,8 @@
           "kind": "story.area.spawn",
           "region": "dune_road",
           "count": 2,
-          "ifRefused": "skip"
+          "ifRefused": "skip",
+          "camp": "lq_dune_road"
          }
         }
        ]
@@ -1892,6 +1981,24 @@
             "kind": "story.area.spawn",
             "region": "brine_flats",
             "count": 6,
+            "ifRefused": "skip",
+            "camp": "lq_brine_flats"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "foe.add",
+            "foe": "lq-brine-captain",
+            "name": "The Brine Captain",
+            "cell": "w_ridgemere_12_12",
+            "x": 189,
+            "y": 33,
+            "strength": "tough",
+            "band": 0,
+            "stance": "waits",
+            "minutes": 120,
+            "description": "A tall road wolf in a salt-stiff grey coat, who gives the raiders their orders.",
             "ifRefused": "skip"
            }
           }
@@ -1911,7 +2018,8 @@
               "kind": "story.area.spawn",
               "region": "brine_flats",
               "count": 4,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_brine_flats"
              }
             }
            ]
@@ -1930,7 +2038,8 @@
               "kind": "story.area.spawn",
               "region": "brine_flats",
               "count": 3,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_brine_flats"
              }
             }
            ]
@@ -1943,7 +2052,8 @@
             "kind": "story.area.spawn",
             "region": "brine_flats",
             "count": 2,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_brine_flats"
            }
           }
          ]
@@ -2033,7 +2143,8 @@
           "kind": "story.area.spawn",
           "region": "ochre_cut",
           "count": 6,
-          "ifRefused": "skip"
+          "ifRefused": "skip",
+          "camp": "lq_ochre_cut"
          }
         }
        ],
@@ -2052,7 +2163,8 @@
             "kind": "story.area.spawn",
             "region": "ochre_cut",
             "count": 4,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_ochre_cut"
            }
           }
          ]
@@ -2071,7 +2183,8 @@
             "kind": "story.area.spawn",
             "region": "ochre_cut",
             "count": 3,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_ochre_cut"
            }
           }
          ]
@@ -2084,7 +2197,8 @@
           "kind": "story.area.spawn",
           "region": "ochre_cut",
           "count": 2,
-          "ifRefused": "skip"
+          "ifRefused": "skip",
+          "camp": "lq_ochre_cut"
          }
         }
        ]
@@ -2117,7 +2231,8 @@
             "kind": "story.area.spawn",
             "region": "dune_road",
             "count": 6,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_dune_road"
            }
           }
          ],
@@ -2136,7 +2251,8 @@
               "kind": "story.area.spawn",
               "region": "dune_road",
               "count": 4,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_dune_road"
              }
             }
            ]
@@ -2155,7 +2271,8 @@
               "kind": "story.area.spawn",
               "region": "dune_road",
               "count": 3,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_dune_road"
              }
             }
            ]
@@ -2168,7 +2285,8 @@
             "kind": "story.area.spawn",
             "region": "dune_road",
             "count": 2,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_dune_road"
            }
           }
          ]
@@ -2523,6 +2641,14 @@
           },
           "op": "<=",
           "right": 29
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:saltwell"
+          },
+          "op": ">=",
+          "right": 66
          }
         ]
        },
@@ -2532,7 +2658,19 @@
          "effect": {
           "kind": "character.grant",
           "player": "$actor",
-          "coins": 6,
+          "coins": {
+           "min": [
+            6,
+            {
+             "div": [
+              {
+               "purse": "town:saltwell"
+              },
+              20
+             ]
+            }
+           ]
+          },
           "purse": "town:saltwell",
           "reason": "the Saltwell stores pay the wagon's riders",
           "ifRefused": "skip"
@@ -2541,12 +2679,36 @@
         {
          "do": "add",
          "var": "coin_saltwell_day",
-         "value": 6
+         "value": {
+          "min": [
+           6,
+           {
+            "div": [
+             {
+              "purse": "town:saltwell"
+             },
+             20
+            ]
+           }
+          ]
+         }
         },
         {
          "do": "add",
          "var": "lq_coin",
-         "value": 6
+         "value": {
+          "min": [
+           6,
+           {
+            "div": [
+             {
+              "purse": "town:saltwell"
+             },
+             20
+            ]
+           }
+          ]
+         }
         }
        ],
        "else": [
@@ -2620,6 +2782,14 @@
           },
           "op": "<=",
           "right": 32
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:saltwell"
+          },
+          "op": ">=",
+          "right": 63
          }
         ]
        },
@@ -2629,7 +2799,19 @@
          "effect": {
           "kind": "character.grant",
           "player": "$actor",
-          "coins": 3,
+          "coins": {
+           "min": [
+            3,
+            {
+             "div": [
+              {
+               "purse": "town:saltwell"
+              },
+              20
+             ]
+            }
+           ]
+          },
           "purse": "town:saltwell",
           "reason": "the Saltwell stores pay the wagon's riders",
           "ifRefused": "skip"
@@ -2638,12 +2820,36 @@
         {
          "do": "add",
          "var": "coin_saltwell_day",
-         "value": 3
+         "value": {
+          "min": [
+           3,
+           {
+            "div": [
+             {
+              "purse": "town:saltwell"
+             },
+             20
+            ]
+           }
+          ]
+         }
         },
         {
          "do": "add",
          "var": "lq_coin",
-         "value": 3
+         "value": {
+          "min": [
+           3,
+           {
+            "div": [
+             {
+              "purse": "town:saltwell"
+             },
+             20
+            ]
+           }
+          ]
+         }
         }
        ],
        "else": [
@@ -2840,7 +3046,8 @@
         "npc": "rm_osric_ropeworth",
         "id": "lq_salt_osric1",
         "words": "Your sacks have Saltpan string on them.",
-        "reply": "String's string. I buy what's brought to my door, and I don't ask whose paws tied it. That's trade. If you want a sermon, the chapel's down the hill."
+        "reply": "String's string. I buy what's brought to my door, and I don't ask whose paws tied it. That's trade. If you want a sermon, the chapel's down the hill.",
+        "player": "$actor"
        }
       },
       {
@@ -2947,7 +3154,8 @@
         "npc": "rm_osric_ropeworth",
         "id": "lq_salt_osric1",
         "words": "Your sacks have Saltpan string on them.",
-        "reply": "String's string. I buy what's brought to my door, and I don't ask whose paws tied it. That's trade. If you want a sermon, the chapel's down the hill."
+        "reply": "String's string. I buy what's brought to my door, and I don't ask whose paws tied it. That's trade. If you want a sermon, the chapel's down the hill.",
+        "player": "$actor"
        }
       },
       {
@@ -3054,7 +3262,8 @@
         "npc": "rm_osric_ropeworth",
         "id": "lq_salt_osric1",
         "words": "Your sacks have Saltpan string on them.",
-        "reply": "String's string. I buy what's brought to my door, and I don't ask whose paws tied it. That's trade. If you want a sermon, the chapel's down the hill."
+        "reply": "String's string. I buy what's brought to my door, and I don't ask whose paws tied it. That's trade. If you want a sermon, the chapel's down the hill.",
+        "player": "$actor"
        }
       },
       {
@@ -3125,7 +3334,8 @@
       "npc": "rm_osric_ropeworth",
       "id": "lq_salt_bought",
       "words": "Pay me, and the tally stays with me.",
-      "reply": "Now you're talking sense. Ten pennies and a sack's worth of quiet. Keep your nose pointed somewhere else, and we never spoke."
+      "reply": "Now you're talking sense. Ten pennies and a sack's worth of quiet. Keep your nose pointed somewhere else, and we never spoke.",
+      "player": "$actor"
      }
     },
     {
@@ -3135,7 +3345,8 @@
       "npc": "rmx_fenwick_mossdale",
       "id": "lq_salt_board",
       "words": "Lay this salt tally before the Market Board.",
-      "reply": "#oath#. A tally with a grey paw on it, eh? The Board sits on Marketday. I'll put it first, and his counter can answer for it. #thanks#, neighbour."
+      "reply": "#oath#. A tally with a grey paw on it, eh? The Board sits on Marketday. I'll put it first, and his counter can answer for it. #thanks#, neighbour.",
+      "player": "$actor"
      }
     },
     {
@@ -3145,7 +3356,8 @@
       "npc": "cty_orm_sootgate",
       "id": "lq_salt_cart",
       "words": "Sell the salt off the cart, straight to the smokehouses.",
-      "reply": "No provisioner between us and the fish? I'll drive it to the Rag Market myself on Marketday. Take two sacks to the smokehouse now, so they know it's coming."
+      "reply": "No provisioner between us and the fish? I'll drive it to the Rag Market myself on Marketday. Take two sacks to the smokehouse now, so they know it's coming.",
+      "player": "$actor"
      }
     }
    ]
@@ -3184,6 +3396,14 @@
         },
         "op": "<=",
         "right": 31
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:saltwell"
+        },
+        "op": ">=",
+        "right": 64
        }
       ]
      },
@@ -3193,7 +3413,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 4,
+        "coins": {
+         "min": [
+          4,
+          {
+           "div": [
+            {
+             "purse": "town:saltwell"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:saltwell",
         "reason": "the Saltwell stores pay for the tally",
         "ifRefused": "skip"
@@ -3202,12 +3434,36 @@
       {
        "do": "add",
        "var": "coin_saltwell_day",
-       "value": 4
+       "value": {
+        "min": [
+         4,
+         {
+          "div": [
+           {
+            "purse": "town:saltwell"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 4
+       "value": {
+        "min": [
+         4,
+         {
+          "div": [
+           {
+            "purse": "town:saltwell"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -3269,6 +3525,14 @@
         },
         "op": "<=",
         "right": 52
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 68
        }
       ]
      },
@@ -3278,7 +3542,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 8,
+        "coins": {
+         "min": [
+          8,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:ridgemere",
         "reason": "Vane & Daughters pays it back",
         "ifRefused": "skip"
@@ -3287,17 +3563,53 @@
       {
        "do": "add",
        "var": "coin_ridgemere_day",
-       "value": 8
+       "value": {
+        "min": [
+         8,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 8
+       "value": {
+        "min": [
+         8,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "restitution",
-       "value": 8
+       "value": {
+        "min": [
+         8,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -3358,6 +3670,14 @@
         },
         "op": "<=",
         "right": 25
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 70
        }
       ]
      },
@@ -3367,7 +3687,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 10,
+        "coins": {
+         "min": [
+          10,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:ridgemere",
         "reason": "the provisioner's coin",
         "ifRefused": "skip"
@@ -3376,12 +3708,36 @@
       {
        "do": "add",
        "var": "coin_ridgemere_day",
-       "value": 10
+       "value": {
+        "min": [
+         10,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 10
+       "value": {
+        "min": [
+         10,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -3455,6 +3811,14 @@
         },
         "op": "<=",
         "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:saltwell"
+        },
+        "op": ">=",
+        "right": 72
        }
       ]
      },
@@ -3464,7 +3828,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 12,
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:saltwell"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:saltwell",
         "reason": "the Saltwell stores pay for the sacks sold at the old price",
         "ifRefused": "skip"
@@ -3473,12 +3849,36 @@
       {
        "do": "add",
        "var": "coin_saltwell_day",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:saltwell"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:saltwell"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -3864,6 +4264,13 @@
      "kind": "door.unlock",
      "door": "link_fs_salt_saltpan_store_door_a",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_salt",
+     "value": "raided",
+     "days": 365
     }
    ],
    "exits": []
@@ -3881,6 +4288,13 @@
      "kind": "door.unlock",
      "door": "link_r2_the_records_office_door_a",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_salt",
+     "value": "raided",
+     "days": 365
     }
    ],
    "exits": [],
@@ -4067,6 +4481,13 @@
      "days": 28,
      "text": "The salt road holds. Wagons load on wagon day. Water and shade to every wolf who rode.",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_salt",
+     "value": "board",
+     "days": 365
     }
    ],
    "exits": []
@@ -4086,6 +4507,13 @@
      "event": "salt_short",
      "days": 0,
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_salt",
+     "value": "bought",
+     "days": 365
     }
    ],
    "exits": [],
@@ -4133,6 +4561,13 @@
      "days": 28,
      "text": "SALTPAN SALT off the cart at the old price, Marketday at the Rag Market in Ridgemere. Full sacks, no middle wolf.",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_salt",
+     "value": "cart",
+     "days": 365
     }
    ],
    "exits": []
@@ -4353,7 +4788,23 @@
      "detail": "laid the salt tally before the Market Board",
      "ifRefused": "when here"
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "brackish",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "ride",
+      "status": "done"
+     }
+    ]
+   }
   },
   {
    "id": "salt_bought",
@@ -4448,7 +4899,23 @@
      "detail": "took a provisioner's coin to keep the city's salt dear",
      "ifRefused": "when here"
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "brackish",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "ride",
+      "status": "done"
+     }
+    ]
+   }
   },
   {
    "id": "salt_cart",
@@ -4557,7 +5024,23 @@
      "detail": "sold the Saltpan's salt off the cart at the old price",
      "ifRefused": "when here"
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "brackish",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "ride",
+      "status": "done"
+     }
+    ]
+   }
   }
  ],
  "tests": [
@@ -4567,6 +5050,10 @@
    "facts": {
     "world": {
      "hour": 22
+    },
+    "purses": {
+     "town:ridgemere": 2000,
+     "town:saltwell": 2000
     }
    },
    "events": [
@@ -4608,7 +5095,7 @@
      "kind": "bandit falls",
      "day": 1.04,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -4616,7 +5103,7 @@
      "kind": "bandit falls",
      "day": 1.041,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -4624,7 +5111,7 @@
      "kind": "bandit falls",
      "day": 1.042,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -4632,7 +5119,7 @@
      "kind": "camp cleared",
      "day": 1.05,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -4691,7 +5178,7 @@
      "kind": "bandit falls",
      "day": 1.14,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -4699,7 +5186,7 @@
      "kind": "bandit falls",
      "day": 1.141,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -4707,7 +5194,7 @@
      "kind": "bandit falls",
      "day": 1.142,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -4715,7 +5202,7 @@
      "kind": "camp cleared",
      "day": 1.15,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -4796,7 +5283,7 @@
      "kind": "bandit falls",
      "day": 2.43,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -4804,7 +5291,7 @@
      "kind": "bandit falls",
      "day": 2.43,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -4812,7 +5299,7 @@
      "kind": "camp cleared",
      "day": 2.44,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -4829,7 +5316,7 @@
      "kind": "bandit falls",
      "day": 2.53,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -4837,7 +5324,7 @@
      "kind": "bandit falls",
      "day": 2.53,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -4845,7 +5332,7 @@
      "kind": "camp cleared",
      "day": 2.54,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -4876,7 +5363,7 @@
      "kind": "bandit falls",
      "day": 2.63,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -4884,7 +5371,7 @@
      "kind": "bandit falls",
      "day": 2.63,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -4892,7 +5379,7 @@
      "kind": "camp cleared",
      "day": 2.64,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -4964,7 +5451,7 @@
      "kind": "bandit falls",
      "day": 9.75,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -4972,7 +5459,7 @@
      "kind": "bandit falls",
      "day": 9.75,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -4980,7 +5467,7 @@
      "kind": "camp cleared",
      "day": 9.76,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5020,7 +5507,7 @@
      "kind": "bandit falls",
      "day": 9.95,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -5028,7 +5515,7 @@
      "kind": "bandit falls",
      "day": 9.95,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -5036,7 +5523,7 @@
      "kind": "camp cleared",
      "day": 9.96,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -5108,7 +5595,7 @@
      "kind": "bandit falls",
      "day": 17.07,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5116,7 +5603,7 @@
      "kind": "bandit falls",
      "day": 17.07,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5124,7 +5611,7 @@
      "kind": "camp cleared",
      "day": 17.08,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5141,7 +5628,7 @@
      "kind": "bandit falls",
      "day": 17.17,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -5149,7 +5636,7 @@
      "kind": "bandit falls",
      "day": 17.17,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -5157,7 +5644,7 @@
      "kind": "camp cleared",
      "day": 17.18,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -5188,7 +5675,7 @@
      "kind": "bandit falls",
      "day": 17.27,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -5196,7 +5683,7 @@
      "kind": "bandit falls",
      "day": 17.27,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -5204,7 +5691,7 @@
      "kind": "camp cleared",
      "day": 17.28,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -5375,6 +5862,10 @@
    "facts": {
     "world": {
      "hour": 22
+    },
+    "purses": {
+     "town:ridgemere": 2000,
+     "town:saltwell": 2000
     }
    },
    "events": [
@@ -5416,7 +5907,7 @@
      "kind": "bandit falls",
      "day": 1.04,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5424,7 +5915,7 @@
      "kind": "bandit falls",
      "day": 1.041,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5432,7 +5923,7 @@
      "kind": "bandit falls",
      "day": 1.042,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5440,7 +5931,7 @@
      "kind": "camp cleared",
      "day": 1.05,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5499,7 +5990,7 @@
      "kind": "bandit falls",
      "day": 1.14,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5507,7 +5998,7 @@
      "kind": "bandit falls",
      "day": 1.141,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5515,7 +6006,7 @@
      "kind": "bandit falls",
      "day": 1.142,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5523,7 +6014,7 @@
      "kind": "camp cleared",
      "day": 1.15,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5582,7 +6073,7 @@
      "kind": "bandit falls",
      "day": 1.24,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5590,7 +6081,7 @@
      "kind": "bandit falls",
      "day": 1.241,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5598,7 +6089,7 @@
      "kind": "bandit falls",
      "day": 1.242,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5606,7 +6097,7 @@
      "kind": "camp cleared",
      "day": 1.25,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5700,7 +6191,7 @@
      "kind": "bandit falls",
      "day": 2.43,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5708,7 +6199,7 @@
      "kind": "bandit falls",
      "day": 2.43,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5716,7 +6207,7 @@
      "kind": "bandit falls",
      "day": 2.43,
      "actor": "wolf-cedar",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5724,7 +6215,7 @@
      "kind": "camp cleared",
      "day": 2.44,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5741,7 +6232,7 @@
      "kind": "bandit falls",
      "day": 2.53,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -5749,7 +6240,7 @@
      "kind": "bandit falls",
      "day": 2.53,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -5757,7 +6248,7 @@
      "kind": "bandit falls",
      "day": 2.53,
      "actor": "wolf-cedar",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -5765,7 +6256,7 @@
      "kind": "camp cleared",
      "day": 2.54,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -5801,7 +6292,7 @@
      "kind": "bandit falls",
      "day": 2.63,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -5809,7 +6300,7 @@
      "kind": "bandit falls",
      "day": 2.63,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -5817,7 +6308,7 @@
      "kind": "bandit falls",
      "day": 2.63,
      "actor": "wolf-cedar",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -5825,7 +6316,7 @@
      "kind": "camp cleared",
      "day": 2.64,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -5917,7 +6408,7 @@
      "kind": "bandit falls",
      "day": 9.75,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5925,7 +6416,7 @@
      "kind": "bandit falls",
      "day": 9.75,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5933,7 +6424,7 @@
      "kind": "bandit falls",
      "day": 9.75,
      "actor": "wolf-cedar",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5941,7 +6432,7 @@
      "kind": "camp cleared",
      "day": 9.76,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -5958,7 +6449,7 @@
      "kind": "bandit falls",
      "day": 9.85,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -5966,7 +6457,7 @@
      "kind": "bandit falls",
      "day": 9.85,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -5974,7 +6465,7 @@
      "kind": "bandit falls",
      "day": 9.85,
      "actor": "wolf-cedar",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -5982,7 +6473,7 @@
      "kind": "camp cleared",
      "day": 9.86,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -6018,7 +6509,7 @@
      "kind": "bandit falls",
      "day": 9.95,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -6026,7 +6517,7 @@
      "kind": "bandit falls",
      "day": 9.95,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -6034,7 +6525,7 @@
      "kind": "bandit falls",
      "day": 9.95,
      "actor": "wolf-cedar",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -6042,7 +6533,7 @@
      "kind": "camp cleared",
      "day": 9.96,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -6267,7 +6758,7 @@
      "kind": "bandit falls",
      "day": 24.17,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -6275,7 +6766,7 @@
      "kind": "bandit falls",
      "day": 24.17,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -6283,7 +6774,7 @@
      "kind": "bandit falls",
      "day": 24.17,
      "actor": "wolf-cedar",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -6291,7 +6782,7 @@
      "kind": "camp cleared",
      "day": 24.18,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -6372,6 +6863,10 @@
    "facts": {
     "world": {
      "hour": 22
+    },
+    "purses": {
+     "town:ridgemere": 2000,
+     "town:saltwell": 2000
     }
    },
    "events": [
@@ -6413,7 +6908,7 @@
      "kind": "bandit falls",
      "day": 1.04,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -6421,7 +6916,7 @@
      "kind": "bandit falls",
      "day": 1.041,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -6429,7 +6924,7 @@
      "kind": "bandit falls",
      "day": 1.042,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -6437,7 +6932,7 @@
      "kind": "camp cleared",
      "day": 1.05,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -6496,7 +6991,7 @@
      "kind": "bandit falls",
      "day": 1.14,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -6504,7 +6999,7 @@
      "kind": "bandit falls",
      "day": 1.141,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -6512,7 +7007,7 @@
      "kind": "bandit falls",
      "day": 1.142,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -6520,7 +7015,7 @@
      "kind": "camp cleared",
      "day": 1.15,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -6603,7 +7098,7 @@
      "kind": "bandit falls",
      "day": 2.43,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -6611,7 +7106,7 @@
      "kind": "bandit falls",
      "day": 2.43,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -6619,7 +7114,7 @@
      "kind": "camp cleared",
      "day": 2.44,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -6636,7 +7131,7 @@
      "kind": "bandit falls",
      "day": 2.53,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -6644,7 +7139,7 @@
      "kind": "bandit falls",
      "day": 2.53,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -6652,7 +7147,7 @@
      "kind": "camp cleared",
      "day": 2.54,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -6685,7 +7180,7 @@
      "kind": "bandit falls",
      "day": 2.63,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -6693,7 +7188,7 @@
      "kind": "bandit falls",
      "day": 2.63,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -6701,7 +7196,7 @@
      "kind": "camp cleared",
      "day": 2.64,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -6775,7 +7270,7 @@
      "kind": "bandit falls",
      "day": 9.75,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -6783,7 +7278,7 @@
      "kind": "bandit falls",
      "day": 9.75,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -6791,7 +7286,7 @@
      "kind": "camp cleared",
      "day": 9.76,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -6808,7 +7303,7 @@
      "kind": "bandit falls",
      "day": 9.85,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -6816,7 +7311,7 @@
      "kind": "bandit falls",
      "day": 9.85,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -6824,7 +7319,7 @@
      "kind": "camp cleared",
      "day": 9.86,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -6857,7 +7352,7 @@
      "kind": "bandit falls",
      "day": 9.95,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -6865,7 +7360,7 @@
      "kind": "bandit falls",
      "day": 9.95,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -6873,7 +7368,7 @@
      "kind": "camp cleared",
      "day": 9.96,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -7032,7 +7527,7 @@
      "kind": "bandit falls",
      "day": 17.07,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7040,7 +7535,7 @@
      "kind": "bandit falls",
      "day": 17.07,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7048,7 +7543,7 @@
      "kind": "camp cleared",
      "day": 17.08,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7156,7 +7651,7 @@
      "kind": "bandit falls",
      "day": 24.39,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7164,7 +7659,7 @@
      "kind": "bandit falls",
      "day": 24.39,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7172,7 +7667,7 @@
      "kind": "camp cleared",
      "day": 24.4,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7285,6 +7780,10 @@
    "facts": {
     "world": {
      "hour": 22
+    },
+    "purses": {
+     "town:ridgemere": 2000,
+     "town:saltwell": 2000
     }
    },
    "events": [
@@ -7326,7 +7825,7 @@
      "kind": "bandit falls",
      "day": 1.04,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7334,7 +7833,7 @@
      "kind": "bandit falls",
      "day": 1.041,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7342,7 +7841,7 @@
      "kind": "bandit falls",
      "day": 1.042,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7350,7 +7849,7 @@
      "kind": "camp cleared",
      "day": 1.05,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7418,7 +7917,7 @@
      "kind": "bandit falls",
      "day": 2.43,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7426,7 +7925,7 @@
      "kind": "camp cleared",
      "day": 2.44,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7443,7 +7942,7 @@
      "kind": "bandit falls",
      "day": 2.53,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -7451,7 +7950,7 @@
      "kind": "camp cleared",
      "day": 2.54,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -7477,7 +7976,7 @@
      "kind": "bandit falls",
      "day": 2.63,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -7485,7 +7984,7 @@
      "kind": "camp cleared",
      "day": 2.64,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -7544,7 +8043,7 @@
      "kind": "bandit falls",
      "day": 9.75,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7552,7 +8051,7 @@
      "kind": "camp cleared",
      "day": 9.76,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7569,7 +8068,7 @@
      "kind": "bandit falls",
      "day": 9.85,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -7577,7 +8076,7 @@
      "kind": "camp cleared",
      "day": 9.86,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -7603,7 +8102,7 @@
      "kind": "bandit falls",
      "day": 9.95,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -7611,7 +8110,7 @@
      "kind": "camp cleared",
      "day": 9.96,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -7670,7 +8169,7 @@
      "kind": "bandit falls",
      "day": 17.07,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7678,7 +8177,7 @@
      "kind": "camp cleared",
      "day": 17.08,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_brine_flats",
      "cell": "w_ridgemere_12_12"
     },
     {
@@ -7695,7 +8194,7 @@
      "kind": "bandit falls",
      "day": 17.17,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -7703,7 +8202,7 @@
      "kind": "camp cleared",
      "day": 17.18,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_dune_road",
      "cell": "w_ridgemere_11_12"
     },
     {
@@ -7729,7 +8228,7 @@
      "kind": "bandit falls",
      "day": 17.27,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {
@@ -7737,7 +8236,7 @@
      "kind": "camp cleared",
      "day": 17.28,
      "actor": "wolf-ash",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_ochre_cut",
      "cell": "w_ridgemere_11_11"
     },
     {

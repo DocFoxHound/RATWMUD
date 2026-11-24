@@ -755,6 +755,34 @@
    "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
   },
   {
+   "name": "coin_till_edric_millton_day",
+   "type": "number",
+   "value": 0,
+   "note": "Story coin paid today from till:job:rm_edric_millton (Edric Millton's cooperage till); nh-purses sets it to 0 each day. medium Q6 (mq-coopers-note), day cap 19.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_till_edric_millton_ok",
+   "type": "switch",
+   "value": true,
+   "note": "till:job:rm_edric_millton at or above its floor: off below 60, on again at 80 (nh-purses).",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_till_rupert_fogton_day",
+   "type": "number",
+   "value": 0,
+   "note": "Story coin paid today from till:job:rm_rupert_fogton (Hollis Physic's till); nh-purses sets it to 0 each day. the Runnel Fever's draught money, day cap 9.",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
+   "name": "coin_till_rupert_fogton_ok",
+   "type": "switch",
+   "value": true,
+   "note": "till:job:rm_rupert_fogton at or above its floor: off below 60, on again at 80 (nh-purses).",
+   "group": "purse counters and switches (campaign 2.11, 4.5; owned by nh-purses)"
+  },
+  {
    "name": "lq_vines",
    "type": "text",
    "value": "",

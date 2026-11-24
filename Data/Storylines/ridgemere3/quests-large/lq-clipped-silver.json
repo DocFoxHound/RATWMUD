@@ -3,6 +3,7 @@
  "version": 2,
  "id": "lq-clipped-silver",
  "title": "Clipped Silver",
+ "prefix": "lq",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -206,6 +207,20 @@
    "type": "number",
    "scope": "player",
    "note": "Marketday shares of the silver still owed to the wolf (4 at the start)."
+  },
+  {
+   "id": "coin_till_eleanor_saltcot_day",
+   "type": "number",
+   "scope": "world",
+   "initial": 0,
+   "note": "Story coin paid today from the Greatly Bank's till (nh-purses; cap 16)."
+  },
+  {
+   "id": "coin_till_eleanor_saltcot_ok",
+   "type": "switch",
+   "scope": "world",
+   "initial": true,
+   "note": "The Greatly Bank's till at or above its floor (nh-purses)."
   }
  ],
  "regions": [
@@ -324,7 +339,8 @@
       "id": "lq_silver_weigh",
       "words": "Are these pennies true?",
       "reply": "Short-weighed, every third one. Rims shaved and stamped again. Somebody with a jeweler's file and a good die. That's not Larkfield work. We'd have heard the hammer.",
-      "once": true
+      "once": true,
+      "player": "$actor"
      }
     }
    ]
@@ -350,7 +366,8 @@
       "npc": "tn_lf_pike_chalkley",
       "id": "lq_silver_beam",
       "words": "That beam is false. The Market Board should see it.",
-      "reply": "#oath#. Then tell the warden so to his face, and I'll write it on the wall behind the counter so I never forget the look of it."
+      "reply": "#oath#. Then tell the warden so to his face, and I'll write it on the wall behind the counter so I never forget the look of it.",
+      "player": "$actor"
      }
     },
     {
@@ -360,7 +377,8 @@
       "npc": "tn_lf_pike_chalkley",
       "id": "lq_silver_hush",
       "words": "Leave it with me. I'll deal with the Counting House.",
-      "reply": "You? With them? Well. Mind they don't weigh you on it."
+      "reply": "You? With them? Well. Mind they don't weigh you on it.",
+      "player": "$actor"
      }
     }
    ]
@@ -420,6 +438,17 @@
       "objective": "told",
       "player": "$actor"
      }
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "talk.remember",
+      "scope": "town",
+      "town": "ridgemere",
+      "key": "lq_beam",
+      "value": "board",
+      "days": 30
+     }
     }
    ]
   },
@@ -477,16 +506,16 @@
       "conditions": [
        {
         "test": "switch",
-        "var": "coin_ridgemere_ok",
+        "var": "coin_till_eleanor_saltcot_ok",
         "is": true
        },
        {
         "test": "compare",
         "left": {
-         "var": "coin_ridgemere_day"
+         "var": "coin_till_eleanor_saltcot_day"
         },
         "op": "<=",
-        "right": 129
+        "right": 10
        },
        {
         "test": "compare",
@@ -495,6 +524,14 @@
         },
         "op": "<=",
         "right": 29
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "till:job:rm_eleanor_saltcot"
+        },
+        "op": ">=",
+        "right": 66
        }
       ]
      },
@@ -504,21 +541,57 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 6,
-        "purse": "town:ridgemere",
+        "coins": {
+         "min": [
+          6,
+          {
+           "div": [
+            {
+             "purse": "till:job:rm_eleanor_saltcot"
+            },
+            20
+           ]
+          }
+         ]
+        },
+        "purse": "till:job:rm_eleanor_saltcot",
         "reason": "a Counting House chit, cashed",
         "ifRefused": "skip"
        }
       },
       {
        "do": "add",
-       "var": "coin_ridgemere_day",
-       "value": 6
+       "var": "coin_till_eleanor_saltcot_day",
+       "value": {
+        "min": [
+         6,
+         {
+          "div": [
+           {
+            "purse": "till:job:rm_eleanor_saltcot"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 6
+       "value": {
+        "min": [
+         6,
+         {
+          "div": [
+           {
+            "purse": "till:job:rm_eleanor_saltcot"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -674,6 +747,14 @@
           },
           "op": "<=",
           "right": 29
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:larkfield"
+          },
+          "op": ">=",
+          "right": 66
          }
         ]
        },
@@ -683,7 +764,19 @@
          "effect": {
           "kind": "character.grant",
           "player": "$actor",
-          "coins": 6,
+          "coins": {
+           "min": [
+            6,
+            {
+             "div": [
+              {
+               "purse": "town:larkfield"
+              },
+              20
+             ]
+            }
+           ]
+          },
           "purse": "town:larkfield",
           "reason": "the Larkfield stores pay for a true beam",
           "ifRefused": "skip"
@@ -692,12 +785,36 @@
         {
          "do": "add",
          "var": "coin_larkfield_day",
-         "value": 6
+         "value": {
+          "min": [
+           6,
+           {
+            "div": [
+             {
+              "purse": "town:larkfield"
+             },
+             20
+            ]
+           }
+          ]
+         }
         },
         {
          "do": "add",
          "var": "lq_coin",
-         "value": 6
+         "value": {
+          "min": [
+           6,
+           {
+            "div": [
+             {
+              "purse": "town:larkfield"
+             },
+             20
+            ]
+           }
+          ]
+         }
         }
        ],
        "else": [
@@ -782,7 +899,8 @@
       "id": "lq_silver_dirk",
       "words": "Where does the jeweler go when she shuts the shop?",
       "reply": "Out to the old Kestrel workings, with a basket and a lamp. Says she buys silver off the tailings. There's no silver in dead tailings. I've told her so. She cries at night about the factor's chalk on our door.",
-      "once": true
+      "once": true,
+      "player": "$actor"
      }
     }
    ]
@@ -849,7 +967,8 @@
             "kind": "story.area.spawn",
             "region": "kestrel",
             "count": 6,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_kestrel"
            }
           }
          ],
@@ -868,7 +987,8 @@
               "kind": "story.area.spawn",
               "region": "kestrel",
               "count": 4,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_kestrel"
              }
             }
            ]
@@ -887,7 +1007,8 @@
               "kind": "story.area.spawn",
               "region": "kestrel",
               "count": 3,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_kestrel"
              }
             }
            ]
@@ -900,7 +1021,8 @@
             "kind": "story.area.spawn",
             "region": "kestrel",
             "count": 2,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_kestrel"
            }
           }
          ]
@@ -933,7 +1055,8 @@
               "kind": "story.area.spawn",
               "region": "kestrel_b",
               "count": 6,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_kestrel_b"
              }
             }
            ],
@@ -952,7 +1075,8 @@
                 "kind": "story.area.spawn",
                 "region": "kestrel_b",
                 "count": 4,
-                "ifRefused": "skip"
+                "ifRefused": "skip",
+                "camp": "lq_kestrel_b"
                }
               }
              ]
@@ -971,7 +1095,8 @@
                 "kind": "story.area.spawn",
                 "region": "kestrel_b",
                 "count": 3,
-                "ifRefused": "skip"
+                "ifRefused": "skip",
+                "camp": "lq_kestrel_b"
                }
               }
              ]
@@ -984,7 +1109,8 @@
               "kind": "story.area.spawn",
               "region": "kestrel_b",
               "count": 2,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_kestrel_b"
              }
             }
            ]
@@ -1058,7 +1184,8 @@
             "kind": "story.area.spawn",
             "region": "kestrel_b",
             "count": 6,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_kestrel_b"
            }
           }
          ],
@@ -1077,7 +1204,8 @@
               "kind": "story.area.spawn",
               "region": "kestrel_b",
               "count": 4,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_kestrel_b"
              }
             }
            ]
@@ -1096,7 +1224,8 @@
               "kind": "story.area.spawn",
               "region": "kestrel_b",
               "count": 3,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_kestrel_b"
              }
             }
            ]
@@ -1109,7 +1238,8 @@
             "kind": "story.area.spawn",
             "region": "kestrel_b",
             "count": 2,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_kestrel_b"
            }
           }
          ]
@@ -1142,7 +1272,8 @@
               "kind": "story.area.spawn",
               "region": "kestrel",
               "count": 6,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_kestrel"
              }
             }
            ],
@@ -1161,7 +1292,8 @@
                 "kind": "story.area.spawn",
                 "region": "kestrel",
                 "count": 4,
-                "ifRefused": "skip"
+                "ifRefused": "skip",
+                "camp": "lq_kestrel"
                }
               }
              ]
@@ -1180,7 +1312,8 @@
                 "kind": "story.area.spawn",
                 "region": "kestrel",
                 "count": 3,
-                "ifRefused": "skip"
+                "ifRefused": "skip",
+                "camp": "lq_kestrel"
                }
               }
              ]
@@ -1193,7 +1326,8 @@
               "kind": "story.area.spawn",
               "region": "kestrel",
               "count": 2,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_kestrel"
              }
             }
            ]
@@ -1210,7 +1344,13 @@
    "id": "camp-kestrel",
    "on": "camp cleared",
    "match": {
-    "cell": "w_ridgemere_8_2"
+    "cell": "w_ridgemere_8_2",
+    "target": {
+     "in": [
+      "camp_story_lq_kestrel",
+      "camp_story_lq_kestrel_b"
+     ]
+    }
    },
    "if": {
     "test": "any",
@@ -1588,6 +1728,14 @@
             },
             "op": "<=",
             "right": 29
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:larkfield"
+            },
+            "op": ">=",
+            "right": 66
            }
           ]
          },
@@ -1597,7 +1745,19 @@
            "effect": {
             "kind": "character.grant",
             "player": "$each",
-            "coins": 6,
+            "coins": {
+             "min": [
+              6,
+              {
+               "div": [
+                {
+                 "purse": "town:larkfield"
+                },
+                20
+               ]
+              }
+             ]
+            },
             "purse": "town:larkfield",
             "reason": "the Larkfield stores pay for the silver trail",
             "ifRefused": "skip"
@@ -1606,12 +1766,36 @@
           {
            "do": "add",
            "var": "coin_larkfield_day",
-           "value": 6
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:larkfield"
+               },
+               20
+              ]
+             }
+            ]
+           }
           },
           {
            "do": "add",
            "var": "lq_coin",
-           "value": 6,
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:larkfield"
+               },
+               20
+              ]
+             }
+            ]
+           },
            "of": "$each"
           }
          ],
@@ -2070,7 +2254,8 @@
         "npc": "rm_vigdis_rainmore",
         "id": "lq_silver_cut",
         "words": "Keep clipping. Give me a share.",
-        "reply": "You're a cold one. A share, then, every Marketday, and you never saw my file. The chalk comes off my door by the new moon, and that's all I ever wanted."
+        "reply": "You're a cold one. A share, then, every Marketday, and you never saw my file. The chalk comes off my door by the new moon, and that's all I ever wanted.",
+        "player": "$actor"
        }
       },
       {
@@ -2159,6 +2344,14 @@
         },
         "op": "<=",
         "right": 31
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:larkfield"
+        },
+        "op": ">=",
+        "right": 64
        }
       ]
      },
@@ -2168,7 +2361,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 4,
+        "coins": {
+         "min": [
+          4,
+          {
+           "div": [
+            {
+             "purse": "town:larkfield"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:larkfield",
         "reason": "the Larkfield stores pay for the dies",
         "ifRefused": "skip"
@@ -2177,12 +2382,36 @@
       {
        "do": "add",
        "var": "coin_larkfield_day",
-       "value": 4
+       "value": {
+        "min": [
+         4,
+         {
+          "div": [
+           {
+            "purse": "town:larkfield"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 4
+       "value": {
+        "min": [
+         4,
+         {
+          "div": [
+           {
+            "purse": "town:larkfield"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -2244,6 +2473,14 @@
         },
         "op": "<=",
         "right": 42
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 68
        }
       ]
      },
@@ -2253,7 +2490,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 8,
+        "coins": {
+         "min": [
+          8,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:ridgemere",
         "reason": "Silver & Rain pays it back",
         "ifRefused": "skip"
@@ -2262,17 +2511,53 @@
       {
        "do": "add",
        "var": "coin_ridgemere_day",
-       "value": 8
+       "value": {
+        "min": [
+         8,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 8
+       "value": {
+        "min": [
+         8,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "restitution",
-       "value": 8
+       "value": {
+        "min": [
+         8,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -2332,6 +2617,14 @@
         },
         "op": "<=",
         "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:larkfield"
+        },
+        "op": ">=",
+        "right": 72
        }
       ]
      },
@@ -2341,7 +2634,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 12,
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:larkfield"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:larkfield",
         "reason": "the Larkfield stores pay for the light coin's end",
         "ifRefused": "skip"
@@ -2350,12 +2655,36 @@
       {
        "do": "add",
        "var": "coin_larkfield_day",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:larkfield"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:larkfield"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -2478,6 +2807,14 @@
             },
             "op": "<=",
             "right": 32
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:ridgemere"
+            },
+            "op": ">=",
+            "right": 63
            }
           ]
          },
@@ -2487,7 +2824,19 @@
            "effect": {
             "kind": "character.grant",
             "player": "$each",
-            "coins": 3,
+            "coins": {
+             "min": [
+              3,
+              {
+               "div": [
+                {
+                 "purse": "town:ridgemere"
+                },
+                20
+               ]
+              }
+             ]
+            },
             "purse": "town:ridgemere",
             "reason": "a share of the silver",
             "ifRefused": "skip"
@@ -2496,12 +2845,36 @@
           {
            "do": "add",
            "var": "coin_ridgemere_day",
-           "value": 3
+           "value": {
+            "min": [
+             3,
+             {
+              "div": [
+               {
+                "purse": "town:ridgemere"
+               },
+               20
+              ]
+             }
+            ]
+           }
           },
           {
            "do": "add",
            "var": "lq_coin",
-           "value": 3,
+           "value": {
+            "min": [
+             3,
+             {
+              "div": [
+               {
+                "purse": "town:ridgemere"
+               },
+               20
+              ]
+             }
+            ]
+           },
            "of": "$each"
           }
          ],
@@ -2752,6 +3125,13 @@
      "kind": "door.unlock",
      "door": "link_r2_the_records_office_door_a",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_silver",
+     "value": "clipping",
+     "days": 365
     }
    ],
    "exits": []
@@ -2764,6 +3144,13 @@
      "kind": "npc.line",
      "npc": "tn_lf_pike_chalkley",
      "text": "The dies are out of the Kestrel. Now, what's to be done with an old jeweler who shaves the realm's coin? That's the hard weighing."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_silver",
+     "value": "clipping",
+     "days": 365
     }
    ],
    "exits": [],
@@ -2909,6 +3296,13 @@
      "player": "world",
      "cue": "lq_die",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_silver",
+     "value": "board",
+     "days": 365
     }
    ],
    "exits": []
@@ -2929,6 +3323,13 @@
      "days": 14,
      "words": "light coin called in",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_silver",
+     "value": "mercy",
+     "days": 365
     }
    ],
    "exits": []
@@ -2949,6 +3350,13 @@
      "days": 28,
      "words": "light coin about",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_silver",
+     "value": "cut",
+     "days": 365
     }
    ],
    "exits": []
@@ -3089,7 +3497,13 @@
      "label": "Bring down the guards on the workings.",
      "on": "bandit falls",
      "match": {
-      "cell": "w_ridgemere_8_2"
+      "cell": "w_ridgemere_8_2",
+      "target": {
+       "in": [
+        "camp_story_lq_kestrel",
+        "camp_story_lq_kestrel_b"
+       ]
+      }
      },
      "goal": 2,
      "after": [
@@ -3153,7 +3567,23 @@
      "detail": "laid a coiner's dies before the Market Board",
      "ifRefused": "when here"
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "light",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "trail",
+      "status": "done"
+     }
+    ]
+   }
   },
   {
    "id": "silver_mercy",
@@ -3207,8 +3637,31 @@
      "player": "$actor",
      "detail": "paid an old jeweler's debt and broke her dies",
      "ifRefused": "when here"
+    },
+    {
+     "kind": "npc.greet",
+     "npc": "rm_vigdis_rainmore",
+     "player": "$actor",
+     "days": 14,
+     "text": "You paid what I owed and broke the shears. I don't know why you did it. #thanks#, #address#."
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "light",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "trail",
+      "status": "done"
+     }
+    ]
+   }
   },
   {
    "id": "silver_cut",
@@ -3240,7 +3693,23 @@
      "detail": "took a share of a coiner's silver",
      "ifRefused": "when here"
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "light",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "trail",
+      "status": "done"
+     }
+    ]
+   }
   }
  ],
  "tests": [
@@ -3429,7 +3898,7 @@
      "kind": "bandit falls",
      "day": 2.04,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -3437,7 +3906,7 @@
      "kind": "bandit falls",
      "day": 2.041,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -3445,7 +3914,7 @@
      "kind": "bandit falls",
      "day": 2.042,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -3453,7 +3922,7 @@
      "kind": "camp cleared",
      "day": 2.05,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -3535,7 +4004,7 @@
      "kind": "bandit falls",
      "day": 9.54,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -3543,7 +4012,7 @@
      "kind": "bandit falls",
      "day": 9.541,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -3551,7 +4020,7 @@
      "kind": "bandit falls",
      "day": 9.542,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -3559,7 +4028,7 @@
      "kind": "camp cleared",
      "day": 9.55,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -3670,6 +4139,13 @@
       "lq_beam": "hushed",
       "packed": true
      }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:larkfield": 2000,
+     "town:ridgemere": 2000,
+     "till:job:rm_eleanor_saltcot": 2000
     }
    }
   },
@@ -3910,7 +4386,7 @@
      "kind": "bandit falls",
      "day": 2.04,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -3918,7 +4394,7 @@
      "kind": "bandit falls",
      "day": 2.041,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -3926,7 +4402,7 @@
      "kind": "bandit falls",
      "day": 2.042,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -3934,7 +4410,7 @@
      "kind": "camp cleared",
      "day": 2.05,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -3992,7 +4468,7 @@
      "kind": "bandit falls",
      "day": 3.04,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4000,7 +4476,7 @@
      "kind": "bandit falls",
      "day": 3.041,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4008,7 +4484,7 @@
      "kind": "bandit falls",
      "day": 3.042,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4016,7 +4492,7 @@
      "kind": "camp cleared",
      "day": 3.05,
      "actor": "wolf-birch",
-     "target": "camp_story_2",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4074,6 +4550,13 @@
     },
     "story": {
      "t_mercy": 2
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:larkfield": 2000,
+     "town:ridgemere": 2000,
+     "till:job:rm_eleanor_saltcot": 2000
     }
    }
   },
@@ -4252,7 +4735,7 @@
      "kind": "bandit falls",
      "day": 2.04,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4260,7 +4743,7 @@
      "kind": "bandit falls",
      "day": 2.041,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4268,7 +4751,7 @@
      "kind": "bandit falls",
      "day": 2.042,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4276,7 +4759,7 @@
      "kind": "camp cleared",
      "day": 2.05,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4335,7 +4818,7 @@
      "kind": "bandit falls",
      "day": 3.04,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4343,7 +4826,7 @@
      "kind": "bandit falls",
      "day": 3.041,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4351,7 +4834,7 @@
      "kind": "bandit falls",
      "day": 3.042,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4359,7 +4842,7 @@
      "kind": "camp cleared",
      "day": 3.05,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4465,6 +4948,13 @@
       "shares_left": 0,
       "lq_coin": 24
      }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:larkfield": 2000,
+     "town:ridgemere": 2000,
+     "till:job:rm_eleanor_saltcot": 2000
     }
    }
   },
@@ -4581,7 +5071,7 @@
      "kind": "bandit falls",
      "day": 2.04,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4589,7 +5079,7 @@
      "kind": "bandit falls",
      "day": 2.041,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4597,7 +5087,7 @@
      "kind": "bandit falls",
      "day": 2.042,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4605,7 +5095,7 @@
      "kind": "camp cleared",
      "day": 2.05,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4672,7 +5162,7 @@
      "kind": "bandit falls",
      "day": 9.54,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4680,7 +5170,7 @@
      "kind": "bandit falls",
      "day": 9.541,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4688,7 +5178,7 @@
      "kind": "bandit falls",
      "day": 9.542,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4696,7 +5186,7 @@
      "kind": "camp cleared",
      "day": 9.55,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_kestrel",
      "cell": "w_ridgemere_8_2"
     },
     {
@@ -4722,6 +5212,13 @@
    "expectVariables": {
     "world": {
      "lq_silver": "board"
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:larkfield": 2000,
+     "town:ridgemere": 2000,
+     "till:job:rm_eleanor_saltcot": 2000
     }
    }
   }

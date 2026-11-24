@@ -3,6 +3,7 @@
  "version": 2,
  "id": "nh-pack.small.north",
  "title": "Errands of the north",
+ "prefix": "sq",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -113,12 +114,6 @@
    "note": "When the baker last handed this wolf the landing loaves (once a game day, so taking the errand again after putting it aside mints no more bread)."
   },
   {
-   "id": "t_ewe_trail",
-   "type": "timer",
-   "scope": "player",
-   "note": "When a wool trail was last laid for this wolf (once a week, as N4's join.again 7 will, so putting the errand aside and taking it again mints no more wool)."
-  },
-  {
    "id": "ewe_on_north",
    "type": "switch",
    "scope": "player",
@@ -191,7 +186,32 @@
   {
    "id": "open",
    "journal": "Coldwater, Oakhaven and Frosthollow have small jobs for a willing wolf: ask about, or read the notice boards.",
-   "effects": [],
+   "effects": [
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "frosthollow",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
    "exits": [],
    "triggers": [
     {
@@ -408,6 +428,14 @@
           },
           "op": "<=",
           "right": 18
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:coldwater"
+          },
+          "op": ">=",
+          "right": 63
          }
         ]
        },
@@ -485,6 +513,14 @@
           },
           "op": "<=",
           "right": 19
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:coldwater"
+          },
+          "op": ">=",
+          "right": 62
          }
         ]
        },
@@ -562,6 +598,14 @@
           },
           "op": "<=",
           "right": 20
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:oakhaven"
+          },
+          "op": ">=",
+          "right": 64
          }
         ]
        },
@@ -639,6 +683,14 @@
           },
           "op": "<=",
           "right": 21
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:oakhaven"
+          },
+          "op": ">=",
+          "right": 63
          }
         ]
        },
@@ -716,6 +768,14 @@
           },
           "op": "<=",
           "right": 22
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:oakhaven"
+          },
+          "op": ">=",
+          "right": 62
          }
         ]
        },
@@ -805,6 +865,14 @@
           },
           "op": "<=",
           "right": 21
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:frosthollow"
+          },
+          "op": ">=",
+          "right": 63
          }
         ]
        },
@@ -1402,138 +1470,99 @@
      "match": {
       "detail": "sq-strayed-ewe"
      },
-     "note": "Two copies, two trails: the north one if it is free, else the south; three tufts laid along it. At most one trail a week for each wolf (until N4's join.again: 7): a wolf who put the errand aside this week has nothing to follow, and the copy ends at once.",
+     "note": "Two copies, two trails: the north one if it is free, else the south; three tufts laid along it. A wolf waits a week after any end of the errand before taking it again (join.again 7).",
      "actions": [
       {
        "do": "if",
        "if": {
-        "test": "compare",
-        "left": {
-         "since": "t_ewe_trail"
-        },
-        "op": "<",
-        "right": 7
+        "test": "switch",
+        "var": "ewe_n_busy",
+        "is": false
        },
        "then": [
         {
+         "do": "turn on",
+         "var": "ewe_n_busy"
+        },
+        {
+         "do": "turn on",
+         "var": "ewe_on_north"
+        },
+        {
          "do": "effect",
          "effect": {
-          "kind": "journal.note",
-          "player": "$actor",
-          "text": "The Larkdowns ewes are all in the fold this week, and there is no wool on the thorns to follow. Ask again in a few days."
+          "kind": "item.place",
+          "item": "wool",
+          "quantity": 1,
+          "cell": "w_ridgemere_9_8",
+          "x": 238,
+          "y": 96
          }
         },
         {
          "do": "effect",
          "effect": {
-          "kind": "quest.fail",
-          "quest": "sq-strayed-ewe",
-          "player": "$actor"
+          "kind": "item.place",
+          "item": "wool",
+          "quantity": 1,
+          "cell": "w_ridgemere_9_8",
+          "x": 240,
+          "y": 80
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "wool",
+          "quantity": 1,
+          "cell": "w_ridgemere_9_8",
+          "x": 244,
+          "y": 66
          }
         }
        ],
        "else": [
         {
-         "do": "if",
-         "if": {
-          "test": "switch",
-          "var": "ewe_n_busy",
-          "is": false
-         },
-         "then": [
-          {
-           "do": "turn on",
-           "var": "ewe_n_busy"
-          },
-          {
-           "do": "turn on",
-           "var": "ewe_on_north"
-          },
-          {
-           "do": "effect",
-           "effect": {
-            "kind": "item.place",
-            "item": "wool",
-            "quantity": 1,
-            "cell": "w_ridgemere_9_8",
-            "x": 238,
-            "y": 96
-           }
-          },
-          {
-           "do": "effect",
-           "effect": {
-            "kind": "item.place",
-            "item": "wool",
-            "quantity": 1,
-            "cell": "w_ridgemere_9_8",
-            "x": 240,
-            "y": 80
-           }
-          },
-          {
-           "do": "effect",
-           "effect": {
-            "kind": "item.place",
-            "item": "wool",
-            "quantity": 1,
-            "cell": "w_ridgemere_9_8",
-            "x": 244,
-            "y": 66
-           }
-          },
-          {
-           "do": "start timer",
-           "var": "t_ewe_trail"
-          }
-         ],
-         "else": [
-          {
-           "do": "turn on",
-           "var": "ewe_s_busy"
-          },
-          {
-           "do": "turn off",
-           "var": "ewe_on_north"
-          },
-          {
-           "do": "effect",
-           "effect": {
-            "kind": "item.place",
-            "item": "wool",
-            "quantity": 1,
-            "cell": "w_ridgemere_9_8",
-            "x": 214,
-            "y": 118
-           }
-          },
-          {
-           "do": "effect",
-           "effect": {
-            "kind": "item.place",
-            "item": "wool",
-            "quantity": 1,
-            "cell": "w_ridgemere_9_8",
-            "x": 202,
-            "y": 130
-           }
-          },
-          {
-           "do": "effect",
-           "effect": {
-            "kind": "item.place",
-            "item": "wool",
-            "quantity": 1,
-            "cell": "w_ridgemere_9_8",
-            "x": 190,
-            "y": 142
-           }
-          },
-          {
-           "do": "start timer",
-           "var": "t_ewe_trail"
-          }
-         ]
+         "do": "turn on",
+         "var": "ewe_s_busy"
+        },
+        {
+         "do": "turn off",
+         "var": "ewe_on_north"
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "wool",
+          "quantity": 1,
+          "cell": "w_ridgemere_9_8",
+          "x": 214,
+          "y": 118
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "wool",
+          "quantity": 1,
+          "cell": "w_ridgemere_9_8",
+          "x": 202,
+          "y": 130
+         }
+        },
+        {
+         "do": "effect",
+         "effect": {
+          "kind": "item.place",
+          "item": "wool",
+          "quantity": 1,
+          "cell": "w_ridgemere_9_8",
+          "x": 190,
+          "y": 142
+         }
         }
        ]
       }
@@ -2231,6 +2260,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_last",
+     "value": "fox",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ]
   },
@@ -2270,6 +2315,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_last",
+     "value": "landing",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ]
   },
@@ -2327,6 +2388,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_last",
+     "value": "kettle",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -2345,7 +2422,8 @@
    "giver": "tn_fh_laurel_pinefell",
    "repeat": "weekly",
    "join": {
-    "cap": 1
+    "cap": 1,
+    "again": 7
    },
    "fail": [
     {
@@ -2397,6 +2475,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_last",
+     "value": "apples",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -2450,6 +2544,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_last",
+     "value": "pens",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -2468,7 +2578,8 @@
    "giver": "tn_fh_marl_cragpeak",
    "repeat": "weekly",
    "join": {
-    "cap": 2
+    "cap": 2,
+    "again": 7
    },
    "fail": [
     {
@@ -2497,6 +2608,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "travel"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_last",
+     "value": "ewe",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ]
   },
@@ -2536,6 +2663,29 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_last",
+     "value": "drag",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "npc.greet",
+     "npc": "cty_tristram_rainridge",
+     "player": "$actor",
+     "days": 7,
+     "text": "Good bark, you. The drag's moving on your rope, mm? My grandmother would've called you sound wood."
     }
    ],
    "bonus": [
@@ -2600,6 +2750,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_last",
+     "value": "venison",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ]
   },
@@ -2646,6 +2812,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_last",
+     "value": "sleep",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -2707,6 +2889,29 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "frosthollow",
+     "key": "sq_last",
+     "value": "passwood",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "frosthollow",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "npc.greet",
+     "npc": "cty_ebba_coalgate",
+     "player": "$actor",
+     "days": 7,
+     "text": "Lamp's thanks, cousin. The Pass House fires kept, and the carters with them. Warm hearth to you."
     }
    ],
    "bonus": [
@@ -2726,7 +2931,8 @@
    "board": "frosthollow",
    "repeat": "weekly",
    "join": {
-    "cap": 2
+    "cap": 2,
+    "again": 7
    },
    "fail": [
     {
@@ -2772,6 +2978,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "frosthollow",
+     "key": "sq_last",
+     "value": "clamp",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "frosthollow",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ]
   },
@@ -2818,6 +3040,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "frosthollow",
+     "key": "sq_last",
+     "value": "goats",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "frosthollow",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -2864,6 +3102,11 @@
       "town": "coldwater",
       "indoors": false
      }
+    },
+    "purses": {
+     "town:coldwater": 2000,
+     "town:frosthollow": 2000,
+     "town:oakhaven": 2000
     }
    },
    "events": [
@@ -3070,6 +3313,33 @@
    "expectEffects": [
     {
      "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "frosthollow",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "phase": "open",
      "kind": "npc.move",
      "npc": "tn_sm_edric_harvestley",
      "cell": "w_ridgemere_8_6",
@@ -3110,6 +3380,26 @@
      "kind": "story.practice",
      "player": "wolf-ash",
      "skill": "watch",
+     "reward": "sq-apple-nose"
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_last",
+     "value": "apples",
+     "days": 2,
+     "reward": "sq-apple-nose"
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365,
      "reward": "sq-apple-nose"
     },
     {
@@ -3346,6 +3636,13 @@
      "nh_realm": 3,
      "coin_coldwater_day": 3
     }
+   },
+   "facts": {
+    "purses": {
+     "town:coldwater": 2000,
+     "town:frosthollow": 2000,
+     "town:oakhaven": 2000
+    }
    }
   },
   {
@@ -3389,6 +3686,11 @@
       "town": "coldwater",
       "indoors": false
      }
+    },
+    "purses": {
+     "town:coldwater": 2000,
+     "town:frosthollow": 2000,
+     "town:oakhaven": 2000
     }
    },
    "events": [
@@ -3616,6 +3918,11 @@
       "town": "oakhaven",
       "indoors": false
      }
+    },
+    "purses": {
+     "town:coldwater": 2000,
+     "town:frosthollow": 2000,
+     "town:oakhaven": 2000
     }
    },
    "events": [
@@ -3904,6 +4211,11 @@
       "town": "frosthollow",
       "indoors": false
      }
+    },
+    "purses": {
+     "town:coldwater": 2000,
+     "town:frosthollow": 2000,
+     "town:oakhaven": 2000
     }
    },
    "events": [
@@ -4390,15 +4702,27 @@
      "coin_coldwater_day": 21,
      "nh_voice_coldwater": 24
     }
+   },
+   "facts": {
+    "purses": {
+     "town:coldwater": 2000,
+     "town:frosthollow": 2000,
+     "town:oakhaven": 2000
+    }
    }
   },
   {
-   "name": "Taken again: no fresh loaves or wool the same day or week; storms that count for nothing",
+   "name": "Taken again: no fresh loaves the same day, no ewe errand inside the week; storms count for nothing",
    "cohort": [],
    "facts": {
     "world": {
      "period": "day",
      "hour": 10
+    },
+    "purses": {
+     "town:coldwater": 2000,
+     "town:frosthollow": 2000,
+     "town:oakhaven": 2000
     }
    },
    "events": [
@@ -4462,15 +4786,6 @@
      "day": 1.11,
      "actor": "wolf-birch",
      "target": "run",
-     "detail": "sq-strayed-ewe"
-    },
-    {
-     "id": "e8",
-     "kind": "quest accepted",
-     "day": 1.12,
-     "actor": "wolf-birch",
-     "target": "run",
-     "item": "tn_fh_marl_cragpeak",
      "detail": "sq-strayed-ewe"
     },
     {
@@ -4584,8 +4899,6 @@
     "deed-landing",
     "ewe-trail",
     "ewe-put-aside",
-    "ewe-trail",
-    "ewe-lost",
     "storm-breaks",
     "feed-oakhaven",
     "pay-oakhaven-2",
@@ -4593,6 +4906,33 @@
     "ewe-trail"
    ],
    "expectEffects": [
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "frosthollow",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
     {
      "phase": "open",
      "kind": "item.give",
@@ -4611,6 +4951,26 @@
      "kind": "story.practice",
      "player": "wolf-ash",
      "skill": "service",
+     "reward": "sq-bread-to-the-landing"
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_last",
+     "value": "landing",
+     "days": 2,
+     "reward": "sq-bread-to-the-landing"
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "coldwater",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365,
      "reward": "sq-bread-to-the-landing"
     },
     {
@@ -4657,15 +5017,29 @@
     },
     {
      "phase": "open",
-     "kind": "journal.note",
-     "player": "wolf-birch",
-     "text": "The Larkdowns ewes are all in the fold this week, and there is no wool on the thorns to follow. Ask again in a few days."
-    },
-    {
-     "phase": "open",
      "kind": "story.practice",
      "player": "wolf-cedar",
      "skill": "service",
+     "reward": "sq-sleepless-logger"
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_last",
+     "value": "sleep",
+     "days": 2,
+     "reward": "sq-sleepless-logger"
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365,
      "reward": "sq-sleepless-logger"
     },
     {

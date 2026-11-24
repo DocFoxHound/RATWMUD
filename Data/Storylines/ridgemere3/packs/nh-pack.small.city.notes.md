@@ -98,3 +98,21 @@ during their hours, and the lines are rewritten in their speech (all plain):
 - `givers.tsv` rows moved to the new givers. The talk library's lines for these errands follow
   (`artifacts/quests/build/talk2/build_packs.py` FIX map; trees regenerated). Rehearsals follow (the region events,
   the paper and ink, the new residents' cells).
+
+## Wave J (as built, 2026-11-24, branch `r3-nh-live`)
+The engine of doc 86 (Phases 1a to 9) is merged, so this version uses what the sections above call "later". Every
+program here passes `python3 tools/nh_check.py --all` (now with the wave J checks: the prefix, the purse guard, the talk keys).
+
+- `"prefix": "sq"`. **C8**: each errand's rewards have its towns remember `sq_last=<its word>` (2 days) and renew
+  `sq_on=yes` (365); the phase's opening says `sq_on=yes` in Ridgemere and Oakhaven. The DM no longer seeds them.
+- **M2**: both pay triggers also read the treasury itself (at least 60 and the amount).
+- **N4**: `sq-gone-to-see-the-ships` has `join.again: 7`.
+- **C6**: words while under way from four givers (the pup's father, the Stairs porter, the bell's porter, the mooring
+  hand), in plain speech with `#address#`.
+- **J9**: the City Office letter (`letter^city_letter`), the Carters' Yard crate (`crate^yard_crate`) and Greywool's
+  bolt (`wool_cloth^greywool_bolt`) are the story's own; only they count, and the second-start notes no longer say
+  "or bring your own". The rehearsals' gifts name them.
+- **J1**: every choice here already went to its wolf.
+- **Left**: SQ2 for the errands (fourteen givers have tills; each would need its own counter and switch in nh-purses,
+  and the economy has not been asked about shop tills paying out: the treasury still pays, worded as before); C12a/J2
+  (the pack does not yet tell the running chapter), SQ1, SQ5, SQ3 and J10.

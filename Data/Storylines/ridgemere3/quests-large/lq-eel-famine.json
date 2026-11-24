@@ -3,6 +3,7 @@
  "version": 2,
  "id": "lq-eel-famine",
  "title": "The Eel Famine",
+ "prefix": "lq",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -302,7 +303,13 @@
      "label": "Drive off the weir's night guards.",
      "on": "bandit falls",
      "match": {
-      "cell": "w_ridgemere_3_12"
+      "cell": "w_ridgemere_3_12",
+      "target": {
+       "in": [
+        "camp_story_lq_weir",
+        "camp_story_lq_weir_b"
+       ]
+      }
      },
      "goal": 3,
      "after": [
@@ -401,7 +408,23 @@
      "item": "smoked_fish",
      "quantity": 4
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "traps",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "weir",
+      "status": "done"
+     }
+    ]
+   }
   },
   {
    "id": "eels_share",
@@ -471,7 +494,23 @@
      "item": "fishing_net",
      "quantity": 1
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "traps",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "weir",
+      "status": "done"
+     }
+    ]
+   }
   }
  ],
  "triggers": [
@@ -587,6 +626,14 @@
             },
             "op": "<=",
             "right": 29
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:fenshore"
+            },
+            "op": ">=",
+            "right": 66
            }
           ]
          },
@@ -596,7 +643,19 @@
            "effect": {
             "kind": "character.grant",
             "player": "$each",
-            "coins": 6,
+            "coins": {
+             "min": [
+              6,
+              {
+               "div": [
+                {
+                 "purse": "town:fenshore"
+                },
+                20
+               ]
+              }
+             ]
+            },
             "purse": "town:fenshore",
             "reason": "the Fenshore stores thank you for the weir",
             "ifRefused": "skip"
@@ -605,13 +664,37 @@
           {
            "do": "add",
            "var": "coin_fenshore_day",
-           "value": 6
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:fenshore"
+               },
+               20
+              ]
+             }
+            ]
+           }
           },
           {
            "do": "add",
            "var": "lq_coin",
            "of": "$each",
-           "value": 6
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:fenshore"
+               },
+               20
+              ]
+             }
+            ]
+           }
           }
          ],
          "else": [
@@ -629,6 +712,16 @@
            "do": "turn on",
            "var": "lq_thin",
            "of": "$each"
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "talk.remember",
+            "scope": "realm",
+            "key": "lq_eels_thin",
+            "value": "yes",
+            "days": 1
+           }
           },
           {
            "do": "effect",
@@ -946,6 +1039,14 @@
         },
         "op": "<=",
         "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:fenshore"
+        },
+        "op": ">=",
+        "right": 72
        }
       ]
      },
@@ -955,7 +1056,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 12,
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:fenshore"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:fenshore",
         "reason": "Fenshore thanks you for the run of eels",
         "ifRefused": "skip"
@@ -964,12 +1077,36 @@
       {
        "do": "add",
        "var": "coin_fenshore_day",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:fenshore"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:fenshore"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -986,6 +1123,16 @@
       {
        "do": "turn on",
        "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "realm",
+        "key": "lq_eels_thin",
+        "value": "yes",
+        "days": 1
+       }
       },
       {
        "do": "effect",
@@ -1043,6 +1190,14 @@
         },
         "op": "<=",
         "right": 33
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:fenshore"
+        },
+        "op": ">=",
+        "right": 62
        }
       ]
      },
@@ -1052,7 +1207,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 2,
+        "coins": {
+         "min": [
+          2,
+          {
+           "div": [
+            {
+             "purse": "town:fenshore"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:fenshore",
         "reason": "Fenshore thanks you for the eel-share",
         "ifRefused": "skip"
@@ -1061,12 +1228,36 @@
       {
        "do": "add",
        "var": "coin_fenshore_day",
-       "value": 2
+       "value": {
+        "min": [
+         2,
+         {
+          "div": [
+           {
+            "purse": "town:fenshore"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 2
+       "value": {
+        "min": [
+         2,
+         {
+          "div": [
+           {
+            "purse": "town:fenshore"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -1083,6 +1274,16 @@
       {
        "do": "turn on",
        "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "realm",
+        "key": "lq_eels_thin",
+        "value": "yes",
+        "days": 1
+       }
       },
       {
        "do": "effect",
@@ -1159,6 +1360,14 @@
         },
         "op": "<=",
         "right": 25
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:ridgemere"
+        },
+        "op": ">=",
+        "right": 70
        }
       ]
      },
@@ -1168,7 +1377,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 10,
+        "coins": {
+         "min": [
+          10,
+          {
+           "div": [
+            {
+             "purse": "town:ridgemere"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:ridgemere",
         "reason": "the Fish Hall's first eel-share",
         "ifRefused": "skip"
@@ -1177,12 +1398,36 @@
       {
        "do": "add",
        "var": "coin_ridgemere_day",
-       "value": 10
+       "value": {
+        "min": [
+         10,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 10
+       "value": {
+        "min": [
+         10,
+         {
+          "div": [
+           {
+            "purse": "town:ridgemere"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
@@ -1213,6 +1458,16 @@
       {
        "do": "turn on",
        "var": "lq_thin"
+      },
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "realm",
+        "key": "lq_eels_thin",
+        "value": "yes",
+        "days": 1
+       }
       },
       {
        "do": "effect",
@@ -1618,7 +1873,8 @@
         "kind": "story.area.spawn",
         "region": "weir",
         "count": 6,
-        "ifRefused": "skip"
+        "ifRefused": "skip",
+        "camp": "lq_weir"
        }
       }
      ],
@@ -1637,7 +1893,8 @@
           "kind": "story.area.spawn",
           "region": "weir",
           "count": 4,
-          "ifRefused": "skip"
+          "ifRefused": "skip",
+          "camp": "lq_weir"
          }
         }
        ]
@@ -1656,7 +1913,8 @@
           "kind": "story.area.spawn",
           "region": "weir",
           "count": 3,
-          "ifRefused": "skip"
+          "ifRefused": "skip",
+          "camp": "lq_weir"
          }
         }
        ]
@@ -1669,7 +1927,8 @@
         "kind": "story.area.spawn",
         "region": "weir",
         "count": 2,
-        "ifRefused": "skip"
+        "ifRefused": "skip",
+        "camp": "lq_weir"
        }
       }
      ]
@@ -1737,7 +1996,8 @@
         "kind": "story.area.spawn",
         "region": "weir_b",
         "count": 6,
-        "ifRefused": "skip"
+        "ifRefused": "skip",
+        "camp": "lq_weir_b"
        }
       }
      ],
@@ -1756,7 +2016,8 @@
           "kind": "story.area.spawn",
           "region": "weir_b",
           "count": 4,
-          "ifRefused": "skip"
+          "ifRefused": "skip",
+          "camp": "lq_weir_b"
          }
         }
        ]
@@ -1775,7 +2036,8 @@
           "kind": "story.area.spawn",
           "region": "weir_b",
           "count": 3,
-          "ifRefused": "skip"
+          "ifRefused": "skip",
+          "camp": "lq_weir_b"
          }
         }
        ]
@@ -1788,7 +2050,8 @@
         "kind": "story.area.spawn",
         "region": "weir_b",
         "count": 2,
-        "ifRefused": "skip"
+        "ifRefused": "skip",
+        "camp": "lq_weir_b"
        }
       }
      ]
@@ -1799,7 +2062,13 @@
    "id": "camp-cleared",
    "on": "camp cleared",
    "match": {
-    "cell": "w_ridgemere_3_12"
+    "cell": "w_ridgemere_3_12",
+    "target": {
+     "in": [
+      "camp_story_lq_weir",
+      "camp_story_lq_weir_b"
+     ]
+    }
    },
    "if": {
     "test": "any",
@@ -2238,6 +2507,13 @@
      "kind": "door.unlock",
      "door": "link_fs_marsh_eels_eelhouse_door_a",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_eels",
+     "value": "weir",
+     "days": 365
     }
    ],
    "exits": [],
@@ -2568,6 +2844,13 @@
      "days": 7,
      "ifRefused": "skip",
      "text": "THE WEIR IS DOWN below Rivermouth. Mud and eels, and thanks to every wolf who pulled a stake. Fenshore must choose: let the eels run, or take the Fish Hall's share. Ask at Fen Shore landing."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_eels",
+     "value": "weir",
+     "days": 365
     }
    ],
    "exits": [],
@@ -2785,6 +3068,13 @@
      "days": 28,
      "ifRefused": "skip",
      "text": "THE EELS ARE UP WITHY CREEK. Mud and eels, and thanks to every wolf who pulled a stake."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_eels",
+     "value": "run",
+     "days": 365
     }
    ],
    "exits": [],
@@ -2899,6 +3189,13 @@
      "days": 28,
      "ifRefused": "skip",
      "text": "ONE GAP IN THE WEIR, and a share of every Fish Hall eel to Fenshore. Mud and eels, it's more supper than we had."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_eels",
+     "value": "shared",
+     "days": 365
     }
    ],
    "exits": [],
@@ -3187,7 +3484,7 @@
      "kind": "bandit falls",
      "day": 0.88,
      "actor": "wolf-ash",
-     "target": "camp_story_7",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -3196,7 +3493,7 @@
      "kind": "bandit falls",
      "day": 0.881,
      "actor": "wolf-ash",
-     "target": "camp_story_7",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -3205,7 +3502,7 @@
      "kind": "bandit falls",
      "day": 0.882,
      "actor": "wolf-ash",
-     "target": "camp_story_7",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -3214,7 +3511,7 @@
      "kind": "camp cleared",
      "day": 0.885,
      "actor": "wolf-ash",
-     "target": "camp_story_7",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "by Ash"
     },
@@ -3468,6 +3765,12 @@
      "nh_realm": 32,
      "nh_voice_fenshore": 32,
      "nh_threat": 29
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:ridgemere": 2000
     }
    }
   },
@@ -3834,7 +4137,7 @@
      "kind": "bandit falls",
      "day": 0.91,
      "actor": "wolf-ash",
-     "target": "camp_story_8",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -3843,7 +4146,7 @@
      "kind": "bandit falls",
      "day": 0.91,
      "actor": "wolf-ash",
-     "target": "camp_story_8",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -3852,7 +4155,7 @@
      "kind": "bandit falls",
      "day": 0.91,
      "actor": "wolf-ash",
-     "target": "camp_story_8",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -3861,7 +4164,7 @@
      "kind": "bandit falls",
      "day": 0.91,
      "actor": "wolf-birch",
-     "target": "camp_story_8",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -3870,7 +4173,7 @@
      "kind": "bandit falls",
      "day": 0.91,
      "actor": "wolf-birch",
-     "target": "camp_story_8",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -3879,7 +4182,7 @@
      "kind": "bandit falls",
      "day": 0.91,
      "actor": "wolf-birch",
-     "target": "camp_story_8",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -3888,7 +4191,7 @@
      "kind": "bandit falls",
      "day": 0.91,
      "actor": "wolf-cedar",
-     "target": "camp_story_8",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -3897,7 +4200,7 @@
      "kind": "bandit falls",
      "day": 0.91,
      "actor": "wolf-cedar",
-     "target": "camp_story_8",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -3906,7 +4209,7 @@
      "kind": "bandit falls",
      "day": 0.91,
      "actor": "wolf-cedar",
-     "target": "camp_story_8",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -3915,7 +4218,7 @@
      "kind": "bandit falls",
      "day": 0.91,
      "actor": "wolf-dun",
-     "target": "camp_story_8",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -3924,7 +4227,7 @@
      "kind": "bandit falls",
      "day": 0.91,
      "actor": "wolf-dun",
-     "target": "camp_story_8",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -3933,7 +4236,7 @@
      "kind": "bandit falls",
      "day": 0.91,
      "actor": "wolf-dun",
-     "target": "camp_story_8",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -3942,7 +4245,7 @@
      "kind": "camp cleared",
      "day": 0.92,
      "actor": "wolf-dun",
-     "target": "camp_story_8",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "by Dun"
     },
@@ -4130,6 +4433,12 @@
      "coin_fenshore_day": 18,
      "nh_names": 0
     }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:ridgemere": 2000
+    }
    }
   },
   {
@@ -4228,7 +4537,7 @@
      "kind": "bandit falls",
      "day": 0.31,
      "actor": "wolf-ash",
-     "target": "camp_story_9",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -4237,7 +4546,7 @@
      "kind": "bandit falls",
      "day": 0.31,
      "actor": "wolf-ash",
-     "target": "camp_story_9",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -4246,7 +4555,7 @@
      "kind": "bandit falls",
      "day": 0.31,
      "actor": "wolf-ash",
-     "target": "camp_story_9",
+     "target": "camp_story_lq_weir",
      "cell": "w_ridgemere_3_12",
      "detail": "a weir guard"
     },
@@ -4339,6 +4648,12 @@
     },
     "weir": {
      "party:wolf-ash": "done"
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:ridgemere": 2000
     }
    }
   },
@@ -4452,6 +4767,12 @@
      "t_run": 0,
      "t_share": 0,
      "weir_left": 0
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:fenshore": 2000,
+     "town:ridgemere": 2000
     }
    }
   }

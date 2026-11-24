@@ -3,6 +3,7 @@
  "version": 2,
  "id": "lq-old-brown",
  "title": "The Old Brown of the Greyteeth",
+ "prefix": "lq",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -285,7 +286,8 @@
       "id": "lq_brown_count",
       "words": "How many are gone?",
       "reply": "Forty-two, if you count the lambs. Funny thing, eh? The owner never counted the forty. Only the two the bear had. Make of that what you like, neighbour.",
-      "once": true
+      "once": true,
+      "player": "$actor"
      }
     }
    ]
@@ -604,6 +606,24 @@
             "kind": "story.area.spawn",
             "region": "fold",
             "count": 6,
+            "ifRefused": "skip",
+            "camp": "lq_fold"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "foe.add",
+            "foe": "lq-drover",
+            "name": "Sleet the Drover",
+            "cell": "w_ridgemere_11_5",
+            "x": 16,
+            "y": 245,
+            "strength": "tough",
+            "band": 0,
+            "stance": "waits",
+            "minutes": 120,
+            "description": "A rangy rustler with a crook and a grey paw-mark daubed on his coat.",
             "ifRefused": "skip"
            }
           }
@@ -623,7 +643,8 @@
               "kind": "story.area.spawn",
               "region": "fold",
               "count": 4,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_fold"
              }
             }
            ]
@@ -642,7 +663,8 @@
               "kind": "story.area.spawn",
               "region": "fold",
               "count": 3,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_fold"
              }
             }
            ]
@@ -655,7 +677,8 @@
             "kind": "story.area.spawn",
             "region": "fold",
             "count": 2,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_fold"
            }
           }
          ]
@@ -688,7 +711,8 @@
               "kind": "story.area.spawn",
               "region": "fold_b",
               "count": 6,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_fold_b"
              }
             }
            ],
@@ -707,7 +731,8 @@
                 "kind": "story.area.spawn",
                 "region": "fold_b",
                 "count": 4,
-                "ifRefused": "skip"
+                "ifRefused": "skip",
+                "camp": "lq_fold_b"
                }
               }
              ]
@@ -726,7 +751,8 @@
                 "kind": "story.area.spawn",
                 "region": "fold_b",
                 "count": 3,
-                "ifRefused": "skip"
+                "ifRefused": "skip",
+                "camp": "lq_fold_b"
                }
               }
              ]
@@ -739,7 +765,8 @@
               "kind": "story.area.spawn",
               "region": "fold_b",
               "count": 2,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_fold_b"
              }
             }
            ]
@@ -850,6 +877,24 @@
             "kind": "story.area.spawn",
             "region": "fold_b",
             "count": 6,
+            "ifRefused": "skip",
+            "camp": "lq_fold_b"
+           }
+          },
+          {
+           "do": "effect",
+           "effect": {
+            "kind": "foe.add",
+            "foe": "lq-drover",
+            "name": "Sleet the Drover",
+            "cell": "w_ridgemere_11_5",
+            "x": 65,
+            "y": 221,
+            "strength": "tough",
+            "band": 0,
+            "stance": "waits",
+            "minutes": 120,
+            "description": "A rangy rustler with a crook and a grey paw-mark daubed on his coat.",
             "ifRefused": "skip"
            }
           }
@@ -869,7 +914,8 @@
               "kind": "story.area.spawn",
               "region": "fold_b",
               "count": 4,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_fold_b"
              }
             }
            ]
@@ -888,7 +934,8 @@
               "kind": "story.area.spawn",
               "region": "fold_b",
               "count": 3,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_fold_b"
              }
             }
            ]
@@ -901,7 +948,8 @@
             "kind": "story.area.spawn",
             "region": "fold_b",
             "count": 2,
-            "ifRefused": "skip"
+            "ifRefused": "skip",
+            "camp": "lq_fold_b"
            }
           }
          ]
@@ -934,7 +982,8 @@
               "kind": "story.area.spawn",
               "region": "fold",
               "count": 6,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_fold"
              }
             }
            ],
@@ -953,7 +1002,8 @@
                 "kind": "story.area.spawn",
                 "region": "fold",
                 "count": 4,
-                "ifRefused": "skip"
+                "ifRefused": "skip",
+                "camp": "lq_fold"
                }
               }
              ]
@@ -972,7 +1022,8 @@
                 "kind": "story.area.spawn",
                 "region": "fold",
                 "count": 3,
-                "ifRefused": "skip"
+                "ifRefused": "skip",
+                "camp": "lq_fold"
                }
               }
              ]
@@ -985,7 +1036,8 @@
               "kind": "story.area.spawn",
               "region": "fold",
               "count": 2,
-              "ifRefused": "skip"
+              "ifRefused": "skip",
+              "camp": "lq_fold"
              }
             }
            ]
@@ -1002,7 +1054,13 @@
    "id": "camp-fold",
    "on": "camp cleared",
    "match": {
-    "cell": "w_ridgemere_11_5"
+    "cell": "w_ridgemere_11_5",
+    "target": {
+     "in": [
+      "camp_story_lq_fold",
+      "camp_story_lq_fold_b"
+     ]
+    }
    },
    "if": {
     "test": "any",
@@ -1423,6 +1481,14 @@
             },
             "op": "<=",
             "right": 29
+           },
+           {
+            "test": "compare",
+            "left": {
+             "purse": "town:coldwater"
+            },
+            "op": ">=",
+            "right": 66
            }
           ]
          },
@@ -1432,7 +1498,19 @@
            "effect": {
             "kind": "character.grant",
             "player": "$each",
-            "coins": 6,
+            "coins": {
+             "min": [
+              6,
+              {
+               "div": [
+                {
+                 "purse": "town:coldwater"
+                },
+                20
+               ]
+              }
+             ]
+            },
             "purse": "town:coldwater",
             "reason": "the Coldwater stores pay the fold-sitters",
             "ifRefused": "skip"
@@ -1441,12 +1519,36 @@
           {
            "do": "add",
            "var": "coin_coldwater_day",
-           "value": 6
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:coldwater"
+               },
+               20
+              ]
+             }
+            ]
+           }
           },
           {
            "do": "add",
            "var": "lq_coin",
-           "value": 6,
+           "value": {
+            "min": [
+             6,
+             {
+              "div": [
+               {
+                "purse": "town:coldwater"
+               },
+               20
+              ]
+             }
+            ]
+           },
            "of": "$each"
           }
          ],
@@ -1583,6 +1685,30 @@
        ]
       }
      ]
+    },
+    {
+     "do": "if",
+     "if": {
+      "test": "compare",
+      "left": {
+       "var": "nh_stage"
+      },
+      "op": ">=",
+      "right": 3
+     },
+     "then": [
+      {
+       "do": "effect",
+       "effect": {
+        "kind": "talk.remember",
+        "scope": "town",
+        "town": "frosthollow",
+        "key": "lq_rustlers",
+        "value": "grey",
+        "days": 30
+       }
+      }
+     ]
     }
    ]
   },
@@ -1715,6 +1841,16 @@
        }
       }
      ]
+    },
+    {
+     "do": "effect",
+     "effect": {
+      "kind": "hunt.stage",
+      "region": "greytarn",
+      "species": "bear",
+      "count": 1,
+      "minutes": 240
+     }
     }
    ]
   },
@@ -1770,7 +1906,8 @@
         "npc": "cty_vale_pikebridge",
         "id": "lq_brown_high",
         "words": "Will the high fold take the flock?",
-        "reply": "Grass enough, and a lick if somebody brings salt up. Bring me two of salt and I'll open the gate. Blight take the bear, I'd still not want it killed for being hungry."
+        "reply": "Grass enough, and a lick if somebody brings salt up. Bring me two of salt and I'll open the gate. Blight take the bear, I'd still not want it killed for being hungry.",
+        "player": "$actor"
        }
       },
       {
@@ -1940,6 +2077,14 @@
           },
           "op": "<=",
           "right": 23
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:coldwater"
+          },
+          "op": ">=",
+          "right": 72
          }
         ]
        },
@@ -1949,7 +2094,19 @@
          "effect": {
           "kind": "character.grant",
           "player": "$each",
-          "coins": 12,
+          "coins": {
+           "min": [
+            12,
+            {
+             "div": [
+              {
+               "purse": "town:coldwater"
+              },
+              20
+             ]
+            }
+           ]
+          },
           "purse": "town:coldwater",
           "reason": "the Coldwater stores pay for the Old Brown",
           "ifRefused": "skip"
@@ -1958,12 +2115,36 @@
         {
          "do": "add",
          "var": "coin_coldwater_day",
-         "value": 12
+         "value": {
+          "min": [
+           12,
+           {
+            "div": [
+             {
+              "purse": "town:coldwater"
+             },
+             20
+            ]
+           }
+          ]
+         }
         },
         {
          "do": "add",
          "var": "lq_coin",
-         "value": 12,
+         "value": {
+          "min": [
+           12,
+           {
+            "div": [
+             {
+              "purse": "town:coldwater"
+             },
+             20
+            ]
+           }
+          ]
+         },
          "of": "$each"
         }
        ],
@@ -2045,6 +2226,14 @@
         },
         "op": "<=",
         "right": 23
+       },
+       {
+        "test": "compare",
+        "left": {
+         "purse": "town:coldwater"
+        },
+        "op": ">=",
+        "right": 72
        }
       ]
      },
@@ -2054,7 +2243,19 @@
        "effect": {
         "kind": "character.grant",
         "player": "$actor",
-        "coins": 12,
+        "coins": {
+         "min": [
+          12,
+          {
+           "div": [
+            {
+             "purse": "town:coldwater"
+            },
+            20
+           ]
+          }
+         ]
+        },
         "purse": "town:coldwater",
         "reason": "the Coldwater stores pay for the flock kept safe",
         "ifRefused": "skip"
@@ -2063,12 +2264,36 @@
       {
        "do": "add",
        "var": "coin_coldwater_day",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:coldwater"
+           },
+           20
+          ]
+         }
+        ]
+       }
       },
       {
        "do": "add",
        "var": "lq_coin",
-       "value": 12
+       "value": {
+        "min": [
+         12,
+         {
+          "div": [
+           {
+            "purse": "town:coldwater"
+           },
+           20
+          ]
+         }
+        ]
+       }
       }
      ],
      "else": [
@@ -2305,6 +2530,13 @@
      "kind": "door.unlock",
      "door": "link_fs_sheep_foothills_barn_door_a",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_brown",
+     "value": "rustled",
+     "days": 365
     }
    ],
    "exits": []
@@ -2317,6 +2549,13 @@
      "kind": "npc.line",
      "npc": "cty_jessamy_greyford",
      "text": "The rustlers are broken, and the Old Brown's still on the scree. Bring it down, or move the flock high? Think on it, neighbour."
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_brown",
+     "value": "rustled",
+     "days": 365
     }
    ],
    "exits": [],
@@ -2403,6 +2642,13 @@
      "days": 28,
      "text": "The Old Brown is down. The Greyteeth fold sleeps.",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_brown",
+     "value": "slain",
+     "days": 365
     }
    ],
    "exits": []
@@ -2422,6 +2668,13 @@
      "days": 28,
      "text": "The flock is on the high fold, and the Old Brown has its rocks.",
      "ifRefused": "skip"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "realm",
+     "key": "lq_brown",
+     "value": "spared",
+     "days": 365
     }
    ],
    "exits": []
@@ -2523,7 +2776,13 @@
      "label": "Drive the rustlers off the fold.",
      "on": "bandit falls",
      "match": {
-      "cell": "w_ridgemere_11_5"
+      "cell": "w_ridgemere_11_5",
+      "target": {
+       "in": [
+        "camp_story_lq_fold",
+        "camp_story_lq_fold_b"
+       ]
+      }
      },
      "goal": 2
     },
@@ -2575,6 +2834,11 @@
      "on": "hunted",
      "match": {
       "target": "bear"
+     },
+     "where": {
+      "cells": [
+       "w_ridgemere_13_3"
+      ]
      }
     },
     {
@@ -2610,7 +2874,23 @@
      "detail": "brought down the Old Brown of the Greyteeth",
      "ifRefused": "when here"
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "wool",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "foldnight",
+      "status": "done"
+     }
+    ]
+   }
   },
   {
    "id": "brown_spare",
@@ -2677,7 +2957,23 @@
      "detail": "moved the Greyteeth flock out of the Old Brown's road",
      "ifRefused": "when here"
     }
-   ]
+   ],
+   "closure": "line",
+   "requires": {
+    "test": "any",
+    "conditions": [
+     {
+      "test": "quest is",
+      "quest": "wool",
+      "status": "done"
+     },
+     {
+      "test": "quest is",
+      "quest": "foldnight",
+      "status": "done"
+     }
+    ]
+   }
   }
  ],
  "tests": [
@@ -2866,7 +3162,7 @@
      "kind": "bandit falls",
      "day": 3.11,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -2874,7 +3170,7 @@
      "kind": "bandit falls",
      "day": 3.111,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -2882,7 +3178,7 @@
      "kind": "bandit falls",
      "day": 3.112,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -2890,7 +3186,7 @@
      "kind": "camp cleared",
      "day": 3.12,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3034,6 +3330,11 @@
       "road": "hunt",
       "packed": true
      }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:coldwater": 2000
     }
    }
   },
@@ -3258,7 +3559,7 @@
      "kind": "bandit falls",
      "day": 3.11,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3266,7 +3567,7 @@
      "kind": "bandit falls",
      "day": 3.111,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3274,7 +3575,7 @@
      "kind": "bandit falls",
      "day": 3.112,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3282,7 +3583,7 @@
      "kind": "camp cleared",
      "day": 3.12,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3369,7 +3670,7 @@
      "kind": "bandit falls",
      "day": 5.11,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3377,7 +3678,7 @@
      "kind": "bandit falls",
      "day": 5.111,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3385,7 +3686,7 @@
      "kind": "bandit falls",
      "day": 5.112,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3393,7 +3694,7 @@
      "kind": "camp cleared",
      "day": 5.12,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3488,7 +3789,7 @@
      "kind": "bandit falls",
      "day": 12.11,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3496,7 +3797,7 @@
      "kind": "bandit falls",
      "day": 12.111,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3504,7 +3805,7 @@
      "kind": "bandit falls",
      "day": 12.112,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3512,7 +3813,7 @@
      "kind": "camp cleared",
      "day": 12.12,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3660,6 +3961,11 @@
      "wolf-birch": {
       "lq_thin": true
      }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:coldwater": 2000
     }
    }
   },
@@ -3884,7 +4190,7 @@
      "kind": "bandit falls",
      "day": 3.11,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3892,7 +4198,7 @@
      "kind": "bandit falls",
      "day": 3.111,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3900,7 +4206,7 @@
      "kind": "bandit falls",
      "day": 3.112,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3908,7 +4214,7 @@
      "kind": "camp cleared",
      "day": 3.12,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -3995,7 +4301,7 @@
      "kind": "bandit falls",
      "day": 5.11,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -4003,7 +4309,7 @@
      "kind": "bandit falls",
      "day": 5.111,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -4011,7 +4317,7 @@
      "kind": "bandit falls",
      "day": 5.112,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -4019,7 +4325,7 @@
      "kind": "camp cleared",
      "day": 5.12,
      "actor": "wolf-birch",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -4106,7 +4412,7 @@
      "kind": "bandit falls",
      "day": 7.11,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -4114,7 +4420,7 @@
      "kind": "bandit falls",
      "day": 7.111,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -4122,7 +4428,7 @@
      "kind": "bandit falls",
      "day": 7.112,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -4130,7 +4436,7 @@
      "kind": "camp cleared",
      "day": 7.12,
      "actor": "wolf-cedar",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -4225,7 +4531,7 @@
      "kind": "bandit falls",
      "day": 12.11,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -4233,7 +4539,7 @@
      "kind": "bandit falls",
      "day": 12.111,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -4241,7 +4547,7 @@
      "kind": "bandit falls",
      "day": 12.112,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -4249,7 +4555,7 @@
      "kind": "camp cleared",
      "day": 12.12,
      "actor": "wolf-ash",
-     "target": "camp_story_1",
+     "target": "camp_story_lq_fold",
      "cell": "w_ridgemere_11_5"
     },
     {
@@ -4290,6 +4596,11 @@
     "world": {
      "lq_brown": "spared",
      "lq_rustlers": "grey"
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:coldwater": 2000
     }
    }
   }

@@ -3,6 +3,7 @@
  "version": 2,
  "id": "nh-pack.small.city",
  "title": "Errands of Ridgemere",
+ "prefix": "sq",
  "audience": {
   "kind": "open",
   "cap": 5000
@@ -147,7 +148,24 @@
   {
    "id": "open",
    "journal": "Ridgemere's bakers, healers, clerks and dockers want a paw with the day's work. Ask them, or read the city board.",
-   "effects": [],
+   "effects": [
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    }
+   ],
    "exits": [],
    "triggers": [
     {
@@ -283,7 +301,9 @@
               "kind": "item.give",
               "player": "$actor",
               "item": "letter",
-              "quantity": 1
+              "quantity": 1,
+              "tag": "city_letter",
+              "name": "The City Office letter"
              }
             },
             {
@@ -297,7 +317,7 @@
              "effect": {
               "kind": "journal.note",
               "player": "$actor",
-              "text": "You were handed the City Office letter once already today. Carry it, or bring your own."
+              "text": "You were handed the City Office letter once already today. Carry it up."
              }
             }
            ]
@@ -332,7 +352,9 @@
               "kind": "item.give",
               "player": "$actor",
               "item": "crate",
-              "quantity": 1
+              "quantity": 1,
+              "tag": "yard_crate",
+              "name": "The Carters' Yard crate"
              }
             },
             {
@@ -346,7 +368,7 @@
              "effect": {
               "kind": "journal.note",
               "player": "$actor",
-              "text": "You were handed the Carters' Yard crate once already today. Carry it, or bring your own."
+              "text": "You were handed the Carters' Yard crate once already today. Carry it on."
              }
             }
            ]
@@ -381,7 +403,9 @@
               "kind": "item.give",
               "player": "$actor",
               "item": "wool_cloth",
-              "quantity": 1
+              "quantity": 1,
+              "tag": "greywool_bolt",
+              "name": "Greywool's bolt"
              }
             },
             {
@@ -395,7 +419,7 @@
              "effect": {
               "kind": "journal.note",
               "player": "$actor",
-              "text": "You were handed Greywool's bolt once already today. Carry it, or bring your own."
+              "text": "You were handed Greywool's bolt once already today. Carry it up."
              }
             }
            ]
@@ -1938,6 +1962,14 @@
           },
           "op": "<=",
           "right": 133
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:ridgemere"
+          },
+          "op": ">=",
+          "right": 62
          }
         ]
        },
@@ -2085,6 +2117,14 @@
           },
           "op": "<=",
           "right": 132
+         },
+         {
+          "test": "compare",
+          "left": {
+           "purse": "town:ridgemere"
+          },
+          "op": ">=",
+          "right": 63
          }
         ]
        },
@@ -2599,6 +2639,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "bread",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -2658,6 +2714,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "herbs",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -2677,7 +2749,8 @@
    "giver": "rm_soren_ropewick",
    "repeat": "weekly",
    "join": {
-    "cap": 1
+    "cap": 1,
+    "again": 7
    },
    "fail": [
     {
@@ -2702,7 +2775,9 @@
     "accept": "I'll find her.",
     "decline": "I can't just now.",
     "handIn": "Here she is, safe.",
-    "thanks": "There's my minnow. #thanks#, #address#. The patrolman on the Sump round used to walk her home, before he went up the Hundred Steps to keep the Palace lamp. Now it's you. #farewell#."
+    "thanks": "There's my minnow. #thanks#, #address#. The patrolman on the Sump round used to walk her home, before he went up the Hundred Steps to keep the Palace lamp. Now it's you. #farewell#.",
+    "duringAsk": "Any sign of her?",
+    "during": "Not home yet, then. She'll be where the masts are thickest, #address#. Down the Sump Stairs and out to the piers."
    },
    "objectives": [
     {
@@ -2726,6 +2801,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "ships",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ]
   },
@@ -2781,6 +2872,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "smoke",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "board": "ridgemere"
@@ -2836,6 +2943,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "craft"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "resin",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -2900,6 +3023,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "commerce"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "records",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -2935,7 +3074,9 @@
     "accept": "I'll take it up.",
     "decline": "Find another paw today.",
     "handIn": "Your letter is delivered.",
-    "thanks": "#thanks#. One less on the pile, and one less climb for me. Half the Heights owes a House factor, and they'd sooner not open anything with a seal on it. You got one taken in. That's a day's work, that is."
+    "thanks": "#thanks#. One less on the pile, and one less climb for me. Half the Heights owes a House factor, and they'd sooner not open anything with a seal on it. You got one taken in. That's a day's work, that is.",
+    "duringAsk": "Still on the stairs?",
+    "during": "Still climbing? The letter goes to the Vance who runs the Rag Mill, #address#. Their doorkeeper never comes down."
    },
    "objectives": [
     {
@@ -2944,7 +3085,7 @@
      "on": "gift",
      "match": {
       "target": "rm_eleanor_vance",
-      "item": "letter"
+      "item": "letter^city_letter"
      }
     }
    ],
@@ -2953,6 +3094,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "travel"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "letter",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "board": "ridgemere"
@@ -2998,6 +3155,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "candles",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "board": "ridgemere"
@@ -3045,6 +3218,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "alms",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -3099,6 +3288,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "commerce"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "stock",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -3163,6 +3368,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "commerce"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "greens",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "board": "ridgemere"
@@ -3208,6 +3429,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "charcoal",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "board": "ridgemere"
@@ -3258,6 +3495,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "stables",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "board": "ridgemere"
@@ -3282,7 +3535,9 @@
     "accept": "I'll ring it.",
     "decline": "I sleep late.",
     "handIn": "The bell's rung.",
-    "thanks": "#thanks#. I heard it from the Stairs. There's wolves in the Sump who set their day by that bell, and they've been late ever since he went up. It's a small thing, but somebody had to see it done."
+    "thanks": "#thanks#. I heard it from the Stairs. There's wolves in the Sump who set their day by that bell, and they've been late ever since he went up. It's a small thing, but somebody had to see it done.",
+    "duringAsk": "About the bell...",
+    "during": "The rope hangs at the Clock Tower door. First light, #address#, and not a breath before, or the whole Sump grumbles."
    },
    "objectives": [
     {
@@ -3308,6 +3563,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "bell",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "board": "ridgemere"
@@ -3332,7 +3603,9 @@
     "accept": "I'll be on the pier.",
     "decline": "I can't wait about today.",
     "handIn": "She's tied up, and here's your rope.",
-    "thanks": "#thanks#. Snug as a pup in a basket. I'll be up in the Heights one day, you know, a house with a door that sticks. And I'll still come down to take a ship's lines."
+    "thanks": "#thanks#. Snug as a pup in a basket. I'll be up in the Heights one day, you know, a house with a door that sticks. And I'll still come down to take a ship's lines.",
+    "duringAsk": "About the lines...",
+    "during": "Watch the notice by the office for her. When she's in, the lines go on her before she settles."
    },
    "objectives": [
     {
@@ -3356,6 +3629,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "labour"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "lines",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "board": "ridgemere"
@@ -3384,7 +3673,7 @@
      "on": "gift",
      "match": {
       "target": "tn_oh_cairn_oakhaven",
-      "item": "crate"
+      "item": "crate^yard_crate"
      }
     }
    ],
@@ -3393,6 +3682,38 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "travel"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_last",
+     "value": "crate",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "crate",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "board": "ridgemere"
@@ -3432,6 +3753,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "willow",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "board": "ridgemere"
@@ -3485,6 +3822,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "watch"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "pheasant",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -3564,6 +3917,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "travel"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "tarns",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -3632,6 +4001,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "fellhall",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -3691,6 +4076,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "service"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "grayrock",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -3735,7 +4136,7 @@
      "on": "gift",
      "match": {
       "target": "rm_wenna_mossgrave",
-      "item": "wool_cloth"
+      "item": "wool_cloth^greywool_bolt"
      }
     },
     {
@@ -3756,6 +4157,22 @@
      "kind": "story.practice",
      "player": "$actor",
      "skill": "travel"
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "bolt",
+     "days": 2
+    },
+    {
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
     }
    ],
    "bonus": [
@@ -4078,6 +4495,11 @@
       "sq_done": 2
      }
     }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
    }
   },
   {
@@ -4159,6 +4581,24 @@
    "expectEffects": [
     {
      "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "phase": "open",
      "kind": "npc.move",
      "npc": "rm_corra_ropewick",
      "cell": "w_ridgemere_0_1",
@@ -4200,6 +4640,26 @@
     },
     {
      "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "ships",
+     "days": 2,
+     "reward": "sq-gone-to-see-the-ships"
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365,
+     "reward": "sq-gone-to-see-the-ships"
+    },
+    {
+     "phase": "open",
      "kind": "character.grant",
      "player": "wolf-ash",
      "coins": 3,
@@ -4223,6 +4683,11 @@
      "wolf-ash": {
       "sq_done": 1
      }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
     }
    }
   },
@@ -4270,6 +4735,11 @@
     "world": {
      "nh_realm": 0,
      "coin_ridgemere_day": 0
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
     }
    }
   },
@@ -4338,7 +4808,7 @@
      "day": 1.007,
      "actor": "wolf-birch",
      "target": "rm_eleanor_vance",
-     "item": "letter",
+     "item": "letter^city_letter",
      "quantity": 1,
      "cell": "rm_the_rag_mill"
     },
@@ -4494,6 +4964,11 @@
      "nh_realm": 8,
      "nh_names": 0,
      "coin_ridgemere_day": 8
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
     }
    }
   },
@@ -4770,7 +5245,7 @@
      "day": 1.019,
      "actor": "wolf-fern",
      "target": "tn_oh_cairn_oakhaven",
-     "item": "crate",
+     "item": "crate^yard_crate",
      "quantity": 1,
      "cell": "cn_oakhaven_store"
     },
@@ -4863,6 +5338,11 @@
      "nh_voice_ridgemere": 12,
      "nh_voice_oakhaven": 2,
      "coin_ridgemere_day": 18
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
     }
    }
   },
@@ -5089,7 +5569,7 @@
      "day": 1.025,
      "actor": "wolf-ash",
      "target": "rm_wenna_mossgrave",
-     "item": "wool_cloth",
+     "item": "wool_cloth^greywool_bolt",
      "quantity": 1,
      "cell": "w_ridgemere_1_2"
     },
@@ -5137,6 +5617,11 @@
     "world": {
      "nh_realm": 10,
      "coin_ridgemere_day": 12
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
     }
    }
   },
@@ -6442,6 +6927,11 @@
      "nh_realm": 92,
      "nh_voice_ridgemere": 92
     }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
+    }
    }
   },
   {
@@ -6480,7 +6970,7 @@
      "day": 1.004,
      "actor": "wolf-ash",
      "target": "rm_eleanor_vance",
-     "item": "letter",
+     "item": "letter^city_letter",
      "quantity": 1,
      "cell": "rm_the_rag_mill"
     },
@@ -6514,22 +7004,62 @@
    "expectEffects": [
     {
      "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "oakhaven",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365
+    },
+    {
+     "phase": "open",
      "kind": "item.give",
      "player": "wolf-ash",
      "item": "letter",
-     "quantity": 1
+     "quantity": 1,
+     "tag": "city_letter",
+     "name": "The City Office letter"
     },
     {
      "phase": "open",
      "kind": "journal.note",
      "player": "wolf-ash",
-     "text": "You were handed the City Office letter once already today. Carry it, or bring your own."
+     "text": "You were handed the City Office letter once already today. Carry it up."
     },
     {
      "phase": "open",
      "kind": "story.practice",
      "player": "wolf-ash",
      "skill": "travel",
+     "reward": "sq-heights-round"
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_last",
+     "value": "letter",
+     "days": 2,
+     "reward": "sq-heights-round"
+    },
+    {
+     "phase": "open",
+     "kind": "talk.remember",
+     "scope": "town",
+     "town": "ridgemere",
+     "key": "sq_on",
+     "value": "yes",
+     "days": 365,
      "reward": "sq-heights-round"
     },
     {
@@ -6552,7 +7082,9 @@
      "kind": "item.give",
      "player": "wolf-ash",
      "item": "letter",
-     "quantity": 1
+     "quantity": 1,
+     "tag": "city_letter",
+     "name": "The City Office letter"
     }
    ],
    "expectVariables": {
@@ -6564,6 +7096,11 @@
      "wolf-ash": {
       "sq_done": 1
      }
+    }
+   },
+   "facts": {
+    "purses": {
+     "town:ridgemere": 2000
     }
    }
   }

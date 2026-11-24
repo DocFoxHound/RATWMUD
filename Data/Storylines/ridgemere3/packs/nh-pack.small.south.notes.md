@@ -160,3 +160,16 @@ refuses a door into one, or into a room whose stairs reach one.
   (`story_quests.open_in`), and each door here serves one, so each stays unlocked until the run ends, when the game puts
   back what each had. (`door.lock` would lock the workers out too. `door.close` closes a door to wolves and leaves its
   lock alone: that is how the stage pack ends its windows.)
+
+## Wave J (as built, 2026-11-24, branch `r3-nh-live`)
+The engine of doc 86 (Phases 1a to 9) is merged, so this version uses what the sections above call "later". Every
+program here passes `python3 tools/nh_check.py --all` (now with the wave J checks: the prefix, the purse guard, the talk keys).
+
+- `"prefix": "sq"`. **C8**: each errand's rewards say `sq_last=<its word>` (2 days) and renew `sq_on=yes`; the phase
+  opens with `sq_on=yes` in Larkfield, Southmeadow, Fenshore, Saltwell and Ridgemere.
+- **M2** on the six pay triggers. **C1**: each grant pays its amount, or a twentieth of a poorer store
+  (`min(amount, purse / 20)`), and the day counter adds what was paid.
+- **C2**: the garland rope is `max(6, 2 x active wolves)`, read before each bunch is measured (it grew by one a helper).
+- **C5**: when the rope is full the giver, Briar Sedgebridge (re-cast from Willa), thanks every wolf who tied a bunch
+  (For each over `sq_helpers`, `npc.greet`, 7 days).
+- **Left**: J10 (the Gift objectives for Gift-carrying wolves only), C12a/J2, L2 (the bounty is a natural camp's).

@@ -100,3 +100,12 @@ refuses a door into one, or into a room whose stairs reach one.
   (`story_quests.open_in`), and each door here serves one, so each stays unlocked until the run ends, when the game puts
   back what each had. (`door.lock` would lock the workers out too. `door.close` closes a door to wolves and leaves its
   lock alone: that is how the stage pack ends its windows.)
+
+## Wave J (as built, 2026-11-24, branch `r3-nh-live`)
+The engine of doc 86 (Phases 1a to 9) is merged, so this version uses what the sections above call "later". Every
+program here passes `python3 tools/nh_check.py --all` (now with the wave J checks: the prefix, the purse guard, the talk keys).
+
+- `"prefix": "lq"`. **J3**: `eels_run` and `eels_share` count as a finished Story (C6: after `traps` or `weir`).
+- **C8**: `lq_eels` by phase; a wolf paid in bread tells the realm `lq_eels_thin=yes` for a day (Ivo's line).
+- **L2** on the weir camps; **M2** and **C1** on every grant.
+- **Left**: the clock lays stay every wolf's (J1 needs an acting wolf), L5.
