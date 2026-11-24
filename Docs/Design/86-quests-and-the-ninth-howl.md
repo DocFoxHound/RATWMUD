@@ -1,6 +1,6 @@
 # 86. Quests and the Ninth Howl: quest packs, the first grand campaign, its cast and talk, and the triggers they need
 
-Draft, 2026-11-22. A design; nothing is built yet. Surveyed at `17f6db3b` on `ridgemere2` (the Story Maker as doc 85
+Draft, 2026-11-22. A design; all its engine phases are built (2026-11-24: "Phase 1a as built" to "End of slice as built", on branches `r3-nh-p1a` to `r3-nh-p9`). Surveyed at `17f6db3b` on `ridgemere2` (the Story Maker as doc 85
 left it, all eleven of its phases built). World: **Ridgemere 3** (key `ridgemere3`, database `ratw_ridgemere3`, world
 id `upper_accord`), read only. Every resident, place, item, purse and event named here was checked against that world
 on 2026-11-22; nothing in the world was changed.
@@ -2475,3 +2475,92 @@ six nits (five fixed); two more were found while fixing.
   after review, unchanged), `story_guide.py --check`; the Editor's tests (78 and 156), `tsc --noEmit` and `npm run smoke`
   (65 panels, House purses among them); a scratch Ridgemere 3 server from this branch (restored the save, answered;
   stopped after).
+
+## End of slice as built
+
+**End of slice as built** (2026-11-24, on `r3-nh-p9` at `32504dbb`; commits `9de99d07` and `491c11d5`). The checks across
+all phases, one end-to-end on a copy of Ridgemere 3, and one review-and-fix pass over `ridgemere2...r3-nh-p9`. **No
+migration** beyond Phase 8's 0080 and 0081; nothing was written to `ratw_ridgemere3`, `ratw_dev` or `ratw_prod`.
+- **The whole check** (the local PostgreSQL; the tests' own `ratw_test_*` databases and `RATW_STORY_TEST_DSN` on a
+  throwaway database migrated whole, dropped after):
+  - `ctest` (122): all pass but `talk_scorecard_quick` under `-j8`, the timing gate noted in every phase, which passes alone
+    three times out of three; `pg_client` skipped as ever. `story_world_behaviors` failed once in 40 runs under load: its
+    check that the watch list is said with no count before it (`!contains(gave, "1 the watch list")`) matched the end of
+    "Neighbour u1 the watch list" whenever the give's line was in what Ash had heard; it looks for " 1 the" now.
+  - Python: every `tools/test_*.py` (74 files, 1,480 tests) one at a time, five at once. The failures are the known ones,
+    each failing the same on `ridgemere2`: `test_live_edit` (1), the map and terrain exporters (`test_map_editor` 1,
+    `test_terrain_catalog` 1), the Dungeon Master mark's check in `test_live_map` (1), `test_world_admin` (2),
+    `test_world_package`'s two end-to-end tests. `test_story_facts_live` and the scene and siege live tests passed
+    this time. After the fixes below, every `test_story_*.py` (23), `test_dungeon_master` and
+    `test_studio` again: all OK.
+  - The Editor: tests (78 and 156), `tsc --noEmit`, `npm run smoke` (65 panels; the workbench over 108 programs, 1,192
+    views, and the quests' 2, none edited) and `npm run build`. The client: tests (246) and `npm run build`. `story_guide.py --check`.
+  - A scratch Ridgemere 3 server from this branch (`tools/scratch.sh ridgemere3`): restored the save (5 wolves, 777
+    residents), listened, served the page; stopped after.
+- **End to end** (scripts kept out of the tree, in the session's `/tmp/r3eos/e2e/`). A scratch server applies no orders,
+  so the run was on a **copy**: `ratw_ridgemere3` dumped (read only) into a throwaway `ratw_test_eos_r3_*`, migrated
+  through 0081 (only 0080 and 0081 were new), and a game server from this branch on it (`--database ridgemere3` with
+  `RATW_DATABASE_URL` naming the copy, `--dev-identity`, port 0, 127.0.0.1). The save's accounts are central (ticket)
+  accounts, which a password-mode server refuses, so the copy's accounts and its five wolves were taken out first and
+  three new wolves (Ash, Birch, Cedar) came in through real game connections (the client's own `Connection`). The real
+  story runner ran as its own process (`story_runner.py --world ridgemere3` with `RATW_RIDGEMERE3_DBNAME` the copy), and
+  everything an admin does went through the DM tool's route (`POST /api/story-program`, a Dungeon Master account of the
+  copy). The stories: **a campaign of two chapters** ("The Commons": chapter 1 ready by participation, `of: active`,
+  30% and a floor of 1, `auto`, its closing phase starting chapter 2 with the same wolves; chapter 2 ready after 5 days,
+  not `auto`) and **a small pack** ("Raiders at the Commons": Rupert Ropehand the farrier, moved beside the wolves and
+  held; a pledge quest and a raid quest that `requires` it, `closure: line`). Seen, in order:
+  - `campaign.approve` (both chapters rehearsed, no warnings), chapter 1 published; the pack approved alone and
+    published; both phases applied; the farrier moved and held (one `story.effects` batch).
+  - Each wolf opened Rupert's window: **Ask about: A pledge to the farrier**, "I'll do it." ("You take on: A pledge to the
+    farrier."), then the story's choice **I will stand with the Commons.** ("Then the Commons will remember you."): the
+    **pledge** (`dialogue choice`, `p_pledge`, the pledged list) and **a till payment** each: "Paid 3p to Ash from
+    till:job:rm_rupert_ropehand: the farrier's penny." (cash 20 to 23, all three).
+  - The raid offered only then (`requires`), taken in the window; **a foe**: "Grisk the Raider come to Ridgemere, the
+    Commons and the Rise", hunting: he set on Cedar, the Watch on duty (Tilde Nailby, Vidar Dripmarsh) came in, Ash and
+    Birch joined from their own cards; Cedar was downed in one; **Grisk broke off: `foe fled` (fled)** in every
+    run. The pack's trigger completed every raider's copy; **a title**: "Named Raid-Breaker of the Commons." (all three,
+    saved with the wolves, known in Ridgemere for 30 days); **a closure counted**: "A finished Story: The raider on the
+    Rise (3 social)." for each.
+  - **A notify**: the pack's `story.notify raid_won` for each wolf reached chapter 1 (`story-event` commands, "Story
+    notified: e2e-raiders (raid_won); heard fired."); **chapter 1 moved on by participation**: "Ready: 3 of 3 active
+    wolves (100%; 30% and 1 needed)", into its closing phase, finished, and started chapter 2 "for 3 wolves".
+  - **Chapter 2 moved on by an admin Advance**: the route's `command` `advance` `{when: now, anyway: true}` with a reason:
+    "Advanced to done now anyway (not ready: 0 of 1 parts met): 0 of 5 days.", audited (`story.advance`, by the Dungeon
+    Master, with the reason); the campaign "ended", both chapters complete, the timelines with their `ready`, chapter
+    and command items.
+  - **Found by it: the server crashed** at the pack's first batch. `npc.hold` took the story's `npcs` section by
+    reference, then made `follow`, whose new field moved the first: the hold was written to freed memory (a segfault on
+    Ridgemere 3; in the test town it had passed because earlier sections had left room). Doc 85, Phase 9's code; the
+    same in Phase 7's foe loop (a resident made a foe and beaten was held, making `npcs`, while the loop walked `foes`).
+    Both fixed (`9de99d07`); `story_world_tests` has a third story whose first order is a hold, which segfaults without
+    the fix. The end-to-end then passed, and again after the review's fixes.
+- **The review** (one pass over `ridgemere2...r3-nh-p9`, 164 files): four bugs and four nits, all fixed (`491c11d5`).
+  - **A casting took 36 s on Ridgemere 3**: `cast_pick` read `dm.story_posts` (a view over the whole checkpoint) once per
+    resident. The posts held are read once: 0.1 s, the same choice.
+  - **`npc.post` was journalled as Economy only**; positions are journalled with Careers, so a crash before the next
+    checkpoint lost the post. `record(Careers | Economy)`.
+  - **A resident made a foe who died outside a fight** (old age, a Dungeon Master, `npc.kill`) ended with no event, so a
+    story waiting on its foe waited for ever. Now `foe fled` with item **`gone`** (the catalogue's help and the guide's
+    reference: fled, time or gone). `battle_tests`: dead outside a fight.
+  - **The casting's seed** counted the casting log, which keeps 20, so from the 21st casting on every one asked the same
+    seed: `castCount` now (the same seeds as before for the first 20). `test_story_quests`: thirty castings, thirty seeds.
+  - Nits: a story's own words over a limit are no longer cut short by the name fills (they come back whole and the order
+    refuses them, as before C1b; names that make a line too long are still cut at a word: `story_world_tests`); the Foes
+    panel's time left at `--speed`; `npc.queue` says "in line there already" (the newest a story names is first);
+    `talk.remember` says "Not remembered" for a memory the caps let go of at once, and the story does not hold it
+    (`story_world_tests`).
+- **Left, and why**: (1) **`foe defeated` was not seen live**: three new wolves never beat a "tough" foe, who runs below
+  25 health; `battle_tests` and `story_world_tests` play it (a champion who never runs). (2) The end-to-end's world is a
+  copy with its accounts and wolves taken out (a password server and a ticket save never mix: doc 77), so it says nothing
+  about the laptop's central sign-in; the scripts that made it are not in the tree. (3) The closure was read from the
+  game's receipt, not from a wolf's Quickening checklist. (4) **M3's economy check is still not run** (a simulation the
+  user has not approved): House purses stay off behind `storyHousePurses`. (5) The pre-existing Python failures above are
+  not this slice's.
+- **Going live on Ridgemere 3** needs, in order: this branch merged into `ridgemere2` (all phases, `r3-nh-p1a` to
+  `r3-nh-p9`, are one chain); the migrations no phase has applied there, **0080** (`dm.story_posts`) and **0081**
+  (`dm.story_realm_vars`) (`ratw_ridgemere3` is at 0079; `world_db.migrate` applies them in order); the game server rebuilt
+  and the laptop's world restarted (`Saved/WorldAgent/run.sh`, port 7788; publishing a build restarts it); the story
+  runner restarted (`tools/story_runner.py --world ridgemere3`); the Editor (Studio and the desktop shell's Editor) and
+  the client released from it (a client after 0.1.10, for the slice's journal, quest and card changes).
+  Then section 10's preparation: the allow-listed words, the world variables, protecting the cast, `warden_order`. House
+  purses stay off until the user approves their economy check and the owner turns them on.
