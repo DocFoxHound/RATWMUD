@@ -318,6 +318,12 @@ std::string baseOf(const std::string& id);                  // "hide~fine" -> "h
 bool storyTagged(const std::string& id);
 void nameStoryItem(const std::string& id, const std::string& name);   // ("" forgets the name.)
 const std::string* storyItemName(const std::string& id);              // The story's name for it, or none.
+// A story's name may begin with an article ("The watch list"): `counted` gives "2 rope" for a name as it is and, for a
+// story's own item named so, "the watch list", "2 of the watch list" (an "A"/"An" one: "a token", "2 token"); `theItem`
+// gives "the rope" and "the watch list" alike.
+bool articled(const std::string& name);
+std::string counted(const std::string& name, int quantity, bool story);
+std::string theItem(const std::string& name, bool story);
 std::string makerOf(const std::string& id);                 // "sword~masterwork@sorrel" -> "sorrel"; "" for none.
 std::string withMaker(const std::string& id, const std::string& maker);
 std::string unmarked(const std::string& id);                // The id without its maker's mark.

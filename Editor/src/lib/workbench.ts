@@ -15,6 +15,8 @@ export interface Param {
     all?: boolean;
     /** Version 2: a variable's types (`variable`), an optional slot, an operand's kind or the slot it must match. */
     of?: string[]; optional?: boolean; kind?: string; like?: string;
+    /** Doc 86, J9: an item slot that may name the story's own item (item^tag): "carries", as an event's filter may. */
+    own?: boolean;
     /** Doc 86, C3a: a `variable` slot's scopes (Rank: a wolf's own number, into a list of the story or the world). */
     scope?: string[];
     /** (The Editor's own: an `objective` slot's quest, filled from the record beside it, so its picker lists that quest's.) */
@@ -245,19 +247,27 @@ export function effectValuesOf(p: Program, kinds: string[], key: string): string
 export const talkKeysOf = (p: Program) => effectValuesOf(p, ['talk.remember', 'talk.forget'], 'key');
 export const talkValuesOf = (p: Program) => effectValuesOf(p, ['talk.remember'], 'value');
 export const figuresOf = (p: Program) => effectValuesOf(p, ['figure.set', 'figure.clear'], 'figure');
-/** Doc 86, J9: the story's own items a program gives (item.give with a tag), as a filter or "carries" names them
- *  (letter^watch_list), with the name it gives them and the base item. */
+/** Doc 86, J9: the story's own items a program gives (item.give with a tag, wherever it is: a phase's effects, a trigger's
+ *  actions at any depth, a quest's rewards, a chapter's...), as a filter or "carries" names them (letter^watch_list), with
+ *  the name it gives them and the base item. A rehearsal's events are the game's, not the story's, and are left out. */
 export function storyItemsOf(p: Program): {id: string; item: string; tag: string; name: string; keep: boolean}[] {
     const out = new Map<string, {id: string; item: string; tag: string; name: string; keep: boolean}>();
-    const effects = [...p.phases.flatMap(ph => ph.effects ?? []), ...(p.quests ?? []).flatMap(q => [...(q.rewards ?? []), ...(q.bonus ?? [])]),
-        ...[...(p.triggers ?? []), ...p.phases.flatMap(ph => ph.triggers ?? [])].flatMap(t => allActions(t.actions).flatMap(({a}) => a.do === 'effect' ? [a.effect] : []))];
-    for (const e of effects)
+    const visit = (node: unknown): void => {
+        if (Array.isArray(node)) { node.forEach(visit); return; }
+        if (!node || typeof node !== 'object') return;
+        const e = node as Record<string, unknown>;
         if (e.kind === 'item.give' && typeof e.item === 'string' && typeof e.tag === 'string' && e.tag) {
             const id = `${e.item}^${e.tag}`;
             if (!out.has(id)) out.set(id, {id, item: e.item, tag: e.tag, name: typeof e.name === 'string' ? e.name : '', keep: e.keep === true});
         }
+        for (const v of Object.values(e)) visit(v);
+    };
+    for (const [k, v] of Object.entries(p)) if (k !== 'tests') visit(v);
     return [...out.values()].sort((a, b) => a.id.localeCompare(b.id));
 }
+/** Doc 86, J9: whether a slot may name the story's own item: an event's filter (no parameter) or a parameter that says so
+ *  ("carries"); never an effect's own item (item.give, item.take, item.place, a region's item), which the game refuses. */
+export const ownItemsHere = (slot: Pick<Slot, 'param'>) => !slot.param || slot.param.own === true;
 export const tagsOf = (p: Program) => [...new Set(storyItemsOf(p).map(s => s.tag))].sort();
 /** Phase 9: the strangers (visitor.add) a program brings, by the ids it gives them. */
 export function visitorsOf(p: Program): string[] {

@@ -3606,7 +3606,7 @@ Result World::takeItem(const std::string& id, const std::string& groundId)
     if (!e->npc && storyListens("item picked up"))
         recordEvent({"item picked up", id, {}, e->cellId, 0, 0, item, 1, 0, {}});
     // (A story's own item by the name its story gave it: doc 86, J9.)
-    return {true, "You pick up the " + (items::storyTagged(item) ? std::string(Society::itemName(item)) : item) + ".", {}};
+    return {true, "You pick up " + (items::storyTagged(item) ? items::theItem(Society::itemName(item), true) : "the " + item) + ".", {}};
 }
 
 void World::dropItem(Battle& b, BattleFighter& f)

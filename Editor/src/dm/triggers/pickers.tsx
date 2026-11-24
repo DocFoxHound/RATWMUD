@@ -5,7 +5,7 @@
 import {createContext, useContext, useMemo, useState} from 'react';
 import {MapView} from '../MapView';
 import {surfaceFor} from '../../lib/surface';
-import {allActions, countersOf, figuresOf, fillsOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, widestFilled, REF_KIND, signalsOf, storyItemsOf, tagsOf, talkKeysOf, talkValuesOf, visitorsOf, type CatEvent, type CatItem, type Condition, type Operand, type Param,
+import {allActions, countersOf, figuresOf, fillsOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, widestFilled, REF_KIND, ownItemsHere, signalsOf, storyItemsOf, tagsOf, talkKeysOf, talkValuesOf, visitorsOf, type CatEvent, type CatItem, type Condition, type Operand, type Param,
     type Program, type Slot} from '../../lib/workbench';
 import {useBench} from './context';
 import {ConditionNode} from './TriggerView';
@@ -36,8 +36,9 @@ function EnterId({value, pick, label = 'Enter an id'}: {value: unknown; pick: (v
         <label>{label}<input value={text} onChange={e => setText(e.target.value)} maxLength={80}/></label><button type="submit">Use</button></form>;
 }
 
-/** The options of a reference type, from the world's refs and the story itself. */
-export function useOptions(type: string): Option[] {
+/** The options of a reference type, from the world's refs and the story itself (`own`: an item slot that may name the
+ *  story's own items, doc 86, J9). */
+export function useOptions(type: string, own = false): Option[] {
     const {refs, program} = useBench();
     return useMemo(() => {
         if (type === 'character') return [...(refs?.wolves ?? []).map(w => ({...w, group: 'Wolves'})), ...(refs?.residents ?? []).map(r => ({...r, group: 'Residents'}))];
@@ -51,14 +52,14 @@ export function useOptions(type: string): Option[] {
         const kind = REF_KIND[type];
         const list = kind ? (refs?.[kind] as Option[] | undefined) ?? [] : [];
         // (Doc 86, J9: the story's own items first, as filters and "carries" name them: letter^watch_list.)
-        if (type === 'item') return [...storyItemsOf(program).map(s => ({id: s.id, name: s.name || `${s.item} (${s.tag})`, group: "The story's own",
+        if (type === 'item') return [...(own ? storyItemsOf(program) : []).map(s => ({id: s.id, name: s.name || `${s.item} (${s.tag})`, group: "The story's own",
             hint: s.keep ? 'kept after the story' : 'taken back at the end'})), ...(refs?.items ?? []).map(i => ({id: i.id, name: i.name, group: i.category}))];
         if (type === 'resident') return (refs?.residents ?? []).map(r => ({id: r.id, name: r.name, hint: r.work || r.home}));
         if (type === 'place') return (refs?.places ?? []).map(p => ({id: p.id, name: p.name, hint: p.kind + (p.town ? ' · ' + p.town : '')}));
         // (Doc 86, L1: an animal for a staged hunt, with the ground it lives on.)
         if (type === 'species') return (refs?.species ?? []).map(a => ({id: a.id, name: a.name, hint: (a.habitats ?? []).join(', ')}));
         return list;
-    }, [type, refs, program]);
+    }, [type, refs, program, own]);
 }
 
 function TilePicker({value, pick}: {value: {cell?: unknown; x?: unknown; y?: unknown}; pick: (v: Values) => void}) {
@@ -233,7 +234,7 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
     const key = slot.keys[0];
     const one = (v: unknown) => pick({[key]: v});
     const type = slot.type;
-    const options = useOptions(type === 'wolf' ? 'wolf' : type);
+    const options = useOptions(type === 'wolf' ? 'wolf' : type, ownItemsHere(slot));
     let body: React.ReactNode;
     if (type === 'tile') body = <TilePicker value={(slot.value ?? {}) as Values} pick={pick}/>;
     else if (type === 'variable') body = <VariablePicker slot={slot} pick={one}/>;

@@ -50,7 +50,7 @@ std::string Game::goodsWords(const std::string& item, int quantity, std::int64_t
 {
     std::string words;
     if (!item.empty() && quantity > 0)
-        words = std::to_string(quantity) + " " + lowerFirst(Society::itemName(item));
+        words = items::counted(lowerFirst(Society::itemName(item)), quantity, items::storyTagged(item));   // (Doc 86, J9: "the watch list".)
     if (coins > 0)
         words += (words.empty() ? "" : " and ") + std::to_string(coins) + "p";
     return words;

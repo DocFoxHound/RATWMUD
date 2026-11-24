@@ -1797,15 +1797,16 @@ gains three optional parameters, and there is one new parameter type (`tag`, 50 
 - **Checks** (`story_program.validate_effect`, `_check_tags`): the tag is `[a-z0-9_]{1,32}`; `name` (one line of 60, no
   `#`, brackets or fills) and `keep` only with a `tag`; the base a plain item (no `~` or `@`); one `item^tag` is given with
   one name and one `keep` everywhere in the program; 64 kinds at most; an `item` with `^` anywhere but a rehearsal is the
-  short form. Approval checks the base against the item catalogue as before (`reference_problems`, `world_checks` split on
+  short form, and never in a `starts` (after review); one the program never gives is a warning (after review). Approval checks the base against the item catalogue as before (`reference_problems`, `world_checks` split on
   `^` too). The story words check (V2, `story_words.EFFECT_WORDS`) reads the name, as every text a wolf reads.
 - **The order.** `story_runner.order_of` sends a tagged `item.give` as `item.give` (target the wolf) with the hashed `item`,
   `name`, `keep`, `run` and `visit`; an untagged one is the order it always was. `RUNNER_VERSION` is `doc86-phase6`.
 - **The game** (`Core/RatwStoryArea.cpp`, `Core/RatwGameStoryWorld.cpp`). `applyStoryReward`'s `item.give` calls
   `Game::storyItemGiven` for a tagged id: it refuses a malformed id (a short form, a base with a make, a base not in the
-  catalogue), a story not running, a name that is not one line of 60, and more than 4,000 names in the world; it keeps the
-  name in `storyItemNames_` and in `items::nameStoryItem` (the table `Society::itemName` reads, so the pack, trades, gifts
-  and messages show it). After the goods are made, `storyItemHeld` lists the id in the run's `held.tags` unless `keep`.
+  catalogue), a story not running, a name that is not one line of 60, and more than 4,000 names in the world. After the
+  goods are made, `storyItemHeld` keeps the name in `storyItemNames_` and in `items::nameStoryItem` (the table
+  `Society::itemName` reads, so the pack, trades, gifts and messages show it) and lists the id in the run's `held.tags`
+  unless `keep`.
   `endStoryWorld` takes every unit of those out of every account (`Society::takeAll`: wolves, residents, tills, stalls,
   letters on the road) and off the ground (`World::takeBackItems`), forgets their names and tells each wolf who held one
   ("What the story ... gave you to carry is gone with it."). A kept one stays with its name, saved and loaded with the
@@ -1814,10 +1815,12 @@ gains three optional parameters, and there is one new parameter type (`tag`, 50 
   that split by hand (`tendLoans`, `makersScent`, `giftWorthThanks`) now call `baseOf`. `items::good` finds the base;
   `items::storyTagged` says whether an id is a story's own. Such an item is never a wearable or a blade, has no wear
   (`World::durabilityOf` 0, so the pack shows no condition), is no kind of its base for making, eating or paying
-  (`Society::kindsHeld` returns only itself, asked by its own id), and is refused by a shop (`Society::stagedQuote`), a stall
+  (`Society::kindsHeld` returns only itself, asked by its own id; after review `Society::edible` and `nourishment` say no
+  food, so no wolf or resident eats it and the staged wallet trims keep it), and is refused by a shop (`Society::stagedQuote`), a stall
   (`list`), a town project's hand-in and a loan: "That belongs to a story." Picking it up off the ground names it as its story does.
 - **Facts.** `storyFactsJson` counts a carried story item under its own id when the watch names it (the watch's `items` is
-  the expanded list), and under its base otherwise, as before.
+  the expanded list), and under its base as well when the watch names that (changed after review: the spec's "under the
+  base otherwise" let one story's watch hide the item from another's "carries letter").
 - **Workbench** (`Editor/`): `storyItemsOf` / `tagsOf` read the program's tagged gives; the item picker offers "The story's
   own" first (as `letter^watch_list`, named, with kept or taken back); the new `tag` picker (`NamePicker` with a pattern);
   `namesOf` names a story's own item as `“The watch list” (the story's Letter)`. `item.give` reads "Give the acting wolf 1
@@ -1854,6 +1857,32 @@ gains three optional parameters, and there is one new parameter type (`tag`, 50 
   paying, building), which is what "can't be crafted from" needs; asked for by its own id it is there. Taking back reaches
   every account, so a letter on the road with one inside loses it; nothing else is touched. A kept item's name lasts as long
   as the world keeps it (4,000 names at most); a name is forgotten only when its run takes the item back.
+- **After review** (the review of `f8bcb2fd`). (1) `carries` counts a story's own item under its own id and, independently,
+  under its base: the watch is every live story's, so story A watching `letter^watch_list` no longer makes the list stop
+  counting as a letter for story B (`story_world_tests` now expects `letter == 2` for Ash's two lists). (2) The workbench
+  offers "The story's own" items only where they can be named: an event's filter (a slot with no parameter) and a parameter
+  marked `"own": true` in the catalogue (`carries`'s item); never `item.give`'s own item, `item.take`, `item.place` or
+  `story.area.item`, which refuse `^` (`ownItemsHere`, `useOptions(type, own)`). `storyItemsOf` now walks the whole program
+  (a rehearsal's events left out), as `_check_tags` does. (3) `expand_tags` and `expanded_phase` read the cache once, under
+  a lock (`_expanded` returns the expanded program and its phases together), and the oldest program goes one at a time past
+  `EXPANDED_MOST` (64), so a thread letting a program go between two reads no longer raises `KeyError`. A program is read
+  as it was when first expanded (said in the code: the runner reads a fresh dict each time). (4) A tagged give refused for a
+  full pack leaves no name behind: `storyItemGiven` only checks, `storyItemHeld` names after the goods are made. (5)
+  Validation refuses `^` in a `starts` ("named whole"), and `program_warnings` warns of an `item^tag` the program never
+  gives (`own_items_named` against `story_items`, so that is no longer only the tests'): its hash is this program's, so
+  only what an earlier version of the story gave could match it (a warning, not a refusal, for that reason; the parity
+  tests' small programs also name one they never give). (6) The guide says a plain filter takes a
+  story's own item as its base only on `gift` and `gift again`; `item picked up` and `item dropped` match exactly. (7) A
+  story's own food is never eaten (`edible`, `nourishment`; `bestFood`, `eatFirst`, `hasFood`) and the staged wallet trims
+  neither drop it as food nor cap it as another good. (8) A story's name beginning with an article reads in the world text
+  as "You pick up the watch list.", "You give the warden the watch list.", "You receive 2 of the watch list."
+  (`items::counted`, `items::theItem`; a catalogue item's words are unchanged). Kept: (9) the client pack test (as above),
+  and a chapter cannot name an earlier chapter's item (the hash is per program; the guide says so). Tests:
+  `story_world_tests` (the facts as a letter too, the gift said as "the watch list", a story's bread not edible, a give to a
+  full pack refused and unnamed), `test_story_v2` (`Phase6Items`: "named whole" refused, an `in` list of the story's own accepted, one never given warned of
+  at its path;
+  the cache let go between reads, the oldest evicted, eight programs read from six threads at once), `workbench.test.ts`
+  (where the story's items are offered; one deep in a branch found, a rehearsal's not).
 - **Going live** on `ratw_ridgemere3` needs no migration; the game server restarted from this branch, the story runner from
   this branch with the rebuilt `libratw_story.so` (the gift filter's split is in both twins), the Editor released from it.
   The client needs no change.

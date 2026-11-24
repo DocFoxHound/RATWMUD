@@ -590,12 +590,17 @@ on open water"), when the region is indoors, or when it is in a town (no hunt be
 ```
 
 It is a letter (it weighs what a letter weighs), but it is the story's: no shop or stall takes it ("That belongs to a
-story."), it is never built with, made into something or used up as a letter, and it never wears. Name it in a filter
-(`gift`, `gift again`, `item picked up`, `item dropped`) or in "carries" as `item^tag`: `letter^watch_list` is this
-story's list and nothing else, not a plain letter and not another story's list of the same mark. A plain `letter` filter
-or "carries letter" still counts it as a letter, as it counts a fine or a marked one. Give it from a plain item (no `~`
-make or `@` maker's mark), with one name, and kept or not, wherever the story gives it. The base is checked against the
-item catalogue at approval as any item.
+story."), it is never built with, made into something, used up or eaten as a letter (a story's bread is not eaten
+either), and it never wears. Name it in a filter (`gift`, `gift again`, `item picked up`, `item dropped`) or in "carries"
+as `item^tag`: `letter^watch_list` is this story's list and nothing else, not a plain letter and not another story's
+list of the same mark. Name it whole: "begins with" cannot name it (the game's id has the story's mark inside it), but
+"one of" can list it. "carries letter" still counts it as a letter, as it counts a fine or a marked one, whatever any
+other story is watching; so does a plain `letter` filter on a gift (`gift`, `gift again`). A filter on `item picked up`
+or `item dropped` matches the item exactly, as for a fine or a marked one, so name the story's own as `letter^watch_list`
+there. Give it from a plain item (no `~` make or `@` maker's mark), with one name, and kept or not, wherever the story
+gives it. The base is checked against the gives. The base is checked against the item catalogue at approval as any item, and an `item^tag` the story never
+gives (no "Give a wolf an item" of that item with that mark) is warned of: only one an earlier version of the story gave
+could match it.
 
 When the run ends, every one not kept is taken back: out of every pack, from a resident it was given to, and off the
 ground; the wolves who carried it are told it is gone with the story. A kept one stays with its name (a writ of

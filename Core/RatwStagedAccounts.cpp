@@ -894,7 +894,7 @@ void Society::stagedTrim(const std::string& id, int band)
     double have = 0;
     std::vector<std::pair<int, std::string>> foods;   // (Nourishment, item): the richest dropped first.
     for (const auto& [item, n] : wallet.stock)
-        if (n > 0 && nourishment(item) > 0)
+        if (n > 0 && nourishment(item) > 0 && !items::storyTagged(item))   // (A story's own item is no food: doc 86, J9.)
         {
             have += double(nourishment(item)) * n;
             if (items::makerOf(item).empty())
@@ -922,7 +922,7 @@ void Society::stagedTrim(const std::string& id, int band)
         const auto& [item, n] = *it;
         const auto* good = items::good(item);
         const bool worn = items::wearable(item) != nullptr || items::blade(item) != nullptr || (good && good->category == "weapon");
-        const bool keep = nourishment(item) > 0 || !items::makerOf(item).empty() || item == "sword";
+        const bool keep = nourishment(item) > 0 || !items::makerOf(item).empty() || item == "sword" || items::storyTagged(item);
         const int must = least(item);
         const int cap = std::max(must, worn ? std::max(1, row.goodsMost) : row.goodsMost);
         if (!keep && n > cap)

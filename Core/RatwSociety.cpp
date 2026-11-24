@@ -1150,13 +1150,14 @@ bool Society::rehome(const std::string& id)
 // Food (doc 35, Part 7).
 bool Society::edible(const std::string& item)
 {
-    const auto* good = items::good(item);
+    // (A story's own item, for all it is bread underneath, is the story's to take back, never eaten: doc 86, J9.)
+    const auto* good = items::storyTagged(item) ? nullptr : items::good(item);
     return good && good->nourish > 0 && !good->drink;
 }
 
 int Society::nourishment(const std::string& item)
 {
-    const auto* good = items::good(item);
+    const auto* good = items::storyTagged(item) ? nullptr : items::good(item);
     return good && !good->drink ? good->nourish : 0;
 }
 
@@ -1165,7 +1166,7 @@ std::string Society::bestFood(const EconomyAccount& account)
     const std::string* best = nullptr;
     int most = 0;
     for (const auto& [item, n] : account.stock)
-        if (n > 0)
+        if (n > 0 && !items::storyTagged(item))     // (A story's own item is never eaten: doc 86, J9.)
             if (const auto* good = items::good(item); good && !good->drink && good->nourish > most)
             {
                 most = good->nourish;
@@ -1180,7 +1181,7 @@ std::string Society::eatFirst(const EconomyAccount& account)
     const items::Item* firstGood = nullptr;
     const auto keeps = [](const items::Item* g) { return g->keeps > 0 ? g->keeps : 1e9; };
     for (const auto& [item, n] : account.stock)
-        if (n > 0)
+        if (n > 0 && !items::storyTagged(item))
             if (const auto* good = items::good(item); good && !good->drink && good->nourish > 0)
                 if (!first || keeps(good) < keeps(firstGood) || (keeps(good) == keeps(firstGood) && good->nourish > firstGood->nourish))
                 {
@@ -1193,7 +1194,7 @@ std::string Society::eatFirst(const EconomyAccount& account)
 bool Society::hasFood(const EconomyAccount& account)
 {
     for (const auto& [item, n] : account.stock)
-        if (n > 0)
+        if (n > 0 && !items::storyTagged(item))
             if (const auto* good = items::good(item); good && !good->drink && good->nourish > 0)
                 return true;
     return false;

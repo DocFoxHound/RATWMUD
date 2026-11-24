@@ -597,16 +597,17 @@ Result Game::storyItemGiven(const std::string& wolf, const std::string& item, co
         return {false, "A story item's name is one line of up to 60 characters.", wolf};
     if (!name.empty() && !storyItemNames_.count(item) && storyItemNames_.size() >= StoryItemNamesMost)
         return {false, "The world keeps the names of " + std::to_string(StoryItemNamesMost) + " story items at most.", wolf};
+    return {true, {}, wolf};
+}
+
+void Game::storyItemHeld(const std::string& item, const Value& payload, const std::string& name)
+{
+    // (Named only now it is in a pack: a give refused for a full pack leaves no name in the world.)
     if (!name.empty())
     {
         storyItemNames_[item] = name;
         items::nameStoryItem(item, name);
     }
-    return {true, {}, wolf};
-}
-
-void Game::storyItemHeld(const std::string& item, const Value& payload)
-{
     // (Kept after the story: it stays with its name. Otherwise the run takes every unit of it back when it ends.)
     auto* story = storylines_.find(payload.string("run"));
     if (!story || payload.boolean("keep"))

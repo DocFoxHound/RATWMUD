@@ -156,11 +156,15 @@ std::string Game::storyFactsJson()
                 std::map<std::string, double> held;
                 if (purse)
                     for (const auto& [item, n] : purse->stock)
-                        // (Doc 86, J9: a story's own item under its own id when the watch names it, else as its base.)
-                        if (n > 0 && w.items.count(item) && items::storyTagged(item))
-                            held[item] += n;
-                        else if (n > 0 && w.items.count(baseItem(item)))
-                            held[baseItem(item)] += n;
+                        if (n > 0)
+                        {
+                            // (Doc 86, J9: a story's own item under its own id when the watch names it, and as its base
+                            // too: the watch is every live story's, so one story's naming it never hides it from another.)
+                            if (items::storyTagged(item) && w.items.count(item))
+                                held[item] += n;
+                            if (w.items.count(baseItem(item)))
+                                held[baseItem(item)] += n;
+                        }
                 for (const auto& [item, n] : held)
                     carries.add(item, n);
                 f.add("carries", std::move(carries));

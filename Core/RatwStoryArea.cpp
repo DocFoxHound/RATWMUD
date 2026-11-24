@@ -117,15 +117,16 @@ Result Game::applyStoryReward(const std::string& kind, const std::string& wolf, 
                 return refused;
         if (!world_.society().canCreate(wolf, good, quantity))
         {
-            tellActedOn(wolf, "You have no room to carry " + std::to_string(quantity) + " " + Society::itemName(good) + ".");
+            // (A story's own item is named only once it is given: a refused one leaves no name behind.)
+            tellActedOn(wolf, "You have no room to carry " + items::counted(name.empty() ? Society::itemName(good) : name, quantity, items::storyTagged(good)) + ".");
             return {false, "Their pack is full.", wolf};
         }
         world_.society().create(wolf, good, quantity, "dm grant: story reward");
         if (items::storyTagged(good))
-            storyItemHeld(good, payload);
+            storyItemHeld(good, payload, name);
         recordCharacters(Economy, {wolf});
-        tellActedOn(wolf, "You receive " + std::to_string(quantity) + " " + Society::itemName(good) + ".");
-        return {true, "Gave " + std::to_string(quantity) + " " + Society::itemName(good) + ".", wolf};
+        tellActedOn(wolf, "You receive " + items::counted(Society::itemName(good), quantity, items::storyTagged(good)) + ".");
+        return {true, "Gave " + items::counted(Society::itemName(good), quantity, items::storyTagged(good)) + ".", wolf};
     }
     const auto factionId = payload.string("faction");
     const auto& points = payload["points"];

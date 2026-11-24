@@ -2704,12 +2704,12 @@ class Game
     // begun in one of its regions (L1, RatwGameStoryWorld.cpp: held.hunts), met by the hunt a wolf begins there.
     Result residentHowl(const std::string& npc);
     Result storyHunt(const std::string& wolf);
-    // Doc 86, J9 (RatwGameStoryWorld.cpp): the stories' own items. A tagged item.give names its item (id -> name, saved
-    // with the checkpoint and given to items::nameStoryItem, as every name is shown) and, unless kept, lists it in the run's
-    // held.tags; endStoryWorld takes every unit of those back from every purse and the ground.
+    // Doc 86, J9 (RatwGameStoryWorld.cpp): the stories' own items. A tagged item.give is checked (storyItemGiven) and, once
+    // in the pack, names its item (storyItemHeld: id -> name, saved with the checkpoint and given to items::nameStoryItem,
+    // as every name is shown) and, unless kept, lists it in the run's held.tags; endStoryWorld takes every unit of those back from every purse and the ground.
     std::map<std::string, std::string> storyItemNames_;
     Result storyItemGiven(const std::string& wolf, const std::string& item, const json::Value& payload, std::string& name);
-    void storyItemHeld(const std::string& item, const json::Value& payload);
+    void storyItemHeld(const std::string& item, const json::Value& payload, const std::string& name);
     Result applyStoryWatch(const std::string& run, const json::Value& payload);   // (J6: the watch sent again.)
     std::string takeStoryGreet(const std::string& npc, const std::string& wolf);       // The greeting, once ("" none).
     void dropStoryHolds(const std::string& owner);      // Every hold of "run:<run>" or "campaign:<id>" let go.

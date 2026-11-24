@@ -164,33 +164,48 @@ def _expand(pid, node):
     return {**node, **changed} if changed else node
 
 
-_EXPANDED = {}   # id(program) -> (program, expanded, {id(phase): expanded phase}): a program is expanded once while it is kept
+# id(program) -> (program, expanded, {id(phase): expanded phase}), the newest last: a program is expanded once while it
+# is kept. The HTTP threads, the scheduler and rehearsals read it at once, so it is locked, and the oldest goes one at a
+# time past EXPANDED_MOST. A program is read as it was when first expanded: one changed in place is a new program only
+# once it is a new dict (the runner reads a fresh one from the database each time; the Editor sends a new one).
+_EXPANDED = {}
+_EXPANDED_LOCK = threading.Lock()
+EXPANDED_MOST = 64
+
+
+def _expanded(p):
+    """(the program expanded, {id(phase): its phase expanded}) for a program, from the cache or made now."""
+    with _EXPANDED_LOCK:
+        hit = _EXPANDED.pop(id(p), None)
+        if hit is not None and hit[0] is p:
+            _EXPANDED[id(p)] = hit   # (Put back as the newest.)
+            return hit[1], hit[2]
+    x = _expand(p.get('id', ''), p)
+    phases = {}
+    if x is not p and isinstance(p.get('phases'), list) and isinstance(x.get('phases'), list):
+        phases = {id(a): b for a, b in zip(p['phases'], x['phases'])}
+    with _EXPANDED_LOCK:
+        _EXPANDED.pop(id(p), None)
+        _EXPANDED[id(p)] = (p, x, phases)
+        while len(_EXPANDED) > EXPANDED_MOST:
+            del _EXPANDED[next(iter(_EXPANDED))]
+    return x, phases
 
 
 def expand_tags(p):
     """The program as the runner and both twins read it: a story's own items in the hashed form (doc 86, J9). The program
     itself when it names none."""
-    if not isinstance(p, dict):
-        return p
-    hit = _EXPANDED.get(id(p))
-    if hit is not None and hit[0] is p:
-        return hit[1]
-    x = _expand(p.get('id', ''), p)
-    phases = {}
-    if x is not p and isinstance(p.get('phases'), list) and isinstance(x.get('phases'), list):
-        phases = {id(a): b for a, b in zip(p['phases'], x['phases'])}
-    if len(_EXPANDED) >= 64:
-        _EXPANDED.clear()
-    _EXPANDED[id(p)] = (p, x, phases)
-    return x
+    return _expanded(p)[0] if isinstance(p, dict) else p
 
 
 def expanded_phase(p, phase):
     """One phase of a program as expand_tags gives it (a phase made up beside the program is expanded on its own)."""
-    x = expand_tags(p)
+    if not isinstance(p, dict):
+        return phase
+    x, phases = _expanded(p)   # (One read of the cache: another thread may let the program go from it at any moment.)
     if x is p:
         return phase
-    found = _EXPANDED[id(p)][2].get(id(phase))
+    found = phases.get(id(phase))
     return found if found is not None else _expand(p.get('id', ''), phase)
 
 
@@ -1557,8 +1572,13 @@ def validate(p):
 
 
 def _check_tags(p):
-    """Doc 86, J9: each of the story's own items is given one way (one name, kept or not) and named rightly where it is read."""
+    """Doc 86, J9: each of the story's own items is given one way (one name, kept or not) and named rightly where it is read:
+    whole, never by how it begins (the game's id has the story's hash before the mark). One the story never gives is a
+    warning (program_warnings): a new version may still read what an earlier one gave."""
     seen = {}
+    def name(v):
+        if isinstance(v, str) and '^' in v:
+            require(TAGGED_SHORT.fullmatch(v) is not None, f'A story\'s own item is named <item>^<mark> (letter^watch_list): {v}')
     def visit(node):
         if isinstance(node, list):
             for x in node:
@@ -1571,17 +1591,39 @@ def _check_tags(p):
             how = (node.get('name', ''), bool(node.get('keep')))
             require(seen.setdefault(key, how) == how, f'The story\'s own item {key} is given with one name, and kept or not, everywhere.')
         for k, v in node.items():
-            if k == 'item' and isinstance(v, str) and '^' in v:
-                require(TAGGED_SHORT.fullmatch(v) is not None, f'A story\'s own item is named <item>^<mark> (letter^watch_list): {v}')
-            elif k == 'item' and isinstance(v, dict) and isinstance(v.get('in'), list):
-                for x in v['in']:
-                    require(not isinstance(x, str) or '^' not in x or TAGGED_SHORT.fullmatch(x),
-                            f'A story\'s own item is named <item>^<mark> (letter^watch_list): {x}')
+            if k == 'item' and isinstance(v, dict) and ('starts' in v or 'in' in v):
+                require(not (isinstance(v.get('starts'), str) and '^' in v['starts']),
+                        f'A story\'s own item is named whole ({v.get("starts")}...: name it as letter^watch_list, or list them with "one of").')
+                for x in v.get('in', []) if isinstance(v.get('in'), list) else []:
+                    name(x)
+            elif k == 'item':
+                name(v)
             else:
                 visit(v)
     # (A rehearsal's events and expected effects are the game's facts and orders: they may name the hashed form.)
     visit({k: v for k, v in p.items() if k != 'tests'})
     require(len(seen) <= TAGGED_MOST, f'A story gives at most {TAGGED_MOST} kinds of its own items.')
+
+
+def own_items_named(p):
+    """Doc 86, J9: every story's own item a program names in a filter or a condition (item^tag), with the first place it is
+    named: {item^tag: path}. A rehearsal's events are left out."""
+    out = {}
+    def visit(node, path):
+        if isinstance(node, list):
+            for i, x in enumerate(node):
+                visit(x, f'{path}[{i}]')
+        elif isinstance(node, dict):
+            for k, v in node.items():
+                at = f'{path}.{k}' if path else k
+                if k == 'item':
+                    for x in [v] if isinstance(v, str) else v.get('in', []) if isinstance(v, dict) and isinstance(v.get('in'), list) else []:
+                        if isinstance(x, str) and TAGGED_SHORT.fullmatch(x):
+                            out.setdefault(x, at)
+                else:
+                    visit(v, at)
+    visit({k: v for k, v in p.items() if k != 'tests'}, '')
+    return out
 
 
 def camps_of(p):
@@ -1886,6 +1928,14 @@ def program_warnings(p):
         if (scope, key) not in written:
             out.append({'level': 'warning', 'path': path, 'at': at,
                         'text': f'Counter "{key}" ({scope}) is read but nothing sets it: it stays 0 (a misspelt name?).'})
+    # (Doc 86, J9: an item^tag the program never gives: the hash is this program's, so only what an earlier version of
+    # this story gave could match it.)
+    given = story_items({k: v for k, v in p.items() if k != 'tests'})
+    for item, path in sorted(own_items_named(p).items()):
+        if item not in given:
+            out.append({'level': 'warning', 'path': path, 'at': {'kind': 'program'},
+                        'text': f'Nothing in this story gives {item} ("Give a wolf an item" of {item.split("^")[0]} with the mark '
+                                f'{item.split("^")[1]}): only one an earlier version of the story gave could match it.'})
     if p.get('version') == 2:
         used = variable_uses(p)
         for i, d in enumerate(p.get('variables', [])):

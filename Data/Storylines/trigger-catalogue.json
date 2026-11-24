@@ -7771,7 +7771,8 @@
     {
      "key": "item",
      "type": "item",
-     "label": "the item"
+     "label": "the item",
+     "own": true
     }
    ],
    "reads": "wolves.carries"

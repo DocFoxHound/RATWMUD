@@ -785,12 +785,71 @@ class Phase6Items(unittest.TestCase):
             (lambda p: p['quests'][0]['objectives'][0]['match'].update(item=rules.tagged_item('v2-watch-list', 'letter', 'watch_list')),
              'named <item>^<mark>'),
             (lambda p: p['phases'][0]['triggers'][1]['if'].update(item='letter^'), 'Name the item'),
+            # (Named whole: "begins with" never meets the game's id, the story's mark being inside it.)
+            (lambda p: p['quests'][0]['objectives'][0]['match'].update(item={'starts': 'letter^watch'}), 'named whole'),
         ]
         for edit, words in cases:
             with self.subTest(words=words):
                 with self.assertRaisesRegex(ValueError, re.escape(words) if '<' in words else words):
                     rules.validate(program(edit))
         rules.validate(program(lambda p: give(p).pop('name')))   # (A story's own item may go unnamed: it shows as its base.)
+        rules.validate(program(lambda p: p['quests'][0]['objectives'][0]['match'].update(item={'in': ['letter^watch_list', 'writ^thanks']})))
+        rules.validate(program(lambda p: p['quests'][0]['objectives'][0]['match'].update(item={'starts': 'lett'})))
+
+    def test_one_the_story_never_gives_is_warned_of(self):
+        # (The hash is this program's: only what an earlier version of the story gave could match it, so it is a warning.)
+        def warnings(edit):
+            p = copy.deepcopy(samples.LETTERS)
+            edit(p)
+            rules.validate(p)
+            return [w for w in rules.problems(p) if 'Nothing in this story gives' in w['text']]
+        self.assertEqual(warnings(lambda p: None), [])
+        for edit, item, path in [
+                (lambda p: p['quests'][0]['objectives'][0]['match'].update(item='letter^nothing'), 'letter^nothing', 'quests[0].objectives[0].match.item'),
+                (lambda p: p['phases'][0]['triggers'][1]['if'].update(item='rope^watch_list'), 'rope^watch_list', 'phases[0].triggers[1].if.item'),
+                (lambda p: p['quests'][0]['objectives'][0]['match'].update(item={'in': ['letter^watch_list', 'writ^nothing']}), 'writ^nothing',
+                 'quests[0].objectives[0].match.item')]:
+            with self.subTest(item=item):
+                found = warnings(edit)
+                self.assertEqual([(w['level'], w['path']) for w in found], [('warning', path)], found)
+                self.assertIn(item, found[0]['text'])
+
+    def test_the_expanded_programs_are_safe_across_threads(self):
+        # (The HTTP threads, the scheduler and rehearsals read the cache at once; one may let a program go from it while
+        # another is between reading the program and its phase.)
+        import threading
+        mine = rules.tagged_item('v2-watch-list', 'letter', 'watch_list')
+        p = copy.deepcopy(samples.LETTERS)
+        real = rules._expanded
+        def let_go(q):   # (Another thread lets every program go the moment this one is read.)
+            out = real(q)
+            with rules._EXPANDED_LOCK:
+                rules._EXPANDED.clear()
+            return out
+        with patch.object(rules, '_expanded', side_effect=let_go):
+            phase = rules.expanded_phase(p, p['phases'][0])
+        self.assertEqual(next(t for t in phase['triggers'] if t['id'] == 'seen')['if']['item'], mine)
+        with patch.object(rules, 'EXPANDED_MOST', 2):   # (The oldest goes, one at a time.)
+            a, b, c = (copy.deepcopy(samples.LETTERS) for _ in range(3))
+            for q in (a, b, a, c):
+                rules.expand_tags(q)
+            self.assertEqual(list(rules._EXPANDED), [id(a), id(c)])
+        errors, programs = [], [copy.deepcopy(samples.LETTERS) for _ in range(8)]
+        def read():
+            try:
+                for _ in range(200):
+                    for q in programs:
+                        ph = rules.effective_phase(q, q['phases'][0])
+                        assert next(t for t in ph['triggers'] if t['id'] == 'seen')['if']['item'] == mine
+            except Exception as error:   # (Any error at all is the failure.)
+                errors.append(error)
+        with patch.object(rules, 'EXPANDED_MOST', 3):
+            threads = [threading.Thread(target=read) for _ in range(6)]
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join()
+        self.assertEqual(errors, [])
 
     def test_its_name_is_world_text(self):
         # (The name is shown in the pack: the story words check reads it as every text a wolf reads.)

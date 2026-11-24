@@ -484,8 +484,9 @@ characters, one line, no `#`, brackets or fills; only with a `tag`) and `keep` (
 everywhere in the program (`story_program._check_tags`; 64 kinds at most). The runner's order is `item.give` (target the
 wolf) with `item` the game's id `<base>^<hash8>.<tag>` (`story_program.tagged_item`: `hash8` the first 8 hex digits of the
 SHA-256 of the program's `id`), `name`, `keep`, `run` and `visit`. The game (`Game::storyItemGiven`, `storyItemHeld`)
-refuses a malformed id, a story not running or a name that is not one line of 60, keeps the name in `storyItemNames_` (the
-checkpoint's `storyItemNames`; 4,000 at most) and, unless `keep`, lists the id in the run's `held.tags`. `endStoryWorld`
+refuses a malformed id, a story not running or a name that is not one line of 60; once the goods are made (a full pack
+refused names nothing), it keeps the name in `storyItemNames_` (the checkpoint's `storyItemNames`; 4,000 at most) and,
+unless `keep`, lists the id in the run's `held.tags`. `endStoryWorld`
 takes every unit of those out of every account and off the ground (`World::takeBackItems`, `Society::takeAll`), forgets
 their names and tells the wolves who held one. A kept one keeps its name.
 
@@ -493,9 +494,10 @@ their names and tells the wolves who held one. A kept one keeps its name.
 dropped`, and an `in` list's values) and a `carries` condition's `item` take `<base>^<tag>`. `story_program.expand_tags`
 gives the program those in the game's form wherever it is read (`effective_phase`, `story_quests.index`, `watch_of`), so
 both twins and the game's facts see one id; a rehearsal's events and facts and the console's What if are put in that form
-too (`own_items`). An author never writes the hashed form (refused). A filter naming no mark (`letter`) takes a story's own
-item as a kind of its base, as it takes `~` and `@` kinds; one naming a mark takes only that story's. The facts count it
-under its own id when the watch names it, and under its base otherwise.
+too (`own_items`). An author never writes the hashed form or a `starts` with `^` (refused); an `item^tag` the program never
+gives is warned of (`program_warnings`: only an earlier version's could match it). A gift filter (`gift`, `gift again`) naming no mark (`letter`) takes a story's own item as a kind of its
+base, as it takes `~` and `@` kinds; other events' filters match exactly; one naming a mark takes only that story's. The
+facts count it under its own id when the watch names it, and under its base when the watch names that, both at once.
 
 **In the game.** `items::baseOf` stops at `^` as at `~` and `@`; `items::good` finds its base; it is never a wearable or a
 blade, has no wear (`World::durabilityOf` 0), is no kind of its base for making, eating or paying (`Society::kindsHeld`), and

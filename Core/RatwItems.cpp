@@ -724,6 +724,48 @@ const std::string* storyItemName(const std::string& id)
     return found == storyNames().end() ? nullptr : &found->second;
 }
 
+namespace
+{
+std::size_t articleLength(const std::string& name)
+{
+    for (const char* a : {"the ", "an ", "a "})
+    {
+        const std::string article = a;
+        if (name.size() > article.size() &&
+            std::equal(article.begin(), article.end(), name.begin(), [](char x, char y) { return x == std::tolower(static_cast<unsigned char>(y)); }))
+            return article.size();
+    }
+    return 0;
+}
+
+std::string lowered(std::string name)
+{
+    if (!name.empty())
+        name[0] = char(std::tolower(static_cast<unsigned char>(name[0])));
+    return name;
+}
+} // namespace
+
+bool articled(const std::string& name)
+{
+    return articleLength(name) > 0;
+}
+
+std::string counted(const std::string& name, int quantity, bool story)
+{
+    const auto article = story ? articleLength(name) : 0;
+    if (!article)
+        return std::to_string(quantity) + " " + name;
+    if (quantity == 1)
+        return lowered(name);
+    return article == 4 ? std::to_string(quantity) + " of " + lowered(name) : std::to_string(quantity) + " " + name.substr(article);
+}
+
+std::string theItem(const std::string& name, bool story)
+{
+    return story && articled(name) ? lowered(name) : "the " + name;
+}
+
 std::string unmarked(const std::string& id)
 {
     return id.substr(0, id.find('@'));

@@ -662,7 +662,7 @@ test('doc 86, Phase 5 after review: once residents are counted the list is asked
     assert.equal(countWho(other), other);
 });
 
-import {storyItemsOf, tagsOf} from './workbench.ts';
+import {ownItemsHere, storyItemsOf, tagsOf, type Slot} from './workbench.ts';
 test('doc 86, Phase 6: the watch list in words; a story\'s own items offered by item^tag and named as the story names them', () => {
     const p = v2['v2-watch-list'];
     assert.ok(editable(p));
@@ -683,4 +683,18 @@ test('doc 86, Phase 6: the watch list in words; a story\'s own items offered by 
     const plainGive = {kind: 'item.give', player: '$actor', item: 'rope', quantity: 2};
     assert.equal(plain(itemParts(cat.effects.find(e => e.id === 'item.give')!, plainGive, ns)), 'Give the acting wolf 2 rope');
     assert.equal(cat.effects.find(e => e.id === 'item.give')!.params!.find(x => x.key === 'tag')!.type, 'tag');
+    // (The story's own items are offered where a filter or "carries" names them, never for an effect's own item: the game
+    // refuses item^tag there.)
+    const slotOf = (ps: ReturnType<typeof itemParts>, key: string) => ps.find(x => 'slot' in x && x.slot === key) as Slot;
+    assert.equal(ownItemsHere(slotOf(conditionParts(cat, seen, ns), 'item')), true, 'carries');
+    assert.equal(ownItemsHere(slotOf(eventParts(cat, ts.find(t => t.id === 'any')!, ns), 'item')), true, 'a gift filter');
+    for (const kind of ['item.give', 'item.take', 'item.place', 'story.area.item']) {
+        const item = cat.effects.find(e => e.id === kind)!;
+        assert.equal(ownItemsHere(slotOf(itemParts(item, {kind, item: 'rope'}, ns), 'item')), false, kind);
+    }
+    // (An item.give anywhere in the program is found: in a chapter's phase exit's actions, deep in a branch.)
+    const deep = {...p, phases: [...p.phases, {id: 'later', journal: '', effects: [], triggers: [{id: 'x', on: 'gift', actions: [{do: 'if',
+        if: {test: 'compare', left: 1, op: '>=', right: 1}, then: [{do: 'effect', effect: {kind: 'item.give', player: '$actor', item: 'rope', quantity: 1, tag: 'coil'}}]}]}]}],
+        tests: [{events: [{kind: 'item.give', item: 'bread', tag: 'nope'}]}]} as unknown as Program;
+    assert.deepEqual(storyItemsOf(deep).map(s => s.id), ['letter^watch_list', 'rope^coil', 'writ^thanks'], 'not a rehearsal\'s');
 });
