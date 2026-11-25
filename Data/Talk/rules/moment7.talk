@@ -1557,7 +1557,7 @@ rule m7_lore_open_wardens
 when concept=talk.lore
 does tell.story
 cooldown 2d
-say {m7o=tale} Folk say the Wardens watch the Quickened from somewhere past the mountains. | {m7o=tale} Ever seen a Warden? My uncle swore he did. Grey cloak, no face. | {m7o=tale} If you've a gift, they say, the Wardens hear of it.
+say {m7o=tale} Folk say the Wardens watch the Quickened from somewhere past the mountains. | {m7o=tale} Ever seen a Warden? My uncle swore he did. Black cloak, silver trim, no face. | {m7o=tale} If you've a gift, they say, the Wardens hear of it.
 then other: moment.reply_lore
 
 rule m7_lore_open_houses

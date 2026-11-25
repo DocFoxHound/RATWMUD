@@ -5856,7 +5856,7 @@
     {
      "kind": "npc.line",
      "npc": "rm_gorm_plankgate",
-     "text": "She asks whether a realm that cannot hold its own ford can keep its own pups. I have no answer for her yet, #address#."
+     "text": "She asks whether a realm that cannot hold its own ford can keep its own pups. She asks it as if she knows. I have no answer yet, #address#."
     },
     {
      "kind": "project.post",
@@ -14915,7 +14915,7 @@
      "phase": "ch7_muster",
      "kind": "npc.line",
      "npc": "rm_gorm_plankgate",
-     "text": "She asks whether a realm that cannot hold its own ford can keep its own pups. I have no answer for her yet, #address#."
+     "text": "She asks whether a realm that cannot hold its own ford can keep its own pups. She asks it as if she knows. I have no answer yet, #address#."
     },
     {
      "phase": "ch7_muster",
@@ -16462,7 +16462,7 @@
      "phase": "ch7_muster",
      "kind": "npc.line",
      "npc": "rm_gorm_plankgate",
-     "text": "She asks whether a realm that cannot hold its own ford can keep its own pups. I have no answer for her yet, #address#."
+     "text": "She asks whether a realm that cannot hold its own ford can keep its own pups. She asks it as if she knows. I have no answer yet, #address#."
     },
     {
      "phase": "ch7_muster",

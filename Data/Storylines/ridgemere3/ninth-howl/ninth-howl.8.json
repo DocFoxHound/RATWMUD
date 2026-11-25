@@ -7457,7 +7457,7 @@
       "y": 6,
       "minutes": 720,
       "like": "tn_sm_brisk_plumby",
-      "description": "a silver-muzzled arctic wolf in the Concord's black cloak with silver trim",
+      "description": "a silver-muzzled arctic wolf in a Warden's black cloak with silver trim, who looks at everything as if pricing it, and finding it cheap",
       "ifRefused": "skip"
      }
     },
@@ -11944,7 +11944,7 @@
   {
    "id": "nh8-lessons",
    "title": "Stillwater Lessons",
-   "summary": "The Reedmere pup at the Glasswater landing hums, and the water listens. Teach her slowly, as Kell says: time spent with her, a song at the landing, humming with her when the ice is restless.",
+   "summary": "The Reedmere pup at the Glasswater landing hums, and the water listens, and a black cloak watches the mere. Teach her slowly, as Kell says: time spent with her, a song at the landing, humming with her when the ice is restless.",
    "scope": "story",
    "contributors": 1,
    "handIn": false,

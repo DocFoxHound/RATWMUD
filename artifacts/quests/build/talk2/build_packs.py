@@ -72,6 +72,8 @@ FIX={
  "A skipper at North Cove says somebody lights a lamp there.":"A crane hand on the Wharf says somebody lights a lamp there.",
  "A pup, they say, no Gift at all.":"A young Sump wolf, they say, no Gift at all.",
  "The lender at Vance House wants a plain answer.":"The Vance at the Rag Mill wants a plain answer.",
+ # the Wardens canon pass (2026-11-24): a House asks the Concord, and the Order answers whom it pleases.
+ "Somebody's writing to the Wardens.":"Somebody's writing to the Concord for the black cloaks.",
 }
 for x in r:
     for a,b in FIX.items():

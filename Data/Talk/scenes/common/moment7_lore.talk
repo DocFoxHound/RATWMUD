@@ -36,7 +36,7 @@ a : Bolt the door. | Cats are ghosts too. | #bc_i_wont# | Comforting thought.
 scene m7_lore_wardens
 when topic=lore
 does tell.story / react.story / assess
-a : They say the Wardens know every Quickened in the realm. | My cousin swore a Warden came to his village. Grey cloak, asked questions, left. | If a pup shows a gift, mothers keep it quiet. Wardens, see. | Nobody's ever seen a Warden's face.
+a : They say the Wardens know every Quickened in the realm. | My cousin swore a Warden came to his village. Black cloak, asked questions, left. | If a pup shows a gift, mothers keep it quiet. Wardens, see. | Nobody's ever seen a Warden's face.
 b[young] #pup : What's a Warden? Do they eat pups?
 b : Let them know. I've no gift but snoring. | Asked what? | Wise mothers. | Maybe they've not got one.
 a@pup : Only the noisy ones.

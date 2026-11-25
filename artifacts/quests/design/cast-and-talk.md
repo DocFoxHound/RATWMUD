@@ -286,7 +286,7 @@ hub (resident | watch | church greet | inn greet)    ← T greetings by self.id 
 | Fates | Mirebridge's voice at the Moot; silent with the Council casting it (lights faded) |
 | Protect | protect + spare |
 
-#### Gorm Plankgate, the Wardens' Eye
+#### Gorm Plankgate, the Order's Eye in Ridgemere (an informant: not sworn, not Quickened)
 | | |
 |---|---|
 | Id | `rm_gorm_plankgate` (apprentice `rmx_dunstan_plankham`) |
@@ -298,7 +298,7 @@ hub (resident | watch | church greet | inn greet)    ← T greetings by self.id 
 | Voice | the oasis formality turned clinical ("honoured guest", "by salt and water"); asks exact questions and waits |
 | Motive | no Quickened pup drowns untaught again (the Saltwell well) |
 | Arc | Ch 4 the cough, "let me look at your paws". Ch 5 revealed as the one who wrote to Upper Accord. Ch 6 the Envoy's Question. Ch 8 the Tansy choice. Ch 9 the Envoy's three questions and the verdict |
-| Fates | keeps a Warden House at the abbey (Realm Answers, Tansy taught); the Wardens' Eye under a Warden at the Grey Gull (Holds); the Concord's registrar (Bends) |
+| Fates | watches the realm's own Quickened from the abbey (Realm Answers); carries the letters of the Warden at the Grey Gull (Holds); the first of the Order's Eyes in every silent town (Bends) |
 | Protect | protect + spare. **DM prep:** faction `warden_order`, Gorm a ranked member, before Ch 5's end |
 
 ### 2.2 Villains and rivals

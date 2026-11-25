@@ -961,7 +961,22 @@ Wardens are **not a Gift Family**.
 
 They are an institution.
 
-The Order predates the Concord but now serves beneath it. Wardens wear distinctive black cloaks with silver trim and are sufficiently famous or feared that experienced wolves recognize them.
+### The canon (the owner, 2026-11-24)
+
+> "The Wardens are a secretive Order of Quickened Wolves that work with a multi-nation religious organization called the Concord. The Wardens take quickened wolves as pups, teach them how to be weapons, and are used much in rare situations. The Wardens are dark and their philosophy can be something like a mixed Sith/Jedi philosophy. Their ancient benefactor is the Dark One, though not even many of THEM know that, only the top leadership. They're calculating, cold, but high-class and almost snobbish. They're excellent, cultured killers."
+
+What follows from it, for every writer:
+
+- **A secretive Order of Quickened wolves.** Every sworn Warden is Quickened. There are very few of them, and they are sent only in rare situations, so a Warden on a road is an event a town talks of for a season.
+- **They work with the Concord.** The Concord is the church of many nations (section 5); the Order predates it but now serves beneath it, and goes where the Concord's business takes it. A realm asks the Concord; the Order answers whom it pleases.
+- **They take Quickened wolves as pups**, at Upper Accord and its training grounds (section 7), and teach them to be weapons. This is the real threat behind every Quickened pup's story: a family that hides a pup is hiding it from the Order.
+- **Dark, and a philosophy of discipline and power**: something between a monastic order of peace-keepers and a cult of mastery (a mixed Sith/Jedi philosophy). Order above the self, the strong bound so the weak are spared, and the strong taught to use what they are.
+- **Calculating, cold, high-class, almost snobbish.** Wardens are cultured and exacting, speak little and precisely, and look down on the unsworn. By the Order's custom a sworn Warden does not speak to the unsworn of a realm: she speaks through its **Eye**.
+- **Excellent, cultured killers.** When a Warden fights, it is brief.
+- **Eyes.** The Order keeps informants in the realms it watches: not sworn, not Quickened, often healers or clerks, who write to Upper Accord of every Gift they hear of. In Ridgemere 3 the Order's Eye is Gorm Plankgate, the Saltwell-raised infirmarian at the Sump Infirmary.
+- **The Dark One.** The Order's ancient benefactor is the Dark One (section 6). **This is known only to the Order's top leadership, and is DM-only:** most sworn Wardens do not know it, and no world text states it as fact. At most a line or two a wolf could doubt (a rumour, an odd turn of phrase: a Warden who does not return a blessing), and only where it fits.
+
+Wardens wear distinctive black cloaks with silver trim and are sufficiently famous or feared that experienced wolves recognize them.
 
 Their stated purpose includes:
 

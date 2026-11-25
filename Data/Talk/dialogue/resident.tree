@@ -149,13 +149,13 @@ say[self.id=cty_ulric_stonevein self.from=frosthollow world.mem.nh_captain=fled 
 say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_stage=howls priority=4] Hold out your paw. No reason. An infirmarian likes to look.
 say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_stage=letters priority=4] A quiet season at the infirmary, honoured guest. I write a great many letters in a quiet season.
 say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_stage=letters world.mem.nh_wardens=coming priority=4] Yes, I wrote to them. By salt and water, someone had to.
-say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_stage=lights priority=4] I am the realm's Eye, and I'm sorry for it. Ask your question; I'll carry it.
-say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_stage=harvest priority=4] She asks whether a realm that cannot hold its own ford can keep its own pups. I've no answer for her yet, honoured guest.
-say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_stage=bell priority=4] If the pup is taught, I can say the realm keeps its own. If she is hidden, I can say nothing, carefully.
-say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_stage=moot priority=4] She is listening, honoured guest. So am I.
-say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_concord=answers priority=5] She tore up the Keeping at the Bay Light. I've a Warden House to keep at the abbey now.
-say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_concord=holds priority=5] One Warden stays at the Grey Gull a while. I'm to keep her tea hot.
-say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_concord=bends priority=5] Wardens in every silent town before long. I wrote the letter that brought them. I'll carry that.
+say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_stage=lights priority=4] I am the Order's Eye in this city. Not sworn, honoured guest; I only watch. Ask your question and I'll carry it.
+say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_stage=harvest priority=4] She asks whether a realm that cannot hold its own ford can keep its own pups. She asks it as if she knows, honoured guest.
+say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_stage=bell priority=4] If the pup is taught here, I can say the realm keeps its own. If not, they take her over the Pass, and she comes back a weapon.
+say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_stage=moot priority=4] She is listening, honoured guest. She has not yet decided this realm is worth it.
+say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_concord=answers priority=5] She tore up the Keeping at the Bay Light. The realm keeps its own Quickened now, and I keep watch on them. Only watch.
+say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_concord=holds priority=5] One of them stays at the Grey Gull till spring. She sends her tea back twice. I am to carry her letters.
+say[self.id=rm_gorm_plankgate self.from=saltwell world.mem.nh_concord=bends priority=5] An Eye in every silent town by spring, and every Quickened name written down. I wrote the first letter. I'll carry that.
 # tn_cw_tansy_reedmere
 say[self.id=tn_cw_tansy_reedmere self.from=coldwater world.mem.nh_stage=king|moot_called|reckoning|signals priority=4] #greet#. I'm only watching the mere. It's allowed.
 say[self.id=tn_cw_tansy_reedmere self.from=coldwater world.mem.nh_stage=howls priority=4] I hum when the chorus starts. The water likes it better than howling. That's silly, isn't it?
@@ -164,9 +164,9 @@ say[self.id=tn_cw_tansy_reedmere self.from=coldwater world.mem.nh_stage=bell pri
 say[self.id=tn_cw_tansy_reedmere self.from=coldwater world.mem.nh_stage=bell|moot world.mem.nh_mere=still priority=4] The whole mere went still when I asked. Everyone saw. I'm not sorry.
 say[self.id=tn_cw_tansy_reedmere self.from=coldwater world.mem.nh_stage=moot priority=4] If you're at the landing on the Moot night, I'll be there too. I'm braver when somebody's there.
 say[self.id=tn_cw_tansy_reedmere self.from=coldwater world.mem.nh_tansy=taught priority=5] The water listens now, a little, when I ask it nicely. Not the bell. Never the bell again.
-say[self.id=tn_cw_tansy_reedmere self.from=coldwater world.mem.nh_tansy=pledged priority=5] They say I'm to go to the Wardens' school when the roads open. I'll write. They let you write, don't they?
+say[self.id=tn_cw_tansy_reedmere self.from=coldwater world.mem.nh_tansy=pledged priority=5] The black cloaks take me over the Pass when the roads open. I'll write. They let you write, don't they?
 say[self.id=tn_cw_tansy_reedmere self.from=coldwater world.mem.nh_tansy=hidden priority=5] I hum at the landing every night. Nobody asks why.
-say[self.id=tn_cw_tansy_reedmere self.from=coldwater world.mem.nh_tansy=found priority=5] They found me out. I'm to go away to the Wardens. Nobody at home will say a word about it.
+say[self.id=tn_cw_tansy_reedmere self.from=coldwater world.mem.nh_tansy=found priority=5] They found me out. The black cloaks come for me in spring. Nobody at home will say a word about it.
 # tn_mb_skye_eelbank
 say[self.id=tn_mb_skye_eelbank self.from=fenshore world.mem.nh_stage=king|moot_called|reckoning|signals priority=4] #greet#. Best eel trapper on the river, me. Ask anyone. Ask the eels.
 say[self.id=tn_mb_skye_eelbank self.from=fenshore world.mem.nh_stage=howls priority=4] #greet#. Mirebridge had a howl that went round the reeds twice before it came back. I'll teach you the first turn, no?
@@ -542,7 +542,7 @@ say[self.from=ridgemere world.mem.nh_crown=regency] No crown at all, and a Moot 
 say[self.from=ridgemere world.mem.nh_crown=regency world.mem.nh_moot=midwinter] No crown at all, and a Moot every Midwinter. I'll believe it when it sits twice.
 say[self.from=ridgemere world.mem.nh_crown=bought] The Counting House has the realm now. They call it a Protectorate. I call it a debt with a crown on.
 say[self.from=ridgemere world.mem.nh_concord=answers] The black cloak tore the Keeping at the Bay Light. The Wardens are going home.
-say[self.from=ridgemere world.mem.nh_concord=bends] Wardens in every silent town by spring. We were too quiet, somewhere.
+say[self.from=ridgemere world.mem.nh_concord=bends] An Eye for the Wardens in every silent town by spring, and every Quickened named. We were too quiet, somewhere.
 say[self.from=ridgemere world.mem.nh_captain=turned] The Grey Captain went back over the Pass with the coin. To fetch the Deepvein families down, they say.
 say[self.from=ridgemere world.mem.nh_captain=beaten] They held the Grey Captain a day in the Keep's cells and judged him at the Moot's end. It's on the Market Square board.
 say[self.from=coldwater world.mem.nh_howl=ran] We answered, eh? Glasswater answered! A howl over the water.
@@ -550,7 +550,7 @@ say[self.from=coldwater world.mem.nh_crown=ottilie] A Queen who coughs in the da
 say[self.from=coldwater world.mem.nh_crown=lamp] The lamp-keeper's a fen wolf. Close enough to the lake. Fair catch.
 say[self.from=coldwater world.mem.nh_crown=regency] A Moot every year, eh? The city asking the lake what it thinks. Deep and dark, I'll get used to it.
 say[self.from=coldwater world.mem.nh_crown=bought] Bought, eh? Muddied water all the way up.
-say[self.from=coldwater world.mem.nh_concord=holds] One black cloak at the Grey Gull till spring. Fair winds to her.
+say[self.from=coldwater world.mem.nh_concord=holds] One black cloak at the Grey Gull till spring, sending the soup back. Fair winds to her, eh?
 say[self.from=larkfield world.mem.nh_howl=ran] Larkfield answered on the dot. Sold, to the realm.
 say[self.from=larkfield world.mem.nh_crown=ottilie] A Queen who carries her own petitions. That's full weight.
 say[self.from=larkfield world.mem.nh_crown=lamp] A patrolman king. By the market cross, the Houses are still weighing it.
@@ -912,7 +912,7 @@ say[world.mem.nh_stage=letters self.from=ridgemere world.mem.nh_toll=cried] The 
 say[world.mem.nh_stage=letters self.from=ridgemere] Fell wants the Rainward Hills, and Fell's green is on the wolves driving stakes. Mind the cut.
 say[world.mem.nh_stage=letters self.from=coldwater] Bounders in green on the Oakhaven road, eh? Fishers don't drive stakes into the ground.
 say[world.mem.nh_stage=letters self.from=coldwater] Green cloaks and grey lamps, together. Deep and dark, who's paying whom?
-say[world.mem.nh_stage=letters self.from=coldwater] Black cloaks on the Pass Road, eh? Wardens, they say. Fair winds to whoever they've come for.
+say[world.mem.nh_stage=letters self.from=coldwater] Black cloaks on the Pass Road, eh? Wardens. Quickened, every one, and taken as pups. Fair winds to whoever they've come for.
 say[world.mem.nh_stage=letters self.from=larkfield] Fell wants the hills. Fell wants everything with a price on it, #address#.
 say[world.mem.nh_stage=letters self.from=larkfield] Grayrock pays one mark a wagon on the High Road. Scales and silver, to whom?
 say[world.mem.nh_stage=letters self.from=larkfield] Don't take a Fell errand without reading it. Fellhall has more rooms than doors.
@@ -1005,7 +1005,7 @@ say[world.mem.nh_stage=bell self.from=ridgemere] An old rag-mill hand is selling
 say[world.mem.nh_stage=bell self.from=coldwater] Hear that? Under the ice. Bright One's tide, it's ringing.
 say[world.mem.nh_stage=bell self.from=coldwater world.mem.nh_bell=rung] Net and line, they raised it! Green as a pike and loud as a gale, eh?
 say[world.mem.nh_stage=bell self.from=coldwater world.mem.nh_mere=still] The whole mere's still. I've never seen it so. Calm water to her.
-say[world.mem.nh_stage=bell self.from=coldwater] The black cloak watches the mere all day. Deep and dark, what's she looking for?
+say[world.mem.nh_stage=bell self.from=coldwater] The black cloak watches the mere all day. They take the ones the water listens to, eh? Take them young.
 say[world.mem.nh_stage=bell self.from=coldwater] Don't walk the black lane on the ice, neighbour. It never freezes, and nobody says why.
 say[world.mem.nh_stage=bell self.from=larkfield] A writ lost for a debt. That's the dearest paper ever bought in Ridgemere, #address#.
 say[world.mem.nh_stage=bell self.from=larkfield] The Counting House hid the old King's writ. Weights and measures, there's a cheat's scale for you.
@@ -1021,7 +1021,7 @@ say[world.mem.nh_stage=bell self.from=mirebridge|fenshore] Don't stamp on the ic
 say[world.mem.nh_stage=bell self.from=mirebridge|fenshore world.mem.nh_bell=cracked] They rang it cracked. Don't laugh. It's still ours.
 say[world.mem.nh_stage=bell self.from=saltwell] A King writes "let the realm choose", and the Houses hide it in the dark. The Houses hid it, #address#, not the King.
 say[world.mem.nh_stage=bell self.from=saltwell] A Chancellor weeping over a paper means someone made him hold it.
-say[world.mem.nh_stage=bell self.from=saltwell] A pup who calls water is a gift and a danger, #address#. Do not hide her carelessly.
+say[world.mem.nh_stage=bell self.from=saltwell] A pup who calls water is a gift and a danger, #address#. The black cloaks take such pups. Do not hide her carelessly.
 say[world.mem.nh_stage=bell self.from=oakhaven] Old Oak. The old King planted something deep before he fell, mm? Now we see the shoot.
 say[world.mem.nh_stage=bell self.from=oakhaven] The Counting House paid for a writ to be lost. Rotten at the root, mm?
 say[world.mem.nh_stage=bell self.from=oakhaven] Don't trust a sale of secrets on the Sump Stairs. Somebody's paying both ends.
@@ -1065,7 +1065,7 @@ say[self.from=ridgemere world.mem.nh_crown=regency] No crown at all, and a Moot 
 say[self.from=ridgemere world.mem.nh_crown=regency world.mem.nh_moot=midwinter] No crown at all, and a Moot every Midwinter. I'll believe it when it sits twice.
 say[self.from=ridgemere world.mem.nh_crown=bought] The Counting House has the realm now. They call it a Protectorate. I call it a debt with a crown on.
 say[self.from=ridgemere world.mem.nh_concord=answers] The black cloak tore the Keeping at the Bay Light. The Wardens are going home.
-say[self.from=ridgemere world.mem.nh_concord=bends] Wardens in every silent town by spring. We were too quiet, somewhere.
+say[self.from=ridgemere world.mem.nh_concord=bends] An Eye for the Wardens in every silent town by spring, and every Quickened named. We were too quiet, somewhere.
 say[self.from=ridgemere world.mem.nh_captain=turned] The Grey Captain went back over the Pass with the coin. To fetch the Deepvein families down, they say.
 say[self.from=ridgemere world.mem.nh_captain=beaten] They held the Grey Captain a day in the Keep's cells and judged him at the Moot's end. It's on the Market Square board.
 say[self.from=coldwater world.mem.nh_howl=ran] We answered, eh? Glasswater answered! A howl over the water.
@@ -1073,7 +1073,7 @@ say[self.from=coldwater world.mem.nh_crown=ottilie] A Queen who coughs in the da
 say[self.from=coldwater world.mem.nh_crown=lamp] The lamp-keeper's a fen wolf. Close enough to the lake. Fair catch.
 say[self.from=coldwater world.mem.nh_crown=regency] A Moot every year, eh? The city asking the lake what it thinks. Deep and dark, I'll get used to it.
 say[self.from=coldwater world.mem.nh_crown=bought] Bought, eh? Muddied water all the way up.
-say[self.from=coldwater world.mem.nh_concord=holds] One black cloak at the Grey Gull till spring. Fair winds to her.
+say[self.from=coldwater world.mem.nh_concord=holds] One black cloak at the Grey Gull till spring, sending the soup back. Fair winds to her, eh?
 say[self.from=larkfield world.mem.nh_howl=ran] Larkfield answered on the dot. Sold, to the realm.
 say[self.from=larkfield world.mem.nh_crown=ottilie] A Queen who carries her own petitions. That's full weight.
 say[self.from=larkfield world.mem.nh_crown=lamp] A patrolman king. By the market cross, the Houses are still weighing it.
@@ -1285,7 +1285,7 @@ say[here.region=larkfield self.from=larkfield world.mem.lq_eels=shared] Fenshore
 say[here.region=ridgemere self.quarter=heights self.from=ridgemere world.mem.lq_thief=walking] They say a Quickened wolf walks through the Heights' walls and takes pledges. Lock your strongroom, for all the good it does.
 say[here.region=ridgemere self.from=ridgemere world.mem.lq_thief=forgiven] Vance House let the Sump pledges go. A wolf put it to the lender plain, they say, and the lender listened.
 say[here.region=larkfield self.from=larkfield world.mem.lq_thief=named] Ridgemere caught its wall-walking thief. A young Sump wolf, they say, no Gift at all. Short-weighed magic, that.
-say[here.region=ridgemere self.from=ridgemere world.mem.lq_thief=blinker] The Heights swear it was a Quickened thief. Somebody's writing to the Wardens. Bright One keep us all.
+say[here.region=ridgemere self.from=ridgemere world.mem.lq_thief=blinker] The Heights swear it was a Quickened thief. Somebody's writing to the Concord for the black cloaks. Bright One keep us all.
 say[here.region=frosthollow self.from=frosthollow world.mem.lq_hearths=undersold] Upper hearths charcoal at half price in the city. Dead rock luck, or somebody's hand in it. Deep, I'd say the hand. | Upper hearths charcoal at half price in the city. That's no cracked seam, cousin. That's somebody's hand in it.
 say[here.region=ridgemere self.quarter=commons self.from=ridgemere world.mem.lq_hearths=contract] The charcoal store pays the hill colliers by the sack now. Dearer coal, and no strangers at the yard door.
 say[here.region=frosthollow self.from=frosthollow world.mem.lq_hearths=home] Frosthollow charcoal on the Frosthollow square, Marketday. Deep and plain, the way it should be, stone. | Frosthollow charcoal on the Frosthollow square, Marketday. Sound sacks at our own price, the way it should be, stone.
@@ -1972,7 +1972,7 @@ say[world.mem.nh_stage=letters self.from=ridgemere priority=2] Some of those let
 say[world.mem.nh_stage=letters self.from=ridgemere world.mem.nh_toll=cried priority=2] The herald cried a Grayrock toll receipt on the square. The Sump cheered. The Wharf didn't.
 say[world.mem.nh_stage=letters self.from=ridgemere priority=2] Fell wants the Rainward Hills, and Fell's green is on the wolves driving stakes. Mind the cut.
 say[world.mem.nh_stage=letters self.from=coldwater priority=2] Green cloaks and grey lamps, together. Deep and dark, who's paying whom?
-say[world.mem.nh_stage=letters self.from=coldwater priority=2] Black cloaks on the Pass Road, eh? Wardens, they say. Fair winds to whoever they've come for.
+say[world.mem.nh_stage=letters self.from=coldwater priority=2] Black cloaks on the Pass Road, eh? Wardens. Quickened, every one, and taken as pups. Fair winds to whoever they've come for.
 say[world.mem.nh_stage=letters self.from=larkfield priority=2] Grayrock pays one mark a wagon on the High Road. Scales and silver, to whom?
 say[world.mem.nh_stage=letters self.from=larkfield priority=2] Don't take a Fell errand without reading it. Fellhall has more rooms than doors.
 say[world.mem.nh_stage=letters self.from=southmeadow priority=2] Fell's green cloaks are driving stakes in Oakhaven's cut. Blight take them.
@@ -2021,7 +2021,7 @@ say[world.mem.nh_stage=harvest self.from=frosthollow priority=2] Deepvein. The d
 say[world.mem.nh_stage=harvest self.from=frosthollow priority=2] Don't say Deepvein in the Lamp and Pick unless you mean it.
 say[world.mem.nh_stage=bell self.from=ridgemere priority=2] The Counting House master told the Chancellor to lose it, they whisper. Lose a King's writ!
 say[world.mem.nh_stage=bell self.from=ridgemere priority=2] An old rag-mill hand is selling what she saw. Get there before she gets to the City Office.
-say[world.mem.nh_stage=bell self.from=coldwater priority=2] The black cloak watches the mere all day. Deep and dark, what's she looking for?
+say[world.mem.nh_stage=bell self.from=coldwater priority=2] The black cloak watches the mere all day. They take the ones the water listens to, eh? Take them young.
 say[world.mem.nh_stage=bell self.from=coldwater priority=2] Don't walk the black lane on the ice, neighbour. It never freezes, and nobody says why.
 say[world.mem.nh_stage=bell self.from=larkfield priority=2] The Counting House hid the old King's writ. Weights and measures, there's a cheat's scale for you.
 say[world.mem.nh_stage=bell self.from=larkfield priority=2] Don't go out on the Upper Mere ice alone, #address#. Weights and measures, ice doesn't bargain.
@@ -2032,7 +2032,7 @@ say[world.mem.nh_stage=bell self.from=mirebridge|fenshore priority=2] The Houses
 say[world.mem.nh_stage=bell self.from=mirebridge|fenshore priority=2] Don't stamp on the ice when you listen, #address#. The bell's not the only thing under it.
 say[world.mem.nh_stage=bell self.from=mirebridge|fenshore world.mem.nh_bell=cracked priority=2] They rang it cracked. Don't laugh. It's still ours.
 say[world.mem.nh_stage=bell self.from=saltwell priority=2] A Chancellor weeping over a paper means someone made him hold it.
-say[world.mem.nh_stage=bell self.from=saltwell priority=2] A pup who calls water is a gift and a danger, #address#. Do not hide her carelessly.
+say[world.mem.nh_stage=bell self.from=saltwell priority=2] A pup who calls water is a gift and a danger, #address#. The black cloaks take such pups. Do not hide her carelessly.
 say[world.mem.nh_stage=bell self.from=oakhaven priority=2] The Counting House paid for a writ to be lost. Rotten at the root, mm?
 say[world.mem.nh_stage=bell self.from=oakhaven priority=2] Don't trust a sale of secrets on the Sump Stairs. Somebody's paying both ends.
 say[world.mem.nh_stage=bell self.from=frosthollow priority=2] On the Moot night the Pass is his, the notice says. The Captain writes like he means it.
@@ -2140,7 +2140,7 @@ say[world.mem.nh_stage=lights self.from=southmeadow priority=2] The bee-keeper l
 say[world.mem.nh_stage=lights self.from=southmeadow here.region=southmeadow priority=2] The cellar hand at the press house read the Sunfields stone. Ask her for the chiselled name; the fen priest will want it.
 say[world.mem.nh_stage=lights self.from=mirebridge|fenshore priority=2] The old one at Withy Creek knows which lights are which. Don't sit with your back to the reeds when you ask.
 say[world.mem.nh_stage=lights self.from=mirebridge|fenshore here.region=fenshore priority=2] The Rivermouth skipper ties up at our boardwalk at dawn, late as ever. Ask her what she carried, no? Watch her paws.
-say[world.mem.nh_stage=lights self.from=saltwell priority=2] The black cloak speaks only through the healer. Ask him what she asks.
+say[world.mem.nh_stage=lights self.from=saltwell priority=2] The black cloak does not speak to the unsworn, #address#. Only through the healer. Ask him what she asks.
 say[world.mem.nh_stage=lights self.from=oakhaven priority=2] The carpenter at the Fenshore pottery's an Oakhaven root. Ask him about the potter's post, slow.
 say[world.mem.nh_stage=lights self.from=frosthollow priority=2] If you want the black cloak's question, ask the healer in the city. She won't say it herself.
 say[world.mem.nh_stage=harvest self.from=ridgemere world.mem.nh_desmond=held priority=2] The magistrate's court hears the dismissed guard's case. Sit in if you've an opinion.
@@ -2560,7 +2560,7 @@ say Then Frosthollow knows. If he's alive, I'll stand on the Pass with a lamp li
 choice Can I ask you something more? -> nh_ul
 choice Goodbye for now. -> bye
 
-# ---- Gorm Plankgate, the Wardens' Eye (saltwell), at the Sump Infirmary
+# ---- Gorm Plankgate, the Order's Eye in Ridgemere (saltwell; an informant, not sworn, not Quickened), at the Sump Infirmary
 node nh_gm
 say In Saltwell, when I was young, a pup the water obeyed drowned a well and herself with it. No one had taught her. I wrote so it would not happen here.
 mood sad
@@ -2580,53 +2580,53 @@ choice Can I ask you something more? -> nh_gm
 choice Goodbye for now. -> bye
 
 node nh_gm_gift
-say Bring a friend who will vouch for them, and come in daylight. I write down what is true and nothing more.
-say[self.from=saltwell] Bring a friend who will vouch for them, and come in daylight. I write down what is true and nothing more, honoured guest.
+say Bring a friend to vouch for them, and come in daylight. I write what is true, nothing more. A name on their list does not come off.
+say[self.from=saltwell] Bring a friend to vouch, honoured guest, and come in daylight. I write what is true. A name on their list does not come off.
 choice Can I ask you something more? -> nh_gm
 choice Goodbye for now. -> bye
 
 # story-heard; the wolf's real act is the `told the wardens` event at the Eye: tally pledged
 node nh_gm_told
-say Then she will be taught, not drowned. You did a hard thing. I will write it kindly.
+say Then she will be taught, not drowned. What they teach her for, I do not ask. I will write it kindly.
 mood calm
 choice Can I ask you something more? -> nh_gm
 choice Goodbye for now. -> bye
 
 # story-heard: each hiding wolf rolls chance 30 against the Envoy's search
 node nh_gm_lie
-say So you say. She will look herself. I hope you're right.
-say[self.from=saltwell] So you say. She will look herself. I hope you're right, honoured guest.
+say So you say. She will look herself, and she has found better liars than you. I hope you're right.
+say[self.from=saltwell] So you say. She will look herself, and she has found better liars. I hope you're right, honoured guest.
 mood stern
 choice Can I ask you something more? -> nh_gm
 choice Goodbye for now. -> bye
 
 # the Envoy's third question (the first three wolves who ask)
 node nh_gm_q
-say She asks it of the first three who ask her: what kind of realm is this?
+say She asks it of the first three who ask her: what kind of realm is this? She has heard a great deal of noise, she says, and seen very little realm.
 choice A realm that paid the Watch to look away, and is learning to stop. -> nh_gm_q_honest
 choice The finest realm on the map. -> nh_gm_q_proud
 choice Ask the Houses. -> nh_gm_q_evade
 
 # story-heard (the first three wolves): Concord +1
 node nh_gm_q_honest
-say She writes that down. She writes slowly when she likes an answer.
+say She writes that down. She writes slowly when an answer surprises her. It does not happen often.
 mood pleased
 choice Can I ask you something more? -> nh_gm
 choice Goodbye for now. -> bye
 
 node nh_gm_q_proud
-say She writes nothing.
+say She writes nothing. When they bless her on the square, she does not bless them back.
 choice Can I ask you something more? -> nh_gm
 choice Goodbye for now. -> bye
 
 node nh_gm_q_evade
-say She says she has.
+say She says she has. The Houses told her the price of everything.
 choice Can I ask you something more? -> nh_gm
 choice Goodbye for now. -> bye
 
 # ---- Tansy Reedmere, the pup the water obeys (plain words: accent none; a pup's voice): her chain, four steps (Ch 8)
 node nh_ta
-say You can't tell anyone. Promise? Not even the healer from the city.
+say You can't tell anyone. Promise? Not even the healer from the city. The black cloaks take pups like me over the Pass.
 mood worried
 choice Does the water talk? -> nh_ta_talk
 choice I promise. -> nh_ta_talk
@@ -2669,7 +2669,7 @@ choice Goodbye for now. -> bye
 node nh_ke_pup
 say The little one who hums? Everyone on the shore's got an answer. What's yours?
 choice She should be taught here, by us. -> nh_ta_teach
-choice Tell the healer. She needs the Wardens. -> nh_ta_give
+choice Tell the healer. The Wardens know what to do with her kind. -> nh_ta_give
 choice Hide her. Nobody need know. -> nh_ta_hide
 choice I haven't made up my mind. -> nh_ke
 
@@ -2683,8 +2683,8 @@ choice Goodbye for now. -> bye
 
 # story-heard: the Reedmere tally, give
 node nh_ta_give
-say The city's healer, then. It's a hard road for one so small.
-say[self.from=coldwater] The city's healer, then. It's a hard road for a minnow.
+say The city's healer, then. They'll take her over the Pass, and whatever comes back won't be ours.
+say[self.from=coldwater] The city's healer, then. Over the Pass she goes, eh? Whatever comes back won't be our minnow.
 mood sad
 choice Can I ask you something more? -> nh_ke
 choice Goodbye for now. -> bye

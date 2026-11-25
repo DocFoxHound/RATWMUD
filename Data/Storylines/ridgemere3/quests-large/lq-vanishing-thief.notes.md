@@ -72,7 +72,7 @@ say[world.mem.lq_thief=walking self.quarter=heights priority=2] They say a Quick
 say[world.mem.lq_thief=walking self.quarter=sump priority=2] There's an old street under the Heights, from before the walls. The Sunken Street. Folk say it runs further than anybody's walked.
 say[world.mem.lq_thief=forgiven here.region=ridgemere priority=2] Vance House let the Sump pledges go. A wolf put it to the lender plain, they say, and the lender listened.
 say[world.mem.lq_thief=named here.region=larkfield self.dialect=larkfield priority=2] Ridgemere caught its wall-walking thief. A pup, they say, no Gift at all. Short-weighed magic, that.
-say[world.mem.lq_thief=blinker here.region=ridgemere priority=2] The Heights swear it was a Quickened thief. Somebody's writing to the Wardens. Bright One keep us all.
+say[world.mem.lq_thief=blinker here.region=ridgemere priority=2] The Heights swear it was a Quickened thief. Somebody's writing to the Concord for the black cloaks. Bright One keep us all.
 # hub, Petra's thin purse (C8 later; the DM may seed it):
 say[self.id=rm_petra_vance world.mem.lq_thief_thin=yes priority=4] The treasury's short this week, so it's bread and my thanks. Bright One knows I've had my fill of counting coin.
 # inn.tree greet, Ridgemere:

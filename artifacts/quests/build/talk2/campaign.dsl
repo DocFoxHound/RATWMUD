@@ -352,7 +352,7 @@ R :: Bounders in green on the Oakhaven road, eh? Fishers don't drive stakes into
 W :: If you're walking the bounds, mark the alders too. The old line runs along the water, eh?
 A :: The harbourmaster at the city's Wharf Office grew up on the lake. Ask her kindly and she'll say which road the lord took.
 V :: Green cloaks and grey lamps, together. Deep and dark, who's paying whom?
-! :: Black cloaks on the Pass Road, eh? Wardens, they say. Fair winds to whoever they've come for.
+! :: Black cloaks on the Pass Road, eh? Wardens. Quickened, every one, and taken as pups. Fair winds to whoever they've come for.
 H nh_hills=oakhaven :: The cut's still Oakhaven's, I hear. Calm water.
 H :: Somebody walked the Grayrock lord's letters out to him, eh? Calm water, the wharf can sleep.
 W @coldwater :: A Coldwater carter wants wolves to scout the Pass Road stage before the black cloak walks it. Ask at the carts by the square, eh?
@@ -462,7 +462,7 @@ A @fenshore :: The Rivermouth skipper ties up at our boardwalk at dawn, late as 
 - saltwell
 R :: In the old way, #address#, you bring bread and salt to a House at war. Even a House needs to eat.
 W :: The healer at the Sump Infirmary writes to the black cloaks. If a friend carries a Gift, speak for them there, #address#.
-A :: The black cloak speaks only through the healer. Ask him what she asks.
+A :: The black cloak does not speak to the unsworn, #address#. Only through the healer. Ask him what she asks.
 V :: Lights in the fens, fire in the city, cudgels on the roads. A mirage of three, and one paw behind it.
 ! :: Do not hide a Gift from the black cloak and then use it in the open, #address#.
 H nh_quarrel=peace :: Bread and salt reached every House. By bread and salt, the old way still works.
@@ -581,7 +581,7 @@ R nh_bell=rung :: Net and line, they raised it! Green as a pike and loud as a ga
 R nh_mere=still :: The whole mere's still. I've never seen it so. Calm water to her.
 W :: Take a tug rope and oil your coat, eh? And lie flat on the ice. It carries the sound.
 A @coldwater :: The Upper Mere skipper takes bearings. Fish with him first; he doesn't trust city paws.
-V :: The black cloak watches the mere all day. Deep and dark, what's she looking for?
+V :: The black cloak watches the mere all day. They take the ones the water listens to, eh? Take them young.
 ! :: Don't walk the black lane on the ice, neighbour. It never freezes, and nobody says why.
 W @coldwater :: The Bakehouse wants bread and smoked fish carried out to the haulers at the Upper Mere shed, eh? Cold paws want feeding.
 H nh_bell=rung :: The bell's up and the haulers are home. Calm water to every wolf on the ropes, eh?
@@ -619,7 +619,7 @@ R :: A King writes "let the realm choose", and the Houses hide it in the dark. T
 W :: The keeper of our stores lost a brother at a mine. She has asked which one for years, #address#. Ask Frosthollow.
 A :: The mine captain drinks at the Lamp and Pick on Restday. Bring a friend if you mean to ask him things.
 V :: A Chancellor weeping over a paper means someone made him hold it.
-! :: A pup who calls water is a gift and a danger, #address#. Do not hide her carelessly.
+! :: A pup who calls water is a gift and a danger, #address#. The black cloaks take such pups. Do not hide her carelessly.
 H nh_fenwick=confessed :: The mine captain said it aloud at last. By salt and water, the well remembers, and now so does the valley.
 A @saltwell :: Our stores keeper has waited years to hear which mine, #address#. When the mine captain speaks, carry it to her shade.
 - oakhaven
@@ -721,7 +721,7 @@ R nh_crown=regency :: No crown at all, and a Moot every year. I'll believe it wh
 R nh_crown=regency nh_moot=midwinter :: No crown at all, and a Moot every Midwinter. I'll believe it when it sits twice.
 R nh_crown=bought :: The Counting House has the realm now. They call it a Protectorate. I call it a debt with a crown on.
 R nh_concord=answers :: The black cloak tore the Keeping at the Bay Light. The Wardens are going home.
-R nh_concord=bends :: Wardens in every silent town by spring. We were too quiet, somewhere.
+R nh_concord=bends :: An Eye for the Wardens in every silent town by spring, and every Quickened named. We were too quiet, somewhere.
 R nh_captain=turned :: The Grey Captain went back over the Pass with the coin. To fetch the Deepvein families down, they say.
 R nh_captain=beaten :: They held the Grey Captain a day in the Keep's cells and judged him at the Moot's end. It's on the Market Square board.
 H fig=hero nh_crown=ottilie|lamp|regency|bought :: They say #world.figure_hero# carried the realm's howl further than anyone. The Lantern, folk are calling that wolf.
@@ -731,7 +731,7 @@ R nh_crown=ottilie :: A Queen who coughs in the damp. She'll want a lake wolf's 
 R nh_crown=lamp :: The lamp-keeper's a fen wolf. Close enough to the lake. Fair catch.
 R nh_crown=regency :: A Moot every year, eh? The city asking the lake what it thinks. Deep and dark, I'll get used to it.
 R nh_crown=bought :: Bought, eh? Muddied water all the way up.
-R nh_concord=holds :: One black cloak at the Grey Gull till spring. Fair winds to her.
+R nh_concord=holds :: One black cloak at the Grey Gull till spring, sending the soup back. Fair winds to her, eh?
 - larkfield
 R nh_howl=ran :: Larkfield answered on the dot. Sold, to the realm.
 R nh_crown=ottilie :: A Queen who carries her own petitions. That's full weight.
