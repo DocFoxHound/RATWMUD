@@ -65,10 +65,23 @@ constexpr const char* FurZoneIds[] = {
 #define RATW_FUR(id, name, rgb)
 #define RATW_EYE(id, name, rgb)
 #define RATW_FUR_ZONE(id, name) id,
+#define RATW_FUR_LAYER(id, name)
 #include "RatwFurPalette.inc"
 #undef RATW_FUR
 #undef RATW_EYE
 #undef RATW_FUR_ZONE
+#undef RATW_FUR_LAYER
+};
+constexpr const char* FurLayerIds[] = {
+#define RATW_FUR(id, name, rgb)
+#define RATW_EYE(id, name, rgb)
+#define RATW_FUR_ZONE(id, name)
+#define RATW_FUR_LAYER(id, name) id,
+#include "RatwFurPalette.inc"
+#undef RATW_FUR
+#undef RATW_EYE
+#undef RATW_FUR_ZONE
+#undef RATW_FUR_LAYER
 };
 const PaletteEntry* furEntry(const std::string& id)
 {
@@ -108,12 +121,35 @@ bool furZone(const std::string& id)
     return false;
 }
 
+bool furLayer(const std::string& id)
+{
+    for (const auto* layer : FurLayerIds)
+        if (id == layer)
+            return true;
+    return false;
+}
+
 bool validFur(const Fur& fur)
 {
-    if (!furCoat(fur.coat) || !eyeColour(fur.eyes))
+    if (!fur.shades.empty())
+    {
+        if (fur.shades.size() != 5)
+            return false;
+        for (const auto& s : fur.shades)
+            if (!furColour(s))
+                return false;
+    }
+    else if (!furCoat(fur.coat))
+        return false;
+    if (!eyeColour(fur.eyes))
+        return false;
+    if (!fur.claws.empty() && !furColour(fur.claws))
         return false;
     for (const auto& [zone, coat] : fur.zones)
         if (!furZone(zone) || !furCoat(coat))
+            return false;
+    for (const auto& [layer, colour] : fur.layers)
+        if (!furLayer(layer) || !furColour(colour))
             return false;
     return true;
 }

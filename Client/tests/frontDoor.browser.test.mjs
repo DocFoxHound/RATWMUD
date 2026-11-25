@@ -72,7 +72,7 @@ test('creating a character: an explicit review, one request, retried under its o
     assert.deepEqual(await door(`['species', 'sex', 'stature', 'pattern', 'baseColor', 'gradientColor', 'markingColor', 'gradientAmount', 'patternAmount']
         .filter(k => !(k in d.draftAppearance))`), [], 'all nine appearance fields');
     assert.equal(await door('d.draftAppearance.species'), 'timber', 'no species to choose: a timber wolf, as the data needs one');
-    assert.deepEqual(await door('d.draftAppearance.fur'), {coat: ['soot', 'ash', 'cream'], eyes: 'amber'}, 'the first ready coat, no zones of its own');
+    assert.deepEqual(await door('d.draftAppearance.fur'), {coat: ['soot', 'flint', 'ash', 'dove', 'cream'], eyes: 'amber', claws: 'straw'}, 'the first ready coat, no layer overrides of its own');
     await door(`(d.draftName = '  Briar  ', d.draftAge = 12, Object.assign(d.draftAppearance, {species: 'maned', pattern: 'saddle', baseColor: 6}))`);
     await door('d.review()');
     assert.equal(await door('d.draftName'), 'Briar', 'the name is trimmed');
@@ -208,18 +208,18 @@ test('painted wolves: three sizes, the words agree with the painting, the face i
     await page.evaluate(`window.ratw.page('creator')`);
     await page.evaluate(`document.querySelector('.creator-tabs [data-tab=body]').click()`);
     const cards = () => page.evaluate(`[...document.querySelectorAll('.build-card')].map(c => [c.dataset.build, c.textContent, c.classList.contains('chosen')])`);
-    assert.deepEqual(await cards(), [['small', 'Small', false], ['medium', 'Medium', true], ['large', 'Large', false]], 'smallest first; a new wolf is medium');
+    assert.deepEqual(await cards(), [['small', 'Small', false], ['medium', 'Average', true], ['large', 'Tall', false]], 'smallest first; a new wolf is average');
     assert.equal(await page.evaluate(`[...document.querySelectorAll('.creator-panel select')].length`), 1, 'sex alone: no species (the user, 2026-11-14); stature goes with the size');
     const summary = () => page.evaluate(`document.querySelector('.door-preview .wolf-id-text .pre').textContent`);
-    assert.match(await summary(), /Medium · 76 cm at shoulder/);
+    assert.match(await summary(), /Average · 76 cm at shoulder/);
     await page.evaluate(`document.querySelector('.build-card[data-build=large]').click()`);
     assert.deepEqual(await door('[d.draftAppearance.build, d.draftAppearance.stature]'), ['large', 'tall'], 'the size is kept as the build, with its stature');
-    assert.match(await summary(), /Large · 85 cm at shoulder/);
+    assert.match(await summary(), /Tall · 85 cm at shoulder/);
     assert.doesNotMatch(await summary(), /stature/i);
     await page.evaluate(`document.querySelector('.build-card[data-build=small]').click()`);
     assert.deepEqual(await door('[d.draftAppearance.build, d.draftAppearance.stature]'), ['small', 'short']);
     assert.match(await summary(), /Small · 67 cm at shoulder/);
-    assert.ok(await door(`!!d.draftAppearance.fur`), 'choosing a size keeps the painted look');
+    assert.ok(await door(`!!d.draftAppearance.fur`), 'choosing a size keeps the layered doll look');
     // The face is its own picture beside the name; the profile is the card's other one. Both are painted.
     await page.waitFor(`(() => { const lit = c => c && [...c.getContext('2d').getImageData(0, 0, c.width, c.height).data].some(v => v);
         return lit(document.querySelector('.door-preview .wolf-id canvas.wolf-face')) && lit(document.querySelector('.door-preview canvas.portrait')) &&
@@ -230,13 +230,13 @@ test('painted wolves: three sizes, the words agree with the painting, the face i
         for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200) { top = Math.floor(i / 4 / c.width); break; }
         return c.height - top; })()`);
     const [small, medium, large] = [await painted('small'), await painted('medium'), await painted('large')];
-    assert.ok(small < medium && medium < large, `the small wolf stands lower than the medium, the medium than the large (${small}, ${medium}, ${large})`);
+    assert.ok(small < medium && medium < large, `the small wolf stands lower than the average, the average than the tall (${small}, ${medium}, ${large})`);
     // No paper card behind the wolves (the user, 2026-11-14): the canvases' corners are clear.
     const corners = await page.evaluate(`[...document.querySelectorAll('.door-preview canvas, .build-card canvas')].map(c => {
         const g = c.getContext('2d'); return [[1, 1], [c.width - 2, 1], [1, c.height - 2]].map(([x, y]) => g.getImageData(x, y, 1, 1).data[3]); }).flat()`);
     assert.ok(corners.length >= 15 && corners.every(a => a === 0), `the wolves are drawn on nothing (${corners})`);
     // On the roster: a face for each wolf in the list, the selected wolf's profile on its card, and words that say
-    // the size painted; a wolf saved with one of the first paintings keeps the painting that took its place.
+    // the size painted; a wolf saved with one of the first paintings keeps the size that took its place.
     const look = await door('({...d.draftAppearance})');
     const wolves = [{id: 'w1', name: 'Tall', age: 30, appearance: {...look, build: 'lean', stature: 'average'}},
         {id: 'w2', name: 'Stocky', age: 30, appearance: {...look, build: 'average', stature: 'average'}},
@@ -249,30 +249,28 @@ test('painted wolves: three sizes, the words agree with the painting, the face i
         await door(`(d.selectedId = '${id}', d.show('roster'))`);
         return page.evaluate(`document.querySelector('.door-detail .muted').textContent`);
     };
-    assert.match(await detail('w1'), /Large · 85 cm/, 'the old lean painting is the large wolf');
+    assert.match(await detail('w1'), /Tall · 85 cm/, 'the old lean painting is the tall wolf');
     assert.match(await detail('w2'), /Small · 67 cm/, 'the old average painting is the small wolf');
-    assert.match(await detail('w3'), /Medium · 76 cm/, 'the old heavy painting is the medium wolf');
+    assert.match(await detail('w3'), /Average · 76 cm/, 'the old heavy painting is the average wolf');
 });
 
-test('fur zones: every zone in the coat\'s colours, one changed right there, and its Reset (the user, 2026-11-14)', async () => {
+test('doll layers: every layer inherits the coat until overridden, and Reset restores it', async () => {
     await door(`(d.busy = false, d.receive({type: 'lobby', stage: 'characters', ok: true, characters: []}))`);
     await page.evaluate(`window.ratw.page('creator')`);
     await page.evaluate(`document.querySelector('.creator-tabs [data-tab=markings]').click()`);
     assert.equal(await page.evaluate(`document.querySelectorAll('.creator-panel select').length`), 0, 'no dropdown');
-    const zoneNames = () => page.evaluate(`[...document.querySelectorAll('.zone-row[data-zone=legs] .fur-chip strong')].map(s => s.textContent)`);
-    const coatNames = await page.evaluate(`[...document.querySelectorAll('.zone-row[data-zone=back] .fur-chip strong')].map(s => s.textContent)`);
-    assert.deepEqual(await zoneNames(), coatNames, 'a zone starts as the coat');
-    assert.equal(await page.evaluate(`document.querySelector('.zone-row[data-zone=legs] .zone-reset').disabled`), true, 'nothing to reset yet');
-    await page.evaluate(`document.querySelector('.zone-row[data-zone=legs] .fur-chip[data-slot="2"]').click()`);
-    await page.evaluate(`document.querySelector('.zone-row[data-zone=legs] .swatch[data-colour=snow]').click()`);
-    const legs = await door('d.draftAppearance.fur.zones.legs');
-    assert.equal(legs[2], 'snow', 'the light fur of the legs changed');
-    assert.deepEqual(legs.slice(0, 2), (await door('d.draftAppearance.fur.coat')).slice(0, 2), 'the rest the coat\'s');
-    assert.equal((await zoneNames())[2], 'Snow');
-    assert.equal(await page.evaluate(`document.querySelector('.zone-row[data-zone=legs] .zone-reset').disabled`), false);
-    await page.evaluate(`document.querySelector('.zone-row[data-zone=legs] .zone-reset').click()`);
-    assert.equal(await door('d.draftAppearance.fur.zones'), undefined, 'Reset: the coat\'s scheme again');
-    assert.deepEqual(await zoneNames(), coatNames);
+    await page.evaluate(`document.querySelector('.layer-group[data-group="Front legs"]').click()`);
+    const sockName = () => page.evaluate(`document.querySelector('.layer-row[data-layer=fore_socks] .fur-chip strong').textContent`);
+    const baseName = await sockName();
+    assert.equal(await page.evaluate(`document.querySelector('.layer-row[data-layer=fore_socks] .zone-reset').disabled`), true, 'nothing to reset yet');
+    await page.evaluate(`document.querySelector('.layer-row[data-layer=fore_socks] .fur-chip').click()`);
+    await page.evaluate(`document.querySelector('.layer-row[data-layer=fore_socks] .swatch[data-colour=snow]').click()`);
+    assert.equal(await door('d.draftAppearance.fur.layers.fore_socks'), 'snow', 'front socks overridden');
+    assert.equal(await sockName(), 'Snow');
+    assert.equal(await page.evaluate(`document.querySelector('.layer-row[data-layer=fore_socks] .zone-reset').disabled`), false);
+    await page.evaluate(`document.querySelector('.layer-row[data-layer=fore_socks] .zone-reset').click()`);
+    assert.equal(await door('d.draftAppearance.fur.layers'), undefined, 'Reset: back to the base coat');
+    assert.equal(await sockName(), baseName);
 });
 
 test('a name is at most 24 characters, in the box and at review', async () => {

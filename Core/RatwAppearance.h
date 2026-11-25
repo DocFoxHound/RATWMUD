@@ -19,24 +19,33 @@ constexpr std::size_t MaxMarkings = 6;
 extern const char* const MarkingMasks[];       // "socks", "stockings", "blaze", ... (null-terminated)
 bool knownMarking(const std::string& mask);
 
-// The painted wolf (Docs/Design/81-painted-wolves.md): one of three sizes of painting (the appearance's `build`)
-// coloured with the player's fur. Three fur colours for the whole coat (the painting's dark, mid and light fur), an eye colour, and
-// for any of the eight fur zones three colours of its own. Every colour is an id in the palette
-// (Data/Wolves/palette.json), never a colour itself: nothing outside the palette can be kept.
+// The layered wolf doll (Docs/Design/81-painted-wolves.md): one of six dolls (female/male x small/medium/large,
+// driven by `sex` and `build`), coloured with the player's fur. A coat is either 5 fur colours (darkest, dark, mid,
+// light, lightest — the new layered dolls) or 3 (dark, mid, light — legacy wolves), plus an eye colour, optional claw
+// colour, optional per-layer overrides (any of the 45 fur/claw doll layers), and legacy zone overrides. Every colour
+// is an id in the palette (Data/Wolves/palette.json), never a raw colour: nothing outside the palette can be kept.
 struct FurCoat
 {
-    std::string dark, mid, light;                // Fur palette ids.
+    std::string dark, mid, light;                // 3-shade coat (legacy) or [0, 2, 4] summary of a 5-shade coat.
 };
 struct Fur
 {
-    FurCoat coat;                                // The whole wolf's. All empty: no painted look chosen (an older wolf).
+    FurCoat coat;                                // 3-shade coat (empty when no painted look chosen).
+    std::vector<std::string> shades;             // 5-shade coat (darkest..lightest), when chosen; empty for 3-shade coats.
     std::string eyes;                            // An eye palette id.
-    std::map<std::string, FurCoat> zones;        // A zone's own colours, by zone id; a zone not here wears the coat.
-    bool chosen() const { return !coat.dark.empty() || !coat.mid.empty() || !coat.light.empty() || !eyes.empty() || !zones.empty(); }
+    std::string claws;                           // Optional claw colour (a fur palette id).
+    std::map<std::string, FurCoat> zones;        // Legacy 8-zone overrides (3 fur ids each).
+    std::map<std::string, std::string> layers;   // Per-layer overrides (doll layer id -> fur palette id).
+    bool chosen() const
+    {
+        return !coat.dark.empty() || !coat.mid.empty() || !coat.light.empty() || !shades.empty() || !eyes.empty() ||
+               !claws.empty() || !zones.empty() || !layers.empty();
+    }
 };
 bool furColour(const std::string& id);           // In the palette's fur colours.
 bool eyeColour(const std::string& id);           // In the palette's eye colours.
 bool furZone(const std::string& id);             // "back", "sides", "chest", "legs", "tail", "tail_tip", "head", "muzzle".
+bool furLayer(const std::string& id);            // Any of the 45 customizable non-eye doll layers.
 const char* furColourName(const std::string& id);    // "" for one not in the palette.
 int furColourRgb(const std::string& id);             // 0xRRGGBB; -1 for one not in the palette.
 bool validFur(const Fur& fur);                   // Chosen, complete, and every id in the palette.

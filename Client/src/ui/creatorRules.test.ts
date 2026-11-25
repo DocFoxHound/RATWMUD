@@ -3,7 +3,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {nameProblem, NameMost, resetZone, setZoneColour, tierCards, zoneChanged, zoneCoat} from './creatorRules.ts';
+import {currentLayerColour, layerChanged, nameProblem, NameMost, resetLayer, resetLayers, resetZone, setLayerColour, setZoneColour, tierCards, zoneChanged, zoneCoat} from './creatorRules.ts';
 import type {Fur} from './fur.ts';
 
 test('a name is 2 to 24 characters, as Core and central count them', () => {
@@ -39,6 +39,22 @@ test('a fur zone wears the coat until one of its colours is changed, and Reset g
     // A new coat carries every zone that has none of its own.
     const recoated: Fur = {...changed, coat: ['russet', 'tan', 'cream']};
     assert.deepEqual(zoneCoat(recoated, 'back'), ['russet', 'tan', 'cream']);
+});
+
+test('a doll layer inherits from the 5-shade coat/claws until overridden, and Reset restores it', () => {
+    const wolf: Fur = {coat: ['soot', 'flint', 'ash', 'dove', 'cream'], eyes: 'amber', claws: 'straw'};
+    assert.equal(currentLayerColour(wolf, 'fore_socks'), 'ash');
+    assert.equal(currentLayerColour(wolf, 'fore_claws'), 'straw');
+    assert.equal(layerChanged(wolf, 'fore_socks'), false);
+    const socked = setLayerColour(wolf, 'fore_socks', 'snow');
+    assert.equal(layerChanged(socked, 'fore_socks'), true);
+    assert.equal(currentLayerColour(socked, 'fore_socks'), 'snow');
+    assert.deepEqual(socked.layers, {fore_socks: 'snow'});
+    const both = setLayerColour(socked, 'eyebrow', 'ivory');
+    assert.deepEqual(Object.keys(both.layers ?? {}).sort(), ['eyebrow', 'fore_socks']);
+    assert.deepEqual(resetLayer(both, 'fore_socks').layers, {eyebrow: 'ivory'});
+    assert.equal(resetLayers(both, ['fore_socks', 'eyebrow']).layers, undefined);
+    assert.equal(setLayerColour(socked, 'fore_socks', 'ash').layers, undefined, 'setting back to inherited colour clears the override');
 });
 
 test('the Gift tiers: Normal, Gifted and Quickened, each greyed with the reason when the account hasn\'t opened it', () => {

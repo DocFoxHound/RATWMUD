@@ -3,7 +3,7 @@
 import {css} from '../color.ts';
 import {speakingColor} from '../theme.ts';
 import {drawPortrait, paintedLook, type Portraits} from '../portrait.ts';
-import {BuildNames, type Build} from '../fur.ts';
+import {BuildNames, type DollKey} from '../fur.ts';
 import {arr, bool, clamp, countText, envNumber, isObject, num, obj, str, wholeCount, type Json} from '../../game/json.ts';
 import {postureLabel, restLabel, readLoad, loadLabel, loadCost, weightLabel} from '../../game/labels.ts';
 import type {GameState} from '../../game/state.ts';
@@ -67,15 +67,21 @@ interface Doll {
     self: Json | null;
 }
 
-/** Where each fur spot (Core/RatwItems.h FurSpots) sits on each size's profile, in the paintings' shared frame (961 by
- *  595 pixels; Client/src/assets/wolves). The paintings face left, so the near legs are the wolf's left. */
-const FurSpotsAt: Record<Build, Record<string, [number, number]>> = {
-    small: {ears: [201, 212], crown: [190, 260], ruff: [228, 358], chest: [316, 398], back: [447, 296], foreleg_left: [387, 507],
-        foreleg_right: [303, 507], hindleg_left: [663, 507], hindleg_right: [561, 507], tail: [708, 390]},
-    medium: {ears: [123, 130], crown: [116, 178], ruff: [165, 290], chest: [258, 339], back: [406, 223], foreleg_left: [315, 490],
-        foreleg_right: [229, 490], hindleg_left: [687, 490], hindleg_right: [553, 490], tail: [743, 345]},
-    large: {ears: [96, 32], crown: [84, 72], ruff: [125, 195], chest: [252, 264], back: [400, 140], foreleg_left: [292, 470],
-        foreleg_right: [224, 470], hindleg_left: [727, 470], hindleg_right: [585, 470], tail: [765, 282]},
+/** Where each fur spot (Core/RatwItems.h FurSpots) sits on each doll, in the shared frame (1033 by 821 pixels;
+ *  tools/doll_prep.py). The dolls face left, so the near legs are the wolf's left. */
+const FurSpotsAt: Record<DollKey, Record<string, [number, number]>> = {
+    'female-small': {ears: [228, 220], crown: [218, 266], ruff: [261, 453], chest: [466, 514], back: [523, 384],
+        foreleg_left: [399, 623], foreleg_right: [334, 623], hindleg_left: [804, 621], hindleg_right: [671, 621], tail: [848, 483]},
+    'female-medium': {ears: [171, 133], crown: [177, 187], ruff: [240, 381], chest: [477, 459], back: [528, 322],
+        foreleg_left: [391, 594], foreleg_right: [315, 594], hindleg_left: [833, 586], hindleg_right: [698, 586], tail: [879, 425]},
+    'female-large': {ears: [85, 53], crown: [107, 108], ruff: [210, 281], chest: [450, 363], back: [523, 213],
+        foreleg_left: [397, 553], foreleg_right: [319, 553], hindleg_left: [828, 535], hindleg_right: [687, 535], tail: [897, 341]},
+    'male-small': {ears: [234, 193], crown: [215, 239], ruff: [257, 417], chest: [491, 509], back: [540, 375],
+        foreleg_left: [415, 615], foreleg_right: [350, 615], hindleg_left: [823, 603], hindleg_right: [702, 603], tail: [863, 463]},
+    'male-medium': {ears: [176, 135], crown: [171, 189], ruff: [237, 378], chest: [474, 468], back: [531, 320],
+        foreleg_left: [405, 594], foreleg_right: [322, 594], hindleg_left: [843, 584], hindleg_right: [703, 584], tail: [883, 439]},
+    'male-large': {ears: [93, 48], crown: [113, 103], ruff: [240, 292], chest: [501, 351], back: [531, 203],
+        foreleg_left: [419, 543], foreleg_right: [341, 543], hindleg_left: [858, 523], hindleg_right: [721, 523], tail: [905, 339]},
 };
 /** A fur spot's name: the fur zone it is in (doc 81's eight), then the part where that says too little. */
 const FurSpotNames: Record<string, string> = {
@@ -211,7 +217,7 @@ export class Dialogs {
         for (const line of lines) el('div', 'label muted', text, line);
         const canvas = el('canvas', 'portrait painted', parent);
         canvas.width = 720;
-        canvas.height = 446;
+        canvas.height = 572;
         const c = canvas.getContext('2d');
         if (c) drawPortrait(c, this.portraits, appearance, 0, 0, canvas.width, canvas.height);
     }
@@ -1138,18 +1144,18 @@ export class Dialogs {
         const box = this.box(parent, `JEWELLERY · ${pieces.length ? `${pieces.length} PIECE${pieces.length === 1 ? '' : 'S'}` : 'NONE'}`);
         const wrap = el('div', 'rpg-fur', box);
         const figure = el('div', 'rpg-fur-figure', wrap);
-        // The painting in its frame, the frame filling the canvas, so the markers (in the frame's pixels) sit on it.
+        // The doll in its shared frame (1033x821), filling the canvas so the markers sit accurately on each spot.
         const canvas = el('canvas', 'rpg-fur-wolf', figure);
         canvas.width = 480;
-        canvas.height = 297;
+        canvas.height = 382;
         const c = canvas.getContext('2d');
         if (c) drawPortrait(c, this.portraits, doll.appearance, 0, 0, canvas.width, canvas.height, undefined, {pad: 0, radius: 6});
         const ns = 'http://www.w3.org/2000/svg';
         const svg = document.createElementNS(ns, 'svg');
-        svg.setAttribute('viewBox', '0 0 961 595');
+        svg.setAttribute('viewBox', '0 0 1033 821');
         svg.setAttribute('class', 'rpg-fur-svg');
         figure.appendChild(svg);
-        const where = FurSpotsAt[paintedLook(doll.appearance)?.build ?? 'medium'];
+        const where = FurSpotsAt[paintedLook(doll.appearance)?.doll ?? 'male-medium'];
         const at: Record<string, [number, number, string]> = Object.fromEntries(Object.entries(where).map(([spot, [x, y]]) => [spot, [x, y, FurSpotNames[spot]]]));
         if (!at[this.spot]) this.spot = '';
         for (const [spot, [x, y, label]] of Object.entries(at)) {

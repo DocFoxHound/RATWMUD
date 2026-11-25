@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The painted wolves' palette: one list of fur and eye colours for the server, central's identity check and the client.
+"""The wolf dolls' palette: one list of fur and eye colours, zones and doll layers for the server, central's identity check and the client.
 
   python3 tools/fur_palette.py           regenerate the C++ and client tables from Data/Wolves/palette.json
   python3 tools/fur_palette.py --check   fail if a generated table is out of date
@@ -55,22 +55,53 @@ def load(path: Path = SOURCE) -> dict:
     zones = [z['id'] for z in data['zones']]
     _check(len(zones) == len(set(zones)) and 0 < len(zones) <= 15 and all(re.fullmatch(r'[a-z][a-z_]{0,15}', z) for z in zones),
            'Zones are up to 15 different ids (the zone maps keep one in four bits).')
+    layers = data.get('layers', [])
+    _check(len(layers) == 46, f'Expected 46 doll layers, got {len(layers)}.')
+    layer_ids: set[str] = set()
+    custom_layers: set[str] = set()
+    for i, layer in enumerate(layers):
+        lid = layer['id']
+        _check(re.fullmatch(r'[a-z][a-z0-9_]{0,15}', lid) is not None, f'layer {lid!r}: invalid id.')
+        _check(lid not in layer_ids, f'layer {lid!r}: duplicate id.')
+        layer_ids.add(lid)
+        _check(isinstance(layer.get('name'), str) and 0 < len(layer['name']) <= 28, f'layer {lid!r}: bad name.')
+        _check(isinstance(layer.get('group'), str) and layer['group'], f'layer {lid!r}: missing group.')
+        shade = layer.get('shade')
+        _check(shade in (0, 1, 2, 3, 4, 'eyes', 'claws'), f'layer {lid!r}: shade must be 0..4, "eyes", or "claws".')
+        zone = layer.get('zone', '')
+        _check(zone == '' or zone in zones, f'layer {lid!r}: unknown legacy zone {zone!r}.')
+        if i == 0:
+            _check(lid == 'eyes' and shade == 'eyes', 'Layer 1 must be eyes.')
+        else:
+            custom_layers.add(lid)
     fur, eyes = {c['id'] for c in data['fur']}, {c['id'] for c in data['eyes']}
     seen = set()
     for coat in data['coats']:
         _check(coat['id'] not in seen and re.fullmatch(r'[a-z][a-z_]{0,15}', coat['id']) is not None, f'coat {coat["id"]!r}: a new id.')
         seen.add(coat['id'])
-        _check(len(coat['coat']) == 3 and set(coat['coat']) <= fur and coat['eyes'] in eyes, f'coat {coat["id"]!r}: three fur ids and an eye id.')
+        _check(len(coat['coat']) in (3, 5) and set(coat['coat']) <= fur and coat['eyes'] in eyes,
+               f'coat {coat["id"]!r}: three or five fur ids and an eye id.')
+        if 'claws' in coat:
+            _check(coat['claws'] in fur, f'coat {coat["id"]!r}: claws must be a fur id.')
         for zone, ids in coat.get('zones', {}).items():
             _check(zone in zones and len(ids) == 3 and set(ids) <= fur, f'coat {coat["id"]!r}: zone {zone!r} is three fur ids.')
+        for lid, col in coat.get('layers', {}).items():
+            _check(lid in custom_layers and col in fur, f'coat {coat["id"]!r}: layer {lid!r} must be a doll layer and fur id.')
     return data
 
 
 def cpp_table(data: dict) -> str:
-    lines = [f'// {HEADER}', '// RATW_FUR(id, name, rgb)  RATW_EYE(id, name, rgb)  RATW_FUR_ZONE(id, name)']
+    lines = [
+        f'// {HEADER}',
+        '// RATW_FUR(id, name, rgb)  RATW_EYE(id, name, rgb)  RATW_FUR_ZONE(id, name)  RATW_FUR_LAYER(id, name)',
+        '#ifndef RATW_FUR_LAYER',
+        '#define RATW_FUR_LAYER(id, name)',
+        '#endif',
+    ]
     lines += [f'RATW_FUR("{c["id"]}", "{c["name"]}", 0x{c["hex"][1:]})' for c in data['fur']]
     lines += [f'RATW_EYE("{c["id"]}", "{c["name"]}", 0x{c["hex"][1:]})' for c in data['eyes']]
     lines += [f'RATW_FUR_ZONE("{z["id"]}", "{z["name"]}")' for z in data['zones']]
+    lines += [f'RATW_FUR_LAYER("{l["id"]}", "{l["name"]}")' for l in data['layers'] if l['id'] != 'eyes']
     return '\n'.join(lines) + '\n'
 
 
@@ -80,12 +111,15 @@ def client_table(data: dict) -> str:
     return (f'// {HEADER}\n'
             'export interface FurColour { id: string; name: string; group: string; hex: string }\n'
             'export interface EyeColour { id: string; name: string; hex: string }\n'
-            'export interface ReadyCoat { id: string; name: string; coat: string[]; eyes: string; zones?: Record<string, string[]> }\n\n'
+            'export interface DollLayer { id: string; name: string; group: string; shade: 0 | 1 | 2 | 3 | 4 | \'eyes\' | \'claws\'; zone: string }\n'
+            'export interface ReadyCoat { id: string; name: string; coat: string[]; eyes: string; claws?: string; zones?: Record<string, string[]>; layers?: Record<string, string> }\n\n'
             f'export const FurColours: readonly FurColour[] = [\n{rows(data["fur"], ("id", "name", "group", "hex"))}\n];\n\n'
             f'export const EyeColours: readonly EyeColour[] = [\n{rows(data["eyes"], ("id", "name", "hex"))}\n];\n\n'
-            '/** The fur zones, in the order the zone maps number them (tools/avatar_prep.py). */\n'
+            '/** The legacy fur zones, in the order the face zone map numbers them. */\n'
             f'export const FurZones: readonly {{id: string; name: string}}[] = [\n{rows(data["zones"], ("id", "name"))}\n];\n\n'
-            f'export const ReadyCoats: readonly ReadyCoat[] = [\n{rows(data["coats"], ("id", "name", "coat", "eyes", "zones"))}\n];\n')
+            '/** The 46 layered doll parts, in exact stack order 1..46 (tools/doll_prep.py). */\n'
+            f'export const DollLayers: readonly DollLayer[] = [\n{rows(data["layers"], ("id", "name", "group", "shade", "zone"))}\n];\n\n'
+            f'export const ReadyCoats: readonly ReadyCoat[] = [\n{rows(data["coats"], ("id", "name", "coat", "eyes", "claws", "zones", "layers"))}\n];\n')
 
 
 def main() -> int:

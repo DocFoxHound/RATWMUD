@@ -138,19 +138,29 @@
 .door .roster-actions { justify-content: flex-end; }
 .door .roster-actions button.primary { flex: none; min-width: 220px; }
 
-/* The fur zones: every zone in the coat's colours, changed right there, Reset to the coat's (no dropdown). */
-.creator-panel .zone-row { margin-top: -6px; padding: 9px 12px; gap: 10px; border-left: 3px solid transparent; }
+/* The layered doll controls: 5 shades + claws in Coat, body-region filter tabs and per-layer rows in Layers. */
+.layer-toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.layer-toolbar p { margin: 0; flex: 1; }
+.layer-toolbar-actions { display: flex; gap: 6px; flex: none; }
+.layer-groups { display: flex; flex-wrap: wrap; gap: 6px; }
+.door .layer-group { margin: 0; padding: 6px 11px; font-size: 13px; font-weight: 400; background: rgba(41, 55, 47, .6); color: var(--paper);
+    border: 1px solid #3a4a44; border-radius: 3px; display: inline-flex; align-items: center; gap: 6px; }
+.door .layer-group:hover { background: rgba(48, 64, 56, .85); }
+.door .layer-group.active { background: var(--gold); color: var(--ink); border-color: var(--gold); font-weight: 500; }
+.door .layer-group em { font-style: normal; font-size: 11px; padding: 1px 6px; border-radius: 8px; background: rgba(0, 0, 0, .35); color: var(--paper); }
+.door .layer-group.active em { background: rgba(0, 0, 0, .2); color: var(--ink); }
+.creator-panel .zone-row { margin-top: -6px; padding: 8px 12px; gap: 10px; border-left: 3px solid transparent; }
 .creator-panel .zone-row.own { border-left-color: var(--sage); }
 .creator-panel .zone-row.open { background: rgba(255, 255, 255, .06); }
 .zone-head { gap: 12px; }
-.zone-title { display: flex; flex-direction: column; gap: 2px; width: 150px; flex: none; }
-.zone-title strong { font-weight: 500; font-size: 16px; }
+.zone-title { display: flex; flex-direction: column; gap: 2px; width: 165px; flex: none; }
+.zone-title strong { font-weight: 500; font-size: 15px; }
 .zone-title small { font-size: 12px; letter-spacing: .03em; }
-.zone-head .fur-chips { flex: 1; }
-.door .zone-head .fur-chip { padding: 5px 8px; }
+.zone-head .fur-chips, .zone-head .fur-chip { flex: 1; }
+.door .zone-head .fur-chip { padding: 5px 10px; }
 .door .zone-head .fur-chip strong { font-size: 14px; }
-.door .zone-reset { margin: 0; padding: 7px 12px; font-size: 13px; font-weight: 400; background: transparent; color: var(--sage);
-    border: 1px solid #3a4a44; }
+.door .zone-reset { margin: 0; padding: 6px 11px; font-size: 13px; font-weight: 400; background: transparent; color: var(--sage);
+    border: 1px solid #3a4a44; white-space: nowrap; }
 .door .zone-reset:disabled { opacity: .3; }
 .swatch-grid.fur-grid { grid-template-columns: repeat(14, 1fr); gap: 4px; }
 .door .swatch-grid.fur-grid .swatch { height: 26px; }

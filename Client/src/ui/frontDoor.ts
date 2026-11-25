@@ -12,28 +12,32 @@
 // there). A host's account also has the Host page (3.2). In central mode its commands go to the client (client.ts),
 // which answers with lobby events of the same shape.
 import {lifeStage, Portraits, readAppearance, shoulderHeightCm, drawPortrait} from './portrait.ts';
-import {buildOf, BuildNames, Builds, BuildStature, EyeColours, eyeName, FurColours, furHex, furName, furOf, FurZones, olderLook, ReadyCoats, zoneName,
-    type Build, type Fur, type FurCoat, type ReadyCoat} from './fur.ts';
+import {baseLayerColour, buildOf, BuildNames, Builds, BuildStature, clawColour, coatShades, dollOf, DollLayerGroups, DollLayers, EyeColours, eyeName, FurColours, furHex, furName, furOf, layerName, olderLook, ReadyCoats, sexOf, ShadeNames,
+    type Build, type DollKey, type Fur, type FurCoat5, type ReadyCoat, type Sex} from './fur.ts';
 import {artCache, sendPortrait, squarePixels} from './artwork.ts';
 import {ask, askText} from './dialog.ts';
 import {EditorDoor} from './editorDoor.ts';
-import {nameProblem, NameMost, resetZone, setZoneColour, tierCards, zoneChanged, zoneCoat} from './creatorRules.ts';
+import {currentLayerColour, layerChanged, nameProblem, NameMost, resetLayer, resetLayers, setLayerColour, tierCards} from './creatorRules.ts';
 import {hostOf, type EditorBridge} from '../net/editor.ts';
 import {HOST_SEES, kindBadges} from '../net/worlds.ts';
 import {arr, bool, isObject, num, obj, str, type Json} from '../game/json.ts';
 import {newCommandId} from '../net/session.ts';
 import {agoText, envLine, worldTomlLines} from '../net/central.ts';
 
-// The painted wolf in the creator (Docs/Design/81-painted-wolves.md): a size (which of the three profiles), the
-// coat's three fur colours, the eyes, and any fur zone's own three: all from the palette. Drawn on nothing: the
-// paintings are cut out, so the wolves stand over the page (the user, 2026-11-14: no paper card behind them).
+// The layered wolf doll in the creator (Docs/Design/81-painted-wolves.md): sex + size (which of the six dolls), the
+// coat's five fur shades, claws, eyes, and optional per-layer overrides across all 45 fur/claw layers: all from the
+// palette. Drawn on nothing: the dolls stand directly over the page.
 
-/** A draft's fur: what it has chosen, or what its older fields come to (fur.ts); a copy, to change. */
+/** A draft's fur: what it has chosen (normalised to 5 shades), or what its older fields come to (fur.ts); a copy. */
 function draftFur(d: Json): Fur {
     const a = readAppearance(d);
-    const fur: Fur = a ? furOf(a) : {coat: ReadyCoats[0].coat as FurCoat, eyes: ReadyCoats[0].eyes};
-    const zones = Object.entries(fur.zones ?? {}).map(([zone, coat]) => [zone, [...coat]]);
-    return {coat: [...fur.coat], eyes: fur.eyes, ...(zones.length ? {zones: Object.fromEntries(zones)} : {})};
+    const fur: Fur = a ? furOf(a) : readyFur(ReadyCoats[0]);
+    const out: Fur = {coat: coatShades(fur.coat), eyes: fur.eyes, claws: clawColour(fur)};
+    if (fur.zones && Object.keys(fur.zones).length) {
+        out.zones = Object.fromEntries(Object.entries(fur.zones).map(([z, c]) => [z, [...c] as [string, string, string]]));
+    }
+    if (fur.layers && Object.keys(fur.layers).length) out.layers = {...fur.layers};
+    return out;
 }
 
 function draftBuild(d: Json): Build {
@@ -41,7 +45,12 @@ function draftBuild(d: Json): Build {
     return a ? buildOf(a) : 'medium';
 }
 
-/** "Medium · 76 cm at shoulder": a wolf's size as its painting shows it, and the height that goes with that size. */
+function draftSex(d: Json): Sex {
+    const a = readAppearance(d);
+    return a ? sexOf(a) : (d.sex === 'female' ? 'female' : 'male');
+}
+
+/** "Average · 76 cm at shoulder": a wolf's size as its doll shows it, and the height that goes with that size. */
 function sizeWords(d: Json | null, age: number): string {
     const a = readAppearance(d);
     if (!a) return '';
@@ -49,34 +58,50 @@ function sizeWords(d: Json | null, age: number): string {
     return `${BuildNames[size]} · ${shoulderHeightCm({...a, stature: BuildStature[size]}, age).toFixed(0)} cm at shoulder`;
 }
 
-/** Puts a painted look on a draft: the size (the build, and the stature that goes with it) and the fur, and the
- *  older fields in step with them (the coat's colour and the eyes in words, the wolf on the sheet: fur.ts olderLook). */
+/** Puts a layered doll look on a draft: the size (build + stature) and the fur (5-shade coat, eyes, claws, layers),
+ *  and keeps the older summary fields in step so descriptive text agrees with the doll. */
 function wear(d: Json, fur: Fur, build: Build) {
-    const zones = Object.entries(fur.zones ?? {});
+    const shades = coatShades(fur.coat);
+    const claws = clawColour(fur);
+    const layers = Object.entries(fur.layers ?? {}).filter(([, col]) => !!col);
+    const next: Fur = {coat: shades, eyes: fur.eyes, claws, ...(layers.length ? {layers: Object.fromEntries(layers)} : {})};
     d.build = build;
     d.stature = BuildStature[build];
-    d.fur = {coat: [...fur.coat], eyes: fur.eyes, ...(zones.length ? {zones: Object.fromEntries(zones.map(([zone, coat]) => [zone, [...coat]]))} : {})};
-    const older = olderLook(fur);
+    d.fur = {coat: [...shades], eyes: fur.eyes, claws, ...(layers.length ? {layers: Object.fromEntries(layers)} : {})};
+    const older = olderLook(next);
     Object.assign(d, {coat: older.coat, gradientTint: older.gradientTint, eyes: older.eyes, pattern: 'solid'});
     delete d.markingTint;
     if (older.markings.length) d.markings = older.markings;
     else delete d.markings;
 }
 
-const readyFur = (c: ReadyCoat): Fur => ({coat: c.coat as FurCoat, eyes: c.eyes, ...(c.zones ? {zones: c.zones as Record<string, FurCoat>} : {})});
+const readyFur = (c: ReadyCoat): Fur => ({
+    coat: coatShades(c.coat as Fur['coat']),
+    eyes: c.eyes,
+    claws: c.claws ?? 'straw',
+    ...(c.layers && Object.keys(c.layers).length ? {layers: {...c.layers}} : {}),
+});
 
-/** "soot, ash and cream" */
-const coatWords = (coat: FurCoat) => `${furName(coat[0])}, ${furName(coat[1])} and ${furName(coat[2])}`.toLowerCase();
+/** "soot, flint, ash, dove and cream" */
+const coatWords = (coat: FurCoat5) => `${coat.slice(0, -1).map(furName).join(', ')} and ${furName(coat[coat.length - 1])}`.toLowerCase();
 
-/** A whole new look at random (keeping the name and age): a size, a natural coat, sometimes a zone or two of another
- *  coat's colours, and eyes. (The species stays as it is: it is no longer chosen, the user 2026-11-14.) */
+/** A whole new look at random (keeping the name and age): sex, size, a natural ready coat, eyes, and occasional
+ *  distinctive accent layers. */
 function randomiseAppearance(d: Json) {
     const pick = <T>(list: readonly T[]) => list[Math.floor(Math.random() * list.length)];
     d.sex = pick(Choices.sex);
-    const fur = readyFur(pick(ReadyCoats));
-    const zones: Record<string, FurCoat> = {...(fur.zones ?? {})};
-    for (let i = Math.floor(Math.random() * 3); i > 0; --i) zones[pick(FurZones).id] = pick(ReadyCoats).coat as FurCoat;
-    wear(d, {coat: fur.coat, eyes: pick(EyeColours).id, zones}, pick(Builds));
+    const base = readyFur(pick(ReadyCoats));
+    const layers: Record<string, string> = {...(base.layers ?? {})};
+    if (Math.random() < 0.35) {
+        const accent = pick(ReadyCoats).coat;
+        const tip = Math.random() < 0.5 ? accent[0] : accent[accent.length - 1];
+        layers.tail_tip = tip;
+    }
+    if (Math.random() < 0.25) {
+        const sock = pick(['snow', 'ivory', 'cream', 'black', 'soot'] as const);
+        layers.fore_socks = layers.hind_socks = layers.fore_toes = layers.hind_toes = sock;
+    }
+    wear(d, {coat: base.coat, eyes: pick(EyeColours).id, claws: base.claws, ...(Object.keys(layers).length ? {layers} : {})}, pick(Builds));
 }
 
 type Page = 'login' | 'register' | 'menu' | 'roster' | 'creator' | 'review' | 'choices' | 'servers' | 'pick' | 'arrive' | 'host' | 'editor';
@@ -133,8 +158,8 @@ const title = (v: string) => (v ? v[0].toUpperCase() + v.slice(1) : v);
 const stageName = (age: number) => (age < 13 ? 'Young' : age < 18 ? 'Adolescent' : age < 65 ? 'Adult' : 'Old');
 const utf8Length = (s: string) => new TextEncoder().encode(s).length;
 
-/** The title screen's wolves: three of the ready coats, one of each size. */
-const TitleWolves: Array<[Build, string]> = [['large', 'timber'], ['medium', 'arctic'], ['small', 'russet']];
+/** The title screen's wolves: three of the ready coats, across sizes and sexes. */
+const TitleWolves: Array<[DollKey, string]> = [['male-large', 'timber'], ['female-medium', 'woodland'], ['female-small', 'russet']];
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> & {className?: string} = {},
     ...children: Array<Node | string>): HTMLElementTagNameMap[K] {
@@ -235,8 +260,9 @@ export class FrontDoor {
     private portraitWolf: Json | null = null;                    // Whose they are, when not the selected wolf or the draft.
     private pagePainters: Array<() => void> = [];        // The page's other painted wolves (the roster's faces, the title's art).
     private panelPainters: Array<() => void> = [];       // The creator panel's (the builds to choose from).
-    private furSlot: Record<string, number> = {};        // Which of a picker's three colours is being chosen.
-    private openZone = '';                               // The fur zone whose palette is open.
+    private furSlot: Record<string, number> = {};        // Which coat/claw chip (0..4 fur shades, 5 claws) is active.
+    private openZone = '';                               // The doll layer whose palette is open.
+    private layerGroup: string = DollLayerGroups[0];     // Which body region is shown in the Layers tab.
     private timer: number;
     private send: (command: Json) => void;
 
@@ -1528,9 +1554,14 @@ export class FrontDoor {
         const fields = el('div', {className: 'door-fields'});
         // Colours in words, never their codes (R1): the palette's names.
         const fur = draftFur(draft);
-        const zones = Object.keys(fur.zones ?? {}).map(zoneName);
-        const coatLines = [el('p', {className: 'muted'}, `Coat: ${coatWords(fur.coat)} · ${eyeName(fur.eyes).toLowerCase()} eyes`),
-            el('p', {className: 'muted'}, zones.length ? `With their own colours: ${zones.join(', ').toLowerCase()}` : 'One coat all over.')];
+        const shades = coatShades(fur.coat);
+        const customLayers = Object.keys(fur.layers ?? {}).filter(id => layerChanged(fur, id)).map(layerName);
+        const coatLines = [
+            el('p', {className: 'muted'}, `Coat: ${coatWords(shades)} · ${furName(clawColour(fur)).toLowerCase()} claws · ${eyeName(fur.eyes).toLowerCase()} eyes`),
+            el('p', {className: 'muted'}, customLayers.length
+                ? `Custom layers (${customLayers.length}): ${customLayers.slice(0, 6).join(', ').toLowerCase()}${customLayers.length > 6 ? '…' : ''}`
+                : 'Base coat all over.'),
+        ];
         if (!reviewOnly) fields.append(this.creatorFields(draft, refresh, nameHeading));
         else if (this.mode === 'central') {
             const family = arr(this.gifts, 'families').filter(isObject).find(f => str(f, 'id') === this.draftFamily);
@@ -1581,9 +1612,9 @@ export class FrontDoor {
         const tabs = el('div', {className: 'creator-tabs'});
         const panel = el('div', {className: 'creator-panel'});
         const tabNames: Array<[string, string]> = this.mode === 'central'
-            ? [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Fur zones'], ['eyes', 'Eyes'], ['gift', 'Gift'], ['strengths', 'Strengths'],
+            ? [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Layers'], ['eyes', 'Eyes'], ['gift', 'Gift'], ['strengths', 'Strengths'],
                 ['tie', 'Tie'], ['name', 'Name & age']]
-            : [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Fur zones'], ['eyes', 'Eyes'], ['gift', 'Gift'],
+            : [['body', 'Body'], ['coat', 'Coat'], ['markings', 'Layers'], ['eyes', 'Eyes'], ['gift', 'Gift'],
                 ['strengths', 'Strengths'], ...(this.starts.length ? [['arrival', 'Arrival'] as [string, string]] : []),
                 ...(this.ties.length ? [['tie', 'Tie'] as [string, string]] : []), ['name', 'Name & age']];
         if (!tabNames.some(([id]) => id === this.creatorTab)) this.creatorTab = 'body';
@@ -1625,7 +1656,9 @@ export class FrontDoor {
             });
             return el('label', {}, el('span', {}, caption), select);
         };
-        const fur = draftFur(draft), build = draftBuild(draft);
+        const fur = draftFur(draft), build = draftBuild(draft), sex = draftSex(draft);
+        const shades = coatShades(fur.coat);
+        const claws = clawColour(fur);
         const wearing = (next: Fur, nextBuild: Build = build) => {
             wear(draft, next, nextBuild);
             changed();
@@ -1647,24 +1680,31 @@ export class FrontDoor {
             for (const c of FurColours) grid.append(swatch(c.id, c.name, c.hex, chosen === c.id, () => choose(c.id)));
             return grid;
         };
-        // Three fur colours (the painting's dark, mid and light fur): a chip each, and the palette for the one in hand.
-        const chips = (key: string, coat: FurCoat, active: number | null, pick: (slot: number) => void) => {
-            const row = el('div', {className: 'fur-chips'});
-            ['Dark', 'Mid', 'Light'].forEach((label, i) => {
+        // Five fur shades (darkest to lightest) plus claws: a chip each, and the palette for the one in hand.
+        const coatChips = (active: number, pick: (slot: number) => void) => {
+            const row = el('div', {className: 'fur-chips coat-chips'});
+            ShadeNames.forEach((label, i) => {
                 const chip = el('button', {type: 'button', className: i === active ? 'fur-chip active' : 'fur-chip'},
-                    dot(coat[i]), el('span', {}, `${label} fur`), el('strong', {}, furName(coat[i])));
+                    dot(shades[i]), el('span', {}, label), el('strong', {}, furName(shades[i])));
                 chip.dataset.slot = String(i);
-                chip.dataset.key = key;
+                chip.dataset.key = 'coat';
                 chip.addEventListener('click', () => pick(i));
                 row.append(chip);
             });
+            const clawChip = el('button', {type: 'button', className: active === 5 ? 'fur-chip active' : 'fur-chip'},
+                dot(claws), el('span', {}, 'Claws'), el('strong', {}, furName(claws)));
+            clawChip.dataset.slot = '5';
+            clawChip.dataset.key = 'claws';
+            clawChip.addEventListener('click', () => pick(5));
+            row.append(clawChip);
             return row;
         };
         if (tab === 'body') {
-            // The three sizes, each in the coat chosen so far, at the sizes they were painted.
+            // The three sizes for the selected sex, each in the live coat at its true painted scale.
             const cards = el('div', {className: 'build-cards'});
             for (const b of Builds) {
-                const canvas = el('canvas', {width: 360, height: 230});
+                const doll: DollKey = `${sex}-${b}`;
+                const canvas = el('canvas', {width: 360, height: 286});
                 const card = el('button', {type: 'button', className: b === build ? 'build-card chosen' : 'build-card'}, canvas, el('span', {}, BuildNames[b]));
                 card.dataset.build = b;
                 card.addEventListener('click', () => wearing(fur, b));
@@ -1672,7 +1712,7 @@ export class FrontDoor {
                     const g = canvas.getContext('2d');
                     if (!g) return;
                     g.clearRect(0, 0, canvas.width, canvas.height);
-                    this.wolves.draw(g, b, fur, 0, 0, canvas.width, canvas.height);
+                    this.wolves.draw(g, doll, fur, 0, 0, canvas.width, canvas.height);
                 };
                 this.panelPainters.push(paint);
                 paint();
@@ -1680,61 +1720,101 @@ export class FrontDoor {
             }
             return [el('div', {className: 'field'}, el('span', {}, `SIZE · ${BuildNames[build].toUpperCase()}`), cards),
                 el('div', {className: 'pair'}, choice('sex', 'SEX', Choices.sex)),
-                el('p', {className: 'muted'}, 'The size is the wolf you see: its painting, its stature and its height at the shoulder. None of it changes skills.')];
+                el('p', {className: 'muted'}, 'Sex and size choose your wolf\'s doll, stature and shoulder height. None of it changes skills.')];
         }
         if (tab === 'coat') {
             const ready = el('div', {className: 'ready-coats'});
             for (const c of ReadyCoats) {
-                const b = el('button', {type: 'button', className: 'ready-coat'}, el('span', {className: 'fur-dots'}, ...c.coat.map(dot)), el('span', {}, c.name));
+                const cShades = coatShades(c.coat as Fur['coat']);
+                const b = el('button', {type: 'button', className: 'ready-coat'},
+                    el('span', {className: 'fur-dots'}, ...cShades.map(dot)), el('span', {}, c.name));
                 b.dataset.coat = c.id;
                 b.addEventListener('click', () => wearing(readyFur(c)));
                 ready.append(b);
             }
-            const slot = Math.min(2, Math.max(0, this.furSlot.coat ?? 0));
+            const slot = Math.min(5, Math.max(0, this.furSlot.coat ?? 0));
+            const currentId = slot === 5 ? claws : shades[slot];
             return [el('div', {className: 'field'}, el('span', {}, 'A COAT TO START FROM'), ready),
-                el('div', {className: 'field'}, el('span', {}, 'THE COAT · THREE FUR COLOURS'),
+                el('div', {className: 'field'}, el('span', {}, 'BASE COAT · FIVE FUR SHADES & CLAWS'),
                     el('div', {className: 'fur-picker'},
-                        chips('coat', fur.coat, slot, i => { this.furSlot.coat = i; changed(); }),
-                        palette(fur.coat[slot], id => {
-                            const coat: FurCoat = [...fur.coat];
-                            coat[slot] = id;
-                            wearing({...fur, coat});
+                        coatChips(slot, i => { this.furSlot.coat = i; changed(); }),
+                        palette(currentId, id => {
+                            if (slot === 5) {
+                                wearing({...fur, claws: id});
+                            } else {
+                                const nextCoat: FurCoat5 = [...shades];
+                                nextCoat[slot] = id;
+                                wearing({...fur, coat: nextCoat});
+                            }
                         }))),
-                el('p', {className: 'muted'}, 'The painting keeps its brushwork: its dark, mid and light fur take your three colours. Every fur zone wears ' +
-                    'them too, until you change it in Fur zones.')];
+                el('p', {className: 'muted'}, 'Your five fur shades colour the wolf from darkest markings to palest undercoat. Fine-tune any individual ' +
+                    'layer in Layers.')];
         }
-        if (tab === 'markings') {                  // (The tab keeps its older id; it is the fur zones now.)
-            // Every zone wears the coat's colours; change one of its three right here, and Reset gives it the coat's again
-            // (the user, 2026-11-14: no dropdown).
-            const rows: HTMLElement[] = [el('p', {className: 'muted'}, 'Every part of the coat starts in the coat\'s colours. Pick a part\'s dark, mid or ' +
-                'light fur to change it; Reset gives it the coat\'s again.')];
-            for (const z of FurZones) {
-                const own = zoneChanged(fur, z.id);
-                const coat = zoneCoat(fur, z.id);
-                const key = `zone:${z.id}`;
-                const open = this.openZone === z.id;
-                const slot = Math.min(2, Math.max(0, this.furSlot[key] ?? 0));
-                const reset = el('button', {type: 'button', className: 'zone-reset', textContent: 'Reset', title: 'Back to the coat\'s colours'});
-                reset.dataset.zone = z.id;
+        if (tab === 'markings') {                  // (Tab id stays `markings` for continuity; shows the 45 doll layers.)
+            const customisable = DollLayers.filter(l => l.id !== 'eyes');
+            const totalChanged = customisable.filter(l => layerChanged(fur, l.id)).length;
+            const groupTabs = el('div', {className: 'layer-groups'});
+            for (const group of DollLayerGroups) {
+                const groupLayers = customisable.filter(l => l.group === group);
+                const count = groupLayers.filter(l => layerChanged(fur, l.id)).length;
+                const b = el('button', {type: 'button', className: group === this.layerGroup ? 'layer-group active' : 'layer-group'},
+                    group, ...(count ? [el('em', {}, String(count))] : []));
+                b.dataset.group = group;
+                b.addEventListener('click', () => {
+                    this.layerGroup = group;
+                    this.openZone = '';
+                    changed();
+                });
+                groupTabs.append(b);
+            }
+            const groupLayers = customisable.filter(l => l.group === this.layerGroup);
+            const groupIds = groupLayers.map(l => l.id);
+            const groupChanged = groupLayers.some(l => layerChanged(fur, l.id));
+            const resetGroup = el('button', {type: 'button', className: 'zone-reset', textContent: `Reset ${this.layerGroup.toLowerCase()}`});
+            resetGroup.disabled = !groupChanged;
+            resetGroup.addEventListener('click', () => {
+                this.openZone = '';
+                wearing(resetLayers(fur, groupIds));
+            });
+            const resetAll = el('button', {type: 'button', className: 'zone-reset', textContent: 'Reset all layers'});
+            resetAll.disabled = totalChanged === 0;
+            resetAll.addEventListener('click', () => {
+                this.openZone = '';
+                wearing(resetLayers(fur));
+            });
+            const toolbar = el('div', {className: 'layer-toolbar'},
+                el('p', {className: 'muted'}, 'Pick a body region and click any layer to recolour it. Reset restores a layer to the base coat.'),
+                el('div', {className: 'layer-toolbar-actions'}, resetGroup, resetAll));
+
+            const rows: HTMLElement[] = [toolbar, groupTabs];
+            for (const l of groupLayers) {
+                const own = layerChanged(fur, l.id);
+                const colour = currentLayerColour(fur, l.id);
+                const inherited = baseLayerColour(fur, l.id);
+                const open = this.openZone === l.id;
+                const reset = el('button', {type: 'button', className: 'zone-reset', textContent: 'Reset', title: `Back to ${furName(inherited)}`});
+                reset.dataset.layer = l.id;
                 reset.disabled = !own;
                 reset.addEventListener('click', () => {
-                    if (this.openZone === z.id) this.openZone = '';
-                    wearing(resetZone(fur, z.id));
+                    if (this.openZone === l.id) this.openZone = '';
+                    wearing(resetLayer(fur, l.id));
+                });
+                const pickBtn = el('button', {type: 'button', className: open ? 'fur-chip active' : 'fur-chip'},
+                    dot(colour), el('span', {}, own ? 'Custom' : 'Base coat'), el('strong', {}, furName(colour)));
+                pickBtn.dataset.layer = l.id;
+                pickBtn.addEventListener('click', () => {
+                    this.openZone = open ? '' : l.id;
+                    changed();
                 });
                 const head = el('div', {className: 'zone-head'},
-                    el('div', {className: 'zone-title'}, el('strong', {}, z.name), el('small', {className: own ? 'sage' : 'muted'}, own ? 'Its own colours' : 'As the coat')),
-                    chips(key, coat, open ? slot : null, i => {
-                        const again = open && slot === i;
-                        this.openZone = again ? '' : z.id;
-                        this.furSlot[key] = i;
-                        changed();
-                    }),
+                    el('div', {className: 'zone-title'}, el('strong', {}, l.name), el('small', {className: own ? 'sage' : 'muted'}, own ? 'Custom colour' : 'From coat')),
+                    pickBtn,
                     reset);
-                const row = el('div', {className: `zone-row${open ? ' open' : ''}${own ? ' own' : ''}`}, head);
-                row.dataset.zone = z.id;
+                const row = el('div', {className: `zone-row layer-row${open ? ' open' : ''}${own ? ' own' : ''}`}, head);
+                row.dataset.layer = l.id;
                 if (open) {
-                    row.append(palette(coat[slot], id => wearing(setZoneColour(fur, z.id, slot, id))));
-                    queueMicrotask(() => row.scrollIntoView({block: 'nearest'}));      // (Its palette, in sight.)
+                    row.append(palette(colour, id => wearing(setLayerColour(fur, l.id, id))));
+                    queueMicrotask(() => row.scrollIntoView({block: 'nearest'}));
                 }
                 rows.push(row);
             }
@@ -2149,7 +2229,7 @@ export class FrontDoor {
             c.fillStyle = '#a6a699';
             c.font = '32px sans-serif';
             c.fillText('Portrait unavailable', 24, 48);
-        } else this.wolves.draw(c, buildOf(look), furOf(look), 0, 0, canvas.width, canvas.height);
+        } else this.wolves.draw(c, dollOf(look), furOf(look), 0, 0, canvas.width, canvas.height);
         canvas.dataset.stage = lifeStage(age);
         // The face, where the page shows it as its own portrait.
         const face = this.faceCanvas, f = face?.getContext('2d');

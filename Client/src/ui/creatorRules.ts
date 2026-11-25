@@ -1,7 +1,7 @@
-// The character creator's rules, apart from its page (frontDoor.ts), so they can be tested: the name's length, the fur
-// zones (each wears the coat's colours until the player changes one of its three, and Reset gives it the coat's again),
-// and the Gift's three tiers, each open or greyed with the reason (the user, 2026-11-14).
-import {type Fur, type FurCoat} from './fur.ts';
+// The character creator's rules, apart from its page (frontDoor.ts), so they can be tested: the name's length, the
+// fur layers & legacy zones (each inherits from the coat/claws until changed, and Reset restores it), and the Gift's
+// three tiers, each open or greyed with the reason (the user, 2026-11-14).
+import {baseLayerColour, coatThree, layerColour, type Fur, type FurCoat3} from './fur.ts';
 import {arr, isObject, num, obj, str, type Json} from '../game/json.ts';
 
 /** A new wolf's name is 2 to 24 characters (Core/RatwIdentity.h, identity::NewNameMost; central keeps it too). Counted
@@ -15,38 +15,93 @@ export function nameProblem(name: string, most = NameMost): string {
     return '';
 }
 
-/** The three colours a zone wears: its own, else the coat's. */
-export function zoneCoat(fur: Fur, zone: string): FurCoat {
-    return [...(fur.zones?.[zone] ?? fur.coat)] as FurCoat;
-}
-
-/** Whether a zone wears colours of its own (not the coat's). */
-export function zoneChanged(fur: Fur, zone: string): boolean {
-    const own = fur.zones?.[zone];
-    return !!own && own.some((c, i) => c !== fur.coat[i]);
-}
-
-function withZones(fur: Fur, zones: Record<string, FurCoat>): Fur {
-    const kept = Object.entries(zones).filter(([, coat]) => coat.some((c, i) => c !== fur.coat[i]));
-    const out: Fur = {coat: [...fur.coat] as FurCoat, eyes: fur.eyes};
-    if (kept.length) out.zones = Object.fromEntries(kept.map(([zone, coat]) => [zone, [...coat] as FurCoat]));
+/** Clone a Fur cleanly, omitting empty zones/layers maps. */
+function cleanFur(fur: Fur): Fur {
+    const out: Fur = {coat: [...fur.coat] as Fur['coat'], eyes: fur.eyes};
+    if (fur.claws) out.claws = fur.claws;
+    if (fur.zones && Object.keys(fur.zones).length) {
+        out.zones = Object.fromEntries(Object.entries(fur.zones).map(([z, c]) => [z, [...c] as FurCoat3]));
+    }
+    if (fur.layers && Object.keys(fur.layers).length) {
+        out.layers = {...fur.layers};
+    }
     return out;
 }
 
-/** One of a zone's three colours (0 dark, 1 mid, 2 light) changed: the zone starts from what it wears (the coat's,
- *  unless it has its own). A zone that comes back to the coat's three is the coat's again (nothing kept). */
+// ---------------------------------------------------------------------------------------------- Per-layer markings (45 doll layers)
+
+/** Whether a doll layer wears a colour override of its own (different from what it inherits from the coat/claws). */
+export function layerChanged(fur: Fur, layerId: string): boolean {
+    const own = fur.layers?.[layerId];
+    return !!own && own !== baseLayerColour(fur, layerId);
+}
+
+/** Change one doll layer's colour. Setting it back to its inherited coat/claws colour drops the override. */
+export function setLayerColour(fur: Fur, layerId: string, colour: string): Fur {
+    const layers = {...(fur.layers ?? {})};
+    if (colour === baseLayerColour(fur, layerId)) delete layers[layerId];
+    else layers[layerId] = colour;
+    return cleanFur({...fur, layers});
+}
+
+/** Reset one doll layer back to its inherited coat/claws colour. */
+export function resetLayer(fur: Fur, layerId: string): Fur {
+    if (!fur.layers || !(layerId in fur.layers)) return cleanFur(fur);
+    const layers = {...fur.layers};
+    delete layers[layerId];
+    return cleanFur({...fur, layers});
+}
+
+/** Reset every layer override in a list of layer ids (e.g. an entire body group or all layers). */
+export function resetLayers(fur: Fur, layerIds?: readonly string[]): Fur {
+    if (!fur.layers) return cleanFur(fur);
+    if (!layerIds) return cleanFur({...fur, layers: undefined});
+    const layers = {...fur.layers};
+    for (const id of layerIds) delete layers[id];
+    return cleanFur({...fur, layers});
+}
+
+/** Read a doll layer's current colour id (override if set, else inherited). */
+export function currentLayerColour(fur: Fur, layerId: string): string {
+    return layerColour(fur, layerId);
+}
+
+// ---------------------------------------------------------------------------------------------- Legacy zone helpers (kept for older tests/compatibility)
+
+/** The three colours a legacy zone wears: its own, else the coat's 3-shade summary. */
+export function zoneCoat(fur: Fur, zone: string): FurCoat3 {
+    const base = coatThree(fur.coat);
+    return [...(fur.zones?.[zone] ?? base)] as FurCoat3;
+}
+
+/** Whether a legacy zone wears colours of its own (not the coat's). */
+export function zoneChanged(fur: Fur, zone: string): boolean {
+    const own = fur.zones?.[zone];
+    const base = coatThree(fur.coat);
+    return !!own && own.some((c, i) => c !== base[i]);
+}
+
+function withZones(fur: Fur, zones: Record<string, FurCoat3>): Fur {
+    const base = coatThree(fur.coat);
+    const kept = Object.entries(zones).filter(([, coat]) => coat.some((c, i) => c !== base[i]));
+    return cleanFur({...fur, zones: kept.length ? Object.fromEntries(kept) : undefined});
+}
+
+/** One of a legacy zone's three colours (0 dark, 1 mid, 2 light) changed. */
 export function setZoneColour(fur: Fur, zone: string, slot: number, colour: string): Fur {
     const next = zoneCoat(fur, zone);
     next[Math.min(2, Math.max(0, slot))] = colour;
     return withZones(fur, {...(fur.zones ?? {}), [zone]: next});
 }
 
-/** The zone's Reset: the coat's scheme again. */
+/** A legacy zone's Reset: back to the coat's scheme. */
 export function resetZone(fur: Fur, zone: string): Fur {
     const zones = {...(fur.zones ?? {})};
     delete zones[zone];
     return withZones(fur, zones);
 }
+
+// ---------------------------------------------------------------------------------------------- Gift tiers
 
 /** A Gift tier as the creator shows it: open, or greyed with why. */
 export interface TierCard {
@@ -66,13 +121,7 @@ export function quickenedNeeds(unlocks: Json | null): string {
         `and ${num(q, 'stories', 2)} closed Stories`;
 }
 
-/** The three tiers, by the game's unlock rules (doc 49; doc 77, Q12 (a); Core/RatwGame.cpp, arrivalChoices):
- *   - on a world (a browser on a password world): Gifted and Quickened open as the account's standing there has opened
- *     them (`tiers`, the lobby's tiersView); Quickened needs Gifted too; an older server that sends none: all open.
- *   - on central (the desktop client): the tier is the wolf's own, chosen here and kept by central (doc 49, 9.1; the
- *     user, 2026-11-14: "This isn't offered to a user when they join a server"); a wolf with a Gift family is Gifted
- *     anywhere, so Gifted is open to every account; Quickened is the account's, once for every world: open when central
- *     says the account has it (`quickened`), else greyed, with what an official world asks. */
+/** The three tiers, by the game's unlock rules (doc 49; doc 77, Q12 (a); Core/RatwGame.cpp, arrivalChoices). */
 export function tierCards(mode: 'world' | 'central', tiers: Json | null, unlocks: Json | null = null, quickened = false): TierCard[] {
     return Tiers.map(tier => {
         if (tier === 'normal') return {tier, open: true, reason: '', progress: []};

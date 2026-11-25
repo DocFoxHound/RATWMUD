@@ -100,16 +100,19 @@ for (const name of species)
 
 // Every in-game portrait is the painted wolf (doc 81): a wolf's own fur and size, or for one saved before the painted
 // wolves, the look derived from what it had (as character select shows it).
-test('a portrait is painted in the wolf\'s own fur, or the derived look of an older wolf', () => {
+test('a portrait is painted in the wolf\'s own fur, sex and size, or the derived look of an older wolf', () => {
     const older = {species: 'timber', sex: 'female', stature: 'short', pattern: 'saddle', baseColor: 6, gradientColor: 0, markingColor: 5,
         gradientAmount: 0.6, patternAmount: 0.8};
-    const fur = {coat: ['rust', 'sand', 'ivory'], eyes: 'amber', zones: {back: ['soot', 'charcoal', 'ash']}};
-    assert.deepEqual(paintedLook({...older, stature: 'tall', build: 'large', fur}), {fur, build: 'large'}, 'its own fur, at its size');
+    const fur = {coat: ['rust', 'russet', 'tan', 'sand', 'ivory'] as [string, string, string, string, string], eyes: 'amber', claws: 'sable',
+        layers: {back_accent: 'soot'}};
+    assert.deepEqual(paintedLook({...older, stature: 'tall', build: 'large', fur}), {fur, build: 'large', sex: 'female', doll: 'female-large'}, 'its own fur, sex and size');
     const derived = paintedLook(older);
     assert.equal(derived?.build, 'small', 'an older wolf: the size of its stature');
+    assert.equal(derived?.sex, 'female');
+    assert.equal(derived?.doll, 'female-small');
     assert.ok(derived?.fur.zones?.back, 'and its saddle on its back');
     assert.deepEqual(paintedLook(older), derived, 'the same every time');
-    assert.equal(paintedLook({...older, build: 'lean'})?.build, 'large', 'a first painting\'s name: the painting that took its place');
+    assert.equal(paintedLook({...older, build: 'lean'})?.doll, 'female-large', 'a first painting\'s name: the size that took its place');
     assert.equal(paintedLook(null), null, 'no appearance (a hunt\'s game): no wolf');
     assert.equal(paintedLook({...older, fur: {coat: ['neon', 'sand', 'ivory'], eyes: 'amber'}}), null, 'off the palette: none');
 });

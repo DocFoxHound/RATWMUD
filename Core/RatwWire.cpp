@@ -50,7 +50,8 @@ Value appearance(const Appearance& a)
         }
         o.add("markings", list);
     }
-    // The painted look (doc 81), only when chosen: the coat's three fur ids, the eyes' id, and each zone's own three.
+    // The layered doll look (doc 81), only when chosen: 5 (or legacy 3) coat fur ids, eyes, optional claws,
+    // optional per-layer overrides, and optional legacy zones.
     if (a.fur.chosen())
     {
         const auto three = [](const FurCoat& coat) {
@@ -61,14 +62,31 @@ Value appearance(const Appearance& a)
             return list;
         };
         auto fur = Value::object();
-        fur.add("coat", three(a.fur.coat));
+        if (a.fur.shades.size() == 5)
+        {
+            auto list = Value::array();
+            for (const auto& s : a.fur.shades)
+                list.push(s);
+            fur.add("coat", list);
+        }
+        else
+            fur.add("coat", three(a.fur.coat));
         fur.add("eyes", a.fur.eyes);
+        if (!a.fur.claws.empty())
+            fur.add("claws", a.fur.claws);
         if (!a.fur.zones.empty())
         {
             auto zones = Value::object();
             for (const auto& [zone, coat] : a.fur.zones)
                 zones.add(zone, three(coat));
             fur.add("zones", zones);
+        }
+        if (!a.fur.layers.empty())
+        {
+            auto layers = Value::object();
+            for (const auto& [layer, colour] : a.fur.layers)
+                layers.add(layer, colour);
+            fur.add("layers", layers);
         }
         o.add("fur", fur);
     }
@@ -77,7 +95,7 @@ Value appearance(const Appearance& a)
 
 namespace
 {
-// Three palette ids, as they are kept: ["dark", "mid", "light"]. (Whether each is in the palette: validAppearance.)
+// Three palette ids, as they are kept for legacy coats/zones: ["dark", "mid", "light"].
 bool readFurCoat(const Value& list, FurCoat& out)
 {
     if (!list.isArray() || list.items().size() != 3)
@@ -91,18 +109,57 @@ bool readFurCoat(const Value& list, FurCoat& out)
 
 bool readFur(const Value& o, Fur& out)
 {
-    if (!o.isObject() || o.size() < 2 || o.size() > 3 || !o["eyes"].isString() || o["eyes"].asString().size() > 16 ||
-        !readFurCoat(o["coat"], out.coat))
+    if (!o.isObject() || o.size() < 2 || o.size() > 5)
         return false;
-    out.eyes = o["eyes"].asString();
-    if (o.size() == 3)
+    for (const auto& [key, _] : o.fields())
+        if (key != "coat" && key != "eyes" && key != "claws" && key != "zones" && key != "layers")
+            return false;
+    const auto* eyes = o.find("eyes");
+    const auto* coat = o.find("coat");
+    if (!eyes || !eyes->isString() || eyes->asString().size() > 16 || !coat || !coat->isArray())
+        return false;
+    if (coat->items().size() == 3)
     {
-        const auto* zones = o.find("zones");
-        if (!zones || !zones->isObject() || zones->size() == 0 || zones->size() > 16)
-            return false;                           // (No empty "zones": one look has one form.)
-        for (const auto& [zone, coat] : zones->fields())
-            if (zone.empty() || zone.size() > 16 || out.zones.count(zone) || !readFurCoat(coat, out.zones[zone]))
+        if (!readFurCoat(*coat, out.coat))
+            return false;
+    }
+    else if (coat->items().size() == 5)
+    {
+        out.shades.clear();
+        for (const auto& id : coat->items())
+        {
+            if (!id.isString() || id.asString().empty() || id.asString().size() > 16)
                 return false;
+            out.shades.push_back(id.asString());
+        }
+        out.coat = {out.shades[0], out.shades[2], out.shades[4]};
+    }
+    else
+        return false;
+    out.eyes = eyes->asString();
+    if (const auto* claws = o.find("claws"))
+    {
+        if (!claws->isString() || claws->asString().empty() || claws->asString().size() > 16)
+            return false;
+        out.claws = claws->asString();
+    }
+    if (const auto* zones = o.find("zones"))
+    {
+        if (!zones->isObject() || zones->size() == 0 || zones->size() > 16)
+            return false;                           // (No empty "zones": one look has one form.)
+        for (const auto& [zone, zcoat] : zones->fields())
+            if (zone.empty() || zone.size() > 16 || out.zones.count(zone) || !readFurCoat(zcoat, out.zones[zone]))
+                return false;
+    }
+    if (const auto* layers = o.find("layers"))
+    {
+        if (!layers->isObject() || layers->size() == 0 || layers->size() > 46)
+            return false;                           // (No empty "layers": one look has one form.)
+        for (const auto& [layer, col] : layers->fields())
+            if (layer.empty() || layer.size() > 16 || out.layers.count(layer) || !col.isString() || col.asString().empty() || col.asString().size() > 16)
+                return false;
+            else
+                out.layers[layer] = col.asString();
     }
     return true;
 }

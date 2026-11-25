@@ -1,10 +1,10 @@
-// A wolf's portrait wherever the game shows one (Docs/Design/81-painted-wolves.md): the painted wolf (wolfPaint.ts) in
-// that wolf's own fur, its face or its profile, or an uploaded picture where the viewer may see one. The appearance as
-// the server checks it, and the height at the shoulder. Never used for the map's W token, nor for a hunt's game (its
-// glyph).
+// A wolf's portrait wherever the game shows one (Docs/Design/81-painted-wolves.md): the layered wolf doll
+// (wolfPaint.ts) in that wolf's own fur, sex and size, or its face, or an uploaded picture where the viewer may see
+// one. The appearance as the server checks it, and the height at the shoulder. Never used for the map's W token, nor
+// for a hunt's game (its glyph).
 import {isObject, type Json} from '../game/json.ts';
 import {artCache} from './artwork.ts';
-import {buildOf, Builds, furOf, readFur, type Build, type Fur} from './fur.ts';
+import {AllDolls, buildOf, dollOf, furOf, readFur, sexOf, type Build, type DollKey, type Fur, type Sex} from './fur.ts';
 import {PaintedWolves, WolfPaper, type Painting} from './wolfPaint.ts';
 
 export interface Appearance {
@@ -24,7 +24,7 @@ export interface Appearance {
     eyes?: string;
     build?: string;
     markings?: Array<{mask: string; color: string; opacity: number}>;
-    // The painted look (doc 81; fur.ts), when chosen: palette ids. `build` is the size it is painted as (fur.ts buildOf).
+    // The layered doll look (doc 81; fur.ts), when chosen: palette ids. `build` + `sex` pick the doll.
     fur?: Fur;
 }
 
@@ -87,22 +87,20 @@ export function shoulderHeightCm(a: Appearance, age: number): number {
     return baseline * stature * maturity;
 }
 
-/** Which painting a portrait shows (doc 81): the face (one painting, every wolf's), or the profile of the wolf's size. */
+/** Which painting a portrait shows (doc 81): the face (one painting, every wolf's), or the profile of the wolf's sex & size. */
 export type PortraitView = 'face' | 'profile';
 
 export interface PortraitOptions {
     view?: PortraitView;        // The profile unless said.
-    paper?: boolean;            // On the paintings' paper (rounded), else on nothing: what is behind shows. Off unless said:
-                                // the wolves are transparent and stand over the screen (the user's notes, 2026-11-14).
-    radius?: number;            // The paper's corners, in pixels (a fraction of the box's shorter side by default).
+    paper?: boolean;            // On the paintings' paper (rounded), else on nothing: what is behind shows.
+    radius?: number;            // The paper's corners, in pixels.
     pad?: number;               // The margin round the painting, as a share of the box's shorter side (0.07).
-    flip?: boolean;             // Facing right (the paintings face left): the left of a face-off.
+    flip?: boolean;             // Facing right (the dolls face left): the left of a face-off.
 }
 
 /**
- * The wolves' portraits for one page (doc 81): the paintings (wolfPaint.ts) asked for at once, so they have arrived by
- * the first portrait, and each look painted once at the size it is shown and kept. `version` counts paintings arrived:
- * a place that drew before one did draws again when it changes (or listens).
+ * The wolves' portraits for one page (doc 81): the face and six layered dolls (wolfPaint.ts) asked for at once, so
+ * they have arrived by the first portrait, and each look painted once at the size it is shown and kept.
  */
 export class Portraits {
     readonly wolves = new PaintedWolves();
@@ -114,28 +112,26 @@ export class Portraits {
             ++this.version;
             for (const f of this.listeners) f();
         };
-        for (const painting of ['face', ...Builds] as const) this.wolves.aspect(painting);
+        for (const painting of ['face', ...AllDolls] as const) this.wolves.aspect(painting);
     }
 
-    /** Called as each painting arrives; returns a function that stops it. */
+    /** Called as each asset arrives; returns a function that stops it. */
     listen(f: () => void): () => void {
         this.listeners.add(f);
         return () => this.listeners.delete(f);
     }
 }
 
-/** Where a wolf's painted look comes from: an appearance as the server sends it (its `fur`, or for a wolf saved before
- *  the painted wolves the look derived from what it had: fur.ts furOf), and the painting of its size. */
-export function paintedLook(appearanceJson: unknown): {fur: Fur; build: Build} | null {
+/** Where a wolf's look comes from: its `fur` (or derived look for an older wolf/NPC), size, sex, and exact doll key. */
+export function paintedLook(appearanceJson: unknown): {fur: Fur; build: Build; sex: Sex; doll: DollKey} | null {
     const look = readAppearance(appearanceJson);
-    return look ? {fur: furOf(look), build: buildOf(look)} : null;
+    return look ? {fur: furOf(look), build: buildOf(look), sex: sexOf(look), doll: dollOf(look)} : null;
 }
 
 /**
  * Draws a portrait into a box: an uploaded picture the viewer may see (doc 29, phase 9), square and centred; else the
- * painted wolf in its own fur (doc 81), its face or its profile, over what is behind (on its paper only if asked). The profiles share one frame, so a small
- * wolf stands smaller than a large one in boxes of one size. False if there is nothing to draw (yet): no appearance (a
- * hunt's game), or the paintings still on their way.
+ * wolf doll (or face) in its own fur, sex and size, over what is behind (on its paper only if asked). False if there
+ * is nothing to draw (yet): no appearance (a hunt's game), or the assets still loading.
  */
 export function drawPortrait(ctx: CanvasRenderingContext2D, portraits: Portraits, appearanceJson: unknown,
     x: number, y: number, w: number, h: number, artwork?: string, options: PortraitOptions = {}): boolean {
@@ -150,7 +146,7 @@ export function drawPortrait(ctx: CanvasRenderingContext2D, portraits: Portraits
     }
     const look = paintedLook(appearanceJson);
     if (!look) return false;
-    const painting: Painting = options.view === 'face' ? 'face' : look.build;
+    const painting: Painting = options.view === 'face' ? 'face' : look.doll;
     const wolves = portraits.wolves;
     if (!wolves.aspect(painting)) return false;
     const short = Math.min(w, h), pad = short * (options.pad ?? 0.07);

@@ -1,22 +1,38 @@
-import type {CSSProperties} from 'react';
+import {useEffect, useRef} from 'react';
 import {COATS} from '../model/model.mjs';
 import type {Appearance} from '../model/model.mjs';
+import {drawPortrait, Portraits} from '../../../Client/src/ui/portrait';
 
-// Data/Portraits/<species>.png is a 2×2 grayscale atlas of 768×512 frames:
-// young (top left), adolescent (top right), adult (bottom left), old (bottom right).
-// The frame is tinted with the coat colour and masked to the wolf's silhouette,
-// approximating the game's runtime recolouring.
-const FRAMES = ['0% 0%', '100% 0%', '0% 100%', '100% 100%'];
-const stage = (age: number) => age <= 12 ? 0 : age <= 17 ? 1 : age <= 64 ? 2 : 3;
+// Renders any NPC or character using the layered wolf dolls (Client/src/assets/wolves, shared 1033x821 frame),
+// matching the exact sex, size, and coat/fur shown in the game client.
+let sharedPortraits: Portraits | undefined;
 
-export function Portrait({appearance, age, size = 56, className = ''}: {appearance: Appearance; age: number; size?: number; className?: string}) {
-    const url = `url(portraits/${appearance.species}.png)`, at = FRAMES[stage(age)];
-    const layer: CSSProperties = {backgroundImage: url, backgroundSize: '200% 200%', backgroundPosition: at,
-        maskImage: url, maskSize: '200% 200%', maskPosition: at, WebkitMaskImage: url, WebkitMaskSize: '200% 200%', WebkitMaskPosition: at};
+export function Portrait({appearance, age: _age, size = 56, className = ''}: {appearance: Appearance; age: number; size?: number; className?: string}) {
+    const ref = useRef<HTMLCanvasElement>(null);
+    const height = Math.max(1, Math.round(size * 821 / 1033));
+    const pixelW = Math.max(2, Math.round(size * 2));
+    const pixelH = Math.max(2, Math.round(height * 2));
+    const lookKey = JSON.stringify(appearance);
+
+    useEffect(() => {
+        const canvas = ref.current;
+        const ctx = canvas?.getContext('2d');
+        if (!canvas || !ctx) return;
+        const images = sharedPortraits ??= new Portraits();
+        const fullLook = {gradientAmount: 0.35, patternAmount: 0.55, ...appearance};
+        const paint = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPortrait(ctx, images, fullLook, 0, 0, canvas.width, canvas.height, undefined, {view: 'profile', pad: 0.03});
+        };
+        paint();
+        return images.listen(paint);
+    }, [lookKey, pixelW, pixelH]);
+
+    const coatName = COATS[appearance.baseColor]?.[0] ?? 'wolf';
     return (
-        <span className={`portrait ${className}`} style={{width: size, height: size * 2 / 3}} role="img"
-            aria-label={`${appearance.species} wolf, ${COATS[appearance.baseColor][0]} coat`}>
-            <span style={{...layer, backgroundColor: COATS[appearance.baseColor][1], backgroundBlendMode: 'multiply'}} />
+        <span className={`portrait ${className}`} style={{width: size, height}} role="img"
+            aria-label={`${appearance.sex} ${appearance.stature} wolf, ${coatName} coat`}>
+            <canvas ref={ref} width={pixelW} height={pixelH} style={{width: '100%', height: '100%', display: 'block'}} />
         </span>
     );
 }

@@ -1,0 +1,286 @@
+{
+  "format": "ratw-wolf-assets",
+  "version": 1,
+  "canvas": [
+    1024,
+    1024
+  ],
+  "layerCount": 48,
+  "dolls": {
+    "female-small": {
+      "poses": [],
+      "expressions": {},
+      "damage": {},
+      "anatomy": {},
+      "markings": {},
+      "wearables": {},
+      "faces": []
+    },
+    "female-medium": {
+      "poses": [
+        "jogging",
+        "lying",
+        "running",
+        "sitting",
+        "sleeping",
+        "sprinting",
+        "stalking",
+        "standing",
+        "walking"
+      ],
+      "expressions": {},
+      "damage": {
+        "jogging": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "lying": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "running": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "sitting": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "sleeping": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "sprinting": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "stalking": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "standing": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "walking": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ]
+      },
+      "anatomy": {
+        "jogging": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "lying": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "running": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "sitting": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "sleeping": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "sprinting": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "stalking": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "standing": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "walking": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ]
+      },
+      "markings": {
+        "jogging": [
+          "brindle",
+          "frosting",
+          "irish_saddle",
+          "merle",
+          "piebald",
+          "ticking"
+        ],
+        "lying": [
+          "brindle",
+          "frosting",
+          "irish_saddle",
+          "merle",
+          "piebald",
+          "ticking"
+        ],
+        "running": [
+          "brindle",
+          "frosting",
+          "irish_saddle",
+          "merle",
+          "piebald",
+          "ticking"
+        ],
+        "sitting": [
+          "brindle",
+          "frosting",
+          "irish_saddle",
+          "merle",
+          "piebald",
+          "ticking"
+        ],
+        "sleeping": [
+          "brindle",
+          "frosting",
+          "irish_saddle",
+          "merle",
+          "piebald",
+          "ticking"
+        ],
+        "sprinting": [
+          "brindle",
+          "frosting",
+          "irish_saddle",
+          "merle",
+          "piebald",
+          "ticking"
+        ],
+        "stalking": [
+          "brindle",
+          "frosting",
+          "irish_saddle",
+          "merle",
+          "piebald",
+          "ticking"
+        ],
+        "standing": [
+          "brindle",
+          "frosting",
+          "irish_saddle",
+          "merle",
+          "piebald",
+          "ticking"
+        ],
+        "walking": [
+          "brindle",
+          "frosting",
+          "irish_saddle",
+          "merle",
+          "piebald",
+          "ticking"
+        ]
+      },
+      "wearables": {},
+      "faces": []
+    },
+    "female-large": {
+      "poses": [],
+      "expressions": {},
+      "damage": {},
+      "anatomy": {},
+      "markings": {},
+      "wearables": {},
+      "faces": []
+    },
+    "male-small": {
+      "poses": [],
+      "expressions": {},
+      "damage": {},
+      "anatomy": {},
+      "markings": {},
+      "wearables": {},
+      "faces": []
+    },
+    "male-medium": {
+      "poses": [],
+      "expressions": {},
+      "damage": {},
+      "anatomy": {},
+      "markings": {},
+      "wearables": {},
+      "faces": []
+    },
+    "male-large": {
+      "poses": [],
+      "expressions": {},
+      "damage": {},
+      "anatomy": {},
+      "markings": {},
+      "wearables": {},
+      "faces": []
+    }
+  },
+  "sharedFaces": []
+}
