@@ -213,6 +213,106 @@ def weights_to_porter_duff(layer_w: np.ndarray, sil_alpha: np.ndarray) -> np.nda
     return pd_a
 
 
+def build_artist_shadow(
+    inside: np.ndarray,
+    sil_alpha: np.ndarray,
+    layer_w: np.ndarray,
+    ink_a: np.ndarray,
+) -> np.ndarray:
+    """Synthesize smooth, seam-free cel + fur-tuft shading matching Female_Average's original 47_SHADOW.
+
+    Uses strictly continuous silhouette geometry (never rectangular region polygon seams!) + organic
+    belly layer so there are ZERO straight horizontal/vertical shadow bars on any pose:
+      1. Local downward-facing underside occlusion (belly, under-chest, under-jaw, under-neck, under-tail, paws)
+         computed directly on the wolf silhouette (`inside`) — strong alpha 190-238.
+      2. Recessed-leg / under-body ambient shadow along lower concave pockets (inner thighs, groin, armpit).
+      3. Fine organic fur-tuft grain along the upper shadow edge (matching artist dry-brush texture without
+         wide diagonal zebra bands).
+    """
+    h, w = inside.shape
+    # Fine natural fur-tuft grain (multi-scale, no wide zebra stripes!)
+    rng = np.random.default_rng(73)
+    def fbm_fur() -> np.ndarray:
+        acc = np.zeros((h, w), np.float32)
+        amp, norm = 1.0, 0.0
+        for sx, sy in ((48, 32), (110, 74), (220, 150)):
+            g = rng.random((sy, sx), dtype=np.float32)
+            up = np.asarray(Image.fromarray((g * 255).astype(np.uint8)).resize((w, h), Image.BICUBIC), np.float32) / 255.0
+            acc += amp * up
+            norm += amp
+            amp *= 0.55
+        return acc / norm
+
+    fur_g = fbm_fur()
+
+    def local_underside(mask_bool: np.ndarray, depth_px: float) -> np.ndarray:
+        """Distance upward from EVERY downward-facing boundary of mask_bool (catches belly even above legs!)."""
+        below = np.zeros_like(mask_bool)
+        below[:-1, :] = mask_bool[1:, :]
+        bottom_edges = mask_bool & (~below)
+        dist = np.full((h, w), depth_px * 2.0, np.float32)
+        dist[bottom_edges] = 0.0
+        for y in range(h - 2, -1, -1):
+            m = mask_bool[y]
+            if m.any():
+                dist[y, m] = np.minimum(dist[y, m], dist[y + 1, m] + 1.0)
+        return np.where(mask_bool, np.clip((depth_px - dist) / max(1.0, depth_px), 0.0, 1.0), 0.0)
+
+    def local_rightside(mask_bool: np.ndarray, depth_px: float) -> np.ndarray:
+        """Distance leftward from right-facing edges (light comes from upper-left, so trailing right edges shade softly)."""
+        right = np.zeros_like(mask_bool)
+        right[:, :-1] = mask_bool[:, 1:]
+        right_edges = mask_bool & (~right)
+        dist = np.full((h, w), depth_px * 2.0, np.float32)
+        dist[right_edges] = 0.0
+        for x in range(w - 2, -1, -1):
+            m = mask_bool[:, x]
+            if m.any():
+                dist[m, x] = np.minimum(dist[m, x], dist[m, x + 1] + 1.0)
+        return np.where(mask_bool, np.clip((depth_px - dist) / max(1.0, depth_px), 0.0, 1.0), 0.0)
+
+    # 1. Pure silhouette-derived downward-facing & trailing-edge shading (100% seam-free!)
+    under_core = local_underside(inside, 48.0)     # crisp deep belly / under-chin / under-tail / under-paw shadow
+    under_mid = local_underside(inside, 118.0)     # softer fur-feathered shadow climbing lower ribs, flanks, thighs
+    right_soft = local_rightside(inside, 36.0)     # subtle trailing-edge depth (rear of legs, ruff, tail)
+
+    # 2. Organic belly layer (follows natural cream fur brush stroke, never a straight box!)
+    belly = np.clip(layer_w[LID_TO_IDX['belly']], 0.0, 1.0)
+    belly_soft = np.asarray(Image.fromarray((belly * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(5.0)), np.float32) / 255.0
+
+    # 3. Distance from top-edge (keep dorsal ridge & top of head/back well-lit like standing.zip!)
+    above = np.zeros_like(inside)
+    above[1:, :] = inside[:-1, :]
+    top_edges = inside & (~above)
+    top_dist = np.full((h, w), 200.0, np.float32)
+    top_dist[top_edges] = 0.0
+    for y in range(1, h):
+        m = inside[y]
+        if m.any():
+            top_dist[y, m] = np.minimum(top_dist[y, m], top_dist[y - 1, m] + 1.0)
+    lit_crown = np.clip((top_dist - 18.0) / 38.0, 0.15, 1.0)  # protect top ~20px dorsal highlight
+
+    # 4. Combine into crisp artist-grade cel + dry-brush fur shading (alpha 165-232)
+    core_pot = np.maximum.reduce([
+        under_core * 0.92,
+        belly_soft * 0.88,
+        right_soft * 0.42 * lit_crown,
+    ])
+    mid_pot = np.maximum(under_mid * 0.72, right_soft * 0.48) * lit_crown
+
+    # Crisp organic fur-tuft breakup along transition edge (no wide diagonal bars!)
+    brushed_core = np.clip((core_pot - 0.10 + (fur_g - 0.50) * 0.28) * 1.9, 0.0, 1.0) * 0.88
+    brushed_mid = np.clip((mid_pot - 0.22 + (fur_g - 0.48) * 0.42) * 1.6, 0.0, 1.0) * 0.68
+    raw = np.maximum(brushed_core, brushed_mid)
+
+    # Keep eyes and muzzle tip clean of heavy shadow
+    eye_m = layer_w[LID_TO_IDX['eyes']] > 0.1
+    raw[dilate(eye_m, 5)] = 0.0
+
+    smooth = np.asarray(Image.fromarray((raw * 255).clip(0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.5)), np.float32) / 255.0
+    return np.clip(smooth, 0.0, 0.90) * sil_alpha
+
+
 def decompose_to_zip(
     src_image: Path,
     out_zip: Path,
@@ -352,15 +452,10 @@ def decompose_to_zip(
     # Convert to EXACT Porter-Duff source-over alphas!
     pd_a = weights_to_porter_duff(layer_w, sil_alpha)
 
-    # 5. Subtle underside & anatomical cel shadow (47_SHADOW)
-    dist_from_bottom = np.zeros((h, w), np.float32)
-    for x in range(w):
-        col_y = np.flatnonzero(inside[:, x])
-        if len(col_y):
-            dist_from_bottom[col_y, x] = col_y.max() - col_y
-    under = np.clip((44.0 - dist_from_bottom) / 44.0, 0.0, 1.0) * 0.52
-    shadow_raw = np.clip(under, 0.0, 0.65)
-    shadow_a = (np.asarray(Image.fromarray((shadow_raw * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(9)), np.float32) / 255.0) * sil_alpha
+    # 5. Artist-authentic cel + dry-brush fur shadow (47_SHADOW, multiply rgb(131,131,131))
+    # Matches Female_Average standing.zip: bold underside occlusion on belly, inner thighs, far limbs,
+    # under-chin/jaw, shaggy ruff creases, and under-tail, feathered upward with directional fur strokes.
+    shadow_a = build_artist_shadow(inside, sil_alpha, layer_w, ink_a)
 
     def apply_shift(a: np.ndarray) -> np.ndarray:
         if shift_y == 0:
@@ -771,6 +866,7 @@ def generate_tail_variants_for_zip(
     limp_angle_deg: float = 55.0,
     dock_frac: float = 0.36,
     hinge_frac: float = 0.44,
+    radial_dock_px: float | None = None,
 ) -> list[str]:
     """Generate standalone 48-layer `docked_tail.zip` and `half_limp_tail.zip` directly from a pose .zip.
 
@@ -837,17 +933,34 @@ def generate_tail_variants_for_zip(
     half_w = max(0.08, half_w)
 
     # ---------- 1. DOCKED TAIL ----------
-    # Smooth organic rounded fur-tuft contour at s_geo ~ dock_frac (no jagged sawtooth)
-    tuft_wave = 0.032 * np.sin((t / half_w) * 4.5 + 0.6) + 0.014 * np.cos((t / half_w) * 9.0)
-    cut_s = dock_frac - 0.09 * np.clip((t / half_w) ** 2, 0.0, 1.5) + tuft_wave
-    # If BFS didn't reach a disconnected pixel inside tail_only_zone (geo < 0), treat as distal if far from root
     dist_r = np.hypot(xx - rx, yy - ry)
-    s_eff = np.where(geo >= 0, s_geo, dist_r / max(1.0, length))
-    remove_dock = tail_only_zone & (s_eff > cut_s)
-    keep_dock = ~remove_dock
-
-    # Crisp black ink stroke along the docked stub's rounded furry end
-    stub_edge = tail_only_zone & (np.abs(s_eff - cut_s) * max_geo <= 2.4) & dilate(tail_fur & keep_dock, 2)
+    if radial_dock_px is not None:
+        # For curled/ground tails (sitting, lying, sleeping): keep ONLY the short rounded fluffy bob
+        # exiting behind the rump (geodesic + radial distance from tail root) so the curled lower loop
+        # disappears cleanly with ZERO diagonal wedge or leftover tip!
+        ang_r = np.arctan2(yy - ry, xx - rx)
+        r_limit = radial_dock_px + 4.5 * np.sin(ang_r * 9.0 + 0.5) + 2.5 * np.cos(ang_r * 17.0)
+        d_eff = np.where(geo >= 0, np.maximum(geo * 0.72, dist_r), dist_r)
+        keep_raw = tail_only_zone & (d_eff <= r_limit)
+        # Keep only the component directly attached to the tail root
+        keep_stub = largest_component(keep_raw) if keep_raw.any() else keep_raw
+        remove_dock = tail_only_zone & (~keep_stub)
+        keep_dock = ~remove_dock
+        # Crisp black ink stroke closing the rounded stub end where it faces the removed tail
+        stub_edge = (
+            tail_only_zone
+            & dilate(keep_stub & tail_fur, 2)
+            & dilate(remove_dock, 3)
+        )
+    else:
+        # Smooth organic rounded fur-tuft contour at s_geo ~ dock_frac (no jagged sawtooth)
+        tuft_wave = 0.032 * np.sin((t / half_w) * 4.5 + 0.6) + 0.014 * np.cos((t / half_w) * 9.0)
+        cut_s = dock_frac - 0.09 * np.clip((t / half_w) ** 2, 0.0, 1.5) + tuft_wave
+        s_eff = np.where(geo >= 0, s_geo, dist_r / max(1.0, length))
+        remove_dock = tail_only_zone & (s_eff > cut_s)
+        keep_dock = ~remove_dock
+        # Crisp black ink stroke along the docked stub's rounded furry end
+        stub_edge = tail_only_zone & (np.abs(s_eff - cut_s) * max_geo <= 2.4) & dilate(tail_fur & keep_dock, 2)
     dock_layers = [lay.copy() for lay in raw_layers]
     for k in range(1, 7):
         dock_layers[k][remove_dock, 3] = 0

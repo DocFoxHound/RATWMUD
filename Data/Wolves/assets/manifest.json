@@ -19,6 +19,7 @@
     "female-medium": {
       "poses": [
         "jogging",
+        "knocked_out",
         "lying",
         "running",
         "sitting",
@@ -28,9 +29,67 @@
         "standing",
         "walking"
       ],
-      "expressions": {},
+      "expressions": {
+        "jogging": [
+          "angry",
+          "scared"
+        ],
+        "lying": [
+          "angry",
+          "angry_dominant",
+          "angry_scared",
+          "happy",
+          "hurt",
+          "sad",
+          "surprised",
+          "threatening",
+          "tired"
+        ],
+        "running": [
+          "angry",
+          "scared"
+        ],
+        "sitting": [
+          "angry",
+          "angry_dominant",
+          "angry_scared",
+          "happy",
+          "hurt",
+          "sad",
+          "surprised",
+          "threatening",
+          "tired"
+        ],
+        "sprinting": [
+          "angry",
+          "scared"
+        ],
+        "standing": [
+          "angry",
+          "angry_dominant",
+          "angry_scared",
+          "happy",
+          "hurt",
+          "sad",
+          "surprised",
+          "threatening",
+          "tired"
+        ],
+        "walking": [
+          "angry",
+          "scared"
+        ]
+      },
       "damage": {
         "jogging": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "knocked_out": [
           "forelegs",
           "head",
           "hindlegs",
@@ -111,6 +170,13 @@
           "docked_tail",
           "half_limp_tail"
         ],
+        "knocked_out": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
         "lying": [
           "clipped_ear_both",
           "clipped_ear_left",
@@ -170,6 +236,14 @@
       },
       "markings": {
         "jogging": [
+          "brindle",
+          "frosting",
+          "irish_saddle",
+          "merle",
+          "piebald",
+          "ticking"
+        ],
+        "knocked_out": [
           "brindle",
           "frosting",
           "irish_saddle",
