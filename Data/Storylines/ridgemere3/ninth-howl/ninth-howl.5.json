@@ -822,8 +822,16 @@
      "id": "c",
      "type": "line",
      "speaker": "gorm",
-     "text": "By the Concord's custom the Envoy speaks only through me. Walk her down the Pass Road, and she will hear this realm kindly.",
-     "seconds": 7
+     "text": "I am their Eye in this city. Not sworn, no Gift: the sworn are all Quickened, taken as pups. I only watch, and write.",
+     "seconds": 7,
+     "next": "d"
+    },
+    {
+     "id": "d",
+     "type": "line",
+     "speaker": "gorm",
+     "text": "By the Order's custom a sworn Warden does not speak to the unsworn. Walk her down the Pass Road, and she may think this realm worth hearing.",
+     "seconds": 8
     }
    ]
   },
@@ -8814,61 +8822,61 @@
   },
   {
    "id": "ch5_closing",
-   "journal": "Black Cloaks on the Pass Road. The Concord's Envoy comes down at first light; walk her down to the city.",
+   "journal": "Black Cloaks on the Pass Road. A Warden-Envoy comes down at first light on the Concord's business; walk her down to the city.",
    "effects": [
     {
      "kind": "board.post",
      "town": "ridgemere",
-     "text": "At first light the Concord's Envoy comes down the Pass Road to the Pass House. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
+     "text": "At first light a Warden-Envoy of the Order comes down the Pass Road to the Pass House, on the Concord's business. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
      "days": 7,
      "ifRefused": "skip"
     },
     {
      "kind": "board.post",
      "town": "coldwater",
-     "text": "At first light the Concord's Envoy comes down the Pass Road to the Pass House. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
+     "text": "At first light a Warden-Envoy of the Order comes down the Pass Road to the Pass House, on the Concord's business. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
      "days": 7,
      "ifRefused": "skip"
     },
     {
      "kind": "board.post",
      "town": "larkfield",
-     "text": "At first light the Concord's Envoy comes down the Pass Road to the Pass House. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
+     "text": "At first light a Warden-Envoy of the Order comes down the Pass Road to the Pass House, on the Concord's business. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
      "days": 7,
      "ifRefused": "skip"
     },
     {
      "kind": "board.post",
      "town": "southmeadow",
-     "text": "At first light the Concord's Envoy comes down the Pass Road to the Pass House. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
+     "text": "At first light a Warden-Envoy of the Order comes down the Pass Road to the Pass House, on the Concord's business. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
      "days": 7,
      "ifRefused": "skip"
     },
     {
      "kind": "board.post",
      "town": "fenshore",
-     "text": "At first light the Concord's Envoy comes down the Pass Road to the Pass House. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
+     "text": "At first light a Warden-Envoy of the Order comes down the Pass Road to the Pass House, on the Concord's business. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
      "days": 7,
      "ifRefused": "skip"
     },
     {
      "kind": "board.post",
      "town": "saltwell",
-     "text": "At first light the Concord's Envoy comes down the Pass Road to the Pass House. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
+     "text": "At first light a Warden-Envoy of the Order comes down the Pass Road to the Pass House, on the Concord's business. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
      "days": 7,
      "ifRefused": "skip"
     },
     {
      "kind": "board.post",
      "town": "oakhaven",
-     "text": "At first light the Concord's Envoy comes down the Pass Road to the Pass House. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
+     "text": "At first light a Warden-Envoy of the Order comes down the Pass Road to the Pass House, on the Concord's business. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
      "days": 7,
      "ifRefused": "skip"
     },
     {
      "kind": "board.post",
      "town": "frosthollow",
-     "text": "At first light the Concord's Envoy comes down the Pass Road to the Pass House. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
+     "text": "At first light a Warden-Envoy of the Order comes down the Pass Road to the Pass House, on the Concord's business. Then the Council settles the Rainward Hills, and the Grayrock vote. (signed) the Herald of Ridgemere",
      "days": 7,
      "ifRefused": "skip"
     },
@@ -9479,7 +9487,7 @@
         "name": "The Warden-Envoy",
         "like": "tn_sm_brisk_plumby",
         "minutes": 1440,
-        "description": "A silver-muzzled arctic wolf in the Concord's black cloak with silver trim.",
+        "description": "A silver-muzzled arctic wolf in a Warden's black cloak with silver trim. She looks at everything as if pricing it, and finding it cheap.",
         "ifRefused": "skip"
        }
       },
@@ -9509,7 +9517,7 @@
        "effect": {
         "kind": "board.post",
         "town": "frosthollow",
-        "text": "The Concord's Envoy is at the Pass House. She wants walking down to the city, stage by stage, and the Captain's wolves watch the High Road.",
+        "text": "The Warden-Envoy is at the Pass House, on the Concord's business. She expects to be walked down to the city, stage by stage, and the Captain's wolves watch the High Road.",
         "days": 7,
         "ifRefused": "skip"
        }
@@ -9519,7 +9527,7 @@
        "effect": {
         "kind": "story.tell",
         "to": "world",
-        "text": "A silver-muzzled wolf in the Concord's black cloak has come down to the Pass House. She speaks to nobody.",
+        "text": "A silver-muzzled wolf in a Warden's black cloak has come down to the Pass House. She speaks to nobody, and looks at the Pass House as if it had disappointed her.",
         "ifRefused": "skip"
        }
       },
@@ -9598,7 +9606,7 @@
           "name": "The Warden-Envoy",
           "like": "tn_sm_brisk_plumby",
           "minutes": 1440,
-          "description": "A silver-muzzled arctic wolf in the Concord's black cloak with silver trim.",
+          "description": "A silver-muzzled arctic wolf in a Warden's black cloak with silver trim. She looks at everything as if pricing it, and finding it cheap.",
           "ifRefused": "skip"
          }
         },
@@ -9641,7 +9649,7 @@
             "name": "The Warden-Envoy",
             "like": "tn_sm_brisk_plumby",
             "minutes": 1440,
-            "description": "A silver-muzzled arctic wolf in the Concord's black cloak with silver trim.",
+            "description": "A silver-muzzled arctic wolf in a Warden's black cloak with silver trim. She looks at everything as if pricing it, and finding it cheap.",
             "ifRefused": "skip"
            }
           }
@@ -9674,7 +9682,7 @@
             "name": "The Warden-Envoy",
             "like": "tn_sm_brisk_plumby",
             "minutes": 1440,
-            "description": "A silver-muzzled arctic wolf in the Concord's black cloak with silver trim.",
+            "description": "A silver-muzzled arctic wolf in a Warden's black cloak with silver trim. She looks at everything as if pricing it, and finding it cheap.",
             "ifRefused": "skip"
            }
           },
@@ -9717,7 +9725,7 @@
             "name": "The Warden-Envoy",
             "like": "tn_sm_brisk_plumby",
             "minutes": 1440,
-            "description": "A silver-muzzled arctic wolf in the Concord's black cloak with silver trim.",
+            "description": "A silver-muzzled arctic wolf in a Warden's black cloak with silver trim. She looks at everything as if pricing it, and finding it cheap.",
             "ifRefused": "skip"
            }
           },
@@ -9802,7 +9810,7 @@
           "name": "The Warden-Envoy",
           "like": "tn_sm_brisk_plumby",
           "minutes": 1440,
-          "description": "A silver-muzzled arctic wolf in the Concord's black cloak with silver trim.",
+          "description": "A silver-muzzled arctic wolf in a Warden's black cloak with silver trim. She looks at everything as if pricing it, and finding it cheap.",
           "ifRefused": "skip"
          }
         },
@@ -9811,7 +9819,7 @@
          "effect": {
           "kind": "story.tell",
           "to": "world",
-          "text": "The Envoy has come down to the city alone. Nobody walked her road with her, and she will have noticed.",
+          "text": "The Envoy has come down to the city alone. Nobody walked her road with her. She has written it down.",
           "ifRefused": "skip"
          }
         }
@@ -9843,7 +9851,7 @@
        "do": "finish",
        "who": "everyone",
        "outcome": "success",
-       "text": "Forty letters found their lord, the hills were settled, and the Concord came down the Pass Road."
+       "text": "Forty letters found their lord, the hills were settled, and the Wardens came down the Pass Road."
       }
      ]
     },
@@ -9887,7 +9895,7 @@
           "name": "The Warden-Envoy",
           "like": "tn_sm_brisk_plumby",
           "minutes": 1440,
-          "description": "A silver-muzzled arctic wolf in the Concord's black cloak with silver trim.",
+          "description": "A silver-muzzled arctic wolf in a Warden's black cloak with silver trim. She looks at everything as if pricing it, and finding it cheap.",
           "ifRefused": "skip"
          }
         }
@@ -9921,7 +9929,7 @@
             "name": "The Warden-Envoy",
             "like": "tn_sm_brisk_plumby",
             "minutes": 1440,
-            "description": "A silver-muzzled arctic wolf in the Concord's black cloak with silver trim.",
+            "description": "A silver-muzzled arctic wolf in a Warden's black cloak with silver trim. She looks at everything as if pricing it, and finding it cheap.",
             "ifRefused": "skip"
            }
           }
@@ -9955,7 +9963,7 @@
             "name": "The Warden-Envoy",
             "like": "tn_sm_brisk_plumby",
             "minutes": 1440,
-            "description": "A silver-muzzled arctic wolf in the Concord's black cloak with silver trim.",
+            "description": "A silver-muzzled arctic wolf in a Warden's black cloak with silver trim. She looks at everything as if pricing it, and finding it cheap.",
             "ifRefused": "skip"
            }
           }
@@ -9989,7 +9997,7 @@
             "name": "The Warden-Envoy",
             "like": "tn_sm_brisk_plumby",
             "minutes": 1440,
-            "description": "A silver-muzzled arctic wolf in the Concord's black cloak with silver trim.",
+            "description": "A silver-muzzled arctic wolf in a Warden's black cloak with silver trim. She looks at everything as if pricing it, and finding it cheap.",
             "ifRefused": "skip"
            }
           }
@@ -10016,7 +10024,7 @@
           "name": "The Warden-Envoy",
           "like": "tn_sm_brisk_plumby",
           "minutes": 1440,
-          "description": "A silver-muzzled arctic wolf in the Concord's black cloak with silver trim.",
+          "description": "A silver-muzzled arctic wolf in a Warden's black cloak with silver trim. She looks at everything as if pricing it, and finding it cheap.",
           "ifRefused": "skip"
          }
         }
@@ -11019,7 +11027,7 @@
   {
    "id": "q_envoy",
    "title": "Walk the Envoy Down",
-   "summary": "The Concord's Envoy is at the Pass House and wants walking down to the city: the Frosthollow square, the Upper Mere post, the Glasswater relay, the Ridgemere waystation.",
+   "summary": "The Warden-Envoy is at the Pass House and expects to be walked down to the city: the Frosthollow square, the Upper Mere post, the Glasswater relay, the Ridgemere waystation.",
    "scope": "story",
    "contributors": 1,
    "phases": [
@@ -11072,7 +11080,7 @@
     {
      "kind": "deed.award",
      "player": "$actor",
-     "detail": "walked the Concord's envoy down the Pass Road",
+     "detail": "walked the Wardens' envoy down the Pass Road",
      "ifRefused": "when here"
     }
    ]

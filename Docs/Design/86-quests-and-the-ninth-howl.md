@@ -284,7 +284,7 @@ the bought ones, by a rule posted on every board.
 |---|---|
 | **The Realm Answers**: the Wardens leave by the Pass | 14 or more |
 | **The Realm Holds**: one Warden stays until spring | 9–13 |
-| **The Realm Bends**: Wardens in every silent town | 8 or less |
+| **The Realm Bends**: the Order's Eyes in every silent town, and every Quickened wolf named to it | 8 or less |
 
 Four rulers by three verdicts: **12 endings, every one a full ending.** Lasting after: figures, posts standing, faction
 relations, the ruler's post (C14), and realm talk kept for 90 days.
@@ -441,7 +441,7 @@ quarter, temperament, looks, voice, arc by chapter, fate by branch): `cast-and-t
 | **Rosalind Greatly** | `rm_rosalind_greatly` | f 22, plain, bookish | the whistleblower with a ledger that doesn't add up | Greatly's conscience; the unwilling Bought Queen |
 | **Speaker Gerrit Mudhand** | `rm_gerrit_mudhand` | m 55, plain, chatty | keeper of the Moot's roll; patron of the Moot backing | Speaker of the Council |
 | **Ulric Stonevein** | `cty_ulric_stonevein` | m 30, frosthollow | smells his brother's harness → the lamp-oil list → the Turn | parts from Hakon, or mourns him |
-| **Tansy Reedmere** | `tn_cw_tansy_reedmere` | f 14, coldwater | the "something big" under the ice: the water obeys her | the realm's first kept Quickened; pledged to the Wardens; hidden |
+| **Tansy Reedmere** | `tn_cw_tansy_reedmere` | f 14, coldwater | the "something big" under the ice: the water obeys her | the realm's first kept Quickened; pledged to the Order, to be taken over the Pass in spring; hidden |
 | **Solveig Tarwell** | `rm_solveig_tarwell` | f 44, plain, quiet | the wharf names → the Rite of the Tide → the Bay Light bell | rings the drowned bell |
 | **Skye Eelbank** | `tn_mb_skye_eelbank` | f 50, mirebridge speech | the path with no note → named Mirebridge's Keeper | Mirebridge's voice at the Moot |
 
@@ -463,7 +463,7 @@ already.
 | Who | Role |
 |---|---|
 | Chancellor Oskar Gullworth `rm_oskar_gullworth` | the weeping Chancellor, owned, not wicked: confesses, is exposed, runs, or pays |
-| Gorm Plankgate `rm_gorm_plankgate` | **the Wardens' Eye**: the first `warden_order` member, and the Envoy's only voice |
+| Gorm Plankgate `rm_gorm_plankgate` | **the Order's Eye in Ridgemere**: an informant, not sworn and not Quickened; the first `warden_order` member, and the Envoy's only voice |
 | Captain Corra Slagmore; Gudrun Fell and Osric Timberland; the Grayrocks; the four House heads | the indebted Watch; the match that shapes the quarrel; the forty letters; the Council's votes |
 | Kell Greyton, Willa Coldwick, Ingrid Kendrick, Piet Lumley, Ulla Rusthand and others | the ice, and the small lives the campaign answers |
 
@@ -485,7 +485,7 @@ already.
 
 | Who | How | Speaks |
 |---|---|---|
-| **Warden-Envoy Ingeborg Rimewater** | `visitor.add`, `like: tn_sm_brisk_plumby`, Ch 5 end – Ch 9 | only through Gorm, by Concord custom |
+| **Warden-Envoy Ingeborg Rimewater**, a sworn (so Quickened) Warden: cold, exacting, cultured, faintly contemptuous | `visitor.add`, `like: tn_sm_brisk_plumby`, Ch 5 end – Ch 9 | only through Gorm: by the Order's custom a sworn Warden does not speak to the unsworn |
 | **The Grey Captain** | `visitor.add` at the parley, `like: cty_stone_sunton`; a C10 champion foe at the Pass | through Desmond, or by letter; T3 gives him a scene panel |
 | **Hakon**, Ulric's brother | `visitor.add`, `like: rm_palle_bilgemarsh`; a foe at the Pass | in the Turn's scene (T3) |
 | The Captain's companies, bounders, cudgels | `story.area.spawn`, `bandits.call`; C10 bands later | — |
@@ -3200,3 +3200,36 @@ tiles and the console's crash, the second ran on the fixed tiles.
   `warden_order` faction with Gorm Plankgate a ranked member, before Chapter 5 closes; a client and Editor release after
   0.1.10 (the Campaigns console's readiness bars, foes panel and the new workbench pickers are in the desktop Editor only
   then; the browser client and the laptop's DM tool already have them). House purses stay off (M3's economy check).
+
+## The Wardens canon pass (2026-11-24, branch `r3-nh-wardens`)
+
+The owner's canon for the Wardens (now in the setting bible, §19): a secretive Order of Quickened wolves that works with
+the Concord, the church of many nations, and serves beneath it; it takes Quickened wolves as pups and makes weapons of
+them, and is sent only in rare situations; dark, calculating, cold, high-class, almost snobbish; excellent, cultured
+killers. Its ancient benefactor is the Dark One, known only to its top leadership: **DM-only**, never stated in world
+text. This pass is a voice-and-lore pass: no id, variable, trigger, branch or limit changed.
+
+- **Gorm Plankgate** is the Order's Eye in Ridgemere: an informant, not sworn and not Quickened. His Ch 5 reveal
+  (`nh_gorm_eye`) gains a fourth beat: he is their Eye, not sworn, no Gift; the sworn are all Quickened, taken as pups;
+  and by the Order's custom a sworn Warden does not speak to the unsworn, so she speaks through him.
+- **The Warden-Envoy** is a sworn (so Quickened) Warden. She stays mute (the custom is now the Order's, not the
+  Concord's), and the words Gorm carries for her are cold, exacting and faintly contemptuous: she "calls it a small
+  thing", has "heard a great deal of noise and seen very little realm", writes slowly when an answer surprises her ("it
+  does not happen often"), and has "not yet decided this realm is worth it". Her description: "in a Warden's black cloak
+  with silver trim. She looks at everything as if pricing it, and finding it cheap."
+- **The Envoy's Question** (Ch 6) now says what failing costs: the Concord keeps the realm, and the Order keeps its
+  Quickened. The herald's post says so too.
+- **The Tansy thread** carries the Order's real claim on Quickened pups: Tansy fears the black cloaks take pups like her
+  over the Pass; Kell's "give" answer says whatever comes back won't be theirs; Gorm's bell line says she comes back a
+  weapon; Coldwater and Saltwell gossip in the bell stage say the black cloaks take such pups; the "pledged" and
+  "found" fates have her taken over the Pass in spring (she still stays home this campaign: no resident leaves the world).
+- **The Concord's verdict:** the Realm Answers keeps the realm's Quickened at home, Gorm only watching; the Realm Holds
+  leaves one Warden at the Grey Gull who sends her tea back; the Realm Bends is the Order's Eyes in every silent town and
+  every Quickened wolf named to it (not Wardens posted everywhere, which the canon's rare Order wouldn't do).
+- **The Dark One:** one doubtable line only: when they bless her on the square, she does not bless them back (Gorm, the
+  "proud" answer to her question in Ch 9).
+- The library's lore lines say "black cloak" for a Warden (they said grey, which is the Grey Captain's colour).
+- Running on Ridgemere 3 and changed: `lq-vanishing-thief` only (the board post asks the Council to write to the
+  Concord; Eleanor Vance doubts the Order comes because a House asks). Acts II and III (ninth-howl.4 to 9: 5 to 9
+  changed) are re-approved before they are published, since their digests changed. The packs, the stage pack, nh-purses,
+  Act I and the cleanup are unchanged.

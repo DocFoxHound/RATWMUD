@@ -873,7 +873,7 @@ rule nh_letters_coldwater_3
 when concept=talk.news|talk.bandits world.mem.nh_stage=letters self.from=coldwater
 does tell.news
 cooldown 1d
-say Black cloaks on the Pass Road, eh? Wardens, they say. Fair winds to whoever they've come for.
+say Black cloaks on the Pass Road, eh? Wardens. Quickened, every one, and taken as pups. Fair winds to whoever they've come for.
 
 rule nh_letters_larkfield_1
 when concept=talk.news|talk.gossip world.mem.nh_stage=letters self.from=larkfield
@@ -1431,7 +1431,7 @@ rule nh_bell_coldwater_4
 when concept=talk.gossip world.mem.nh_stage=bell self.from=coldwater
 does tell.gossip
 cooldown 1d
-say The black cloak watches the mere all day. Deep and dark, what's she looking for?
+say The black cloak watches the mere all day. They take the ones the water listens to, eh? Take them young.
 
 rule nh_bell_coldwater_5
 when concept=talk.news|talk.bandits world.mem.nh_stage=bell self.from=coldwater
@@ -1527,7 +1527,7 @@ rule nh_bell_saltwell_3
 when concept=talk.news|talk.bandits world.mem.nh_stage=bell self.from=saltwell
 does tell.news
 cooldown 1d
-say A pup who calls water is a gift and a danger, #address#. Do not hide her carelessly.
+say A pup who calls water is a gift and a danger, #address#. The black cloaks take such pups. Do not hide her carelessly.
 
 rule nh_bell_oakhaven_1
 when concept=talk.news|talk.gossip world.mem.nh_stage=bell self.from=oakhaven
@@ -1791,7 +1791,7 @@ rule nh_after_plain_7
 when concept=talk.news|talk.gossip self.from=ridgemere world.mem.nh_concord=bends
 does tell.news
 cooldown 1d
-say Wardens in every silent town by spring. We were too quiet, somewhere.
+say An Eye for the Wardens in every silent town by spring, and every Quickened named. We were too quiet, somewhere.
 
 rule nh_after_plain_8
 when concept=talk.news|talk.gossip self.from=ridgemere world.mem.nh_captain=turned
@@ -1839,7 +1839,7 @@ rule nh_after_coldwater_6
 when concept=talk.news|talk.gossip self.from=coldwater world.mem.nh_concord=holds
 does tell.news
 cooldown 1d
-say One black cloak at the Grey Gull till spring. Fair winds to her.
+say One black cloak at the Grey Gull till spring, sending the soup back. Fair winds to her, eh?
 
 rule nh_after_larkfield_1
 when concept=talk.news|talk.gossip self.from=larkfield world.mem.nh_howl=ran

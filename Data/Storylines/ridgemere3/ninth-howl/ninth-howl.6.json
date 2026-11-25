@@ -675,7 +675,7 @@
      "id": "b1",
      "type": "line",
      "speaker": "eye",
-     "text": "She will not speak to you herself. By the Concord's custom an envoy speaks to a realm only through its own Eye.",
+     "text": "She will not speak to you herself. By the Order's custom a sworn Warden does not speak to the unsworn. She speaks through her Eye.",
      "seconds": 9,
      "next": "b2"
     },
@@ -683,7 +683,7 @@
      "id": "b2",
      "type": "line",
      "speaker": "eye",
-     "text": "She asks this: on the night your Moot sits, let one howl run from the Pass to the Waste, every town answering the one before.",
+     "text": "She asks this, and calls it a small thing: on the night your Moot sits, let one howl run from the Pass to the Waste, every town answering.",
      "seconds": 9,
      "next": "b3"
     },
@@ -691,7 +691,7 @@
      "id": "b3",
      "type": "line",
      "speaker": "eye",
-     "text": "Then she will write that you keep yourselves. I am the realm's Eye, and I am sorry for it.",
+     "text": "Then she will write that you keep yourselves. If not, the Concord keeps you, and the Order keeps your Quickened. I only carry it.",
      "seconds": 8
     }
    ]
@@ -6384,7 +6384,7 @@
       "y": 144,
       "minutes": 1440,
       "like": "tn_sm_brisk_plumby",
-      "description": "A silver-muzzled arctic wolf in the Concord's black cloak with silver trim.",
+      "description": "A silver-muzzled arctic wolf in a Warden's black cloak with silver trim. She looks at everything as if pricing it, and finding it cheap.",
       "ifRefused": "skip"
      }
     }
@@ -6687,7 +6687,7 @@
           "y": 144,
           "minutes": 1440,
           "like": "tn_sm_brisk_plumby",
-          "description": "A silver-muzzled arctic wolf in the Concord's black cloak with silver trim.",
+          "description": "A silver-muzzled arctic wolf in a Warden's black cloak with silver trim. She looks at everything as if pricing it, and finding it cheap.",
           "ifRefused": "skip"
          }
         },
@@ -6696,7 +6696,7 @@
          "effect": {
           "kind": "board.post",
           "town": "ridgemere",
-          "text": "The black cloaks ask one thing of the realm: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. (signed) the Herald of Ridgemere",
+          "text": "The Wardens ask one thing of the realm, for the Concord: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. If it fails, the Concord keeps us. (signed) the Herald of Ridgemere",
           "days": 28,
           "ifRefused": "skip"
          }
@@ -6706,7 +6706,7 @@
          "effect": {
           "kind": "board.post",
           "town": "coldwater",
-          "text": "The black cloaks ask one thing of the realm: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. (signed) the Herald of Ridgemere",
+          "text": "The Wardens ask one thing of the realm, for the Concord: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. If it fails, the Concord keeps us. (signed) the Herald of Ridgemere",
           "days": 28,
           "ifRefused": "skip"
          }
@@ -6716,7 +6716,7 @@
          "effect": {
           "kind": "board.post",
           "town": "larkfield",
-          "text": "The black cloaks ask one thing of the realm: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. (signed) the Herald of Ridgemere",
+          "text": "The Wardens ask one thing of the realm, for the Concord: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. If it fails, the Concord keeps us. (signed) the Herald of Ridgemere",
           "days": 28,
           "ifRefused": "skip"
          }
@@ -6726,7 +6726,7 @@
          "effect": {
           "kind": "board.post",
           "town": "southmeadow",
-          "text": "The black cloaks ask one thing of the realm: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. (signed) the Herald of Ridgemere",
+          "text": "The Wardens ask one thing of the realm, for the Concord: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. If it fails, the Concord keeps us. (signed) the Herald of Ridgemere",
           "days": 28,
           "ifRefused": "skip"
          }
@@ -6736,7 +6736,7 @@
          "effect": {
           "kind": "board.post",
           "town": "fenshore",
-          "text": "The black cloaks ask one thing of the realm: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. (signed) the Herald of Ridgemere",
+          "text": "The Wardens ask one thing of the realm, for the Concord: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. If it fails, the Concord keeps us. (signed) the Herald of Ridgemere",
           "days": 28,
           "ifRefused": "skip"
          }
@@ -6746,7 +6746,7 @@
          "effect": {
           "kind": "board.post",
           "town": "saltwell",
-          "text": "The black cloaks ask one thing of the realm: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. (signed) the Herald of Ridgemere",
+          "text": "The Wardens ask one thing of the realm, for the Concord: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. If it fails, the Concord keeps us. (signed) the Herald of Ridgemere",
           "days": 28,
           "ifRefused": "skip"
          }
@@ -6756,7 +6756,7 @@
          "effect": {
           "kind": "board.post",
           "town": "oakhaven",
-          "text": "The black cloaks ask one thing of the realm: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. (signed) the Herald of Ridgemere",
+          "text": "The Wardens ask one thing of the realm, for the Concord: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. If it fails, the Concord keeps us. (signed) the Herald of Ridgemere",
           "days": 28,
           "ifRefused": "skip"
          }
@@ -6766,7 +6766,7 @@
          "effect": {
           "kind": "board.post",
           "town": "frosthollow",
-          "text": "The black cloaks ask one thing of the realm: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. (signed) the Herald of Ridgemere",
+          "text": "The Wardens ask one thing of the realm, for the Concord: on the night the Moot sits, one howl from the Pass to the Waste, every town answering the one before. If it fails, the Concord keeps us. (signed) the Herald of Ridgemere",
           "days": 28,
           "ifRefused": "skip"
          }
@@ -10570,7 +10570,7 @@
   {
    "id": "nh6_quick",
    "title": "The Quickened Wolf's Question",
-   "summary": "The Sump infirmarian writes to the black cloaks. A wolf who carries a Gift can stand before the Wardens with a friend to vouch for them, or hide.",
+   "summary": "The Sump infirmarian writes to the black cloaks. A wolf who carries a Gift can stand before the Wardens with a friend to vouch for them, or hide, and hope the black cloak never catches the scent.",
    "scope": "player",
    "repeat": "once",
    "objectives": [

@@ -725,7 +725,7 @@
      "type": "line",
      "speaker": "eye",
      "seconds": 8,
-     "text": "She is listening, honoured guest. So am I.",
+     "text": "She is listening, honoured guest. She has not yet decided this realm is worth it.",
      "next": "free"
     },
     {
@@ -1174,7 +1174,7 @@
       "y": 30,
       "minutes": 1440,
       "like": "tn_sm_brisk_plumby",
-      "description": "a silver-muzzled arctic wolf in the Concord's black cloak with silver trim",
+      "description": "a silver-muzzled arctic wolf in a Warden's black cloak with silver trim, who looks at everything as if pricing it, and finding it cheap",
       "ifRefused": "skip"
      }
     },
@@ -2021,7 +2021,7 @@
       "y": 30,
       "minutes": 1440,
       "like": "tn_sm_brisk_plumby",
-      "description": "a silver-muzzled arctic wolf in the Concord's black cloak with silver trim",
+      "description": "a silver-muzzled arctic wolf in a Warden's black cloak with silver trim, who looks at everything as if pricing it, and finding it cheap",
       "ifRefused": "skip"
      }
     },
@@ -2031,7 +2031,7 @@
       "kind": "story.tell",
       "to": "region",
       "region": "moot",
-      "text": "A wolf in a black cloak with silver trim stands by the Market Square board, writing on a slate, and does not look up."
+      "text": "A wolf in a black cloak with silver trim stands by the Market Square board, writing on a slate, and does not look up. The square, it seems, is not worth it."
      }
     }
    ]
@@ -5818,7 +5818,7 @@
  "phases": [
   {
    "id": "ch9_run_up",
-   "journal": "The Moot is coming. Keep a post on the Howl Line, carry lanterns for the drowned, walk the drowned bell to the Bay Light, raise a silent town's howl, or answer the Envoy's question through the Wardens' Eye. When enough of the realm has, the herald calls the Moot night.",
+   "journal": "The Moot is coming. Keep a post on the Howl Line, carry lanterns for the drowned, walk the drowned bell to the Bay Light, raise a silent town's howl, or answer the Envoy's question through the Order's Eye at the Sump Infirmary. When enough of the realm has, the herald calls the Moot night.",
    "effects": [
     {
      "kind": "talk.remember",
@@ -18873,7 +18873,7 @@
          "effect": {
           "kind": "story.tell",
           "to": "world",
-          "text": "She tears a paper at the Bay Light, slowly, in front of everyone: the Concord's Keeping. The Wardens leave by the Pass."
+          "text": "She tears a paper at the Bay Light, slowly, in front of everyone: the Concord's Keeping. The Wardens leave by the Pass, and she does not look back."
          }
         },
         {
@@ -18951,7 +18951,7 @@
            "effect": {
             "kind": "story.tell",
             "to": "world",
-            "text": "The Concord's Keeping is set aside. One Warden stays at the Grey Gull until spring."
+            "text": "The Concord's Keeping is set aside. One Warden stays at the Grey Gull until spring, and watches."
            }
           }
          ]
@@ -18979,7 +18979,7 @@
          "effect": {
           "kind": "story.tell",
           "to": "world",
-          "text": "The black cloak writes a long time. By spring there will be Wardens in every silent town."
+          "text": "The black cloak writes a long time. By spring the Order will have an Eye in every silent town, and every Quickened wolf's name."
          }
         }
        ]

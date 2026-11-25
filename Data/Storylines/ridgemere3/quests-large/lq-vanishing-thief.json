@@ -3047,7 +3047,7 @@
      "town": "ridgemere",
      "days": 28,
      "ifRefused": "skip",
-     "text": "Lock your strongrooms. The Heights ask the Council to send for the Wardens."
+     "text": "Lock your strongrooms. The Heights ask the Council to write to the Concord for the Wardens."
     },
     {
      "kind": "talk.remember",
@@ -3185,7 +3185,7 @@
     {
      "kind": "npc.line",
      "npc": "rm_eleanor_vance",
-     "text": "Black cloaks on the Pass Road, and they say the Vances sent for them. Bright One help us, perhaps we did."
+     "text": "Black cloaks on the Pass Road, and they say the Vances sent for them. Bright One help us. I doubt the Order comes because a House asks."
     },
     {
      "kind": "talk.remember",
