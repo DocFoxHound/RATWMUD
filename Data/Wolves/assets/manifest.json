@@ -530,7 +530,30 @@
         "standing",
         "walking"
       ],
-      "expressions": {},
+      "expressions": {
+        "sitting": [
+          "angry",
+          "angry_dominant",
+          "angry_scared",
+          "happy",
+          "hurt",
+          "sad",
+          "surprised",
+          "threatening",
+          "tired"
+        ],
+        "standing": [
+          "angry",
+          "angry_dominant",
+          "angry_scared",
+          "happy",
+          "hurt",
+          "sad",
+          "surprised",
+          "threatening",
+          "tired"
+        ]
+      },
       "damage": {
         "jogging": [
           "forelegs",
@@ -726,7 +749,13 @@
         "lying",
         "playful",
         "roll",
-        "standing"
+        "running",
+        "sitting",
+        "sleeping",
+        "sprinting",
+        "stalking",
+        "standing",
+        "walking"
       ],
       "expressions": {},
       "damage": {
@@ -763,9 +792,62 @@
           "torso"
         ],
         "roll": [
-          "head"
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "running": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "sitting": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "sleeping": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "sprinting": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "stalking": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
         ],
         "standing": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "walking": [
           "forelegs",
           "head",
           "hindlegs",
@@ -810,7 +892,49 @@
           "docked_tail",
           "half_limp_tail"
         ],
+        "running": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "sitting": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "sleeping": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "sprinting": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "stalking": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
         "standing": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "walking": [
           "clipped_ear_both",
           "clipped_ear_left",
           "clipped_ear_right",
@@ -827,8 +951,25 @@
         "standing"
       ],
       "expressions": {},
-      "damage": {},
-      "anatomy": {},
+      "damage": {
+        "standing": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ]
+      },
+      "anatomy": {
+        "standing": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ]
+      },
       "markings": {},
       "wearables": {},
       "faces": []
@@ -838,8 +979,25 @@
         "standing"
       ],
       "expressions": {},
-      "damage": {},
-      "anatomy": {},
+      "damage": {
+        "standing": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ]
+      },
+      "anatomy": {
+        "standing": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ]
+      },
       "markings": {},
       "wearables": {},
       "faces": []
