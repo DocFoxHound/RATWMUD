@@ -785,6 +785,40 @@
         "walking"
       ],
       "expressions": {
+        "jogging": [
+          "angry",
+          "scared"
+        ],
+        "lying": [
+          "angry",
+          "angry_dominant",
+          "angry_scared",
+          "happy",
+          "hurt",
+          "sad",
+          "surprised",
+          "threatening",
+          "tired"
+        ],
+        "running": [
+          "angry",
+          "scared"
+        ],
+        "sitting": [
+          "angry",
+          "angry_dominant",
+          "angry_scared",
+          "happy",
+          "hurt",
+          "sad",
+          "surprised",
+          "threatening",
+          "tired"
+        ],
+        "sprinting": [
+          "angry",
+          "scared"
+        ],
         "standing": [
           "angry",
           "angry_dominant",
@@ -792,8 +826,13 @@
           "happy",
           "hurt",
           "sad",
+          "surprised",
           "threatening",
           "tired"
+        ],
+        "walking": [
+          "angry",
+          "scared"
         ]
       },
       "damage": {
@@ -986,14 +1025,60 @@
     },
     "male-medium": {
       "poses": [
+        "jogging",
         "knocked_out",
         "lying",
+        "playful",
         "roll",
+        "running",
+        "sitting",
         "sleeping",
-        "standing"
+        "sprinting",
+        "stalking",
+        "standing",
+        "walking"
       ],
-      "expressions": {},
+      "expressions": {
+        "lying": [
+          "angry",
+          "angry_dominant",
+          "angry_scared",
+          "happy",
+          "sad",
+          "threatening"
+        ],
+        "sitting": [
+          "angry",
+          "angry_dominant",
+          "angry_scared",
+          "happy",
+          "hurt",
+          "sad",
+          "surprised",
+          "threatening",
+          "tired"
+        ],
+        "standing": [
+          "angry",
+          "angry_dominant",
+          "angry_scared",
+          "happy",
+          "hurt",
+          "sad",
+          "surprised",
+          "threatening",
+          "tired"
+        ]
+      },
       "damage": {
+        "jogging": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
         "knocked_out": [
           "forelegs",
           "head",
@@ -1010,7 +1095,31 @@
           "tail",
           "torso"
         ],
+        "playful": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
         "roll": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "running": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "sitting": [
           "forelegs",
           "head",
           "hindlegs",
@@ -1026,7 +1135,31 @@
           "tail",
           "torso"
         ],
+        "sprinting": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "stalking": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
         "standing": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "walking": [
           "forelegs",
           "head",
           "hindlegs",
@@ -1036,6 +1169,13 @@
         ]
       },
       "anatomy": {
+        "jogging": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
         "knocked_out": [
           "clipped_ear_both",
           "clipped_ear_left",
@@ -1050,7 +1190,28 @@
           "docked_tail",
           "half_limp_tail"
         ],
+        "playful": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
         "roll": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "running": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "sitting": [
           "clipped_ear_both",
           "clipped_ear_left",
           "clipped_ear_right",
@@ -1064,7 +1225,28 @@
           "docked_tail",
           "half_limp_tail"
         ],
+        "sprinting": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "stalking": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
         "standing": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "walking": [
           "clipped_ear_both",
           "clipped_ear_left",
           "clipped_ear_right",
@@ -1078,11 +1260,101 @@
     },
     "male-large": {
       "poses": [
-        "standing"
+        "jogging",
+        "knocked_out",
+        "lying",
+        "playful",
+        "roll",
+        "running",
+        "sitting",
+        "sleeping",
+        "stalking",
+        "standing",
+        "walking"
       ],
       "expressions": {},
       "damage": {
+        "jogging": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "knocked_out": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "lying": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "playful": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "roll": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "running": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "sitting": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "sleeping": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "stalking": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
         "standing": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "walking": [
           "forelegs",
           "head",
           "hindlegs",
@@ -1092,7 +1364,77 @@
         ]
       },
       "anatomy": {
+        "jogging": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "knocked_out": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "lying": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "playful": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "roll": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "running": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "sitting": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "sleeping": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "stalking": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
         "standing": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "walking": [
           "clipped_ear_both",
           "clipped_ear_left",
           "clipped_ear_right",
