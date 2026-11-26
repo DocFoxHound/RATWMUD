@@ -219,34 +219,30 @@ def build_artist_shadow(
     layer_w: np.ndarray,
     ink_a: np.ndarray,
 ) -> np.ndarray:
-    """Synthesize smooth, seam-free cel + fur-tuft shading matching Female_Average's original 47_SHADOW.
+    """Synthesize crisp, contour-hugging multiply cel/dry-brush shading matching the artist's 47_SHADOW
+    across all six source dolls (measured median alpha ~216/255, rgb 131,131,131).
 
-    Uses strictly continuous silhouette geometry (never rectangular region polygon seams!) + organic
-    belly layer so there are ZERO straight horizontal/vertical shadow bars on any pose:
-      1. Local downward-facing underside occlusion (belly, under-chest, under-jaw, under-neck, under-tail, paws)
-         computed directly on the wolf silhouette (`inside`) — strong alpha 190-238.
-      2. Recessed-leg / under-body ambient shadow along lower concave pockets (inner thighs, groin, armpit).
-      3. Fine organic fur-tuft grain along the upper shadow edge (matching artist dry-brush texture without
-         wide diagonal zebra bands).
+    Follows the artist's exact shadow grammar (zero fuzzy airbrush fog!):
+      1. Crisp anatomical underside cel band (14-24px) hugging lower belly, chest-under, under-jaw, and lower tail.
+      2. Crisp trailing-edge contour shadow (9-15px) along rear/right edges of legs, thighs, and tail (light from upper-left).
+      3. Internal 48_LINEART fur-tuft & crease shadows: crisp directional bands (6-12px down-right) tucked directly
+         beneath internal shaggy ruff lines, cheek/jaw creases, shoulder folds, and limb overlaps.
+      4. Sharp dry-brush cel threshold (alpha ~214/255, 0.5px anti-alias) so multiply blending stays bold and crisp.
     """
     h, w = inside.shape
-    # Fine natural fur-tuft grain (multi-scale, no wide zebra stripes!)
+    # Fine fur-tuft dry-brush edge grain (crisp high-frequency breakup, no foggy blur)
     rng = np.random.default_rng(73)
-    def fbm_fur() -> np.ndarray:
-        acc = np.zeros((h, w), np.float32)
-        amp, norm = 1.0, 0.0
-        for sx, sy in ((48, 32), (110, 74), (220, 150)):
-            g = rng.random((sy, sx), dtype=np.float32)
-            up = np.asarray(Image.fromarray((g * 255).astype(np.uint8)).resize((w, h), Image.BICUBIC), np.float32) / 255.0
-            acc += amp * up
-            norm += amp
-            amp *= 0.55
-        return acc / norm
-
-    fur_g = fbm_fur()
+    acc = np.zeros((h, w), np.float32)
+    amp, norm = 1.0, 0.0
+    for sx, sy in ((64, 48), (140, 100), (260, 185)):
+        g = rng.random((sy, sx), dtype=np.float32)
+        up = np.asarray(Image.fromarray((g * 255).astype(np.uint8)).resize((w, h), Image.BICUBIC), np.float32) / 255.0
+        acc += amp * up
+        norm += amp
+        amp *= 0.55
+    fur_g = acc / norm
 
     def local_underside(mask_bool: np.ndarray, depth_px: float) -> np.ndarray:
-        """Distance upward from EVERY downward-facing boundary of mask_bool (catches belly even above legs!)."""
         below = np.zeros_like(mask_bool)
         below[:-1, :] = mask_bool[1:, :]
         bottom_edges = mask_bool & (~below)
@@ -259,7 +255,6 @@ def build_artist_shadow(
         return np.where(mask_bool, np.clip((depth_px - dist) / max(1.0, depth_px), 0.0, 1.0), 0.0)
 
     def local_rightside(mask_bool: np.ndarray, depth_px: float) -> np.ndarray:
-        """Distance leftward from right-facing edges (light comes from upper-left, so trailing right edges shade softly)."""
         right = np.zeros_like(mask_bool)
         right[:, :-1] = mask_bool[:, 1:]
         right_edges = mask_bool & (~right)
@@ -271,16 +266,7 @@ def build_artist_shadow(
                 dist[m, x] = np.minimum(dist[m, x], dist[m, x + 1] + 1.0)
         return np.where(mask_bool, np.clip((depth_px - dist) / max(1.0, depth_px), 0.0, 1.0), 0.0)
 
-    # 1. Pure silhouette-derived downward-facing & trailing-edge shading (100% seam-free!)
-    under_core = local_underside(inside, 48.0)     # crisp deep belly / under-chin / under-tail / under-paw shadow
-    under_mid = local_underside(inside, 118.0)     # softer fur-feathered shadow climbing lower ribs, flanks, thighs
-    right_soft = local_rightside(inside, 36.0)     # subtle trailing-edge depth (rear of legs, ruff, tail)
-
-    # 2. Organic belly layer (follows natural cream fur brush stroke, never a straight box!)
-    belly = np.clip(layer_w[LID_TO_IDX['belly']], 0.0, 1.0)
-    belly_soft = np.asarray(Image.fromarray((belly * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(5.0)), np.float32) / 255.0
-
-    # 3. Distance from top-edge (keep dorsal ridge & top of head/back well-lit like standing.zip!)
+    # Distance from top-edge (keep dorsal ridge, top of skull, ears, and upper back crisp & lit!)
     above = np.zeros_like(inside)
     above[1:, :] = inside[:-1, :]
     top_edges = inside & (~above)
@@ -290,27 +276,61 @@ def build_artist_shadow(
         m = inside[y]
         if m.any():
             top_dist[y, m] = np.minimum(top_dist[y, m], top_dist[y - 1, m] + 1.0)
-    lit_crown = np.clip((top_dist - 18.0) / 38.0, 0.15, 1.0)  # protect top ~20px dorsal highlight
+    lit_crown = np.clip((top_dist - 22.0) / 20.0, 0.0, 1.0)
 
-    # 4. Combine into crisp artist-grade cel + dry-brush fur shading (alpha 165-232)
-    core_pot = np.maximum.reduce([
-        under_core * 0.92,
-        belly_soft * 0.88,
-        right_soft * 0.42 * lit_crown,
-    ])
-    mid_pot = np.maximum(under_mid * 0.72, right_soft * 0.48) * lit_crown
+    # 1. Tight crisp underside cel band (belly, chest underside, under-jaw, lower tail — NOT 118px blurry fog!)
+    under_tight = local_underside(inside, 26.0) * lit_crown
+    # Deeper crisp crescent under concave belly/groin & under-neck (where layer_w has belly/neck_under)
+    belly_m = np.clip(layer_w[LID_TO_IDX['belly']] + layer_w[LID_TO_IDX['neck_under']] * 0.75, 0.0, 1.0)
+    under_belly = local_underside(inside, 42.0) * np.clip(belly_m * 1.5, 0.0, 1.0) * lit_crown
 
-    # Crisp organic fur-tuft breakup along transition edge (no wide diagonal bars!)
-    brushed_core = np.clip((core_pot - 0.10 + (fur_g - 0.50) * 0.28) * 1.9, 0.0, 1.0) * 0.88
-    brushed_mid = np.clip((mid_pot - 0.22 + (fur_g - 0.48) * 0.42) * 1.6, 0.0, 1.0) * 0.68
-    raw = np.maximum(brushed_core, brushed_mid)
+    # 2. Crisp trailing-edge shadow along right/rear contours of legs, haunches, and tail (light from upper-left)
+    right_tight = local_rightside(inside, 18.0) * lit_crown
 
-    # Keep eyes and muzzle tip clean of heavy shadow
+    # 3. Internal 48_LINEART fur-tuft & anatomical fold shadows (neck ruff rows, cheek ruff, shoulder/haunch creases!)
+    # Exclude outer silhouette border (7px) so only true internal body/fur-tuft lines cast directional crease shadows.
+    interior_zone = erode(inside, 7)
+    internal_ink = (ink_a > 0.30) & interior_zone
+    # Restrict internal fur-tuft shadows away from eyes/muzzle tip/claws
     eye_m = layer_w[LID_TO_IDX['eyes']] > 0.1
-    raw[dilate(eye_m, 5)] = 0.0
+    claw_m = (layer_w[LID_TO_IDX['fore_claws']] > 0.1) | (layer_w[LID_TO_IDX['hind_claws']] > 0.1)
+    paw_m = (layer_w[LID_TO_IDX['fore_toes']] > 0.25) | (layer_w[LID_TO_IDX['hind_toes']] > 0.25)
+    internal_ink &= (~dilate(eye_m, 14)) & (~dilate(claw_m, 10)) & (~dilate(paw_m, 4))
 
-    smooth = np.asarray(Image.fromarray((raw * 255).clip(0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.5)), np.float32) / 255.0
-    return np.clip(smooth, 0.0, 0.90) * sil_alpha
+    # Cast directional shadow 2..15px down-and-right (+dy, +dx) away from upper-left light!
+    crease_pot = np.zeros((h, w), np.float32)
+    ink_f = internal_ink.astype(np.float32)
+    for step in range(2, 16):
+        dy = int(round(step * 0.80))
+        dx = int(round(step * 0.60))
+        shifted = np.roll(np.roll(ink_f, dy, axis=0), dx, axis=1)
+        w_step = 1.0 - (step - 2) / 15.0
+        crease_pot = np.maximum(crease_pot, shifted * w_step)
+    # Keep crease shadows inside body & below lit crown, strongest in shaggy neck/shoulder/haunch fur
+    crease_pot *= inside.astype(np.float32) * lit_crown
+    # Break crease bands subtly with fine dry-brush fur grain so they match the artist's jagged ruff shading
+    crease_brushed = np.clip((crease_pot - 0.14 + (fur_g - 0.50) * 0.36) * 4.2, 0.0, 1.0)
+
+    # 4. Crisp hard-edged cel combine (artist median alpha ~216/255 = 0.847 — ZERO blurry grey haze!)
+    contour_pot = np.maximum.reduce([
+        under_tight * 0.96,
+        under_belly * 1.04,
+        right_tight * 0.90,
+    ])
+    # Suppress heavy muddy shadow on top of feet/paws (keep only tiny bottom paw contact edge)
+    contour_pot = np.where(paw_m, local_underside(inside, 9.0) * 0.82, contour_pot)
+
+    # Crisp cel threshold with fine dry-brush tooth on upper edge
+    cel_contour = np.clip((contour_pot - 0.32 + (fur_g - 0.50) * 0.30) * 5.6, 0.0, 1.0)
+    raw = np.maximum(cel_contour * 0.85, crease_brushed * 0.80)
+
+    # Keep eyes and muzzle catchlights completely clean of shadow
+    raw[dilate(eye_m, 6)] = 0.0
+    raw[dilate(claw_m, 2)] = 0.0
+
+    # Minimal 0.5px anti-alias ONLY (no blurry fog!)
+    crisp = np.asarray(Image.fromarray((raw * 255).clip(0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.5)), np.float32) / 255.0
+    return np.clip(crisp, 0.0, 0.86) * sil_alpha
 
 
 def decompose_to_zip(
@@ -347,8 +367,10 @@ def decompose_to_zip(
     if spec:
         regions.update(spec)
 
-    # 1. Lineart: pure black ink + nose/eye catchlights (+ optional white bared teeth!)
-    ink_a = np.where(inside, np.clip((33.0 - lum) / 18.0, 0.0, 1.0), 0.0).astype(np.float32)
+    # 1. Lineart: pure black ink + thin neutral-grey anti-aliased interior ink strokes + eye/nose catchlights (+ optional white bared teeth!)
+    ink_core = np.clip((34.0 - lum) / 18.0, 0.0, 1.0)
+    ink_thin = np.where(sat < 10.0, np.clip((52.0 - lum) / 24.0, 0.0, 1.0), 0.0)
+    ink_a = np.where(inside, np.maximum(ink_core, ink_thin), 0.0).astype(np.float32)
     ex0, ey0, ex1, ey1 = regions['eye_box']
     nx0, ny0, nx1, ny1 = regions['nose_box']
     in_eye_box = (xx >= ex0) & (xx <= ex1) & (yy >= ey0) & (yy <= ey1)
