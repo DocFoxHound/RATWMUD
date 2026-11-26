@@ -21,7 +21,8 @@
         "jogging",
         "knocked_out",
         "lying",
-        "playful_roll",
+        "playful",
+        "roll",
         "running",
         "sitting",
         "sleeping",
@@ -106,7 +107,15 @@
           "tail",
           "torso"
         ],
-        "playful_roll": [
+        "playful": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "roll": [
           "forelegs",
           "head",
           "hindlegs",
@@ -193,7 +202,14 @@
           "docked_tail",
           "half_limp_tail"
         ],
-        "playful_roll": [
+        "playful": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "roll": [
           "clipped_ear_both",
           "clipped_ear_left",
           "clipped_ear_right",
