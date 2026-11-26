@@ -1183,7 +1183,14 @@ def _paint_ink_wound(
 
 def generate_damage_for_zip(zip_path: Path, out_dir: Path, seed: int = 31) -> dict[str, int]:
     """Generate 6 independent, hand-inked transparent damage overlays (head, neck, forelegs, hindlegs, torso, tail)
-    anchored directly to each pose's own 48-layer anatomical region masks."""
+    tracked strictly inside ink-bounded interior fur segments of each pose's 48 layers.
+
+    Guarantees:
+      - Wounds anchor on the deepest interior fur of each anatomical region (never on forepaws/toes or seams).
+      - Limb/tail wounds align with the local principal axis of that ink-bounded fur segment.
+      - Wounds are clipped cleanly to the active fur segment and masked beneath dark 48_LINEART contours so
+        no wound ever paints over inked lines between body parts.
+    """
     with zipfile.ZipFile(zip_path) as z:
         names = sorted(z.namelist())
         layers = [np.asarray(Image.open(io.BytesIO(z.read(f))).convert('RGBA')) for f in names]
@@ -1200,79 +1207,188 @@ def generate_damage_for_zip(zip_path: Path, out_dir: Path, seed: int = 31) -> di
     reg_a: dict[str, np.ndarray] = {v: np.zeros((h, w), np.float32) for v in group_map.values()}
     sil_a = np.zeros((h, w), np.float32)
     eye_a = layers[0][..., 3].astype(np.float32) / 255.0
+    paw_a = np.zeros((h, w), np.float32)
+    ear_a = np.zeros((h, w), np.float32)
+    # Dark black ink contours from 48_LINEART (exclude white eye/nose/teeth catchlights)
+    line_rgba = layers[47]
+    line_lum = line_rgba[..., 0] * 0.299 + line_rgba[..., 1] * 0.587 + line_rgba[..., 2] * 0.114
+    ink_a = np.where(line_lum < 90.0, line_rgba[..., 3].astype(np.float32) / 255.0, 0.0)
+
     for k in range(1, 46):
         a = layers[k][..., 3].astype(np.float32) / 255.0
+        lid = PALETTE['layers'][k]['id']
         sil_a = np.maximum(sil_a, a)
+        if lid in ('fore_toes', 'hind_toes', 'fore_claws', 'hind_claws'):
+            paw_a = np.maximum(paw_a, a)
+            continue
+        if lid in ('inner_ear', 'upr_ear', 'lwr_ear'):
+            ear_a = np.maximum(ear_a, a)
         grp = PALETTE['layers'][k]['group']
         if grp in group_map:
             rkey = group_map[grp]
-            # Exclude eyes/ears tips slightly from head wounds so eyes stay readable
-            if PALETTE['layers'][k]['id'] in ('fore_claws', 'hind_claws'):
-                continue
             reg_a[rkey] = np.maximum(reg_a[rkey], a)
 
+    # Distance from dark ink contours / silhouette boundary (pure Pillow MinFilter, fast & exact)
+    ink_barrier = dilate(ink_a > 0.28, 2)
     fur_n = _fur_grain_field(h, w, seed)
     rng = np.random.default_rng(seed + 17)
     out_dir.mkdir(parents=True, exist_ok=True)
     counts: dict[str, int] = {}
 
-    def region_anchor(rname: str, qx: float = 0.5, qy: float = 0.5) -> tuple[float, float, float, float]:
-        mask = reg_a[rname] > 0.25
+    def connected_component_at(mask: np.ndarray, sy: int, sx: int) -> np.ndarray:
+        out = np.zeros((h, w), bool)
+        if not (0 <= sy < h and 0 <= sx < w and mask[sy, sx]):
+            return out
+        q = deque([(sy, sx)])
+        out[sy, sx] = True
+        while q:
+            y, x = q.popleft()
+            for ny, nx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
+                if 0 <= ny < h and 0 <= nx < w and mask[ny, nx] and not out[ny, nx]:
+                    out[ny, nx] = True
+                    q.append((ny, nx))
+        return out
+
+    def find_safe_pocket(rname: str, prefer_qy: float = 0.45, prefer_qx: float = 0.50) -> tuple[float, float, float, float, float, np.ndarray]:
+        """Return (cx, cy, depth_px, ux, uy, comp_mask) for the best ink-free interior fur pocket in rname."""
+        raw = reg_a[rname] > 0.30
         if rname == 'head':
-            # Avoid covering eye directly
-            mask = mask & (~dilate(eye_a > 0.1, 10))
-        ys, xs = np.nonzero(mask)
-        if not len(xs):
-            return 512.0, 512.0, 40.0, 40.0
-        x0, x1 = float(np.percentile(xs, 12)), float(np.percentile(xs, 88))
-        y0, y1 = float(np.percentile(ys, 12)), float(np.percentile(ys, 88))
-        bw, bh = max(24.0, x1 - x0), max(24.0, y1 - y0)
-        # Snap anchor to nearest interior pixel of mask so wounds NEVER float in empty air!
-        tx, ty = x0 + qx * bw, y0 + qy * bh
-        idx = int(np.argmin((xs - tx) ** 2 + (ys - ty) ** 2))
-        return float(xs[idx]), float(ys[idx]), bw, bh
+            raw = raw & (~dilate(eye_a > 0.1, 12)) & (~dilate(ear_a > 0.2, 4))
+        elif rname in ('forelegs', 'hindlegs'):
+            raw = raw & (~dilate(paw_a > 0.15, 14))
+        safe = raw & (~ink_barrier)
+        if safe.sum() < 40:
+            # Fallback to broader region (e.g. knocked_out pose with hidden paws -> shoulder/rump area)
+            safe = (reg_a[rname] > 0.20) & (~ink_barrier)
+        if safe.sum() < 25:
+            safe = (sil_a > 0.30) & (~ink_barrier)
+
+        # Iterative erosion to measure distance to nearest ink line or region edge (up to 26px)
+        depth = np.zeros((h, w), np.float32)
+        cur = safe.copy()
+        for step in range(1, 27):
+            if not cur.any():
+                break
+            depth[cur] = float(step)
+            cur = erode(cur, 1)
+
+        ys, xs = np.nonzero(safe)
+        x0, x1 = float(np.percentile(xs, 10)), float(np.percentile(xs, 90))
+        y0, y1 = float(np.percentile(ys, 10)), float(np.percentile(ys, 90))
+        bw, bh = max(20.0, x1 - x0), max(20.0, y1 - y0)
+        tx, ty = x0 + prefer_qx * bw, y0 + prefer_qy * bh
+        # Score pixels: strongly prefer deep interior (far from ink lines!) with gentle preference toward anatomical sweet-spot
+        d_vals = depth[ys, xs]
+        dist_pref = np.hypot((xs - tx) / bw, (ys - ty) / bh)
+        score = d_vals - dist_pref * 3.5
+        best = int(np.argmax(score))
+        cx, cy = float(xs[best]), float(ys[best])
+        max_d = float(d_vals[best])
+
+        comp = connected_component_at(safe, int(cy), int(cx))
+        # Compute local principal axis (ux, uy) of pixels in this ink-bounded pocket near (cx, cy)
+        cys, cxs = np.nonzero(comp)
+        near = ((cxs - cx) ** 2 + (cys - cy) ** 2) <= (68.0 ** 2)
+        if near.sum() >= 15:
+            pts = np.stack([cxs[near] - cx, cys[near] - cy], axis=1).astype(np.float32)
+            cov = (pts.T @ pts) / len(pts)
+            evals, evecs = np.linalg.eigh(cov)
+            ux, uy = float(evecs[0, 1]), float(evecs[1, 1])
+            # Normalize direction to point generally downward-right for natural gravity/fur flow
+            if uy < 0 or (abs(uy) < 0.2 and ux < 0):
+                ux, uy = -ux, -uy
+        else:
+            ux, uy = 0.6, 0.8
+        return cx, cy, max_d, ux, uy, comp
 
     for rname in ('head', 'neck', 'forelegs', 'hindlegs', 'torso', 'tail'):
         ov = Image.new('RGBA', (w, h), (0, 0, 0, 0))
-        cx, cy, bw, bh = region_anchor(rname, 0.52, 0.48)
-        scale = max(0.65, min(1.25, math.hypot(bw, bh) / 145.0))
-
         if rname == 'head':
-            # Cheek scratch + muzzle graze (avoiding eye)
-            cx1, cy1, _, _ = region_anchor('head', 0.58, 0.64)
-            cx2, cy2, _, _ = region_anchor('head', 0.24, 0.56)
-            ov = _paint_ink_wound(ov, [(cx1 - 18 * scale, cy1 - 12 * scale), (cx1, cy1), (cx1 + 16 * scale, cy1 + 14 * scale)], 2.6, fur_n, rng, 18.0, 'gash')
-            ov = _paint_ink_wound(ov, [(cx2 - 10 * scale, cy2 - 6 * scale), (cx2 + 12 * scale, cy2 + 7 * scale)], 2.0, fur_n, rng, 11.0, 'graze')
+            cx, cy, dep, ux, uy, comp = find_safe_pocket('head', prefer_qy=0.62, prefer_qx=0.56)
+            span = min(22.0, max(10.0, dep * 1.45))
+            ov = _paint_ink_wound(
+                ov,
+                [(cx - ux * span, cy - uy * span), (cx, cy), (cx + ux * span * 0.9, cy + uy * span * 0.9)],
+                2.4, fur_n, rng, min(14.0, dep * 0.95), 'gash',
+            )
+            px, py = -uy, ux
+            ov = _paint_ink_wound(
+                ov,
+                [(cx + px * 7 - ux * span * 0.55, cy + py * 7 - uy * span * 0.55),
+                 (cx + px * 7 + ux * span * 0.55, cy + py * 7 + uy * span * 0.55)],
+                1.9, fur_n, rng, min(10.0, dep * 0.7), 'graze',
+            )
+            valid_comp = comp
         elif rname == 'neck':
-            # Jagged canine bite marks + ragged ruff slash
-            cx1, cy1, _, _ = region_anchor('neck', 0.48, 0.46)
-            ov = _paint_ink_wound(ov, [(cx1 - 14, cy1 - 8), (cx1 + 6, cy1 + 4), (cx1 + 22, cy1 - 12)], 3.4, fur_n, rng, 30.0, 'bite')
-            ov = _paint_ink_wound(ov, [(cx1 - 18, cy1 + 14), (cx1 + 8, cy1 + 30), (cx1 + 26, cy1 + 46)], 2.8, fur_n, rng, 22.0, 'gash')
+            cx, cy, dep, ux, uy, comp = find_safe_pocket('neck', prefer_qy=0.48, prefer_qx=0.48)
+            span = min(28.0, max(12.0, dep * 1.4))
+            px, py = -uy, ux
+            ov = _paint_ink_wound(
+                ov,
+                [(cx - ux * span * 0.45 + px * 6, cy - uy * span * 0.45 + py * 6),
+                 (cx + px * 2, cy + py * 2),
+                 (cx + ux * span * 0.45 - px * 6, cy + uy * span * 0.45 - py * 6)],
+                3.0, fur_n, rng, min(22.0, dep * 1.1), 'bite',
+            )
+            ov = _paint_ink_wound(
+                ov,
+                [(cx - ux * span * 0.85 - px * 9, cy - uy * span * 0.85 - py * 9),
+                 (cx - px * 9, cy - py * 9),
+                 (cx + ux * span * 0.85 - px * 9, cy + uy * span * 0.85 - py * 9)],
+                2.6, fur_n, rng, min(18.0, dep * 0.95), 'gash',
+            )
+            valid_comp = comp
         elif rname == 'torso':
-            # Three asymmetric ragged claw rakes across ribs/flank
-            cx1, cy1, _, _ = region_anchor('torso', 0.48, 0.48)
-            ov = _paint_ink_wound(ov, [(cx1 - 28 * scale, cy1 - 36 * scale), (cx1 + 2 * scale, cy1 + 2 * scale), (cx1 + 24 * scale, cy1 + 42 * scale)], 3.9, fur_n, rng, 34.0, 'gash')
-            ov = _paint_ink_wound(ov, [(cx1 - 4 * scale, cy1 - 26 * scale), (cx1 + 20 * scale, cy1 + 14 * scale), (cx1 + 38 * scale, cy1 + 52 * scale)], 3.2, fur_n, rng, 26.0, 'gash')
-            ov = _paint_ink_wound(ov, [(cx1 + 18 * scale, cy1 - 12 * scale), (cx1 + 34 * scale, cy1 + 18 * scale)], 2.3, fur_n, rng, 18.0, 'graze')
+            cx, cy, dep, ux, uy, comp = find_safe_pocket('torso', prefer_qy=0.48, prefer_qx=0.48)
+            # Three asymmetric diagonal claw rakes strictly inside ribs/flank interior
+            span = min(44.0, max(18.0, dep * 1.85))
+            # Diagonal claw direction (~55 deg down-right)
+            dx, dy = 0.56, 0.83
+            px, py = -dy, dx
+            ov = _paint_ink_wound(ov, [(cx - dx * span - px * 11, cy - dy * span - py * 11), (cx - px * 11, cy - py * 11), (cx + dx * span - px * 11, cy + dy * span - py * 11)], 3.7, fur_n, rng, min(28.0, dep * 1.15), 'gash')
+            ov = _paint_ink_wound(ov, [(cx - dx * span * 0.82 + px * 5, cy - dy * span * 0.82 + py * 5), (cx + px * 5, cy + py * 5), (cx + dx * span * 0.82 + px * 5, cy + dy * span * 0.82 + py * 5)], 3.0, fur_n, rng, min(22.0, dep * 1.0), 'gash')
+            ov = _paint_ink_wound(ov, [(cx - dx * span * 0.55 + px * 19, cy - dy * span * 0.55 + py * 19), (cx + dx * span * 0.55 + px * 19, cy + dy * span * 0.55 + py * 19)], 2.2, fur_n, rng, min(14.0, dep * 0.8), 'graze')
+            valid_comp = comp
         elif rname == 'forelegs':
-            # Upper shoulder graze + shin laceration
-            cx1, cy1, _, _ = region_anchor('forelegs', 0.50, 0.35)
-            cx2, cy2, _, _ = region_anchor('forelegs', 0.46, 0.64)
-            ov = _paint_ink_wound(ov, [(cx1 - 10, cy1 - 14), (cx1 + 12, cy1 + 16)], 2.6, fur_n, rng, 18.0, 'graze')
-            ov = _paint_ink_wound(ov, [(cx2 - 10, cy2 - 26), (cx2 + 4, cy2 + 6), (cx2 + 10, cy2 + 34)], 2.9, fur_n, rng, 22.0, 'gash')
+            # Anchor strictly in the broad upper shoulder/forearm interior (NEVER on forepaws or leg-gap ink lines!)
+            cx, cy, dep, ux, uy, comp = find_safe_pocket('forelegs', prefer_qy=0.28, prefer_qx=0.52)
+            span = min(28.0, max(10.0, dep * 1.55))
+            px, py = -uy, ux
+            ov = _paint_ink_wound(
+                ov,
+                [(cx - ux * span, cy - uy * span), (cx, cy), (cx + ux * span, cy + uy * span)],
+                2.8, fur_n, rng, min(18.0, dep * 1.0), 'gash',
+            )
+            if dep >= 11.0:
+                ov = _paint_ink_wound(
+                    ov,
+                    [(cx + px * 7 - ux * span * 0.6, cy + py * 7 - uy * span * 0.6),
+                     (cx + px * 7 + ux * span * 0.6, cy + py * 7 + uy * span * 0.6)],
+                    2.2, fur_n, rng, min(13.0, dep * 0.8), 'graze',
+                )
+            valid_comp = comp
         elif rname == 'hindlegs':
-            # Deep haunch tear + secondary claw nick
-            cx1, cy1, _, _ = region_anchor('hindlegs', 0.46, 0.34)
-            ov = _paint_ink_wound(ov, [(cx1 - 24 * scale, cy1 - 26 * scale), (cx1 + 2 * scale, cy1 + 6 * scale), (cx1 + 22 * scale, cy1 + 38 * scale)], 3.7, fur_n, rng, 30.0, 'gash')
-            ov = _paint_ink_wound(ov, [(cx1 - 2 * scale, cy1 - 30 * scale), (cx1 + 18 * scale, cy1 + 2 * scale)], 2.5, fur_n, rng, 19.0, 'gash')
+            # Anchor strictly in the muscular upper haunch/thigh interior (away from hock & leg-gap ink lines)
+            cx, cy, dep, ux, uy, comp = find_safe_pocket('hindlegs', prefer_qy=0.32, prefer_qx=0.46)
+            span = min(36.0, max(14.0, dep * 1.65))
+            px, py = -uy, ux
+            ov = _paint_ink_wound(ov, [(cx - ux * span, cy - uy * span), (cx, cy), (cx + ux * span, cy + uy * span)], 3.4, fur_n, rng, min(24.0, dep * 1.1), 'gash')
+            ov = _paint_ink_wound(ov, [(cx + px * 10 - ux * span * 0.72, cy + py * 10 - uy * span * 0.72), (cx + px * 10 + ux * span * 0.72, cy + py * 10 + uy * span * 0.72)], 2.4, fur_n, rng, min(16.0, dep * 0.85), 'gash')
+            valid_comp = comp
         elif rname == 'tail':
-            # Tattered mid-tail bite & tear
-            cx1, cy1, _, _ = region_anchor('tail', 0.52, 0.50)
-            ov = _paint_ink_wound(ov, [(cx1 - 18, cy1 - 14), (cx1 + 4, cy1 + 4), (cx1 + 20, cy1 + 20)], 3.0, fur_n, rng, 18.0, 'gash')
-            ov = _paint_ink_wound(ov, [(cx1 - 6, cy1 + 4), (cx1 + 12, cy1 + 16)], 2.6, fur_n, rng, 15.0, 'bite')
+            cx, cy, dep, ux, uy, comp = find_safe_pocket('tail', prefer_qy=0.50, prefer_qx=0.52)
+            span = min(24.0, max(10.0, dep * 1.4))
+            px, py = -uy, ux
+            ov = _paint_ink_wound(ov, [(cx - ux * span, cy - uy * span), (cx, cy), (cx + ux * span, cy + uy * span)], 2.7, fur_n, rng, min(15.0, dep * 0.9), 'gash')
+            ov = _paint_ink_wound(ov, [(cx + px * 5 - ux * span * 0.35, cy + py * 5 - uy * span * 0.35), (cx + px * 5 + ux * span * 0.35, cy + py * 5 + uy * span * 0.35)], 2.2, fur_n, rng, min(12.0, dep * 0.75), 'bite')
+            valid_comp = comp
 
-        # Clip strictly to this region's silhouette (plus 3px feather) so regions stay 100% independent!
-        clip_m = np.clip(feather(reg_a[rname] > 0.12, 2.0) * 1.4, 0.0, 1.0) * np.clip(sil_a * 1.4, 0.0, 1.0)
+        # Strictly clip to this ink-bounded fur component AND mask out dark 48_LINEART strokes so
+        # wounds NEVER paint over inked lines separating limbs or body parts!
+        comp_soft = np.clip(feather(dilate(valid_comp, 1), 1.8) * 1.35, 0.0, 1.0)
+        reg_soft = np.clip(feather(reg_a[rname] > 0.15, 1.5) * 1.4, 0.0, 1.0)
+        ink_keepout = 1.0 - np.clip(ink_a * 1.45, 0.0, 1.0)
+        clip_m = comp_soft * reg_soft * np.clip(sil_a * 1.4, 0.0, 1.0) * ink_keepout
         if rname == 'head':
             clip_m *= (1.0 - np.clip(feather(eye_a > 0.1, 2.0) * 1.6, 0.0, 1.0))
         oarr = np.asarray(ov, np.float32)

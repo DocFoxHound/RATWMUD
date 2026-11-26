@@ -15,6 +15,7 @@ Data/Wolves/assets/
     │   ├── lying.zip
     │   ├── sleeping.zip
     │   ├── knocked_out.zip
+    │   ├── playful_roll.zip
     │   ├── sitting.zip
     │   ├── stalking.zip
     │   ├── walking.zip

@@ -21,6 +21,7 @@
         "jogging",
         "knocked_out",
         "lying",
+        "playful_roll",
         "running",
         "sitting",
         "sleeping",
@@ -98,6 +99,14 @@
           "torso"
         ],
         "lying": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "playful_roll": [
           "forelegs",
           "head",
           "hindlegs",
@@ -184,6 +193,13 @@
           "docked_tail",
           "half_limp_tail"
         ],
+        "playful_roll": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
         "running": [
           "clipped_ear_both",
           "clipped_ear_left",
@@ -234,88 +250,7 @@
           "half_limp_tail"
         ]
       },
-      "markings": {
-        "jogging": [
-          "brindle",
-          "frosting",
-          "irish_saddle",
-          "merle",
-          "piebald",
-          "ticking"
-        ],
-        "knocked_out": [
-          "brindle",
-          "frosting",
-          "irish_saddle",
-          "merle",
-          "piebald",
-          "ticking"
-        ],
-        "lying": [
-          "brindle",
-          "frosting",
-          "irish_saddle",
-          "merle",
-          "piebald",
-          "ticking"
-        ],
-        "running": [
-          "brindle",
-          "frosting",
-          "irish_saddle",
-          "merle",
-          "piebald",
-          "ticking"
-        ],
-        "sitting": [
-          "brindle",
-          "frosting",
-          "irish_saddle",
-          "merle",
-          "piebald",
-          "ticking"
-        ],
-        "sleeping": [
-          "brindle",
-          "frosting",
-          "irish_saddle",
-          "merle",
-          "piebald",
-          "ticking"
-        ],
-        "sprinting": [
-          "brindle",
-          "frosting",
-          "irish_saddle",
-          "merle",
-          "piebald",
-          "ticking"
-        ],
-        "stalking": [
-          "brindle",
-          "frosting",
-          "irish_saddle",
-          "merle",
-          "piebald",
-          "ticking"
-        ],
-        "standing": [
-          "brindle",
-          "frosting",
-          "irish_saddle",
-          "merle",
-          "piebald",
-          "ticking"
-        ],
-        "walking": [
-          "brindle",
-          "frosting",
-          "irish_saddle",
-          "merle",
-          "piebald",
-          "ticking"
-        ]
-      },
+      "markings": {},
       "wearables": {},
       "faces": []
     },
