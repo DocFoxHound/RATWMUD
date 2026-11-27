@@ -1039,13 +1039,24 @@
         "walking"
       ],
       "expressions": {
+        "jogging": [
+          "angry",
+          "scared"
+        ],
         "lying": [
           "angry",
           "angry_dominant",
           "angry_scared",
           "happy",
+          "hurt",
           "sad",
-          "threatening"
+          "surprised",
+          "threatening",
+          "tired"
+        ],
+        "running": [
+          "angry",
+          "scared"
         ],
         "sitting": [
           "angry",
@@ -1058,6 +1069,10 @@
           "threatening",
           "tired"
         ],
+        "sprinting": [
+          "angry",
+          "scared"
+        ],
         "standing": [
           "angry",
           "angry_dominant",
@@ -1068,6 +1083,10 @@
           "surprised",
           "threatening",
           "tired"
+        ],
+        "walking": [
+          "angry",
+          "scared"
         ]
       },
       "damage": {
@@ -1268,11 +1287,62 @@
         "running",
         "sitting",
         "sleeping",
+        "sprinting",
         "stalking",
         "standing",
         "walking"
       ],
-      "expressions": {},
+      "expressions": {
+        "jogging": [
+          "angry",
+          "scared"
+        ],
+        "lying": [
+          "angry",
+          "angry_dominant",
+          "angry_scared",
+          "happy",
+          "hurt",
+          "sad",
+          "surprised",
+          "threatening",
+          "tired"
+        ],
+        "running": [
+          "angry",
+          "scared"
+        ],
+        "sitting": [
+          "angry",
+          "angry_dominant",
+          "angry_scared",
+          "happy",
+          "hurt",
+          "sad",
+          "surprised",
+          "threatening",
+          "tired"
+        ],
+        "sprinting": [
+          "angry",
+          "scared"
+        ],
+        "standing": [
+          "angry",
+          "angry_dominant",
+          "angry_scared",
+          "happy",
+          "hurt",
+          "sad",
+          "surprised",
+          "threatening",
+          "tired"
+        ],
+        "walking": [
+          "angry",
+          "scared"
+        ]
+      },
       "damage": {
         "jogging": [
           "forelegs",
@@ -1331,6 +1401,14 @@
           "torso"
         ],
         "sleeping": [
+          "forelegs",
+          "head",
+          "hindlegs",
+          "neck",
+          "tail",
+          "torso"
+        ],
+        "sprinting": [
           "forelegs",
           "head",
           "hindlegs",
@@ -1414,6 +1492,13 @@
           "half_limp_tail"
         ],
         "sleeping": [
+          "clipped_ear_both",
+          "clipped_ear_left",
+          "clipped_ear_right",
+          "docked_tail",
+          "half_limp_tail"
+        ],
+        "sprinting": [
           "clipped_ear_both",
           "clipped_ear_left",
           "clipped_ear_right",
