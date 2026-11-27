@@ -13,7 +13,8 @@ on the dev server (188.68.41.241) from 2026-11-13 and runs on its own server, **
   stopped and disabled; the volume `ratw-central-pg-data` and `/root/central-final-*.sql` (the last dump) are kept
   there as a backup. Remove the forward once no client uses the old address.
 - **Differences from the old setup:** Caddy here uses its default admin endpoint (no `admin unix//run/caddy/...` line).
-- **Not yet:** backups of central's database, and doc 77's "Going public" phase
+- **Backups:** nightly, on the same server (section "Backups").
+- **Not yet:** doc 77's "Going public" phase
   (the legal pages, the age gate's page, the official world beside it).
 
 ## What is where
@@ -53,6 +54,27 @@ The database container belongs to `ratwmud`'s own service manager (the account h
 cd /srv/ratwmud && runuser -u ratwmud -- env XDG_RUNTIME_DIR=/run/user/1001 \
   DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1001/bus HOME=/srv/ratwmud systemctl --user status ratw-central-pg
 ```
+
+## Backups
+
+Nightly at 03:30 UTC (`ratw-central-backup.timer`, which runs `/usr/local/sbin/ratw-central-backup` as root) into
+`/var/backups/ratw-central` (root only, 0700), kept 14 days:
+
+- `ratw_central-STAMP.dump`: the database (`pg_dump -Fc`);
+- `roles-STAMP.sql`: the database roles (`pg_dumpall --roles-only`);
+- `keys-and-secrets-STAMP.tar.gz`: the ticket keys, `pg.env` and `central.env` (losing the keys signs every player out).
+
+They are on the same server, so they cover a broken database or a bad deploy, not the loss of the server. Run one now:
+`systemctl start ratw-central-backup`; see the last: `journalctl -u ratw-central-backup -n 5`. To restore (as root):
+
+```
+U="runuser -u ratwmud -- env XDG_RUNTIME_DIR=/run/user/1001 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1001/bus HOME=/srv/ratwmud"
+systemctl stop ratw-central
+cd /srv/ratwmud && $U podman exec -i ratw-central-pg pg_restore -U postgres -d ratw_central --clean --if-exists < /var/backups/ratw-central/ratw_central-STAMP.dump
+systemctl start ratw-central
+```
+
+(First tested on 2026-11-27: the dump restored into a scratch database with every row.)
 
 ## Updating it
 
