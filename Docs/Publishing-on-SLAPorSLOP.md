@@ -49,7 +49,7 @@ The fields it fills in:
 | Age rating | **12+** (see below) |
 | Content labels | violence, gambling themes |
 | Tags | rpg, open-world, simulation, multiplayer, exploration, pvp, co-op, stealth, turn-based, atmospheric |
-| Online | the maker's servers (central: `ratw.188-68-41-241.sslip.io`) and servers players host (worlds) |
+| Online | the maker's servers (central: `ratw.37-27-253-109.sslip.io`) and servers players host (worlds) |
 | Works in sandbox mode | yes |
 | Bug reports | yes |
 

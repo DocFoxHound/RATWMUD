@@ -1,12 +1,18 @@
-# Central on the dev server
+# Central on its own server
 
-Central (accounts, wolves, tickets and the list of worlds: Docs/Design/77-central-accounts-and-hosted-worlds.md) runs
-on the dev server since 2026-11-13.
+Central (accounts, wolves, tickets and the list of worlds: Docs/Design/77-central-accounts-and-hosted-worlds.md) ran
+on the dev server (188.68.41.241) from 2026-11-13 and runs on its own server, **37.27.253.109**, since 2026-11-27.
 
-- **Address:** `https://ratw.188-68-41-241.sslip.io` (try `/health`). An sslip.io name, as the server's other sites
-  use, until the game has a domain of its own.
-- **Server:** 188.68.41.241 (Fedora 44). It hosts other projects too: leave their accounts, containers and Caddy
-  sites alone.
+- **Address:** `https://ratw.37-27-253-109.sslip.io` (try `/health`). An sslip.io name until the game has a domain of
+  its own.
+- **Server:** 37.27.253.109 (Fedora 44, Hetzner Helsinki, 1 vCPU, 1 GB RAM, 19 GB disk), central's alone. Root logs in by
+  key. Caddy's main file trusts 188.68.41.241 as a proxy (below).
+- **The old address** `https://ratw.188-68-41-241.sslip.io` (the dev server, which hosts other projects: leave their
+  accounts, containers and Caddy sites alone) forwards to the new one (its `/etc/caddy/Caddyfile.d/ratw.caddyfile`), so
+  clients up to 0.1.11, whose built-in address it is, keep working. Its old central service and database container are
+  stopped and disabled; the volume `ratw-central-pg-data` and `/root/central-final-*.sql` (the last dump) are kept
+  there as a backup. Remove the forward once no client uses the old address.
+- **Differences from the old setup:** Caddy here uses its default admin endpoint (no `admin unix//run/caddy/...` line).
 - **Not yet:** backups of central's database, and doc 77's "Going public" phase
   (the legal pages, the age gate's page, the official world beside it).
 
@@ -86,7 +92,7 @@ code that has it (migration `0007`, applied when central starts):
   installed client uses it with nothing to set. A central on your own computer, for development:
   `--central http://127.0.0.1:7790`.
 - **A world:** register it on central (`worlds add`, then `worlds token`), then start the server in ticket mode
-  (`--central https://ratw.188-68-41-241.sslip.io --world-id ID`) with the world agent holding the token. Central
+  (`--central https://ratw.37-27-253-109.sslip.io --world-id ID`) with the world agent holding the token. Central
   lists a world only when it can call the world back on a public address.
 - **Anyone who has the address can register an account.** Nothing else limits sign-ups yet.
 

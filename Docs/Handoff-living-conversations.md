@@ -108,7 +108,7 @@ cmake --build build-core -j8                     # then spot-check game/talk/man
 
 Restart the laptop world: stop `Saved/WorldAgent/run.sh` **and** its three children (`tools/world_agent.py run`,
 `build-core/ratw_server --port 7788`, `tools/npc_mind.py`), then start `bash Saved/WorldAgent/run.sh` again in the
-background and wait until `https://ratw.188-68-41-241.sslip.io/worlds` lists port 7788. Then `bash
+background and wait until `https://ratw.37-27-253-109.sslip.io/worlds` lists port 7788. Then `bash
 tools/deploy_central.sh`. The launcher restarts the world by itself after a published build (exit 75), but not after
 a crash or a maintenance close (exit 76).
 

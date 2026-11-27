@@ -5,12 +5,12 @@
 #
 #   bash tools/deploy_central.sh [REVISION]        (default: HEAD)
 #
-# RATW_CENTRAL_SSH   who to log in as (default root@188.68.41.241)
+# RATW_CENTRAL_SSH   who to log in as (default root@37.27.253.109)
 # RATW_IDENTITY_BIN  a built ratw_identity (default: build-core/ratw_identity)
 set -euo pipefail
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 revision="${1:-HEAD}"
-target="${RATW_CENTRAL_SSH:-root@188.68.41.241}"
+target="${RATW_CENTRAL_SSH:-root@37.27.253.109}"
 identity="${RATW_IDENTITY_BIN:-$root/build-core/ratw_identity}"
 [[ -x "$identity" ]] || { echo "No ratw_identity at $identity: cmake --build build-core --target ratw_identity, or set RATW_IDENTITY_BIN." >&2; exit 2; }
 short="$(git -C "$root" rev-parse --short "$revision")"

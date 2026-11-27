@@ -12,9 +12,9 @@ use std::time::Duration;
 
 use crate::tokens::TokenStore;
 
-/// Central's address: the one on the dev server (Docs/Central-server.md; an sslip.io name until the game has a domain
+/// Central's address: the one on its own server since 2026-11-27 (Docs/Central-server.md; an sslip.io name until the game has a domain
 /// of its own). A central on this computer, for development and the tests, is `--central http://127.0.0.1:7790`.
-pub const BUILT_IN: &str = "https://ratw.188-68-41-241.sslip.io";
+pub const BUILT_IN: &str = "https://ratw.37-27-253-109.sslip.io";
 
 /// Central's address, checked: `https://` anywhere, plain `http://` only to this computer (127.x, localhost, ::1); no
 /// path, query, fragment or user name. Gives the base (no trailing slash) and what the page shows ("127.0.0.1:7790").
